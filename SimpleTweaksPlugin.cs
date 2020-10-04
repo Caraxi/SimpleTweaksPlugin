@@ -56,7 +56,7 @@ namespace SimpleTweaksPlugin {
         }
 
         public void SetupCommands() {
-            PluginInterface.CommandManager.AddHandler("/uitweaks", new Dalamud.Game.Command.CommandInfo(OnConfigCommandHandler) {
+            PluginInterface.CommandManager.AddHandler("/tweaks", new Dalamud.Game.Command.CommandInfo(OnConfigCommandHandler) {
                 HelpMessage = $"Open config window for {this.Name}",
                 ShowInHelp = true
             });
@@ -67,7 +67,7 @@ namespace SimpleTweaksPlugin {
         }
 
         public void RemoveCommands() {
-            PluginInterface.CommandManager.RemoveHandler("/uitweaks");
+            PluginInterface.CommandManager.RemoveHandler("/tweaks");
         }
 
         private void BuildUI() {

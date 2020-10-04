@@ -1,7 +1,7 @@
 {
   "Author": "Caraxi",
   "Name": "Simple Tweaks",
-  "Description": "",
+  "Description": "Collection of simple ideas that are too small to warrent their own plugin.\n/tweaks to open the config",
   "InternalName": "SimpleTweaksPlugin",
   "AssemblyVersion": "0.1.0.0",
   "RepoUrl": "https://github.com/Caraxi/SimpleTweaksPlugin",

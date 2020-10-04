@@ -29,8 +29,8 @@ namespace SimpleTweaksPlugin {
         }
 
         public bool DrawConfigUI() {
-            bool drawConfig = true;
-            ImGuiWindowFlags windowFlags = ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse;
+            var drawConfig = true;
+            var windowFlags = ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse;
             ImGui.Begin($"{plugin.Name} Config", ref drawConfig, windowFlags);
 
             foreach (var t in plugin.Tweaks) {
