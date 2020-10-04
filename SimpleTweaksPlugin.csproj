@@ -26,6 +26,11 @@
         <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     </PropertyGroup>
     <ItemGroup>
+      <Compile Remove="Publish\**" />
+      <EmbeddedResource Remove="Publish\**" />
+      <None Remove="Publish\**" />
+    </ItemGroup>
+    <ItemGroup>
 		<Reference Include="Dalamud">
 			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Dalamud.dll</HintPath>
 		</Reference>
@@ -34,33 +39,6 @@
 		</Reference>
 		<Reference Include="ImGuiScene">
 			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\ImGuiScene.dll</HintPath>
-		</Reference>
-		<Reference Include="EasyHook">
-			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\EasyHook.dll</HintPath>
-		</Reference>
-		<Reference Include="Serilog">
-			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Serilog.dll</HintPath>
-		</Reference>
-		<Reference Include="Newtonsoft.Json">
-			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Newtonsoft.Json.dll</HintPath>
-		</Reference>
-		<Reference Include="JetBrains.Annotations">
-			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\JetBrains.Annotations.dll</HintPath>
-		</Reference>
-		<Reference Include="SharpDX.Desktop">
-			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\SharpDX.Desktop.dll</HintPath>
-		</Reference>
-		<Reference Include="Serilog.Sinks.File">
-			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Serilog.Sinks.File.dll</HintPath>
-		</Reference>
-		<Reference Include="Serilog.Sinks.Async">
-			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Serilog.Sinks.Async.dll</HintPath>
-		</Reference>
-		<Reference Include="Lumina">
-			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Lumina.dll</HintPath>
-		</Reference>
-		<Reference Include="Lumina.Generated">
-			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Lumina.Generated.dll</HintPath>
 		</Reference>
     </ItemGroup>
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">

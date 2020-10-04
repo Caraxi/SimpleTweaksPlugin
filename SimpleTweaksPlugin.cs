@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Dalamud.Plugin;
-using SimpleTweaksPlugin.Tweaks;
 
 namespace SimpleTweaksPlugin {
     public class SimpleTweaksPlugin : IDalamudPlugin {
