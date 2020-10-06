@@ -3,6 +3,7 @@ using Dalamud.Plugin;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
@@ -30,7 +31,9 @@ namespace SimpleTweaksPlugin {
 
         public bool DrawConfigUI() {
             var drawConfig = true;
-            var windowFlags = ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse;
+
+            var windowFlags = ImGuiWindowFlags.NoCollapse;
+            ImGui.SetNextWindowSizeConstraints(new Vector2(300, 200), new Vector2(600, 800));
             ImGui.Begin($"{plugin.Name} Config", ref drawConfig, windowFlags);
 
             foreach (var t in plugin.Tweaks) {
