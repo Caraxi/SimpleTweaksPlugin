@@ -39,7 +39,7 @@ namespace SimpleTweaksPlugin {
 
             foreach (var t in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(Tweak)))) {
                 var tweak = (Tweak) Activator.CreateInstance(t);
-                tweak.InterfaceSetup(pluginInterface);
+                tweak.InterfaceSetup(pluginInterface, PluginConfig);
                 tweak.Setup();
                 if (PluginConfig.EnabledTweaks.Contains(t.Name)) {
                     tweak.Enable();

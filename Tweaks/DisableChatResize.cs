@@ -2,7 +2,7 @@
 using Dalamud.Hooking;
 using Dalamud.Plugin;
 
-namespace SimpleTweaksPlugin.Tweaks {
+namespace SimpleTweaksPlugin {
     public class DisableChatResize : Tweak {
         public override string Name => "Disable Chat Resize";
 
@@ -35,7 +35,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                     return;
                 }
 
-                base.Setup();
+                Ready = true;
 
             } catch (Exception ex) {
                 PluginLog.LogError($"Failed to setup {this.GetType().Name}: {ex.Message}");
@@ -59,19 +59,20 @@ namespace SimpleTweaksPlugin.Tweaks {
 
             mainChatWindowControlHook?.Enable();
             subChatWindowControlHook?.Enable();
-            base.Enable();
+            Enabled = true;
         }
 
         public override void Disable() {
             mainChatWindowControlHook?.Disable();
             subChatWindowControlHook?.Disable();
-            base.Disable();
+            Enabled = false;
         }
 
         public override void Dispose() {
             mainChatWindowControlHook?.Dispose();
             subChatWindowControlHook?.Dispose();
-            base.Dispose();
+            Enabled = false;
+            Ready = false;
         }
     }
 }

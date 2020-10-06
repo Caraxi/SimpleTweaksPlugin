@@ -2,7 +2,7 @@
 using Dalamud.Hooking;
 using Dalamud.Plugin;
 
-namespace SimpleTweaksPlugin.Tweaks {
+namespace SimpleTweaksPlugin {
     
     public class DisableChatMovement : Tweak {
 
@@ -35,7 +35,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                     return;
                 }
 
-                base.Setup();
+                Ready = true;
 
             } catch (Exception ex) {
                 PluginLog.LogError($"Failed to setup {this.GetType().Name}: {ex.Message}");
@@ -49,7 +49,7 @@ namespace SimpleTweaksPlugin.Tweaks {
 
             setUiPositionHook?.Enable();
             chatPanelDragControlHook?.Enable();
-            base.Enable();
+            Enabled = true;
         }
 
         private unsafe void ChatPanelControlDetour(IntPtr a1, ulong controlCode, ulong a3, IntPtr a4, short* a5) {
@@ -70,13 +70,14 @@ namespace SimpleTweaksPlugin.Tweaks {
         public override void Disable() {
             setUiPositionHook?.Disable();
             chatPanelDragControlHook?.Disable();
-            base.Disable();
+            Enabled = false;
         }
 
         public override void Dispose() {
             setUiPositionHook?.Dispose();
             chatPanelDragControlHook?.Dispose();
-            base.Dispose();
+            Enabled = false;
+            Ready = false;
         }
     }
 }

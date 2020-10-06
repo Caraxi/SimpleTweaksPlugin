@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 
 namespace SimpleTweaksPlugin {
-    public class SimpleTweaksPluginConfig : IPluginConfiguration {
+    public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
         [NonSerialized]
         private DalamudPluginInterface pluginInterface;
 
@@ -50,6 +50,13 @@ namespace SimpleTweaksPlugin {
                     Save();
                 }
 
+                if (t.Enabled) {
+                    ImGui.Indent(24 * ImGui.GetIO().FontGlobalScale);
+                    if (t.DrawConfig()) {
+                        Save();
+                    }
+                    ImGui.Indent(-24 * ImGui.GetIO().FontGlobalScale);
+                }
             }
             
             ImGui.End();
