@@ -32,6 +32,7 @@ namespace SimpleTweaksPlugin {
             this.PluginConfig.Init(this, pluginInterface);
 
             PluginInterface.UiBuilder.OnBuildUi += this.BuildUI;
+            pluginInterface.UiBuilder.OnOpenConfigUi += OnConfigCommandHandler;
 
             SetupCommands();
 
@@ -62,7 +63,7 @@ namespace SimpleTweaksPlugin {
             });
         }
 
-        public void OnConfigCommandHandler(string command, string args) {
+        public void OnConfigCommandHandler(object command, object args) {
             drawConfigWindow = !drawConfigWindow;
         }
 
