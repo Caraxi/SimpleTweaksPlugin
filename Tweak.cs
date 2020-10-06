@@ -1,5 +1,6 @@
 ﻿using System;
 using Dalamud.Plugin;
+using ImGuiNET;
 
 namespace SimpleTweaksPlugin {
     public abstract class Tweak : IDisposable {
@@ -17,6 +18,9 @@ namespace SimpleTweaksPlugin {
         }
 
         public virtual bool DrawConfig() {
+            ImGui.Indent(56);
+            ImGui.Text(Name);
+            ImGui.Indent(-56);
             return false;
         }
 
