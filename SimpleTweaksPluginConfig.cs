@@ -37,7 +37,7 @@ namespace SimpleTweaksPlugin {
 
                 var enabled = t.Enabled;
 
-                if (ImGui.Checkbox(t.Name, ref enabled)) {
+                if (ImGui.Checkbox($"###{t.GetType().Name}enabledCheckbox", ref enabled)) {
                     if (enabled) {
                         t.Enable();
                         if (t.Enabled) {
@@ -49,14 +49,15 @@ namespace SimpleTweaksPlugin {
                     }
                     Save();
                 }
+                ImGui.SameLine();
 
-                if (t.Enabled) {
-                    ImGui.Indent(24 * ImGui.GetIO().FontGlobalScale);
-                    if (t.DrawConfig()) {
-                        Save();
-                    }
-                    ImGui.Indent(-24 * ImGui.GetIO().FontGlobalScale);
+                if (t.DrawConfig()) {
+                    Save();
                 }
+
+                ImGui.Separator();
+
+               
             }
             
             ImGui.End();
