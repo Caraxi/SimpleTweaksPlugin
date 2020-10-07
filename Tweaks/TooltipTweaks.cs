@@ -151,7 +151,6 @@ namespace SimpleTweaksPlugin {
 
                         switch (PluginInterface.ClientState.ClientLanguage) {
                             case ClientLanguage.Japanese:
-                                // 分解適正スキル:
                                 ReplaceText(*(a3 + 4) + 0x23, allocDesynthSkill, $"分解適正スキル:{item.LevelItem.Row:F2}", $"分解適正スキル:{item.LevelItem.Row} ({desynthLevel:F0})");
                                 break;
                             case ClientLanguage.English:
@@ -186,7 +185,6 @@ namespace SimpleTweaksPlugin {
             return Encoding.UTF8.GetString(ptr, offset);
         }
 
-        // https://git.sr.ht/~jkcclemens/GoodMemory/tree/master/GoodMemory/Plugin.cs
         private unsafe void WriteString(byte* dst, string s, bool finalise = false) {
             var bytes = Encoding.UTF8.GetBytes(s);
             for (var i = 0; i < bytes.Length; i++) {
