@@ -137,9 +137,6 @@ namespace SimpleTweaksPlugin {
 
         private unsafe IntPtr TooltipDetour(IntPtr a1, uint** a2, byte*** a3) {
             var tooltip = *(Tooltip*) *(a3 + 4);
-
-            PluginLog.Log($"{(ulong) (*(a3 + 4)):X}");
-
             if (PluginConfig.TooltipTweaks.EnableDurability) ReplacePercentage(*(a3+4) + 28, allocDurability, lastDurability / 300.0);
             if (PluginConfig.TooltipTweaks.EnableSpiritbond) ReplacePercentage(*(a3+4) + 30, allocSpiritbond, lastSpiritbond / 100.0);
             if (PluginConfig.TooltipTweaks.ShowDesynthSkill) {
