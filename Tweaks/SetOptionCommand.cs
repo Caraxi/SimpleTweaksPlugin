@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game.Command;
@@ -27,12 +28,15 @@ namespace SimpleTweaksPlugin {
             Bool,
         }
 
-        private readonly Dictionary<string, (OptionType type, ulong key, int offset)> optionKinds = new Dictionary<string, (OptionType, ulong, int)> {
-            { "itemtooltips", (OptionType.Bool, 0x130, 0xBDE0)},
-            { "actiontooltips", (OptionType.Bool, 0x136, 0xBE40) },
+        private readonly Dictionary<string, (OptionType type, ulong key, int offset, string[] alias)> optionKinds = new Dictionary<string, (OptionType, ulong, int, string[])> {
+            { "itemtooltips", (OptionType.Bool, 0x130, 0xBDE0, new [] {"itt"} )},
+            { "actiontooltips", (OptionType.Bool, 0x136, 0xBE40, new [] {"att"}) },
         };
 
-
+        private readonly Dictionary<OptionType, string> optionTypeValueHints = new Dictionary<OptionType, string> {
+            {OptionType.Bool, "on | off | toggle"}
+        };
+        
         public override void Setup() {
             if (Ready) return;
 
@@ -57,23 +61,53 @@ namespace SimpleTweaksPlugin {
 
         public override bool DrawConfig() {
             if (!Enabled) return base.DrawConfig();
-            var change = false;
-
             if (ImGui.TreeNode($"{Name}###{GetType().Name}settingsNode")) {
-                ImGui.TextDisabled("/setoption list");
-                ImGui.TextDisabled("/setoption [option] [value]");
+                ImGui.TextDisabled("/setopt list");
+                ImGui.TextDisabled("/setopt [option] [value]");
+
+                if (ImGui.TreeNode("Available Options##optionListTree")) {
+                    
+                    ImGui.Columns(3);
+                    ImGui.Text("option");
+                    ImGui.NextColumn();
+                    ImGui.Text("values");
+                    ImGui.NextColumn();
+                    ImGui.Text("alias");
+                    ImGui.Separator();
+
+                    foreach (var o in optionKinds) {
+                        
+                        ImGui.NextColumn();
+                        ImGui.Text(o.Key);
+                        ImGui.NextColumn();
+                        ImGui.Text(optionTypeValueHints.ContainsKey(o.Value.type) ? optionTypeValueHints[o.Value.type] : "");
+                        ImGui.NextColumn();
+                        var sb = new StringBuilder();
+                        foreach (var a in o.Value.alias) {
+                            sb.Append(a);
+                            sb.Append(" ");
+                        }
+                        ImGui.Text(sb.ToString());
+                    }
+
+
+                    ImGui.Columns();
+                    ImGui.TreePop();
+                }
+
                 ImGui.TreePop();
             }
 
-            return change;
+            return false;
         }
 
-        public override unsafe void Enable() {
+        public override void Enable() {
             if (!Ready) return;
             setOptionHook ??= new Hook<SetOptionDelegate>(setOptionAddress, new SetOptionDelegate(SetOptionDetour));
             setOptionHook?.Enable();
 
             PluginInterface.CommandManager.AddHandler("/setoption", new CommandInfo(OptionCommand) {HelpMessage = "Set the skill tooltips on or off.", ShowInHelp = true});
+            PluginInterface.CommandManager.AddHandler("/setopt", new CommandInfo(OptionCommand) {HelpMessage = "Set the skill tooltips on or off.", ShowInHelp = false});
 
             Enabled = true;
         }
@@ -101,13 +135,20 @@ namespace SimpleTweaksPlugin {
             
             var optionKind = argList[0];
 
-            if (!optionKinds.ContainsKey(optionKind)) {
-                PluginInterface.Framework.Gui.Chat.PrintError("Unknown Option");
-                PluginInterface.Framework.Gui.Chat.PrintError("/setoption list for a list of options");
-                return;
+            (OptionType type, ulong key, int offset, string[] alias) optionDefinition;
+            if (optionKinds.ContainsKey(optionKind)) {
+                optionDefinition = optionKinds[optionKind];
+            } else {
+                var fromAlias = optionKinds.Values.Where(ok => ok.alias.Contains(optionKind)).ToArray();
+
+                if (fromAlias.Length == 0) {
+                    PluginInterface.Framework.Gui.Chat.PrintError("Unknown Option");
+                    PluginInterface.Framework.Gui.Chat.PrintError("/setoption list for a list of options");
+                    return;
+                } 
+                optionDefinition = fromAlias[0];
             }
 
-            var optionDefinition = optionKinds[optionKind];
             var optionValue = "";
             if (argList.Length >= 2) {
                 optionValue = argList[1];
@@ -128,6 +169,7 @@ namespace SimpleTweaksPlugin {
                         case "off":
                             setOption(baseAddress, optionDefinition.key, 0, 2);
                             break;
+                        case "":
                         case "t":
                         case "toggle":
                             if (optionDefinition.offset > 0) {
@@ -138,14 +180,14 @@ namespace SimpleTweaksPlugin {
                             }
                             break;
                         default:
-                            PluginInterface.Framework.Gui.Chat.PrintError($"/setoption {optionKind} (on | off | toggle)");
+                            PluginInterface.Framework.Gui.Chat.PrintError($"/setoption {optionKind} ({optionTypeValueHints[optionDefinition.type]})");
                             break;
                         }
 
                     break;
                 }
                 default:
-                    PluginInterface.Framework.Gui.Chat.PrintError($"Unsupported Option");
+                    PluginInterface.Framework.Gui.Chat.PrintError("Unsupported Option");
                     break;
             }
 
@@ -154,7 +196,6 @@ namespace SimpleTweaksPlugin {
         private IntPtr SetOptionDetour(IntPtr baseAddress, ulong kind, ulong value, ulong unknown) {
             this.baseAddress = baseAddress;
 #if DEBUG
-            PluginLog.Log($"{PluginInterface.Framework.Address.BaseAddress.ToInt64():X}");
             PluginLog.Log($"Set Option: {baseAddress.ToInt64():X} {kind:X}, {value:X}, {unknown:X}");
 #endif
             return setOptionHook.Original(baseAddress, kind, value, unknown);
@@ -163,6 +204,7 @@ namespace SimpleTweaksPlugin {
         public override void Disable() {
             setOptionHook?.Disable();
             PluginInterface.CommandManager.RemoveHandler("/setoption");
+            PluginInterface.CommandManager.RemoveHandler("/setopt");
             Enabled = false;
         }
 

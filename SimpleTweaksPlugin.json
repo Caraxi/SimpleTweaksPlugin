@@ -3,7 +3,7 @@
   "Name": "Simple Tweaks",
   "Description": "Collection of simple ideas that are too small to warrent their own plugin.\n/tweaks to open the config",
   "InternalName": "SimpleTweaksPlugin",
-  "AssemblyVersion": "0.1.2.0",
+  "AssemblyVersion": "0.1.2.1",
   "RepoUrl": "https://github.com/Caraxi/SimpleTweaksPlugin",
   "ApplicableVersion": "any",
   "DalamudApiLevel": 1
