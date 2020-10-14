@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud;
+using Dalamud.Game.Internal;
 using Lumina.Excel.GeneratedSheets;
 
 namespace SimpleTweaksPlugin {
@@ -22,6 +23,7 @@ namespace SimpleTweaksPlugin {
             public bool EnableSpiritbond = true;
             public bool TrailingZeros = true;
             public bool ShowDesynthSkill = true;
+            public bool EnableCopyItemName = true;
         }
 
         public override bool DrawConfig() {
@@ -35,6 +37,7 @@ namespace SimpleTweaksPlugin {
                 change = ImGui.Checkbox("Trailing Zeros", ref PluginConfig.TooltipTweaks.TrailingZeros) || change;
                 ImGui.Indent(-20);
                 change = ImGui.Checkbox("Show Desynth Skill", ref PluginConfig.TooltipTweaks.ShowDesynthSkill) || change;
+                change = ImGui.Checkbox("CTRL-C to copy hovered item.", ref PluginConfig.TooltipTweaks.EnableCopyItemName) || change;
                 ImGui.TreePop();
             }
             
@@ -57,6 +60,7 @@ namespace SimpleTweaksPlugin {
         private readonly IntPtr allocSpiritbond = Marshal.AllocHGlobal(32);
         private readonly IntPtr allocDurability = Marshal.AllocHGlobal(32);
         private readonly IntPtr allocDesynthSkill = Marshal.AllocHGlobal(512);
+        private readonly IntPtr allocControlDisplay = Marshal.AllocHGlobal(512);
 
         private ushort lastSpiritbond;
         private ushort lastDurability;
@@ -95,7 +99,26 @@ namespace SimpleTweaksPlugin {
             itemHoveredHook ??= new Hook<ItemHoveredDelegate>(itemHoveredAddress, new ItemHoveredDelegate(ItemHoveredDetour));
             tooltipHook?.Enable();
             itemHoveredHook?.Enable();
+            PluginInterface.Framework.OnUpdateEvent += FrameworkOnOnUpdateEvent;
             Enabled = true;
+        }
+
+        private void FrameworkOnOnUpdateEvent(Framework framework) {
+
+            if (PluginConfig.TooltipTweaks.EnableCopyItemName) {
+                if (PluginInterface.Framework.Gui.HoveredItem != 0 && PluginInterface.ClientState.KeyState[0x11] && PluginInterface.ClientState.KeyState[0x43]) {
+                    // CTRL + C
+                    var id = PluginInterface.Framework.Gui.HoveredItem;
+                    if (id < 2000000) {
+                        id %= 500000;
+                        var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint) id);
+                        if (item != null) {
+                            System.Windows.Forms.Clipboard.SetText(item.Name);
+                            PluginInterface.ClientState.KeyState[0x43] = false;
+                        }
+                    }
+                }
+            }
         }
 
         private unsafe byte ItemHoveredDetour(IntPtr a1, IntPtr* a2, int* containerId, ushort* slotId, IntPtr a5, uint slotIdInt, IntPtr a7) {
@@ -128,12 +151,26 @@ namespace SimpleTweaksPlugin {
             *startPtr = (byte*)alloc;
         }
 
+        private unsafe void AppendText(byte** startPtr, IntPtr alloc, string text) {
+            if (startPtr == null) return;
+            var start = *(startPtr);
+            if (start == null) return;
+            if (start == (byte*) alloc) return;
+            var overwrite = ReadString(start);
+            overwrite += text;
+            WriteString((byte*)alloc, overwrite, true);
+            *startPtr = (byte*)alloc;
+        }
+
         private unsafe IntPtr TooltipDetour(IntPtr a1, uint** a2, byte*** a3) {
 #if DEBUG
             PluginLog.Log("Tooltip Address: " + ((ulong) *(a3 + 4)).ToString("X"));
 #endif
             if (PluginConfig.TooltipTweaks.EnableDurability) ReplacePercentage(*(a3+4) + 28, allocDurability, lastDurability / 300.0);
             if (PluginConfig.TooltipTweaks.EnableSpiritbond) ReplacePercentage(*(a3+4) + 30, allocSpiritbond, lastSpiritbond / 100.0);
+            if (PluginConfig.TooltipTweaks.EnableCopyItemName) {
+                AppendText(*(a3 + 4) + 0x40, allocControlDisplay, "　Ctrl+C  Copy item name");
+            }
             if (PluginConfig.TooltipTweaks.ShowDesynthSkill) {
                 var id = PluginInterface.Framework.Gui.HoveredItem;
                 if (id < 2000000) {
@@ -194,6 +231,7 @@ namespace SimpleTweaksPlugin {
         public override void Disable() {
             tooltipHook?.Disable();
             itemHoveredHook?.Disable();
+            PluginInterface.Framework.OnUpdateEvent -= FrameworkOnOnUpdateEvent;
             Enabled = false;
         }
 
