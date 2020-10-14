@@ -15,7 +15,7 @@ namespace SimpleTweaksPlugin {
 
     public class TooltipTweaks : Tweak {
 
-        private readonly uint[] furnitureCategories = {56, 65, 66, 67, 68, 69, 70, 71, 72};
+        private readonly uint[] desynthInDescription = {46, 56, 65, 66, 67, 68, 69, 70, 71, 72};
         
         public class Config {
             public bool EnableDurability = true;
@@ -144,20 +144,20 @@ namespace SimpleTweaksPlugin {
                         var classJobOffset = 2 * (int) (item.ClassJobRepair.Row - 8);
                         var desynthLevel = *(ushort*) (playerStaticAddress + (0x692 + classJobOffset)) / 100f;
 
-                        var isFurniture = furnitureCategories.Contains(item.ItemSearchCategory.Row);
+                        var useDescription = desynthInDescription.Contains(item.ItemSearchCategory.Row);
 
                         switch (PluginInterface.ClientState.ClientLanguage) {
                             case ClientLanguage.Japanese:
-                                ReplaceText(*(a3 + 4) + (isFurniture ? 0xD : 0x23), allocDesynthSkill, $"分解適正スキル:{item.LevelItem.Row:F2}", $"分解適正スキル:{item.LevelItem.Row} ({desynthLevel:F0})");
+                                ReplaceText(*(a3 + 4) + (useDescription ? 0xD : 0x23), allocDesynthSkill, $"分解適正スキル:{item.LevelItem.Row:F2}", $"分解適正スキル:{item.LevelItem.Row} ({desynthLevel:F0})");
                                 break;
                             case ClientLanguage.English:
-                                ReplaceText(*(a3 + 4) + (isFurniture ? 0xD : 0x23), allocDesynthSkill, $"Desynthesizable: {item.LevelItem.Row:F2}", $"Desynthable: {item.LevelItem.Row} ({desynthLevel:F0})");
+                                ReplaceText(*(a3 + 4) + (useDescription ? 0xD : 0x23), allocDesynthSkill, $"Desynthesizable: {item.LevelItem.Row:F2}", $"Desynthable: {item.LevelItem.Row} ({desynthLevel:F0})");
                                 break;
                             case ClientLanguage.German:
-                                ReplaceText(*(a3 + 4) + (isFurniture ? 0xD : 0x23), allocDesynthSkill, $"Verwertung: {item.LevelItem.Row},00", $"Verwertung: {item.LevelItem.Row} ({desynthLevel:F0})");
+                                ReplaceText(*(a3 + 4) + (useDescription ? 0xD : 0x23), allocDesynthSkill, $"Verwertung: {item.LevelItem.Row},00", $"Verwertung: {item.LevelItem.Row} ({desynthLevel:F0})");
                                 break;
                             case ClientLanguage.French:
-                                ReplaceText(*(a3 + 4) + (isFurniture ? 0xD : 0x23), allocDesynthSkill, $"Recyclage: ✓ [{item.LevelItem.Row},00]", $"\nRecyclage: ✓ {item.LevelItem.Row} ({desynthLevel:F0})");
+                                ReplaceText(*(a3 + 4) + (useDescription ? 0xD : 0x23), allocDesynthSkill, $"Recyclage: ✓ [{item.LevelItem.Row},00]", $"\nRecyclage: ✓ {item.LevelItem.Row} ({desynthLevel:F0})");
                                 break;
                         }
                         
