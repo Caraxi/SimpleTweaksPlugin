@@ -155,6 +155,7 @@ namespace SimpleTweaksPlugin {
                         });
                         PluginLog.Log($"{a3.ToInt64():X}");
                         if (alias != null) {
+                            // https://git.sr.ht/~jkcclemens/CCMM/tree/master/Custom%20Commands%20and%20Macro%20Macros/GameFunctions.cs#L44
                             var newStr = $"/{alias.Output}{inputString.Substring(alias.Input.Length + 1)}";
                             PluginLog.Log($"Aliasing Command: {inputString} -> {newStr}");
                             var bytes = Encoding.UTF8.GetBytes(newStr);
