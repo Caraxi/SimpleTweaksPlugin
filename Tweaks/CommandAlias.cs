@@ -143,7 +143,6 @@ namespace SimpleTweaksPlugin {
         private unsafe byte ProcessChatInputDetour(IntPtr uiModule, byte** message, IntPtr a3) {
             try {
                 var inputString = Encoding.UTF8.GetString(*message, *(int*) (message + 16) - 1);
-                PluginLog.Log($"'{inputString}'");
                 if (inputString.StartsWith("/")) {
                     var splitString = inputString.Split(' ');
 
@@ -153,7 +152,6 @@ namespace SimpleTweaksPlugin {
                             if (!a.IsValid()) return false;
                             return splitString[0] == $"/{a.Input}";
                         });
-                        PluginLog.Log($"{a3.ToInt64():X}");
                         if (alias != null) {
                             // https://git.sr.ht/~jkcclemens/CCMM/tree/master/Custom%20Commands%20and%20Macro%20Macros/GameFunctions.cs#L44
                             var newStr = $"/{alias.Output}{inputString.Substring(alias.Input.Length + 1)}";
