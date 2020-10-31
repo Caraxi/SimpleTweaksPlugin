@@ -3,6 +3,7 @@ using Dalamud.Plugin;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace SimpleTweaksPlugin {
@@ -19,6 +20,7 @@ namespace SimpleTweaksPlugin {
 
         public List<string> EnabledTweaks = new List<string>();
 
+        private bool HideKofi;
 
         public void Init(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface) {
             this.plugin = plugin;
@@ -31,10 +33,27 @@ namespace SimpleTweaksPlugin {
 
         public bool DrawConfigUI() {
             var drawConfig = true;
-
+            var scale = ImGui.GetIO().FontGlobalScale;
             var windowFlags = ImGuiWindowFlags.NoCollapse;
-            ImGui.SetNextWindowSizeConstraints(new Vector2(300, 200), new Vector2(600, 800));
+            ImGui.SetNextWindowSizeConstraints(new Vector2(350 * scale, 200 * scale), new Vector2(600 * scale, 800 * scale));
             ImGui.Begin($"{plugin.Name} Config", ref drawConfig, windowFlags);
+
+            if (!HideKofi) {
+                ImGui.PushStyleColor(ImGuiCol.Button, 0xFF5E5BFF);
+                ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xFF5E5BAA);
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xFF5E5BDD);
+                var c = ImGui.GetCursorPos();
+                ImGui.SetCursorPosX(ImGui.GetWindowContentRegionWidth() - ImGui.CalcTextSize("Support on Ko-fi").X);
+                if (ImGui.SmallButton("Support on Ko-fi")) {
+                    Process.Start("https://ko-fi.com/Caraxi");
+                }
+                ImGui.SetCursorPos(c);
+                ImGui.PopStyleColor(3);
+            }
+
+            ImGui.Text("Enable or disable any tweaks here.\nAll tweaks are disabled by default.");
+            
+            ImGui.Separator();
 
             foreach (var t in plugin.Tweaks) {
 
@@ -63,6 +82,18 @@ namespace SimpleTweaksPlugin {
                
             }
             
+            var a = false;
+            ImGui.PushStyleColor(ImGuiCol.FrameBg, 0x0);
+            ImGui.PushStyleColor(ImGuiCol.FrameBgActive, 0x0);
+            ImGui.PushStyleColor(ImGuiCol.FrameBgHovered, 0x0);
+            ImGui.Checkbox("###notARealCheckbox", ref a);
+            ImGui.PopStyleColor(3);
+            ImGui.SameLine();
+            if (ImGui.TreeNode("General Options")) {
+                if (ImGui.Checkbox("Hide Ko-fi link.", ref HideKofi)) Save();
+                ImGui.TreePop();
+            }
+
             ImGui.End();
 
             return drawConfig;
