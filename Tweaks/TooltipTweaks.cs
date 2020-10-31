@@ -188,7 +188,7 @@ namespace SimpleTweaksPlugin {
                                 ReplaceText(*(a3 + 4) + (useDescription ? 0xD : 0x23), allocDesynthSkill, $"分解適正スキル:{item.LevelItem.Row:F0}.00", $"分解適正スキル:{item.LevelItem.Row} ({desynthLevel:F0})");
                                 break;
                             case ClientLanguage.English:
-                                ReplaceText(*(a3 + 4) + (useDescription ? 0xD : 0x23), allocDesynthSkill, $"Desynthesizable: {item.LevelItem.Row:F2}.00", $"Desynthable: {item.LevelItem.Row} ({desynthLevel:F0})");
+                                ReplaceText(*(a3 + 4) + (useDescription ? 0xD : 0x23), allocDesynthSkill, $"Desynthesizable: {item.LevelItem.Row:F0}.00", $"Desynthable: {item.LevelItem.Row} ({desynthLevel:F0})");
                                 break;
                             case ClientLanguage.German:
                                 ReplaceText(*(a3 + 4) + (useDescription ? 0xD : 0x23), allocDesynthSkill, $"Verwertung: {item.LevelItem.Row},00", $"Verwertung: {item.LevelItem.Row} ({desynthLevel:F0})");
