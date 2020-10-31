@@ -9,7 +9,7 @@ using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 
 namespace SimpleTweaksPlugin {
-    class ExamineItemLevel : Tweak {
+    internal class ExamineItemLevel : Tweak {
 
         private delegate IntPtr GetInventoryContainer(IntPtr inventoryManager, int inventoryId);
         private delegate IntPtr GetContainerSlot(IntPtr inventoryContainer, int slotId);
