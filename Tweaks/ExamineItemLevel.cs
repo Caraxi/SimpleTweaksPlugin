@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -23,6 +22,8 @@ namespace SimpleTweaksPlugin {
 
         public override string Name => "Item Level in Examine";
 
+        private IntPtr examineIsValidPtr = IntPtr.Zero;
+
         public override void Setup() {
 
             try {
@@ -33,35 +34,47 @@ namespace SimpleTweaksPlugin {
                 a = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 8B 5B 0C");
                 if (a == IntPtr.Zero) throw new Exception("Failed to find GetContainerSlot");
                 getContainerSlot = Marshal.GetDelegateForFunctionPointer<GetContainerSlot>(a);
+                examineIsValidPtr = PluginInterface.TargetModuleScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 C7 43 ?? ?? ?? ?? ??");
                 Ready = true;
             } catch {
                 PluginLog.Log("Failed to find address for ExamineItemLevel");
             }
         }
-
         private unsafe void DrawUI() {
             if (!Ready) return;
+            if (examineIsValidPtr == IntPtr.Zero) return;
+            if (*(byte*) (examineIsValidPtr + 0x2A8) == 0) return;
             var container = getInventoryContainer(inventoryManager, 2009);
             if (container == IntPtr.Zero) return;
             var ui = PluginInterface.Framework.Gui.GetAddonByName("CharacterInspect", 1);
             if (ui == null) return;
             ImGui.SetNextWindowSize(new Vector2(ui.Scale * 350, ui.Scale * 540), ImGuiCond.Always);
             ImGui.SetNextWindowPos(new Vector2(ui.X, ui.Y), ImGuiCond.Always);
-            if (ImGui.Begin("Inspect Display", ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoTitleBar)) {
-                var itemLevels = new List<uint>();
+            if (ImGui.Begin("Inspect Display", ImGuiWindowFlags.NoMouseInputs | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoTitleBar)) { 
+                var sum = 0U;
                 for (var i = 0; i < 13; i++) {
                     var slot = getContainerSlot(container, i);
                     if (slot == IntPtr.Zero) continue;
                     var id = *(uint*) (slot + 8);
                     var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow(id);
                     if (i == 0 && !canHaveOffhand.Contains(item.ItemUICategory.Row)) {
+                        sum += item.LevelItem.Row;
                         i++;
                     }
-                    itemLevels.Add(item.LevelItem.Row);
+                    sum += item.LevelItem.Row;
                 }
+
+
+#if DEBUG
+                var s = container.ToInt64().ToString("X");
+                ImGui.SetCursorPosY(ImGui.GetWindowHeight() - 45);
+                ImGui.SetWindowFontScale(1);
+                ImGui.InputText("container", ref s, 16, ImGuiInputTextFlags.ReadOnly);
+#endif
+                var avgItemLevel = sum / 13;
                 // Divide by FontGlobalScale to avoid sizes changing due to Dalamud settings
                 ImGui.SetWindowFontScale((1.5f / ImGui.GetIO().FontGlobalScale) * ui.Scale);
-                var text = $"{itemLevels.Average(a => a):0000}";
+                var text = $"{avgItemLevel:0000}";
                 ImGui.SetCursorPos(new Vector2((ui.Scale * 260) - ImGui.CalcTextSize(text).X, ui.Scale * 190));
                 ImGui.TextColored(ImGui.ColorConvertU32ToFloat4(0xffbcbf5a), text);
                 ImGui.SetWindowFontScale((1.7f / ImGui.GetIO().FontGlobalScale) * ui.Scale);
@@ -84,7 +97,7 @@ namespace SimpleTweaksPlugin {
         }
 
         public override void Dispose() {
-            Disable();
+            if (Enabled) Disable();
             Ready = false;
             Enabled = false;
         }
