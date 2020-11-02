@@ -142,7 +142,12 @@ namespace SimpleTweaksPlugin {
 
         private unsafe byte ProcessChatInputDetour(IntPtr uiModule, byte** message, IntPtr a3) {
             try {
-                var inputString = Encoding.UTF8.GetString(*message, *(int*) (message + 16) - 1);
+                var bc = *(short*) (message + 16) - 1;
+                if (bc < 2 || bc > 255) {
+                    return processChatInputHook.Original(uiModule, message, a3);
+                }
+                
+                var inputString = Encoding.UTF8.GetString(*message, bc);
                 if (inputString.StartsWith("/")) {
                     var splitString = inputString.Split(' ');
 
