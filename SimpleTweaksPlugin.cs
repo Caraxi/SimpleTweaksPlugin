@@ -14,6 +14,8 @@ namespace SimpleTweaksPlugin {
 
         private bool drawConfigWindow = false;
 
+        public string AssemblyLocation { get; private set; } = Assembly.GetExecutingAssembly().Location;
+
         public void Dispose() {
             PluginInterface.UiBuilder.OnBuildUi -= this.BuildUI;
             RemoveCommands();
