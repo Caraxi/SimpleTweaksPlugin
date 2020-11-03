@@ -31,7 +31,6 @@ namespace SimpleTweaksPlugin {
             #if DEBUG
             public bool ShowItemID = false;
             #endif
-            public bool AlwaysShowGlamourName = false;
         }
 
         public override bool DrawConfig() {
@@ -48,7 +47,6 @@ namespace SimpleTweaksPlugin {
                 change = ImGui.Checkbox("Trailing Zeros", ref PluginConfig.TooltipTweaks.TrailingZeros) || change;
                 ImGui.Indent(-20);
                 change = ImGui.Checkbox("Show Desynth Skill", ref PluginConfig.TooltipTweaks.ShowDesynthSkill) || change;
-                change = ImGui.Checkbox("Always show glamour name", ref PluginConfig.TooltipTweaks.AlwaysShowGlamourName) || change;
                 change = ImGui.Checkbox("CTRL-C to copy hovered item.", ref PluginConfig.TooltipTweaks.EnableCopyItemName) || change;
                 ImGui.TreePop();
             }
@@ -239,8 +237,6 @@ namespace SimpleTweaksPlugin {
                         var desynthLevel = *(ushort*) (playerStaticAddress + (0x692 + classJobOffset)) / 100f;
 
                         var useDescription = desynthInDescription.Contains(item.ItemSearchCategory.Row);
-
-
 
 
                         switch (PluginInterface.ClientState.ClientLanguage) {
