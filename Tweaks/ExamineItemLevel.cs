@@ -42,6 +42,7 @@ namespace SimpleTweaksPlugin {
         }
         private unsafe void DrawUI() {
             if (!Ready) return;
+            var inaccurate = false;
             if (examineIsValidPtr == IntPtr.Zero) return;
             if (*(byte*) (examineIsValidPtr + 0x2A8) == 0) return;
             var container = getInventoryContainer(inventoryManager, 2009);
@@ -57,6 +58,7 @@ namespace SimpleTweaksPlugin {
                     if (slot == IntPtr.Zero) continue;
                     var id = *(uint*) (slot + 8);
                     var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow(id);
+                    if ((item.Unknown89 & 2) == 2) inaccurate = true;
                     if (i == 0 && !canHaveOffhand.Contains(item.ItemUICategory.Row)) {
                         sum += item.LevelItem.Row;
                         i++;
@@ -75,8 +77,18 @@ namespace SimpleTweaksPlugin {
                 // Divide by FontGlobalScale to avoid sizes changing due to Dalamud settings
                 ImGui.SetWindowFontScale((1.5f / ImGui.GetIO().FontGlobalScale) * ui.Scale);
                 var text = $"{avgItemLevel:0000}";
-                ImGui.SetCursorPos(new Vector2((ui.Scale * 260) - ImGui.CalcTextSize(text).X, ui.Scale * 190));
-                ImGui.TextColored(ImGui.ColorConvertU32ToFloat4(0xffbcbf5a), text);
+                var textsize = ImGui.CalcTextSize(text);
+                ImGui.SetCursorPos(new Vector2((ui.Scale * 255) - textsize.X, ui.Scale * 195));
+                var pos = ImGui.GetCursorScreenPos();
+                
+                ImGui.TextColored(ImGui.ColorConvertU32ToFloat4(inaccurate ? 0xff5a5abc : 0xffbcbf5a), text);
+                if (inaccurate) {
+                    var m = ImGui.GetMousePos();
+                    if (m.X >= pos.X && m.X < pos.X + textsize.X && m.Y >= pos.Y && m.Y <= pos.Y + textsize.Y) {
+                        ImGui.SetTooltip("Item level is inaccurate due to variable ilvl items.");
+                    }
+                }
+
                 ImGui.SetWindowFontScale((1.7f / ImGui.GetIO().FontGlobalScale) * ui.Scale);
                 var iconSize = ImGui.CalcTextSize($"{(char) SeIconChar.ItemLevel}");
                 ImGui.SetCursorPos(new Vector2((ui.Scale * 265) - ImGui.CalcTextSize(text).X - iconSize.X, ui.Scale * 187));
