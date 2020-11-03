@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -23,6 +24,9 @@ namespace SimpleTweaksPlugin {
         public override string Name => "Item Level in Examine";
 
         private IntPtr examineIsValidPtr = IntPtr.Zero;
+        private bool fontBuilt;
+        private ImFontPtr font;
+        private bool fontLoadFailed;
 
         public override void Setup() {
 
@@ -43,6 +47,11 @@ namespace SimpleTweaksPlugin {
         private unsafe void DrawUI() {
             if (!Ready) return;
             var inaccurate = false;
+            if (!fontBuilt && !fontLoadFailed) {
+                PluginInterface.UiBuilder.RebuildFonts();
+                return;
+            }
+
             if (examineIsValidPtr == IntPtr.Zero) return;
             if (*(byte*) (examineIsValidPtr + 0x2A8) == 0) return;
             var container = getInventoryContainer(inventoryManager, 2009);
@@ -66,22 +75,24 @@ namespace SimpleTweaksPlugin {
                     sum += item.LevelItem.Row;
                 }
 
-
-#if DEBUG
-                var s = container.ToInt64().ToString("X");
-                ImGui.SetCursorPosY(ImGui.GetWindowHeight() - 45);
-                ImGui.SetWindowFontScale(1);
-                ImGui.InputText("container", ref s, 16, ImGuiInputTextFlags.ReadOnly);
-#endif
                 var avgItemLevel = sum / 13;
+                
+                
+                if (!fontLoadFailed && fontBuilt) {
+                    ImGui.PushFont(font);
+                }
                 // Divide by FontGlobalScale to avoid sizes changing due to Dalamud settings
-                ImGui.SetWindowFontScale((1.5f / ImGui.GetIO().FontGlobalScale) * ui.Scale);
+                ImGui.SetWindowFontScale((1.0f / ImGui.GetIO().FontGlobalScale) * ui.Scale);
                 var text = $"{avgItemLevel:0000}";
                 var textsize = ImGui.CalcTextSize(text);
                 ImGui.SetCursorPos(new Vector2((ui.Scale * 255) - textsize.X, ui.Scale * 195));
                 var pos = ImGui.GetCursorScreenPos();
                 
                 ImGui.TextColored(ImGui.ColorConvertU32ToFloat4(inaccurate ? 0xff5a5abc : 0xffbcbf5a), text);
+                if (!fontLoadFailed && fontBuilt) {
+                    ImGui.PopFont();
+                }
+
                 if (inaccurate) {
                     var m = ImGui.GetMousePos();
                     if (m.X >= pos.X && m.X < pos.X + textsize.X && m.Y >= pos.Y && m.Y <= pos.Y + textsize.Y) {
@@ -90,9 +101,9 @@ namespace SimpleTweaksPlugin {
                 }
 
                 ImGui.SetWindowFontScale((1.7f / ImGui.GetIO().FontGlobalScale) * ui.Scale);
-                var iconSize = ImGui.CalcTextSize($"{(char) SeIconChar.ItemLevel}");
-                ImGui.SetCursorPos(new Vector2((ui.Scale * 265) - ImGui.CalcTextSize(text).X - iconSize.X, ui.Scale * 187));
-                ImGui.TextColored(ImGui.ColorConvertU32ToFloat4(0xffa4dffc), $"{(char) SeIconChar.ItemLevel}");
+                var iconSize = ImGui.CalcTextSize($"{(char)SeIconChar.ItemLevel}");
+                ImGui.SetCursorPos(new Vector2((ui.Scale * 255) - textsize.X - iconSize.X, ui.Scale * 187));
+                ImGui.TextColored(ImGui.ColorConvertU32ToFloat4(0xffa4dffc), $"{(char)SeIconChar.ItemLevel}");
                 ImGui.End();
             }
         }
@@ -100,11 +111,40 @@ namespace SimpleTweaksPlugin {
         public override void Enable() {
             if (!Ready) return;
             PluginInterface.UiBuilder.OnBuildUi += this.DrawUI;
+            PluginInterface.UiBuilder.OnBuildFonts += this.BuildFonts;
             Enabled = true;
+        }
+
+        private void BuildFonts() {
+            try {
+                if (Plugin.AssemblyLocation == null) return;
+                var fontFile = Path.Combine(Path.GetDirectoryName(Plugin.AssemblyLocation), "itemlevel-font.ttf");
+
+                fontBuilt = false;
+                if (File.Exists(fontFile)) {
+                    try {
+                        font = ImGui.GetIO().Fonts.AddFontFromFileTTF(fontFile, 20);
+                        fontBuilt = true;
+                    } catch (Exception ex) {
+                        PluginLog.Log($"Font failed to load. {fontFile}");
+                        PluginLog.Log(ex.ToString());
+                        fontLoadFailed = true;
+                    }
+                } else {
+                    PluginLog.Log($"Font doesn't exist. {fontFile}");
+                    fontLoadFailed = true;
+                }
+            } catch (Exception ex){
+                PluginLog.Log($"Font failed to load.");
+                PluginLog.Log(ex.ToString());
+                fontLoadFailed = true;
+            }
+           
         }
 
         public override void Disable() {
             PluginInterface.UiBuilder.OnBuildUi -= this.DrawUI;
+            PluginInterface.UiBuilder.OnBuildFonts -= this.BuildFonts;
             Enabled = false;
         }
 
