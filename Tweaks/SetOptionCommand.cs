@@ -17,8 +17,12 @@ namespace SimpleTweaksPlugin {
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)] 
         private delegate IntPtr SetOptionDelegate(IntPtr baseAddress, ulong kind, ulong value, ulong unknown);
+        
+        [UnmanagedFunctionPointer(CallingConvention.ThisCall)] 
+        private delegate void SetGamepadMode(IntPtr baseAddress, ulong value);
 
         private SetOptionDelegate setOption;
+        private SetGamepadMode setGamepadMode;
 
         private Hook<SetOptionDelegate> setOptionHook;
         
@@ -26,15 +30,18 @@ namespace SimpleTweaksPlugin {
 
         private enum OptionType {
             Bool,
+            ToggleGamepadMode, // bool with extra shit
         }
 
         private readonly Dictionary<string, (OptionType type, ulong key, int offset, string[] alias)> optionKinds = new Dictionary<string, (OptionType, ulong, int, string[])> {
             { "itemtooltips", (OptionType.Bool, 0x130, 0xBDE0, new [] {"itt"} )},
             { "actiontooltips", (OptionType.Bool, 0x136, 0xBE40, new [] {"att"}) },
+            { "gamepadmode", (OptionType.ToggleGamepadMode, 0x89, 0xB370, new [] { "gp" })},
         };
 
         private readonly Dictionary<OptionType, string> optionTypeValueHints = new Dictionary<OptionType, string> {
-            {OptionType.Bool, "on | off | toggle"}
+            {OptionType.Bool, "on | off | toggle"},
+            {OptionType.ToggleGamepadMode, "on | off | toggle"},
         };
         
         public override void Setup() {
@@ -47,6 +54,10 @@ namespace SimpleTweaksPlugin {
                     setOption = Marshal.GetDelegateForFunctionPointer<SetOptionDelegate>(setOptionAddress);
                 }
 
+                var toggleGamepadModeAddress = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 40 0F B6 DF 49 8B CC");
+                PluginLog.Log(toggleGamepadModeAddress.ToInt64().ToString("X"));
+                setGamepadMode = Marshal.GetDelegateForFunctionPointer<SetGamepadMode>(toggleGamepadModeAddress);
+                
                 if (setOptionAddress == IntPtr.Zero) {
                     PluginLog.LogError($"Failed to setup {GetType().Name}: Failed to find required functions.");
                     return;
@@ -154,8 +165,10 @@ namespace SimpleTweaksPlugin {
                 optionValue = argList[1];
             }
 
+            var setValue = 0UL;
             switch (optionDefinition.type) {
                 
+                case OptionType.ToggleGamepadMode:
                 case OptionType.Bool: {
 
                     switch (optionValue) {
@@ -163,11 +176,13 @@ namespace SimpleTweaksPlugin {
                         case "true":
                         case "on":
                             setOption(baseAddress, optionDefinition.key, 1, 2);
+                            setValue = 1;
                             break;
                         case "0":
                         case "false":
                         case "off":
                             setOption(baseAddress, optionDefinition.key, 0, 2);
+                            setValue = 0;
                             break;
                         case "":
                         case "t":
@@ -175,6 +190,7 @@ namespace SimpleTweaksPlugin {
                             if (optionDefinition.offset > 0) {
                                 var cVal = Marshal.ReadByte(baseAddress, optionDefinition.offset);
                                 setOption(baseAddress, optionDefinition.key, cVal == 1 ? 0UL : 1UL, 2);
+                                setValue = cVal == 1 ? 1 : 0UL;
                             } else {
                                 PluginInterface.Framework.Gui.Chat.PrintError($"Toggle not available for {optionKind}");
                             }
@@ -188,9 +204,16 @@ namespace SimpleTweaksPlugin {
                 }
                 default:
                     PluginInterface.Framework.Gui.Chat.PrintError("Unsupported Option");
-                    break;
+                    return;
             }
 
+            switch (optionDefinition.type) {
+                case OptionType.ToggleGamepadMode: {
+                    setGamepadMode(baseAddress, setValue);
+                    break;
+                }
+            }
+            
         }
 
         private IntPtr SetOptionDetour(IntPtr baseAddress, ulong kind, ulong value, ulong unknown) {
