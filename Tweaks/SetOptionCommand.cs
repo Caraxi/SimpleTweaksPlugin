@@ -37,6 +37,7 @@ namespace SimpleTweaksPlugin {
             { "itemtooltips", (OptionType.Bool, 0x130, 0xBDE0, new [] {"itt"} )},
             { "actiontooltips", (OptionType.Bool, 0x136, 0xBE40, new [] {"att"}) },
             { "gamepadmode", (OptionType.ToggleGamepadMode, 0x89, 0xB370, new [] { "gp" })},
+            { "legacymovement", (OptionType.Bool, 0x8A, 0xB380, new [] { "lm"})},
         };
 
         private readonly Dictionary<OptionType, string> optionTypeValueHints = new Dictionary<OptionType, string> {
