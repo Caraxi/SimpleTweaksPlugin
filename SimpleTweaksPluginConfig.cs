@@ -20,7 +20,7 @@ namespace SimpleTweaksPlugin {
 
         public List<string> EnabledTweaks = new List<string>();
 
-        private bool HideKofi;
+        public bool HideKofi;
 
         public void Init(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface) {
             this.plugin = plugin;
