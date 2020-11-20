@@ -88,7 +88,7 @@ namespace SimpleTweaksPlugin {
                     ImGui.Separator();
 
                     foreach (var o in optionKinds) {
-                        
+                        if (o.Value.type == OptionType.ToggleGamepadMode) continue;
                         ImGui.NextColumn();
                         ImGui.Text(o.Key);
                         ImGui.NextColumn();
@@ -138,6 +138,7 @@ namespace SimpleTweaksPlugin {
                 var sb = new StringBuilder();
 
                 foreach (var o in optionKinds.Keys) {
+                    if (optionKinds[o].type == OptionType.ToggleGamepadMode) continue;
                     sb.Append(o + " ");
                 }
                 PluginInterface.Framework.Gui.Chat.Print($"Options:\n{sb}");
