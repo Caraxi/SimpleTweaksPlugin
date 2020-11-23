@@ -231,7 +231,7 @@ namespace SimpleTweaksPlugin {
                     id %= 500000;
                     
                     var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint) id);
-                    if (item != null && item.Unknown36 > 0) {
+                    if (item != null && item.Desynth > 0) {
                         PluginLog.Log($"Desynthable: {item.Name}");
                         var classJobOffset = 2 * (int) (item.ClassJobRepair.Row - 8);
                         var desynthLevel = *(ushort*) (playerStaticAddress + (0x692 + classJobOffset)) / 100f;

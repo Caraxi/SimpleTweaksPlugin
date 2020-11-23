@@ -43,8 +43,8 @@
 		<Reference Include="Lumina">
 			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Lumina.dll</HintPath>
 		</Reference>
-		<Reference Include="Lumina.Generated">
-			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Lumina.Generated.dll</HintPath>
+		<Reference Include="Lumina.Excel">
+			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Lumina.Excel.dll</HintPath>
 		</Reference>
 		<Reference Include="System.Windows.Forms" />
     </ItemGroup>
