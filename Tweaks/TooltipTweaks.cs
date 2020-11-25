@@ -9,6 +9,7 @@ using System.Text;
 using Dalamud;
 using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
+using Dalamud.Game.ClientState.Structs;
 using Dalamud.Game.Internal;
 using Lumina.Excel.GeneratedSheets;
 
@@ -31,6 +32,8 @@ namespace SimpleTweaksPlugin {
             #if DEBUG
             public bool ShowItemID = false;
             #endif
+            public bool FoodStats = false;
+            public bool FoodStatsHighlight = true;
         }
 
         public override bool DrawConfig() {
@@ -47,6 +50,12 @@ namespace SimpleTweaksPlugin {
                 change = ImGui.Checkbox("Trailing Zeros", ref PluginConfig.TooltipTweaks.TrailingZeros) || change;
                 ImGui.Indent(-20);
                 change = ImGui.Checkbox("Show Desynth Skill", ref PluginConfig.TooltipTweaks.ShowDesynthSkill) || change;
+                change = ImGui.Checkbox("Show exact food stats", ref PluginConfig.TooltipTweaks.FoodStats) || change;
+                if (PluginConfig.TooltipTweaks.FoodStats) {
+                    ImGui.Indent(20);
+                    change = ImGui.Checkbox("Highlight active value", ref PluginConfig.TooltipTweaks.FoodStatsHighlight) || change;
+                    ImGui.Indent(-20);
+                }
                 change = ImGui.Checkbox("CTRL-C to copy hovered item.", ref PluginConfig.TooltipTweaks.EnableCopyItemName) || change;
                 ImGui.TreePop();
             }
@@ -60,18 +69,23 @@ namespace SimpleTweaksPlugin {
 
         private unsafe delegate byte ItemHoveredDelegate(IntPtr a1, IntPtr* a2, int* containerId, ushort* slotId, IntPtr a5, uint slotIdInt, IntPtr a7);
         
+        private delegate ulong GetBaseParam(IntPtr playerAddress, uint baseParamId);
         private Hook<TooltipDelegate> tooltipHook;
         private Hook<ItemHoveredDelegate> itemHoveredHook;
 
         private IntPtr tooltipAddress;
         private IntPtr itemHoveredAddress;
         private IntPtr playerStaticAddress;
+        private IntPtr getBaseParamAddress;
+
+        private GetBaseParam getBaseParam;
 
         private readonly IntPtr allocSpiritbond = Marshal.AllocHGlobal(32);
         private readonly IntPtr allocDurability = Marshal.AllocHGlobal(32);
         private readonly IntPtr allocDesynthSkill = Marshal.AllocHGlobal(512);
         private readonly IntPtr allocControlDisplay = Marshal.AllocHGlobal(512);
         private readonly IntPtr allocItemName = Marshal.AllocHGlobal(512);
+        private readonly IntPtr allocFoodBonuses = Marshal.AllocHGlobal(1024);
         #if DEBUG
         private readonly IntPtr allocItemId = Marshal.AllocHGlobal(512);
         #endif
@@ -92,6 +106,11 @@ namespace SimpleTweaksPlugin {
 
                 if (playerStaticAddress == IntPtr.Zero) {
                     playerStaticAddress = PluginInterface.TargetModuleScanner.GetStaticAddressFromSig("8B D7 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B7 E8");
+                }
+
+                if (getBaseParamAddress == IntPtr.Zero) {
+                    getBaseParamAddress = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 44 8B C0 33 D2 48 8B CB E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 48 8D 0D");
+                    getBaseParam = Marshal.GetDelegateForFunctionPointer<GetBaseParam>(getBaseParamAddress);
                 }
 
                 if (tooltipAddress == IntPtr.Zero || itemHoveredAddress == IntPtr.Zero) {
@@ -258,6 +277,81 @@ namespace SimpleTweaksPlugin {
                     }
                 }
             }
+
+            if (PluginConfig.TooltipTweaks.FoodStats) {
+                var id = PluginInterface.Framework.Gui.HoveredItem;
+                PluginLog.Log($"ID: {id}");
+                if (id < 2000000) {
+                    var hq = id >= 500000;
+                    id %= 500000;
+                    var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint)id);
+
+                    var action = item.ItemAction?.Value;
+                    if (action != null) {PluginLog.Log($"ActionType: {action.Type}");}
+                    if (action != null && (action.Type == 844 || action.Type == 845)) {
+
+                        var itemFood = PluginInterface.Data.Excel.GetSheet<ItemFood>().GetRow(hq ? action.DataHQ[1] : action.Data[1]);
+                        if (itemFood != null) {
+                            var payloads = new List<Payload>();
+                            var hasChange = false;
+
+                            var currentFoodEffect = PluginInterface.ClientState.LocalPlayer.StatusEffects.FirstOrDefault(a => a.EffectId == 48);
+
+                            foreach (var bonus in itemFood.UnkStruct1) {
+                                if (bonus.BaseParam == 0) continue;
+                                var param = PluginInterface.Data.Excel.GetSheet<BaseParam>().GetRow(bonus.BaseParam);
+                                var value = hq ? bonus.ValueHQ : bonus.Value;
+                                var max = hq ? bonus.MaxHQ : bonus.Max;
+                                if (bonus.IsRelative) {
+                                    hasChange = true;
+
+                                    var currentStat = getBaseParam(playerStaticAddress, bonus.BaseParam);
+                                    var relativeAdd = (short) (currentStat * (value / 100f));
+                                    var change = relativeAdd > max ? max : relativeAdd;
+
+                                    // PluginLog.Log($"  {param.Name}: {value}% (Max {max}) [{param.RowId}:{getBaseParam(playerStaticAddress, param.RowId)}]");
+                                    if (payloads.Count > 0) payloads.Add(new TextPayload("\n"));
+
+                                    payloads.Add(new TextPayload($"{param.Name} +"));
+
+                                    if (PluginConfig.TooltipTweaks.FoodStatsHighlight && change < max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
+                                    payloads.Add(new TextPayload($"{value}%"));
+                                    if (change < max) {
+                                        if (PluginConfig.TooltipTweaks.FoodStatsHighlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+                                        payloads.Add(new TextPayload($" (Current "));
+                                        if (PluginConfig.TooltipTweaks.FoodStatsHighlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
+                                        payloads.Add(new TextPayload($"{change}"));
+                                        if (PluginConfig.TooltipTweaks.FoodStatsHighlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+                                        payloads.Add(new TextPayload($")"));
+                                    }
+
+                                    payloads.Add(new TextPayload(" (Max "));
+                                    if (PluginConfig.TooltipTweaks.FoodStatsHighlight && change == max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
+                                    payloads.Add(new TextPayload($"{max}"));
+                                    if (PluginConfig.TooltipTweaks.FoodStatsHighlight && change == max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+                                    payloads.Add(new TextPayload(")"));
+                                } else {
+                                    if (payloads.Count > 0) payloads.Add(new TextPayload("\n"));
+                                    payloads.Add(new TextPayload($"{param.Name} +{value}"));
+                                }
+                            }
+
+                            if (payloads.Count > 0 && hasChange) {
+                                PluginLog.Log("Rewriting Food Effects");
+                                var seStr = new SeString(payloads);
+                                WriteSeString(*(a3 + 4) + 0x10, allocFoodBonuses, seStr);
+                            }
+
+                        }
+
+                    } else {
+                        PluginLog.Log($"\nNot Food");
+                    }
+                    
+                    
+                }
+            }
+
             return tooltipHook.Original(a1, a2, a3);
         }
 
@@ -323,6 +417,7 @@ namespace SimpleTweaksPlugin {
             Marshal.FreeHGlobal(this.allocDesynthSkill);
             Marshal.FreeHGlobal(this.allocControlDisplay);
             Marshal.FreeHGlobal(this.allocItemName);
+            Marshal.FreeHGlobal(this.allocFoodBonuses);
 #if DEBUG
             Marshal.FreeHGlobal(this.allocItemId);
 #endif
