@@ -16,6 +16,8 @@ namespace SimpleTweaksPlugin {
 
         public string AssemblyLocation { get; private set; } = Assembly.GetExecutingAssembly().Location;
 
+        internal Common Common;
+
         public void Dispose() {
             PluginInterface.UiBuilder.OnBuildUi -= this.BuildUI;
             RemoveCommands();
@@ -32,6 +34,8 @@ namespace SimpleTweaksPlugin {
             this.PluginInterface = pluginInterface;
             this.PluginConfig = (SimpleTweaksPluginConfig)pluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
             this.PluginConfig.Init(this, pluginInterface);
+
+            Common = new Common(pluginInterface);
 
             PluginInterface.UiBuilder.OnBuildUi += this.BuildUI;
             pluginInterface.UiBuilder.OnOpenConfigUi += OnConfigCommandHandler;

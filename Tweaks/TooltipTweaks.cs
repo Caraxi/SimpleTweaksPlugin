@@ -79,17 +79,7 @@ namespace SimpleTweaksPlugin {
         private IntPtr getBaseParamAddress;
 
         private GetBaseParam getBaseParam;
-
-        private readonly IntPtr allocSpiritbond = Marshal.AllocHGlobal(32);
-        private readonly IntPtr allocDurability = Marshal.AllocHGlobal(32);
-        private readonly IntPtr allocDesynthSkill = Marshal.AllocHGlobal(512);
-        private readonly IntPtr allocControlDisplay = Marshal.AllocHGlobal(512);
-        private readonly IntPtr allocItemName = Marshal.AllocHGlobal(512);
-        private readonly IntPtr allocFoodBonuses = Marshal.AllocHGlobal(1024);
-        #if DEBUG
-        private readonly IntPtr allocItemId = Marshal.AllocHGlobal(512);
-        #endif
-
+        
         private ushort lastSpiritbond;
         private ushort lastDurability;
 
@@ -161,87 +151,83 @@ namespace SimpleTweaksPlugin {
             return ret;
         }
 
-        private unsafe void ReplacePercentage(byte** startPtr, IntPtr alloc, double percent) {
-            if (startPtr == null) return;
-            var start = *(startPtr);
-            if (start == null) return;
-            if (start == (byte*) alloc) return;
-            var overwrite = ReadString(start);
-            if (overwrite == "???%") return;
-            overwrite = percent.ToString(PluginConfig.TooltipTweaks.TrailingZeros ? "F2" : "0.##") + "%";
-            WriteString((byte*)alloc, overwrite, true);
-            *startPtr = (byte*)alloc;
+        public enum TooltipField : byte {
+            ItemName,
+            GlamourName,
+            ItemUiCategory,
+            ItemDescription = 13,
+            Effects = 16,
+            DurabilityPercent = 28,
+            SpiritbondPercent = 30,
+            ExtractableProjectableDesynthesizable = 35,
+            ControlsDisplay = 64,
         }
 
-        private unsafe void ReplaceText(byte** startPtr, IntPtr alloc, string find, string replace) {
-            if (startPtr == null) return;
-            var start = *(startPtr);
-            if (start == null) return;
-            if (start == (byte*) alloc) return;
-            var overwrite = ReadString(start);
-            if (!overwrite.Contains(find)) return;
-            overwrite = overwrite.Replace(find, replace);
-            WriteString((byte*)alloc, overwrite, true);
-            *startPtr = (byte*)alloc;
+        private readonly Dictionary<TooltipField,(int size, IntPtr alloc)> tooltipAllocations = new Dictionary<TooltipField, (int size, IntPtr alloc)>();
+
+        private unsafe SeString ReadTooltipField(byte*** tooltipBase, TooltipField field) {
+            return Plugin.Common.ReadSeString(*(tooltipBase + 4) + (byte) field);
         }
 
-        private unsafe void AppendText(byte** startPtr, IntPtr alloc, string text) {
-            if (startPtr == null) return;
-            var start = *(startPtr);
-            if (start == null) return;
-            if (start == (byte*) alloc) return;
-            var overwrite = ReadString(start);
-            overwrite += text;
-            WriteString((byte*)alloc, overwrite, true);
-            *startPtr = (byte*)alloc;
+        private unsafe void WriteTooltipField(byte*** tooltipBase, TooltipField field, SeString value) {
+
+            IntPtr alloc = IntPtr.Zero;
+            var size = value.Encode().Length;
+            if (tooltipAllocations.ContainsKey(field)) {
+                var ta = tooltipAllocations[field];
+                if (ta.size < size + 128) {
+                    Marshal.FreeHGlobal(ta.alloc);
+                    tooltipAllocations.Remove(field);
+                } else {
+                    alloc = ta.alloc;
+                }
+            }
+
+            if (alloc == IntPtr.Zero) {
+                var allocSize = 64;
+                while (allocSize < size + 128) allocSize *= 2;
+                alloc = Marshal.AllocHGlobal(allocSize);
+                tooltipAllocations.Add(field, (allocSize, alloc));
+            }
+
+            Plugin.Common.WriteSeString(*(tooltipBase + 4) + (byte) field, alloc, value);
         }
 
-        private unsafe void AppendSeString(byte** startPtr, IntPtr alloc, SeString append) {
-            if (startPtr == null) return;
-            var start = *(startPtr);
-            if (start == null) return;
-            if (start == (byte*)alloc) return;
-            var overwrite = ReadSeString(start);
-            overwrite.Payloads.AddRange(append.Payloads);
-            WriteSeString((byte*) alloc, overwrite);
-            *startPtr = (byte*) alloc;
-        }
-
-        private unsafe void WriteSeString(byte** startPtr, IntPtr alloc, SeString seString) {
-            if (startPtr == null) return;
-            var start = *(startPtr);
-            if (start == null) return;
-            if (start == (byte*)alloc) return;
-            WriteSeString((byte*) alloc, seString);
-            *startPtr = (byte*) alloc;
-        }
-
-        private unsafe SeString ReadSeString(byte** startPtr) {
-            if (startPtr == null) return null;
-            var start = *(startPtr);
-            if (start == null) return null;
-            return ReadSeString(start);
-        }
-
-
-
-        private unsafe IntPtr TooltipDetour(IntPtr a1, uint** a2, byte*** a3) {
+        private unsafe IntPtr TooltipDetour(IntPtr a1, uint** a2, byte*** tooltipBase) {
 #if DEBUG
-            PluginLog.Log("Tooltip Address: " + ((ulong) *(a3 + 4)).ToString("X"));
+            PluginLog.Log("Tooltip Address: " + ((ulong) *(tooltipBase + 4)).ToString("X"));
 #endif
-            if (PluginConfig.TooltipTweaks.EnableDurability) ReplacePercentage(*(a3+4) + 28, allocDurability, lastDurability / 300.0);
-            if (PluginConfig.TooltipTweaks.EnableSpiritbond) ReplacePercentage(*(a3+4) + 30, allocSpiritbond, lastSpiritbond / 100.0);
+            if (PluginConfig.TooltipTweaks.EnableDurability) {
+                var seStr = new SeString(new List<Payload>() {
+                    new TextPayload((lastDurability / 300f).ToString(PluginConfig.TooltipTweaks.TrailingZeros ? "F2" : "0.##") + "%")
+                });
+                WriteTooltipField(tooltipBase, TooltipField.DurabilityPercent, seStr);
+            }
+            
+            if (PluginConfig.TooltipTweaks.EnableSpiritbond) {
+                var seStr = new SeString(new List<Payload>() {
+                    new TextPayload((lastSpiritbond / 100f).ToString(PluginConfig.TooltipTweaks.TrailingZeros ? "F2" : "0.##") + "%")
+                });
+                WriteTooltipField(tooltipBase, TooltipField.SpiritbondPercent, seStr);
+            }
+
             #if DEBUG
             if (PluginConfig.TooltipTweaks.ShowItemID) {
                 var id = PluginInterface.Framework.Gui.HoveredItem;
                 if (id < 2000000) { 
                     id %= 500000;
                 }
-                AppendText(*(a3 + 4) + 2, allocItemId, $"  ({id})");
+
+                var seStr = ReadTooltipField(tooltipBase, TooltipField.ItemUiCategory);
+                seStr.Payloads.Add(new TextPayload($"  ({id})"));
+                WriteTooltipField(tooltipBase, TooltipField.ItemUiCategory, seStr);
             }
             #endif
+
             if (PluginConfig.TooltipTweaks.EnableCopyItemName) {
-                AppendText(*(a3 + 4) + 0x40, allocControlDisplay, "　Ctrl+C  Copy item name");
+                var seStr = ReadTooltipField(tooltipBase, TooltipField.ControlsDisplay);
+                seStr.Payloads.Add(new TextPayload("\nCtrl+C  Copy item name"));
+                WriteTooltipField(tooltipBase, TooltipField.ControlsDisplay, seStr);
             }
             
             if (PluginConfig.TooltipTweaks.ShowDesynthSkill) {
@@ -251,29 +237,21 @@ namespace SimpleTweaksPlugin {
                     
                     var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint) id);
                     if (item != null && item.Desynth > 0) {
-                        PluginLog.Log($"Desynthable: {item.Name}");
                         var classJobOffset = 2 * (int) (item.ClassJobRepair.Row - 8);
                         var desynthLevel = *(ushort*) (playerStaticAddress + (0x692 + classJobOffset)) / 100f;
 
                         var useDescription = desynthInDescription.Contains(item.ItemSearchCategory.Row);
 
+                        var seStr = ReadTooltipField(tooltipBase, useDescription ? TooltipField.ItemDescription : TooltipField.ExtractableProjectableDesynthesizable);
 
-                        switch (PluginInterface.ClientState.ClientLanguage) {
-                            case ClientLanguage.Japanese:
-                                ReplaceText(*(a3 + 4) + (useDescription ? 0xD : 0x23), allocDesynthSkill, $"分解適正スキル:{item.LevelItem.Row:F0}.00", $"分解適正スキル:{item.LevelItem.Row} ({desynthLevel:F0})");
-                                break;
-                            case ClientLanguage.English:
-                                ReplaceText(*(a3 + 4) + (useDescription ? 0xD : 0x23), allocDesynthSkill, $"Desynthesizable: {item.LevelItem.Row:F0}.00", $"Desynthable: {item.LevelItem.Row} ({desynthLevel:F0})");
-                                break;
-                            case ClientLanguage.German:
-                                ReplaceText(*(a3 + 4) + (useDescription ? 0xD : 0x23), allocDesynthSkill, $"Verwertung: {item.LevelItem.Row},00", $"Verwertung: {item.LevelItem.Row} ({desynthLevel:F0})");
-                                break;
-                            case ClientLanguage.French:
-                                ReplaceText(*(a3 + 4) + (useDescription ? 0xD : 0x23), allocDesynthSkill, $"Recyclage: ✓ [{item.LevelItem.Row},00]", $"\nRecyclage: ✓ {item.LevelItem.Row} ({desynthLevel:F0})");
-                                break;
+
+
+                        if (seStr.Payloads.Last() is TextPayload textPayload) {
+                            textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
+                            textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
+                            WriteTooltipField(tooltipBase, useDescription ? TooltipField.ItemDescription : TooltipField.ExtractableProjectableDesynthesizable, seStr);
                         }
-                        
-                        
+
                     }
                 }
             }
@@ -339,7 +317,7 @@ namespace SimpleTweaksPlugin {
                             if (payloads.Count > 0 && hasChange) {
                                 PluginLog.Log("Rewriting Food Effects");
                                 var seStr = new SeString(payloads);
-                                WriteSeString(*(a3 + 4) + 0x10, allocFoodBonuses, seStr);
+                                WriteTooltipField(tooltipBase, TooltipField.Effects, seStr);
                             }
 
                         }
@@ -352,54 +330,7 @@ namespace SimpleTweaksPlugin {
                 }
             }
 
-            return tooltipHook.Original(a1, a2, a3);
-        }
-
-        // https://git.sr.ht/~jkcclemens/GoodMemory/tree/master/GoodMemory/Plugin.cs
-        private unsafe string ReadString(byte* ptr) {
-            var offset = 0;
-            while (true) {
-                var b = *(ptr + offset);
-                if (b == 0) {
-                    break;
-                }
-                offset += 1;
-            }
-            return Encoding.UTF8.GetString(ptr, offset);
-        }
-
-        private unsafe SeString ReadSeString(byte* ptr) {
-            var offset = 0;
-            while (true) {
-                var b = *(ptr + offset);
-                if (b == 0) {
-                    break;
-                }
-                offset += 1;
-            }
-
-            var bytes = new byte[offset];
-            Marshal.Copy(new IntPtr(ptr), bytes, 0, offset);
-
-            return PluginInterface.SeStringManager.Parse(bytes);
-        }
-
-        private unsafe void WriteString(byte* dst, string s, bool finalise = false) {
-            var bytes = Encoding.UTF8.GetBytes(s);
-            for (var i = 0; i < bytes.Length; i++) {
-                *(dst + i) = bytes[i];
-            }
-            if (finalise) {
-                *(dst + bytes.Length) = 0;
-            }
-        }
-
-        private unsafe void WriteSeString(byte* dst, SeString s) {
-            var bytes = s.Encode();
-            for (var i = 0; i < bytes.Length; i++) {
-                *(dst + i) = bytes[i];
-            }
-            *(dst + bytes.Length) = 0;
+            return tooltipHook.Original(a1, a2, tooltipBase);
         }
 
         public override void Disable() {
@@ -412,15 +343,11 @@ namespace SimpleTweaksPlugin {
         public override void Dispose() {
             tooltipHook?.Dispose();
             itemHoveredHook?.Dispose();
-            Marshal.FreeHGlobal(this.allocSpiritbond);
-            Marshal.FreeHGlobal(this.allocDurability);
-            Marshal.FreeHGlobal(this.allocDesynthSkill);
-            Marshal.FreeHGlobal(this.allocControlDisplay);
-            Marshal.FreeHGlobal(this.allocItemName);
-            Marshal.FreeHGlobal(this.allocFoodBonuses);
-#if DEBUG
-            Marshal.FreeHGlobal(this.allocItemId);
-#endif
+            foreach (var f in tooltipAllocations) {
+                Marshal.FreeHGlobal(f.Value.alloc);
+            }
+            tooltipAllocations.Clear();
+
             Enabled = false;
             Ready = false;
         }
