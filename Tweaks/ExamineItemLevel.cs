@@ -28,6 +28,8 @@ namespace SimpleTweaksPlugin {
         private ImFontPtr font;
         private bool fontLoadFailed;
 
+        private Vector2 lastTextSize = Vector2.One;
+
         public override void Setup() {
 
             try {
@@ -60,7 +62,32 @@ namespace SimpleTweaksPlugin {
             if (ui == null) return;
             ImGui.SetNextWindowSize(new Vector2(ui.Scale * 350, ui.Scale * 540), ImGuiCond.Always);
             ImGui.SetNextWindowPos(new Vector2(ui.X, ui.Y), ImGuiCond.Always);
-            if (ImGui.Begin("Inspect Display", ImGuiWindowFlags.NoMouseInputs | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoTitleBar)) { 
+
+
+            var itemDetail = PluginInterface.Framework.Gui.GetAddonByName("ItemDetail", 1);
+            var covered = false;
+            
+            var textPos = new Vector2((ui.X + 255 * ui.Scale) - lastTextSize.X, ui.Y + 195 * ui.Scale);
+            if (itemDetail != null && itemDetail.Visible) {
+                var itemDetailPos = new Vector2(itemDetail.X, itemDetail.Y);
+                var itemDetailSize = new Vector2(itemDetail.Width * itemDetail.Scale, itemDetail.Height * itemDetail.Scale);
+#if DEBUG
+                if (ImGui.GetIO().KeyShift) {
+                    var dl = ImGui.GetForegroundDrawList();
+                    dl.AddRect(textPos, textPos + lastTextSize, 0xFF0000FF);
+                    dl.AddRect(itemDetailPos, itemDetailPos + itemDetailSize, 0xFFFF0000);
+                }
+#endif
+                covered = !(
+                    textPos.X + lastTextSize.X < itemDetailPos.X ||
+                    textPos.Y + lastTextSize.Y < itemDetailPos.Y ||
+                    textPos.X > itemDetailPos.X + itemDetailSize.X ||
+                    textPos.Y > itemDetailPos.Y + itemDetailSize.Y
+                );
+            }
+
+
+            if (!covered && ImGui.Begin("Inspect Display", ImGuiWindowFlags.NoMouseInputs | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoTitleBar)) { 
                 var sum = 0U;
                 for (var i = 0; i < 13; i++) {
                     var slot = getContainerSlot(container, i);
@@ -102,6 +129,7 @@ namespace SimpleTweaksPlugin {
 
                 ImGui.SetWindowFontScale((1.7f / ImGui.GetIO().FontGlobalScale) * ui.Scale);
                 var iconSize = ImGui.CalcTextSize($"{(char)SeIconChar.ItemLevel}");
+                lastTextSize = textsize + new Vector2(iconSize.X, 0);
                 ImGui.SetCursorPos(new Vector2((ui.Scale * 255) - textsize.X - iconSize.X, ui.Scale * 187));
                 ImGui.TextColored(ImGui.ColorConvertU32ToFloat4(0xffa4dffc), $"{(char)SeIconChar.ItemLevel}");
                 ImGui.End();
