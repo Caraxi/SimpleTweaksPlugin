@@ -5,11 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using Dalamud;
 using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
-using Dalamud.Game.ClientState.Structs;
 using Dalamud.Game.Internal;
 using Lumina.Excel.GeneratedSheets;
 
@@ -23,16 +20,16 @@ namespace SimpleTweaksPlugin {
         private readonly uint[] desynthInDescription = {46, 56, 65, 66, 67, 68, 69, 70, 71, 72};
         
         public class Config {
-            public bool EnableDurability = true;
-            public bool EnableSpiritbond = true;
+            public bool EnableDurability;
+            public bool EnableSpiritbond;
             public bool TrailingZeros = true;
-            public bool ShowDesynthSkill = true;
-            public bool EnableCopyItemName = true;
+            public bool ShowDesynthSkill;
+            public bool EnableCopyItemName;
             public bool ShowAcquiredStatus = false;
             #if DEBUG
-            public bool ShowItemID = false;
+            public bool ShowItemID;
             #endif
-            public bool FoodStats = false;
+            public bool FoodStats;
             public bool FoodStatsHighlight = true;
         }
 
@@ -41,14 +38,14 @@ namespace SimpleTweaksPlugin {
             var change = false;
             
             if (ImGui.TreeNode($"{Name}###{GetType().Name}settingsNode")) {
-                change = ImGui.Checkbox("Precise Durability", ref PluginConfig.TooltipTweaks.EnableDurability) || change;
+                change = ImGui.Checkbox("Precise Durability", ref PluginConfig.TooltipTweaks.EnableDurability);
                 change = ImGui.Checkbox("Precise Spiritbond", ref PluginConfig.TooltipTweaks.EnableSpiritbond) || change;
-                #if DEBUG
-                change = ImGui.Checkbox("Show Item ID", ref PluginConfig.TooltipTweaks.ShowItemID) || change;
-                #endif
                 ImGui.Indent(20);
                 change = ImGui.Checkbox("Trailing Zeros", ref PluginConfig.TooltipTweaks.TrailingZeros) || change;
                 ImGui.Indent(-20);
+#if DEBUG
+                change = ImGui.Checkbox("Show Item ID", ref PluginConfig.TooltipTweaks.ShowItemID) || change;
+#endif
                 change = ImGui.Checkbox("Show Desynth Skill", ref PluginConfig.TooltipTweaks.ShowDesynthSkill) || change;
                 change = ImGui.Checkbox("Show exact food stats", ref PluginConfig.TooltipTweaks.FoodStats) || change;
                 if (PluginConfig.TooltipTweaks.FoodStats) {
@@ -258,22 +255,24 @@ namespace SimpleTweaksPlugin {
 
             if (PluginConfig.TooltipTweaks.FoodStats) {
                 var id = PluginInterface.Framework.Gui.HoveredItem;
+#if DEBUG
                 PluginLog.Log($"ID: {id}");
+#endif
                 if (id < 2000000) {
                     var hq = id >= 500000;
                     id %= 500000;
                     var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint)id);
 
                     var action = item.ItemAction?.Value;
-                    if (action != null) {PluginLog.Log($"ActionType: {action.Type}");}
+#if DEBUG
+                    if (action != null) { PluginLog.Log($"ActionType: {action.Type}"); }
+#endif
                     if (action != null && (action.Type == 844 || action.Type == 845)) {
 
                         var itemFood = PluginInterface.Data.Excel.GetSheet<ItemFood>().GetRow(hq ? action.DataHQ[1] : action.Data[1]);
                         if (itemFood != null) {
                             var payloads = new List<Payload>();
                             var hasChange = false;
-
-                            var currentFoodEffect = PluginInterface.ClientState.LocalPlayer.StatusEffects.FirstOrDefault(a => a.EffectId == 48);
 
                             foreach (var bonus in itemFood.UnkStruct1) {
                                 if (bonus.BaseParam == 0) continue;
@@ -286,8 +285,7 @@ namespace SimpleTweaksPlugin {
                                     var currentStat = getBaseParam(playerStaticAddress, bonus.BaseParam);
                                     var relativeAdd = (short) (currentStat * (value / 100f));
                                     var change = relativeAdd > max ? max : relativeAdd;
-
-                                    // PluginLog.Log($"  {param.Name}: {value}% (Max {max}) [{param.RowId}:{getBaseParam(playerStaticAddress, param.RowId)}]");
+                                    
                                     if (payloads.Count > 0) payloads.Add(new TextPayload("\n"));
 
                                     payloads.Add(new TextPayload($"{param.Name} +"));
@@ -315,15 +313,15 @@ namespace SimpleTweaksPlugin {
                             }
 
                             if (payloads.Count > 0 && hasChange) {
+#if DEBUG
                                 PluginLog.Log("Rewriting Food Effects");
+#endif
                                 var seStr = new SeString(payloads);
                                 WriteTooltipField(tooltipBase, TooltipField.Effects, seStr);
                             }
 
                         }
 
-                    } else {
-                        PluginLog.Log($"\nNot Food");
                     }
                     
                     

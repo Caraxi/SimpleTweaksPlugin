@@ -21,6 +21,7 @@ namespace SimpleTweaksPlugin {
         public List<string> EnabledTweaks = new List<string>();
 
         public bool HideKofi;
+        public bool ShowExperimentalTweaks;
 
         public void Init(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface) {
             this.plugin = plugin;
@@ -56,16 +57,21 @@ namespace SimpleTweaksPlugin {
             ImGui.Separator();
 
             foreach (var t in plugin.Tweaks) {
-
                 var enabled = t.Enabled;
-
+                if (t.Experimental && !ShowExperimentalTweaks && !enabled) continue;
                 if (ImGui.Checkbox($"###{t.GetType().Name}enabledCheckbox", ref enabled)) {
                     if (enabled) {
+#if DEBUG
+                        PluginLog.Log($"Enable: {t.Name}");
+#endif
                         t.Enable();
                         if (t.Enabled) {
                             EnabledTweaks.Add(t.GetType().Name);
                         }
                     } else {
+#if DEBUG
+                        PluginLog.Log($"Disable: {t.Name}");
+#endif
                         t.Disable();
                         EnabledTweaks.RemoveAll(a => a == t.GetType().Name);
                     }
@@ -90,6 +96,7 @@ namespace SimpleTweaksPlugin {
             ImGui.PopStyleColor(3);
             ImGui.SameLine();
             if (ImGui.TreeNode("General Options")) {
+                if (ImGui.Checkbox("Show Experimental Tweaks.", ref ShowExperimentalTweaks)) Save();
                 if (ImGui.Checkbox("Hide Ko-fi link.", ref HideKofi)) Save();
                 ImGui.TreePop();
             }

@@ -23,7 +23,13 @@ namespace SimpleTweaksPlugin {
             RemoveCommands();
 
             foreach (var t in Tweaks) {
+#if DEBUG
+                PluginLog.Log($"Disable: {t.Name}");
+#endif
                 t.Disable();
+#if DEBUG
+                PluginLog.Log($"Dispose: {t.Name}");
+#endif
                 t.Dispose();
             }
 
@@ -49,6 +55,9 @@ namespace SimpleTweaksPlugin {
                 tweak.InterfaceSetup(this, pluginInterface, PluginConfig);
                 tweak.Setup();
                 if (PluginConfig.EnabledTweaks.Contains(t.Name)) {
+#if DEBUG
+                    PluginLog.Log($"Enable: {t.Name}");
+#endif
                     tweak.Enable();
                 }
                 tweakList.Add(tweak);
