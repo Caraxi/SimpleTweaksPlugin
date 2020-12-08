@@ -191,24 +191,22 @@ namespace SimpleTweaksPlugin {
         }
 
         private unsafe IntPtr TooltipDetour(IntPtr a1, uint** a2, byte*** tooltipBase) {
+
+            try {
 #if DEBUG
             PluginLog.Log("Tooltip Address: " + ((ulong) *(tooltipBase + 4)).ToString("X"));
 #endif
-            if (PluginConfig.TooltipTweaks.EnableDurability) {
-                var seStr = new SeString(new List<Payload>() {
-                    new TextPayload((lastDurability / 300f).ToString(PluginConfig.TooltipTweaks.TrailingZeros ? "F2" : "0.##") + "%")
-                });
-                WriteTooltipField(tooltipBase, TooltipField.DurabilityPercent, seStr);
-            }
-            
-            if (PluginConfig.TooltipTweaks.EnableSpiritbond) {
-                var seStr = new SeString(new List<Payload>() {
-                    new TextPayload((lastSpiritbond / 100f).ToString(PluginConfig.TooltipTweaks.TrailingZeros ? "F2" : "0.##") + "%")
-                });
-                WriteTooltipField(tooltipBase, TooltipField.SpiritbondPercent, seStr);
-            }
+                if (PluginConfig.TooltipTweaks.EnableDurability) {
+                    var seStr = new SeString(new List<Payload>() {new TextPayload((lastDurability / 300f).ToString(PluginConfig.TooltipTweaks.TrailingZeros ? "F2" : "0.##") + "%")});
+                    WriteTooltipField(tooltipBase, TooltipField.DurabilityPercent, seStr);
+                }
 
-            #if DEBUG
+                if (PluginConfig.TooltipTweaks.EnableSpiritbond) {
+                    var seStr = new SeString(new List<Payload>() {new TextPayload((lastSpiritbond / 100f).ToString(PluginConfig.TooltipTweaks.TrailingZeros ? "F2" : "0.##") + "%")});
+                    WriteTooltipField(tooltipBase, TooltipField.SpiritbondPercent, seStr);
+                }
+
+#if DEBUG
             if (PluginConfig.TooltipTweaks.ShowItemID) {
                 var id = PluginInterface.Framework.Gui.HoveredItem;
                 if (id < 2000000) { 
@@ -219,114 +217,118 @@ namespace SimpleTweaksPlugin {
                 seStr.Payloads.Add(new TextPayload($"  ({id})"));
                 WriteTooltipField(tooltipBase, TooltipField.ItemUiCategory, seStr);
             }
-            #endif
+#endif
 
-            if (PluginConfig.TooltipTweaks.EnableCopyItemName) {
-                var seStr = ReadTooltipField(tooltipBase, TooltipField.ControlsDisplay);
-                seStr.Payloads.Add(new TextPayload("\nCtrl+C  Copy item name"));
-                WriteTooltipField(tooltipBase, TooltipField.ControlsDisplay, seStr);
-            }
-            
-            if (PluginConfig.TooltipTweaks.ShowDesynthSkill) {
-                var id = PluginInterface.Framework.Gui.HoveredItem;
-                if (id < 2000000) {
-                    id %= 500000;
-                    
-                    var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint) id);
-                    if (item != null && item.Desynth > 0) {
-                        var classJobOffset = 2 * (int) (item.ClassJobRepair.Row - 8);
-                        var desynthLevel = *(ushort*) (playerStaticAddress + (0x692 + classJobOffset)) / 100f;
+                if (PluginConfig.TooltipTweaks.EnableCopyItemName) {
+                    var seStr = ReadTooltipField(tooltipBase, TooltipField.ControlsDisplay);
+                    seStr.Payloads.Add(new TextPayload("\nCtrl+C  Copy item name"));
+                    WriteTooltipField(tooltipBase, TooltipField.ControlsDisplay, seStr);
+                }
 
-                        var useDescription = desynthInDescription.Contains(item.ItemSearchCategory.Row);
+                if (PluginConfig.TooltipTweaks.ShowDesynthSkill) {
+                    var id = PluginInterface.Framework.Gui.HoveredItem;
+                    if (id < 2000000) {
+                        id %= 500000;
 
-                        var seStr = ReadTooltipField(tooltipBase, useDescription ? TooltipField.ItemDescription : TooltipField.ExtractableProjectableDesynthesizable);
+                        var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint) id);
+                        if (item != null && item.Desynth > 0) {
+                            var classJobOffset = 2 * (int) (item.ClassJobRepair.Row - 8);
+                            var desynthLevel = *(ushort*) (playerStaticAddress + (0x692 + classJobOffset)) / 100f;
+
+                            var useDescription = desynthInDescription.Contains(item.ItemSearchCategory.Row);
+
+                            var seStr = ReadTooltipField(tooltipBase, useDescription ? TooltipField.ItemDescription : TooltipField.ExtractableProjectableDesynthesizable);
 
 
 
-                        if (seStr.Payloads.Last() is TextPayload textPayload) {
-                            textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
-                            textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
-                            WriteTooltipField(tooltipBase, useDescription ? TooltipField.ItemDescription : TooltipField.ExtractableProjectableDesynthesizable, seStr);
+                            if (seStr.Payloads.Last() is TextPayload textPayload) {
+                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
+                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
+                                WriteTooltipField(tooltipBase, useDescription ? TooltipField.ItemDescription : TooltipField.ExtractableProjectableDesynthesizable, seStr);
+                            }
+
                         }
-
                     }
                 }
-            }
 
-            if (PluginConfig.TooltipTweaks.FoodStats) {
-                var id = PluginInterface.Framework.Gui.HoveredItem;
+                if (PluginConfig.TooltipTweaks.FoodStats) {
+                    var id = PluginInterface.Framework.Gui.HoveredItem;
 #if DEBUG
                 PluginLog.Log($"ID: {id}");
 #endif
-                if (id < 2000000) {
-                    var hq = id >= 500000;
-                    id %= 500000;
-                    var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint)id);
+                    if (id < 2000000) {
+                        var hq = id >= 500000;
+                        id %= 500000;
+                        var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint) id);
 
-                    var action = item.ItemAction?.Value;
+                        var action = item.ItemAction?.Value;
 #if DEBUG
                     if (action != null) { PluginLog.Log($"ActionType: {action.Type}"); }
 #endif
-                    if (action != null && (action.Type == 844 || action.Type == 845)) {
+                        if (action != null && (action.Type == 844 || action.Type == 845)) {
 
-                        var itemFood = PluginInterface.Data.Excel.GetSheet<ItemFood>().GetRow(hq ? action.DataHQ[1] : action.Data[1]);
-                        if (itemFood != null) {
-                            var payloads = new List<Payload>();
-                            var hasChange = false;
+                            var itemFood = PluginInterface.Data.Excel.GetSheet<ItemFood>().GetRow(hq ? action.DataHQ[1] : action.Data[1]);
+                            if (itemFood != null) {
+                                var payloads = new List<Payload>();
+                                var hasChange = false;
 
-                            foreach (var bonus in itemFood.UnkStruct1) {
-                                if (bonus.BaseParam == 0) continue;
-                                var param = PluginInterface.Data.Excel.GetSheet<BaseParam>().GetRow(bonus.BaseParam);
-                                var value = hq ? bonus.ValueHQ : bonus.Value;
-                                var max = hq ? bonus.MaxHQ : bonus.Max;
-                                if (bonus.IsRelative) {
-                                    hasChange = true;
+                                foreach (var bonus in itemFood.UnkStruct1) {
+                                    if (bonus.BaseParam == 0) continue;
+                                    var param = PluginInterface.Data.Excel.GetSheet<BaseParam>().GetRow(bonus.BaseParam);
+                                    var value = hq ? bonus.ValueHQ : bonus.Value;
+                                    var max = hq ? bonus.MaxHQ : bonus.Max;
+                                    if (bonus.IsRelative) {
+                                        hasChange = true;
 
-                                    var currentStat = getBaseParam(playerStaticAddress, bonus.BaseParam);
-                                    var relativeAdd = (short) (currentStat * (value / 100f));
-                                    var change = relativeAdd > max ? max : relativeAdd;
-                                    
-                                    if (payloads.Count > 0) payloads.Add(new TextPayload("\n"));
+                                        var currentStat = getBaseParam(playerStaticAddress, bonus.BaseParam);
+                                        var relativeAdd = (short) (currentStat * (value / 100f));
+                                        var change = relativeAdd > max ? max : relativeAdd;
 
-                                    payloads.Add(new TextPayload($"{param.Name} +"));
+                                        if (payloads.Count > 0) payloads.Add(new TextPayload("\n"));
 
-                                    if (PluginConfig.TooltipTweaks.FoodStatsHighlight && change < max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
-                                    payloads.Add(new TextPayload($"{value}%"));
-                                    if (change < max) {
-                                        if (PluginConfig.TooltipTweaks.FoodStatsHighlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
-                                        payloads.Add(new TextPayload($" (Current "));
-                                        if (PluginConfig.TooltipTweaks.FoodStatsHighlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
-                                        payloads.Add(new TextPayload($"{change}"));
-                                        if (PluginConfig.TooltipTweaks.FoodStatsHighlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
-                                        payloads.Add(new TextPayload($")"));
+                                        payloads.Add(new TextPayload($"{param.Name} +"));
+
+                                        if (PluginConfig.TooltipTweaks.FoodStatsHighlight && change < max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
+                                        payloads.Add(new TextPayload($"{value}%"));
+                                        if (change < max) {
+                                            if (PluginConfig.TooltipTweaks.FoodStatsHighlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+                                            payloads.Add(new TextPayload($" (Current "));
+                                            if (PluginConfig.TooltipTweaks.FoodStatsHighlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
+                                            payloads.Add(new TextPayload($"{change}"));
+                                            if (PluginConfig.TooltipTweaks.FoodStatsHighlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+                                            payloads.Add(new TextPayload($")"));
+                                        }
+
+                                        payloads.Add(new TextPayload(" (Max "));
+                                        if (PluginConfig.TooltipTweaks.FoodStatsHighlight && change == max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
+                                        payloads.Add(new TextPayload($"{max}"));
+                                        if (PluginConfig.TooltipTweaks.FoodStatsHighlight && change == max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+                                        payloads.Add(new TextPayload(")"));
+                                    } else {
+                                        if (payloads.Count > 0) payloads.Add(new TextPayload("\n"));
+                                        payloads.Add(new TextPayload($"{param.Name} +{value}"));
                                     }
-
-                                    payloads.Add(new TextPayload(" (Max "));
-                                    if (PluginConfig.TooltipTweaks.FoodStatsHighlight && change == max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
-                                    payloads.Add(new TextPayload($"{max}"));
-                                    if (PluginConfig.TooltipTweaks.FoodStatsHighlight && change == max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
-                                    payloads.Add(new TextPayload(")"));
-                                } else {
-                                    if (payloads.Count > 0) payloads.Add(new TextPayload("\n"));
-                                    payloads.Add(new TextPayload($"{param.Name} +{value}"));
                                 }
-                            }
 
-                            if (payloads.Count > 0 && hasChange) {
+                                if (payloads.Count > 0 && hasChange) {
 #if DEBUG
                                 PluginLog.Log("Rewriting Food Effects");
 #endif
-                                var seStr = new SeString(payloads);
-                                WriteTooltipField(tooltipBase, TooltipField.Effects, seStr);
+                                    var seStr = new SeString(payloads);
+                                    WriteTooltipField(tooltipBase, TooltipField.Effects, seStr);
+                                }
+
                             }
 
                         }
 
+
                     }
-                    
-                    
                 }
+            } catch (Exception ex) {
+                PluginLog.LogError(ex.ToString());
             }
+
 
             return tooltipHook.Original(a1, a2, tooltipBase);
         }
