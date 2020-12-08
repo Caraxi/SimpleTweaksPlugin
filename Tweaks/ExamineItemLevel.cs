@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using Dalamud.Game.Chat;
 using Dalamud.Plugin;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
 
 namespace SimpleTweaksPlugin {
     internal class ExamineItemLevel : Tweak {
@@ -27,7 +26,7 @@ namespace SimpleTweaksPlugin {
         private bool fontBuilt;
         private ImFontPtr font;
         private bool fontLoadFailed;
-
+        private bool fontPushed;
         private Vector2 lastTextSize = Vector2.One;
 
         public override void Setup() {
@@ -105,8 +104,9 @@ namespace SimpleTweaksPlugin {
                 var avgItemLevel = sum / 13;
                 
                 
-                if (!fontLoadFailed && fontBuilt) {
+                if (!fontLoadFailed && fontBuilt && !fontPushed) {
                     ImGui.PushFont(font);
+                    fontPushed = true;
                 }
                 // Divide by FontGlobalScale to avoid sizes changing due to Dalamud settings
                 ImGui.SetWindowFontScale((1.0f / ImGui.GetIO().FontGlobalScale) * ui.Scale);
@@ -116,8 +116,9 @@ namespace SimpleTweaksPlugin {
                 var pos = ImGui.GetCursorScreenPos();
                 
                 ImGui.TextColored(ImGui.ColorConvertU32ToFloat4(inaccurate ? 0xff5a5abc : 0xffbcbf5a), text);
-                if (!fontLoadFailed && fontBuilt) {
+                if (fontPushed) {
                     ImGui.PopFont();
+                    fontPushed = false;
                 }
 
                 if (inaccurate) {
