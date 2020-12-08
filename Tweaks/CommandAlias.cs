@@ -179,6 +179,7 @@ namespace SimpleTweaksPlugin {
                 }
             } catch (Exception ex) {
                 PluginLog.LogError($"Error processing chat input.\n{ex}");
+                Plugin.Error(this, ex);
             }
             
             return processChatInputHook.Original(uiModule, message, a3);

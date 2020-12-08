@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Dalamud.Plugin;
+using ImGuiNET;
 
 namespace SimpleTweaksPlugin {
     public class SimpleTweaksPlugin : IDalamudPlugin {
@@ -88,6 +89,50 @@ namespace SimpleTweaksPlugin {
 
         private void BuildUI() {
             drawConfigWindow = drawConfigWindow && PluginConfig.DrawConfigUI();
+
+            if (errorList.Count > 0) {
+                var errorsStillOpen = true;
+                ImGui.Begin($"{Name}: Error!", ref errorsStillOpen, ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.AlwaysAutoResize);
+
+                foreach (var e in errorList) {
+                    if (e.IsNew) {
+                        e.IsNew = false;
+                        e.Tweak.Disable();
+                    }
+
+                    ImGui.Text($"Error caught in {e.Tweak.Name}:");
+                    ImGui.Text($"{e.Exception}");
+
+                    if (ImGui.Button("Ok")) {
+                        e.Closed = true;
+                    }
+
+                    ImGui.Separator();
+                }
+
+                errorList.RemoveAll(e => e.Closed);
+
+                ImGui.End();
+
+                if (!errorsStillOpen) {
+                    errorList.Clear();
+                }
+            }
+        }
+
+        private class CaughtError {
+            public Tweak Tweak;
+            public Exception Exception;
+            public bool IsNew = true;
+            public bool Closed = false;
+        }
+
+
+        private readonly List<CaughtError> errorList = new List<CaughtError>();
+
+
+        public void Error(Tweak tweak, Exception exception) {
+            errorList.Insert(0, new CaughtError { Tweak = tweak, Exception = exception});
         }
     }
 }

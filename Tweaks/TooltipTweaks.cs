@@ -197,13 +197,19 @@ namespace SimpleTweaksPlugin {
             PluginLog.Log("Tooltip Address: " + ((ulong) *(tooltipBase + 4)).ToString("X"));
 #endif
                 if (PluginConfig.TooltipTweaks.EnableDurability) {
-                    var seStr = new SeString(new List<Payload>() {new TextPayload((lastDurability / 300f).ToString(PluginConfig.TooltipTweaks.TrailingZeros ? "F2" : "0.##") + "%")});
-                    WriteTooltipField(tooltipBase, TooltipField.DurabilityPercent, seStr);
+                    var cDur = ReadTooltipField(tooltipBase, TooltipField.DurabilityPercent);
+                    if (!cDur.TextValue.StartsWith("?")) {
+                        var seStr = new SeString(new List<Payload>() { new TextPayload((lastDurability / 300f).ToString(PluginConfig.TooltipTweaks.TrailingZeros ? "F2" : "0.##") + "%") });
+                        WriteTooltipField(tooltipBase, TooltipField.DurabilityPercent, seStr);
+                    }
                 }
 
                 if (PluginConfig.TooltipTweaks.EnableSpiritbond) {
-                    var seStr = new SeString(new List<Payload>() {new TextPayload((lastSpiritbond / 100f).ToString(PluginConfig.TooltipTweaks.TrailingZeros ? "F2" : "0.##") + "%")});
-                    WriteTooltipField(tooltipBase, TooltipField.SpiritbondPercent, seStr);
+                    var cSpr = ReadTooltipField(tooltipBase, TooltipField.SpiritbondPercent);
+                    if (!cSpr.TextValue.StartsWith("?")) {
+                        var seStr = new SeString(new List<Payload>() {new TextPayload((lastSpiritbond / 100f).ToString(PluginConfig.TooltipTweaks.TrailingZeros ? "F2" : "0.##") + "%")});
+                        WriteTooltipField(tooltipBase, TooltipField.SpiritbondPercent, seStr);
+                    }
                 }
 
 #if DEBUG
@@ -327,6 +333,7 @@ namespace SimpleTweaksPlugin {
                 }
             } catch (Exception ex) {
                 PluginLog.LogError(ex.ToString());
+                Plugin.Error(this, ex);
             }
 
 

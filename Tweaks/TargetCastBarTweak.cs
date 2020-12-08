@@ -17,7 +17,13 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
 
         public void OnFrameworkUpdate(Framework framework) {
-            HandleBars(framework);
+            try {
+                HandleBars(framework);
+            } catch (Exception ex) {
+                Console.WriteLine(ex);
+                Plugin.Error(this, ex);
+            }
+            
         }
 
         private void HandleBars(Framework framework, bool reset = false) {
