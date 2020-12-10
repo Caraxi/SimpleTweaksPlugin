@@ -239,7 +239,7 @@ namespace SimpleTweaksPlugin {
                         var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint) id);
                         if (item != null && item.Desynth > 0) {
                             var classJobOffset = 2 * (int) (item.ClassJobRepair.Row - 8);
-                            var desynthLevel = *(ushort*) (playerStaticAddress + (0x692 + classJobOffset)) / 100f;
+                            var desynthLevel = *(ushort*) (playerStaticAddress + (0x69A + classJobOffset)) / 100f;
 
                             var useDescription = desynthInDescription.Contains(item.ItemSearchCategory.Row);
 
