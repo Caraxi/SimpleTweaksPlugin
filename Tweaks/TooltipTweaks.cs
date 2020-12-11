@@ -17,8 +17,8 @@ namespace SimpleTweaksPlugin {
 
     public class TooltipTweaks : Tweak {
 
-        private readonly uint[] desynthInDescription = {46, 56, 65, 66, 67, 68, 69, 70, 71, 72};
-        
+        private readonly uint[] desynthInDescription = { 46, 56, 65, 66, 67, 68, 69, 70, 71, 72 };
+
         public class Config {
             public bool EnableDurability;
             public bool EnableSpiritbond;
@@ -26,9 +26,9 @@ namespace SimpleTweaksPlugin {
             public bool ShowDesynthSkill;
             public bool EnableCopyItemName;
             public bool ShowAcquiredStatus = false;
-            #if DEBUG
+#if DEBUG
             public bool ShowItemID;
-            #endif
+#endif
             public bool FoodStats;
             public bool FoodStatsHighlight = true;
         }
@@ -36,7 +36,7 @@ namespace SimpleTweaksPlugin {
         public override bool DrawConfig() {
             if (!Enabled) return base.DrawConfig();
             var change = false;
-            
+
             if (ImGui.TreeNode($"{Name}###{GetType().Name}settingsNode")) {
                 change = ImGui.Checkbox("Precise Durability", ref PluginConfig.TooltipTweaks.EnableDurability);
                 change = ImGui.Checkbox("Precise Spiritbond", ref PluginConfig.TooltipTweaks.EnableSpiritbond) || change;
@@ -56,7 +56,7 @@ namespace SimpleTweaksPlugin {
                 change = ImGui.Checkbox("CTRL-C to copy hovered item.", ref PluginConfig.TooltipTweaks.EnableCopyItemName) || change;
                 ImGui.TreePop();
             }
-            
+
             return change;
         }
 
@@ -65,7 +65,7 @@ namespace SimpleTweaksPlugin {
         private unsafe delegate IntPtr TooltipDelegate(IntPtr a1, uint** a2, byte*** a3);
 
         private unsafe delegate byte ItemHoveredDelegate(IntPtr a1, IntPtr* a2, int* containerId, ushort* slotId, IntPtr a5, uint slotIdInt, IntPtr a7);
-        
+
         private delegate ulong GetBaseParam(IntPtr playerAddress, uint baseParamId);
         private Hook<TooltipDelegate> tooltipHook;
         private Hook<ItemHoveredDelegate> itemHoveredHook;
@@ -76,7 +76,7 @@ namespace SimpleTweaksPlugin {
         private IntPtr getBaseParamAddress;
 
         private GetBaseParam getBaseParam;
-        
+
         private ushort lastSpiritbond;
         private ushort lastDurability;
 
@@ -131,7 +131,7 @@ namespace SimpleTweaksPlugin {
                     var id = PluginInterface.Framework.Gui.HoveredItem;
                     if (id < 2000000) {
                         id %= 500000;
-                        var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint) id);
+                        var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint)id);
                         if (item != null) {
                             System.Windows.Forms.Clipboard.SetText(item.Name);
                             PluginInterface.ClientState.KeyState[0x43] = false;
@@ -143,8 +143,8 @@ namespace SimpleTweaksPlugin {
 
         private unsafe byte ItemHoveredDetour(IntPtr a1, IntPtr* a2, int* containerId, ushort* slotId, IntPtr a5, uint slotIdInt, IntPtr a7) {
             var ret = itemHoveredHook.Original(a1, a2, containerId, slotId, a5, slotIdInt, a7);
-            lastSpiritbond = *(ushort*) (a7 + 16);
-            lastDurability = *(ushort*) (a7 + 18);
+            lastSpiritbond = *(ushort*)(a7 + 16);
+            lastDurability = *(ushort*)(a7 + 18);
             return ret;
         }
 
@@ -160,10 +160,10 @@ namespace SimpleTweaksPlugin {
             ControlsDisplay = 64,
         }
 
-        private readonly Dictionary<TooltipField,(int size, IntPtr alloc)> tooltipAllocations = new Dictionary<TooltipField, (int size, IntPtr alloc)>();
+        private readonly Dictionary<TooltipField, (int size, IntPtr alloc)> tooltipAllocations = new Dictionary<TooltipField, (int size, IntPtr alloc)>();
 
         private unsafe SeString ReadTooltipField(byte*** tooltipBase, TooltipField field) {
-            return Plugin.Common.ReadSeString(*(tooltipBase + 4) + (byte) field);
+            return Plugin.Common.ReadSeString(*(tooltipBase + 4) + (byte)field);
         }
 
         private unsafe void WriteTooltipField(byte*** tooltipBase, TooltipField field, SeString value) {
@@ -187,18 +187,18 @@ namespace SimpleTweaksPlugin {
                 tooltipAllocations.Add(field, (allocSize, alloc));
             }
 
-            Plugin.Common.WriteSeString(*(tooltipBase + 4) + (byte) field, alloc, value);
+            Plugin.Common.WriteSeString(*(tooltipBase + 4) + (byte)field, alloc, value);
         }
 
         private unsafe IntPtr TooltipDetour(IntPtr a1, uint** a2, byte*** tooltipBase) {
 
             try {
 #if DEBUG
-            PluginLog.Log("Tooltip Address: " + ((ulong) *(tooltipBase + 4)).ToString("X"));
+                PluginLog.Log("Tooltip Address: " + ((ulong)*(tooltipBase + 4)).ToString("X"));
 #endif
                 if (PluginConfig.TooltipTweaks.EnableDurability) {
                     var cDur = ReadTooltipField(tooltipBase, TooltipField.DurabilityPercent);
-                    if (!cDur.TextValue.StartsWith("?")) {
+                    if (cDur != null && !(cDur.Payloads[0] is TextPayload tp && tp.Text.StartsWith("?"))) {
                         var seStr = new SeString(new List<Payload>() { new TextPayload((lastDurability / 300f).ToString(PluginConfig.TooltipTweaks.TrailingZeros ? "F2" : "0.##") + "%") });
                         WriteTooltipField(tooltipBase, TooltipField.DurabilityPercent, seStr);
                     }
@@ -206,29 +206,31 @@ namespace SimpleTweaksPlugin {
 
                 if (PluginConfig.TooltipTweaks.EnableSpiritbond) {
                     var cSpr = ReadTooltipField(tooltipBase, TooltipField.SpiritbondPercent);
-                    if (!cSpr.TextValue.StartsWith("?")) {
-                        var seStr = new SeString(new List<Payload>() {new TextPayload((lastSpiritbond / 100f).ToString(PluginConfig.TooltipTweaks.TrailingZeros ? "F2" : "0.##") + "%")});
+                    if (cSpr != null && !(cSpr.Payloads[0] is TextPayload tp && tp.Text.StartsWith("?"))) {
+                        var seStr = new SeString(new List<Payload>() { new TextPayload((lastSpiritbond / 100f).ToString(PluginConfig.TooltipTweaks.TrailingZeros ? "F2" : "0.##") + "%") });
                         WriteTooltipField(tooltipBase, TooltipField.SpiritbondPercent, seStr);
                     }
                 }
 
 #if DEBUG
-            if (PluginConfig.TooltipTweaks.ShowItemID) {
-                var id = PluginInterface.Framework.Gui.HoveredItem;
-                if (id < 2000000) { 
-                    id %= 500000;
+                if (PluginConfig.TooltipTweaks.ShowItemID) {
+                    var id = PluginInterface.Framework.Gui.HoveredItem;
+                    if (id < 2000000) {
+                        id %= 500000;
+                    }
+                    var seStr = ReadTooltipField(tooltipBase, TooltipField.ItemUiCategory);
+                    if (seStr != null) {
+                        seStr.Payloads.Add(new TextPayload($"  ({id})"));
+                        WriteTooltipField(tooltipBase, TooltipField.ItemUiCategory, seStr);
+                    }
                 }
-
-                var seStr = ReadTooltipField(tooltipBase, TooltipField.ItemUiCategory);
-                seStr.Payloads.Add(new TextPayload($"  ({id})"));
-                WriteTooltipField(tooltipBase, TooltipField.ItemUiCategory, seStr);
-            }
 #endif
-
                 if (PluginConfig.TooltipTweaks.EnableCopyItemName) {
                     var seStr = ReadTooltipField(tooltipBase, TooltipField.ControlsDisplay);
-                    seStr.Payloads.Add(new TextPayload("\nCtrl+C  Copy item name"));
-                    WriteTooltipField(tooltipBase, TooltipField.ControlsDisplay, seStr);
+                    if (seStr != null) {
+                        seStr.Payloads.Add(new TextPayload("\nCtrl+C  Copy item name"));
+                        WriteTooltipField(tooltipBase, TooltipField.ControlsDisplay, seStr);
+                    }
                 }
 
                 if (PluginConfig.TooltipTweaks.ShowDesynthSkill) {
@@ -236,23 +238,21 @@ namespace SimpleTweaksPlugin {
                     if (id < 2000000) {
                         id %= 500000;
 
-                        var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint) id);
+                        var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint)id);
                         if (item != null && item.Desynth > 0) {
-                            var classJobOffset = 2 * (int) (item.ClassJobRepair.Row - 8);
-                            var desynthLevel = *(ushort*) (playerStaticAddress + (0x69A + classJobOffset)) / 100f;
+                            var classJobOffset = 2 * (int)(item.ClassJobRepair.Row - 8);
+                            var desynthLevel = *(ushort*)(playerStaticAddress + (0x69A + classJobOffset)) / 100f;
 
                             var useDescription = desynthInDescription.Contains(item.ItemSearchCategory.Row);
 
                             var seStr = ReadTooltipField(tooltipBase, useDescription ? TooltipField.ItemDescription : TooltipField.ExtractableProjectableDesynthesizable);
-
-
-
-                            if (seStr.Payloads.Last() is TextPayload textPayload) {
-                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
-                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
-                                WriteTooltipField(tooltipBase, useDescription ? TooltipField.ItemDescription : TooltipField.ExtractableProjectableDesynthesizable, seStr);
+                            if (seStr != null) {
+                                if (seStr.Payloads.Last() is TextPayload textPayload) {
+                                    textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
+                                    textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
+                                    WriteTooltipField(tooltipBase, useDescription ? TooltipField.ItemDescription : TooltipField.ExtractableProjectableDesynthesizable, seStr);
+                                }
                             }
-
                         }
                     }
                 }
@@ -260,16 +260,16 @@ namespace SimpleTweaksPlugin {
                 if (PluginConfig.TooltipTweaks.FoodStats) {
                     var id = PluginInterface.Framework.Gui.HoveredItem;
 #if DEBUG
-                PluginLog.Log($"ID: {id}");
+                    PluginLog.Log($"ID: {id}");
 #endif
                     if (id < 2000000) {
                         var hq = id >= 500000;
                         id %= 500000;
-                        var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint) id);
+                        var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint)id);
 
                         var action = item.ItemAction?.Value;
 #if DEBUG
-                    if (action != null) { PluginLog.Log($"ActionType: {action.Type}"); }
+                        if (action != null) { PluginLog.Log($"ActionType: {action.Type}"); }
 #endif
                         if (action != null && (action.Type == 844 || action.Type == 845)) {
 
@@ -287,7 +287,7 @@ namespace SimpleTweaksPlugin {
                                         hasChange = true;
 
                                         var currentStat = getBaseParam(playerStaticAddress, bonus.BaseParam);
-                                        var relativeAdd = (short) (currentStat * (value / 100f));
+                                        var relativeAdd = (short)(currentStat * (value / 100f));
                                         var change = relativeAdd > max ? max : relativeAdd;
 
                                         if (payloads.Count > 0) payloads.Add(new TextPayload("\n"));
@@ -318,7 +318,7 @@ namespace SimpleTweaksPlugin {
 
                                 if (payloads.Count > 0 && hasChange) {
 #if DEBUG
-                                PluginLog.Log("Rewriting Food Effects");
+                                    PluginLog.Log("Rewriting Food Effects");
 #endif
                                     var seStr = new SeString(payloads);
                                     WriteTooltipField(tooltipBase, TooltipField.Effects, seStr);
