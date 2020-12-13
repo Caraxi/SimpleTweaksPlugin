@@ -4,8 +4,8 @@ using System.IO;
 using Dalamud.Game.Command;
 using ImGuiNET;
 
-namespace SimpleTweaksPlugin {
-    class ChrDirCommand : Tweak {
+namespace SimpleTweaksPlugin.Tweaks {
+    public class ChrDirCommand : Tweak {
         public override string Name => "Character Directory Command";
 
         public override void Setup() {
@@ -27,9 +27,11 @@ namespace SimpleTweaksPlugin {
             PluginInterface.Framework.Gui.Chat.Print(saveDir);
         }
 
-        public override bool DrawConfig() {
-            if (!Enabled) return base.DrawConfig();
-            var change = false;
+        public override void DrawConfig(ref bool change) {
+            if (!Enabled) {
+                base.DrawConfig(ref change);
+                return;
+            }
 
             if (ImGui.TreeNode($"{Name}###{GetType().Name}settingsNode")) {
                 ImGui.TextDisabled("/chrdir");
@@ -37,7 +39,6 @@ namespace SimpleTweaksPlugin {
                 ImGui.TreePop();
             }
 
-            return change;
         }
 
         public override void Disable() {

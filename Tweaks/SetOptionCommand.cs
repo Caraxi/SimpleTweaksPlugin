@@ -8,7 +8,7 @@ using Dalamud.Hooking;
 using Dalamud.Plugin;
 using ImGuiNET;
 
-namespace SimpleTweaksPlugin {
+namespace SimpleTweaksPlugin.Tweaks {
     public class SetOptionCommand : Tweak {
 
         public override string Name => "Set Option Command";
@@ -71,8 +71,11 @@ namespace SimpleTweaksPlugin {
             }
         }
 
-        public override bool DrawConfig() {
-            if (!Enabled) return base.DrawConfig();
+        public override void DrawConfig(ref bool change) {
+            if (!Enabled) {
+                base.DrawConfig(ref change);
+                return;
+            }
             if (ImGui.TreeNode($"{Name}###{GetType().Name}settingsNode")) {
                 ImGui.TextDisabled("/setopt list");
                 ImGui.TextDisabled("/setopt [option] [value]");
@@ -109,8 +112,6 @@ namespace SimpleTweaksPlugin {
 
                 ImGui.TreePop();
             }
-
-            return false;
         }
 
         public override void Enable() {

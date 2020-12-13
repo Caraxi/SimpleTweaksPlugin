@@ -7,12 +7,15 @@ using System.Text;
 using Dalamud.Hooking;
 using Dalamud.Plugin;
 using ImGuiNET;
+using SimpleTweaksPlugin.Tweaks;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {
         public CommandAlias.Config CommandAlias = new CommandAlias.Config();
     }
+}
 
+namespace SimpleTweaksPlugin.Tweaks {
     public class CommandAlias : Tweak {
         #region Config
         public class Config {
@@ -31,9 +34,11 @@ namespace SimpleTweaksPlugin {
 
         }
 
-        public override bool DrawConfig() {
-            if (!Enabled) return base.DrawConfig();
-            var change = false;
+        public override void DrawConfig(ref bool change) {
+            if (!Enabled) {
+                base.DrawConfig(ref change);
+                return;
+            }
 
             if (ImGui.TreeNode($"{Name}###{GetType().Name}settingsNode")) {
 
@@ -111,8 +116,6 @@ namespace SimpleTweaksPlugin {
                 ImGui.Columns(1);
                 ImGui.TreePop();
             }
-
-            return change;
         }
         #endregion
 

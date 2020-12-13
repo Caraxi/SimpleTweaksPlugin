@@ -8,8 +8,8 @@ using Dalamud.Plugin;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 
-namespace SimpleTweaksPlugin {
-    internal class ExamineItemLevel : Tweak {
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
+    public class ExamineItemLevel : UiAdjustments.SubTweak {
 
         private delegate IntPtr GetInventoryContainer(IntPtr inventoryManager, int inventoryId);
         private delegate IntPtr GetContainerSlot(IntPtr inventoryContainer, int slotId);

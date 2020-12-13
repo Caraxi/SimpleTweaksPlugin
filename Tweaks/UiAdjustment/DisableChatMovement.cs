@@ -2,9 +2,9 @@
 using Dalamud.Hooking;
 using Dalamud.Plugin;
 
-namespace SimpleTweaksPlugin {
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     
-    public class DisableChatMovement : Tweak {
+    public class DisableChatMovement : UiAdjustments.SubTweak {
 
         public override string Name => "Disable Chat Movement";
 

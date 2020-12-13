@@ -2,8 +2,8 @@
 using Dalamud.Hooking;
 using Dalamud.Plugin;
 
-namespace SimpleTweaksPlugin {
-    public class DisableChatResize : Tweak {
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
+    public class DisableChatResize : UiAdjustments.SubTweak {
         public override string Name => "Disable Chat Resize";
 
         private unsafe delegate void MainChatWindowControlDelegate(IntPtr uiObject, ulong controlCode, IntPtr a3, IntPtr* a4, IntPtr a5);

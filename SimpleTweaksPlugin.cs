@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Dalamud.Plugin;
+using ImGuiNET;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
-using Dalamud.Plugin;
-using ImGuiNET;
 
 namespace SimpleTweaksPlugin {
     public class SimpleTweaksPlugin : IDalamudPlugin {
@@ -37,10 +38,19 @@ namespace SimpleTweaksPlugin {
             Tweaks.Clear();
         }
 
+        public int UpdateFrom = -1;
+
         public void Initialize(DalamudPluginInterface pluginInterface) {
             this.PluginInterface = pluginInterface;
             this.PluginConfig = (SimpleTweaksPluginConfig)pluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
             this.PluginConfig.Init(this, pluginInterface);
+
+
+            if (PluginConfig.Version < 2) {
+                UpdateFrom = PluginConfig.Version;
+                PluginConfig.Version = 2;
+                PluginConfig.Save();
+            }
 
             Common = new Common(pluginInterface);
 
@@ -51,8 +61,12 @@ namespace SimpleTweaksPlugin {
 
             var tweakList = new List<Tweak>();
 
-            foreach (var t in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(Tweak)))) {
-                var tweak = (Tweak) Activator.CreateInstance(t);
+            foreach (var t in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(Tweak)) && !t.IsAbstract)) {
+#if DEBUG
+                PluginLog.Log($"Initalizing Tweak: {t.Name}");
+#endif
+
+                var tweak = (Tweak)Activator.CreateInstance(t);
                 tweak.InterfaceSetup(this, pluginInterface, PluginConfig);
                 tweak.Setup();
                 if (PluginConfig.EnabledTweaks.Contains(t.Name)) {
@@ -62,6 +76,7 @@ namespace SimpleTweaksPlugin {
                     tweak.Enable();
                 }
                 tweakList.Add(tweak);
+                
             }
 
             Tweaks = tweakList.OrderBy(t => t.Name).ToList();
@@ -88,6 +103,39 @@ namespace SimpleTweaksPlugin {
         }
 
         private void BuildUI() {
+
+            if (UpdateFrom >= 0) {
+
+                bool stillOpen = true;
+
+                ImGui.SetNextWindowSizeConstraints(new Vector2(500, 50) * ImGui.GetIO().FontGlobalScale, new Vector2(500, 500));
+                ImGui.Begin("Simple Tweaks: Updated", ref stillOpen, ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse);
+                ImGui.SetWindowFontScale(1.3f);
+                
+                ImGui.Text($"Thank you for updating {Name}.");
+                ImGui.Separator();
+                ImGui.TextWrapped("Due to a major rework on internal systems some settings have changed and you may need to reenable or reset some things.");
+                ImGui.Separator();
+                if (UpdateFrom < 2) {
+                    ImGui.TextWrapped($"With version 1.2 of {Name} the Tooltip Tweaks have been completely reworked and will all be disabled due to the config for them changing completely.");
+                    ImGui.Separator();
+                    ImGui.TextWrapped("Some tweaks have been moved into 'Sub Tweaks' of the new UI Adjustments category and will require reenabling.");
+                    
+                    ImGui.Separator();
+                }
+
+                ImGui.Text("I apologise for any inconveniance caused by this update.");
+                ImGui.SetWindowFontScale(1f);
+                ImGui.End();
+
+                if (!stillOpen) {
+                    UpdateFrom = -1;
+                }
+
+            }
+
+
+
             drawConfigWindow = drawConfigWindow && PluginConfig.DrawConfigUI();
 
             if (errorList.Count > 0) {
@@ -100,7 +148,9 @@ namespace SimpleTweaksPlugin {
                         e.Tweak.Disable();
                     }
 
-                    ImGui.Text($"Error caught in {e.Tweak.Name}:");
+                    
+
+                    ImGui.Text($"Error caught in {(e.Manager!=null ? $"{e.Manager.Name}@":"")}{e.Tweak.Name}:");
                     ImGui.Text($"{e.Exception}");
 
                     if (ImGui.Button("Ok")) {
@@ -121,7 +171,8 @@ namespace SimpleTweaksPlugin {
         }
 
         private class CaughtError {
-            public Tweak Tweak;
+            public BaseTweak Tweak;
+            public SubTweakManager Manager = null;
             public Exception Exception;
             public bool IsNew = true;
             public bool Closed = false;
@@ -130,9 +181,12 @@ namespace SimpleTweaksPlugin {
 
         private readonly List<CaughtError> errorList = new List<CaughtError>();
 
+        public void Error(BaseTweak tweak, Exception exception, bool allowContinue = false) {
+            errorList.Insert(0, new CaughtError { Tweak = tweak, Exception = exception, IsNew = !allowContinue});
+        }
 
-        public void Error(Tweak tweak, Exception exception) {
-            errorList.Insert(0, new CaughtError { Tweak = tweak, Exception = exception});
+        public void Error(SubTweakManager manager, BaseTweak tweak, Exception exception, bool allowContinue = false) {
+            errorList.Insert(0, new CaughtError { Tweak = tweak, Manager = manager, Exception = exception, IsNew = !allowContinue});
         }
     }
 }

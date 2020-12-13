@@ -15,7 +15,7 @@
     </PropertyGroup>
     <PropertyGroup Label="Feature">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>1.1.1.5</Version>
+        <Version>1.2.0.0</Version>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)'=='Release'">
         <AppOutputBase>$(MSBuildProjectDirectory)\</AppOutputBase>
@@ -26,9 +26,15 @@
         <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     </PropertyGroup>
     <ItemGroup>
+      <Compile Remove="lib\**" />
       <Compile Remove="Publish\**" />
+      <EmbeddedResource Remove="lib\**" />
       <EmbeddedResource Remove="Publish\**" />
+      <None Remove="lib\**" />
       <None Remove="Publish\**" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="lib\FFXIVClientStructs\FFXIVClientStructs.csproj" />
     </ItemGroup>
     <ItemGroup>
 		<Reference Include="Dalamud">
@@ -54,9 +60,9 @@
       </None>
     </ItemGroup>
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-      <Exec Command="cd $(ProjectDir)$(OutDir)&#xD;&#xA;for %25%25i in (*.*) do if not &quot;%25%25i&quot;==&quot;itemlevel-font.ttf&quot; if not &quot;%25%25i&quot;==&quot;$(TargetName).dll&quot; if not &quot;%25%25i&quot;==&quot;$(TargetName).pdb&quot; del /q &quot;%25%25i&quot;&#xD;&#xA;if $(ConfigurationName) == Release (&#xD;&#xA;  powershell New-Item -ItemType Directory -Force -Path '$(ProjectDir)Publish'&#xD;&#xA;  powershell Compress-Archive -Path '$(TargetPath)','$(ProjectDir)$(ProjectName).json','$(ProjectDir)$(OutDir)$(TargetName).pdb','$(ProjectDir)$(OutDir)itemlevel-font.ttf' -DestinationPath '$(ProjectDir)Publish\latest.zip' -Force&#xD;&#xA;  echo F|xcopy &quot;$(ProjectDir)$(ProjectName).json&quot; &quot;$(ProjectDir)Publish\$(ProjectName).json&quot; /Y /F&#xD;&#xA;)" />
+      <Exec Command="cd $(ProjectDir)$(OutDir)&#xD;&#xA;for %25%25i in (*.*) do if not &quot;%25%25i&quot;==&quot;itemlevel-font.ttf&quot; if not &quot;%25%25i&quot;==&quot;$(TargetName).dll&quot; if not &quot;%25%25i&quot;==&quot;$(TargetName).pdb&quot; if not &quot;%25%25i&quot;==&quot;FFXIVClientStructs.dll&quot; del /q &quot;%25%25i&quot;&#xD;&#xA;if $(ConfigurationName) == Release (&#xD;&#xA;  powershell New-Item -ItemType Directory -Force -Path '$(ProjectDir)Publish'&#xD;&#xA;  powershell Compress-Archive -Path '$(TargetPath)','$(ProjectDir)$(ProjectName).json','$(ProjectDir)$(OutDir)$(TargetName).pdb','$(ProjectDir)$(OutDir)itemlevel-font.ttf','$(ProjectDir)$(OutDir)FFXIVClientStructs.dll' -DestinationPath '$(ProjectDir)Publish\latest.zip' -Force&#xD;&#xA;  echo F|xcopy &quot;$(ProjectDir)$(ProjectName).json&quot; &quot;$(ProjectDir)Publish\$(ProjectName).json&quot; /Y /F&#xD;&#xA;)" />
     </Target>
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-      <Exec Command="powershell -Command &quot;$newLine = '\n';$v=Get-Content '$(ProjectPath)' | Select-String '&lt;Version&gt;([\d\.]+)&lt;/Version&gt;' -AllMatches; $version = $v.Matches.Groups[1].Value; $jsonTemplate=Get-Content '$(ProjectDir)\$(ProjectName).template.json' | ConvertFrom-Json; $jsonTemplate.AssemblyVersion=$version; $jsonTemplate.Description = $jsonTemplate.Description -join $newLine; ($jsonTemplate | ConvertTo-Json).Replace('\\n','\n') | Out-File '$(ProjectDir)\$(ProjectName).json'&quot;" />
+      <Exec Command="powershell -Command &quot;$newLine = '\n';$v=Get-Content '$(ProjectPath)' | Select-String '&lt;Version&gt;([\d\.]+)&lt;/Version&gt;' -AllMatches; $version = $v.Matches.Groups[1].Value; $jsonTemplate=Get-Content '$(ProjectDir)\$(ProjectName).template.json' | ConvertFrom-Json; $jsonTemplate.AssemblyVersion=$version; $jsonTemplate.Description = $jsonTemplate.Description -join $newLine; ($jsonTemplate | ConvertTo-Json).Replace('\\n','\n') | Out-File '$(ProjectDir)\$(ProjectName).json' -Encoding utf8&quot;" />
     </Target>
 </Project>

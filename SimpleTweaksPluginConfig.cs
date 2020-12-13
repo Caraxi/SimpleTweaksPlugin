@@ -14,7 +14,7 @@ namespace SimpleTweaksPlugin {
         [NonSerialized]
         private SimpleTweaksPlugin plugin;
 
-        public int Version { get; set; }
+        public int Version { get; set; } = 2;
 
         public SimpleTweaksPluginConfig() { }
 
@@ -79,9 +79,9 @@ namespace SimpleTweaksPlugin {
                 }
                 ImGui.SameLine();
 
-                if (t.DrawConfig()) {
-                    Save();
-                }
+                var changed = false;
+                t.DrawConfig(ref changed);
+                if (changed) Save();
 
                 ImGui.Separator();
 

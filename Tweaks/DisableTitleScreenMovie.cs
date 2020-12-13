@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Dalamud.Plugin;
 
-namespace SimpleTweaksPlugin {
+namespace SimpleTweaksPlugin.Tweaks {
     internal class DisableTitleScreenMovie : Tweak {
 
         [DllImport("kernel32.dll", SetLastError = true)]
