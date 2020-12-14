@@ -25,13 +25,9 @@ namespace SimpleTweaksPlugin {
             RemoveCommands();
 
             foreach (var t in Tweaks) {
-#if DEBUG
-                PluginLog.Log($"Disable: {t.Name}");
-#endif
+                SimpleLog.Debug($"Disable: {t.Name}");
                 t.Disable();
-#if DEBUG
-                PluginLog.Log($"Dispose: {t.Name}");
-#endif
+                SimpleLog.Debug($"Dispose: {t.Name}");
                 t.Dispose();
             }
 
@@ -41,6 +37,7 @@ namespace SimpleTweaksPlugin {
         public int UpdateFrom = -1;
 
         public void Initialize(DalamudPluginInterface pluginInterface) {
+            SimpleLog.SetupBuildPath();
             this.PluginInterface = pluginInterface;
             this.PluginConfig = (SimpleTweaksPluginConfig)pluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
             this.PluginConfig.Init(this, pluginInterface);
@@ -62,17 +59,12 @@ namespace SimpleTweaksPlugin {
             var tweakList = new List<Tweak>();
 
             foreach (var t in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(Tweak)) && !t.IsAbstract)) {
-#if DEBUG
-                PluginLog.Log($"Initalizing Tweak: {t.Name}");
-#endif
-
+                SimpleLog.Debug($"Initalizing Tweak: {t.Name}");
                 var tweak = (Tweak)Activator.CreateInstance(t);
                 tweak.InterfaceSetup(this, pluginInterface, PluginConfig);
                 tweak.Setup();
                 if (PluginConfig.EnabledTweaks.Contains(t.Name)) {
-#if DEBUG
-                    PluginLog.Log($"Enable: {t.Name}");
-#endif
+                    SimpleLog.Debug($"Enable: {t.Name}");
                     tweak.Enable();
                 }
                 tweakList.Add(tweak);

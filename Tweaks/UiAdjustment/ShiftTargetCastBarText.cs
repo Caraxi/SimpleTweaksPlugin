@@ -168,7 +168,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override void Disable() {
             if (!Enabled) return;
             PluginInterface.Framework.OnUpdateEvent -= OnFrameworkUpdate;
-            PluginLog.Log($"[{GetType().Name}] Reset");
+            SimpleLog.Debug($"[{GetType().Name}] Reset");
             HandleBars(PluginInterface.Framework, true);
             Enabled = false;
         }

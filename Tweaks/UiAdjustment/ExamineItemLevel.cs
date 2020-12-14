@@ -43,7 +43,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 examineIsValidPtr = PluginInterface.TargetModuleScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 C7 43 ?? ?? ?? ?? ??");
                 Ready = true;
             } catch {
-                PluginLog.Log("Failed to find address for ExamineItemLevel");
+                SimpleLog.Log("Failed to find address for ExamineItemLevel");
             }
         }
         private unsafe void DrawUI() {
@@ -135,7 +135,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     ImGui.End();
                 }
             } catch (Exception ex) {
-                PluginLog.Log($"{ex}");
+                SimpleLog.Log($"{ex}");
                 Plugin.Error(this, ex);
             }
             
@@ -159,17 +159,17 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                         font = ImGui.GetIO().Fonts.AddFontFromFileTTF(fontFile, 20);
                         fontBuilt = true;
                     } catch (Exception ex) {
-                        PluginLog.Log($"Font failed to load. {fontFile}");
-                        PluginLog.Log(ex.ToString());
+                        SimpleLog.Log($"Font failed to load. {fontFile}");
+                        SimpleLog.Log(ex.ToString());
                         fontLoadFailed = true;
                     }
                 } else {
-                    PluginLog.Log($"Font doesn't exist. {fontFile}");
+                    SimpleLog.Log($"Font doesn't exist. {fontFile}");
                     fontLoadFailed = true;
                 }
             } catch (Exception ex){
-                PluginLog.Log($"Font failed to load.");
-                PluginLog.Log(ex.ToString());
+                SimpleLog.Log($"Font failed to load.");
+                SimpleLog.Log(ex.ToString());
                 fontLoadFailed = true;
             }
            

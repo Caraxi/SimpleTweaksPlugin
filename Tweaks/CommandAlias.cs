@@ -132,7 +132,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                 processChatInputAddress = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? FE 86 ?? ?? ?? ?? C7 86 ?? ?? ?? ?? ?? ?? ?? ??");
                 Ready = true;
             } catch {
-                PluginLog.Log("Failed to find address for ProcessChatInput");
+                SimpleLog.Log("Failed to find address for ProcessChatInput");
             }
         }
 
@@ -163,7 +163,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                         if (alias != null) {
                             // https://git.sr.ht/~jkcclemens/CCMM/tree/master/Custom%20Commands%20and%20Macro%20Macros/GameFunctions.cs#L44
                             var newStr = $"/{alias.Output}{inputString.Substring(alias.Input.Length + 1)}";
-                            PluginLog.Log($"Aliasing Command: {inputString} -> {newStr}");
+                            SimpleLog.Log($"Aliasing Command: {inputString} -> {newStr}");
                             var bytes = Encoding.UTF8.GetBytes(newStr);
                             var mem1 = Marshal.AllocHGlobal(400);
                             var mem2 = Marshal.AllocHGlobal(bytes.Length + 30);
@@ -181,7 +181,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                     }
                 }
             } catch (Exception ex) {
-                PluginLog.LogError($"Error processing chat input.\n{ex}");
+                SimpleLog.Error($"Error processing chat input.\n{ex}");
                 Plugin.Error(this, ex);
             }
             

@@ -17,7 +17,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                 injectAddress = PluginInterface.TargetModuleScanner.ScanText("60 EA 00 00 0F 86");
                 Ready = true;
             } catch {
-                PluginLog.LogError($"Failed to find address for '{Name}'");
+                SimpleLog.Error($"Failed to find address for '{Name}'");
             }
         }
 

@@ -107,7 +107,7 @@ namespace SimpleTweaksPlugin.Tweaks {
             }
 
             if (tooltipAddress == IntPtr.Zero || itemHoveredAddress == IntPtr.Zero) {
-                PluginLog.LogError($"Failed Setup of {GetType().Name}: Failed to find required functions.");
+                SimpleLog.Error($"Failed Setup of {GetType().Name}: Failed to find required functions.");
                 return;
             }
 

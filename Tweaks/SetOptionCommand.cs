@@ -51,23 +51,23 @@ namespace SimpleTweaksPlugin.Tweaks {
             try {
                 if (setOptionAddress == IntPtr.Zero) {
                     setOptionAddress = PluginInterface.TargetModuleScanner.ScanText("89 54 24 10 53 55 57 41 54 41 55 41 56 48 83 EC 48 8B C2 45 8B E0 44 8B D2 45 32 F6 44 8B C2 45 32 ED");
-                    PluginLog.Log(setOptionAddress.ToInt64().ToString("X"));
+                    SimpleLog.Verbose($"SetOptionAddress: {setOptionAddress.ToInt64():X}");
                     setOption = Marshal.GetDelegateForFunctionPointer<SetOptionDelegate>(setOptionAddress);
                 }
 
                 var toggleGamepadModeAddress = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 40 0F B6 DF 49 8B CC");
-                PluginLog.Log(toggleGamepadModeAddress.ToInt64().ToString("X"));
+                SimpleLog.Verbose($"ToggleGamePadModeAddress: {toggleGamepadModeAddress.ToInt64():X}");
                 setGamepadMode = Marshal.GetDelegateForFunctionPointer<SetGamepadMode>(toggleGamepadModeAddress);
                 
                 if (setOptionAddress == IntPtr.Zero) {
-                    PluginLog.LogError($"Failed to setup {GetType().Name}: Failed to find required functions.");
+                    SimpleLog.Error($"Failed to setup {GetType().Name}: Failed to find required functions.");
                     return;
                 }
 
                 Ready = true;
 
             } catch (Exception ex) {
-                PluginLog.LogError($"Failed to setup {this.GetType().Name}: {ex.Message}");
+                SimpleLog.Error($"Failed to setup {this.GetType().Name}: {ex.Message}");
             }
         }
 
@@ -221,9 +221,7 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         private IntPtr SetOptionDetour(IntPtr baseAddress, ulong kind, ulong value, ulong unknown) {
             this.baseAddress = baseAddress;
-#if DEBUG
-            PluginLog.Log($"Set Option: {baseAddress.ToInt64():X} {kind:X}, {value:X}, {unknown:X}");
-#endif
+            SimpleLog.Verbose($"Set Option: {baseAddress.ToInt64():X} {kind:X}, {value:X}, {unknown:X}");
             return setOptionHook.Original(baseAddress, kind, value, unknown);
         }
 

@@ -61,17 +61,13 @@ namespace SimpleTweaksPlugin {
                 if (t.Experimental && !ShowExperimentalTweaks && !enabled) continue;
                 if (ImGui.Checkbox($"###{t.GetType().Name}enabledCheckbox", ref enabled)) {
                     if (enabled) {
-#if DEBUG
-                        PluginLog.Log($"Enable: {t.Name}");
-#endif
+                        SimpleLog.Debug($"Enable: {t.Name}");
                         t.Enable();
                         if (t.Enabled) {
                             EnabledTweaks.Add(t.GetType().Name);
                         }
                     } else {
-#if DEBUG
-                        PluginLog.Log($"Disable: {t.Name}");
-#endif
+                        SimpleLog.Debug($"Disable: {t.Name}");
                         t.Disable();
                         EnabledTweaks.RemoveAll(a => a == t.GetType().Name);
                     }

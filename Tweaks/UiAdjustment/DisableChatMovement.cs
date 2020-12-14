@@ -31,14 +31,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 }
                 
                 if (setUiPositionAddress == IntPtr.Zero || chatPanelControlAddress == IntPtr.Zero) {
-                    PluginLog.LogError($"Failed to setup {GetType().Name}: Failed to find required functions.");
+                    SimpleLog.Error($"Failed to setup {GetType().Name}: Failed to find required functions.");
                     return;
                 }
 
                 Ready = true;
 
             } catch (Exception ex) {
-                PluginLog.LogError($"Failed to setup {this.GetType().Name}: {ex.Message}");
+                SimpleLog.Error($"Failed to setup {this.GetType().Name}: {ex.Message}");
             }
         }
 
