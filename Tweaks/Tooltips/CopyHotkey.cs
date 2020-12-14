@@ -17,7 +17,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
 
 
-        public override string Name => "Copy Hotkey";
+        public override string Name => "Copy Item Name Hotkey";
         public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, TooltipTweaks.ItemInfo itemInfo) {
             var seStr = tooltip[TooltipTweaks.ItemTooltip.TooltipField.ControlsDisplay];
             if (seStr == null) return;
