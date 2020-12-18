@@ -61,10 +61,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 if (container == IntPtr.Zero) return;
                 var ui = PluginInterface.Framework.Gui.GetAddonByName("CharacterInspect", 1);
                 if (ui == null) return;
-                ImGui.SetNextWindowSize(new Vector2(ui.Scale * 350, ui.Scale * 540), ImGuiCond.Always);
-                ImGui.SetNextWindowPos(new Vector2(ui.X, ui.Y), ImGuiCond.Always);
-
-
                 var itemDetail = PluginInterface.Framework.Gui.GetAddonByName("ItemDetail", 1);
                 var covered = false;
 
@@ -82,8 +78,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     covered = !(textPos.X + lastTextSize.X < itemDetailPos.X || textPos.Y + lastTextSize.Y < itemDetailPos.Y || textPos.X > itemDetailPos.X + itemDetailSize.X || textPos.Y > itemDetailPos.Y + itemDetailSize.Y);
                 }
 
+                if (covered) return;
+                ImGui.SetNextWindowSize(new Vector2(ui.Scale * 350, ui.Scale * 540), ImGuiCond.Always);
+                ImGui.SetNextWindowPos(new Vector2(ui.X, ui.Y), ImGuiCond.Always);
 
-                if (!covered && ImGui.Begin("Inspect Display", ImGuiWindowFlags.NoMouseInputs | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoTitleBar)) {
+                if (ImGui.Begin("Inspect Display###simpleTweaksExamineItemLevelDisplay", ImGuiWindowFlags.NoMouseInputs | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoTitleBar)) {
                     var sum = 0U;
                     for (var i = 0; i < 13; i++) {
                         var slot = getContainerSlot(container, i);
