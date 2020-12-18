@@ -181,7 +181,6 @@ namespace SimpleTweaksPlugin.Tweaks {
                     }
                 }
             } catch (Exception ex) {
-                SimpleLog.Error($"Error processing chat input.\n{ex}");
                 Plugin.Error(this, ex);
             }
             

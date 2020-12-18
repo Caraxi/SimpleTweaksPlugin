@@ -24,6 +24,7 @@ namespace SimpleTweaksPlugin {
             if (ImGui.TreeNode($"{Name}###{GetType().Name}settingsNode")) {
 
                 foreach (var t in SubTweaks) {
+                    if (!t.Ready) continue;
                     var key = GetTweakKey(t);
                     var subTweakEnabled = Enabled && t.Enabled;
                     if (!Enabled) {
@@ -34,11 +35,21 @@ namespace SimpleTweaksPlugin {
                     if (ImGui.Checkbox($"###{GetTweakKey(t)}enabledCheckbox", ref subTweakEnabled)) {
                         if (Enabled) {
                             if (subTweakEnabled) {
-                                t.Enable();
-                                if (!this.PluginConfig.EnabledTweaks.Contains(key)) this.PluginConfig.EnabledTweaks.Add(key);
-                                change = true;
+                                try {
+                                    t.Enable();
+                                    if (!this.PluginConfig.EnabledTweaks.Contains(key)) this.PluginConfig.EnabledTweaks.Add(key);
+                                    change = true;
+                                } catch (Exception ex) {
+                                    Plugin.Error(this, t, ex, true, "Error in Enable");
+                                }
+                                
                             } else {
-                                t.Disable();
+                                try {
+                                    t.Disable();
+                                } catch (Exception ex) {
+                                    Plugin.Error(this, t, ex, true, "Error in Disable");
+                                }
+                                
                                 if (this.PluginConfig.EnabledTweaks.Contains(key)) this.PluginConfig.EnabledTweaks.Remove(key);
                                 change = true;
                             }
@@ -58,10 +69,14 @@ namespace SimpleTweaksPlugin {
             var tweakList = new List<T>();
 
             foreach (var t in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(T)))) {
-                var tweak = (T) Activator.CreateInstance(t);
-                tweak.InterfaceSetup(this.Plugin, this.PluginInterface, this.PluginConfig);
-                tweak.Setup();
-                tweakList.Add(tweak);
+                try {
+                    var tweak = (T) Activator.CreateInstance(t);
+                    tweak.InterfaceSetup(this.Plugin, this.PluginInterface, this.PluginConfig);
+                    tweak.Setup();
+                    tweakList.Add(tweak);
+                } catch (Exception ex) {
+                    Plugin.Error(this, ex, true, $"Error in Setup of '{t.Name}' @ '{this.Name}'");
+                }
             }
 
             SubTweaks = tweakList.OrderBy(t => t.Name).ToList();
@@ -70,27 +85,40 @@ namespace SimpleTweaksPlugin {
         }
         
         public override void Enable() {
+            if (!Ready) return;
             foreach (var t in SubTweaks) {
                 if (PluginConfig.EnabledTweaks.Contains(GetTweakKey(t))) {
-                    t.Enable();
+                    try { 
+                        t.Enable();
+                        
+                    } catch (Exception ex) {
+                        Plugin.Error(this, t, ex, true, $"Error in Enable for '{t.Name}' @ '{this.Name}'");
+                    }
                 }
             }
-
             Enabled = true;
         }
 
         public override void Disable() {
             foreach (var t in SubTweaks) {
-                t.Disable();
+                try {
+                    t.Disable();
+                } catch (Exception ex) {
+                    Plugin.Error(this, t, ex, true, $"Error in Disable for '{t.Name}' @ '{this.Name}'");
+                }
+                
             }
-
             Enabled = false;
         }
 
         public override void Dispose() {
             foreach (var t in SubTweaks) {
-                t.Disable();
-                t.Dispose();
+                try {
+                    t.Disable();
+                    t.Dispose();
+                } catch (Exception ex) {
+                    Plugin.Error(this, t, ex, true, $"Error in Dispose for '{t.Name}' @ '{this.Name}'");
+                }
             }
 
             Ready = false;

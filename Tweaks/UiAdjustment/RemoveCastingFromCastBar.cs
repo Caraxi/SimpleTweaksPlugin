@@ -92,9 +92,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             try {
                 UpdateText(framework);
             } catch (Exception ex) {
-                Console.WriteLine(ex);
-                Plugin.Error(this, ex, true);
-                Disable();
+                Plugin.Error(this, ex);
             }
         }
 

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace SimpleTweaksPlugin {
     public class SimpleTweaksPlugin : IDalamudPlugin {
@@ -63,15 +64,23 @@ namespace SimpleTweaksPlugin {
 
             foreach (var t in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(Tweak)) && !t.IsAbstract)) {
                 SimpleLog.Debug($"Initalizing Tweak: {t.Name}");
-                var tweak = (Tweak)Activator.CreateInstance(t);
-                tweak.InterfaceSetup(this, pluginInterface, PluginConfig);
-                tweak.Setup();
-                if (PluginConfig.EnabledTweaks.Contains(t.Name)) {
-                    SimpleLog.Debug($"Enable: {t.Name}");
-                    tweak.Enable();
+                try {
+                    var tweak = (Tweak) Activator.CreateInstance(t);
+                    tweak.InterfaceSetup(this, pluginInterface, PluginConfig);
+                    tweak.Setup();
+                    if (tweak.Ready && PluginConfig.EnabledTweaks.Contains(t.Name)) {
+                        SimpleLog.Debug($"Enable: {t.Name}");
+                        try {
+                            tweak.Enable();
+                        } catch (Exception ex) {
+                            this.Error(tweak, ex, true, $"Error in Enable for '{tweak.Name}");
+                        }
+                    }
+
+                    tweakList.Add(tweak);
+                } catch (Exception ex) {
+                    this.Error(null, ex, true, $"Failed Loating '{t.Name}'");
                 }
-                tweakList.Add(tweak);
-                
             }
 
             Tweaks = tweakList.OrderBy(t => t.Name).ToList();
@@ -98,90 +107,130 @@ namespace SimpleTweaksPlugin {
         }
 
         private void BuildUI() {
-
-            if (UpdateFrom >= 0) {
-
-                bool stillOpen = true;
-
-                ImGui.SetNextWindowSizeConstraints(new Vector2(500, 50) * ImGui.GetIO().FontGlobalScale, new Vector2(500, 500));
-                ImGui.Begin("Simple Tweaks: Updated", ref stillOpen, ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse);
-                ImGui.SetWindowFontScale(1.3f);
-                
-                ImGui.Text($"Thank you for updating {Name}.");
-                ImGui.Separator();
-                ImGui.TextWrapped("Due to a major rework on internal systems some settings have changed and you may need to reenable or reset some things.");
-                ImGui.Separator();
-                if (UpdateFrom < 2) {
-                    ImGui.TextWrapped($"With version 1.2 of {Name} the Tooltip Tweaks have been completely reworked and will all be disabled due to the config for them changing completely.");
-                    ImGui.Separator();
-                    ImGui.TextWrapped("Some tweaks have been moved into 'Sub Tweaks' of the new UI Adjustments category and will require reenabling.");
-                    
-                    ImGui.Separator();
-                }
-
-                ImGui.Text("I apologise for any inconveniance caused by this update.");
-                ImGui.SetWindowFontScale(1f);
-                ImGui.End();
-
-                if (!stillOpen) {
-                    UpdateFrom = -1;
-                }
-
-            }
-
-
-
             drawConfigWindow = drawConfigWindow && PluginConfig.DrawConfigUI();
 
-            if (errorList.Count > 0) {
-                var errorsStillOpen = true;
-                ImGui.Begin($"{Name}: Error!", ref errorsStillOpen, ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.AlwaysAutoResize);
+            if (ShowErrorWindow) {
+                if (ErrorList.Count > 0) {
+                    var errorsStillOpen = true;
+                    ImGui.Begin($"{Name}: Error!", ref errorsStillOpen, ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.AlwaysAutoResize);
 
-                foreach (var e in errorList) {
-                    if (e.IsNew) {
-                        e.IsNew = false;
-                        e.Tweak.Disable();
+                    for (var i = 0; i < ErrorList.Count && i < 5; i++) {
+                        var e = ErrorList[i];
+
+                        if (e.IsNew && e.Tweak != null) {
+                            e.IsNew = false;
+                            e.Tweak.Disable();
+                        }
+
+                        ImGui.Text($"Error caught in {(e.Manager != null ? $"{e.Manager.Name}@" : "")}{(e.Tweak != null ? e.Tweak.Name : "Tweak Loader")}:");
+                        if (!string.IsNullOrEmpty(e.Message)) {
+                            ImGui.Text(e.Message);
+                        }
+                        ImGui.Text($"{e.Exception}");
+
+                        if (ImGui.Button($"Clear this Error###clearErrorButton{i}")) {
+                            e.Closed = true;
+                        }
+
+                        if (e.Count > 1) {
+                            ImGui.SameLine();
+                            ImGui.Text($"This error has occured {e.Count} times.");
+                        }
+
+
+                        ImGui.Separator();
                     }
 
-                    
-
-                    ImGui.Text($"Error caught in {(e.Manager!=null ? $"{e.Manager.Name}@":"")}{e.Tweak.Name}:");
-                    ImGui.Text($"{e.Exception}");
-
-                    if (ImGui.Button("Ok")) {
-                        e.Closed = true;
+                    if (ErrorList.Count > 5) {
+                        ImGui.TextColored(new Vector4(1, 0, 0, 1), $"{ErrorList.Count - 5} Additional Errors");
                     }
 
-                    ImGui.Separator();
-                }
+                    ErrorList.RemoveAll(e => e.Closed);
 
-                errorList.RemoveAll(e => e.Closed);
+                    ImGui.End();
 
-                ImGui.End();
-
-                if (!errorsStillOpen) {
-                    errorList.Clear();
+                    if (!errorsStillOpen) {
+                        ErrorList.Clear();
+                        ShowErrorWindow = false;
+                    }
+                } else {
+                    ShowErrorWindow = false;
                 }
             }
         }
 
-        private class CaughtError {
-            public BaseTweak Tweak;
+        internal class CaughtError {
+            public BaseTweak Tweak = null;
             public SubTweakManager Manager = null;
             public Exception Exception;
             public bool IsNew = true;
             public bool Closed = false;
+            public string Message = string.Empty;
+            public ulong Count = 1;
+            public override bool Equals(object obj) {
+                if (obj is CaughtError otherError) {
+                    if (otherError.Manager != Manager) return false;
+                    if (otherError.Tweak != Tweak) return false;
+                    if (otherError.Message != this.Message) return false;
+                    if ($"{otherError.Exception}" != $"{Exception}") return false;
+                    return true;
+                }
+
+                return false;
+            }
         }
 
+        internal bool ShowErrorWindow = false;
 
-        private readonly List<CaughtError> errorList = new List<CaughtError>();
+        internal readonly List<CaughtError> ErrorList = new List<CaughtError>();
+        
+        public void Error(BaseTweak tweak, Exception exception, bool allowContinue = false, string message = "", [CallerFilePath] string callerFilePath = "", [CallerLineNumber] int callerLineNumber = 0, [CallerMemberName] string callerMemberName = "" ) {
+            SimpleLog.Error($"Exception in '{tweak.Name}'" + (string.IsNullOrEmpty(message) ? "" : ($": {message}")), callerFilePath, callerMemberName, callerLineNumber);
+            SimpleLog.Error($"{exception}", callerFilePath, callerMemberName, callerLineNumber);
 
-        public void Error(BaseTweak tweak, Exception exception, bool allowContinue = false) {
-            errorList.Insert(0, new CaughtError { Tweak = tweak, Exception = exception, IsNew = !allowContinue});
+            var err = new CaughtError {
+                Tweak = tweak, 
+                Exception = exception, 
+                IsNew = !allowContinue,
+                Message = message
+            };
+
+            var i = ErrorList.IndexOf(err);
+            if (i >= 0) {
+                ErrorList[i].Count++;
+                ErrorList[i].IsNew = ErrorList[i].IsNew || err.IsNew;
+            } else {
+                ErrorList.Insert(0, err);
+            }
+
+            if (ErrorList.Count > 50) {
+                ErrorList.RemoveRange(50, ErrorList.Count - 50);
+            }
         }
 
-        public void Error(SubTweakManager manager, BaseTweak tweak, Exception exception, bool allowContinue = false) {
-            errorList.Insert(0, new CaughtError { Tweak = tweak, Manager = manager, Exception = exception, IsNew = !allowContinue});
+        public void Error(SubTweakManager manager, BaseTweak tweak, Exception exception, bool allowContinue = false, string message = "", [CallerFilePath] string callerFilePath = "", [CallerLineNumber] int callerLineNumber = 0, [CallerMemberName] string callerMemberName = "") {
+            SimpleLog.Error($"Exception in '{tweak.Name}' @ '{manager.Name}'" + (string.IsNullOrEmpty(message) ? "" : ($": {message}")), callerFilePath, callerMemberName, callerLineNumber);
+            SimpleLog.Error($"{exception}", callerFilePath, callerMemberName, callerLineNumber);
+
+            var err = new CaughtError {
+                Tweak = tweak,
+                Manager = manager,
+                Exception = exception,
+                IsNew = !allowContinue,
+                Message = message
+            };
+
+            var i = ErrorList.IndexOf(err);
+            if (i >= 0) {
+                ErrorList[i].Count++;
+                ErrorList[i].IsNew = ErrorList[i].IsNew || err.IsNew;
+            } else {
+                ErrorList.Insert(0, err);
+            }
+            
+            if (ErrorList.Count > 50) {
+                ErrorList.RemoveRange(50, ErrorList.Count - 50);
+            }
         }
     }
 }

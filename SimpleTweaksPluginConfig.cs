@@ -39,7 +39,19 @@ namespace SimpleTweaksPlugin {
             ImGui.SetNextWindowSizeConstraints(new Vector2(350 * scale, 200 * scale), new Vector2(600 * scale, 800 * scale));
             ImGui.Begin($"{plugin.Name} Config", ref drawConfig, windowFlags);
 
-            if (!HideKofi) {
+            if (plugin.ErrorList.Count != 0) {
+                ImGui.PushStyleColor(ImGuiCol.Button, 0x990000FF);
+                ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0x880000FF);
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA0000FF);
+                var c = ImGui.GetCursorPos();
+                var buttonText = $"{plugin.ErrorList.Count} Errors Detected";
+                ImGui.SetCursorPosX(ImGui.GetWindowContentRegionWidth() - ImGui.CalcTextSize(buttonText).X);
+                if (ImGui.Button(buttonText)) {
+                    plugin.ShowErrorWindow = true;
+                }
+                ImGui.SetCursorPos(c);
+                ImGui.PopStyleColor(3);
+            } else if (!HideKofi) {
                 ImGui.PushStyleColor(ImGuiCol.Button, 0xFF5E5BFF);
                 ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xFF5E5BAA);
                 ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xFF5E5BDD);
@@ -62,13 +74,21 @@ namespace SimpleTweaksPlugin {
                 if (ImGui.Checkbox($"###{t.GetType().Name}enabledCheckbox", ref enabled)) {
                     if (enabled) {
                         SimpleLog.Debug($"Enable: {t.Name}");
-                        t.Enable();
-                        if (t.Enabled) {
-                            EnabledTweaks.Add(t.GetType().Name);
+                        try {
+                            t.Enable();
+                            if (t.Enabled) {
+                                EnabledTweaks.Add(t.GetType().Name);
+                            }
+                        } catch (Exception ex) {
+                            plugin.Error(t, ex, false, $"Error in Enable for '{t.Name}'");
                         }
                     } else {
                         SimpleLog.Debug($"Disable: {t.Name}");
-                        t.Disable();
+                        try {
+                            t.Disable();
+                        } catch (Exception ex) {
+                            plugin.Error(t, ex, true, $"Error in Disable for '{t.Name}'");
+                        }
                         EnabledTweaks.RemoveAll(a => a == t.GetType().Name);
                     }
                     Save();

@@ -97,21 +97,23 @@ namespace SimpleTweaksPlugin.Tweaks {
         public override void Setup() {
 
             if (Ready) return;
+            try {
+                if (tooltipAddress == IntPtr.Zero) {
+                    tooltipAddress = PluginInterface.TargetModuleScanner.ScanText("48 89 5C 24 ?? 55 56 57 41 54 41 55 41 56 41 57 48 83 EC 50 48 8B 42 ??");
+                }
 
-            if (tooltipAddress == IntPtr.Zero) {
-                tooltipAddress = PluginInterface.TargetModuleScanner.ScanText("48 89 5C 24 ?? 55 56 57 41 54 41 55 41 56 41 57 48 83 EC 50 48 8B 42 ??");
+                if (itemHoveredAddress == IntPtr.Zero) {
+                    itemHoveredAddress = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? 48 89 B4 24 ?? ?? ?? ?? 48 89 BC 24 ?? ?? ?? ?? 48 8B 7D A7");
+                }
+
+                if (tooltipAddress == IntPtr.Zero || itemHoveredAddress == IntPtr.Zero) {
+                    SimpleLog.Error($"Failed Setup of {GetType().Name}: Failed to find required functions.");
+                    return;
+                }
+                base.Setup();
+            } catch (Exception ex) {
+                SimpleLog.Error($"{ex}");
             }
-
-            if (itemHoveredAddress == IntPtr.Zero) {
-                itemHoveredAddress = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? 48 89 B4 24 ?? ?? ?? ?? 48 89 BC 24 ?? ?? ?? ?? 48 8B 7D A7");
-            }
-
-            if (tooltipAddress == IntPtr.Zero || itemHoveredAddress == IntPtr.Zero) {
-                SimpleLog.Error($"Failed Setup of {GetType().Name}: Failed to find required functions.");
-                return;
-            }
-
-            base.Setup();
         }
 
         public override unsafe void Enable() {

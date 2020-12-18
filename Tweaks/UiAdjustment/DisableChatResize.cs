@@ -1,6 +1,5 @@
 ﻿using System;
 using Dalamud.Hooking;
-using Dalamud.Plugin;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public class DisableChatResize : UiAdjustments.SubTweak {

@@ -134,7 +134,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     ImGui.End();
                 }
             } catch (Exception ex) {
-                SimpleLog.Log($"{ex}");
                 Plugin.Error(this, ex);
             }
             
