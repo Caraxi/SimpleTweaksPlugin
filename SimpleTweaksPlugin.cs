@@ -21,6 +21,7 @@ namespace SimpleTweaksPlugin {
         internal Common Common;
 
         public void Dispose() {
+            SimpleLog.Debug("Dispose");
             PluginInterface.UiBuilder.OnBuildUi -= this.BuildUI;
             RemoveCommands();
 
@@ -37,7 +38,9 @@ namespace SimpleTweaksPlugin {
         public int UpdateFrom = -1;
 
         public void Initialize(DalamudPluginInterface pluginInterface) {
+#if DEBUG
             SimpleLog.SetupBuildPath();
+#endif
             this.PluginInterface = pluginInterface;
             this.PluginConfig = (SimpleTweaksPluginConfig)pluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
             this.PluginConfig.Init(this, pluginInterface);
