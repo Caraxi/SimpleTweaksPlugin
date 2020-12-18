@@ -1,9 +1,21 @@
-﻿using Dalamud.Game.Internal;
+﻿using System.Collections.Generic;
+using Dalamud.Game.Internal;
 using FFXIVClientStructs.Component.GUI;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public class RemoveCommunityFinder : UiAdjustments.SubTweak {
         public override string Name => "Remove Community Finder";
+
+        private List<string> windowsWithCommunityFinder = new List<string>() {
+            "Social",
+            "FreeCompany",
+            "LinkShell",
+            "CrossWorldLinkshell",
+            "CircleFinder",
+            "CircleList",
+            "ContactList",
+            "PvPTeam"
+        };
 
         public override void Enable() {
             PluginInterface.Framework.OnUpdateEvent += OnFrameworkUpdate;
@@ -12,14 +24,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Disable() {
             PluginInterface.Framework.OnUpdateEvent -= OnFrameworkUpdate;
-            UpdateCommunityFinderButton(PluginInterface.Framework, "Social", true);
-            UpdateCommunityFinderButton(PluginInterface.Framework, "FreeCompany", true);
+            foreach(var w in windowsWithCommunityFinder) UpdateCommunityFinderButton(PluginInterface.Framework, w, true);
             base.Disable();
         }
 
-        private void OnFrameworkUpdate(Framework framework) { 
-            UpdateCommunityFinderButton(framework, "Social");
-            UpdateCommunityFinderButton(framework, "FreeCompany");
+        private void OnFrameworkUpdate(Framework framework) {
+            foreach (var w in windowsWithCommunityFinder) UpdateCommunityFinderButton(PluginInterface.Framework, w);
         }
 
         private unsafe void UpdateCommunityFinderButton(Framework framework, string name, bool reset = false) {
