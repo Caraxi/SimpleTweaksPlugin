@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using Dalamud;
 using Dalamud.Game.Chat;
 using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using Dalamud.Game.Internal;
 using Dalamud.Hooking;
-using Dalamud.Plugin;
 using FFXIVClientStructs;
 using FFXIVClientStructs.Component.GUI;
 using ImGuiNET;
@@ -142,6 +140,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             setTextHook?.Disable();
             PluginInterface.Framework.OnUpdateEvent -= OnFrameworkUpdate;
             base.Disable();
+        }
+
+        public override void Dispose() {
+            setTextHook?.Dispose();
+            base.Dispose();
         }
 
         private unsafe AtkTextNode* textNodePtr = null;
