@@ -29,7 +29,7 @@ namespace SimpleTweaksPlugin {
             return ReadSeString(start);
         }
 
-        private unsafe SeString ReadSeString(byte* ptr) {
+        public unsafe SeString ReadSeString(byte* ptr) {
             var offset = 0;
             while (true) {
                 var b = *(ptr + offset);
@@ -45,7 +45,7 @@ namespace SimpleTweaksPlugin {
             return pluginInterface.SeStringManager.Parse(bytes);
         }
 
-        private unsafe void WriteSeString(byte* dst, SeString s) {
+        public unsafe void WriteSeString(byte* dst, SeString s) {
             var bytes = s.Encode();
             for (var i = 0; i < bytes.Length; i++) {
                 *(dst + i) = bytes[i];

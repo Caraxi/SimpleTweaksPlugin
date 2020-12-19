@@ -54,11 +54,6 @@
 		</Reference>
 		<Reference Include="System.Windows.Forms" />
     </ItemGroup>
-    <ItemGroup>
-      <None Update="itemlevel-font.ttf">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-    </ItemGroup>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)'=='Release'">
 		<Exec Command="powershell -Command &quot;New-Item -ItemType Directory -Force -Path '$(ProjectDir)Publish'; $a=Get-Item '$(TargetPath)'; $jsonTemplate=Get-Content '$(ProjectDir)\$(ProjectName).template.json' | ConvertFrom-Json; $jsonTemplate.AssemblyVersion=$a.VersionInfo.FileVersion; $jsonTemplate.Description = $jsonTemplate.Description -join '\n'; ($jsonTemplate | ConvertTo-Json).Replace('\\n','\n') | Out-File '$(ProjectDir)\Publish\$(ProjectName).json' -Encoding utf8;Compress-Archive -Path '$(ProjectDir)\Publish\$(ProjectName).json','$(TargetDir)\*' -DestinationPath '$(ProjectDir)Publish\latest.zip' -Force&quot;"/>
 	</Target>
