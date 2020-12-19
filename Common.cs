@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Text;
 using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Plugin;
+using FFXIVClientStructs;
 
 namespace SimpleTweaksPlugin {
     internal class Common {
@@ -53,6 +53,31 @@ namespace SimpleTweaksPlugin {
             *(dst + bytes.Length) = 0;
         }
 
+        public unsafe void WriteSeString(FFXIVString xivString, SeString s) {
+            var bytes = s.Encode();
+            int i;
+            for (i = 0; i < bytes.Length && i < xivString.BufSize - 1; i++) {
+                *(xivString.StringPtr + i) = bytes[i];
+            }
+            *(xivString.StringPtr + i) = 0;
+        }
 
+        public enum GameOptionKind : uint {
+            GamePadMode        = 0x089, // [bool] Character Config -> Mouse Mode / GamePad Mode
+            LegacyMovement     = 0x08A, // [bool] Character Config -> Control Settings -> General -> Standard Type / Legacy Type
+            DisplayItemHelp    = 0x130, // [bool] Character Config -> UI Settings -> General -> Display Item Help
+            DisplayActionHelp  = 0x136, // [bool] Character Config -> UI Settings -> General -> Display Action Help
+
+            ClockDisplayType   = 0x153, // [enum/byte] 0 = Default, 1 = 24H, 2 = 12H 
+            ClockTypeEorzea    = 0x155, // [bool]
+            ClockTypeLocal     = 0x156, // [bool]
+            ClockTypeServer    = 0x157, // [bool]
+        }
+
+
+        public unsafe T GetGameOption<T>(GameOptionKind opt) {
+            var optionBase = (byte**)(pluginInterface.Framework.Address.BaseAddress + 0x2B28);
+            return Marshal.PtrToStructure<T>(new IntPtr(*optionBase + 0xAAE0 + (16 * (uint)opt)));
+        }
     }
 }
