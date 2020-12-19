@@ -1,4 +1,5 @@
 ﻿using FFXIVClientStructs.Component.GUI;
+using FFXIVClientStructs.Component.GUI.ULD;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {
@@ -29,7 +30,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                 if (current == null) return null;
                 current = step switch {
                     Step.Parent => current->ParentNode,
-                    Step.Child => current->ChildNode,
+                    Step.Child => current->Type >= 1000 ? ((AtkComponentNode*)current)->Component->ULDData.RootNode : current->ChildNode,
                     Step.Next => current->NextSiblingNode,
                     Step.Previous => current->PrevSiblingNode,
                     _ => null,
