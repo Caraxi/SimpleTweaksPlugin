@@ -24,6 +24,11 @@ namespace SimpleTweaksPlugin {
             if (ImGui.TreeNode($"{Name}###{GetType().Name}settingsNode")) {
 
                 foreach (var t in SubTweaks) {
+                    if (!t.Enabled && !PluginConfig.ShowExperimentalTweaks && t.Experimental) {
+                        continue;
+                    }
+
+
                     if (!t.Ready) continue;
                     var key = GetTweakKey(t);
                     var subTweakEnabled = Enabled && t.Enabled;
@@ -36,6 +41,7 @@ namespace SimpleTweaksPlugin {
                         if (Enabled) {
                             if (subTweakEnabled) {
                                 try {
+                                    SimpleLog.Log($"Enable: {t.Name} @ {Name}");
                                     t.Enable();
                                     if (!this.PluginConfig.EnabledTweaks.Contains(key)) this.PluginConfig.EnabledTweaks.Add(key);
                                     change = true;
@@ -45,6 +51,7 @@ namespace SimpleTweaksPlugin {
                                 
                             } else {
                                 try {
+                                    SimpleLog.Log($"Disable: {t.Name} @ {Name}");
                                     t.Disable();
                                 } catch (Exception ex) {
                                     Plugin.Error(this, t, ex, true, "Error in Disable");
@@ -88,9 +95,9 @@ namespace SimpleTweaksPlugin {
             if (!Ready) return;
             foreach (var t in SubTweaks) {
                 if (PluginConfig.EnabledTweaks.Contains(GetTweakKey(t))) {
-                    try { 
+                    try {
+                        SimpleLog.Log($"Enable: {t.Name} @ {Name}");
                         t.Enable();
-                        
                     } catch (Exception ex) {
                         Plugin.Error(this, t, ex, true, $"Error in Enable for '{t.Name}' @ '{this.Name}'");
                     }
@@ -102,6 +109,7 @@ namespace SimpleTweaksPlugin {
         public override void Disable() {
             foreach (var t in SubTweaks) {
                 try {
+                    SimpleLog.Log($"Disable: {t.Name} @ {Name}");
                     t.Disable();
                 } catch (Exception ex) {
                     Plugin.Error(this, t, ex, true, $"Error in Disable for '{t.Name}' @ '{this.Name}'");
