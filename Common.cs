@@ -9,8 +9,26 @@ namespace SimpleTweaksPlugin {
 
         private readonly DalamudPluginInterface pluginInterface;
 
+        private delegate IntPtr GameAlloc(ulong size, IntPtr unk, IntPtr allocator, IntPtr alignment);
+
+        private delegate IntPtr GetGameAllocator();
+
+        private static GameAlloc gameAlloc;
+        private static GetGameAllocator getGameAllocator;
+        
+
+
         public Common(DalamudPluginInterface pluginInterface) {
             this.pluginInterface = pluginInterface;
+            var gameAllocPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 45 8D 67 23");
+            var getGameAllocatorPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 8B 75 08");
+            gameAlloc = Marshal.GetDelegateForFunctionPointer<GameAlloc>(gameAllocPtr);
+            getGameAllocator = Marshal.GetDelegateForFunctionPointer<GetGameAllocator>(getGameAllocatorPtr);
+        }
+
+        public static IntPtr Alloc(ulong size) {
+            if (gameAlloc == null || getGameAllocator == null) return IntPtr.Zero;
+            return gameAlloc(size, IntPtr.Zero, getGameAllocator(), IntPtr.Zero);
         }
         
         public unsafe void WriteSeString(byte** startPtr, IntPtr alloc, SeString seString) {

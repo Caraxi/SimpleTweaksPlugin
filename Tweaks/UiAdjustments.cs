@@ -1,4 +1,6 @@
-﻿using FFXIVClientStructs.Component.GUI;
+﻿using System;
+using System.Runtime.InteropServices;
+using FFXIVClientStructs.Component.GUI;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {
@@ -28,6 +30,7 @@ namespace SimpleTweaksPlugin.Tweaks {
             var current = root;
             foreach (var step in steps) {
                 if (current == null) return null;
+
                 current = step switch {
                     Step.Parent => current->ParentNode,
                     Step.Child => current->Type >= 1000 ? ((AtkComponentNode*)current)->Component->ULDData.RootNode : current->ChildNode,
@@ -39,11 +42,61 @@ namespace SimpleTweaksPlugin.Tweaks {
             }
             return current;
         }
-
         private static unsafe AtkResNode* FinalPreviousNode(AtkResNode* node) {
             while (node->PrevSiblingNode != null) node = node->PrevSiblingNode;
             return node;
         }
-    }
+        public static unsafe AtkResNode** CopyNodeList(AtkResNode** originalList, ushort originalSize, ushort newSize = 0) {
+            if (newSize <= originalSize) newSize = (ushort) (originalSize + 1);
+            var oldListPtr = new IntPtr(originalList);
+            var newListPtr = Common.Alloc((ulong)((newSize + 1) * 8));
+            var clone = new IntPtr[originalSize];
+            Marshal.Copy(oldListPtr, clone, 0, originalSize);
+            Marshal.Copy(clone, 0, newListPtr, originalSize);
+            return (AtkResNode**)(newListPtr);
+        }
+        public static unsafe AtkTextNode* CloneNode(AtkTextNode* original, bool autoInsert = true) {
+            var newAllocation = Common.Alloc((ulong) sizeof(AtkTextNode));
 
+            var bytes = new byte[sizeof(AtkTextNode)];
+            Marshal.Copy(new IntPtr(original), bytes, 0, bytes.Length);
+            Marshal.Copy(bytes, 0, newAllocation, bytes.Length);
+
+            var newNode = (AtkTextNode*) newAllocation;
+
+            newNode->AtkResNode.NextSiblingNode = (AtkResNode*) original;
+            original->AtkResNode.PrevSiblingNode = (AtkResNode*) newNode;
+            if (newNode->AtkResNode.PrevSiblingNode != null) {
+                newNode->AtkResNode.NextSiblingNode = (AtkResNode*) newNode;
+            }
+
+            newNode->AtkResNode.ParentNode->ChildCount += 1;
+            return newNode;
+        }
+
+        public static unsafe AtkResNode* CloneNode(AtkResNode* original) {
+            var size = (NodeType) original->Type switch {
+                NodeType.Res => sizeof(AtkResNode),
+                NodeType.Image => sizeof(AtkImageNode),
+                NodeType.Text => sizeof(AtkTextNode),
+                NodeType.NineGrid => sizeof(AtkNineGridNode),
+                NodeType.Counter => sizeof(AtkCounterNode),
+                NodeType.Collision => sizeof(AtkCollisionNode),
+                _ => throw new Exception("Unsupported Type")
+            };
+
+            var allocation = Common.Alloc((ulong) size);
+            var bytes = new byte[size];
+            Marshal.Copy(new IntPtr(original), bytes, 0, bytes.Length);
+            Marshal.Copy(bytes, 0, allocation, bytes.Length);
+
+            var newNode = (AtkResNode*) allocation;
+            newNode->ParentNode = null;
+            newNode->ChildNode = null;
+            newNode->ChildCount = 0;
+            newNode->PrevSiblingNode = null;
+            newNode->NextSiblingNode = null;
+            return newNode;
+        }
+    }
 }

@@ -8,11 +8,23 @@ using Dalamud.Hooking;
 using FFXIVClientStructs;
 using FFXIVClientStructs.Component.GUI;
 using FFXIVClientStructs.Component.GUI.ULD;
+using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+
+namespace SimpleTweaksPlugin {
+    public partial class UiAdjustmentsConfig {
+        public ExamineItemLevel.Config ExamineItemLevel = new ExamineItemLevel.Config();
+    }
+}
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
     public class ExamineItemLevel : UiAdjustments.SubTweak {
+
+        public class Config {
+            public bool ShowItemLevelIcon = true;
+        }
 
         private delegate IntPtr GetInventoryContainer(IntPtr inventoryManager, int inventoryId);
         private delegate IntPtr GetContainerSlot(IntPtr inventoryContainer, int slotId);
@@ -31,6 +43,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Name => "Item Level in Examine";
 
         private IntPtr examineIsValidPtr = IntPtr.Zero;
+
+        public override void DrawConfig(ref bool hasChanged) {
+            base.DrawConfig(ref hasChanged);
+            if (Enabled) {
+                ImGui.SameLine();
+                hasChanged |= ImGui.Checkbox("Show Item Level Icon", ref PluginConfig.UiAdjustments.ExamineItemLevel.ShowItemLevelIcon);
+            }
+        }
 
         public override void Setup() {
 
@@ -55,7 +75,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             examinedUpdatedHook ??= new Hook<ExamineUpdated>(examineUpdatedAddress, new ExamineUpdated(ExamineUpdatedDetour));
             examinedUpdatedHook?.Enable();
 
-            ShowItemLevel();
             Enabled = true;
         }
 
@@ -76,6 +95,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             var examineWindow = (AtkUnitBase*)PluginInterface.Framework.Gui.GetUiObjectByName("CharacterInspect", 1);
             if (examineWindow == null) return;
+            
             var node = examineWindow->RootNode;
             if (node == null) return;
             node = node->ChildNode;
@@ -105,16 +125,20 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
             if (node == null || compNode == null || compInfo == null) return;
 
+            if (reset) {
+                compNode->Component->ULDData.NodeListCount = 4;
+                return;
+            }
+
+
+
             node = compNode->Component->ULDData.RootNode;
             if (node == null) return;
             while (node->PrevSiblingNode != null) node = node->PrevSiblingNode;
-
+            
             if (node->Type != (ushort)NodeType.Text) return;
 
-            if (reset) {
-                node->Flags &= ~0x10;
-                return;
-            }
+            var textNode = UiAdjustments.CloneNode((AtkTextNode*)node);
 
             var inaccurate = false;
             var sum = 0U;
@@ -133,12 +157,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             var avgItemLevel = sum / 13;
 
-            var textNode = (AtkTextNode*)node;
             var seStr = new SeString(new List<Payload>() {
                 new TextPayload($"{avgItemLevel:0000}"),
             });
 
             Plugin.Common.WriteSeString((byte*)allocText, seStr);
+
             textNode->NodeText.StringPtr = (byte*)allocText;
 
             textNode->FontSize = 14;
@@ -148,12 +172,52 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             textNode->LineSpacing = 24;
             textNode->TextColor = new FFXIVByteColor() { R = (byte)(inaccurate ? 0xFF : 0x45), G = (byte) (inaccurate ? (byte) 0x83 : (byte) 0xB2), B = (byte) (inaccurate ? 0x75 : 0xAE), A = 0xFF };
 
-            node->Height = 24;
-            node->Width = 80;
-            node->Flags |= 0x10;
-            node->Y = 0;
-            node->Flags_2 |= 0x1;
-            node->X = 92;
+            textNode->AtkResNode.Height = 24;
+            textNode->AtkResNode.Width = 80;
+            textNode->AtkResNode.Flags |= 0x10;
+            textNode->AtkResNode.Y = 0;
+            textNode->AtkResNode.X = 92;
+            textNode->AtkResNode.Flags_2 |= 0x1;
+
+            var a = UiAdjustments.CopyNodeList(compNode->Component->ULDData.NodeList, compNode->Component->ULDData.NodeListCount, (ushort)(compNode->Component->ULDData.NodeListCount + 5));
+            compNode->Component->ULDData.NodeList = a;
+            compNode->Component->ULDData.NodeList[compNode->Component->ULDData.NodeListCount++] = (AtkResNode*)textNode;
+
+            if (PluginConfig.UiAdjustments.ExamineItemLevel.ShowItemLevelIcon) {
+                
+                var iconNode = (AtkImageNode*)UiAdjustments.CloneNode(examineWindow->ULDData.NodeList[8]);
+                iconNode->PartId = 47;
+
+                iconNode->PartsList->Parts[47].Height = 24;
+                iconNode->PartsList->Parts[47].Width = 24;
+                iconNode->PartsList->Parts[47].U = 176;
+                iconNode->PartsList->Parts[47].V = 138;
+
+
+                iconNode->AtkResNode.Height = 24;
+                iconNode->AtkResNode.Width = 24;
+                iconNode->AtkResNode.X = textNode->AtkResNode.X + 2;
+                iconNode->AtkResNode.Y = textNode->AtkResNode.Y + 3;
+                iconNode->AtkResNode.Flags |= 0x10;  // Visible
+                iconNode->AtkResNode.Flags_2 |= 0x1; // Update
+
+                iconNode->AtkResNode.ParentNode = textNode->AtkResNode.ParentNode;
+                iconNode->AtkResNode.PrevSiblingNode = textNode->AtkResNode.PrevSiblingNode;
+                if (iconNode->AtkResNode.PrevSiblingNode != null) {
+                    iconNode->AtkResNode.PrevSiblingNode->NextSiblingNode = (AtkResNode*)iconNode;
+                }
+                iconNode->AtkResNode.NextSiblingNode = (AtkResNode*)textNode;
+
+
+
+
+                textNode->AtkResNode.PrevSiblingNode = (AtkResNode*)iconNode;
+
+                compNode->Component->ULDData.NodeList[compNode->Component->ULDData.NodeListCount++] = (AtkResNode*)iconNode;
+            }
+
+
+
         }
 
         public override void Disable() {
