@@ -1,5 +1,4 @@
 ﻿using FFXIVClientStructs.Component.GUI;
-using FFXIVClientStructs.Component.GUI.ULD;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {
@@ -21,6 +20,7 @@ namespace SimpleTweaksPlugin.Tweaks {
             Child,
             Previous,
             Next,
+            PrevFinal
         }
 
         public static unsafe AtkResNode* GetResNodeByPath(AtkResNode* root, params Step[] steps) {
@@ -33,10 +33,16 @@ namespace SimpleTweaksPlugin.Tweaks {
                     Step.Child => current->Type >= 1000 ? ((AtkComponentNode*)current)->Component->ULDData.RootNode : current->ChildNode,
                     Step.Next => current->NextSiblingNode,
                     Step.Previous => current->PrevSiblingNode,
+                    Step.PrevFinal => FinalPreviousNode(current),
                     _ => null,
                 };
             }
             return current;
+        }
+
+        private static unsafe AtkResNode* FinalPreviousNode(AtkResNode* node) {
+            while (node->PrevSiblingNode != null) node = node->PrevSiblingNode;
+            return node;
         }
     }
 

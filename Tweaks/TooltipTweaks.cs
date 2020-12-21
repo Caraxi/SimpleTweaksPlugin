@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Hooking;
 using Dalamud.Plugin;
+using FFXIVClientStructs.Component.GUI;
+using static SimpleTweaksPlugin.Tweaks.UiAdjustments;
+using static SimpleTweaksPlugin.Tweaks.UiAdjustments.Step;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {
@@ -63,6 +67,10 @@ namespace SimpleTweaksPlugin.Tweaks {
 
                     Plugin.Common.WriteSeString(*(baseTooltipPointer + 4) + (byte)field, alloc, value);
                 }
+            }
+            public SeString this[byte field] {
+                get => this[(TooltipField) field];
+                set => this[(TooltipField) field] = value;
             }
 
             public unsafe void SetPointer(byte*** ptr) {
@@ -154,6 +162,17 @@ namespace SimpleTweaksPlugin.Tweaks {
             base.Dispose();
         }
 
+        private async void SetControlsSectionHeight(int height) {
+            await Task.Delay(5);
+            unsafe {
+                var heightShort = (ushort)height;
+                var tooltipUi = (AtkUnitBase*)PluginInterface.Framework.Gui.GetUiObjectByName("ItemDetail", 1);
+                if (tooltipUi == null) return;
+                var bg = GetResNodeByPath(tooltipUi->RootNode, Child, PrevFinal, Child, Child);
+                if (bg != null) bg->Height = heightShort;
+            }
+        }
+
         private unsafe IntPtr TooltipDetour(IntPtr a1, uint** a2, byte*** a3) {
             try {
                 tooltip ??= new ItemTooltip(Plugin);
@@ -165,6 +184,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                         Plugin.Error(this, t, ex);
                     }
                 }
+                SetControlsSectionHeight(tooltip[ItemTooltip.TooltipField.ControlsDisplay].TextValue.Split('\n').Length * 18 + 8);
             } catch (Exception ex) {
                 Plugin.Error(this, ex);
             }
