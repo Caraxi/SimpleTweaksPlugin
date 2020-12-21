@@ -67,19 +67,21 @@ namespace SimpleTweaksPlugin {
                 try {
                     var tweak = (Tweak) Activator.CreateInstance(t);
                     tweak.InterfaceSetup(this, pluginInterface, PluginConfig);
-                    tweak.Setup();
-                    if (tweak.Ready && PluginConfig.EnabledTweaks.Contains(t.Name)) {
-                        SimpleLog.Debug($"Enable: {t.Name}");
-                        try {
-                            tweak.Enable();
-                        } catch (Exception ex) {
-                            this.Error(tweak, ex, true, $"Error in Enable for '{tweak.Name}");
+                    if (tweak.CanLoad) {
+                        tweak.Setup();
+                        if (tweak.Ready && PluginConfig.EnabledTweaks.Contains(t.Name)) {
+                            SimpleLog.Debug($"Enable: {t.Name}");
+                            try {
+                                tweak.Enable();
+                            } catch (Exception ex) {
+                                this.Error(tweak, ex, true, $"Error in Enable for '{tweak.Name}");
+                            }
                         }
-                    }
 
-                    tweakList.Add(tweak);
+                        tweakList.Add(tweak);
+                    }
                 } catch (Exception ex) {
-                    this.Error(null, ex, true, $"Failed Loating '{t.Name}'");
+                    PluginLog.Error(ex, $"Failed loading tweak '{t.Name}'.");
                 }
             }
 
@@ -183,11 +185,16 @@ namespace SimpleTweaksPlugin {
         internal bool ShowErrorWindow = false;
 
         internal readonly List<CaughtError> ErrorList = new List<CaughtError>();
-        
+#if DEBUG
         public void Error(BaseTweak tweak, Exception exception, bool allowContinue = false, string message = "", [CallerFilePath] string callerFilePath = "", [CallerLineNumber] int callerLineNumber = 0, [CallerMemberName] string callerMemberName = "" ) {
+
             SimpleLog.Error($"Exception in '{tweak.Name}'" + (string.IsNullOrEmpty(message) ? "" : ($": {message}")), callerFilePath, callerMemberName, callerLineNumber);
             SimpleLog.Error($"{exception}", callerFilePath, callerMemberName, callerLineNumber);
-
+#else
+        public void Error(BaseTweak tweak, Exception exception, bool allowContinue = false, string message="") {
+            SimpleLog.Error($"Exception in '{tweak.Name}'" + (string.IsNullOrEmpty(message) ? "" : ($": {message}")));
+            SimpleLog.Error($"{exception}");
+#endif
             var err = new CaughtError {
                 Tweak = tweak, 
                 Exception = exception, 
@@ -208,10 +215,15 @@ namespace SimpleTweaksPlugin {
             }
         }
 
+#if DEBUG
         public void Error(SubTweakManager manager, BaseTweak tweak, Exception exception, bool allowContinue = false, string message = "", [CallerFilePath] string callerFilePath = "", [CallerLineNumber] int callerLineNumber = 0, [CallerMemberName] string callerMemberName = "") {
             SimpleLog.Error($"Exception in '{tweak.Name}' @ '{manager.Name}'" + (string.IsNullOrEmpty(message) ? "" : ($": {message}")), callerFilePath, callerMemberName, callerLineNumber);
             SimpleLog.Error($"{exception}", callerFilePath, callerMemberName, callerLineNumber);
-
+#else
+        public void Error(SubTweakManager manager, BaseTweak tweak, Exception exception, bool allowContinue = false, string message = "") {
+            SimpleLog.Error($"Exception in '{tweak.Name}' @ '{manager.Name}'" + (string.IsNullOrEmpty(message) ? "" : ($": {message}")));
+            SimpleLog.Error($"{exception}");
+#endif
             var err = new CaughtError {
                 Tweak = tweak,
                 Manager = manager,

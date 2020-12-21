@@ -15,6 +15,8 @@ namespace SimpleTweaksPlugin {
         public abstract string Name { get; }
         public virtual bool Experimental => false;
 
+        public virtual bool CanLoad => true;
+
         public void InterfaceSetup(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface, SimpleTweaksPluginConfig config) {
             this.PluginInterface = pluginInterface;
             this.PluginConfig = config;

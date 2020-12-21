@@ -1,4 +1,4 @@
-﻿#if DEBUG
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
@@ -10,23 +10,23 @@ namespace SimpleTweaksPlugin.Tweaks {
     class ClickableLinks : Tweak {
         public override string Name => "Clickable Links in Chat";
 
+        public override bool CanLoad => PluginInterface.Framework.Gui.Chat.GetType().GetMethod("AddChatLinkHandler") != null;
+
+
         public override void Enable() {
-
             urlLinkPayload = PluginInterface.AddChatLinkHandler(1, UrlLinkHandle);
-
             PluginInterface.Framework.Gui.Chat.OnChatMessage += OnChatMessage;
             base.Enable();
         }
 
         private void UrlLinkHandle(uint id, SeString message) {
-
             Process.Start(message.TextValue);
-
         }
 
         public override void Disable() {
-            PluginInterface.RemoveChatLinkHandler(1);
+            if (!Enabled) return;
             PluginInterface.Framework.Gui.Chat.OnChatMessage -= OnChatMessage;
+            PluginInterface.RemoveChatLinkHandler(1);
             base.Disable();
         }
 
@@ -42,8 +42,13 @@ namespace SimpleTweaksPlugin.Tweaks {
             var isModified = false;
             var payloads = new List<Payload>();
             var cLinkDepth = 0;
+
+            SimpleLog.Verbose($"{message.TextValue}");
+
+
             message.Payloads.ForEach(p => {
                 // Don't create links inside other links.
+
                 if (p is DalamudLinkPayload) {
                     cLinkDepth++;
                 } else if (cLinkDepth > 0 && p is RawPayload && RawPayload.LinkTerminator.Equals(p)) {
@@ -84,4 +89,3 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
     }
 }
-#endif
