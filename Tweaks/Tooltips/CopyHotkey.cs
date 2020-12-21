@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using Dalamud.Game.ClientState;
@@ -17,6 +20,7 @@ namespace SimpleTweaksPlugin {
 
         public VK[] TeamcraftLinkHotkey = {VK.Ctrl, VK.T};
         public bool TeamcraftLinkHotkeyEnabled = false;
+        public bool TeamcraftLinkHotkeyForceBrowser = false;
 
         public VK[] GardlandToolsLinkHotkey = {VK.Ctrl, VK.G};
         public bool GardlandToolsLinkHotkeyEnabled = false;
@@ -26,6 +30,7 @@ namespace SimpleTweaksPlugin {
 namespace SimpleTweaksPlugin.Tweaks.Tooltips {
     public class CopyHotkey : TooltipTweaks.SubTweak {
 
+        public TooltipTweakConfig Config => PluginConfig.TooltipTweaks;
 
         private readonly string weirdTabChar = Encoding.UTF8.GetString(new byte[] {0xE3, 0x80, 0x80});
 
@@ -40,9 +45,9 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 seStr.Payloads.Add(new TextPayload(string.Join("\n", split)));
             }
 
-            if (PluginConfig.TooltipTweaks.CopyHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", PluginConfig.TooltipTweaks.CopyHotkey.Select(k => k.GetKeyName()))}  Copy item name"));
-            if (PluginConfig.TooltipTweaks.TeamcraftLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", PluginConfig.TooltipTweaks.TeamcraftLinkHotkey.Select(k => k.GetKeyName()))}  View on Teamcraft"));
-            if (PluginConfig.TooltipTweaks.GardlandToolsLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", PluginConfig.TooltipTweaks.GardlandToolsLinkHotkey.Select(k => k.GetKeyName()))}  View on Garland Tools"));
+            if (Config.CopyHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.CopyHotkey.Select(k => k.GetKeyName()))}  Copy item name"));
+            if (Config.TeamcraftLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.TeamcraftLinkHotkey.Select(k => k.GetKeyName()))}  View on Teamcraft"));
+            if (Config.GardlandToolsLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.GardlandToolsLinkHotkey.Select(k => k.GetKeyName()))}  View on Garland Tools"));
 
             SimpleLog.Verbose(seStr.Payloads);
             tooltip[TooltipTweaks.ItemTooltip.TooltipField.ControlsDisplay] = seStr;
@@ -54,6 +59,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         private readonly List<VK> newKeys = new List<VK>();
 
         public void DrawHotkeyConfig(string name, ref VK[] keys, ref bool enabled, ref bool hasChanged) {
+            while (ImGui.GetColumnIndex() != 0) ImGui.NextColumn();
             hasChanged |= ImGui.Checkbox(name, ref enabled);
             ImGui.NextColumn();
             var strKeybind = string.Join("+", keys.Select(k => k.GetKeyName()));
@@ -119,7 +125,6 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                     settingKey = name;
                 }
             }
-            ImGui.NextColumn();
         }
 
         public override void DrawConfig(ref bool hasChanged) {
@@ -129,10 +134,12 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 if (ImGui.TreeNode($"{this.Name}###configTreeNode")) {
                     ImGui.Columns(2);
                     ImGui.SetColumnWidth(0, 180 * ImGui.GetIO().FontGlobalScale);
-                    var c = PluginConfig.TooltipTweaks;
+                    var c = Config;
                     DrawHotkeyConfig("Copy Item Name", ref c.CopyHotkey, ref c.CopyHotkeyEnabled, ref hasChanged);
                     ImGui.Separator();
                     DrawHotkeyConfig("View on Teamcraft", ref c.TeamcraftLinkHotkey, ref c.TeamcraftLinkHotkeyEnabled, ref hasChanged);
+                    ImGui.SameLine();
+                    ImGui.Checkbox($"Browser Only###teamcraftIgnoreClient", ref Config.TeamcraftLinkHotkeyForceBrowser);
                     ImGui.Separator();
                     DrawHotkeyConfig("View on Garland Tools", ref c.GardlandToolsLinkHotkey, ref c.GardlandToolsLinkHotkeyEnabled, ref hasChanged);
                     ImGui.Columns();
@@ -158,8 +165,24 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             System.Windows.Forms.Clipboard.SetText(item.Name);
         }
 
+        private bool teamcraftLocalFailed = false;
+
         private void OpenTeamcraft(Item item) {
-            Process.Start($"https://ffxivteamcraft.com/db//item/{item.RowId}");
+            if (teamcraftLocalFailed || Config.TeamcraftLinkHotkeyForceBrowser) {
+                Process.Start($"https://ffxivteamcraft.com/db/en/item/{item.RowId}");
+                return;
+            }
+            Task.Run(() => {
+                try {
+                    var wr = WebRequest.CreateHttp($"http://localhost:14500/db/en/item/{item.RowId}");
+                    wr.Timeout = 500;
+                    wr.Method = "GET";
+                    wr.GetResponse().Close();
+                } catch {
+                    Process.Start($"https://ffxivteamcraft.com/db/en/item/{item.RowId}");
+                    teamcraftLocalFailed = true;
+                }
+            });
         }
 
         private void OpenGarlandTools(Item item) {
@@ -179,24 +202,23 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
         private void FrameworkOnOnUpdateEvent(Framework framework) {
             try {
-                var c = PluginConfig.TooltipTweaks;
                 if (PluginInterface.Framework.Gui.HoveredItem == 0) return;
 
                 Action<Item> action = null;
                 VK[] keys = null;
-                if (action == null && c.CopyHotkeyEnabled && isHotkeyPress(c.CopyHotkey)) {
+                if (action == null && Config.CopyHotkeyEnabled && isHotkeyPress(Config.CopyHotkey)) {
                     action = CopyItemName;
-                    keys = c.CopyHotkey;
+                    keys = Config.CopyHotkey;
                 }
 
-                if (action == null && c.TeamcraftLinkHotkeyEnabled && isHotkeyPress(c.TeamcraftLinkHotkey)) {
+                if (action == null && Config.TeamcraftLinkHotkeyEnabled && isHotkeyPress(Config.TeamcraftLinkHotkey)) {
                     action = OpenTeamcraft;
-                    keys = c.TeamcraftLinkHotkey;
+                    keys = Config.TeamcraftLinkHotkey;
                 }
 
-                if (action == null && c.GardlandToolsLinkHotkeyEnabled && isHotkeyPress(c.GardlandToolsLinkHotkey)) {
+                if (action == null && Config.GardlandToolsLinkHotkeyEnabled && isHotkeyPress(Config.GardlandToolsLinkHotkey)) {
                     action = OpenGarlandTools;
-                    keys = c.GardlandToolsLinkHotkey;
+                    keys = Config.GardlandToolsLinkHotkey;
                 }
 
                 if (action != null) {
