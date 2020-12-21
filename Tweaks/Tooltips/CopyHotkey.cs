@@ -179,8 +179,17 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                     wr.Method = "GET";
                     wr.GetResponse().Close();
                 } catch {
-                    Process.Start($"https://ffxivteamcraft.com/db/en/item/{item.RowId}");
-                    teamcraftLocalFailed = true;
+                    try {
+                        if (System.IO.Directory.Exists(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ffxiv-teamcraft"))) {
+                            Process.Start($"teamcraft://db/en/item/{item.RowId}");
+                        } else {
+                            teamcraftLocalFailed = true;
+                            Process.Start($"https://ffxivteamcraft.com/db/en/item/{item.RowId}");
+                        }
+                    } catch {
+                        teamcraftLocalFailed = true;
+                        Process.Start($"https://ffxivteamcraft.com/db/en/item/{item.RowId}");
+                    }
                 }
             });
         }
