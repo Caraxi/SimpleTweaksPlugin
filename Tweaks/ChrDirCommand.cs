@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Dalamud.Game.Chat;
+using Dalamud.Game.Chat.SeStringHandling;
+using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using Dalamud.Game.Command;
 using ImGuiNET;
 
@@ -12,10 +16,19 @@ namespace SimpleTweaksPlugin.Tweaks {
             Ready = true;
         }
 
+        private DalamudLinkPayload linkPayload;
+
         public override void Enable() {
             if (Enabled) return;
-            PluginInterface.CommandManager.AddHandler("/chrdir", new CommandInfo(CommandHandler) {ShowInHelp = true, HelpMessage = "Print your character save directory to chat. /savedir open to open the save directory."});
+            PluginInterface.CommandManager.AddHandler("/chrdir", new CommandInfo(CommandHandler) {ShowInHelp = true, HelpMessage = "Print your character save directory to chat. '/chrdir open' to open the directory in explorer."});
+
+            linkPayload = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.OpenFolderLink, OpenFolder);
+            
             Enabled = true;
+        }
+
+        private void OpenFolder(uint arg1, SeString arg2) {
+            Process.Start("explorer.exe", arg2.TextValue);
         }
 
         private void CommandHandler(string command, string arguments) {
@@ -24,7 +37,16 @@ namespace SimpleTweaksPlugin.Tweaks {
                 Process.Start("explorer.exe", saveDir);
                 return;
             }
-            PluginInterface.Framework.Gui.Chat.Print(saveDir);
+            PluginInterface.Framework.Gui.Chat.PrintChat(new XivChatEntry() {
+                MessageBytes = new SeString(new List<Payload>() {
+                    new TextPayload("Character Directory:\n"),
+                    new UIForegroundPayload(PluginInterface.Data, 22),
+                    linkPayload,
+                    new TextPayload(saveDir),
+                    RawPayload.LinkTerminator,
+                    new UIForegroundPayload(PluginInterface.Data, 0)
+                }).Encode()
+            });
         }
 
         public override void DrawConfig(ref bool change) {
@@ -42,6 +64,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
 
         public override void Disable() {
+            PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.OpenFolderLink);
             PluginInterface.CommandManager.RemoveHandler("/chrdir");
             Enabled = false;
         }

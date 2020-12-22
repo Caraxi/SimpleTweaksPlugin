@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Dalamud.Game.Chat;
 using Dalamud.Game.Chat.SeStringHandling;
@@ -10,11 +11,8 @@ namespace SimpleTweaksPlugin.Tweaks {
     class ClickableLinks : Tweak {
         public override string Name => "Clickable Links in Chat";
 
-        public override bool CanLoad => PluginInterface.Framework.Gui.Chat.GetType().GetMethod("AddChatLinkHandler") != null;
-
-
         public override void Enable() {
-            urlLinkPayload = PluginInterface.AddChatLinkHandler(1, UrlLinkHandle);
+            urlLinkPayload = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.OpenUrlLink, UrlLinkHandle);
             PluginInterface.Framework.Gui.Chat.OnChatMessage += OnChatMessage;
             base.Enable();
         }
@@ -26,7 +24,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         public override void Disable() {
             if (!Enabled) return;
             PluginInterface.Framework.Gui.Chat.OnChatMessage -= OnChatMessage;
-            PluginInterface.RemoveChatLinkHandler(1);
+            PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.OpenUrlLink);
             base.Disable();
         }
 
