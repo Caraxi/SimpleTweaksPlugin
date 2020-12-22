@@ -184,7 +184,10 @@ namespace SimpleTweaksPlugin.Tweaks {
                         Plugin.Error(this, t, ex);
                     }
                 }
-                SetControlsSectionHeight(tooltip[ItemTooltip.TooltipField.ControlsDisplay].TextValue.Split('\n').Length * 18 + 8);
+
+                if (tooltip[ItemTooltip.TooltipField.ControlsDisplay] != null) {
+                    SetControlsSectionHeight(tooltip[ItemTooltip.TooltipField.ControlsDisplay].TextValue.Split('\n').Length * 18 + 8);
+                }
             } catch (Exception ex) {
                 Plugin.Error(this, ex);
             }
