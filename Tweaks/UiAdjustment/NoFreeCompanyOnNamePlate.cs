@@ -1,13 +1,12 @@
 ﻿using System;
 using Dalamud.Hooking;
-using Dalamud.Plugin;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
-    class NoFreeCompanyOnNamePlate : UiAdjustments.SubTweak {
+    public unsafe class NoFreeCompanyOnNamePlate : UiAdjustments.SubTweak {
 
         private IntPtr playerNamePlateSetTextAddress;
         private Hook<PlayerNamePlateSetText> playerNamePlateSetTextHook;
-        private delegate IntPtr PlayerNamePlateSetText(IntPtr a1, byte a2, byte a3, string a4, string a5, string a6, uint a7);
+        private delegate IntPtr PlayerNamePlateSetText(byte* a1, byte a2, byte a3, byte* a4, byte* a5, byte* a6, uint a7);
 
         public override string Name => "Hide FC Name on Name Plate";
 
@@ -36,8 +35,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             base.Dispose();
         }
 
-        private IntPtr NamePlateDetour(IntPtr a1, byte a2, byte a3, string a4, string a5, string a6, uint a7) {
-            return playerNamePlateSetTextHook.Original(a1, a2, a3, a4, a5, "", a7);
+        private IntPtr NamePlateDetour(byte* a1, byte a2, byte a3, byte* a4, byte* a5, byte* a6, uint a7) {
+            a6[0] = 0;
+            return playerNamePlateSetTextHook.Original(a1, a2, a3, a4, a5, a6, a7);
         }
     }
 }
