@@ -162,7 +162,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         }
 
         private void CopyItemName(Item item) {
-            System.Windows.Forms.Clipboard.SetText(item.Name);
+            ImGui.SetClipboardText(item.Name);
         }
 
         private bool teamcraftLocalFailed = false;
