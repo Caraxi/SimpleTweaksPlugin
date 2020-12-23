@@ -153,7 +153,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private string[] GetClockIcons() => PluginInterface.ClientState.ClientLanguage switch {
             ClientLanguage.German => new[] { $"{(char)SeIconChar.EorzeaTimeDe}", $"{(char)SeIconChar.LocalTimeDe}", $"{(char)SeIconChar.ServerTimeDe}" },
             ClientLanguage.French => new[] { $"{(char)SeIconChar.EorzeaTimeFr}", $"{(char)SeIconChar.LocalTimeFr}", $"{(char)SeIconChar.ServerTimeFr}" },
-            ClientLanguage.Japanese => new[] { $"{(char)SeIconChar.EorzeaTimeJa}", $"{(char)SeIconChar.LocalTimeJa}", $"{(char)SeIconChar.ServerTimeJa}" },
             _ => new[] { $"{(char)SeIconChar.EorzeaTimeEn}", $"{(char)SeIconChar.LocalTimeEn}", $"{(char)SeIconChar.ServerTimeEn}" },
         };
 
