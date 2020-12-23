@@ -38,10 +38,7 @@ namespace SimpleTweaksPlugin.Tweaks {
             var isModified = false;
             var payloads = new List<Payload>();
             var cLinkDepth = 0;
-
-            SimpleLog.Verbose($"{message.TextValue}");
-
-
+            
             message.Payloads.ForEach(p => {
                 // Don't create links inside other links.
 
