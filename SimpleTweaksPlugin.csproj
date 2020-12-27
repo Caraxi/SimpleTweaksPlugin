@@ -38,7 +38,7 @@
     </ItemGroup>
     <ItemGroup>
 		<Reference Include="Dalamud" Private="false">
-			<HintPath>C:\ffxiv\repo\Dalamud\Dalamud\bin\Debug\Dalamud.dll</HintPath>
+			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Dalamud.dll</HintPath>
 		</Reference>
 		<Reference Include="ImGui.NET" Private="false">
 			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\ImGui.NET.dll</HintPath>
