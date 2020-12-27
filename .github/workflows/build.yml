@@ -1,7 +1,7 @@
 name: Build Artifact
 on:
   push:
-    branches: 'master'
+    branches: 'main'
 jobs:
   build:
     runs-on: [windows-latest]
