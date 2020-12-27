@@ -15,7 +15,7 @@ namespace SimpleTweaksPlugin {
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips {
     public class FoodStats : TooltipTweaks.SubTweak {
-        public override string Name => "Show expected food stats";
+        public override string Name => "Show expected food and potion stats";
 
         private IntPtr playerStaticAddress;
         private IntPtr getBaseParamAddress;
@@ -56,7 +56,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
                 var action = item.ItemAction?.Value;
 
-                if (action != null && (action.Type == 844 || action.Type == 845)) {
+                if (action != null && (action.Type == 844 || action.Type == 845 || action.Type == 846)) {
 
                     var itemFood = PluginInterface.Data.Excel.GetSheet<ItemFood>().GetRow(hq ? action.DataHQ[1] : action.Data[1]);
                     if (itemFood != null) {
