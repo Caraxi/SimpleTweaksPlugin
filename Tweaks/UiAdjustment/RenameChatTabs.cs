@@ -1,0 +1,192 @@
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Dalamud;
+using Dalamud.Game.Chat;
+using FFXIVClientStructs.Component.GUI;
+using FFXIVClientStructs.Component.GUI.ULD;
+using ImGuiNET;
+using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+
+namespace SimpleTweaksPlugin {
+    public partial class  UiAdjustmentsConfig {
+        public RenameChatTabs.Config RenameChatTabs = new RenameChatTabs.Config();
+    }
+}
+
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
+    public class RenameChatTabs : UiAdjustments.SubTweak {
+
+        public class Config {
+            public bool DoRenameTab0;
+            public bool DoRenameTab1;
+            public string ChatTab0Name = string.Empty;
+            public string ChatTab1Name = string.Empty;
+        }
+
+        public override string Name => "Rename Chat Tabs";
+
+        private Task renameTask;
+        private CancellationTokenSource cancellationToken;
+
+        private Config TweakConfig => PluginConfig.UiAdjustments.RenameChatTabs;
+
+        public override void Enable() {
+            if (Enabled) return;
+
+            PluginInterface.ClientState.OnLogin += OnLogin;
+            if (PluginInterface.ClientState.LocalPlayer != null) {
+                OnLogin(null, null);
+            }
+            base.Enable();
+        }
+
+        public override void Disable() {
+            PluginInterface.ClientState.OnLogin -= OnLogin;
+            cancellationToken?.Cancel();
+            if (renameTask != null) {
+                var c = 0;
+                while (!renameTask.IsCompleted) {
+                    Thread.Sleep(1);
+                    if (!renameTask.IsCompleted && c % 1000 == 0) SimpleLog.Verbose("Waiting for task to complete");
+                    c++;
+                }
+            }
+
+            ResetName();
+            base.Disable();
+        }
+
+        public override void DrawConfig(ref bool hasChanged) {
+            if (Enabled) {
+                if (ImGui.TreeNode(Name)) {
+                    hasChanged |= ImGui.Checkbox("###enabledRenameTab0", ref TweakConfig.DoRenameTab0);
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(90 * ImGui.GetIO().FontGlobalScale);
+                    hasChanged |= ImGui.InputTextWithHint("Tab 1###nameTab0", DefaultName0, ref TweakConfig.ChatTab0Name, 16);
+
+                    hasChanged |= ImGui.Checkbox("###enabledRenameTab1", ref TweakConfig.DoRenameTab1);
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(90 * ImGui.GetIO().FontGlobalScale);
+                    hasChanged |= ImGui.InputTextWithHint("Tab 2###nameTab1", DefaultName1, ref TweakConfig.ChatTab1Name, 16);
+
+                    ImGui.TreePop();
+                }
+            } else {
+                base.DrawConfig(ref hasChanged);
+            }
+        }
+
+        private void OnLogin(object sender, EventArgs e) {
+            DoRename();
+        }
+
+        public unsafe void DoRename() {
+
+            if (renameTask != null && !renameTask.IsCompleted) { return; }
+
+            cancellationToken = new CancellationTokenSource();
+
+            renameTask = Task.Run(() => {
+                while (true) {
+                    try {
+                        if (cancellationToken.IsCancellationRequested) break;
+                        var chatLog = (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName("ChatLog", 1);
+                        if (chatLog != null) {
+                            DoRename(chatLog);
+
+                            var chatLogPanel2 = (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName("ChatLogPanel_1", 1);
+                            if (chatLogPanel2 != null) {
+                                DoRenamePanel(chatLogPanel2);
+                            }
+                        }
+                        cancellationToken.Token.WaitHandle.WaitOne(1000);
+                    } catch (Exception ex) {
+                        SimpleLog.Error(ex);
+                        cancellationToken.Token.WaitHandle.WaitOne(10000);
+                    }
+                }
+            }, cancellationToken.Token);
+        }
+
+        public unsafe void ResetName() {
+            var chatLog = (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName("ChatLog", 1);
+            if (chatLog != null) DoRename(chatLog, true);
+            var chatLogPanel = (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName("ChatLogPanel_1", 1);
+            if (chatLogPanel != null) DoRenamePanel(chatLogPanel, true);
+        }
+
+        public string DefaultName0 => PluginInterface.ClientState.ClientLanguage switch {
+            ClientLanguage.French => "Général",
+            ClientLanguage.German => "Allgemein",
+            _ => "General"
+        };
+        public string DefaultName1 => PluginInterface.ClientState.ClientLanguage switch {
+            ClientLanguage.French => "Combat",
+            ClientLanguage.German => "Kampf",
+            _ => "Battle"
+        };
+        
+        public unsafe void DoRename(AtkUnitBase* unitBase, bool reset = false) {
+            SetTabName((AtkComponentNode*) unitBase->ULDData.NodeList[13], (reset || !TweakConfig.DoRenameTab0 || string.IsNullOrEmpty(TweakConfig.ChatTab0Name)) ? DefaultName0 : TweakConfig.ChatTab0Name);
+            SetTabName((AtkComponentNode*) unitBase->ULDData.NodeList[12], (reset || !TweakConfig.DoRenameTab1 || string.IsNullOrEmpty(TweakConfig.ChatTab1Name)) ? DefaultName1 : TweakConfig.ChatTab1Name);
+            
+            // Redo Positions
+            ushort x = 23;
+            for (var i = 13; i > 3; i--) {
+                var t = unitBase->ULDData.NodeList[i];
+                if ((t->Flags & 0x10) != 0x10) continue;
+                t->X = x;
+                t->Flags_2 |= 0x1;
+                x += t->Width;
+            }
+        }
+
+        public unsafe void DoRenamePanel(AtkUnitBase* panel, bool reset = false) {
+
+            var baseComponent = (AtkComponentNode*) panel->ULDData.NodeList[5];
+            var textNode = (AtkTextNode*) baseComponent->Component->ULDData.NodeList[1];
+            textNode->AtkResNode.Width = 0;
+            textNode->AlignmentFontType = (byte) AlignmentType.Left;
+            var name = (reset || !TweakConfig.DoRenameTab1 || string.IsNullOrEmpty(TweakConfig.ChatTab1Name)) ? DefaultName1 : TweakConfig.ChatTab1Name;
+            UiHelper.SetText(textNode, $"{(char) SeIconChar.BoxedNumber2} {name}");
+            textNode->AtkResNode.Width += 5;
+            textNode->AtkResNode.Flags_2 |= 0x1;
+
+            baseComponent->Component->ULDData.NodeList[0]->Width = (ushort)(textNode->AtkResNode.Width + 6);
+            baseComponent->Component->ULDData.NodeList[0]->Flags_2 |= 0x1;
+            baseComponent->AtkResNode.Width = (ushort) (textNode->AtkResNode.Width + 6);
+            baseComponent->AtkResNode.Flags_2 |= 0x1;
+
+            panel->ULDData.NodeList[4]->X = 29 + textNode->AtkResNode.Width;
+            panel->ULDData.NodeList[4]->Flags_2 |= 0x1;
+        }
+
+
+        public unsafe void SetTabName(AtkComponentNode* tab, string name) {
+            if (tab == null) return;
+            var textNode = (AtkTextNode*)tab->Component->ULDData.NodeList[3];
+            if (textNode == null) return;
+            textNode->AtkResNode.Width = 0;
+            UiHelper.SetText(textNode, name);
+            textNode->AtkResNode.Width += 10;
+            textNode->AtkResNode.Flags_2 |= 0x1;
+
+            var tabWidth = (ushort) (textNode->AtkResNode.Width + 16);
+
+
+            tab->Component->ULDData.NodeList[0]->Width = tabWidth;
+            tab->Component->ULDData.NodeList[0]->Flags_2 |= 0x1;
+
+            tab->Component->ULDData.NodeList[1]->Width = tabWidth;
+            tab->Component->ULDData.NodeList[1]->Flags_2 |= 0x1;
+
+            tab->Component->ULDData.NodeList[2]->Width = textNode->AtkResNode.Width;
+            tab->Component->ULDData.NodeList[2]->Flags_2 |= 0x1;
+
+            tab->AtkResNode.Width = tabWidth;
+            tab->AtkResNode.Flags_2 |= 0x1;
+        }
+
+    }
+}

@@ -46,6 +46,7 @@ namespace SimpleTweaksPlugin {
             this.PluginConfig = (SimpleTweaksPluginConfig)pluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
             this.PluginConfig.Init(this, pluginInterface);
 
+            UiHelper.Setup(pluginInterface.TargetModuleScanner);
 
             if (PluginConfig.Version < 2) {
                 UpdateFrom = PluginConfig.Version;
