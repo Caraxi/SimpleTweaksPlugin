@@ -3,7 +3,14 @@ using System;
 using System.Linq;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using Lumina.Excel.GeneratedSheets;
+using ImGuiNET;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltip.TooltipField;
+
+namespace SimpleTweaksPlugin {
+    public partial class TooltipTweakConfig {
+        public bool DesynthesisDelta = false;
+    }
+}
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips {
     public class DesynthesisSkill : TooltipTweaks.SubTweak {
@@ -27,6 +34,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 if (item != null && item.Desynth > 0) {
                     var classJobOffset = 2 * (int)(item.ClassJobRepair.Row - 8);
                     var desynthLevel = *(ushort*)(playerStaticAddress + (0x69A + classJobOffset)) / 100f;
+                    var desynthDelta = item.LevelItem.Row - desynthLevel;
 
                     var useDescription = desynthesisInDescription.Contains(item.ItemSearchCategory.Row);
 
@@ -34,15 +42,24 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
                     if (seStr != null) {
                         if (seStr.Payloads.Last() is TextPayload textPayload) {
-                            textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
-                            textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
+                            if (PluginConfig.TooltipTweaks.DesynthesisDelta) {
+                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthDelta:+#;-#}");
+                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({desynthDelta:+#;-#})");
+                            } else {
+                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
+                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
+                            }
                             tooltip[useDescription ? ItemDescription : ExtractableProjectableDesynthesizable] = seStr;
                         }
                     }
                 }
             }
-
-
+        }
+        public override void DrawConfig(ref bool hasChanged) {
+            base.DrawConfig(ref hasChanged);
+            if (!Enabled) return;
+            ImGui.SameLine();
+            hasChanged |= ImGui.Checkbox($"Desynthesis Delta###{GetType().Name}DesynthesisDelta", ref PluginConfig.TooltipTweaks.DesynthesisDelta);
         }
     }
 }
