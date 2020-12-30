@@ -1,7 +1,8 @@
-name: Build Artifact
+name: Build SimpleTweaksPlugin
 on:
   push:
     branches: 'main'
+  pull_request:
 jobs:
   build:
     if: "! contains(toJSON(github.event.commits.*.message), '[skip-ci]')"
