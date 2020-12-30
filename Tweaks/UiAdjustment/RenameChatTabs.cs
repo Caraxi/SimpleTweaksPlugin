@@ -148,10 +148,15 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (baseComponent == null) return;
             var textNode = (AtkTextNode*) baseComponent->Component->ULDData.NodeList[1];
             if (textNode == null) return;
-            textNode->AtkResNode.Width = 0;
-            textNode->AlignmentFontType = (byte) AlignmentType.Left;
-            var name = (reset || !TweakConfig.DoRenameTab1 || string.IsNullOrEmpty(TweakConfig.ChatTab1Name)) ? DefaultName1 : TweakConfig.ChatTab1Name;
-            UiHelper.SetText(textNode, $"{(char) SeIconChar.BoxedNumber2} {name}");
+
+            var name = $"{(char) SeIconChar.BoxedNumber2} {((reset || !TweakConfig.DoRenameTab1 || string.IsNullOrEmpty(TweakConfig.ChatTab1Name)) ? DefaultName1 : TweakConfig.ChatTab1Name)}";
+            var str = Plugin.Common.ReadSeString(textNode->NodeText.StringPtr);
+            if (str.TextValue == name) return;
+            SimpleLog.Log($"Rename Panel: '{str.TextValue}' -> '{name}'");
+            
+            textNode->AtkResNode.Width = 0; // Auto resizing only grows the box. Set to zero to guarantee it.
+            textNode->AlignmentFontType = (byte) AlignmentType.Left; // Auto resizing doesn't work on Center aligned text.
+            UiHelper.SetText(textNode, $"{name}");
             textNode->AtkResNode.Width += 5;
             textNode->AtkResNode.Flags_2 |= 0x1;
 
@@ -169,7 +174,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (tab == null) return;
             var textNode = (AtkTextNode*)tab->Component->ULDData.NodeList[3];
             if (textNode == null) return;
-            textNode->AtkResNode.Width = 0;
+            var str = Plugin.Common.ReadSeString(textNode->NodeText.StringPtr);
+            if (str.TextValue == name) return;
+            SimpleLog.Log($"Rename Tab: '{str.TextValue}' -> '{name}'");
+            textNode->AtkResNode.Width = 0; // Auto resizing only grows the box. Set to zero to guarantee it.
             UiHelper.SetText(textNode, name);
             textNode->AtkResNode.Width += 10;
             textNode->AtkResNode.Flags_2 |= 0x1;
