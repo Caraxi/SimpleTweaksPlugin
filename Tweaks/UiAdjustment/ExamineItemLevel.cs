@@ -102,7 +102,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (node == null) return;
 
             while (node != null) {
-                if (node->Type == (ushort)NodeType.Res) break;
+                if (node->Type == NodeType.Res) break;
                 node = node->PrevSiblingNode;
             }
 
@@ -114,10 +114,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             ULDComponentInfo* compInfo = null;
 
             while (node != null) {
-                if (node->Type >= 1000) {
+                if ((ushort) node->Type >= 1000) {
                     compNode = (AtkComponentNode*)node;
                     compInfo = (ULDComponentInfo*)compNode->Component->ULDData.Objects;
-                    if (compInfo->ComponentType == (byte)ComponentType.Preview) {
+                    if (compInfo->ComponentType == ComponentType.Preview) {
                         break;
                     }
                 }
@@ -136,7 +136,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (node == null) return;
             while (node->PrevSiblingNode != null) node = node->PrevSiblingNode;
             
-            if (node->Type != (ushort)NodeType.Text) return;
+            if (node->Type != NodeType.Text) return;
 
             var textNode = UiAdjustments.CloneNode((AtkTextNode*)node);
 

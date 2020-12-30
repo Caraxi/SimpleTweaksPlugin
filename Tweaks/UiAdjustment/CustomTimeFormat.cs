@@ -33,9 +33,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         }
 
-        private float maxX = 0;
-        private bool overSized = false;
-        private int maxTextSize = 0;
+        private float maxX;
 
         public override unsafe void DrawConfig(ref bool hasChanged) {
             if (Enabled) {

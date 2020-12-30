@@ -6,7 +6,7 @@ using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-
+#pragma warning disable CS0659
 namespace SimpleTweaksPlugin {
     public class SimpleTweaksPlugin : IDalamudPlugin {
         public string Name => "Simple Tweaks";
@@ -161,6 +161,7 @@ namespace SimpleTweaksPlugin {
                 }
             }
         }
+
 
         internal class CaughtError {
             public BaseTweak Tweak = null;

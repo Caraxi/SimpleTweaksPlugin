@@ -18,12 +18,6 @@ namespace SimpleTweaksPlugin {
 
         public static void SetText(AtkTextNode* textNode, SeString str) {
             if (!Ready) return;
-
-            SimpleLog.Log($"Set TextNode: {(ulong) textNode:X}:");
-            foreach (var p in str.Payloads) {
-                SimpleLog.Log($"  {p}");
-            }
-
             var bytes = str.Encode();
             var ptr = Marshal.AllocHGlobal(bytes.Length + 1);
             Marshal.Copy(bytes, 0, ptr, bytes.Length);
@@ -51,7 +45,7 @@ namespace SimpleTweaksPlugin {
         }
 
         public static void SetWindowSize(AtkComponentNode* windowNode, ushort? width, ushort? height) {
-            if (((ULDComponentInfo*) windowNode->Component->ULDData.Objects)->ComponentType != (byte) ComponentType.Window) return;
+            if (((ULDComponentInfo*) windowNode->Component->ULDData.Objects)->ComponentType != ComponentType.Window) return;
 
             width ??= windowNode->AtkResNode.Width;
             height ??= windowNode->AtkResNode.Height;

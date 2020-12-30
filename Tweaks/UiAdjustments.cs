@@ -33,7 +33,7 @@ namespace SimpleTweaksPlugin.Tweaks {
 
                 current = step switch {
                     Step.Parent => current->ParentNode,
-                    Step.Child => current->Type >= 1000 ? ((AtkComponentNode*)current)->Component->ULDData.RootNode : current->ChildNode,
+                    Step.Child => (ushort) current->Type >= 1000 ? ((AtkComponentNode*)current)->Component->ULDData.RootNode : current->ChildNode,
                     Step.Next => current->NextSiblingNode,
                     Step.Previous => current->PrevSiblingNode,
                     Step.PrevFinal => FinalPreviousNode(current),

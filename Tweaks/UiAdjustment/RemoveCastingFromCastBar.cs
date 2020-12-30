@@ -2,7 +2,6 @@
 using System.Numerics;
 using Dalamud.Game.Internal;
 using Dalamud.Interface;
-using Dalamud.Plugin;
 using FFXIVClientStructs.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
@@ -96,7 +95,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
         }
 
-        private float rot = 0;
         private unsafe void UpdateText(Framework framework, bool reset = false) {
             var castBar = framework.Gui.GetUiObjectByName("_CastBar", 1);
             if (castBar == IntPtr.Zero) return;

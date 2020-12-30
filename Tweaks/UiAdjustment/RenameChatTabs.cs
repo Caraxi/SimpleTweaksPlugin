@@ -128,6 +128,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         };
         
         public unsafe void DoRename(AtkUnitBase* unitBase, bool reset = false) {
+            if (unitBase == null) return;
             SetTabName((AtkComponentNode*) unitBase->ULDData.NodeList[13], (reset || !TweakConfig.DoRenameTab0 || string.IsNullOrEmpty(TweakConfig.ChatTab0Name)) ? DefaultName0 : TweakConfig.ChatTab0Name);
             SetTabName((AtkComponentNode*) unitBase->ULDData.NodeList[12], (reset || !TweakConfig.DoRenameTab1 || string.IsNullOrEmpty(TweakConfig.ChatTab1Name)) ? DefaultName1 : TweakConfig.ChatTab1Name);
             
@@ -143,9 +144,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public unsafe void DoRenamePanel(AtkUnitBase* panel, bool reset = false) {
-
             var baseComponent = (AtkComponentNode*) panel->ULDData.NodeList[5];
+            if (baseComponent == null) return;
             var textNode = (AtkTextNode*) baseComponent->Component->ULDData.NodeList[1];
+            if (textNode == null) return;
             textNode->AtkResNode.Width = 0;
             textNode->AlignmentFontType = (byte) AlignmentType.Left;
             var name = (reset || !TweakConfig.DoRenameTab1 || string.IsNullOrEmpty(TweakConfig.ChatTab1Name)) ? DefaultName1 : TweakConfig.ChatTab1Name;
