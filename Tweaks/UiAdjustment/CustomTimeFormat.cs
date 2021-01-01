@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Dalamud;
 using Dalamud.Game.Chat;
@@ -7,6 +8,7 @@ using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using Dalamud.Game.Internal;
 using Dalamud.Hooking;
+using Dalamud.Interface;
 using FFXIVClientStructs;
 using FFXIVClientStructs.Component.GUI;
 using ImGuiNET;
@@ -31,11 +33,105 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public string CustomFormatLT = "HH:mm:ss";
             public string CustomFormatST = "HH:mm:ss";
 
+            public int[] Order = { 0, 1, 2 };
         }
 
         private float maxX;
 
-        public override unsafe void DrawConfig(ref bool hasChanged) {
+        private class MoveAction {
+            public int Index;
+            public bool MoveUp;
+        }
+
+        private void DrawClockConfig(int index, string name, string icon, ref bool hasChanged, ref bool enabled, ref string format, ref MoveAction moveAction, DateTimeOffset example) {
+
+
+            ImGui.Text(icon);
+            ImGui.SameLine();
+
+            // Reordering
+            ImGui.SetWindowFontScale(1.3f);
+            var p2 = ImGui.GetCursorPos();
+            ImGui.PushFont(UiBuilder.IconFont);
+            var white = new Vector4(1, 1, 1, 1);
+            var other = new Vector4(1, 1, 0, 1);
+            var up = $"{(char)FontAwesomeIcon.SortUp}";
+            var down = $"{(char)FontAwesomeIcon.SortDown}";
+            var s = ImGui.CalcTextSize(up);
+
+            ImGui.BeginGroup();
+            var p3 = ImGui.GetCursorPos();
+            var p4 = ImGui.GetCursorScreenPos();
+            var hoveringUp = ImGui.IsMouseHoveringRect(p4, p4 + new Vector2(s.X, s.Y / 2));
+            var hoveringDown = !hoveringUp && ImGui.IsMouseHoveringRect(p4 + new Vector2(0, s.Y / 2), p4 + s);
+
+            if (index > 0) {
+                ImGui.TextColored(hoveringUp ? other : white, up);
+                if (hoveringUp && ImGui.IsMouseClicked(0)) {
+                    moveAction = new MoveAction() {Index = index, MoveUp = true};
+                }
+            }
+
+            ImGui.SetCursorPos(p3);
+            if (index < 2) {
+                ImGui.TextColored(hoveringDown ? other : white, down);
+                if (hoveringDown && ImGui.IsMouseClicked(0)) {
+                    moveAction = new MoveAction() { Index = index, MoveUp = false };
+                }
+            }
+
+            ImGui.EndGroup();
+            ImGui.SetCursorPos(p2 + new Vector2(s.X, 0));
+            ImGui.PopFont();
+            ImGui.SetWindowFontScale(1.0f);
+            // End Reordering
+
+            hasChanged |= ImGui.Checkbox("###enableET", ref enabled);
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(120);
+            hasChanged |= ImGui.InputText(name + "##formatEditInput", ref format, 50);
+
+            ImGui.SameLine();
+            if (ImGui.GetCursorPosX() > maxX) maxX = ImGui.GetCursorPosX();
+            ImGui.SetCursorPosX(maxX);
+            try {
+                var preview = $"{example.DateTime.ToString(format)}";
+                ImGui.SetNextItemWidth(120);
+                ImGui.InputText($"###preview{name}", ref preview, 50, ImGuiInputTextFlags.ReadOnly);
+            } catch {
+                ImGui.Text("Format Invalid");
+            }
+        }
+
+        private unsafe bool DrawClockConfig(int id, int index, string[] icons, ref bool hasChanged, ref MoveAction moveAction) {
+            var c = PluginConfig.UiAdjustments.CustomTimeFormats;
+            switch (id) {
+                case 0: {
+                    var et = DateTimeOffset.FromUnixTimeSeconds(*(long*)(PluginInterface.Framework.Address.BaseAddress + 0x1608));
+                    DrawClockConfig(index, "Eorzea Time", icons[0], ref hasChanged, ref c.ShowET, ref c.CustomFormatET, ref moveAction, et);
+                    break;
+                }
+                case 1: {
+                    DrawClockConfig(index, "Local Time", icons[1], ref hasChanged, ref c.ShowLT, ref c.CustomFormatLT, ref moveAction, DateTimeOffset.Now);
+                    break;
+                }
+                case 2: {
+                    DrawClockConfig(index, "Server Time", icons[2], ref hasChanged, ref c.ShowST, ref c.CustomFormatST, ref moveAction, DateTimeOffset.Now.UtcDateTime);
+                    break;
+                }
+                default: {
+                    // Broken
+                    c.Order = new[] {0, 1, 2};
+                    SimpleLog.Error("Broken Config Detected. Automatically Fixed");
+                    hasChanged = true;
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public override void DrawConfig(ref bool hasChanged) {
             if (Enabled) {
                 if (ImGui.TreeNode(Name)) {
                     if (Experimental) {
@@ -44,61 +140,51 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     }
 
                     var icons = GetClockIcons();
+                    
+                    var c = PluginConfig.UiAdjustments.CustomTimeFormats;
 
-                    var et = DateTimeOffset.FromUnixTimeSeconds(*(long*)(PluginInterface.Framework.Address.BaseAddress + 0x1608));
-                    var lt = DateTimeOffset.Now;
+                    // Safety
+                    var order = new[] { -1, -1, -1};
+                    if (c.Order.Length != 3) {
+                        c.Order = new[] { 0, 1, 2};
+                        SimpleLog.Error("Broken Config Detected. Automatically Fixed");
+                        hasChanged = true;
+                    }
+                    for (var i = 0; i < c.Order.Length; i++) {
+                        order[i] = c.Order[i];
+                    }
+                    if (!(order.Contains(0) && order.Contains(1) && order.Contains(2))) {
+                        order = new[] {0, 1, 2};
+                        c.Order = new[] { 0, 1, 2 };
+                        SimpleLog.Error("Broken Config Detected. Automatically Fixed");
+                        hasChanged = true;
+                    }
 
-                    ImGui.Text(icons[0]);
-                    ImGui.SameLine();
-                    hasChanged |= ImGui.Checkbox("###enableET", ref PluginConfig.UiAdjustments.CustomTimeFormats.ShowET);
-                    ImGui.SameLine();
-                    ImGui.SetNextItemWidth(120);
-                    hasChanged |= ImGui.InputText("Eorzea Time###editFormatET", ref PluginConfig.UiAdjustments.CustomTimeFormats.CustomFormatET, 50);
-                    
-                    ImGui.SameLine();
-                    if (ImGui.GetCursorPosX() > maxX) maxX = ImGui.GetCursorPosX();
-                    ImGui.SetCursorPosX(maxX);
-                    try {
-                        var preview = $"{et.DateTime.ToString(PluginConfig.UiAdjustments.CustomTimeFormats.CustomFormatET)}";
-                        ImGui.SetNextItemWidth(120);
-                        ImGui.InputText("###previewET", ref preview, 50, ImGuiInputTextFlags.ReadOnly);
-                    } catch {
-                        ImGui.Text("Format Invalid");
+                    MoveAction moveAction = null;
+                    for (var i = 0; i < order.Length; i++) {
+                        if (!DrawClockConfig(order[i], i, icons, ref hasChanged, ref moveAction)) {
+                            break;
+                        }
                     }
-                    
-                    ImGui.Text(icons[1]);
-                    ImGui.SameLine();
-                    hasChanged |= ImGui.Checkbox("###enableLT", ref PluginConfig.UiAdjustments.CustomTimeFormats.ShowLT);
-                    ImGui.SameLine();
-                    ImGui.SetNextItemWidth(120);
-                    hasChanged |= ImGui.InputText("Local Time###editFormatLT", ref PluginConfig.UiAdjustments.CustomTimeFormats.CustomFormatLT, 50);
-                    
-                    ImGui.SameLine();
-                    if (ImGui.GetCursorPosX() > maxX) maxX = ImGui.GetCursorPosX();
-                    ImGui.SetCursorPosX(maxX);
-                    try {
-                        var preview = $"{lt.DateTime.ToString(PluginConfig.UiAdjustments.CustomTimeFormats.CustomFormatLT)}";
-                        ImGui.SetNextItemWidth(120);
-                        ImGui.InputText("###previewLT", ref preview, 50, ImGuiInputTextFlags.ReadOnly);
-                    } catch {
-                        ImGui.Text("Format Invalid");
-                    }
-                    
-                    ImGui.Text(icons[2]);
-                    ImGui.SameLine();
-                    hasChanged |= ImGui.Checkbox("###enableST", ref PluginConfig.UiAdjustments.CustomTimeFormats.ShowST);
-                    ImGui.SameLine();
-                    ImGui.SetNextItemWidth(120);
-                    hasChanged |= ImGui.InputText("Server Time (UTC)###editFormatST", ref PluginConfig.UiAdjustments.CustomTimeFormats.CustomFormatST, 50);
-                    ImGui.SameLine();
-                    if (ImGui.GetCursorPosX() > maxX) maxX = ImGui.GetCursorPosX();
-                    ImGui.SetCursorPosX(maxX);
-                    try {
-                        var preview = $"{lt.UtcDateTime.ToString(PluginConfig.UiAdjustments.CustomTimeFormats.CustomFormatST)}";
-                        ImGui.SetNextItemWidth(120);
-                        ImGui.InputText("###previewST", ref preview, 50, ImGuiInputTextFlags.ReadOnly);
-                    } catch {
-                        ImGui.Text("Format Invalid");
+
+                    if (moveAction != null) {
+                        if (moveAction.MoveUp) {
+                            if (moveAction.Index > 0) {
+                                var moving = c.Order[moveAction.Index];
+                                var replacing = c.Order[moveAction.Index - 1];
+                                c.Order[moveAction.Index - 1] = moving;
+                                c.Order[moveAction.Index] = replacing;
+                                hasChanged = true;
+                            }
+                        } else {
+                            if (moveAction.Index < 2) {
+                                var moving = c.Order[moveAction.Index];
+                                var replacing = c.Order[moveAction.Index + 1];
+                                c.Order[moveAction.Index + 1] = moving;
+                                c.Order[moveAction.Index] = replacing;
+                                hasChanged = true;
+                            }
+                        }
                     }
 
                     ImGui.TreePop();
@@ -154,20 +240,32 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             _ => new[] { $"{(char)SeIconChar.EorzeaTimeEn}", $"{(char)SeIconChar.LocalTimeEn}", $"{(char)SeIconChar.ServerTimeEn}" },
         };
 
-
         private unsafe void UpdateTimeString(FFXIVString xivString) {
             var icons = GetClockIcons();
             var et = DateTimeOffset.FromUnixTimeSeconds(*(long*)(PluginInterface.Framework.Address.BaseAddress + 0x1608));
             var lt = DateTimeOffset.Now;
             var timeSeString = new SeString(new List<Payload>());
-            
+
             try {
-                if (PluginConfig.UiAdjustments.CustomTimeFormats.ShowET)
-                    timeSeString.Payloads.Add(new TextPayload($"{icons[0]} {et.DateTime.ToString(PluginConfig.UiAdjustments.CustomTimeFormats.CustomFormatET)} "));
-                if (PluginConfig.UiAdjustments.CustomTimeFormats.ShowLT)
-                    timeSeString.Payloads.Add(new TextPayload($"{icons[1]} {lt.DateTime.ToString(PluginConfig.UiAdjustments.CustomTimeFormats.CustomFormatLT)} "));
-                if (PluginConfig.UiAdjustments.CustomTimeFormats.ShowST)
-                    timeSeString.Payloads.Add(new TextPayload($"{icons[2]} {lt.UtcDateTime.ToString(PluginConfig.UiAdjustments.CustomTimeFormats.CustomFormatST)} "));
+                foreach (var c in PluginConfig.UiAdjustments.CustomTimeFormats.Order) {
+                    switch (c) {
+                        case 0: {
+                            if (PluginConfig.UiAdjustments.CustomTimeFormats.ShowET)
+                                timeSeString.Payloads.Add(new TextPayload($"{icons[0]} {et.DateTime.ToString(PluginConfig.UiAdjustments.CustomTimeFormats.CustomFormatET)} "));
+                            break;
+                        }
+                        case 1: {
+                            if (PluginConfig.UiAdjustments.CustomTimeFormats.ShowLT)
+                                timeSeString.Payloads.Add(new TextPayload($"{icons[1]} {lt.DateTime.ToString(PluginConfig.UiAdjustments.CustomTimeFormats.CustomFormatLT)} "));
+                            break;
+                        }
+                        case 2: {
+                            if (PluginConfig.UiAdjustments.CustomTimeFormats.ShowST)
+                                timeSeString.Payloads.Add(new TextPayload($"{icons[2]} {lt.UtcDateTime.ToString(PluginConfig.UiAdjustments.CustomTimeFormats.CustomFormatST)} "));
+                            break;
+                        }
+                    }
+                }
             } catch {
                 timeSeString.Payloads.Add(new TextPayload("Invalid Time Format"));
             }
