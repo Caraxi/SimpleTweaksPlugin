@@ -44,8 +44,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private void DrawClockConfig(int index, string name, string icon, ref bool hasChanged, ref bool enabled, ref string format, ref MoveAction moveAction, DateTimeOffset example) {
-
-
             ImGui.Text(icon);
             ImGui.SameLine();
 
@@ -86,7 +84,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             ImGui.SetWindowFontScale(1.0f);
             // End Reordering
 
-            hasChanged |= ImGui.Checkbox("###enableET", ref enabled);
+            hasChanged |= ImGui.Checkbox($"###enable{name}", ref enabled);
             ImGui.SameLine();
             ImGui.SetNextItemWidth(120);
             hasChanged |= ImGui.InputText(name + "##formatEditInput", ref format, 50);
