@@ -181,7 +181,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 } catch {
                     try {
                         if (System.IO.Directory.Exists(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ffxiv-teamcraft"))) {
-                            Process.Start($"teamcraft://db/en/item/{item.RowId}");
+                            Process.Start($"teamcraft:///db/en/item/{item.RowId}");
                         } else {
                             teamcraftLocalFailed = true;
                             Process.Start($"https://ffxivteamcraft.com/db/en/item/{item.RowId}");
