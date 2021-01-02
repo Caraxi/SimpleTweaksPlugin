@@ -1,5 +1,6 @@
-## 1.3.3.1
-- `UI -> Rename Chat Tabs` Don't yeet the notice network button
+## 1.3.3.*
+- New Tweak: `Long Veil`
+  - Forces wedding veils to use their 'inside sanctum of the twelve' model.
 
 ## 1.3.3.0
 - `UI -> Custom Time Format` Allow for custom order of clocks.
