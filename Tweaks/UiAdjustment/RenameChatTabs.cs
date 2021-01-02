@@ -135,6 +135,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             // Redo Positions
             ushort x = 23;
             for (var i = 13; i > 3; i--) {
+                if (i == 5) continue;
                 var t = unitBase->ULDData.NodeList[i];
                 if ((t->Flags & 0x10) != 0x10) continue;
                 t->X = x;
