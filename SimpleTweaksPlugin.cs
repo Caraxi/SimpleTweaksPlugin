@@ -54,6 +54,16 @@ namespace SimpleTweaksPlugin {
                 PluginConfig.Save();
             }
 
+            // TEMP, Update for replacement of RemoveCastingFromCastBar
+            if (PluginConfig.EnabledTweaks.Contains("UiAdjustments@RemoveCastingFromCastBar")) {
+                PluginConfig.EnabledTweaks.Remove("UiAdjustments@RemoveCastingFromCastBar");
+                if (!PluginConfig.EnabledTweaks.Contains("UiAdjustments@CastBarAdjustments")) {
+                    PluginConfig.EnabledTweaks.Add("UiAdjustments@CastBarAdjustments");
+                    PluginConfig.UiAdjustments.CastBarAdjustments.RemoveCastingText = true;
+                }
+                PluginConfig.Save();
+            }
+
             Common = new Common(pluginInterface);
 
             PluginInterface.UiBuilder.OnBuildUi += this.BuildUI;

@@ -3,12 +3,13 @@ using System.Runtime.InteropServices;
 using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Plugin;
 using FFXIVClientStructs;
+using FFXIVClientStructs.Component.GUI;
 using SimpleTweaksPlugin.GameStructs;
 
 namespace SimpleTweaksPlugin {
-    internal class Common {
+    internal unsafe class Common {
 
-        private readonly DalamudPluginInterface pluginInterface;
+        private static DalamudPluginInterface _pluginInterface;
 
         private delegate IntPtr GameAlloc(ulong size, IntPtr unk, IntPtr allocator, IntPtr alignment);
 
@@ -28,7 +29,7 @@ namespace SimpleTweaksPlugin {
         public static IntPtr PlayerStaticAddress { get; private set; }
 
         public Common(DalamudPluginInterface pluginInterface) {
-            this.pluginInterface = pluginInterface;
+            _pluginInterface = pluginInterface;
             var gameAllocPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 45 8D 67 23");
             var getGameAllocatorPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 8B 75 08");
 
@@ -43,6 +44,10 @@ namespace SimpleTweaksPlugin {
 
             getInventoryContainer = Marshal.GetDelegateForFunctionPointer<GetInventoryContainer>(getInventoryContainerPtr);
             getContainerSlot = Marshal.GetDelegateForFunctionPointer<GetContainerSlot>(getContainerSlotPtr);
+        }
+
+        public static AtkUnitBase* GetUnitBase(string name, int index = 1) {
+            return (AtkUnitBase*) _pluginInterface.Framework.Gui.GetUiObjectByName(name, index);
         }
 
         public static IntPtr GetContainer(int containerId) {
@@ -95,7 +100,7 @@ namespace SimpleTweaksPlugin {
             var bytes = new byte[offset];
             Marshal.Copy(new IntPtr(ptr), bytes, 0, offset);
 
-            return pluginInterface.SeStringManager.Parse(bytes);
+            return _pluginInterface.SeStringManager.Parse(bytes);
         }
 
         public unsafe void WriteSeString(byte* dst, SeString s) {
@@ -129,7 +134,7 @@ namespace SimpleTweaksPlugin {
 
 
         public unsafe T GetGameOption<T>(GameOptionKind opt) {
-            var optionBase = (byte**)(pluginInterface.Framework.Address.BaseAddress + 0x2B28);
+            var optionBase = (byte**)(_pluginInterface.Framework.Address.BaseAddress + 0x2B28);
             return Marshal.PtrToStructure<T>(new IntPtr(*optionBase + 0xAAE0 + (16 * (uint)opt)));
         }
     }
