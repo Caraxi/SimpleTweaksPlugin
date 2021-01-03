@@ -13,8 +13,8 @@ namespace SimpleTweaksPlugin {
         public static void Show(AtkImageNode* node) => Show((AtkResNode*)node);
         public static void Show(AtkComponentNode* node) => Show((AtkResNode*)node);
 
-        public static void SetSize(AtkComponentNode* node, ushort? w, ushort? h) => SetSize((AtkResNode*) node, w, h);
-        public static void SetSize(AtkTextNode* node, ushort? w, ushort? h) => SetSize((AtkResNode*) node, w, h);
+        public static void SetSize(AtkComponentNode* node, int? w, int? h) => SetSize((AtkResNode*) node, w, h);
+        public static void SetSize(AtkTextNode* node, int? w, int? h) => SetSize((AtkResNode*) node, w, h);
 
         public static void SetPosition(AtkComponentNode* node, float? x, float? y) => SetPosition((AtkResNode*) node, x, y);
         public static void SetPosition(AtkTextNode* node, float? x, float? y) => SetPosition((AtkResNode*) node, x, y);

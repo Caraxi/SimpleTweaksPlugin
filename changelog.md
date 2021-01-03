@@ -1,6 +1,8 @@
 ## 1.3.3.*
 - New Tweak: `Long Veil`
   - Forces wedding veils to use their 'inside sanctum of the twelve' model.
+- New Tweak: `Extended Desynthesis Window`
+  - Shows the current and optimal desynthesis level on the `/ac desynthesis` window.
 
 ## 1.3.3.0
 - `UI -> Custom Time Format` Allow for custom order of clocks.

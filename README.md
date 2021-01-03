@@ -69,6 +69,10 @@ Displays the results of food or potions
 
 ![image](https://i.imgur.com/jPeUsv0.png)
 
+### Extended Desynthesis Menu
+Shows the current desynthesis level on the `/ac desynthesis` menu.
+
+
 ## Other Tweaks
 
 ### Disable Title Screen Movie
@@ -84,3 +88,6 @@ For example, if you're unfortunate enough to have played WoW and keep typing `/g
 
 ### Set Option Command
 Adds commands to change settings that square wasn't kind enough to give us by default.
+
+### Long Veil
+Shows wedding veils using their Sanctum of the Twelve model everywhere.

@@ -25,18 +25,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public class Config {
             public bool ShowItemLevelIcon = true;
         }
-
-        private delegate IntPtr GetInventoryContainer(IntPtr inventoryManager, int inventoryId);
-        private delegate IntPtr GetContainerSlot(IntPtr inventoryContainer, int slotId);
-
+        
         private delegate IntPtr ExamineUpdated(IntPtr a1, int a2, byte a3);
         private Hook<ExamineUpdated> examinedUpdatedHook;
         private IntPtr examineUpdatedAddress;
 
-        private GetInventoryContainer getInventoryContainer;
-        private GetContainerSlot getContainerSlot;
-
-        private IntPtr inventoryManager;
 
         private readonly uint[] canHaveOffhand = { 2, 6, 8, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32 };
 
@@ -54,13 +47,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Setup() {
 
-            inventoryManager = PluginInterface.TargetModuleScanner.GetStaticAddressFromSig("BA ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B F8 48 85 C0");
-            var a = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 8B 55 BB");
-            if (a == IntPtr.Zero) throw new Exception("Failed to find GetInventoryContainer");
-            getInventoryContainer = Marshal.GetDelegateForFunctionPointer<GetInventoryContainer>(a);
-            a = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 8B 5B 0C");
-            if (a == IntPtr.Zero) throw new Exception("Failed to find GetContainerSlot");
-            getContainerSlot = Marshal.GetDelegateForFunctionPointer<GetContainerSlot>(a);
             examineIsValidPtr = PluginInterface.TargetModuleScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 C7 43 ?? ?? ?? ?? ??");
 
             examineUpdatedAddress = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 41 89 04 9F");
@@ -90,7 +76,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             if (examineIsValidPtr == IntPtr.Zero) return;
             if (*(byte*)(examineIsValidPtr + 0x2A8) == 0) return;
-            var container = getInventoryContainer(inventoryManager, 2009);
+            var container = Common.GetContainer(2009);
             if (container == IntPtr.Zero) return;
 
             var examineWindow = (AtkUnitBase*)PluginInterface.Framework.Gui.GetUiObjectByName("CharacterInspect", 1);
@@ -143,9 +129,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var inaccurate = false;
             var sum = 0U;
             for (var i = 0; i < 13; i++) {
-                var slot = getContainerSlot(container, i);
-                if (slot == IntPtr.Zero) continue;
-                var id = *(uint*)(slot + 8);
+                var slot = Common.GetContainerItem(container, i);
+                if (slot == null) continue;
+                var id = slot->ItemId;
                 var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow(id);
                 if ((item.Unknown90 & 2) == 2) inaccurate = true;
                 if (i == 0 && !canHaveOffhand.Contains(item.ItemUICategory.Row)) {

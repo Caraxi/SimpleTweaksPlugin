@@ -16,13 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
     public class DesynthesisSkill : TooltipTweaks.SubTweak {
         public override string Name => "Show Desynthesis Skill";
 
-        private IntPtr playerStaticAddress;
         private readonly uint[] desynthesisInDescription = { 46, 56, 65, 66, 67, 68, 69, 70, 71, 72 };
-
-        public override void Setup() {
-            playerStaticAddress = PluginInterface.TargetModuleScanner.GetStaticAddressFromSig("8B D7 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B7 E8");
-            base.Setup();
-        }
 
         public override unsafe void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, TooltipTweaks.ItemInfo itemInfo) {
 
@@ -33,7 +27,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint)id);
                 if (item != null && item.Desynth > 0) {
                     var classJobOffset = 2 * (int)(item.ClassJobRepair.Row - 8);
-                    var desynthLevel = *(ushort*)(playerStaticAddress + (0x69A + classJobOffset)) / 100f;
+                    var desynthLevel = *(ushort*)(Common.PlayerStaticAddress + (0x69A + classJobOffset)) / 100f;
                     var desynthDelta = item.LevelItem.Row - desynthLevel;
 
                     var useDescription = desynthesisInDescription.Contains(item.ItemSearchCategory.Row);
