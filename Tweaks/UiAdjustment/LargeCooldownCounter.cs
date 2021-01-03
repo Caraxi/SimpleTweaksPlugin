@@ -15,18 +15,31 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public class Configs {
             public bool FastUpdates;
+            public bool DoCross;
+            public bool DoWCross;
         }
 
         private Configs Config => PluginConfig.UiAdjustments.LargeCooldownCounter;
 
         public override void DrawConfig(ref bool hasChanged) {
-            base.DrawConfig(ref hasChanged);
             if (Enabled) {
-                ImGui.SameLine();
-                hasChanged |= ImGui.Checkbox("Fast Updates##largeCooldownCounterFastUpdates", ref Config.FastUpdates);
-                if (ImGui.IsItemHovered()) {
-                    ImGui.SetTooltip("Enabled: Update all hotbars every tick.\nDisabled: Update one hotbar per tick.");
+                if (ImGui.TreeNode($"{Name}")) {
+                    hasChanged |= ImGui.Checkbox("Fast Updates##largeCooldownCounterFastUpdates", ref Config.FastUpdates);
+                    if (ImGui.IsItemHovered()) {
+                        ImGui.SetTooltip("Enabled: Update all hotbars every tick.\nDisabled: Update one hotbar per tick.");
+                    }
+
+                    hasChanged |= ImGui.Checkbox("Update Cross Hotbar##largeCooldownCounterDoCross", ref Config.DoCross);
+                    hasChanged |= ImGui.Checkbox("Update W Cross Hotbar##largeCooldownCounterDoWCross", ref Config.DoWCross);
+
+                    if (hasChanged) {
+                        UpdateAll(true);
+                        UpdateAll();
+                    }
+                    ImGui.TreePop();
                 }
+            } else {
+                base.DrawConfig(ref hasChanged);
             }
         }
 
@@ -60,11 +73,56 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     if (c++ >= actionBarNames.Length) c = 0;
                     UpdateIndex(c);
                 }
+                if (Config.DoCross) UpdateCross();
+                if (Config.DoWCross) UpdateWCross();
             }
         }
 
         private void UpdateAll(bool reset = false) {
             for (var i = 0; i < actionBarNames.Length; i++) UpdateIndex(i, reset);
+            if (Config.DoCross || reset) UpdateCross(reset);
+            if (Config.DoWCross || reset) UpdateWCross(reset);
+        }
+
+        private void UpdateCross(bool reset = false) {
+            var actionCross = (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName("_ActionCross", 1);
+            if (actionCross == null) return;
+
+            for (var i = 8; i < 12 && i < actionCross->ULDData.NodeListCount; i++) {
+                var component = (AtkComponentNode*) actionCross->ULDData.NodeList[i];
+                if (component == null) continue;
+                if (component->Component->ULDData.NodeListCount != 4) continue;
+
+                for (var j = 0; j < component->Component->ULDData.NodeListCount; j++) {
+                    var dragDropComponent = (AtkComponentNode*) component->Component->ULDData.NodeList[j];
+                    UpdateIcon(dragDropComponent, reset);
+                }
+            }
+        }
+
+        private void UpdateWCross(bool reset = false) {
+            if (reset || Config.FastUpdates || c % 2 == 0) {
+                var left = (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName("_ActionDoubleCrossL", 1);
+                UpdateWCross(left, reset);
+            }
+            if (reset || Config.FastUpdates || c % 2 == 1) {
+                var right = (AtkUnitBase*)PluginInterface.Framework.Gui.GetUiObjectByName("_ActionDoubleCrossR", 1);
+                UpdateWCross(right, reset);
+            }
+        }
+
+        private void UpdateWCross(AtkUnitBase* unitBase, bool reset = false) {
+            if (unitBase == null) return;
+            for (var i = 5; i < 7 && i < unitBase->ULDData.NodeListCount; i++) {
+                var component = (AtkComponentNode*)unitBase->ULDData.NodeList[i];
+                if (component == null) continue;
+                if (component->Component->ULDData.NodeListCount != 4) continue;
+
+                for (var j = 0; j < component->Component->ULDData.NodeListCount; j++) {
+                    var dragDropComponent = (AtkComponentNode*)component->Component->ULDData.NodeList[j];
+                    UpdateIcon(dragDropComponent, reset);
+                }
+            }
         }
 
         private void UpdateIndex(int i, bool reset = false) {
@@ -72,22 +130,25 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var actionBarName = actionBarNames[i];
             var actionBar = (AtkUnitBase*)PluginInterface.Framework.Gui.GetUiObjectByName(actionBarName, 1);
             if (actionBar == null) return;
-            UpdateHotbar(actionBar, i, reset);
+            UpdateHotbar(actionBar, reset);
         }
 
-        private void UpdateHotbar(AtkUnitBase* hotbar, int hotbarIndex, bool reset = false) {
+        private void UpdateHotbar(AtkUnitBase* hotbar, bool reset = false) {
             if (hotbar == null) return;
             if (hotbar->ULDData.NodeListCount < 22) return;
             for (var i = 0; i < 12; i++) {
-                UpdateIcon((AtkComponentNode*) hotbar->ULDData.NodeList[20 - i], hotbarIndex, i, reset);
+                UpdateActionIcon((AtkComponentNode*) hotbar->ULDData.NodeList[20 - i], reset);
             }
         }
 
-        private void UpdateIcon(AtkComponentNode* baseComponent, int hotbarIndex, int iconIndex, bool reset = false) {
+        private void UpdateActionIcon(AtkComponentNode* baseComponent, bool reset = false) {
             if (baseComponent == null) return;
-            
             if (baseComponent->Component->ULDData.NodeListCount < 1) return;
-            var dragDropComponent = (AtkComponentNode*) baseComponent->Component->ULDData.NodeList[0];
+            var dragDropComponent = (AtkComponentNode*)baseComponent->Component->ULDData.NodeList[0];
+            UpdateIcon(dragDropComponent, reset);
+        }
+
+        private void UpdateIcon(AtkComponentNode* dragDropComponent, bool reset = false) {
             if (dragDropComponent == null) return;
             if ((dragDropComponent->AtkResNode.Flags & 0x10) != 0x10) return;
             if (dragDropComponent->Component->ULDData.NodeListCount < 3) return;
