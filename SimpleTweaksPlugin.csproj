@@ -16,7 +16,7 @@
     </PropertyGroup>
     <PropertyGroup Label="Feature">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>1.3.3.8</Version>
+        <Version>1.3.3.9</Version>
     </PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
         <AppOutputBase>$(MSBuildProjectDirectory)\</AppOutputBase>
@@ -45,7 +45,7 @@
 	</ItemGroup>
 	<Target Name="ILMerge" AfterTargets="PostBuildEvent">
 		<!-- Merge and rename -->
-		<Exec Command="$(ILMergeConsolePath) /target:library /out:$(TargetDir)SimpleTweaksPlugin.Merged.dll /log /lib:$(APPDATA)\XIVLauncher\addon\Hooks $(TargetDir)SimpleTweaksPlugin.dll $(ProjectDir)lib/FFXIVClientStructs/bin/$(ConfigurationName)/FFXIVClientStructs.dll&#xD;&#xA;powershell -Command &quot;Remove-Item '$(TargetDir)\*.*' -Exclude '*Merged*';Get-ChildItem '$(TargetDir)\*' | Rename-Item -NewName { $_.Name -replace '.Merged','' };&quot;" />
+		<Exec Command="$(ILMergeConsolePath) /target:library /out:$(TargetDir)SimpleTweaksPlugin.Merged.dll /log /lib:$(APPDATA)\XIVLauncher\addon\Hooks $(TargetDir)SimpleTweaksPlugin.dll $(TargetDir)FFXIVClientStructs.dll&#xD;&#xA;powershell -Command &quot;Remove-Item '$(TargetDir)\*.*' -Exclude '*Merged*';Get-ChildItem '$(TargetDir)\*' | Rename-Item -NewName { $_.Name -replace '.Merged','' };&quot;" />
 	</Target>
 
 	<ItemGroup>
