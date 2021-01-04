@@ -22,7 +22,7 @@ namespace SimpleTweaksPlugin {
             var ptr = Marshal.AllocHGlobal(bytes.Length + 1);
             Marshal.Copy(bytes, 0, ptr, bytes.Length);
             Marshal.WriteByte(ptr, bytes.Length, 0);
-            atkTextNodeSetText(textNode, (byte*) ptr);
+            _atkTextNodeSetText(textNode, (byte*) ptr);
             Marshal.FreeHGlobal(ptr);
         }
 

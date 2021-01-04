@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using FFXIVClientStructs.Component.GUI;
+﻿using FFXIVClientStructs.Component.GUI;
 
 namespace SimpleTweaksPlugin {
     public static unsafe partial class UiHelper {

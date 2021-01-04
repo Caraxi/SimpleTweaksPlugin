@@ -15,16 +15,16 @@ namespace SimpleTweaksPlugin {
 
         private delegate IntPtr GetGameAllocator();
 
-        private static GameAlloc gameAlloc;
-        private static GetGameAllocator getGameAllocator;
+        private static GameAlloc _gameAlloc;
+        private static GetGameAllocator _getGameAllocator;
 
         private delegate IntPtr GetInventoryContainer(IntPtr inventoryManager, int inventoryId);
-        private unsafe delegate InventoryItem* GetContainerSlot(IntPtr inventoryContainer, int slotId);
+        private delegate InventoryItem* GetContainerSlot(IntPtr inventoryContainer, int slotId);
 
-        private static GetInventoryContainer getInventoryContainer;
-        private static GetContainerSlot getContainerSlot;
+        private static GetInventoryContainer _getInventoryContainer;
+        private static GetContainerSlot _getContainerSlot;
 
-        private static IntPtr inventoryManager;
+        private static IntPtr _inventoryManager;
 
         public static IntPtr PlayerStaticAddress { get; private set; }
 
@@ -33,17 +33,17 @@ namespace SimpleTweaksPlugin {
             var gameAllocPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 45 8D 67 23");
             var getGameAllocatorPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 8B 75 08");
 
-            inventoryManager = pluginInterface.TargetModuleScanner.GetStaticAddressFromSig("BA ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B F8 48 85 C0");
+            _inventoryManager = pluginInterface.TargetModuleScanner.GetStaticAddressFromSig("BA ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B F8 48 85 C0");
             var getInventoryContainerPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 8B 55 BB");
             var getContainerSlotPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 8B 5B 0C");
 
             PlayerStaticAddress = pluginInterface.TargetModuleScanner.GetStaticAddressFromSig("8B D7 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B7 E8");
 
-            gameAlloc = Marshal.GetDelegateForFunctionPointer<GameAlloc>(gameAllocPtr);
-            getGameAllocator = Marshal.GetDelegateForFunctionPointer<GetGameAllocator>(getGameAllocatorPtr);
+            _gameAlloc = Marshal.GetDelegateForFunctionPointer<GameAlloc>(gameAllocPtr);
+            _getGameAllocator = Marshal.GetDelegateForFunctionPointer<GetGameAllocator>(getGameAllocatorPtr);
 
-            getInventoryContainer = Marshal.GetDelegateForFunctionPointer<GetInventoryContainer>(getInventoryContainerPtr);
-            getContainerSlot = Marshal.GetDelegateForFunctionPointer<GetContainerSlot>(getContainerSlotPtr);
+            _getInventoryContainer = Marshal.GetDelegateForFunctionPointer<GetInventoryContainer>(getInventoryContainerPtr);
+            _getContainerSlot = Marshal.GetDelegateForFunctionPointer<GetContainerSlot>(getContainerSlotPtr);
         }
 
         public static AtkUnitBase* GetUnitBase(string name, int index = 1) {
@@ -51,27 +51,27 @@ namespace SimpleTweaksPlugin {
         }
 
         public static IntPtr GetContainer(int containerId) {
-            if (inventoryManager == IntPtr.Zero) return IntPtr.Zero;
-            return getInventoryContainer(inventoryManager, containerId);
+            if (_inventoryManager == IntPtr.Zero) return IntPtr.Zero;
+            return _getInventoryContainer(_inventoryManager, containerId);
         }
 
-        public static unsafe InventoryItem* GetContainerItem(IntPtr container, int slot) {
+        public static InventoryItem* GetContainerItem(IntPtr container, int slot) {
             if (container == IntPtr.Zero) return null;
-            return getContainerSlot(container, slot);
+            return _getContainerSlot(container, slot);
         }
 
-        public static unsafe InventoryItem* GetInventoryItem(int inventoryId, int slotId) {
-            if (inventoryManager == IntPtr.Zero) return null;
-            var container = getInventoryContainer(inventoryManager, inventoryId);
-            return container == IntPtr.Zero ? null : getContainerSlot(container, slotId);
+        public static InventoryItem* GetInventoryItem(int inventoryId, int slotId) {
+            if (_inventoryManager == IntPtr.Zero) return null;
+            var container = _getInventoryContainer(_inventoryManager, inventoryId);
+            return container == IntPtr.Zero ? null : _getContainerSlot(container, slotId);
         }
 
         public static IntPtr Alloc(ulong size) {
-            if (gameAlloc == null || getGameAllocator == null) return IntPtr.Zero;
-            return gameAlloc(size, IntPtr.Zero, getGameAllocator(), IntPtr.Zero);
+            if (_gameAlloc == null || _getGameAllocator == null) return IntPtr.Zero;
+            return _gameAlloc(size, IntPtr.Zero, _getGameAllocator(), IntPtr.Zero);
         }
         
-        public unsafe void WriteSeString(byte** startPtr, IntPtr alloc, SeString seString) {
+        public void WriteSeString(byte** startPtr, IntPtr alloc, SeString seString) {
             if (startPtr == null) return;
             var start = *(startPtr);
             if (start == null) return;
@@ -80,14 +80,14 @@ namespace SimpleTweaksPlugin {
             *startPtr = (byte*)alloc;
         }
 
-        public unsafe SeString ReadSeString(byte** startPtr) {
+        public SeString ReadSeString(byte** startPtr) {
             if (startPtr == null) return null;
             var start = *(startPtr);
             if (start == null) return null;
             return ReadSeString(start);
         }
 
-        public unsafe SeString ReadSeString(byte* ptr) {
+        public SeString ReadSeString(byte* ptr) {
             var offset = 0;
             while (true) {
                 var b = *(ptr + offset);
@@ -103,7 +103,7 @@ namespace SimpleTweaksPlugin {
             return _pluginInterface.SeStringManager.Parse(bytes);
         }
 
-        public unsafe void WriteSeString(byte* dst, SeString s) {
+        public void WriteSeString(byte* dst, SeString s) {
             var bytes = s.Encode();
             for (var i = 0; i < bytes.Length; i++) {
                 *(dst + i) = bytes[i];
@@ -111,7 +111,7 @@ namespace SimpleTweaksPlugin {
             *(dst + bytes.Length) = 0;
         }
 
-        public unsafe void WriteSeString(FFXIVString xivString, SeString s) {
+        public void WriteSeString(FFXIVString xivString, SeString s) {
             var bytes = s.Encode();
             int i;
             for (i = 0; i < bytes.Length && i < xivString.BufSize - 1; i++) {
@@ -133,7 +133,7 @@ namespace SimpleTweaksPlugin {
         }
 
 
-        public unsafe T GetGameOption<T>(GameOptionKind opt) {
+        public T GetGameOption<T>(GameOptionKind opt) {
             var optionBase = (byte**)(_pluginInterface.Framework.Address.BaseAddress + 0x2B28);
             return Marshal.PtrToStructure<T>(new IntPtr(*optionBase + 0xAAE0 + (16 * (uint)opt)));
         }

@@ -155,7 +155,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 UiHelper.SetPosition(skillNameText, barNode->X + 4, null);
 
                 UiHelper.SetSize(countdownText, 42, null);
-                UiHelper.SetPosition(countdownText, 130, null);
+                UiHelper.SetPosition(countdownText, 170, null);
 
                 countdownText->AlignmentFontType = 0x25;
                 skillNameText->AlignmentFontType = 0x03;
@@ -173,8 +173,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 UiHelper.SetSize(countdownText, barNode->Width - 8, null);
                 UiHelper.SetPosition(countdownText, (barNode->X + 4) + Config.OffsetCounterPosition, null);
             } else {
+                countdownText->AlignmentFontType = (byte)(0x20 | (byte)Alignment.Right);
                 UiHelper.SetSize(countdownText, 42, null);
-                UiHelper.SetPosition(countdownText, 130, null);
+                UiHelper.SetPosition(countdownText, 170, null);
             }
 
             if (!Config.RemoveName) {

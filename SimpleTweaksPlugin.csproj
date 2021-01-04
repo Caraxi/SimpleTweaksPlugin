@@ -11,12 +11,12 @@
         <OutputPath></OutputPath>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <DebugSymbols>true</DebugSymbols>
-        <DebugType>Portable</DebugType>
+        <DebugType>full</DebugType>
         <DocumentationFile></DocumentationFile>
     </PropertyGroup>
     <PropertyGroup Label="Feature">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>1.3.3.7</Version>
+        <Version>1.3.3.8</Version>
     </PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
         <AppOutputBase>$(MSBuildProjectDirectory)\</AppOutputBase>
@@ -35,9 +35,20 @@
       <None Remove="Publish\**" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="lib\FFXIVClientStructs\FFXIVClientStructs.csproj" />
+      <PackageReference Include="ILMerge" Version="3.0.41" />
     </ItemGroup>
     <ItemGroup>
+      <ProjectReference Include="lib\FFXIVClientStructs\FFXIVClientStructs.csproj" Private="true" />
+    </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="ILMerge" Version="3.0.29" />
+	</ItemGroup>
+	<Target Name="ILMerge" AfterTargets="PostBuildEvent">
+		<!-- Merge and rename -->
+		<Exec Command="$(ILMergeConsolePath) /target:library /out:$(TargetDir)SimpleTweaksPlugin.Merged.dll /log /lib:$(APPDATA)\XIVLauncher\addon\Hooks $(TargetDir)SimpleTweaksPlugin.dll $(ProjectDir)lib/FFXIVClientStructs/bin/$(ConfigurationName)/FFXIVClientStructs.dll&#xD;&#xA;powershell -Command &quot;Remove-Item '$(TargetDir)\*.*' -Exclude '*Merged*';Get-ChildItem '$(TargetDir)\*' | Rename-Item -NewName { $_.Name -replace '.Merged','' };&quot;" />
+	</Target>
+
+	<ItemGroup>
 		<Reference Include="Dalamud" Private="false">
 			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Dalamud.dll</HintPath>
 		</Reference>

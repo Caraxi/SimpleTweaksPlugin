@@ -75,7 +75,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
 
         public static unsafe AtkResNode* CloneNode(AtkResNode* original) {
-            var size = (NodeType) original->Type switch {
+            var size = original->Type switch {
                 NodeType.Res => sizeof(AtkResNode),
                 NodeType.Image => sizeof(AtkImageNode),
                 NodeType.Text => sizeof(AtkTextNode),
