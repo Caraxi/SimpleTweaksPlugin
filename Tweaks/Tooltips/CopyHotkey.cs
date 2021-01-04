@@ -12,6 +12,7 @@ using Dalamud.Game.ClientState;
 using Dalamud.Game.Internal;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Enums;
 
 namespace SimpleTweaksPlugin {
     public partial class TooltipTweakConfig {

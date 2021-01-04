@@ -3,6 +3,7 @@ using Dalamud.Game.Internal;
 using Dalamud.Interface;
 using FFXIVClientStructs.Component.GUI;
 using ImGuiNET;
+using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 namespace SimpleTweaksPlugin {

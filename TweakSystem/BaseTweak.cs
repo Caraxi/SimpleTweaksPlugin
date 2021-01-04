@@ -2,7 +2,7 @@
 using Dalamud.Plugin;
 using ImGuiNET;
 
-namespace SimpleTweaksPlugin {
+namespace SimpleTweaksPlugin.TweakSystem {
     public abstract class BaseTweak {
 
         public SimpleTweaksPlugin Plugin;

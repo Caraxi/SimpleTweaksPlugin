@@ -7,6 +7,8 @@ using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using Dalamud.Game.Command;
 using ImGuiNET;
+using SimpleTweaksPlugin.Enums;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks {
     public class ChrDirCommand : Tweak {

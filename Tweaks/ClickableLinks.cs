@@ -4,6 +4,8 @@ using System.Text.RegularExpressions;
 using Dalamud.Game.Chat;
 using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
+using SimpleTweaksPlugin.Enums;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks {
     class ClickableLinks : Tweak {

@@ -1,6 +1,6 @@
 ﻿using FFXIVClientStructs.Component.GUI;
 
-namespace SimpleTweaksPlugin {
+namespace SimpleTweaksPlugin.Helper {
     public static unsafe partial class UiHelper {
         public static void Hide(AtkTextNode* node) => Hide((AtkResNode*)node);
         public static void Hide(AtkNineGridNode* node) => Hide((AtkResNode*)node);

@@ -8,6 +8,7 @@ using Dalamud.Hooking;
 using Dalamud.Plugin;
 using ImGuiNET;
 using SimpleTweaksPlugin.Tweaks;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {

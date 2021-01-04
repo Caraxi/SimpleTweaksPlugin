@@ -6,6 +6,7 @@ using Dalamud.Game.Chat;
 using FFXIVClientStructs.Component.GUI;
 using FFXIVClientStructs.Component.GUI.ULD;
 using ImGuiNET;
+using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 namespace SimpleTweaksPlugin {

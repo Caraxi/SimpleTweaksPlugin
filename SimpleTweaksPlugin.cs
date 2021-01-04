@@ -6,6 +6,9 @@ using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.TweakSystem;
+
 #pragma warning disable CS0659
 namespace SimpleTweaksPlugin {
     public class SimpleTweaksPlugin : IDalamudPlugin {

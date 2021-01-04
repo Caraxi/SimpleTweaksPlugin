@@ -4,6 +4,7 @@ using System.Linq;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using Lumina.Excel.GeneratedSheets;
 using ImGuiNET;
+using SimpleTweaksPlugin.Helper;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltip.TooltipField;
 
 namespace SimpleTweaksPlugin {

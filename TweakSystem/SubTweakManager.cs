@@ -5,7 +5,7 @@ using System.Numerics;
 using System.Reflection;
 using ImGuiNET;
 
-namespace SimpleTweaksPlugin {
+namespace SimpleTweaksPlugin.TweakSystem {
 
     public abstract class SubTweakManager : Tweak {
 

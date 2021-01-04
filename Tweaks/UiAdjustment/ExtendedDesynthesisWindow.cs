@@ -8,6 +8,7 @@ using FFXIVClientStructs.Component.GUI.ULD;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.GameStructs;
+using SimpleTweaksPlugin.Helper;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {

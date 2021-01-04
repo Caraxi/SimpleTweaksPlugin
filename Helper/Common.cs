@@ -6,7 +6,7 @@ using FFXIVClientStructs;
 using FFXIVClientStructs.Component.GUI;
 using SimpleTweaksPlugin.GameStructs;
 
-namespace SimpleTweaksPlugin {
+namespace SimpleTweaksPlugin.Helper {
     internal unsafe class Common {
 
         private static DalamudPluginInterface _pluginInterface;

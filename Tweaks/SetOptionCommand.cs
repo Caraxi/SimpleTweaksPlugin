@@ -7,6 +7,7 @@ using Dalamud.Game.Command;
 using Dalamud.Hooking;
 using Dalamud.Plugin;
 using ImGuiNET;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks {
     public class SetOptionCommand : Tweak {

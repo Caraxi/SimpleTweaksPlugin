@@ -5,7 +5,7 @@ using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using FFXIVClientStructs.Component.GUI;
 using FFXIVClientStructs.Component.GUI.ULD;
 
-namespace SimpleTweaksPlugin {
+namespace SimpleTweaksPlugin.Helper {
     public static unsafe partial class UiHelper {
         public static void Hide(AtkResNode* node) {
             node->Flags &= ~0x10;

@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace SimpleTweaksPlugin {
+namespace SimpleTweaksPlugin.Enums {
     public enum VK {
         LBUTTON = 1,
         RBUTTON = 2,
@@ -193,8 +193,6 @@ namespace SimpleTweaksPlugin {
             { VK.KEY_8, "8"},
             { VK.KEY_9, "9"},
         };
-
-
         public static string GetKeyName(this VK k) {
             if (namedKeys.ContainsKey(k)) return namedKeys[k];
             return k.ToString();

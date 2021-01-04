@@ -10,6 +10,7 @@ using FFXIVClientStructs.Component.GUI;
 using FFXIVClientStructs.Component.GUI.ULD;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 namespace SimpleTweaksPlugin {

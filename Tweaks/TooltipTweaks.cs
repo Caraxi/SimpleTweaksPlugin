@@ -7,6 +7,7 @@ using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Hooking;
 using Dalamud.Plugin;
 using FFXIVClientStructs.Component.GUI;
+using SimpleTweaksPlugin.TweakSystem;
 using static SimpleTweaksPlugin.Tweaks.UiAdjustments;
 using static SimpleTweaksPlugin.Tweaks.UiAdjustments.Step;
 

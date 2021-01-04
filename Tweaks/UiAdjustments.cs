@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.Component.GUI;
+using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {

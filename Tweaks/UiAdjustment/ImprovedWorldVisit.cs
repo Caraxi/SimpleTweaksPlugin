@@ -5,6 +5,7 @@ using Dalamud.Game.Internal;
 using FFXIVClientStructs;
 using FFXIVClientStructs.Component.GUI;
 using FFXIVClientStructs.Component.GUI.ULD;
+using SimpleTweaksPlugin.Helper;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class ImprovedWorldVisit : UiAdjustments.SubTweak {
