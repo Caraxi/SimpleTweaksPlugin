@@ -1,9 +1,13 @@
-## 1.3.3.*
+## 1.3.4.0
 - New Tweak: `Long Veil`
   - Forces wedding veils to use their 'inside sanctum of the twelve' model.
 - New Tweak: `Extended Desynthesis Window`
   - Shows the current and optimal desynthesis level on the `/ac desynthesis` window.
 - `UI -> Large Cooldown Counter` Add support for Cross Hotbar
+- `UI -> Remove 'Casting' Text from Cast Bar` rewritten to allow more customisation
+  - Renamed to `Cast Bar Adjustments`
+  - Can now hide Icon, 'Casting', Countdown and Skill name individually.
+  - Can now align skill name
 
 ## 1.3.3.0
 - `UI -> Custom Time Format` Allow for custom order of clocks.

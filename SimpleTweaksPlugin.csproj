@@ -16,7 +16,7 @@
     </PropertyGroup>
     <PropertyGroup Label="Feature">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>1.3.3.9</Version>
+        <Version>1.3.4.0</Version>
     </PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
         <AppOutputBase>$(MSBuildProjectDirectory)\</AppOutputBase>
@@ -40,9 +40,6 @@
     <ItemGroup>
       <ProjectReference Include="lib\FFXIVClientStructs\FFXIVClientStructs.csproj" Private="true" />
     </ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="ILMerge" Version="3.0.29" />
-	</ItemGroup>
 	<Target Name="ILMerge" AfterTargets="PostBuildEvent">
 		<!-- Merge and rename -->
 		<Exec Command="$(ILMergeConsolePath) /target:library /out:$(TargetDir)/../SimpleTweaksPlugin.dll /log /lib:$(APPDATA)\XIVLauncher\addon\Hooks $(TargetDir)SimpleTweaksPlugin.dll $(TargetDir)FFXIVClientStructs.dll&#xD;&#xA;powershell -Command &quot;Remove-Item '$(TargetDir)\*.*';Move-Item '$(TargetDir)\..\SimpleTweaksPlugin.*' -Destination '$(TargetDir)';&quot;" />

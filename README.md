@@ -34,8 +34,8 @@ Increases the size of the countdown for abilities on your hotbars.
 
 ![image](https://i.imgur.com/CQzvEcg.png)
 
-### Remove 'Casting' from Cast Bar
-Removes the 'Casting' text on your cast bar and allows the repositioning of the countdown displayed.
+### Cast Bar Adjustments
+Allows various adjustments of the cast bar, such as hiding individual parts or aligning the texts.
 ![image](https://i.imgur.com/83GQnPc.png)
 
 ### Remove Community Finder
