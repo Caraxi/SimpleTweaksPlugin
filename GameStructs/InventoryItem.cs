@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
 
 namespace SimpleTweaksPlugin.GameStructs {
     
@@ -11,7 +6,7 @@ namespace SimpleTweaksPlugin.GameStructs {
     public struct InventoryItem {
 
         [FieldOffset(0x00)] public int Container;
-        [FieldOffset(0x04)] public int Slot;
+        [FieldOffset(0x04)] public short Slot;
         [FieldOffset(0x08)] public uint ItemId;
         [FieldOffset(0x0C)] public uint Quantity;
         [FieldOffset(0x10)] public ushort Spiritbond;

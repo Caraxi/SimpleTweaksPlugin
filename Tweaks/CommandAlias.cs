@@ -5,7 +5,6 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Hooking;
-using Dalamud.Plugin;
 using ImGuiNET;
 using SimpleTweaksPlugin.Tweaks;
 using SimpleTweaksPlugin.TweakSystem;
@@ -24,12 +23,14 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
 
         public class AliasEntry {
+            public static readonly string[] NoOverwrite = { "xlplugins", "xlsettings", "xldclose", "xldev", "tweaks" };
             public bool Enabled = true;
             public string Input = string.Empty;
             public string Output = string.Empty;
             [NonSerialized] public bool Delete = false;
             [NonSerialized] public int UniqueId = 0;
             public bool IsValid() {
+                if (NoOverwrite.Contains(Input)) return false;
                 return !(string.IsNullOrWhiteSpace(Input) || string.IsNullOrWhiteSpace(Output));
             }
 
@@ -52,7 +53,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                     ImGui.EndTooltip();
                 }
                 ImGui.Separator();
-                ImGui.Columns(3);
+                ImGui.Columns(4);
                 var s = ImGui.GetIO().FontGlobalScale;
                 ImGui.SetColumnWidth(0, 60 * s );
                 ImGui.SetColumnWidth(1, 150 * s );
@@ -62,6 +63,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                 ImGui.Text("Input Command");
                 ImGui.NextColumn();
                 ImGui.Text("Output Command");
+                ImGui.NextColumn();
                 ImGui.NextColumn();
                 ImGui.Separator();
                 
@@ -79,13 +81,34 @@ namespace SimpleTweaksPlugin.Tweaks {
                         ImGui.Text("Invalid");
                     }
                     ImGui.NextColumn();
-                    ImGui.SetNextItemWidth(-1);
+                    ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
+                    ImGui.Text("/");
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(-5);
                     change = ImGui.InputText($"###aliasInput{aliasEntry.UniqueId}", ref aliasEntry.Input, 30) || change;
                     focused = ImGui.IsItemFocused();
+                    ImGui.PopStyleVar();
                     ImGui.NextColumn();
-                    ImGui.SetNextItemWidth(-1);
+                    ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
+                    ImGui.Text("/");
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(-5);
                     change = ImGui.InputText($"###aliasOutput{aliasEntry.UniqueId}", ref aliasEntry.Output, 30) || change;
                     focused = focused || ImGui.IsItemFocused();
+                    ImGui.PopStyleVar();
+                    ImGui.NextColumn();
+                    
+                    if (AliasEntry.NoOverwrite.Contains(aliasEntry.Input)) {
+
+                        ImGui.TextColored(new Vector4(1, 0, 0, 1), $"'/{aliasEntry.Input}' is a protected command.");
+                    } else if (string.IsNullOrEmpty(aliasEntry.Input)) {
+                        ImGui.TextColored(new Vector4(1, 0, 0, 1), "Input must not be empty.");
+                    } else if (string.IsNullOrEmpty(aliasEntry.Output)) {
+                        ImGui.TextColored(new Vector4(1, 0, 0, 1), "Output must not be empty.");
+                    } else if (aliasEntry.Input.StartsWith("/")) {
+                        ImGui.TextColored(new Vector4(1, 1, 0, 1), "Don't include the '/'");
+                    }
+
                     ImGui.NextColumn();
 
                     if (string.IsNullOrWhiteSpace(aliasEntry.Input) && string.IsNullOrWhiteSpace(aliasEntry.Output)) {
