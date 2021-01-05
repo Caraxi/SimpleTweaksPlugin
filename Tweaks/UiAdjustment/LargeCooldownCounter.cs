@@ -161,8 +161,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (cooldownTextNode->EdgeColor.R != 0x33) reset = true;
             cooldownTextNode->AtkResNode.X = reset ? 3 : 0;
             cooldownTextNode->AtkResNode.Y = reset ? 37 : 0;
-            // cooldownTextNode->AtkResNode.Width = (ushort) (reset ? 48 : 48);
-            cooldownTextNode->AtkResNode.Height = (ushort) (reset ? 12 : 48);
+            cooldownTextNode->AtkResNode.Width = (ushort) (reset ? 48 : 46);
+            cooldownTextNode->AtkResNode.Height = (ushort) (reset ? 12 : 46);
 
             cooldownTextNode->AlignmentFontType = (byte) (reset ? AlignmentType.Left : AlignmentType.Center);
             cooldownTextNode->FontSize = (byte) (reset ? 12 : 18);
