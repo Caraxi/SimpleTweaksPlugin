@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
-using Dalamud.Game.ClientState;
 using Dalamud.Game.Internal;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
@@ -25,6 +23,8 @@ namespace SimpleTweaksPlugin {
 
         public VK[] GardlandToolsLinkHotkey = {VK.Ctrl, VK.G};
         public bool GardlandToolsLinkHotkeyEnabled = false;
+
+        public bool HideHotkeysOnTooltip = false;
     }
 }
 
@@ -37,6 +37,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
         public override string Name => "Item Hotkeys";
         public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, TooltipTweaks.ItemInfo itemInfo) {
+            if (Config.HideHotkeysOnTooltip) return;
             var seStr = tooltip[TooltipTweaks.ItemTooltip.TooltipField.ControlsDisplay];
             if (seStr == null) return;
 
@@ -144,6 +145,8 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                     ImGui.Separator();
                     DrawHotkeyConfig("View on Garland Tools", ref c.GardlandToolsLinkHotkey, ref c.GardlandToolsLinkHotkeyEnabled, ref hasChanged);
                     ImGui.Columns();
+                    ImGui.Dummy(new Vector2(5 * ImGui.GetIO().FontGlobalScale));
+                    hasChanged |= ImGui.Checkbox("Don't show hotkey help on Tooltip", ref c.HideHotkeysOnTooltip);
                     ImGui.TreePop();
                 }
             } else {
