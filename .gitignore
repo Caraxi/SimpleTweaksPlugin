@@ -3,4 +3,5 @@ obj/
 Publish/
 Publish
 .vs/
+.idea/
 SimpleTweaksPlugin.json

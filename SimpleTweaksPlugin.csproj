@@ -25,6 +25,7 @@
 	<PropertyGroup>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
         <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+        <AssemblyName>SimpleTweaksPluginNoDeps</AssemblyName>
     </PropertyGroup>
     <ItemGroup>
       <Compile Remove="lib\**" />
@@ -42,7 +43,7 @@
     </ItemGroup>
 	<Target Name="ILMerge" AfterTargets="PostBuildEvent">
 		<!-- Merge and rename -->
-		<Exec Command="$(ILMergeConsolePath) /target:library /out:$(TargetDir)/../SimpleTweaksPlugin.dll /log /lib:$(APPDATA)\XIVLauncher\addon\Hooks $(TargetDir)SimpleTweaksPlugin.dll $(TargetDir)FFXIVClientStructs.dll&#xD;&#xA;powershell -Command &quot;Remove-Item '$(TargetDir)\*.*';Move-Item '$(TargetDir)\..\SimpleTweaksPlugin.*' -Destination '$(TargetDir)';&quot;" />
+		<Exec Command="$(ILMergeConsolePath) /target:library /out:$(TargetDir)/../SimpleTweaksPlugin.dll /log /lib:$(APPDATA)\XIVLauncher\addon\Hooks $(TargetDir)SimpleTweaksPluginNoDeps.dll $(TargetDir)FFXIVClientStructs.dll&#xD;&#xA;powershell -Command &quot;Remove-Item '$(TargetDir)\*.*';Move-Item '$(TargetDir)\..\SimpleTweaksPlugin.*' -Destination '$(TargetDir)';&quot;" />
 	</Target>
 	<ItemGroup>
 		<Reference Include="Dalamud" Private="false">
