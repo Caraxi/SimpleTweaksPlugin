@@ -1,6 +1,7 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
-namespace SimpleTweaksPlugin.GameStructs {
+namespace SimpleTweaksPlugin.GameStructs.Client.UI {
     
     [StructLayout(LayoutKind.Explicit, Size = 0x38)]
     public struct InventoryItem {
@@ -11,8 +12,15 @@ namespace SimpleTweaksPlugin.GameStructs {
         [FieldOffset(0x0C)] public uint Quantity;
         [FieldOffset(0x10)] public ushort Spiritbond;
         [FieldOffset(0x12)] public ushort Condition;
-        [FieldOffset(0x14)] public byte Flags;
+        [FieldOffset(0x14)] public ItemFlags Flags;
         [FieldOffset(0x30)] public uint GlamourId;
 
     }
+
+    [Flags]
+    public enum ItemFlags : byte {
+        None,
+        HQ,
+    }
+    
 }

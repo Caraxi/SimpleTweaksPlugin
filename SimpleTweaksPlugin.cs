@@ -18,6 +18,9 @@ namespace SimpleTweaksPlugin {
 
         public List<Tweak> Tweaks = new List<Tweak>();
 
+        public IconManager IconManager { get; private set; }
+        
+
         private bool drawConfigWindow = false;
 
         public string AssemblyLocation { get; private set; } = Assembly.GetExecutingAssembly().Location;
@@ -55,10 +58,13 @@ namespace SimpleTweaksPlugin {
             this.PluginConfig = (SimpleTweaksPluginConfig)pluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
             this.PluginConfig.Init(this, pluginInterface);
 
+            IconManager = new IconManager(pluginInterface);
+            
             UiHelper.Setup(pluginInterface.TargetModuleScanner);
-
             DebugUI.SetPlugin(this);
-
+            
+            
+            
             if (PluginConfig.Version < 2) {
                 UpdateFrom = PluginConfig.Version;
                 PluginConfig.Version = 2;

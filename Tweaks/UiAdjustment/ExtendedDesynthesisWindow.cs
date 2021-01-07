@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
+using Dalamud.Game.Chat;
+using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Internal;
 using Dalamud.Hooking;
 using FFXIVClientStructs;
@@ -7,15 +10,41 @@ using FFXIVClientStructs.Component.GUI;
 using FFXIVClientStructs.Component.GUI.ULD;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.GameStructs;
+using SimpleTweaksPlugin.GameStructs.Client.UI;
+using SimpleTweaksPlugin.GameStructs.Client.UI.Misc;
 using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+
+namespace SimpleTweaksPlugin {
+    public partial class UiAdjustmentsConfig {
+        public ExtendedDesynthesisWindow.Configs ExtendedDesynthesisWindow = new ExtendedDesynthesisWindow.Configs();
+    }
+}
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
+
+        public class Configs {
+            public bool BlockClickOnGearset = false;
+        }
+
+        public Configs Config => PluginConfig.UiAdjustments.ExtendedDesynthesisWindow;
+        
+        public override void DrawConfig(ref bool hasChanged) {
+            if (Enabled) {
+                if (ImGui.TreeNode($"{Name}###extendedDesynthesisConfig")) {
+                    hasChanged |= ImGui.Checkbox("Block clicking on gearset items.", ref Config.BlockClickOnGearset);
+                    ImGui.TreePop();
+                }
+            } else {
+                base.DrawConfig(ref hasChanged);
+            }
+        }
+
         public override string Name => "Extended Desynthesis Window";
 
         private const ushort OriginalWidth = 600;
-        private const ushort AddedWidth = 90;
+        private const ushort AddedWidth = 100;
         private const ushort NewWidth = OriginalWidth + AddedWidth;
 
         private delegate IntPtr SubDelegate(IntPtr a1, ulong index, IntPtr a3, ulong a4);
@@ -45,13 +74,15 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
 
             if (desynthRows.ContainsKey(a4)) {
-                UpdateRow(desynthRows[a4].SkillTextNode, a2);
+                UpdateRow(desynthRows[a4], a2);
             }
             
             return ret;
         }
 
-        private void UpdateRow(AtkTextNode* skillTextNode, ulong index) {
+        private void UpdateRow(DesynthRow desynthRow, ulong index) {
+            var skillTextNode = desynthRow.SkillTextNode;
+            
             if (skillTextNode == null) return;
             var addon = (AddonSalvageItemSelector*) PluginInterface.Framework.Gui.GetUiObjectByName("SalvageItemSelector", 1);
             if (addon != null) {
@@ -64,13 +95,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var salvageItem = (SalvageItem*)salvageItemAddress;
 
                 var item = Common.GetInventoryItem(salvageItem->Container, salvageItem->Slot);
-                SimpleLog.Log($"{index}: {(ulong)item:X}");
 
                 var itemData = PluginInterface.Data.Excel.GetSheet<Item>().GetRow(item->ItemId);
 
                 var classJobOffset = 2 * (int)(itemData.ClassJobRepair.Row - 8);
                 var desynthLevel = *(ushort*)(Common.PlayerStaticAddress + (0x69A + classJobOffset)) / 100f;
-
+                
                 skillTextNode->TextColor = new FFXIVByteColor() {
                     A = 0xFF,
                     R = (byte)(desynthLevel > itemData.LevelItem.Row ? 0x00 : 0xCC),
@@ -78,11 +108,47 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     B = 0x00
                 };
                 UiHelper.SetText(skillTextNode, $"{desynthLevel:F0}/{itemData.LevelItem.Row}");
+
+                var itemIdWithHQ = item->ItemId;
+                if ((item->Flags & ItemFlags.HQ) > 0) itemIdWithHQ += 1000000;
+                var gearsetModule = UiHelper.UiModule.RaptureGearsetModule;
+                var itemInGearset = false;
+                for (var i = 0; i < 101; i++) {
+                    var gearset = &gearsetModule.Gearset[i];
+                    if (gearset->ID != i) break;
+                    if ((gearset->Flags & GearsetFlag.Exists) != GearsetFlag.Exists) continue;
+                    
+                    var items = (GearsetItem*) gearset->ItemsData;
+                    for (var j = 0; j < 14; j++) {
+                        if (items[j].ItemID == itemIdWithHQ) {
+                            var name = Encoding.UTF8.GetString(gearset->Name, 0x2F);
+                            itemInGearset = true;
+                            break;
+                        }
+                    }
+
+                    if (itemInGearset) break;
+                }
+                UiHelper.Show(desynthRow.CollisionNode);
+                if (itemInGearset) {
+                    
+                    
+                    if (Config.BlockClickOnGearset) {
+                        UiHelper.Hide(desynthRow.CollisionNode);
+                    }
+                    UiHelper.SetText(desynthRow.GearsetWarningNode, $"{(char) SeIconChar.BoxedStar}");
+                } else {
+                    UiHelper.SetText(desynthRow.GearsetWarningNode, "");
+                    
+                }
+                
             }
         }
 
         public class DesynthRow {
             public AtkTextNode* SkillTextNode;
+            public AtkTextNode* GearsetWarningNode;
+            public AtkCollisionNode* CollisionNode;
         }
 
         private Dictionary<ulong, DesynthRow> desynthRows = new Dictionary<ulong, DesynthRow>();
@@ -110,16 +176,29 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 UiHelper.SetSize(listNodeList[0], NewWidth - 32, null);
                 UiHelper.SetPosition(listNodeList[1], NewWidth - 40, null);
 
+                
+                UiHelper.ExpandNodeList(atkUnitBase, 2);
                 var newHeaderItem = (AtkTextNode*)UiHelper.CloneNode(nodeList[6]);
                 newHeaderItem->NodeText.StringPtr = (byte*)UiHelper.Alloc((ulong)newHeaderItem->NodeText.BufSize);
                 UiHelper.SetText(newHeaderItem, "Skill");
-                UiHelper.ExpandNodeList(atkUnitBase, 1);
-                newHeaderItem->AtkResNode.X = NewWidth - (AddedWidth + 48);
+                
+                newHeaderItem->AtkResNode.X = NewWidth - (AddedWidth + 60);
                 newHeaderItem->AtkResNode.Width = AddedWidth;
                 newHeaderItem->AtkResNode.ParentNode = nodeList[5];
                 newHeaderItem->AtkResNode.NextSiblingNode = nodeList[8];
                 nodeList[8]->PrevSiblingNode = (AtkResNode*)newHeaderItem;
                 atkUnitBase->ULDData.NodeList[atkUnitBase->ULDData.NodeListCount++] = (AtkResNode*)newHeaderItem;
+                
+                var gsHeaderItem = (AtkTextNode*)UiHelper.CloneNode(nodeList[6]);
+                gsHeaderItem->NodeText.StringPtr = (byte*)UiHelper.Alloc((ulong)gsHeaderItem->NodeText.BufSize);
+                UiHelper.SetText(gsHeaderItem, "GS");
+                gsHeaderItem->AtkResNode.X = NewWidth - 80;
+                gsHeaderItem->AlignmentFontType = (byte) AlignmentType.Right;
+                gsHeaderItem->AtkResNode.Width = 30;
+                gsHeaderItem->AtkResNode.ParentNode = nodeList[5];
+                gsHeaderItem->AtkResNode.NextSiblingNode = (AtkResNode*) newHeaderItem;
+                newHeaderItem->AtkResNode.PrevSiblingNode = (AtkResNode*)gsHeaderItem;
+                atkUnitBase->ULDData.NodeList[atkUnitBase->ULDData.NodeListCount++] = (AtkResNode*)gsHeaderItem;
                 
                 for (var i = 2; i < 18; i++) {
                     var listItem = (AtkComponentNode*)listNodeList[i];
@@ -129,21 +208,35 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     UiHelper.SetSize(listItemNodes[1], NewWidth - 59, null);
                     UiHelper.SetSize(listItemNodes[2], NewWidth - 40, null);
 
-
+                    
+                    UiHelper.ExpandNodeList(listItem, 2);
+                     
                     var newRowItem = (AtkTextNode*)UiHelper.CloneNode(listItemNodes[3]);
                     newRowItem->NodeText.StringPtr = (byte*)UiHelper.Alloc((ulong)newRowItem->NodeText.BufSize);
                     UiHelper.SetText(newRowItem, "???");
-                    UiHelper.ExpandNodeList(listItem, 1);
-                    newRowItem->AtkResNode.X = NewWidth - (AddedWidth + 48);
+                    newRowItem->AtkResNode.X = NewWidth - (AddedWidth + 60);
                     newRowItem->AtkResNode.Width = AddedWidth;
                     newRowItem->AtkResNode.ParentNode = (AtkResNode*)listItem;
                     newRowItem->AtkResNode.NextSiblingNode = listItemNodes[7];
                     newRowItem->AlignmentFontType = (byte)AlignmentType.Center;
                     listItemNodes[7]->PrevSiblingNode = (AtkResNode*)newRowItem;
                     listItem->Component->ULDData.NodeList[listItem->Component->ULDData.NodeListCount++] = (AtkResNode*)newRowItem;
-
+                    
+                    var gearsetWarning = (AtkTextNode*)UiHelper.CloneNode(listItemNodes[3]);
+                    gearsetWarning->NodeText.StringPtr = (byte*)UiHelper.Alloc((ulong)gearsetWarning->NodeText.BufSize);
+                    UiHelper.SetText(gearsetWarning, "?");
+                    gearsetWarning->AtkResNode.X = NewWidth - 80;
+                    gearsetWarning->AtkResNode.Width = 30;
+                    gearsetWarning->AtkResNode.ParentNode = (AtkResNode*)listItem;
+                    gearsetWarning->AtkResNode.NextSiblingNode = (AtkResNode*) newRowItem;
+                    gearsetWarning->AlignmentFontType = (byte)AlignmentType.Right;
+                    newRowItem->AtkResNode.PrevSiblingNode = (AtkResNode*) gearsetWarning;
+                    listItem->Component->ULDData.NodeList[listItem->Component->ULDData.NodeListCount++] = (AtkResNode*)gearsetWarning;
+                    
                     desynthRows.Add((ulong) listItem->Component, new DesynthRow() {
-                        SkillTextNode = newRowItem
+                        SkillTextNode = newRowItem,
+                        GearsetWarningNode = gearsetWarning,
+                        CollisionNode =  (AtkCollisionNode*) listItemNodes[0],
                     });
                 }
             }

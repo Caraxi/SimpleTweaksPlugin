@@ -164,10 +164,14 @@ namespace SimpleTweaksPlugin {
             
         }
 
-        public static void ClickToCopyText(string text) {
+        public static void ClickToCopyText(string text, string textCopy = null) {
+            textCopy ??= text;
             ImGui.Text($"{text}");
-            if (ImGui.IsItemHovered()) ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
-            if (ImGui.IsItemClicked()) ImGui.SetClipboardText($"{text}");
+            if (ImGui.IsItemHovered()) {
+                ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
+                if (textCopy != text) ImGui.SetTooltip(textCopy);
+            }
+            if (ImGui.IsItemClicked()) ImGui.SetClipboardText($"{textCopy}");
         }
 
         public static unsafe void SeStringToText(SeString seStr) {

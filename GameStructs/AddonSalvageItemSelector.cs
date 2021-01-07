@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using FFXIVClientStructs.Component.GUI;
 
-namespace SimpleTweaksPlugin.GameStructs {
+namespace SimpleTweaksPlugin.GameStructs.Client.UI {
 
     [StructLayout(LayoutKind.Explicit, Size = 0x1CB0)]
     public unsafe struct AddonSalvageItemSelector {

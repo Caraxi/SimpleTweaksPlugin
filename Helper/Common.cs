@@ -4,7 +4,7 @@ using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Plugin;
 using FFXIVClientStructs;
 using FFXIVClientStructs.Component.GUI;
-using SimpleTweaksPlugin.GameStructs;
+using SimpleTweaksPlugin.GameStructs.Client.UI;
 
 namespace SimpleTweaksPlugin.Helper {
     internal unsafe class Common {
