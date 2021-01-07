@@ -24,6 +24,12 @@ namespace SimpleTweaksPlugin {
 
         internal Common Common;
 
+#if DEBUG
+        private bool drawDebugWindow = true;
+#else
+        private bool drawDebugWindow = false;
+#endif
+
         public void Dispose() {
             SimpleLog.Debug("Dispose");
             PluginInterface.UiBuilder.OnBuildUi -= this.BuildUI;
@@ -50,6 +56,8 @@ namespace SimpleTweaksPlugin {
             this.PluginConfig.Init(this, pluginInterface);
 
             UiHelper.Setup(pluginInterface.TargetModuleScanner);
+
+            DebugUI.SetPlugin(this);
 
             if (PluginConfig.Version < 2) {
                 UpdateFrom = PluginConfig.Version;
@@ -115,6 +123,10 @@ namespace SimpleTweaksPlugin {
         }
 
         public void OnConfigCommandHandler(object command, object args) {
+            if (args is string argString && argString.ToLower() == "debug") {
+                drawDebugWindow = !drawDebugWindow;
+                return;
+            } 
             drawConfigWindow = !drawConfigWindow;
         }
 
@@ -123,8 +135,12 @@ namespace SimpleTweaksPlugin {
         }
 
         private void BuildUI() {
-            drawConfigWindow = drawConfigWindow && PluginConfig.DrawConfigUI();
+            if (drawDebugWindow) {
+                DebugUI.DrawDebugWindow(ref drawDebugWindow);
+            }
 
+            drawConfigWindow = drawConfigWindow && PluginConfig.DrawConfigUI();
+            
             if (ShowErrorWindow) {
                 if (ErrorList.Count > 0) {
                     var errorsStillOpen = true;
