@@ -8,11 +8,9 @@
     </PropertyGroup>
     <PropertyGroup Label="Build">
         <OutputType>Library</OutputType>
-        <OutputPath></OutputPath>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <DebugSymbols>true</DebugSymbols>
         <DebugType>full</DebugType>
-        <DocumentationFile></DocumentationFile>
     </PropertyGroup>
     <PropertyGroup Label="Feature">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -46,20 +44,25 @@
 		<Exec Command="$(ILMergeConsolePath) /target:library /out:$(TargetDir)/../SimpleTweaksPlugin.dll /log /lib:$(APPDATA)\XIVLauncher\addon\Hooks $(TargetDir)SimpleTweaksPluginNoDeps.dll $(TargetDir)FFXIVClientStructs.dll&#xD;&#xA;powershell -Command &quot;Remove-Item '$(TargetDir)\*.*';Move-Item '$(TargetDir)\..\SimpleTweaksPlugin.*' -Destination '$(TargetDir)';&quot;" />
 	</Target>
 	<ItemGroup>
-		<Reference Include="Dalamud" Private="false">
-			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Dalamud.dll</HintPath>
+		<Reference Include="Dalamud">
+            <Private>false</Private>
+            <HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Dalamud.dll</HintPath>
 		</Reference>
-		<Reference Include="ImGui.NET" Private="false">
-			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\ImGui.NET.dll</HintPath>
+		<Reference Include="ImGui.NET">
+            <Private>false</Private>
+            <HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\ImGui.NET.dll</HintPath>
 		</Reference>
-		<Reference Include="ImGuiScene" Private="false">
-			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\ImGuiScene.dll</HintPath>
+		<Reference Include="ImGuiScene">
+            <Private>false</Private>
+            <HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\ImGuiScene.dll</HintPath>
 		</Reference>
-		<Reference Include="Lumina" Private="false">
-			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Lumina.dll</HintPath>
+		<Reference Include="Lumina">
+            <Private>false</Private>
+            <HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Lumina.dll</HintPath>
 		</Reference>
-		<Reference Include="Lumina.Excel" Private="false">
-			<HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Lumina.Excel.dll</HintPath>
+		<Reference Include="Lumina.Excel">
+            <Private>false</Private>
+            <HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Lumina.Excel.dll</HintPath>
 		</Reference>
     </ItemGroup>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)'=='Release'">
