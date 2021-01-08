@@ -47,36 +47,44 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private const ushort AddedWidth = 100;
         private const ushort NewWidth = OriginalWidth + AddedWidth;
 
-        private delegate IntPtr SubDelegate(IntPtr a1, ulong index, IntPtr a3, ulong a4);
+        private delegate IntPtr UpdateItemDelegate(IntPtr a1, ulong index, IntPtr a3, ulong a4);
+        private delegate byte UpdateListDelegate(IntPtr a1, IntPtr a2, IntPtr a3);
 
-        private Hook<SubDelegate> subHook;
-
+        private Hook<UpdateItemDelegate> updateItemHook;
+        private Hook<UpdateListDelegate> updateListHook;
+        
         public override void Enable() {
-            subHook ??= new Hook<SubDelegate>(PluginInterface.TargetModuleScanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 30 49 8B 38"), new SubDelegate(SubDetour));
-            subHook?.Enable();
+            updateItemHook ??= new Hook<UpdateItemDelegate>(PluginInterface.TargetModuleScanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 30 49 8B 38"), new UpdateItemDelegate(UpdateItemDetour));
+            updateItemHook?.Enable();
+            updateListHook ??= new Hook<UpdateListDelegate>(PluginInterface.TargetModuleScanner.ScanText("40 53 56 57 48 83 EC 20 48 8B D9 49 8B F0"), new UpdateListDelegate(UpdateListDetour));
+            updateListHook?.Enable();
             base.Enable();
+        }
+        
+        private byte UpdateListDetour(IntPtr a1, IntPtr a2, IntPtr a3) {
+            var ret = updateListHook.Original(a1, a2, a3);
+            Update();
+            return ret;
         }
 
         public override void Disable() {
-            subHook?.Disable();
+            updateItemHook?.Disable();
+            updateListHook?.Disable();
+            Reset();
             base.Disable();
         }
 
         public override void Dispose() {
-            subHook.Dispose();
+            updateItemHook?.Dispose();
+            updateListHook?.Dispose();
             base.Dispose();
         }
 
-        private IntPtr SubDetour(IntPtr a1, ulong a2, IntPtr a3, ulong a4) {
-            var ret = subHook.Original(a1, a2, a3, a4);
-            if (!desynthRows.ContainsKey(a4)) {
-                Update();
-            }
-
+        private IntPtr UpdateItemDetour(IntPtr a1, ulong a2, IntPtr a3, ulong a4) {
+            var ret = updateItemHook.Original(a1, a2, a3, a4); 
             if (desynthRows.ContainsKey(a4)) {
                 UpdateRow(desynthRows[a4], a2);
             }
-            
             return ret;
         }
 
@@ -87,7 +95,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var addon = (AddonSalvageItemSelector*) PluginInterface.Framework.Gui.GetUiObjectByName("SalvageItemSelector", 1);
             if (addon != null) {
                 if (index > addon->ItemCount) {
-                    UiHelper.SetText(skillTextNode, "???");
+                    UiHelper.SetText(skillTextNode, "Error");
                     return;
                 }
 
@@ -213,7 +221,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                      
                     var newRowItem = (AtkTextNode*)UiHelper.CloneNode(listItemNodes[3]);
                     newRowItem->NodeText.StringPtr = (byte*)UiHelper.Alloc((ulong)newRowItem->NodeText.BufSize);
-                    UiHelper.SetText(newRowItem, "???");
+                    UiHelper.SetText(newRowItem, "Error");
                     newRowItem->AtkResNode.X = NewWidth - (AddedWidth + 60);
                     newRowItem->AtkResNode.Width = AddedWidth;
                     newRowItem->AtkResNode.ParentNode = (AtkResNode*)listItem;
@@ -241,5 +249,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 }
             }
         }
+
+        public void Reset() {
+            var atkUnitBase = (AtkUnitBase*)PluginInterface.Framework.Gui.GetUiObjectByName("SalvageItemSelector", 1);
+            if (atkUnitBase == null) return;
+            UiHelper.Close(atkUnitBase, true);
+        }
+        
     }
 }
