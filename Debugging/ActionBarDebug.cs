@@ -153,6 +153,16 @@ namespace SimpleTweaksPlugin.Debugging {
                         break;
                     }
 
+                    case HotbarSlotType.CraftAction: {
+                        var action = Plugin.PluginInterface.Data.GetExcelSheet<CraftAction>().GetRow(slot->CommandId);
+                        if (action == null) {
+                            ImGui.TextDisabled("Not Found");
+                        } else {
+                            ImGui.TextWrapped($"{action.Name}");
+                        }
+                        break;
+                    }
+
                     default: {
                         ImGui.TextDisabled("Name Not Supprorted");
                         break;

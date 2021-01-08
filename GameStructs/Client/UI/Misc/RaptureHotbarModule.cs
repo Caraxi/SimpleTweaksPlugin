@@ -203,7 +203,7 @@ namespace SimpleTweaksPlugin.GameStructs.Client.UI.Client.UI.Misc {
         Emote = 0x06,
         Macro = 0x07,
         Sign = 0x08,
-        
+        CraftAction = 0x09,
         GeneralAction = 0x0A,
         CompanionOrder = 0x0B,
         MenuCommand = 0x0C,
