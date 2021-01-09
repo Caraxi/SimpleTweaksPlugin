@@ -169,7 +169,12 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         private unsafe byte ProcessChatInputDetour(IntPtr uiModule, byte** message, IntPtr a3) {
             try {
-                var bc = *(short*) (message + 16) - 1;
+                var bc = 0;
+                for (var i = 0; i < 255; i++) {
+                    if (*(*message + i) != 0) continue;
+                    bc = i;
+                    break;
+                }
                 if (bc < 2 || bc > 255) {
                     return processChatInputHook.Original(uiModule, message, a3);
                 }
