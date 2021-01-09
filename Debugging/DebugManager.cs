@@ -22,7 +22,7 @@ namespace SimpleTweaksPlugin {
 
 namespace SimpleTweaksPlugin.Debugging {
 
-    public class DebugConfig {
+    public partial class DebugConfig {
         public string SelectedPage = String.Empty;
     }
 
