@@ -1,15 +1,8 @@
-﻿using System;
-using System.Diagnostics;
-using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Text;
-using FFXIVClientStructs.Component.GUI;
+﻿using System.Text;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using Lumina.Text;
-using SimpleTweaksPlugin.GameStructs.Client.UI;
 using SimpleTweaksPlugin.GameStructs.Client.UI.Client.UI.Misc;
-using SimpleTweaksPlugin.GameStructs.Client.UI.VTable;
 using SimpleTweaksPlugin.Helper;
 using Action = Lumina.Excel.GeneratedSheets.Action;
 
@@ -43,7 +36,7 @@ namespace SimpleTweaksPlugin.Debugging {
             var raptureHotbarModule = UiHelper.UiModule.RaptureHotbarModule;
             ImGui.Text("RaptureHotbarModule:");
             ImGui.SameLine();
-            DebugUI.ClickToCopyText($"{(ulong)raptureHotbarModule:X}");
+            DebugManager.ClickToCopyText($"{(ulong)raptureHotbarModule:X}");
             ImGui.SameLine();
             ImGui.Text($"{Encoding.ASCII.GetString(raptureHotbarModule.Data->ModuleName, 15)}");
             
@@ -110,7 +103,7 @@ namespace SimpleTweaksPlugin.Debugging {
                 if (slot == null) break;
                 if (slot->CommandType == HotbarSlotType.Empty) {
                     ImGui.PushStyleColor(ImGuiCol.Text, slot->CommandType == HotbarSlotType.Empty ? 0x99999999 : 0xFFFFFFFF);
-                    DebugUI.ClickToCopyText($"{i+1:00}", $"{(ulong)slot:X}");
+                    DebugManager.ClickToCopyText($"{i+1:00}", $"{(ulong)slot:X}");
                     ImGui.NextColumn();
                     ImGui.Text("Empty");
                     ImGui.PopStyleColor();
@@ -119,7 +112,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     continue;
                 }
                 
-                DebugUI.ClickToCopyText($"{i+1:00}", $"{(ulong)slot:X}");
+                DebugManager.ClickToCopyText($"{i+1:00}", $"{(ulong)slot:X}");
                 
                 ImGui.NextColumn();
                 
@@ -160,6 +153,41 @@ namespace SimpleTweaksPlugin.Debugging {
                         } else {
                             ImGui.TextWrapped($"{action.Name}");
                         }
+                        break;
+                    }
+
+                    case HotbarSlotType.GeneralAction: {
+                        var action = Plugin.PluginInterface.Data.GetExcelSheet<GeneralAction>().GetRow(slot->CommandId);
+                        if (action == null) {
+                            ImGui.TextDisabled("Not Found");
+                        } else {
+                            ImGui.TextWrapped($"{action.Name}");
+                        }
+                        break;
+                    }
+                    
+                    case HotbarSlotType.MainCommand: {
+                        var action = Plugin.PluginInterface.Data.GetExcelSheet<MainCommand>().GetRow(slot->CommandId);
+                        if (action == null) {
+                            ImGui.TextDisabled("Not Found");
+                        } else {
+                            ImGui.TextWrapped($"{action.Name}");
+                        }
+                        break;
+                    }
+                    
+                    case HotbarSlotType.ExtraCommand: {
+                        var rawSheet = Plugin.PluginInterface.Data.Excel.GetSheetRaw("ExtraCommand");
+                        var parser = rawSheet.GetRowParser(slot->CommandId);
+                        var name = parser.ReadColumn<SeString>(0);
+                        ImGui.Text($"{name}");
+                        break;
+                    }
+
+                    case HotbarSlotType.GearSet: {
+                        var gearsetModule = UiHelper.UiModule.RaptureGearsetModule;
+                        var gearset = gearsetModule.Gearset[slot->CommandId];
+                        ImGui.Text($"{Encoding.UTF8.GetString(gearset.Name, 0x2F)}");
                         break;
                     }
 

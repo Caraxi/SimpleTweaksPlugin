@@ -16,8 +16,6 @@ namespace SimpleTweaksPlugin {
 
         public int Version { get; set; } = 2;
 
-        public string SelectedDebugPage = string.Empty;
-
         public SimpleTweaksPluginConfig() { }
 
         public List<string> EnabledTweaks = new List<string>();

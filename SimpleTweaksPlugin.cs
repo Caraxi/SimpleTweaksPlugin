@@ -6,6 +6,7 @@ using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -26,13 +27,7 @@ namespace SimpleTweaksPlugin {
         public string AssemblyLocation { get; private set; } = Assembly.GetExecutingAssembly().Location;
 
         internal Common Common;
-
-#if DEBUG
-        private bool drawDebugWindow = true;
-#else
-        private bool drawDebugWindow = false;
-#endif
-
+        
         public void Dispose() {
             SimpleLog.Debug("Dispose");
             PluginInterface.UiBuilder.OnBuildUi -= this.BuildUI;
@@ -61,7 +56,7 @@ namespace SimpleTweaksPlugin {
             IconManager = new IconManager(pluginInterface);
             
             UiHelper.Setup(pluginInterface.TargetModuleScanner);
-            DebugUI.SetPlugin(this);
+            DebugManager.SetPlugin(this);
             
             
             
@@ -116,7 +111,7 @@ namespace SimpleTweaksPlugin {
             Tweaks = tweakList.OrderBy(t => t.Name).ToList();
 
 #if DEBUG
-            drawConfigWindow = true;
+            DebugManager.Enabled = true;
 #endif
 
         }
@@ -130,7 +125,7 @@ namespace SimpleTweaksPlugin {
 
         public void OnConfigCommandHandler(object command, object args) {
             if (args is string argString && argString.ToLower() == "debug") {
-                drawDebugWindow = !drawDebugWindow;
+                DebugManager.Enabled = !DebugManager.Enabled;
                 return;
             } 
             drawConfigWindow = !drawConfigWindow;
@@ -141,8 +136,8 @@ namespace SimpleTweaksPlugin {
         }
 
         private void BuildUI() {
-            if (drawDebugWindow) {
-                DebugUI.DrawDebugWindow(ref drawDebugWindow);
+            if (DebugManager.Enabled) {
+                DebugManager.DrawDebugWindow(ref DebugManager.Enabled);
             }
 
             drawConfigWindow = drawConfigWindow && PluginConfig.DrawConfigUI();

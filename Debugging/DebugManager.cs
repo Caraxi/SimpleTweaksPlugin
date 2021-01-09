@@ -7,8 +7,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using SimpleTweaksPlugin.Debugging;
 
 namespace SimpleTweaksPlugin {
+    public partial class SimpleTweaksPluginConfig {
+        public DebugConfig Debugging = new DebugConfig();
+
+        public bool ShouldSerializeDebugging() {
+            return DebugManager.Enabled;
+        }
+        
+    }
+}
+
+namespace SimpleTweaksPlugin.Debugging {
+
+    public class DebugConfig {
+        public string SelectedPage = String.Empty;
+    }
 
     public abstract class DebugHelper : IDisposable {
         public SimpleTweaksPlugin Plugin;
@@ -16,16 +32,18 @@ namespace SimpleTweaksPlugin {
         public abstract string Name { get; }
 
         public virtual void Dispose() {
-
+            
         }
 
     }
-
-    public class DebugUI : IDisposable {
+    
+    public class DebugManager : IDisposable {
 
         private static Dictionary<string, Action> debugPages = new Dictionary<string, Action>();
 
         private static float sidebarSize = 0;
+        
+        public static bool Enabled = false;
 
         public static void RegisterDebugPage(string key, Action action) {
             if (debugPages.ContainsKey(key)) {
@@ -87,8 +105,8 @@ namespace SimpleTweaksPlugin {
 
                     foreach (var k in debugPages.Keys) {
 
-                        if (ImGui.Selectable($"{k}##debugPageOption", _plugin.PluginConfig.SelectedDebugPage == k)) {
-                            _plugin.PluginConfig.SelectedDebugPage = k;
+                        if (ImGui.Selectable($"{k}##debugPageOption", _plugin.PluginConfig.Debugging.SelectedPage == k)) {
+                            _plugin.PluginConfig.Debugging.SelectedPage = k;
                             _plugin.PluginConfig.Save();
                         }
                         
@@ -100,10 +118,10 @@ namespace SimpleTweaksPlugin {
                 ImGui.SameLine();
 
                 if (ImGui.BeginChild("###debugView", new Vector2(-1, -1), true, ImGuiWindowFlags.HorizontalScrollbar)){
-                    if (string.IsNullOrEmpty(_plugin.PluginConfig.SelectedDebugPage) || !debugPages.ContainsKey(_plugin.PluginConfig.SelectedDebugPage)) {
+                    if (string.IsNullOrEmpty(_plugin.PluginConfig.Debugging.SelectedPage) || !debugPages.ContainsKey(_plugin.PluginConfig.Debugging.SelectedPage)) {
                         ImGui.Text("Select Debug Page");
                     } else {
-                        debugPages[_plugin.PluginConfig.SelectedDebugPage]();
+                        debugPages[_plugin.PluginConfig.Debugging.SelectedPage]();
                     }
                     ImGui.EndChild();
                 }

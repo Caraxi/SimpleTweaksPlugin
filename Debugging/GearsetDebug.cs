@@ -17,7 +17,7 @@ namespace SimpleTweaksPlugin.Debugging {
             
             ImGui.Text("RaptureGearsetModule:");
             ImGui.SameLine();
-            DebugUI.ClickToCopyText($"{(ulong)raptureGearsetModule:X}");
+            DebugManager.ClickToCopyText($"{(ulong)raptureGearsetModule:X}");
             ImGui.SameLine();
             ImGui.Text($"{Encoding.ASCII.GetString(raptureGearsetModule.Data->ModuleName, 15)}");
             
@@ -42,7 +42,7 @@ namespace SimpleTweaksPlugin.Debugging {
                 
                 ImGui.Text($"{gearset->ID:00}");
                 ImGui.NextColumn();
-                DebugUI.ClickToCopyText($"{(ulong) gearset:X}");
+                DebugManager.ClickToCopyText($"{(ulong) gearset:X}");
                 ImGui.NextColumn();
                 ImGui.Text(Encoding.UTF8.GetString(gearset->Name, 0x2F));
                 ImGui.NextColumn();

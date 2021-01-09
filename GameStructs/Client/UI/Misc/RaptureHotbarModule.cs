@@ -100,37 +100,37 @@ namespace SimpleTweaksPlugin.GameStructs.Client.UI.Client.UI.Misc {
     
     [StructLayout(LayoutKind.Explicit, Size = 0x25BF0)]
     public unsafe struct RaptureHotbarModuleStruct {
-        
         [FieldOffset(0x00000)] public void* vtbl;
         
         [FieldOffset(0x00030)] public fixed byte ModuleName[15];
         
-        [FieldOffset(0x00088 + 0xA80 * 00)] public HotBar HotBar01;
-        [FieldOffset(0x00088 + 0xA80 * 01)] public HotBar HotBar02;
-        [FieldOffset(0x00088 + 0xA80 * 02)] public HotBar HotBar03;
-        [FieldOffset(0x00088 + 0xA80 * 03)] public HotBar HotBar04;
-        [FieldOffset(0x00088 + 0xA80 * 04)] public HotBar HotBar05;
-        [FieldOffset(0x00088 + 0xA80 * 05)] public HotBar HotBar06;
-        [FieldOffset(0x00088 + 0xA80 * 06)] public HotBar HotBar07;
-        [FieldOffset(0x00088 + 0xA80 * 07)] public HotBar HotBar08;
-        [FieldOffset(0x00088 + 0xA80 * 08)] public HotBar HotBar09;
-        [FieldOffset(0x00088 + 0xA80 * 09)] public HotBar HotBar10;
+        [FieldOffset(0x00088 + HotBar.Size * 00)] public HotBar HotBar01;
+        [FieldOffset(0x00088 + HotBar.Size * 01)] public HotBar HotBar02;
+        [FieldOffset(0x00088 + HotBar.Size * 02)] public HotBar HotBar03;
+        [FieldOffset(0x00088 + HotBar.Size * 03)] public HotBar HotBar04;
+        [FieldOffset(0x00088 + HotBar.Size * 04)] public HotBar HotBar05;
+        [FieldOffset(0x00088 + HotBar.Size * 05)] public HotBar HotBar06;
+        [FieldOffset(0x00088 + HotBar.Size * 06)] public HotBar HotBar07;
+        [FieldOffset(0x00088 + HotBar.Size * 07)] public HotBar HotBar08;
+        [FieldOffset(0x00088 + HotBar.Size * 08)] public HotBar HotBar09;
+        [FieldOffset(0x00088 + HotBar.Size * 09)] public HotBar HotBar10;
 
-        [FieldOffset(0x00088 + 0xA80 * 10)] public HotBar CrossHotBar01;
-        [FieldOffset(0x00088 + 0xA80 * 11)] public HotBar CrossHotBar02;
-        [FieldOffset(0x00088 + 0xA80 * 12)] public HotBar CrossHotBar03;
-        [FieldOffset(0x00088 + 0xA80 * 13)] public HotBar CrossHotBar04;
-        [FieldOffset(0x00088 + 0xA80 * 14)] public HotBar CrossHotBar05;
-        [FieldOffset(0x00088 + 0xA80 * 15)] public HotBar CrossHotBar06;
-        [FieldOffset(0x00088 + 0xA80 * 16)] public HotBar CrossHotBar07;
-        [FieldOffset(0x00088 + 0xA80 * 17)] public HotBar CrossHotBar08;
+        [FieldOffset(0x00088 + HotBar.Size * 10)] public HotBar CrossHotBar01;
+        [FieldOffset(0x00088 + HotBar.Size * 11)] public HotBar CrossHotBar02;
+        [FieldOffset(0x00088 + HotBar.Size * 12)] public HotBar CrossHotBar03;
+        [FieldOffset(0x00088 + HotBar.Size * 13)] public HotBar CrossHotBar04;
+        [FieldOffset(0x00088 + HotBar.Size * 14)] public HotBar CrossHotBar05;
+        [FieldOffset(0x00088 + HotBar.Size * 15)] public HotBar CrossHotBar06;
+        [FieldOffset(0x00088 + HotBar.Size * 16)] public HotBar CrossHotBar07;
+        [FieldOffset(0x00088 + HotBar.Size * 17)] public HotBar CrossHotBar08;
 
         [FieldOffset(0x0FC88)] public HotBar PetHotBar;
         [FieldOffset(0x10A88)] public HotBar CrossPetHotBar;
     }
 
-    [StructLayout(LayoutKind.Sequential, Size = 0xA80)]
+    [StructLayout(LayoutKind.Sequential, Size = HotBar.Size)]
     public unsafe struct HotBar {
+        public const int Size = 0xE00;
         public HotBarSlot S00;
         public HotBarSlot S01;
         public HotBarSlot S02;
@@ -193,7 +193,7 @@ namespace SimpleTweaksPlugin.GameStructs.Client.UI.Client.UI.Misc {
         [FieldOffset(0xDF)] public byte IsEmpty; // ?
     }
 
-    public enum HotbarSlotType : byte {
+    public enum HotbarSlotType : byte { 
         Empty = 0x00,
         Action = 0x01,
         Item = 0x02,
@@ -202,21 +202,21 @@ namespace SimpleTweaksPlugin.GameStructs.Client.UI.Client.UI.Misc {
         
         Emote = 0x06,
         Macro = 0x07,
-        Sign = 0x08,
+        Marker = 0x08,
         CraftAction = 0x09,
         GeneralAction = 0x0A,
         CompanionOrder = 0x0B,
-        MenuCommand = 0x0C,
+        MainCommand = 0x0C,
         Minion = 0x0D,
         
         GearSet = 0x0F,
         PetOrder = 0x10,
         Mount = 0x11,
-        Waymark = 0x12,
+        FieldMarker = 0x12,
         
         Recipe = 0x14,
         
-        Extras = 0x18,
+        ExtraCommand = 0x18,
         PvPQuickChat = 0x19,
         PvPCombo = 0x1A,
         SquadronOrder = 0x1B,
