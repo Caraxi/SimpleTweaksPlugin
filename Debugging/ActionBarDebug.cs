@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Numerics;
+using System.Text;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using Lumina.Text;
@@ -10,24 +11,6 @@ namespace SimpleTweaksPlugin.Debugging {
     public unsafe class ActionBarDebug : DebugHelper {
 
         public override string Name => "Action Bar Debugging";
-
-        private readonly string[] allActionBars = {
-            "_ActionBar",
-            "_ActionBar01",
-            "_ActionBar02",
-            "_ActionBar03",
-            "_ActionBar04",
-            "_ActionBar05",
-            "_ActionBar06",
-            "_ActionBar07",
-            "_ActionBar08",
-            "_ActionBar09",
-            "_ActionCross",
-            "_ActionDoubleCrossL",
-            "_ActionDoubleCrossR",
-        };
-
-        private bool showUiNodes;
         
         public override void Draw() {
             ImGui.Text($"{Name} Debug");
@@ -39,6 +22,9 @@ namespace SimpleTweaksPlugin.Debugging {
             DebugManager.ClickToCopyText($"{(ulong)raptureHotbarModule:X}");
             ImGui.SameLine();
             ImGui.Text($"{Encoding.ASCII.GetString(raptureHotbarModule.Data->ModuleName, 15)}");
+            ImGui.Text("ActionManager:");
+            ImGui.SameLine();
+            DebugManager.ClickToCopyText($"{(ulong)Common.ActionManager.Data:X}");
             
             ImGui.Separator();
             
@@ -91,6 +77,8 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.NextColumn();
             ImGui.Text("Name");
             ImGui.NextColumn();
+            ImGui.Text("Cooldown");
+            ImGui.NextColumn();
             
             
             ImGuiExt.NextRow();
@@ -119,9 +107,22 @@ namespace SimpleTweaksPlugin.Debugging {
                 ImGui.Text($"{slot->CommandType} : {slot->CommandId}");
                 ImGui.NextColumn();
 
-                ImGui.Text($"{slot->IconTypeA} : {slot->IconA}");
-                ImGui.Text($"{slot->IconTypeB} : {slot->IconB}");
+                var iconGood = false;
+                if (slot->Icon <= ushort.MaxValue) {
+                    var icon = Plugin.IconManager.GetIconTexture((ushort)slot->Icon);
+                    if (icon != null) {
+                        ImGui.Image(icon.ImGuiHandle, new Vector2(32));
+                        iconGood = true;
+                    }
+                }
+                if (!iconGood) {
+                    ImGui.GetWindowDrawList().AddRect(ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + new Vector2(32), 0xFF0000FF, 4);
+                    ImGui.Dummy(new Vector2(32));
+                }
+                ImGui.SameLine();
                 
+                ImGui.Text($"{slot->IconTypeA} : {slot->IconA}\n{slot->IconTypeB} : {slot->IconB}");
+
                 ImGui.NextColumn();
                 switch (slot->CommandType) {
                     case HotbarSlotType.Empty: { break; }
@@ -191,13 +192,67 @@ namespace SimpleTweaksPlugin.Debugging {
                         break;
                     }
 
+                    case HotbarSlotType.Macro: {
+                        ImGui.Text($"{(slot->CommandId >= 256 ? "Shared" : "Individual")} #{slot->CommandId%256}");
+                        break;
+                    }
+                    
                     default: {
                         ImGui.TextDisabled("Name Not Supprorted");
                         break;
                     }
                 }
                 
+                ImGui.NextColumn();
+
+                var cooldownGroup = -1;
                 
+                switch (slot->CommandType) {
+                    case HotbarSlotType.Action: {
+                        var action = Plugin.PluginInterface.Data.Excel.GetSheet<Action>().GetRow(slot->CommandId);
+                        if (action == null) {
+                            ImGui.TextDisabled("Not Found");
+                            break;
+                        }
+                        cooldownGroup = action.CooldownGroup;
+                        break;
+                    }
+                    case HotbarSlotType.Item: {
+                        var item = Plugin.PluginInterface.Data.Excel.GetSheet<Item>().GetRow(slot->CommandId);
+                        if (item == null) {
+                            ImGui.TextDisabled("Not Found");
+                            break;
+                        }
+                        
+                        var cdg = Common.ActionManager.GetCooldownGroup(2, slot->CommandId);
+                        if (cdg < 81) cooldownGroup = (int) (cdg + 1);
+                        
+                        break;
+                    }
+                    case HotbarSlotType.GeneralAction: {
+                        var action = Plugin.PluginInterface.Data.Excel.GetSheet<GeneralAction>().GetRow(slot->CommandId);
+                        if (action?.Action == null) {
+                            ImGui.TextDisabled("Not Found");
+                            break;
+                        }
+
+                        cooldownGroup = action.Action.Value.CooldownGroup;
+                        break;
+                    }
+                }
+
+                if (cooldownGroup > 0) {
+                    
+                    ImGui.Text($"Cooldown Group: {cooldownGroup}");
+
+                    var cooldown = Common.ActionManager.GetActionCooldownSlot(cooldownGroup);
+                    DebugManager.ClickToCopyText($"{(ulong)cooldown:X}");
+                    if (cooldown != null) {
+                        ImGui.Text($"{cooldown->IsCooldown} / {cooldown->CooldownElapsed} / {cooldown->CooldownTotal}");
+                    } else {
+                        ImGui.Text("Failed");
+                    }
+                }
                 
                 ImGuiExt.NextRow();
                 ImGui.Separator();

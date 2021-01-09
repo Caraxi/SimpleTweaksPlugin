@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Dalamud.Game;
 using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Plugin;
 using FFXIVClientStructs;
 using FFXIVClientStructs.Component.GUI;
+using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.GameStructs.Client.UI;
 
 namespace SimpleTweaksPlugin.Helper {
@@ -27,6 +29,8 @@ namespace SimpleTweaksPlugin.Helper {
         private static IntPtr _inventoryManager;
 
         public static IntPtr PlayerStaticAddress { get; private set; }
+
+        public static SigScanner Scanner => _pluginInterface.TargetModuleScanner;
 
         public Common(DalamudPluginInterface pluginInterface) {
             _pluginInterface = pluginInterface;
@@ -137,5 +141,16 @@ namespace SimpleTweaksPlugin.Helper {
             var optionBase = (byte**)(_pluginInterface.Framework.Address.BaseAddress + 0x2B28);
             return Marshal.PtrToStructure<T>(new IntPtr(*optionBase + 0xAAE0 + (16 * (uint)opt)));
         }
+        
+        private static ActionManager _actionManager;
+        public static ActionManager ActionManager {
+            get {
+                if (_actionManager != null) return _actionManager;
+                var address = _pluginInterface.TargetModuleScanner.GetStaticAddressFromSig("E8 ?? ?? ?? ?? 33 C0 E9 ?? ?? ?? ?? 8B 7D 0C");
+                _actionManager = new ActionManager(address);
+                return _actionManager;
+            }
+        }
+
     }
 }
