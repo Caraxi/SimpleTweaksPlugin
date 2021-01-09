@@ -138,6 +138,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public void UpdateCastBar(bool reset = false) {
             var castBar = Common.GetUnitBase("_CastBar");
             if (castBar == null) return;
+            if (castBar->ULDData.NodeList == null || castBar->ULDData.NodeListCount < 12) return;
 
             var barNode = castBar->ULDData.NodeList[3];
 
