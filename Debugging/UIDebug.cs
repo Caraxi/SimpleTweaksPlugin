@@ -334,7 +334,18 @@ namespace SimpleTweaksPlugin.Debugging {
                 ImGui.SameLine();
                 DebugManager.ClickToCopyText($"{(ulong)compNode->Component:X}");
                 ImGui.SameLine();
-                PrintOutObject(*compNode->Component, (ulong) compNode->Component, new List<string>());
+                
+                switch (objectInfo->ComponentType) {
+                    case ComponentType.Button: PrintOutObject(*(AtkComponentButton*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    case ComponentType.Slider: PrintOutObject(*(AtkComponentSlider*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    case ComponentType.Window: PrintOutObject(*(AtkComponentWindow*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    case ComponentType.CheckBox: PrintOutObject(*(AtkComponentCheckBox*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    case ComponentType.GaugeBar: PrintOutObject(*(AtkComponentGaugeBar*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    case ComponentType.RadioButton: PrintOutObject(*(AtkComponentRadioButton*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    case ComponentType.TextInput: PrintOutObject(*(AtkComponentTextInput*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    default: PrintOutObject(*compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                }
+
                 PrintResNode(node);
                 PrintNode(componentInfo.RootNode);
 
