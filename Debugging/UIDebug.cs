@@ -76,7 +76,9 @@ namespace SimpleTweaksPlugin.Debugging {
 
         private int a; 
         private void PrintOutObject(object obj, ulong addr, List<string> path) {
+            ImGui.PushStyleColor(ImGuiCol.Text, 0xFF00FFFF);
             if (ImGui.TreeNode($"{obj}##print-obj-{addr:X}-{string.Join("-", path)}")) {
+                ImGui.PopStyleColor();
                 foreach (var f in obj.GetType().GetFields()) {
                     ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{f.FieldType.Name}");
                     ImGui.SameLine();
@@ -85,7 +87,19 @@ namespace SimpleTweaksPlugin.Debugging {
                     if (f.FieldType.IsPointer) {
                         var val = (Pointer) f.GetValue(obj);
                         var unboxed = Pointer.Unbox(val);
-                        DebugManager.ClickToCopyText($"{(ulong)unboxed:X}");
+                        if (unboxed != null) {
+                            DebugManager.ClickToCopyText($"{(ulong)unboxed:X}");
+                            try {
+                                var type = f.FieldType.GetElementType();
+                                var ptrObj = Marshal.PtrToStructure(new IntPtr(unboxed), type);
+                                ImGui.SameLine();
+                                PrintOutObject(ptrObj, (ulong) unboxed, new List<string>(path) {f.Name});
+                            } catch {
+                                // Ignored
+                            }
+                        } else {
+                            ImGui.Text("null");
+                        }
                     } else {
                         if (!f.FieldType.IsPrimitive) {
                             // ImGui.Text($"[OBJ]");
@@ -94,11 +108,10 @@ namespace SimpleTweaksPlugin.Debugging {
                             ImGui.Text($"{f.GetValue(obj)}");
                         }
                     }
-                    
-                    
                 }
-                
                 ImGui.TreePop();
+            } else {
+                ImGui.PopStyleColor();
             }
         }
         
@@ -196,6 +209,19 @@ namespace SimpleTweaksPlugin.Debugging {
                     popped = true;
                 }
 
+                ImGui.Text("Node: ");
+                ImGui.SameLine();
+                DebugManager.ClickToCopyText($"{(ulong)node:X}");
+                ImGui.SameLine();
+                switch (node->Type) {
+                    case NodeType.Text: PrintOutObject(*(AtkTextNode*)node, (ulong) node, new List<string>()); break;
+                    case NodeType.Image: PrintOutObject(*(AtkImageNode*)node, (ulong) node, new List<string>()); break;
+                    case NodeType.Collision: PrintOutObject(*(AtkCollisionNode*)node, (ulong) node, new List<string>()); break;
+                    case NodeType.NineGrid: PrintOutObject(*(AtkNineGridNode*)node, (ulong) node, new List<string>()); break;
+                    case NodeType.Counter: PrintOutObject(*(AtkCounterNode*)node, (ulong) node, new List<string>()); break;
+                    default: PrintOutObject(*node, (ulong) node, new List<string>()); break;
+                }
+                
                 PrintResNode(node);
 
                 if (node->ChildNode != null)
@@ -299,6 +325,16 @@ namespace SimpleTweaksPlugin.Debugging {
                     popped = true;
                 }
 
+                ImGui.Text("Node: ");
+                ImGui.SameLine();
+                DebugManager.ClickToCopyText($"{(ulong)node:X}");
+                ImGui.SameLine();
+                PrintOutObject(*compNode, (ulong) compNode, new List<string>());
+                ImGui.Text("Component: ");
+                ImGui.SameLine();
+                DebugManager.ClickToCopyText($"{(ulong)compNode->Component:X}");
+                ImGui.SameLine();
+                PrintOutObject(*compNode->Component, (ulong) compNode->Component, new List<string>());
                 PrintResNode(node);
                 PrintNode(componentInfo.RootNode);
 
