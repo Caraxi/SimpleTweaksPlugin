@@ -343,6 +343,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     case ComponentType.GaugeBar: PrintOutObject(*(AtkComponentGaugeBar*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
                     case ComponentType.RadioButton: PrintOutObject(*(AtkComponentRadioButton*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
                     case ComponentType.TextInput: PrintOutObject(*(AtkComponentTextInput*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    case ComponentType.Icon: PrintOutObject(*(AtkComponentIcon*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
                     default: PrintOutObject(*compNode->Component, (ulong) compNode->Component, new List<string>()); break;
                 }
 
