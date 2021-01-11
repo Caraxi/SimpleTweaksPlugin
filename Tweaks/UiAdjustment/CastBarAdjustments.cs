@@ -37,8 +37,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public Configs Config => PluginConfig.UiAdjustments.CastBarAdjustments;
 
-        private void DrawAlignmentSelector(string name, ref Alignment selectedAlignment) {
-
+        private bool DrawAlignmentSelector(string name, ref Alignment selectedAlignment) {
+            var changed = false;
 
             ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 2);
             ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.One);
@@ -48,15 +48,24 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             ImGui.PushFont(UiBuilder.IconFont);
 
             ImGui.PushStyleColor(ImGuiCol.Border, selectedAlignment == Alignment.Left ? 0xFF00A5FF: 0x0);
-            if (ImGui.Button($"{(char) FontAwesomeIcon.AlignLeft}##{name}")) selectedAlignment = Alignment.Left;
+            if (ImGui.Button($"{(char) FontAwesomeIcon.AlignLeft}##{name}")) {
+                selectedAlignment = Alignment.Left;
+                changed = true;
+            }
             ImGui.PopStyleColor();
             ImGui.SameLine();
             ImGui.PushStyleColor(ImGuiCol.Border, selectedAlignment == Alignment.Center ? 0xFF00A5FF : 0x0);
-            if (ImGui.Button($"{(char) FontAwesomeIcon.AlignCenter}##{name}")) selectedAlignment = Alignment.Center;
+            if (ImGui.Button($"{(char) FontAwesomeIcon.AlignCenter}##{name}")) {
+                selectedAlignment = Alignment.Center;
+                changed = true;
+            }
             ImGui.PopStyleColor();
             ImGui.SameLine();
             ImGui.PushStyleColor(ImGuiCol.Border, selectedAlignment == Alignment.Right ? 0xFF00A5FF : 0x0);
-            if (ImGui.Button($"{(char) FontAwesomeIcon.AlignRight}##{name}")) selectedAlignment = Alignment.Right;
+            if (ImGui.Button($"{(char) FontAwesomeIcon.AlignRight}##{name}")) {
+                selectedAlignment = Alignment.Right;
+                changed = true;
+            }
             ImGui.PopStyleColor();
 
             ImGui.PopFont();
@@ -67,6 +76,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             ImGui.PopStyleVar();
             ImGui.PopID();
+            return changed;
         }
 
         private float configAlignmentX;
@@ -86,7 +96,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     ImGui.SameLine();
                     if (ImGui.GetCursorPosX() > configAlignmentX) configAlignmentX = ImGui.GetCursorPosX();
                     ImGui.SetCursorPosX(configAlignmentX);
-                    DrawAlignmentSelector("Align Countdown Text", ref Config.AlignCounter);
+                    hasChanged |= DrawAlignmentSelector("Align Countdown Text", ref Config.AlignCounter);
 
                     ImGui.SetCursorPosX(configAlignmentX);
                     ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
@@ -100,7 +110,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     ImGui.SameLine();
                     if (ImGui.GetCursorPosX() > configAlignmentX) configAlignmentX = ImGui.GetCursorPosX();
                     ImGui.SetCursorPosX(configAlignmentX);
-                    DrawAlignmentSelector("Align Ability Name", ref Config.AlignName);
+                    hasChanged |= DrawAlignmentSelector("Align Ability Name", ref Config.AlignName);
                     ImGui.SetCursorPosX(configAlignmentX);
                     ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
                     hasChanged |= ImGui.InputInt("Offset##offsetNamePosition", ref Config.OffsetNamePosition);
