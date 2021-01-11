@@ -85,7 +85,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                     ImGui.Text("/");
                     ImGui.SameLine();
                     ImGui.SetNextItemWidth(-5);
-                    change = ImGui.InputText($"###aliasInput{aliasEntry.UniqueId}", ref aliasEntry.Input, 30) || change;
+                    change |= ImGui.InputText($"###aliasInput{aliasEntry.UniqueId}", ref aliasEntry.Input, 500) || change;
                     focused = ImGui.IsItemFocused();
                     ImGui.PopStyleVar();
                     ImGui.NextColumn();
@@ -93,7 +93,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                     ImGui.Text("/");
                     ImGui.SameLine();
                     ImGui.SetNextItemWidth(-5);
-                    change = ImGui.InputText($"###aliasOutput{aliasEntry.UniqueId}", ref aliasEntry.Output, 30) || change;
+                    change |= ImGui.InputText($"###aliasOutput{aliasEntry.UniqueId}", ref aliasEntry.Output, 500) || change;
                     focused = focused || ImGui.IsItemFocused();
                     ImGui.PopStyleVar();
                     ImGui.NextColumn();
@@ -126,10 +126,10 @@ namespace SimpleTweaksPlugin.Tweaks {
                 ImGui.Text("New:");
                 ImGui.NextColumn();
                 ImGui.SetNextItemWidth(-1);
-                addNew = ImGui.InputText($"###aliasInput{newEntry.UniqueId}", ref newEntry.Input, 30) || addNew;
+                addNew = ImGui.InputText($"###aliasInput{newEntry.UniqueId}", ref newEntry.Input, 500) || addNew;
                 ImGui.NextColumn();
                 ImGui.SetNextItemWidth(-1);
-                addNew = ImGui.InputText($"###aliasOutput{newEntry.UniqueId}", ref newEntry.Output, 30) || addNew;
+                addNew = ImGui.InputText($"###aliasOutput{newEntry.UniqueId}", ref newEntry.Output, 500) || addNew;
                 ImGui.NextColumn();
 
                 if (addNew) {
@@ -170,12 +170,12 @@ namespace SimpleTweaksPlugin.Tweaks {
         private unsafe byte ProcessChatInputDetour(IntPtr uiModule, byte** message, IntPtr a3) {
             try {
                 var bc = 0;
-                for (var i = 0; i < 255; i++) {
+                for (var i = 0; i <= 500; i++) {
                     if (*(*message + i) != 0) continue;
                     bc = i;
                     break;
                 }
-                if (bc < 2 || bc > 255) {
+                if (bc < 2 || bc > 500) {
                     return processChatInputHook.Original(uiModule, message, a3);
                 }
                 
@@ -192,20 +192,25 @@ namespace SimpleTweaksPlugin.Tweaks {
                         if (alias != null) {
                             // https://git.sr.ht/~jkcclemens/CCMM/tree/master/Custom%20Commands%20and%20Macro%20Macros/GameFunctions.cs#L44
                             var newStr = $"/{alias.Output}{inputString.Substring(alias.Input.Length + 1)}";
-                            SimpleLog.Log($"Aliasing Command: {inputString} -> {newStr}");
-                            var bytes = Encoding.UTF8.GetBytes(newStr);
-                            var mem1 = Marshal.AllocHGlobal(400);
-                            var mem2 = Marshal.AllocHGlobal(bytes.Length + 30);
-                            Marshal.Copy(bytes, 0, mem2, bytes.Length);
-                            Marshal.WriteByte(mem2 + bytes.Length, 0);
-                            Marshal.WriteInt64(mem1, mem2.ToInt64());
-                            Marshal.WriteInt64(mem1 + 8, 64);
-                            Marshal.WriteInt64(mem1 + 8 + 8, bytes.Length + 1);
-                            Marshal.WriteInt64(mem1 + 8 + 8 + 8, 0);
-                            var r = processChatInputHook.Original(uiModule, (byte**) mem1.ToPointer(), a3);
-                            Marshal.FreeHGlobal(mem1);
-                            Marshal.FreeHGlobal(mem2);
-                            return r;
+                            if (newStr.Length <= 500) {
+                                SimpleLog.Log($"Aliasing Command: {inputString} -> {newStr}");
+                                var bytes = Encoding.UTF8.GetBytes(newStr);
+                                var mem1 = Marshal.AllocHGlobal(400);
+                                var mem2 = Marshal.AllocHGlobal(bytes.Length + 30);
+                                Marshal.Copy(bytes, 0, mem2, bytes.Length);
+                                Marshal.WriteByte(mem2 + bytes.Length, 0);
+                                Marshal.WriteInt64(mem1, mem2.ToInt64());
+                                Marshal.WriteInt64(mem1 + 8, 64);
+                                Marshal.WriteInt64(mem1 + 8 + 8, bytes.Length + 1);
+                                Marshal.WriteInt64(mem1 + 8 + 8 + 8, 0);
+                                var r = processChatInputHook.Original(uiModule, (byte**) mem1.ToPointer(), a3);
+                                Marshal.FreeHGlobal(mem1);
+                                Marshal.FreeHGlobal(mem2);
+                                return r;
+                            }
+                            SimpleLog.Log($"String longer than 500");
+                            PluginInterface.Framework.Gui.Chat.PrintError("[Simple Tweaks] Command alias result is longer than the maximum of 500 characters. The command could not be executed.");
+                            return 0;
                         }
                     }
                 }
