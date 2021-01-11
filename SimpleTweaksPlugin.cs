@@ -58,24 +58,12 @@ namespace SimpleTweaksPlugin {
             UiHelper.Setup(pluginInterface.TargetModuleScanner);
             DebugManager.SetPlugin(this);
             
-            
-            
             if (PluginConfig.Version < 2) {
                 UpdateFrom = PluginConfig.Version;
                 PluginConfig.Version = 2;
                 PluginConfig.Save();
             }
-
-            // TEMP, Update for replacement of RemoveCastingFromCastBar
-            if (PluginConfig.EnabledTweaks.Contains("UiAdjustments@RemoveCastingFromCastBar")) {
-                PluginConfig.EnabledTweaks.Remove("UiAdjustments@RemoveCastingFromCastBar");
-                if (!PluginConfig.EnabledTweaks.Contains("UiAdjustments@CastBarAdjustments")) {
-                    PluginConfig.EnabledTweaks.Add("UiAdjustments@CastBarAdjustments");
-                    PluginConfig.UiAdjustments.CastBarAdjustments.RemoveCastingText = true;
-                }
-                PluginConfig.Save();
-            }
-
+            
             Common = new Common(pluginInterface);
 
             PluginInterface.UiBuilder.OnBuildUi += this.BuildUI;
@@ -112,6 +100,7 @@ namespace SimpleTweaksPlugin {
 
 #if DEBUG
             DebugManager.Enabled = true;
+            drawConfigWindow = true;
 #endif
 
         }
@@ -124,7 +113,7 @@ namespace SimpleTweaksPlugin {
         }
 
         public void OnConfigCommandHandler(object command, object args) {
-            if (args is string argString && argString.ToLower() == "debug") {
+            if (args is string argString && argString == "Debug") {
                 DebugManager.Enabled = !DebugManager.Enabled;
                 return;
             } 
