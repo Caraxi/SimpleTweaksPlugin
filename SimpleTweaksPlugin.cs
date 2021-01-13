@@ -5,10 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
+#if DEBUG
+using System.Runtime.CompilerServices;
+using SimpleTweaksPlugin.Debugging;
+#endif
 
 #pragma warning disable CS0659
 namespace SimpleTweaksPlugin {
@@ -56,8 +58,9 @@ namespace SimpleTweaksPlugin {
             IconManager = new IconManager(pluginInterface);
             
             UiHelper.Setup(pluginInterface.TargetModuleScanner);
+            #if DEBUG
             DebugManager.SetPlugin(this);
-            
+            #endif
             if (PluginConfig.Version < 2) {
                 UpdateFrom = PluginConfig.Version;
                 PluginConfig.Version = 2;
@@ -113,10 +116,12 @@ namespace SimpleTweaksPlugin {
         }
 
         public void OnConfigCommandHandler(object command, object args) {
+#if DEBUG
             if (args is string argString && argString == "Debug") {
                 DebugManager.Enabled = !DebugManager.Enabled;
                 return;
-            } 
+            }
+#endif
             drawConfigWindow = !drawConfigWindow;
         }
 
@@ -125,9 +130,11 @@ namespace SimpleTweaksPlugin {
         }
 
         private void BuildUI() {
+#if DEBUG
             if (DebugManager.Enabled) {
                 DebugManager.DrawDebugWindow(ref DebugManager.Enabled);
             }
+#endif
 
             drawConfigWindow = drawConfigWindow && PluginConfig.DrawConfigUI();
             

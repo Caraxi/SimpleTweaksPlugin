@@ -2,6 +2,7 @@
 using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using ImGuiNET;
+using SimpleTweaksPlugin.GameStructs.Client.UI;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltip.TooltipField;
 
@@ -16,10 +17,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public class PrecisionDurability : TooltipTweaks.SubTweak {
         public override string Name => "Precise Durability";
 
-        public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, TooltipTweaks.ItemInfo itemInfo) {
+        public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
             var c = tooltip[DurabilityPercent];
             if (c != null && !(c.Payloads[0] is TextPayload tp && tp.Text.StartsWith("?"))) {
-                tooltip[DurabilityPercent] = new SeString(new List<Payload>() { new TextPayload((itemInfo.Durability / 300f).ToString(PluginConfig.TooltipTweaks.PrecisionDurabilityTrailingZeros ? "F2" : "0.##") + "%") });
+                tooltip[DurabilityPercent] = new SeString(new List<Payload>() { new TextPayload((itemInfo.Condition / 300f).ToString(PluginConfig.TooltipTweaks.PrecisionDurabilityTrailingZeros ? "F2" : "0.##") + "%") });
             }
 
         }

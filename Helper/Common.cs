@@ -10,8 +10,7 @@ using SimpleTweaksPlugin.GameStructs.Client.UI;
 
 namespace SimpleTweaksPlugin.Helper {
     internal unsafe class Common {
-
-        private static DalamudPluginInterface _pluginInterface;
+        public static DalamudPluginInterface PluginInterface { get; private set; }
 
         private delegate IntPtr GameAlloc(ulong size, IntPtr unk, IntPtr allocator, IntPtr alignment);
 
@@ -30,10 +29,10 @@ namespace SimpleTweaksPlugin.Helper {
 
         public static IntPtr PlayerStaticAddress { get; private set; }
 
-        public static SigScanner Scanner => _pluginInterface.TargetModuleScanner;
+        public static SigScanner Scanner => PluginInterface.TargetModuleScanner;
 
         public Common(DalamudPluginInterface pluginInterface) {
-            _pluginInterface = pluginInterface;
+            PluginInterface = pluginInterface;
             var gameAllocPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 45 8D 67 23");
             var getGameAllocatorPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 8B 75 08");
 
@@ -51,7 +50,7 @@ namespace SimpleTweaksPlugin.Helper {
         }
 
         public static AtkUnitBase* GetUnitBase(string name, int index = 1) {
-            return (AtkUnitBase*) _pluginInterface.Framework.Gui.GetUiObjectByName(name, index);
+            return (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName(name, index);
         }
 
         public static IntPtr GetContainer(int containerId) {
@@ -104,7 +103,7 @@ namespace SimpleTweaksPlugin.Helper {
             var bytes = new byte[offset];
             Marshal.Copy(new IntPtr(ptr), bytes, 0, offset);
 
-            return _pluginInterface.SeStringManager.Parse(bytes);
+            return PluginInterface.SeStringManager.Parse(bytes);
         }
 
         public void WriteSeString(byte* dst, SeString s) {
@@ -138,7 +137,7 @@ namespace SimpleTweaksPlugin.Helper {
 
 
         public T GetGameOption<T>(GameOptionKind opt) {
-            var optionBase = (byte**)(_pluginInterface.Framework.Address.BaseAddress + 0x2B28);
+            var optionBase = (byte**)(PluginInterface.Framework.Address.BaseAddress + 0x2B28);
             return Marshal.PtrToStructure<T>(new IntPtr(*optionBase + 0xAAE0 + (16 * (uint)opt)));
         }
         
@@ -146,7 +145,7 @@ namespace SimpleTweaksPlugin.Helper {
         public static ActionManager ActionManager {
             get {
                 if (_actionManager != null) return _actionManager;
-                var address = _pluginInterface.TargetModuleScanner.GetStaticAddressFromSig("E8 ?? ?? ?? ?? 33 C0 E9 ?? ?? ?? ?? 8B 7D 0C");
+                var address = PluginInterface.TargetModuleScanner.GetStaticAddressFromSig("E8 ?? ?? ?? ?? 33 C0 E9 ?? ?? ?? ?? 8B 7D 0C");
                 _actionManager = new ActionManager(address);
                 return _actionManager;
             }

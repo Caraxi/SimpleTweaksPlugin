@@ -4,6 +4,7 @@ using System.Linq;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using Lumina.Excel.GeneratedSheets;
 using ImGuiNET;
+using SimpleTweaksPlugin.GameStructs.Client.UI;
 using SimpleTweaksPlugin.Helper;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltip.TooltipField;
 
@@ -19,7 +20,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
         private readonly uint[] desynthesisInDescription = { 46, 56, 65, 66, 67, 68, 69, 70, 71, 72 };
 
-        public override unsafe void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, TooltipTweaks.ItemInfo itemInfo) {
+        public override unsafe void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
 
             var id = PluginInterface.Framework.Gui.HoveredItem;
             if (id < 2000000) {

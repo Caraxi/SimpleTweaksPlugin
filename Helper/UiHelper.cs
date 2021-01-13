@@ -43,6 +43,11 @@ namespace SimpleTweaksPlugin.Helper {
             if (y != null) node->Y = y.Value;
             node->Flags_2 |= 0x1;
         }
+        
+        public static void SetPosition(AtkUnitBase* atkUnitBase, float? x, float? y) {
+            if (x >= short.MinValue && x <= short.MaxValue) atkUnitBase->X = (short) x.Value;
+            if (y >= short.MinValue && x <= short.MaxValue) atkUnitBase->Y = (short) y.Value;
+        }
 
         public static void SetWindowSize(AtkComponentNode* windowNode, ushort? width, ushort? height) {
             if (((ULDComponentInfo*) windowNode->Component->ULDData.Objects)->ComponentType != ComponentType.Window) return;

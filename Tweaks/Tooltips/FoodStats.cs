@@ -5,7 +5,7 @@ using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
-
+using SimpleTweaksPlugin.GameStructs.Client.UI;
 
 namespace SimpleTweaksPlugin {
     public partial class TooltipTweakConfig {
@@ -45,7 +45,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             ImGui.Checkbox("Highlight Active", ref PluginConfig.TooltipTweaks.FoodStatsHighlight);
         }
 
-        public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, TooltipTweaks.ItemInfo itemInfo) {
+        public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
 
             var id = PluginInterface.Framework.Gui.HoveredItem;
 

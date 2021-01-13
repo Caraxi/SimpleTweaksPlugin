@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.Component.GUI;
 using FFXIVClientStructs.Component.GUI.ULD;
 using ImGuiNET;
+using SimpleTweaksPlugin.Helper;
 
 // Customised version of https://github.com/aers/FFXIVUIDebug
 
@@ -13,7 +13,7 @@ using ImGuiNET;
 namespace SimpleTweaksPlugin.Debugging {
 
     public partial class DebugConfig {
-        public ulong SelectedAtkUnitBase = 0;
+        public ulong SelectedAtkUnitBase;
         public string AtkUnitBaseSearch = string.Empty;
     }
     
@@ -22,12 +22,12 @@ namespace SimpleTweaksPlugin.Debugging {
         private bool firstDraw = true;
         private AtkUnitBase* selectedUnitBase = null;
         
-        private unsafe delegate AtkStage* GetAtkStageSingleton();
+        private delegate AtkStage* GetAtkStageSingleton();
         private GetAtkStageSingleton getAtkStageSingleton;
         
         private const int UnitListCount = 18;
-        private bool[] selectedInList = new bool[UnitListCount];
-        private string[] listNames = new string[UnitListCount]{
+        private readonly bool[] selectedInList = new bool[UnitListCount];
+        private readonly string[] listNames = new string[UnitListCount]{
             "Depth Layer 1",
             "Depth Layer 2",
             "Depth Layer 3",
@@ -63,7 +63,6 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.SetNextItemWidth(-1);
             ImGui.InputTextWithHint("###atkUnitBaseSearch", "Search", ref Plugin.PluginConfig.Debugging.AtkUnitBaseSearch, 0x20);
             
-            
             DrawUnitBaseList();
             ImGui.EndChild();
             if (selectedUnitBase != null) {
@@ -73,48 +72,6 @@ namespace SimpleTweaksPlugin.Debugging {
                 ImGui.EndChild();
             }
         }
-
-        private int a; 
-        private void PrintOutObject(object obj, ulong addr, List<string> path) {
-            ImGui.PushStyleColor(ImGuiCol.Text, 0xFF00FFFF);
-            if (ImGui.TreeNode($"{obj}##print-obj-{addr:X}-{string.Join("-", path)}")) {
-                ImGui.PopStyleColor();
-                foreach (var f in obj.GetType().GetFields()) {
-                    ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{f.FieldType.Name}");
-                    ImGui.SameLine();
-                    ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.4f, 1), $"{f.Name}: ");
-                    ImGui.SameLine();
-                    if (f.FieldType.IsPointer) {
-                        var val = (Pointer) f.GetValue(obj);
-                        var unboxed = Pointer.Unbox(val);
-                        if (unboxed != null) {
-                            DebugManager.ClickToCopyText($"{(ulong)unboxed:X}");
-                            try {
-                                var type = f.FieldType.GetElementType();
-                                var ptrObj = Marshal.PtrToStructure(new IntPtr(unboxed), type);
-                                ImGui.SameLine();
-                                PrintOutObject(ptrObj, (ulong) unboxed, new List<string>(path) {f.Name});
-                            } catch {
-                                // Ignored
-                            }
-                        } else {
-                            ImGui.Text("null");
-                        }
-                    } else {
-                        if (!f.FieldType.IsPrimitive) {
-                            // ImGui.Text($"[OBJ]");
-                            PrintOutObject(f.GetValue(obj), addr, new List<string>(path) {$"{f.Name}"});
-                        } else {
-                            ImGui.Text($"{f.GetValue(obj)}");
-                        }
-                    }
-                }
-                ImGui.TreePop();
-            } else {
-                ImGui.PopStyleColor();
-            }
-        }
-        
         
         private void DrawUnitBase(AtkUnitBase* atkUnitBase) {
 
@@ -134,14 +91,29 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.Separator();
             DebugManager.ClickToCopyText($"Address: {(ulong) atkUnitBase:X}", $"{(ulong) atkUnitBase:X}");
             ImGui.Separator();
-
+            
+#if DEBUG
+            var position = new Vector2(atkUnitBase->X, atkUnitBase->Y);
+            ImGui.PushItemWidth(180);
+            if (ImGui.SliderFloat($"##xPos_atkUnitBase#{(ulong) atkUnitBase:X}", ref position.X, position.X - 10, position.X + 10)) {
+                UiHelper.SetPosition(atkUnitBase, position.X, position.Y);
+                UiHelper.SetPosition(atkUnitBase->RootNode, position.X, position.Y);
+            }
+            ImGui.SameLine();
+            if (ImGui.SliderFloat($"Position##yPos_atkUnitBase#{(ulong) atkUnitBase:X}", ref position.Y, position.Y - 10, position.Y + 10)) {
+                UiHelper.SetPosition(atkUnitBase, position.X, position.Y);
+                UiHelper.SetPosition(atkUnitBase->RootNode, position.X, position.Y);
+            }
+            ImGui.PopItemWidth();
+#else
             ImGui.Text($"Position: [ {atkUnitBase->X} , {atkUnitBase->Y} ]");
+#endif
             ImGui.Text($"Scale: {atkUnitBase->Scale*100}%%");
             ImGui.Text($"Widget Count {atkUnitBase->ULDData.ObjectCount}");
             
             ImGui.Separator();
             
-            PrintOutObject(*atkUnitBase, (ulong) atkUnitBase, new List<string>());
+            DebugManager.PrintOutObject(*atkUnitBase, (ulong) atkUnitBase, new List<string>());
             
             
             
@@ -214,12 +186,12 @@ namespace SimpleTweaksPlugin.Debugging {
                 DebugManager.ClickToCopyText($"{(ulong)node:X}");
                 ImGui.SameLine();
                 switch (node->Type) {
-                    case NodeType.Text: PrintOutObject(*(AtkTextNode*)node, (ulong) node, new List<string>()); break;
-                    case NodeType.Image: PrintOutObject(*(AtkImageNode*)node, (ulong) node, new List<string>()); break;
-                    case NodeType.Collision: PrintOutObject(*(AtkCollisionNode*)node, (ulong) node, new List<string>()); break;
-                    case NodeType.NineGrid: PrintOutObject(*(AtkNineGridNode*)node, (ulong) node, new List<string>()); break;
-                    case NodeType.Counter: PrintOutObject(*(AtkCounterNode*)node, (ulong) node, new List<string>()); break;
-                    default: PrintOutObject(*node, (ulong) node, new List<string>()); break;
+                    case NodeType.Text: DebugManager.PrintOutObject(*(AtkTextNode*)node, (ulong) node, new List<string>()); break;
+                    case NodeType.Image: DebugManager.PrintOutObject(*(AtkImageNode*)node, (ulong) node, new List<string>()); break;
+                    case NodeType.Collision: DebugManager.PrintOutObject(*(AtkCollisionNode*)node, (ulong) node, new List<string>()); break;
+                    case NodeType.NineGrid: DebugManager.PrintOutObject(*(AtkNineGridNode*)node, (ulong) node, new List<string>()); break;
+                    case NodeType.Counter: DebugManager.PrintOutObject(*(AtkCounterNode*)node, (ulong) node, new List<string>()); break;
+                    default: DebugManager.PrintOutObject(*node, (ulong) node, new List<string>()); break;
                 }
                 
                 PrintResNode(node);
@@ -329,22 +301,22 @@ namespace SimpleTweaksPlugin.Debugging {
                 ImGui.SameLine();
                 DebugManager.ClickToCopyText($"{(ulong)node:X}");
                 ImGui.SameLine();
-                PrintOutObject(*compNode, (ulong) compNode, new List<string>());
+                DebugManager.PrintOutObject(*compNode, (ulong) compNode, new List<string>());
                 ImGui.Text("Component: ");
                 ImGui.SameLine();
                 DebugManager.ClickToCopyText($"{(ulong)compNode->Component:X}");
                 ImGui.SameLine();
                 
                 switch (objectInfo->ComponentType) {
-                    case ComponentType.Button: PrintOutObject(*(AtkComponentButton*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
-                    case ComponentType.Slider: PrintOutObject(*(AtkComponentSlider*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
-                    case ComponentType.Window: PrintOutObject(*(AtkComponentWindow*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
-                    case ComponentType.CheckBox: PrintOutObject(*(AtkComponentCheckBox*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
-                    case ComponentType.GaugeBar: PrintOutObject(*(AtkComponentGaugeBar*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
-                    case ComponentType.RadioButton: PrintOutObject(*(AtkComponentRadioButton*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
-                    case ComponentType.TextInput: PrintOutObject(*(AtkComponentTextInput*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
-                    case ComponentType.Icon: PrintOutObject(*(AtkComponentIcon*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
-                    default: PrintOutObject(*compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    case ComponentType.Button: DebugManager.PrintOutObject(*(AtkComponentButton*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    case ComponentType.Slider: DebugManager.PrintOutObject(*(AtkComponentSlider*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    case ComponentType.Window: DebugManager.PrintOutObject(*(AtkComponentWindow*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    case ComponentType.CheckBox: DebugManager.PrintOutObject(*(AtkComponentCheckBox*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    case ComponentType.GaugeBar: DebugManager.PrintOutObject(*(AtkComponentGaugeBar*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    case ComponentType.RadioButton: DebugManager.PrintOutObject(*(AtkComponentRadioButton*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    case ComponentType.TextInput: DebugManager.PrintOutObject(*(AtkComponentTextInput*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    case ComponentType.Icon: DebugManager.PrintOutObject(*(AtkComponentIcon*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    default: DebugManager.PrintOutObject(*compNode->Component, (ulong) compNode->Component, new List<string>()); break;
                 }
 
                 PrintResNode(node);
@@ -421,12 +393,12 @@ namespace SimpleTweaksPlugin.Debugging {
             } else if (doingSearch && string.IsNullOrEmpty(Plugin.PluginConfig.Debugging.AtkUnitBaseSearch)) {
                 ImGui.SetNextItemOpen(false, ImGuiCond.Always);
             }
-            var a = ImGui.TreeNode($"{listNames[index]}##unitList_{index}");
+            var treeNode = ImGui.TreeNode($"{listNames[index]}##unitList_{index}");
             ImGui.PopStyleColor();
             
             ImGui.SameLine();
             ImGui.TextDisabled($"C:{count}  {ptr:X}");
-            return a;
+            return treeNode;
         }
 
         private void DrawUnitBaseList() {

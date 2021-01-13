@@ -11,6 +11,7 @@ using Dalamud.Game.Internal;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Enums;
+using SimpleTweaksPlugin.GameStructs.Client.UI;
 
 namespace SimpleTweaksPlugin {
     public partial class TooltipTweakConfig {
@@ -36,7 +37,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         private readonly string weirdTabChar = Encoding.UTF8.GetString(new byte[] {0xE3, 0x80, 0x80});
 
         public override string Name => "Item Hotkeys";
-        public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, TooltipTweaks.ItemInfo itemInfo) {
+        public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
             if (Config.HideHotkeysOnTooltip) return;
             var seStr = tooltip[TooltipTweaks.ItemTooltip.TooltipField.ControlsDisplay];
             if (seStr == null) return;

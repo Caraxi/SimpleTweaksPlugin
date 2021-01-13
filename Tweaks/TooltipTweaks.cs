@@ -7,6 +7,7 @@ using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Hooking;
 using Dalamud.Plugin;
 using FFXIVClientStructs.Component.GUI;
+using SimpleTweaksPlugin.GameStructs.Client.UI;
 using SimpleTweaksPlugin.TweakSystem;
 using static SimpleTweaksPlugin.Tweaks.UiAdjustments;
 using static SimpleTweaksPlugin.Tweaks.UiAdjustments.Step;
@@ -33,6 +34,12 @@ namespace SimpleTweaksPlugin.Tweaks {
                 DurabilityPercent = 28,
                 SpiritbondPercent = 30,
                 ExtractableProjectableDesynthesizable = 35,
+                Param0 = 37,
+                Param1 = 38,
+                Param2 = 39,
+                Param3 = 40,
+                Param4 = 41,
+                Param5 = 42,
                 ControlsDisplay = 64,
             }
 
@@ -88,7 +95,7 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         public abstract class SubTweak : BaseTweak {
 
-            public abstract void OnItemTooltip(ItemTooltip tooltip, ItemInfo itemInfo);
+            public abstract void OnItemTooltip(ItemTooltip tooltip, InventoryItem itemInfo);
 
         }
 
@@ -139,15 +146,15 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         [StructLayout(LayoutKind.Explicit)]
         public struct ItemInfo {
-            [FieldOffset(0x10)] public ushort SpiritBond;
-            [FieldOffset(0x12)] public ushort Durability;
+            [FieldOffset(0x10)] public ushort Spiritbond;
+            [FieldOffset(0x12)] public ushort Condition;
         }
 
-        private ItemInfo hoveredItem;
+        private InventoryItem hoveredItem;
 
         private unsafe byte ItemHoveredDetour(IntPtr a1, IntPtr* a2, int* containerid, ushort* slotid, IntPtr a5, uint slotidint, IntPtr a7) {
             var returnValue = itemHoveredHook.Original(a1, a2, containerid, slotid, a5, slotidint, a7);
-            hoveredItem = *(ItemInfo*) (a7);
+            hoveredItem = *(InventoryItem*) (a7);
             return returnValue;
         }
 
@@ -178,6 +185,7 @@ namespace SimpleTweaksPlugin.Tweaks {
             try {
                 tooltip ??= new ItemTooltip(Plugin);
                 tooltip.SetPointer(a3);
+                SimpleLog.Verbose($"TooltipDetour: {(ulong)*(a3+4):X}");
                 foreach (var t in SubTweaks.Where(t => t.Enabled)) {
                     try {
                         t.OnItemTooltip(tooltip, hoveredItem);

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using SimpleTweaksPlugin.Debugging;
 
 namespace SimpleTweaksPlugin {
@@ -43,7 +44,7 @@ namespace SimpleTweaksPlugin.Debugging {
 
         private static float sidebarSize = 0;
         
-        public static bool Enabled = false;
+        public static bool Enabled = true;
 
         public static void RegisterDebugPage(string key, Action action) {
             if (debugPages.ContainsKey(key)) {
@@ -220,6 +221,49 @@ namespace SimpleTweaksPlugin.Debugging {
             }
             ImGui.EndGroup();
             if (pushColorCount > 0) ImGui.PopStyleColor(pushColorCount);
+        }
+        
+        public static unsafe void PrintOutObject(object obj, ulong addr, List<string> path, bool autoExpand = false) {
+            ImGui.PushStyleColor(ImGuiCol.Text, 0xFF00FFFF);
+            if (autoExpand) {
+                ImGui.SetNextItemOpen(true, ImGuiCond.Appearing);
+            }
+            if (ImGui.TreeNode($"{obj}##print-obj-{addr:X}-{string.Join("-", path)}")) {
+                ImGui.PopStyleColor();
+                foreach (var f in obj.GetType().GetFields()) {
+                    ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{f.FieldType.Name}");
+                    ImGui.SameLine();
+                    ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.4f, 1), $"{f.Name}: ");
+                    ImGui.SameLine();
+                    if (f.FieldType.IsPointer) {
+                        var val = (Pointer) f.GetValue(obj);
+                        var unboxed = Pointer.Unbox(val);
+                        if (unboxed != null) {
+                            DebugManager.ClickToCopyText($"{(ulong)unboxed:X}");
+                            try {
+                                var type = f.FieldType.GetElementType();
+                                var ptrObj = Marshal.PtrToStructure(new IntPtr(unboxed), type);
+                                ImGui.SameLine();
+                                PrintOutObject(ptrObj, (ulong) unboxed, new List<string>(path) {f.Name});
+                            } catch {
+                                // Ignored
+                            }
+                        } else {
+                            ImGui.Text("null");
+                        }
+                    } else {
+                        if (!f.FieldType.IsPrimitive) {
+                            // ImGui.Text($"[OBJ]");
+                            PrintOutObject(f.GetValue(obj), addr, new List<string>(path) {$"{f.Name}"});
+                        } else {
+                            ImGui.Text($"{f.GetValue(obj)}");
+                        }
+                    }
+                }
+                ImGui.TreePop();
+            } else {
+                ImGui.PopStyleColor();
+            }
         }
     }
 }

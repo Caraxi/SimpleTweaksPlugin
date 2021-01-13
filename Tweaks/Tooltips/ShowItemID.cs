@@ -1,10 +1,11 @@
 ﻿using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using ImGuiNET;
+using SimpleTweaksPlugin.GameStructs.Client.UI;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltip.TooltipField;
 namespace SimpleTweaksPlugin.Tweaks.Tooltips {
     public class ShowItemID : TooltipTweaks.SubTweak {
         public override string Name => "Show Item ID";
-        public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, TooltipTweaks.ItemInfo itemInfo) {
+        public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
             var seStr = tooltip[ItemUiCategory];
             if (seStr == null) return;
             var id = Plugin.PluginInterface.Framework.Gui.HoveredItem;
