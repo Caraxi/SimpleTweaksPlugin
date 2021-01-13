@@ -84,15 +84,11 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             
             if (!(Config.Delta || Config.Total == false)) Config.Total = true; // Config invalid check
             try {
-                SimpleLog.Log($"MateriaStats");
                 var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow(itemInfo.ItemId);
-                SimpleLog.Log("Item Get");
                 if (item == null) return;
                 if (item.MateriaSlotCount == 0) return;
-                SimpleLog.Log("ItemLevel Get");
                 var itemLevel = CustomSheet.GetSheet<ItemLevel>().GetRow(item.LevelItem.Row);
                 if (itemLevel == null) return;
-                SimpleLog.Log("Setup Dictionaries");
                 var baseParams = new Dictionary<uint, BaseParam>();
                 var baseParamDeltas = new Dictionary<uint, int>();
                 var baseParamOriginal = new Dictionary<uint, int>();
@@ -119,7 +115,6 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 if (baseParamDeltas.Count == 0) return;
                 
                 foreach (var (materiaId, level) in itemInfo.Materia()) {
-                    SimpleLog.Log($"Materia: {materiaId}/{level}");
                     if (level >= 10) continue;
                     var materia = PluginInterface.Data.Excel.GetSheet<Materia>().GetRow(materiaId);
                     if (materia == null) continue;
@@ -127,10 +122,8 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                     if (!baseParamDeltas.ContainsKey(materia.BaseParam.Row)) continue;
                     baseParamDeltas[materia.BaseParam.Row] += materia.Value[level];
                 }
-                SimpleLog.Log($"Deltas: ");
                 foreach (var bp in baseParamDeltas) {
                     var param = baseParams[bp.Key];
-                    SimpleLog.Log($" - {param.Name}: {bp.Value}");
                     if (bp.Value == 0) continue;
 
                     foreach (var field in Fields()) {
