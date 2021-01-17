@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using FFXIVClientStructs.Component.GUI;
+using SimpleTweaksPlugin.Enums;
 
 namespace SimpleTweaksPlugin.GameStructs.Client.UI {
 
@@ -29,7 +30,7 @@ namespace SimpleTweaksPlugin.GameStructs.Client.UI {
 
     [StructLayout(LayoutKind.Explicit, Size = 0x30)]
     public unsafe struct SalvageItem {
-        [FieldOffset(0x00)] public int Container;
+        [FieldOffset(0x00)] public InventoryType Inventory;
         [FieldOffset(0x04)] public int Slot;
         [FieldOffset(0x08)] public uint IconId;
         [FieldOffset(0x10)] public byte* NamePtr;

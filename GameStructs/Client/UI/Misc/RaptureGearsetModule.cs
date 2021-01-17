@@ -13,7 +13,7 @@ namespace SimpleTweaksPlugin.GameStructs.Client.UI.Misc {
     [StructLayout(LayoutKind.Explicit, Size = 0xB148)]
     public unsafe struct RaptureGearsetModuleStruct {
         [FieldOffset(0x0000)] public void* vtbl;
-        [FieldOffset(0x0030)] public fixed byte ModuleName[15];
+        [FieldOffset(0x0030)] public fixed byte ModuleName[16];
         [FieldOffset(0x0040)] public ulong Unknown40;
         [FieldOffset(0x0048)] public fixed byte GearsetData[0xAF2C];
         [FieldOffset(0xAF74)] public uint UnknownAF74;

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using SimpleTweaksPlugin.Enums;
 
 namespace SimpleTweaksPlugin.GameStructs.Client.UI {
     
     [StructLayout(LayoutKind.Explicit, Size = 56)]
     public unsafe struct InventoryItem {
 
-        [FieldOffset(0x00)] public int Container;
+        [FieldOffset(0x00)] public InventoryType Container;
         [FieldOffset(0x04)] public short Slot;
         [FieldOffset(0x08)] public uint ItemId;
         [FieldOffset(0x0C)] public uint Quantity;

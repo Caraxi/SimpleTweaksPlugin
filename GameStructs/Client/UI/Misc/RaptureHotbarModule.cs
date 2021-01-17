@@ -93,7 +93,7 @@ namespace SimpleTweaksPlugin.GameStructs.Client.UI.Client.UI.Misc {
     public unsafe struct RaptureHotbarModuleStruct {
         [FieldOffset(0x00000)] public void* vtbl;
         
-        [FieldOffset(0x00030)] public fixed byte ModuleName[15];
+        [FieldOffset(0x00030)] public fixed byte ModuleName[16];
         
         [FieldOffset(0x00088 + HotBar.Size * 00)] public HotBar HotBar01;
         [FieldOffset(0x00088 + HotBar.Size * 01)] public HotBar HotBar02;

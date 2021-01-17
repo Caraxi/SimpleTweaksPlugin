@@ -5,6 +5,7 @@ using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Plugin;
 using FFXIVClientStructs;
 using FFXIVClientStructs.Component.GUI;
+using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.GameStructs.Client.UI;
 
@@ -19,13 +20,13 @@ namespace SimpleTweaksPlugin.Helper {
         private static GameAlloc _gameAlloc;
         private static GetGameAllocator _getGameAllocator;
 
-        private delegate IntPtr GetInventoryContainer(IntPtr inventoryManager, int inventoryId);
+        private delegate IntPtr GetInventoryContainer(IntPtr inventoryManager, InventoryType inventoryType);
         private delegate InventoryItem* GetContainerSlot(IntPtr inventoryContainer, int slotId);
 
         private static GetInventoryContainer _getInventoryContainer;
         private static GetContainerSlot _getContainerSlot;
 
-        private static IntPtr _inventoryManager;
+        public static IntPtr InventoryManagerAddress;
 
         public static IntPtr PlayerStaticAddress { get; private set; }
 
@@ -36,7 +37,7 @@ namespace SimpleTweaksPlugin.Helper {
             var gameAllocPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 45 8D 67 23");
             var getGameAllocatorPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 8B 75 08");
 
-            _inventoryManager = pluginInterface.TargetModuleScanner.GetStaticAddressFromSig("BA ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B F8 48 85 C0");
+            InventoryManagerAddress = pluginInterface.TargetModuleScanner.GetStaticAddressFromSig("BA ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B F8 48 85 C0");
             var getInventoryContainerPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 8B 55 BB");
             var getContainerSlotPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 8B 5B 0C");
 
@@ -53,9 +54,9 @@ namespace SimpleTweaksPlugin.Helper {
             return (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName(name, index);
         }
 
-        public static IntPtr GetContainer(int containerId) {
-            if (_inventoryManager == IntPtr.Zero) return IntPtr.Zero;
-            return _getInventoryContainer(_inventoryManager, containerId);
+        public static IntPtr GetContainer(InventoryType inventoryType) {
+            if (InventoryManagerAddress == IntPtr.Zero) return IntPtr.Zero;
+            return _getInventoryContainer(InventoryManagerAddress, inventoryType);
         }
 
         public static InventoryItem* GetContainerItem(IntPtr container, int slot) {
@@ -63,9 +64,9 @@ namespace SimpleTweaksPlugin.Helper {
             return _getContainerSlot(container, slot);
         }
 
-        public static InventoryItem* GetInventoryItem(int inventoryId, int slotId) {
-            if (_inventoryManager == IntPtr.Zero) return null;
-            var container = _getInventoryContainer(_inventoryManager, inventoryId);
+        public static InventoryItem* GetInventoryItem(InventoryType inventoryType, int slotId) {
+            if (InventoryManagerAddress == IntPtr.Zero) return null;
+            var container = _getInventoryContainer(InventoryManagerAddress, inventoryType);
             return container == IntPtr.Zero ? null : _getContainerSlot(container, slotId);
         }
 

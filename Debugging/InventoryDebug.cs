@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using ImGuiNET;
+using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.Helper;
 
 namespace SimpleTweaksPlugin.Debugging {
     public unsafe class InventoryDebug : DebugHelper {
-        private int containerId = 0;
-        private int slotId = 0;
+        private int containerId;
+        private int slotId;
         
         public override void Draw() {
-
+            DebugManager.ClickToCopyText($"{Common.InventoryManagerAddress.ToInt64():X}");
             if (ImGui.BeginTabBar("inventoryDebuggingTabs")) {
                 if (ImGui.BeginTabItem("Container/Slot")) {
                     
@@ -17,7 +18,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     ImGui.InputInt("Container ID##debugInventoryContainer", ref containerId);
                     ImGui.InputInt("Slot ID##debugInventoryContainer", ref slotId);
                     ImGui.PopItemWidth();
-                    var container = Common.GetContainer(containerId); 
+                    var container = Common.GetContainer((InventoryType) containerId); 
             
                     if (container != IntPtr.Zero) {
                         ImGui.Text($"Container {containerId} Address:");
@@ -60,6 +61,11 @@ namespace SimpleTweaksPlugin.Debugging {
 
                     var module = UiHelper.UiModule.ItemFinderModule;
 
+                    ImGui.Text("ItemFinderModule:");
+                    ImGui.SameLine();
+                    DebugManager.ClickToCopyText($"{(ulong) module:X}");
+                    ImGui.SameLine();
+                    DebugManager.PrintOutObject(module, (ulong) module, new List<string>());
                 }
                 
                 

@@ -10,6 +10,7 @@ using FFXIVClientStructs.Component.GUI;
 using FFXIVClientStructs.Component.GUI.ULD;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
@@ -77,7 +78,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             if (examineIsValidPtr == IntPtr.Zero) return;
             if (*(byte*)(examineIsValidPtr + 0x2A8) == 0) return;
-            var container = Common.GetContainer(2009);
+            var container = Common.GetContainer(InventoryType.Examine);
             if (container == IntPtr.Zero) return;
 
             var examineWindow = (AtkUnitBase*)PluginInterface.Framework.Gui.GetUiObjectByName("CharacterInspect", 1);

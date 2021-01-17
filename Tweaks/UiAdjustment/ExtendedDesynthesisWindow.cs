@@ -102,7 +102,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var salvageItemAddress = (ulong)addon + 0x268 + (ulong) sizeof(SalvageItem) * index;
                 var salvageItem = (SalvageItem*)salvageItemAddress;
 
-                var item = Common.GetInventoryItem(salvageItem->Container, salvageItem->Slot);
+                var item = Common.GetInventoryItem(salvageItem->Inventory, salvageItem->Slot);
 
                 var itemData = PluginInterface.Data.Excel.GetSheet<Item>().GetRow(item->ItemId);
 
