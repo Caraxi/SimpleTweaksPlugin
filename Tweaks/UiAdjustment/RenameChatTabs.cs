@@ -169,6 +169,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             panel->ULDData.NodeList[4]->X = 29 + textNode->AtkResNode.Width;
             panel->ULDData.NodeList[4]->Flags_2 |= 0x1;
+            
+            baseComponent->Component->ULDData.NodeList[0]->Width = baseComponent->AtkResNode.Width;
+            baseComponent->Component->ULDData.NodeList[2]->Width = baseComponent->AtkResNode.Width;
         }
 
 
