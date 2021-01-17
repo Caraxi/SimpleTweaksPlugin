@@ -7,6 +7,8 @@ using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Hooking;
 using Dalamud.Plugin;
 using FFXIVClientStructs.Component.GUI;
+using Lumina.Data;
+using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.GameStructs.Client.UI;
 using SimpleTweaksPlugin.TweakSystem;
 using static SimpleTweaksPlugin.Tweaks.UiAdjustments;
@@ -95,8 +97,8 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         public abstract class SubTweak : BaseTweak {
 
-            public abstract void OnItemTooltip(ItemTooltip tooltip, InventoryItem itemInfo);
-
+            public virtual void OnItemTooltip(ItemTooltip tooltip, InventoryItem itemInfo) { }
+            public virtual unsafe void OnActionTooltip(AddonActionDetail* addonActionDetail, HoveredAction action) { }
         }
 
         private ItemTooltip tooltip;
@@ -106,9 +108,16 @@ namespace SimpleTweaksPlugin.Tweaks {
         private unsafe delegate IntPtr TooltipDelegate(IntPtr a1, uint** a2, byte*** a3);
         private Hook<TooltipDelegate> tooltipHook;
 
+        private unsafe delegate IntPtr ActionTooltipDelegate(AddonActionDetail* a1, void* a2, ulong a3);
+        private Hook<ActionTooltipDelegate> actionTooltipHook;
+        
+
         private IntPtr itemHoveredAddress;
         private unsafe delegate byte ItemHoveredDelegate(IntPtr a1, IntPtr* a2, int* containerId, ushort* slotId, IntPtr a5, uint slotIdInt, IntPtr a7);
         private Hook<ItemHoveredDelegate> itemHoveredHook;
+        
+        private unsafe delegate void ActionHoveredDelegate(ulong a1, int a2, uint a3, int a4, byte a5);
+        private Hook<ActionHoveredDelegate> actionHoveredHook;
 
         public override void Setup() {
 
@@ -134,24 +143,61 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         public override unsafe void Enable() {
             if (!Ready) return;
-
+            
             tooltipHook ??= new Hook<TooltipDelegate>(tooltipAddress, new TooltipDelegate(TooltipDetour));
             itemHoveredHook ??= new Hook<ItemHoveredDelegate>(itemHoveredAddress, new ItemHoveredDelegate(ItemHoveredDetour));
-
+            
+            
+            // 
+            actionTooltipHook ??= new Hook<ActionTooltipDelegate>(
+                PluginInterface.TargetModuleScanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 54 41 55 41 56 41 57 48 83 EC 20 48 8B AA"), 
+                new ActionTooltipDelegate(ActionTooltipDetour));
+            actionHoveredHook ??= new Hook<ActionHoveredDelegate>(
+                PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 83 F8 0F"),
+                new ActionHoveredDelegate(ActionHoveredDetour));
+            
             tooltipHook?.Enable();
             itemHoveredHook?.Enable();
+            actionTooltipHook?.Enable();
+            actionHoveredHook?.Enable();
 
             base.Enable();
         }
 
-        [StructLayout(LayoutKind.Explicit)]
-        public struct ItemInfo {
-            [FieldOffset(0x10)] public ushort Spiritbond;
-            [FieldOffset(0x12)] public ushort Condition;
+
+        public class HoveredAction {
+            public int Category;
+            public uint Id;
+            public int Unknown3;
+            public byte Unknown4;
         }
 
-        private InventoryItem hoveredItem;
+        private HoveredAction hoveredAction = new HoveredAction();
+        private void ActionHoveredDetour(ulong a1, int a2, uint a3, int a4, byte a5) {
+            hoveredAction.Category = a2;
+            hoveredAction.Id = a3;
+            hoveredAction.Unknown3 = a4;
+            hoveredAction.Unknown4 = a5;
+            actionHoveredHook?.Original(a1, a2, a3, a4, a5);
+        }
 
+        private unsafe IntPtr ActionTooltipDetour(AddonActionDetail* addon, void* a2, ulong a3) {
+            var retVal = actionTooltipHook.Original(addon, a2, a3);
+            try {
+                foreach (var t in SubTweaks.Where(t => t.Enabled)) {
+                    try {
+                        t.OnActionTooltip(addon, hoveredAction);
+                    } catch (Exception ex) {
+                        Plugin.Error(this, t, ex);
+                    }
+                }
+            } catch (Exception ex) {
+                SimpleLog.Error(ex);
+            }
+            return retVal;
+        }
+        
+        private InventoryItem hoveredItem;
         private unsafe byte ItemHoveredDetour(IntPtr a1, IntPtr* a2, int* containerid, ushort* slotid, IntPtr a5, uint slotidint, IntPtr a7) {
             var returnValue = itemHoveredHook.Original(a1, a2, containerid, slotid, a5, slotidint, a7);
             hoveredItem = *(InventoryItem*) (a7);
@@ -161,12 +207,16 @@ namespace SimpleTweaksPlugin.Tweaks {
         public override void Disable() {
             tooltipHook?.Disable();
             itemHoveredHook?.Disable();
+            actionTooltipHook?.Disable();
+            actionHoveredHook?.Disable();
             base.Disable();
         }
 
         public override void Dispose() {
             tooltipHook?.Dispose();
             itemHoveredHook?.Dispose();
+            actionTooltipHook?.Dispose();
+            actionHoveredHook?.Dispose();
             base.Dispose();
         }
 
