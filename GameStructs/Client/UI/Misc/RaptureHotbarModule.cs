@@ -23,21 +23,12 @@ namespace SimpleTweaksPlugin.GameStructs.Client.UI.Client.UI.Misc {
         AllWithPet = All | Pet,
     }
 
-    public unsafe class RaptureHotbarModule {
-        private ulong vtbl;
-        public bool IsValid => this.vtbl == (ulong) Data->vtbl;
-        
+    public unsafe class RaptureHotbarModule : StructWrapper<RaptureHotbarModuleStruct> {
         public static implicit operator RaptureHotbarModuleStruct*(RaptureHotbarModule module) => module.Data;
         public static explicit operator ulong(RaptureHotbarModule module) => (ulong) module.Data;
-        public static explicit operator RaptureHotbarModule(RaptureHotbarModuleStruct* @struct) => new RaptureHotbarModule(@struct);
-
-        public RaptureHotbarModuleStruct* Data { get; }
+        public static explicit operator RaptureHotbarModule(RaptureHotbarModuleStruct* @struct) => new() { Data = @struct };
+        public static explicit operator RaptureHotbarModule(void* ptr) => new() { Data = (RaptureHotbarModuleStruct*) ptr};
         
-        public RaptureHotbarModule(RaptureHotbarModuleStruct* data) {
-            Data = data;
-            vtbl = (ulong) data->vtbl;
-        }
-
         public HotBar* GetBar(int index, HotBarType type = HotBarType.AllWithPet) {
             if (index < 0) return null;
             if ((type & HotBarType.Normal) != HotBarType.None) {

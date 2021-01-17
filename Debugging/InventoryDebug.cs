@@ -9,32 +9,63 @@ namespace SimpleTweaksPlugin.Debugging {
         private int slotId = 0;
         
         public override void Draw() {
-            ImGui.PushItemWidth(200);
-            ImGui.InputInt("Container ID##debugInventoryContainer", ref containerId);
-            ImGui.InputInt("Slot ID##debugInventoryContainer", ref slotId);
-            ImGui.PopItemWidth();
-            var container = Common.GetContainer(containerId); 
+
+            if (ImGui.BeginTabBar("inventoryDebuggingTabs")) {
+                if (ImGui.BeginTabItem("Container/Slot")) {
+                    
+                    ImGui.PushItemWidth(200);
+                    ImGui.InputInt("Container ID##debugInventoryContainer", ref containerId);
+                    ImGui.InputInt("Slot ID##debugInventoryContainer", ref slotId);
+                    ImGui.PopItemWidth();
+                    var container = Common.GetContainer(containerId); 
             
-            if (container != IntPtr.Zero) {
-                ImGui.Text($"Container {containerId} Address:");
-                ImGui.SameLine();
-                DebugManager.ClickToCopyText($"{container.ToInt64():X}");
+                    if (container != IntPtr.Zero) {
+                        ImGui.Text($"Container {containerId} Address:");
+                        ImGui.SameLine();
+                        DebugManager.ClickToCopyText($"{container.ToInt64():X}");
 
-                var slot = Common.GetContainerItem(container, slotId);
+                        var slot = Common.GetContainerItem(container, slotId);
 
-                if (slot != null) {
+                        if (slot != null) {
                     
-                    ImGui.Text($"Slot {slotId} Address:");
-                    ImGui.SameLine();
-                    DebugManager.ClickToCopyText($"{(ulong)slot:X}");
+                            ImGui.Text($"Slot {slotId} Address:");
+                            ImGui.SameLine();
+                            DebugManager.ClickToCopyText($"{(ulong)slot:X}");
                     
-                    DebugManager.PrintOutObject(*slot, (ulong) slot, new List<string>(), true);
-                } else {
-                    ImGui.Text("Slot not found.");
+                            DebugManager.PrintOutObject(*slot, (ulong) slot, new List<string>(), true);
+                        } else {
+                            ImGui.Text("Slot not found.");
+                        }
+                    } else {
+                        ImGui.Text("Container not found.");
+                    }
+                    ImGui.EndTabItem();
                 }
-            } else {
-                ImGui.Text("Container not found.");
+
+                if (ImGui.BeginTabItem("Sorting")) {
+
+                    var module = UiHelper.UiModule.ItemOrderModule;
+                    
+                    ImGui.Text("Item Order Module:");
+                    ImGui.SameLine();
+                    DebugManager.ClickToCopyText($"{(ulong) module:X}");
+                    
+                    ImGui.SameLine();
+                    DebugManager.PrintOutObject(module, (ulong) module, new List<string>());
+                    
+                    ImGui.EndTabItem();
+                }
+
+                if (ImGui.BeginTabItem("Finder")) {
+
+                    var module = UiHelper.UiModule.ItemFinderModule;
+
+                }
+                
+                
+                ImGui.EndTabBar();
             }
+
         }
 
         public override string Name => "Inventory Debugging";

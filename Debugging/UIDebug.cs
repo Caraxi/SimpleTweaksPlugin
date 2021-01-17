@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.Component.GUI;
 using FFXIVClientStructs.Component.GUI.ULD;
 using ImGuiNET;
+using SimpleTweaksPlugin.GameStructs;
+using SimpleTweaksPlugin.GameStructs.Client.UI;
 using SimpleTweaksPlugin.Helper;
 
 // Customised version of https://github.com/aers/FFXIVUIDebug
@@ -77,6 +80,7 @@ namespace SimpleTweaksPlugin.Debugging {
 
             var isVisible = (atkUnitBase->Flags & 0x20) == 0x20;
             string addonName = Marshal.PtrToStringAnsi(new IntPtr(atkUnitBase->Name));
+            
             ImGui.Text($"{addonName}");
             ImGui.SameLine();
             ImGui.PushStyleColor(ImGuiCol.Text, isVisible ? 0xFF00FF00 : 0xFF0000FF);
@@ -112,11 +116,16 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.Text($"Widget Count {atkUnitBase->ULDData.ObjectCount}");
             
             ImGui.Separator();
-            
-            DebugManager.PrintOutObject(*atkUnitBase, (ulong) atkUnitBase, new List<string>());
-            
-            
-            
+
+            object addonObj = addonName switch {
+                "ActionDetail" => *(AddonActionDetail*) atkUnitBase,
+                "_ActionBar" => *(AddonActionBarBase*) atkUnitBase,
+                _ => *atkUnitBase
+            };
+
+
+            DebugManager.PrintOutObject(addonObj, (ulong) atkUnitBase, new List<string>());
+
             ImGui.Dummy(new Vector2(25 * ImGui.GetIO().FontGlobalScale));
             ImGui.Separator();
             if (atkUnitBase->RootNode != null)
@@ -238,29 +247,32 @@ namespace SimpleTweaksPlugin.Debugging {
                         break;
                     case NodeType.Image:
                         var imageNode = (AtkImageNode*)node;
-                        if (imageNode->PartsList != null)
-                        {
-                            if (imageNode->PartId > imageNode->PartsList->PartCount)
+                        if (imageNode->PartsList != null) {
+                            if (imageNode->PartId > imageNode->PartsList->PartCount) {
                                 ImGui.Text("part id > part count?");
-                            else
-                            {
+                            } else {
                                 var textureInfo = imageNode->PartsList->Parts[imageNode->PartId].ULDTexture;
-                                // TODO: Something in here isn't set, occasionally it fails. Has been seen in WeeklyPuzzle
-                                try
-                                {
-                                    var texFileNamePtr = textureInfo->AtkTexture.TextureInfo->TexFileResourceHandle->ResourceHandle.FileName;
+                                var texType = textureInfo->AtkTexture.TextureType;
+                                ImGui.Text($"texture type: {texType} part_id={imageNode->PartId} part_id_count={imageNode->PartsList->PartCount}");
+                                if (texType == TextureType.Resource) {
+                                    var texFileNamePtr = textureInfo->AtkTexture.Resource->TexFileResourceHandle->ResourceHandle.FileName;
                                     var texString = Marshal.PtrToStringAnsi(new IntPtr(texFileNamePtr));
-                                    ImGui.Text($"texture path: {texString} part_id={imageNode->PartId} part_id_count={imageNode->PartsList->PartCount}");
-                                }
-                                catch (NullReferenceException)
-                                {
-                                    ImGui.Text($"texture path: null");
+                                    ImGui.Text($"texture path: {texString}");
+                                    var kernelTexture = textureInfo->AtkTexture.Resource->KernelTextureObject;
+                                    
+                                    if (ImGui.TreeNode($"Texture##{(ulong) kernelTexture->D3D11ShaderResourceView:X}")) {
+                                        ImGui.Image(new IntPtr(kernelTexture->D3D11ShaderResourceView), new Vector2(kernelTexture->Width, kernelTexture->Height));
+                                        ImGui.TreePop();
+                                    }
+                                } else if (texType == TextureType.KernelTexture) {
+                                    if (ImGui.TreeNode($"Texture##{(ulong) textureInfo->AtkTexture.KernelTexture->D3D11ShaderResourceView:X}")) {
+                                        ImGui.Image(new IntPtr(textureInfo->AtkTexture.KernelTexture->D3D11ShaderResourceView), new Vector2(textureInfo->AtkTexture.KernelTexture->Width, textureInfo->AtkTexture.KernelTexture->Height)); 
+                                        ImGui.TreePop();
+                                    }
                                 }
                             }
-                        }
-                        else
-                        {
-                            ImGui.Text($"no texture loaded");
+                        } else {
+                            ImGui.Text("no texture loaded");
                         }
                         break;
                 }

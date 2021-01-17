@@ -24,6 +24,7 @@ namespace SimpleTweaksPlugin.GameStructs.Client.UI {
         [FieldOffset(0x2C)] public byte MateriaLevel2;
         [FieldOffset(0x2D)] public byte MateriaLevel3;
         [FieldOffset(0x2E)] public byte MateriaLevel4;
+        [FieldOffset(0x2F)] public byte Stain;
         [FieldOffset(0x30)] public uint GlamourId;
         public bool IsHQ => (Flags & ItemFlags.HQ) == ItemFlags.HQ;
 

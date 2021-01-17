@@ -99,10 +99,8 @@ namespace SimpleTweaksPlugin.Helper {
                 }
                 offset += 1;
             }
-
             var bytes = new byte[offset];
             Marshal.Copy(new IntPtr(ptr), bytes, 0, offset);
-
             return PluginInterface.SeStringManager.Parse(bytes);
         }
 

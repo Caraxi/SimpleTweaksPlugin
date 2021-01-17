@@ -52,7 +52,7 @@ namespace SimpleTweaksPlugin.Helper
                 if (_uiModule == null || !_uiModule.IsValid) {
                     var uiModule = _getUiModule();
                     if (uiModule != null) {
-                        _uiModule = new UiModule(uiModule);
+                        _uiModule = new UiModule() { Data = uiModule };
                     }
                 }
 

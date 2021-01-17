@@ -20,6 +20,8 @@ namespace SimpleTweaksPlugin.GameStructs.Client.UI.VTable {
         public void* vf12;
         public IntPtr GetRaptureHotbarModule;
         public IntPtr GetRaptureGearsetModule;
-
+        public void* vf15;
+        public IntPtr GetItemOrderModule;
+        public IntPtr GetItemFinderModule;
     }
 }

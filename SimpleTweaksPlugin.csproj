@@ -2,7 +2,7 @@
     <PropertyGroup Label="Target">
         <PlatformTarget>AnyCPU</PlatformTarget>
         <TargetFramework>net472</TargetFramework>
-        <LangVersion>8.0</LangVersion>
+        <LangVersion>preview</LangVersion>
         <Platforms>AnyCPU;x64</Platforms>
         <Configurations>Debug;Release</Configurations>
     </PropertyGroup>

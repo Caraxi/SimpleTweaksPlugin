@@ -4,11 +4,15 @@ using FFXIVClientStructs.Component.GUI;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Dalamud.Game.Internal.Libc;
 using SimpleTweaksPlugin.Debugging;
+using SimpleTweaksPlugin.Helper;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {
@@ -222,44 +226,98 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.EndGroup();
             if (pushColorCount > 0) ImGui.PopStyleColor(pushColorCount);
         }
+
+        private static ulong beginModule = 0;
+        private static ulong endModule = 0;
+
+        private static unsafe void PrintOutValue(ulong addr, List<string> path, Type type, object value, MemberInfo member) {
+            var valueParser = member.GetCustomAttribute(typeof(ValueParser));
+            var fieldOffset = member.GetCustomAttribute(typeof(FieldOffsetAttribute));
+            if (valueParser is ValueParser vp) {
+                vp.ImGuiPrint(type, value, member, addr);
+                return;
+            }
+            if (type.IsPointer) {
+                var val = (Pointer) value;
+                var unboxed = Pointer.Unbox(val);
+                if (unboxed != null) {
+                    var unboxedAddr = (ulong) unboxed;
+                    ClickToCopyText($"{(ulong)unboxed:X}");
+                    if (beginModule > 0 && unboxedAddr >= beginModule && unboxedAddr <= endModule) {
+                        ImGui.SameLine();
+                        ImGui.PushStyleColor(ImGuiCol.Text, 0xffcbc0ff);
+                        ClickToCopyText($"ffxiv_dx11.exe+{(unboxedAddr-beginModule):X}");
+                        ImGui.PopStyleColor();
+                    }
+                    try {
+                        var eType = type.GetElementType();
+                        var ptrObj = Marshal.PtrToStructure(new IntPtr(unboxed), eType);
+                        ImGui.SameLine();
+                        PrintOutObject(ptrObj, (ulong) unboxed, new List<string>(path));
+                    } catch {
+                        // Ignored
+                    }
+                } else {
+                    ImGui.Text("null");
+                }
+            } else {
+                if (!type.IsPrimitive) {
+                    PrintOutObject(value, addr, new List<string>(path));
+                } else {
+                    if (member.GetCustomAttribute(typeof(ValueParser.HexValue)) != null) {
+                        ImGui.Text($"{value:X}");
+                    } else {
+                        ImGui.Text($"{value}");
+                    }
+                    
+                }
+            }
+        }
+        
         
         public static unsafe void PrintOutObject(object obj, ulong addr, List<string> path, bool autoExpand = false) {
+            if (endModule == 0 && beginModule == 0) {
+                try {
+                    beginModule = (ulong) Process.GetCurrentProcess().MainModule.BaseAddress.ToInt64();
+                    endModule = (beginModule + (ulong)Process.GetCurrentProcess().MainModule.ModuleMemorySize);
+                } catch {
+                    endModule = 1;
+                }
+            }
             ImGui.PushStyleColor(ImGuiCol.Text, 0xFF00FFFF);
             if (autoExpand) {
                 ImGui.SetNextItemOpen(true, ImGuiCond.Appearing);
             }
             if (ImGui.TreeNode($"{obj}##print-obj-{addr:X}-{string.Join("-", path)}")) {
                 ImGui.PopStyleColor();
-                foreach (var f in obj.GetType().GetFields()) {
-                    ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{f.FieldType.Name}");
+                foreach (var f in obj.GetType().GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.Instance)) {
+
+                    var fixedBuffer = (FixedBufferAttribute) f.GetCustomAttribute(typeof(FixedBufferAttribute));
+                    if (fixedBuffer != null) {
+                        ImGui.Text($"fixed");
+                        ImGui.SameLine();
+                        ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{fixedBuffer.ElementType.Name}[0x{fixedBuffer.Length:X}]");
+                    } else {
+                        ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{f.FieldType.Name}");
+                    }
+                    
                     ImGui.SameLine();
                     ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.4f, 1), $"{f.Name}: ");
                     ImGui.SameLine();
-                    if (f.FieldType.IsPointer) {
-                        var val = (Pointer) f.GetValue(obj);
-                        var unboxed = Pointer.Unbox(val);
-                        if (unboxed != null) {
-                            DebugManager.ClickToCopyText($"{(ulong)unboxed:X}");
-                            try {
-                                var type = f.FieldType.GetElementType();
-                                var ptrObj = Marshal.PtrToStructure(new IntPtr(unboxed), type);
-                                ImGui.SameLine();
-                                PrintOutObject(ptrObj, (ulong) unboxed, new List<string>(path) {f.Name});
-                            } catch {
-                                // Ignored
-                            }
-                        } else {
-                            ImGui.Text("null");
-                        }
-                    } else {
-                        if (!f.FieldType.IsPrimitive) {
-                            // ImGui.Text($"[OBJ]");
-                            PrintOutObject(f.GetValue(obj), addr, new List<string>(path) {$"{f.Name}"});
-                        } else {
-                            ImGui.Text($"{f.GetValue(obj)}");
-                        }
-                    }
+                    
+                    PrintOutValue(addr, new List<string>(path) { f.Name }, f.FieldType, f.GetValue(obj), f);
                 }
+
+                foreach (var p in obj.GetType().GetProperties()) {
+                    ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{p.PropertyType.Name}");
+                    ImGui.SameLine();
+                    ImGui.TextColored(new Vector4(0.2f, 0.6f, 0.4f, 1), $"{p.Name}: ");
+                    ImGui.SameLine();
+                    
+                    PrintOutValue(addr, new List<string>(path) { p.Name }, p.PropertyType, p.GetValue(obj), p);
+                }
+
+
                 ImGui.TreePop();
             } else {
                 ImGui.PopStyleColor();

@@ -1,64 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using SimpleTweaksPlugin.GameStructs.Client.UI.Client.UI.Misc;
 using SimpleTweaksPlugin.GameStructs.Client.UI.Misc;
 using SimpleTweaksPlugin.GameStructs.Client.UI.VTable;
 
 namespace SimpleTweaksPlugin.GameStructs.Client.UI {
-
-    public unsafe class UiModule {
-        
-        
+    
+    public unsafe class UiModule : StructWrapper<UiModuleStruct> {
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        private delegate RaptureHotbarModuleStruct* GetRaptureHotbarModuleDelegate(UiModuleStruct* uiModule);
-        private GetRaptureHotbarModuleDelegate getRaptureHotbarModule;
+        public delegate void* GetModuleDelegate(UiModuleStruct* @this);
         
-        [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-        private delegate RaptureGearsetModuleStruct* GetRaptureGearsetModuleDelegate(UiModuleStruct* uiModule);
-        private GetRaptureGearsetModuleDelegate getRaptureGearsetModule;
+        public static implicit operator UiModuleStruct*(UiModule module) => module.Data;
+        public static explicit operator ulong(UiModule module) => (ulong) module.Data;
+        public static explicit operator UiModule(UiModuleStruct* @struct) => new() { Data = @struct };
+        public static explicit operator UiModule(void* ptr) => new() { Data = (UiModuleStruct*) ptr};
         
-        public UiModuleStruct* Data { get; }
-        private readonly ulong vtblAddr;
-        public UiModule(UiModuleStruct* data) {
-            Data = data;
-            vtblAddr = (ulong) data;
-            
-            getRaptureHotbarModule = Marshal.GetDelegateForFunctionPointer<GetRaptureHotbarModuleDelegate>(Data->vtbl->GetRaptureHotbarModule);
-            getRaptureGearsetModule = Marshal.GetDelegateForFunctionPointer<GetRaptureGearsetModuleDelegate>(Data->vtbl->GetRaptureGearsetModule);
-        }
-        public bool IsValid => vtblAddr == (ulong) Data->vtbl;
 
-        public static implicit operator UiModuleStruct*(UiModule uiModule) => uiModule.Data;
-        public static explicit operator UiModule(UiModuleStruct* uiModuleStruct) => new UiModule(uiModuleStruct);
+        private readonly Dictionary<Type, IStructWrapper> structWrappers = new();
         
-        
-        private RaptureHotbarModule raptureHotbarModule;
-        public RaptureHotbarModule RaptureHotbarModule {
-            get {
-                if (raptureHotbarModule == null || !raptureHotbarModule.IsValid) {
-                    var raptureHotbarModuleStruct = getRaptureHotbarModule(this);
-                    if (raptureHotbarModuleStruct != null) this.raptureHotbarModule = new RaptureHotbarModule(raptureHotbarModuleStruct);
+        private T GetModuleSingleton<T>(IntPtr getterAddr) where T : IStructWrapper, new() {
+            if (structWrappers.ContainsKey(typeof(T))) {
+                if (structWrappers[typeof(T)].IsValid) {
+                    return (T) structWrappers[typeof(T)];
                 }
-                return raptureHotbarModule;
             }
+            var getter = Marshal.GetDelegateForFunctionPointer<GetModuleDelegate>(getterAddr);
+            var module = getter(this);
+            if (module == null) return default;
+            var wrapper = new T();
+            wrapper.SetData(module);
+            structWrappers.Add(typeof(T), wrapper);
+            return wrapper;
         }
         
-        private RaptureGearsetModule raptureGearsetModule;
-        public RaptureGearsetModule RaptureGearsetModule {
-            get {
-                if (raptureGearsetModule == null || !raptureGearsetModule.IsValid) {
-                    var raptureGearsetModuleStruct = getRaptureGearsetModule(this);
-                    if (raptureGearsetModuleStruct != null) this.raptureGearsetModule = new RaptureGearsetModule(raptureGearsetModuleStruct);
-                }
-                return raptureGearsetModule;
-            }
-        }
-        
-        
+        public RaptureHotbarModule RaptureHotbarModule => GetModuleSingleton<RaptureHotbarModule>(Data->vtbl->GetRaptureHotbarModule);
+        public RaptureGearsetModule RaptureGearsetModule => GetModuleSingleton<RaptureGearsetModule>(Data->vtbl->GetRaptureGearsetModule);
+        public ItemOrderModule ItemOrderModule => GetModuleSingleton<ItemOrderModule>(Data->vtbl->GetItemOrderModule);
+        public ItemFinderModule ItemFinderModule => GetModuleSingleton<ItemFinderModule>(Data->vtbl->GetItemFinderModule);
     }
     
     

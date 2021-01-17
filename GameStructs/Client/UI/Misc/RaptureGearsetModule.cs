@@ -2,21 +2,11 @@
 using System.Runtime.InteropServices;
 
 namespace SimpleTweaksPlugin.GameStructs.Client.UI.Misc {
-    public unsafe class RaptureGearsetModule {
-        private ulong vtbl;
-        public bool IsValid => this.vtbl == (ulong) Data->vtbl;
-        
+    public unsafe class RaptureGearsetModule : StructWrapper<RaptureGearsetModuleStruct> {
         public static implicit operator RaptureGearsetModuleStruct*(RaptureGearsetModule module) => module.Data;
         public static explicit operator ulong(RaptureGearsetModule module) => (ulong) module.Data;
-        public static explicit operator RaptureGearsetModule(RaptureGearsetModuleStruct* @struct) => new RaptureGearsetModule(@struct);
-
-        public RaptureGearsetModuleStruct* Data { get; }
-        
-        public RaptureGearsetModule(RaptureGearsetModuleStruct* data) {
-            Data = data;
-            vtbl = (ulong) data->vtbl;
-        }
-
+        public static explicit operator RaptureGearsetModule(RaptureGearsetModuleStruct* @struct) => new() { Data = @struct };
+        public static explicit operator RaptureGearsetModule(void* ptr) => new() { Data = (RaptureGearsetModuleStruct*) ptr};
         public Gearset* Gearset => (Gearset*) this.Data->GearsetData;
     }
 
