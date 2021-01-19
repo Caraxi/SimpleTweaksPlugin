@@ -1,8 +1,7 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using SimpleTweaksPlugin.Helper;
+﻿using System.Runtime.InteropServices;
+using FFXIVClientInterface.Misc;
 
-namespace SimpleTweaksPlugin.GameStructs.Client.UI.Misc {
+namespace FFXIVClientInterface.Client.UI.Misc {
     public unsafe class ItemOrderModule : StructWrapper<ItemOrderModuleStruct> {
         public static implicit operator ItemOrderModuleStruct*(ItemOrderModule module) => module.Data;
         public static explicit operator ulong(ItemOrderModule module) => (ulong) module.Data;
@@ -13,11 +12,11 @@ namespace SimpleTweaksPlugin.GameStructs.Client.UI.Misc {
     [StructLayout(LayoutKind.Explicit, Size = 0xD8)]
     public unsafe struct ItemOrderModuleStruct {
         [FieldOffset(0x00)] public void* vtbl;
-        [ValueParser.FixedString] [FieldOffset(0x30)] public fixed byte ModuleName[16];
+        [FieldOffset(0x30)] public fixed byte ModuleName[16];
         [FieldOffset(0x40)] public ItemOrderContainer* PlayerInventory;
         [FieldOffset(0x48)] public ItemOrderArmoury Armoury;
 
-        [ValueParser.HexValue] [FieldOffset(0xB0)] public ulong RetainerID;
+        [FieldOffset(0xB0)] public ulong RetainerID;
         [FieldOffset(0xB8)] public void* RetainerPtr;
         [FieldOffset(0xC0)] public uint RetainerCount;
         

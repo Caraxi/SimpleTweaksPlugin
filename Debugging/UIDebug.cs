@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using FFXIVClientStructs.Component.GUI;
-using FFXIVClientStructs.Component.GUI.ULD;
+using FFXIVClientStructs.FFXIV.Component.GUI;
+using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.GameStructs.Client.UI;
@@ -120,9 +120,9 @@ namespace SimpleTweaksPlugin.Debugging {
             object addonObj = addonName switch {
                 "ActionDetail" => *(AddonActionDetail*) atkUnitBase,
                 "_ActionBar" => *(AddonActionBarBase*) atkUnitBase,
+                "_MiniTalk" => *(AddonMiniTalk*) atkUnitBase,
                 _ => *atkUnitBase
             };
-
 
             DebugManager.PrintOutObject(addonObj, (ulong) atkUnitBase, new List<string>());
 
@@ -393,6 +393,13 @@ namespace SimpleTweaksPlugin.Debugging {
                 $"RGBA: 0x{node->Color.R:X2}{node->Color.G:X2}{node->Color.B:X2}{node->Color.A:X2} " +
                 $"AddRGB: {node->AddRed} {node->AddGreen} {node->AddBlue} " +
                 $"MultiplyRGB: {node->MultiplyRed} {node->MultiplyGreen} {node->MultiplyBlue}");
+
+            var addR = (int) node->AddRed;
+            if (ImGui.InputInt("AddRed", ref addR)) {
+                node->AddRed = (ushort) addR;
+                node->Flags_2 |= 0x1;
+            }
+
         }
 
 

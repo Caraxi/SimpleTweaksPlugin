@@ -3,8 +3,8 @@ using System.Runtime.InteropServices;
 using Dalamud.Game;
 using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Plugin;
-using FFXIVClientStructs;
-using FFXIVClientStructs.Component.GUI;
+using FFXIVClientStructs.FFXIV.Client.System.String;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.GameStructs.Client.UI;
@@ -20,8 +20,8 @@ namespace SimpleTweaksPlugin.Helper {
         private static GameAlloc _gameAlloc;
         private static GetGameAllocator _getGameAllocator;
 
-        private delegate IntPtr GetInventoryContainer(IntPtr inventoryManager, InventoryType inventoryType);
-        private delegate InventoryItem* GetContainerSlot(IntPtr inventoryContainer, int slotId);
+        private delegate InventoryContainer* GetInventoryContainer(IntPtr inventoryManager, InventoryType inventoryType);
+        private delegate InventoryItem* GetContainerSlot(InventoryContainer* inventoryContainer, int slotId);
 
         private static GetInventoryContainer _getInventoryContainer;
         private static GetContainerSlot _getContainerSlot;
@@ -54,20 +54,20 @@ namespace SimpleTweaksPlugin.Helper {
             return (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName(name, index);
         }
 
-        public static IntPtr GetContainer(InventoryType inventoryType) {
-            if (InventoryManagerAddress == IntPtr.Zero) return IntPtr.Zero;
+        public static InventoryContainer* GetContainer(InventoryType inventoryType) {
+            if (InventoryManagerAddress == IntPtr.Zero) return null;
             return _getInventoryContainer(InventoryManagerAddress, inventoryType);
         }
 
-        public static InventoryItem* GetContainerItem(IntPtr container, int slot) {
-            if (container == IntPtr.Zero) return null;
+        public static InventoryItem* GetContainerItem(InventoryContainer* container, int slot) {
+            if (container == null) return null;
             return _getContainerSlot(container, slot);
         }
 
         public static InventoryItem* GetInventoryItem(InventoryType inventoryType, int slotId) {
             if (InventoryManagerAddress == IntPtr.Zero) return null;
             var container = _getInventoryContainer(InventoryManagerAddress, inventoryType);
-            return container == IntPtr.Zero ? null : _getContainerSlot(container, slotId);
+            return container == null ? null : _getContainerSlot(container, slotId);
         }
 
         public static IntPtr Alloc(ulong size) {
@@ -113,7 +113,7 @@ namespace SimpleTweaksPlugin.Helper {
             *(dst + bytes.Length) = 0;
         }
 
-        public void WriteSeString(FFXIVString xivString, SeString s) {
+        public void WriteSeString(Utf8String xivString, SeString s) {
             var bytes = s.Encode();
             int i;
             for (i = 0; i < bytes.Length && i < xivString.BufSize - 1; i++) {
@@ -139,16 +139,5 @@ namespace SimpleTweaksPlugin.Helper {
             var optionBase = (byte**)(PluginInterface.Framework.Address.BaseAddress + 0x2B28);
             return Marshal.PtrToStructure<T>(new IntPtr(*optionBase + 0xAAE0 + (16 * (uint)opt)));
         }
-        
-        private static ActionManager _actionManager;
-        public static ActionManager ActionManager {
-            get {
-                if (_actionManager != null) return _actionManager;
-                var address = PluginInterface.TargetModuleScanner.GetStaticAddressFromSig("E8 ?? ?? ?? ?? 33 C0 E9 ?? ?? ?? ?? 8B 7D 0C");
-                _actionManager = new ActionManager(address);
-                return _actionManager;
-            }
-        }
-
     }
 }

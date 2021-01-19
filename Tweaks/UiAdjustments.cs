@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using FFXIVClientStructs.Component.GUI;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 

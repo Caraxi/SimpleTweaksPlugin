@@ -1,6 +1,5 @@
 ﻿using Dalamud.Game.Chat.SeStringHandling.Payloads;
-using FFXIVClientStructs.Component.GUI;
-using ImGuiNET;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.GameStructs.Client.UI;
 using SimpleTweaksPlugin.Helper;

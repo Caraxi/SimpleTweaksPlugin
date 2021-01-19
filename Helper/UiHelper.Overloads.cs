@@ -1,4 +1,4 @@
-﻿using FFXIVClientStructs.Component.GUI;
+﻿using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace SimpleTweaksPlugin.Helper {
     public static unsafe partial class UiHelper {

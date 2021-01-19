@@ -1,6 +1,5 @@
 ﻿using System.Runtime.InteropServices;
-using FFXIVClientStructs.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace SimpleTweaksPlugin.GameStructs.Client.UI {
     [StructLayout(LayoutKind.Explicit, Size = 0x248)]

@@ -1,8 +1,6 @@
-﻿using System.Diagnostics;
-using System.Text;
-using System.Xml;
+﻿using System.Text;
+using FFXIVClientInterface.Client.UI.Misc;
 using ImGuiNET;
-using SimpleTweaksPlugin.GameStructs.Client.UI.Misc;
 using SimpleTweaksPlugin.Helper;
 
 namespace SimpleTweaksPlugin.Debugging {
@@ -13,7 +11,7 @@ namespace SimpleTweaksPlugin.Debugging {
         
         public override void Draw() {
 
-            var raptureGearsetModule = UiHelper.UiModule.RaptureGearsetModule;
+            var raptureGearsetModule = SimpleTweaksPlugin.Client.UiModule.RaptureGearsetModule;
             
             ImGui.Text("RaptureGearsetModule:");
             ImGui.SameLine();

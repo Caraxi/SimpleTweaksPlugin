@@ -2,8 +2,8 @@
 using System.Runtime.InteropServices;
 using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
-using FFXIVClientStructs.Component.GUI;
-using FFXIVClientStructs.Component.GUI.ULD;
+using FFXIVClientStructs.FFXIV.Component.GUI;
+using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 
 namespace SimpleTweaksPlugin.Helper {
     public static unsafe partial class UiHelper {
@@ -130,6 +130,5 @@ namespace SimpleTweaksPlugin.Helper {
             if (!Ready) return;
             _atkUnitBaseClose(atkUnitBase, (byte) (unknownBool ? 1 : 0));
         }
-        
     }
 }

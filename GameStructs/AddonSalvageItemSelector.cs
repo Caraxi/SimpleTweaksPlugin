@@ -1,5 +1,5 @@
 ﻿using System.Runtime.InteropServices;
-using FFXIVClientStructs.Component.GUI;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Enums;
 
 namespace SimpleTweaksPlugin.GameStructs.Client.UI {

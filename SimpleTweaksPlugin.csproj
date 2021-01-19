@@ -33,16 +33,20 @@
       <EmbeddedResource Remove="Publish\**" />
       <None Remove="lib\**" />
       <None Remove="Publish\**" />
+      <Compile Remove="FFXIVClientInterface\**" />
+      <EmbeddedResource Remove="FFXIVClientInterface\**" />
+      <None Remove="FFXIVClientInterface\**" />
     </ItemGroup>
     <ItemGroup>
       <PackageReference Include="ILMerge" Version="3.0.41" />
     </ItemGroup>
     <ItemGroup>
+      <ProjectReference Include="FFXIVClientInterface\FFXIVClientInterface.csproj" />
       <ProjectReference Include="lib\FFXIVClientStructs\FFXIVClientStructs.csproj" Private="true" />
     </ItemGroup>
 	<Target Name="ILMerge" AfterTargets="PostBuildEvent">
 		<!-- Merge and rename -->
-		<Exec Command="$(ILMergeConsolePath) /target:library /out:$(TargetDir)/../SimpleTweaksPlugin.dll /log /lib:$(APPDATA)\XIVLauncher\addon\Hooks $(TargetDir)SimpleTweaksPluginNoDeps.dll $(TargetDir)FFXIVClientStructs.dll&#xD;&#xA;powershell -Command &quot;Remove-Item '$(TargetDir)\*.*';Move-Item '$(TargetDir)\..\SimpleTweaksPlugin.*' -Destination '$(TargetDir)';&quot;" />
+		<Exec Command="$(ILMergeConsolePath) /target:library /out:$(TargetDir)/../SimpleTweaksPlugin.dll /log /lib:$(APPDATA)\XIVLauncher\addon\Hooks $(TargetDir)SimpleTweaksPluginNoDeps.dll $(TargetDir)FFXIVClientStructs.dll $(TargetDir)FFXIVClientInterface.dll&#xD;&#xA;powershell -Command &quot;Remove-Item '$(TargetDir)\*.*';Move-Item '$(TargetDir)\..\SimpleTweaksPlugin.*' -Destination '$(TargetDir)';&quot;" />
 	</Target>
 	<ItemGroup>
 		<Reference Include="Dalamud">

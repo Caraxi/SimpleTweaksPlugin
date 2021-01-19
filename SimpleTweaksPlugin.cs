@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using FFXIVClientInterface;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 #if DEBUG
@@ -29,9 +30,12 @@ namespace SimpleTweaksPlugin {
         public string AssemblyLocation { get; private set; } = Assembly.GetExecutingAssembly().Location;
 
         internal Common Common;
+
+        public static ClientInterface Client;
         
         public void Dispose() {
             SimpleLog.Debug("Dispose");
+            
             PluginInterface.UiBuilder.OnBuildUi -= this.BuildUI;
             RemoveCommands();
 
@@ -41,8 +45,8 @@ namespace SimpleTweaksPlugin {
                 SimpleLog.Debug($"Dispose: {t.Name}");
                 t.Dispose();
             }
-
             Tweaks.Clear();
+            Client.Dispose();
         }
 
         public int UpdateFrom = -1;
@@ -52,9 +56,12 @@ namespace SimpleTweaksPlugin {
             SimpleLog.SetupBuildPath();
 #endif
             this.PluginInterface = pluginInterface;
+
+            Client = new ClientInterface(pluginInterface.TargetModuleScanner, pluginInterface.Data);
+            
             this.PluginConfig = (SimpleTweaksPluginConfig)pluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
             this.PluginConfig.Init(this, pluginInterface);
-
+            
             IconManager = new IconManager(pluginInterface);
             
             UiHelper.Setup(pluginInterface.TargetModuleScanner);

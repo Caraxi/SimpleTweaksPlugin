@@ -1,6 +1,6 @@
 ﻿using Dalamud.Game.Internal;
-using FFXIVClientStructs.Component.GUI;
-using FFXIVClientStructs.Component.GUI.ULD;
+using FFXIVClientStructs.FFXIV.Component.GUI;
+using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
 using SimpleTweaksPlugin.GameStructs.Client.UI;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;

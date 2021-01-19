@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Dalamud.Game.Internal;
-using FFXIVClientStructs.Component.GUI;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public class RemoveCommunityFinder : UiAdjustments.SubTweak {

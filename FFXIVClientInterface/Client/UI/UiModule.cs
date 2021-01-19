@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using SimpleTweaksPlugin.GameStructs.Client.UI.Client.UI.Misc;
-using SimpleTweaksPlugin.GameStructs.Client.UI.Misc;
-using SimpleTweaksPlugin.GameStructs.Client.UI.VTable;
+using FFXIVClientInterface.Client.UI.Agent;
+using FFXIVClientInterface.Client.UI.Misc;
+using FFXIVClientInterface.Misc;
 
-namespace SimpleTweaksPlugin.GameStructs.Client.UI {
+namespace FFXIVClientInterface.Client.UI {
     
-    public unsafe class UiModule : StructWrapper<UiModuleStruct> {
+    public unsafe class UiModule : StructWrapper<UiModuleStruct>, IDisposable {
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         public delegate void* GetModuleDelegate(UiModuleStruct* @this);
         
@@ -38,11 +38,19 @@ namespace SimpleTweaksPlugin.GameStructs.Client.UI {
         public RaptureGearsetModule RaptureGearsetModule => GetModuleSingleton<RaptureGearsetModule>(Data->vtbl->GetRaptureGearsetModule);
         public ItemOrderModule ItemOrderModule => GetModuleSingleton<ItemOrderModule>(Data->vtbl->GetItemOrderModule);
         public ItemFinderModule ItemFinderModule => GetModuleSingleton<ItemFinderModule>(Data->vtbl->GetItemFinderModule);
+        public AgentModule AgentModule => GetModuleSingleton<AgentModule>(Data->vtbl->GetAgentModule);
+        
+        
+        public override void Dispose() {
+            foreach (var m in structWrappers) {
+                m.Value.Dispose();
+            }
+        }
     }
     
     
     [StructLayout(LayoutKind.Explicit, Size = 0xDE750)]
     public unsafe struct UiModuleStruct {
-        [FieldOffset(0x00000)] public UiModuleVTable* vtbl;
+        [FieldOffset(0x00000)] public VirtualTable.UiModule* vtbl;
     }
 }

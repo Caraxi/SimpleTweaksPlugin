@@ -6,36 +6,46 @@ using SimpleTweaksPlugin.Helper;
 
 namespace SimpleTweaksPlugin.Debugging {
     public unsafe class InventoryDebug : DebugHelper {
-        private int containerId;
-        private int slotId;
-        
+        private InventoryType inventoryType;
+
         public override void Draw() {
             DebugManager.ClickToCopyText($"{Common.InventoryManagerAddress.ToInt64():X}");
             if (ImGui.BeginTabBar("inventoryDebuggingTabs")) {
                 if (ImGui.BeginTabItem("Container/Slot")) {
-                    
                     ImGui.PushItemWidth(200);
-                    ImGui.InputInt("Container ID##debugInventoryContainer", ref containerId);
-                    ImGui.InputInt("Slot ID##debugInventoryContainer", ref slotId);
+                    if (ImGui.BeginCombo("###containerSelect", $"{inventoryType} [{(int)inventoryType}]")) {
+
+                        foreach (var i in (InventoryType[]) Enum.GetValues(typeof(InventoryType))) {
+                            if (ImGui.Selectable($"{i} [{(int) i}]##inventoryTypeSelect", i == inventoryType)) {
+                                inventoryType = i;
+                            }
+                        }
+                        ImGui.EndCombo();
+                    }
+                    
+                    var container = Common.GetContainer(inventoryType); 
+
                     ImGui.PopItemWidth();
-                    var container = Common.GetContainer((InventoryType) containerId); 
-            
-                    if (container != IntPtr.Zero) {
-                        ImGui.Text($"Container {containerId} Address:");
+                    
+                    
+                    if (container != null) {
+                        
+                        ImGui.Text($"Container Address:");
                         ImGui.SameLine();
-                        DebugManager.ClickToCopyText($"{container.ToInt64():X}");
+                        DebugManager.ClickToCopyText($"{(ulong)container:X}");
+                        
+                        ImGui.SameLine();
+                        DebugManager.PrintOutObject(*container, (ulong) container, new List<string>());
 
-                        var slot = Common.GetContainerItem(container, slotId);
+                        if (ImGui.TreeNode("Items##containerItems")) {
+                            
+                            for (var i = 0; i < container->SlotCount; i++) {
 
-                        if (slot != null) {
-                    
-                            ImGui.Text($"Slot {slotId} Address:");
-                            ImGui.SameLine();
-                            DebugManager.ClickToCopyText($"{(ulong)slot:X}");
-                    
-                            DebugManager.PrintOutObject(*slot, (ulong) slot, new List<string>(), true);
-                        } else {
-                            ImGui.Text("Slot not found.");
+                                var item = container->Items[i];
+                                DebugManager.PrintOutObject(item, (ulong) &item, new List<string> {$"Items[{i}]"},false, $"[{i:00}] {item.Item?.Name ?? "<Not Found>"}" );
+                            
+                            }
+                            ImGui.TreePop();
                         }
                     } else {
                         ImGui.Text("Container not found.");
@@ -45,7 +55,7 @@ namespace SimpleTweaksPlugin.Debugging {
 
                 if (ImGui.BeginTabItem("Sorting")) {
 
-                    var module = UiHelper.UiModule.ItemOrderModule;
+                    var module = SimpleTweaksPlugin.Client.UiModule.ItemOrderModule;
                     
                     ImGui.Text("Item Order Module:");
                     ImGui.SameLine();
@@ -59,7 +69,7 @@ namespace SimpleTweaksPlugin.Debugging {
 
                 if (ImGui.BeginTabItem("Finder")) {
 
-                    var module = UiHelper.UiModule.ItemFinderModule;
+                    var module = SimpleTweaksPlugin.Client.UiModule.ItemFinderModule;
 
                     ImGui.Text("ItemFinderModule:");
                     ImGui.SameLine();

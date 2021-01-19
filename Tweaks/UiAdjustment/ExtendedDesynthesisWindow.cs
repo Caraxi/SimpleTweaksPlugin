@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using System.Text;
 using Dalamud.Game.Chat;
-using Dalamud.Game.Chat.SeStringHandling;
-using Dalamud.Game.Internal;
 using Dalamud.Hooking;
+using FFXIVClientInterface.Client.UI.Misc;
 using FFXIVClientStructs;
-using FFXIVClientStructs.Component.GUI;
-using FFXIVClientStructs.Component.GUI.ULD;
+using FFXIVClientStructs.FFXIV.Client.Graphics;
+using FFXIVClientStructs.FFXIV.Component.GUI;
+using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.GameStructs.Client.UI;
-using SimpleTweaksPlugin.GameStructs.Client.UI.Misc;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
@@ -109,7 +108,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var classJobOffset = 2 * (int)(itemData.ClassJobRepair.Row - 8);
                 var desynthLevel = *(ushort*)(Common.PlayerStaticAddress + (0x69A + classJobOffset)) / 100f;
                 
-                skillTextNode->TextColor = new FFXIVByteColor() {
+                skillTextNode->TextColor = new ByteColor() {
                     A = 0xFF,
                     R = (byte)(desynthLevel > itemData.LevelItem.Row ? 0x00 : 0xCC),
                     G = (byte)(desynthLevel <= itemData.LevelItem.Row ? 0x00 : 0xCC),
@@ -119,7 +118,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 var itemIdWithHQ = item->ItemId;
                 if ((item->Flags & ItemFlags.HQ) > 0) itemIdWithHQ += 1000000;
-                var gearsetModule = UiHelper.UiModule.RaptureGearsetModule;
+                var gearsetModule = SimpleTweaksPlugin.Client.UiModule.RaptureGearsetModule;
                 var itemInGearset = false;
                 for (var i = 0; i < 101; i++) {
                     var gearset = &gearsetModule.Gearset[i];

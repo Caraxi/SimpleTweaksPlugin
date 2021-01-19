@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace SimpleTweaksPlugin.GameStructs.Client.UI.VTable {
+namespace FFXIVClientInterface.VirtualTable {
 
     [StructLayout(LayoutKind.Sequential, Size = 0x658)]
-    public unsafe struct UiModuleVTable {
+    public unsafe struct UiModule {
         public void* vf0; // dtor
         public void* vf1;
         public void* vf2;
@@ -23,5 +23,7 @@ namespace SimpleTweaksPlugin.GameStructs.Client.UI.VTable {
         public void* vf15;
         public IntPtr GetItemOrderModule;
         public IntPtr GetItemFinderModule;
+        public void* vf18;
+        public IntPtr GetAgentModule;
     }
 }

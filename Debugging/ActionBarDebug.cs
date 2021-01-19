@@ -1,9 +1,9 @@
 ﻿using System.Numerics;
 using System.Text;
+using FFXIVClientInterface.Client.UI.Misc;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using Lumina.Text;
-using SimpleTweaksPlugin.GameStructs.Client.UI.Client.UI.Misc;
 using SimpleTweaksPlugin.Helper;
 using Action = Lumina.Excel.GeneratedSheets.Action;
 
@@ -16,7 +16,7 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.Text($"{Name} Debug");
             ImGui.Separator();
 
-            var raptureHotbarModule = UiHelper.UiModule.RaptureHotbarModule;
+            var raptureHotbarModule = SimpleTweaksPlugin.Client.UiModule.RaptureHotbarModule;
             ImGui.Text("RaptureHotbarModule:");
             ImGui.SameLine();
             DebugManager.ClickToCopyText($"{(ulong)raptureHotbarModule:X}");
@@ -24,7 +24,7 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.Text($"{Encoding.ASCII.GetString(raptureHotbarModule.Data->ModuleName, 15)}");
             ImGui.Text("ActionManager:");
             ImGui.SameLine();
-            DebugManager.ClickToCopyText($"{(ulong)Common.ActionManager.Data:X}");
+            DebugManager.ClickToCopyText($"{(ulong)SimpleTweaksPlugin.Client.ActionManager.Data:X}");
             
             ImGui.Separator();
             
@@ -186,7 +186,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     }
 
                     case HotbarSlotType.GearSet: {
-                        var gearsetModule = UiHelper.UiModule.RaptureGearsetModule;
+                        var gearsetModule = SimpleTweaksPlugin.Client.UiModule.RaptureGearsetModule;
                         var gearset = gearsetModule.Gearset[slot->CommandId];
                         ImGui.Text($"{Encoding.UTF8.GetString(gearset.Name, 0x2F)}");
                         break;
@@ -224,7 +224,7 @@ namespace SimpleTweaksPlugin.Debugging {
                             break;
                         }
                         
-                        var cdg = Common.ActionManager.GetCooldownGroup(2, slot->CommandId);
+                        var cdg = SimpleTweaksPlugin.Client.ActionManager.GetRecastGroup(2, slot->CommandId);
                         if (cdg < 81) cooldownGroup = (int) (cdg + 1);
                         
                         break;
@@ -245,10 +245,10 @@ namespace SimpleTweaksPlugin.Debugging {
                     
                     ImGui.Text($"Cooldown Group: {cooldownGroup}");
 
-                    var cooldown = Common.ActionManager.GetActionCooldownSlot(cooldownGroup);
+                    var cooldown = SimpleTweaksPlugin.Client.ActionManager.GetGroupRecastTime(cooldownGroup);
                     DebugManager.ClickToCopyText($"{(ulong)cooldown:X}");
                     if (cooldown != null) {
-                        ImGui.Text($"{cooldown->IsCooldown} / {cooldown->CooldownElapsed} / {cooldown->CooldownTotal}");
+                        ImGui.Text($"{cooldown->IsActive} / {cooldown->Elapsed} / {cooldown->Total}");
                     } else {
                         ImGui.Text("Failed");
                     }

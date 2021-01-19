@@ -6,8 +6,9 @@ using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using Dalamud.Hooking;
 using FFXIVClientStructs;
-using FFXIVClientStructs.Component.GUI;
-using FFXIVClientStructs.Component.GUI.ULD;
+using FFXIVClientStructs.FFXIV.Client.Graphics;
+using FFXIVClientStructs.FFXIV.Component.GUI;
+using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Enums;
@@ -79,7 +80,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (examineIsValidPtr == IntPtr.Zero) return;
             if (*(byte*)(examineIsValidPtr + 0x2A8) == 0) return;
             var container = Common.GetContainer(InventoryType.Examine);
-            if (container == IntPtr.Zero) return;
+            if (container == null) return;
 
             var examineWindow = (AtkUnitBase*)PluginInterface.Framework.Gui.GetUiObjectByName("CharacterInspect", 1);
             if (examineWindow == null) return;
@@ -158,7 +159,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             textNode->FontSize = 16;
             textNode->CharSpacing = 0;
             textNode->LineSpacing = 24;
-            textNode->TextColor = new FFXIVByteColor() { R = (byte)(inaccurate ? 0xFF : 0x45), G = (byte) (inaccurate ? (byte) 0x83 : (byte) 0xB2), B = (byte) (inaccurate ? 0x75 : 0xAE), A = 0xFF };
+            textNode->TextColor = new ByteColor() { R = (byte)(inaccurate ? 0xFF : 0x45), G = (byte) (inaccurate ? (byte) 0x83 : (byte) 0xB2), B = (byte) (inaccurate ? 0x75 : 0xAE), A = 0xFF };
 
             textNode->AtkResNode.Height = 24;
             textNode->AtkResNode.Width = 80;

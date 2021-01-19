@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Enums;
+using SimpleTweaksPlugin.Helper;
 
 namespace SimpleTweaksPlugin.GameStructs.Client.UI {
     
@@ -37,6 +39,7 @@ namespace SimpleTweaksPlugin.GameStructs.Client.UI {
             if (Materia4 != 0) yield return (Materia4, MateriaLevel4);
         }
         
+        public Item Item => Common.PluginInterface.Data.Excel.GetSheet<Item>().GetRow(this.ItemId);
     }
 
     [Flags]

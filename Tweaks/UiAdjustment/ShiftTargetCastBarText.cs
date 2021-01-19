@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using Dalamud.Game.Internal;
 using Dalamud.Interface;
 using Dalamud.Plugin;
-using FFXIVClientStructs.Component.GUI;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using static SimpleTweaksPlugin.Tweaks.UiAdjustments.Step;

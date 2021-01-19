@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using FFXIVClientInterface.Misc;
 
-namespace SimpleTweaksPlugin.GameStructs.Client.UI.Misc {
+namespace FFXIVClientInterface.Client.UI.Misc {
     public unsafe class RaptureGearsetModule : StructWrapper<RaptureGearsetModuleStruct> {
         public static implicit operator RaptureGearsetModuleStruct*(RaptureGearsetModule module) => module.Data;
         public static explicit operator ulong(RaptureGearsetModule module) => (ulong) module.Data;

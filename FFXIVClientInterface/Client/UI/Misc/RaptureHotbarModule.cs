@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using FFXIVClientStructs;
+using FFXIVClientInterface.Misc;
+using FFXIVClientStructs.FFXIV.Client.System.String;
 
-namespace SimpleTweaksPlugin.GameStructs.Client.UI.Client.UI.Misc {
+namespace FFXIVClientInterface.Client.UI.Misc {
 
     [Flags]
     public enum HotBarType : byte {
@@ -166,7 +163,7 @@ namespace SimpleTweaksPlugin.GameStructs.Client.UI.Client.UI.Misc {
 
     [StructLayout(LayoutKind.Explicit, Size = 0xE0)]
     public unsafe struct HotBarSlot {
-        [FieldOffset(0x00)] public FFXIVString PopUpHelp;
+        [FieldOffset(0x00)] public Utf8String PopUpHelp;
         // [FieldOffset(0x68)]
         
         [FieldOffset(0xB8)] public uint CommandId;

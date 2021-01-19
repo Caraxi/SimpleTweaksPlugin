@@ -3,8 +3,9 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using Dalamud.Game.Internal;
 using FFXIVClientStructs;
-using FFXIVClientStructs.Component.GUI;
-using FFXIVClientStructs.Component.GUI.ULD;
+using FFXIVClientStructs.FFXIV.Client.Graphics;
+using FFXIVClientStructs.FFXIV.Component.GUI;
+using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using SimpleTweaksPlugin.Helper;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
@@ -88,8 +89,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 UiHelper.Hide(CurrentWorldHeaderUnderline);
 
                 CurrentWorldName->AlignmentFontType = (byte)AlignmentType.Left;
-                CurrentWorldName->TextColor = new FFXIVByteColor() {A = 255, R = 255, G = 255, B = 255 };
-                CurrentWorldName->EdgeColor = new FFXIVByteColor() { A = 255, R = 156, G = 129, B = 56 };
+                CurrentWorldName->TextColor = new ByteColor() {A = 255, R = 255, G = 255, B = 255 };
+                CurrentWorldName->EdgeColor = new ByteColor() { A = 255, R = 156, G = 129, B = 56 };
                 CurrentWorldName->TextFlags |= (byte) TextFlags.Edge;
 
                 if (x != null && y != null) {

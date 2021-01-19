@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using Dalamud.Game.Internal;
 using Dalamud.Interface;
-using FFXIVClientStructs.Component.GUI;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;

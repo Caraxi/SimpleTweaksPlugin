@@ -1,6 +1,8 @@
-﻿namespace SimpleTweaksPlugin.GameStructs {
+﻿using System;
 
-    public interface IStructWrapper {
+namespace FFXIVClientInterface.Misc {
+
+    public interface IStructWrapper : IDisposable {
         public bool IsValid { get; }
 
         public unsafe void SetData(void* data);
@@ -22,5 +24,9 @@
         public virtual bool IsValid => this.vtbl == *(ulong*) Data;
         
         public void SetData(void* data) => this.Data = (T*) data;
+
+        public virtual void Dispose() {
+            
+        }
     }
 }

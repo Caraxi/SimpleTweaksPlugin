@@ -9,8 +9,8 @@ using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using Dalamud.Game.Internal;
 using Dalamud.Hooking;
 using Dalamud.Interface;
-using FFXIVClientStructs;
-using FFXIVClientStructs.Component.GUI;
+using FFXIVClientStructs.FFXIV.Client.System.String;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using static SimpleTweaksPlugin.Tweaks.UiAdjustments.Step;
@@ -238,7 +238,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             _ => new[] { $"{(char)SeIconChar.EorzeaTimeEn}", $"{(char)SeIconChar.LocalTimeEn}", $"{(char)SeIconChar.ServerTimeEn}" },
         };
 
-        private unsafe void UpdateTimeString(FFXIVString xivString) {
+        private unsafe void UpdateTimeString(Utf8String xivString) {
             var icons = GetClockIcons();
             var et = DateTimeOffset.FromUnixTimeSeconds(*(long*)(PluginInterface.Framework.Address.BaseAddress + 0x1608));
             var lt = DateTimeOffset.Now;
