@@ -65,6 +65,7 @@ namespace SimpleTweaksPlugin.Debugging {
         private RawDX11Scene.BuildUIDelegate originalHandler;
 
         private bool SetExclusiveDraw(Action action) {
+            // Possibly the most cursed shit I've ever done.
             if (originalHandler != null) return false;
             var d = (Dalamud.Dalamud) typeof(DalamudPluginInterface).GetField("dalamud", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(Plugin.PluginInterface);
             if (d == null) return false;
@@ -80,6 +81,7 @@ namespace SimpleTweaksPlugin.Debugging {
         }
         
         private bool FreeExclusiveDraw() {
+            // Undoing the cursed shit requires a little more of the same cursed shit
             if (originalHandler == null) return true;
             SimpleLog.Log($"Free Exclusive Draw");
             var dalamud = (Dalamud.Dalamud) Plugin.PluginInterface.GetType().GetField("dalamud", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(Plugin.PluginInterface);
