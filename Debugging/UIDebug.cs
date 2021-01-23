@@ -1,14 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using Dalamud.Interface;
+using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
+using ImGuiScene;
+using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.GameStructs.Client.UI;
 using SimpleTweaksPlugin.Helper;
+using Action = System.Action;
 
 // Customised version of https://github.com/aers/FFXIVUIDebug
 
@@ -23,6 +29,11 @@ namespace SimpleTweaksPlugin.Debugging {
     
     public unsafe class UIDebug : DebugHelper {
         private bool firstDraw = true;
+        private bool elementSelectorActive = false;
+        private int elementSelectorIndex = 0;
+        private float elementSelectorCountdown = 0;
+        private bool elementSelectorScrolled = false;
+        private ulong[] elementSelectorFind = {};
         private AtkUnitBase* selectedUnitBase = null;
         
         private delegate AtkStage* GetAtkStageSingleton();
@@ -51,7 +62,41 @@ namespace SimpleTweaksPlugin.Debugging {
             "Units 18"
         };
 
+        private RawDX11Scene.BuildUIDelegate originalHandler;
+
+        private bool SetExclusiveDraw(Action action) {
+            if (originalHandler != null) return false;
+            var d = (Dalamud.Dalamud) typeof(DalamudPluginInterface).GetField("dalamud", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(Plugin.PluginInterface);
+            if (d == null) return false;
+            var im = typeof(Dalamud.Dalamud).GetProperty("InterfaceManager", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(d);
+            if (im == null) return false;
+            var ef = im.GetType().GetField("OnDraw", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (ef == null) return false;
+            var handler = (RawDX11Scene.BuildUIDelegate) ef.GetValue(im);
+            if (handler == null) return false;
+            originalHandler = handler;
+            ef.SetValue(im, new RawDX11Scene.BuildUIDelegate(action));
+            return true;
+        }
+        
+        private bool FreeExclusiveDraw() {
+            if (originalHandler == null) return true;
+            SimpleLog.Log($"Free Exclusive Draw");
+            var dalamud = (Dalamud.Dalamud) Plugin.PluginInterface.GetType().GetField("dalamud", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(Plugin.PluginInterface);
+            if (dalamud == null) return false;
+            var interfaceManager = typeof(Dalamud.Dalamud).GetProperty("InterfaceManager", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(dalamud);
+            if (interfaceManager == null) return false;
+
+            var eventField = interfaceManager.GetType().GetField("OnDraw", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (eventField == null) return false;
+
+            eventField.SetValue(interfaceManager, originalHandler);
+            originalHandler = null;
+            return true;
+        }
+        
         public override void Draw() {
+            
             if (firstDraw) {
                 firstDraw = false;
                 selectedUnitBase = (AtkUnitBase*) (Plugin.PluginConfig.Debugging.SelectedAtkUnitBase);
@@ -63,8 +108,23 @@ namespace SimpleTweaksPlugin.Debugging {
 
             ImGui.BeginChild("st_uiDebug_unitBaseSelect", new Vector2(250, -1), true);
             
-            ImGui.SetNextItemWidth(-1);
+            ImGui.SetNextItemWidth(-38);
             ImGui.InputTextWithHint("###atkUnitBaseSearch", "Search", ref Plugin.PluginConfig.Debugging.AtkUnitBaseSearch, 0x20);
+            ImGui.SameLine();
+            ImGui.PushFont(UiBuilder.IconFont);
+            ImGui.PushStyleColor(ImGuiCol.Text, elementSelectorActive ? 0xFF00FFFF : 0xFFFFFFFF);
+            if (ImGui.Button($"{(char) FontAwesomeIcon.ObjectUngroup}", new Vector2(-1, ImGui.GetItemRectSize().Y))) {
+                elementSelectorActive = !elementSelectorActive;
+                Plugin.PluginInterface.UiBuilder.OnBuildUi -= DrawElementSelector;
+                FreeExclusiveDraw();
+                
+                if (elementSelectorActive) {
+                    SetExclusiveDraw(DrawElementSelector);
+                }
+            }
+            ImGui.PopStyleColor();
+            ImGui.PopFont();
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Element Selector");
             
             DrawUnitBaseList();
             ImGui.EndChild();
@@ -74,12 +134,182 @@ namespace SimpleTweaksPlugin.Debugging {
                 DrawUnitBase(selectedUnitBase);
                 ImGui.EndChild();
             }
+
+            if (elementSelectorCountdown > 0) {
+                elementSelectorCountdown -= 1;
+                if (elementSelectorCountdown < 0) elementSelectorCountdown = 0;
+            }
+
+        }
+
+        public override void Dispose() {
+            FreeExclusiveDraw();
+        }
+
+        private void DrawElementSelector() {
+            ImGui.GetIO().WantCaptureKeyboard = true;
+            ImGui.GetIO().WantCaptureMouse = true;
+            ImGui.GetIO().WantTextInput = true;
+            if (ImGui.IsKeyPressed((int)VK.ESCAPE)) {
+                elementSelectorActive = false;
+                FreeExclusiveDraw();
+                return;
+            }
+            
+            ImGui.SetNextWindowPos(Vector2.Zero);
+            ImGui.SetNextWindowSize(ImGui.GetIO().DisplaySize);
+            ImGui.SetNextWindowBgAlpha(0.3f);
+            ImGui.Begin("ElementSelectorWindow", ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoScrollbar);
+            var drawList = ImGui.GetWindowDrawList();
+            
+            var y = 100f;
+            foreach (var s in new[]{"Select an Element", "Press ESCAPE to cancel"}) {
+                var size = ImGui.CalcTextSize(s);
+                var x = ImGui.GetWindowContentRegionWidth() / 2f - size.X / 2;
+                drawList.AddText(new Vector2(x, y), 0xFFFFFFFF, s);
+                y += size.Y;
+            }
+            
+            var mousePos = ImGui.GetMousePos();
+            var windows = GetAtkUnitBaseAtPosition(mousePos);
+
+            ImGui.SetCursorPosX(100);
+            ImGui.SetCursorPosY(100);
+            ImGui.BeginChild("noClick", new Vector2(800, 2000), false, ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoScrollWithMouse);
+            ImGui.BeginGroup();
+            
+            ImGui.Text($"Mouse Position: {mousePos.X}, {mousePos.Y}\n");
+            var i = 0;
+            
+            foreach (var a in windows) {
+                var name = Marshal.PtrToStringAnsi(new IntPtr(a.UnitBase->Name));
+                ImGui.Text($"[Addon] {name}");
+                ImGui.Indent(15);
+                foreach (var n in a.Nodes) {
+                    var nSelected = i++ == elementSelectorIndex;
+                    if (nSelected) ImGui.PushStyleColor(ImGuiCol.Text, 0xFF00FFFF);
+                    // ImGui.Text($"{((int)n.ResNode->Type >= 1000 ? ((ULDComponentInfo*)((AtkComponentNode*) n.ResNode)->Component->ULDData.Objects)->ComponentType.ToString() + "ComponentNode" : n.ResNode->Type.ToString() + "Node")}");
+                    
+                    PrintNode(n.ResNode, false, null, true);
+                    
+                    
+                    if (nSelected) ImGui.PopStyleColor();
+
+                    if (nSelected && ImGui.IsMouseClicked(0)) {
+                        elementSelectorActive = false;
+                        FreeExclusiveDraw();
+
+                        selectedUnitBase = a.UnitBase;
+
+                        var l = new List<ulong>();
+                        
+                        l.Add((ulong)n.ResNode);
+                        var nextNode = n.ResNode->ParentNode;
+                        while (nextNode != null) {
+                            l.Add((ulong) nextNode);
+                            nextNode = nextNode->ParentNode;
+                        }
+
+                        elementSelectorFind = l.ToArray();
+                        elementSelectorCountdown = 100;
+                        elementSelectorScrolled = false;
+                    }
+                    
+                    
+                    drawList.AddRectFilled(n.State.Position, n.State.SecondPosition, (uint) (nSelected ? 0x4400FFFF: 0x0000FF00));
+                }
+                ImGui.Indent(-15);
+            }
+
+            if (i != 0) {
+                elementSelectorIndex -= (int) ImGui.GetIO().MouseWheel;
+                while (elementSelectorIndex < 0) elementSelectorIndex += i;
+                while (elementSelectorIndex >= i) elementSelectorIndex -= i;
+            }
+
+            ImGui.EndGroup();
+            ImGui.EndChild();
+            ImGui.End();
+        }
+
+        private List<AddonResult> GetAtkUnitBaseAtPosition(Vector2 position) {
+            SimpleLog.Log($">> GetAtkUnitBaseAtPosition");
+            var list = new List<AddonResult>();
+            var stage = getAtkStageSingleton();
+            var unitManagers = &stage->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
+            for (var i = 0; i < UnitListCount; i++) {
+                var unitManager = &unitManagers[i];
+                var unitBaseArray = &(unitManager->AtkUnitEntries);
+
+                for (var j = 0; j < unitManager->Count; j++) {
+                    var unitBase = unitBaseArray[j];
+                    if (unitBase->RootNode == null) continue;
+                    if (!(unitBase->IsVisible && unitBase->RootNode->IsVisible)) continue;
+                    var addonResult = new AddonResult() {UnitBase = unitBase};
+                    if (list.Contains(addonResult)) continue;
+                    if (unitBase->X > position.X || unitBase->Y > position.Y) continue;
+                    if (unitBase->X + unitBase->RootNode->Width < position.X) continue;
+                    if (unitBase->Y + unitBase->RootNode->Height < position.Y) continue;
+
+                    addonResult.Nodes = GetAtkResNodeAtPosition(unitBase->ULDData, position);
+                    list.Add(addonResult);
+                }
+            }
+            SimpleLog.Log($"<< GetAtkUnitBaseAtPosition");
+            return list;
+        }
+
+        private class AddonResult {
+            public AtkUnitBase* UnitBase;
+            public List<NodeResult> Nodes = new();
+            
+            public override bool Equals(object obj) {
+                if (!(obj is AddonResult ar)) return false;
+                return UnitBase == ar.UnitBase;
+            }
+        }
+        
+        private class NodeResult {
+            public AtkResNode* ResNode;
+            public NodeState State;
+            public override bool Equals(object obj) {
+                if (!(obj is NodeResult nr)) return false;
+                return nr.ResNode == ResNode;
+            }
+        }
+        
+        private List<NodeResult> GetAtkResNodeAtPosition(ULDData uldData, Vector2 position, bool noReverse = false) {
+            var list = new List<NodeResult>();
+            for (var i = 0; i < uldData.NodeListCount; i++) {
+                var node = uldData.NodeList[i];
+                var state = GetNodeState(node);
+                if (state.Visible) {
+                    if (state.Position.X > position.X) continue;
+                    if (state.Position.Y > position.Y) continue;
+                    if (state.SecondPosition.X < position.X) continue;
+                    if (state.SecondPosition.Y < position.Y) continue;
+                    
+
+                    if ((int) node->Type >= 1000) {
+                        var compNode = (AtkComponentNode*) node;
+                        list.AddRange(GetAtkResNodeAtPosition(compNode->Component->ULDData, position, true));
+                    }
+                    
+                    list.Add(new NodeResult() {
+                        State = state,
+                        ResNode = node,
+                    });
+                }
+            }
+
+            list.Reverse();
+            return list;
         }
         
         private void DrawUnitBase(AtkUnitBase* atkUnitBase) {
 
             var isVisible = (atkUnitBase->Flags & 0x20) == 0x20;
-            string addonName = Marshal.PtrToStringAnsi(new IntPtr(atkUnitBase->Name));
+            var addonName = Marshal.PtrToStringAnsi(new IntPtr(atkUnitBase->Name));
             
             ImGui.Text($"{addonName}");
             ImGui.SameLine();
@@ -128,6 +358,7 @@ namespace SimpleTweaksPlugin.Debugging {
 
             ImGui.Dummy(new Vector2(25 * ImGui.GetIO().FontGlobalScale));
             ImGui.Separator();
+
             if (atkUnitBase->RootNode != null)
                 PrintNode(atkUnitBase->RootNode);
 
@@ -142,25 +373,42 @@ namespace SimpleTweaksPlugin.Debugging {
                     for (var j = 0; j < atkUnitBase->ULDData.NodeListCount; j++) {
                         PrintNode(atkUnitBase->ULDData.NodeList[j], false, $"[{j}] ");
                     }
-
                     ImGui.TreePop();
                 } else {
                     ImGui.PopStyleColor();
                 }
             }
+
+            if (elementSelectorFind.Length > 0 && elementSelectorCountdown <= 0) {
+                elementSelectorFind = new ulong[0];
+            }
+            
         }
 
         
-        private void PrintNode(AtkResNode* node, bool printSiblings = true, string treePrefix = "")
+        private void PrintNode(AtkResNode* node, bool printSiblings = true, string treePrefix = "", bool textOnly = false)
         {
             if (node == null)
                 return;
 
+            var aPos = ImGui.GetCursorScreenPos();
+            if (elementSelectorFind.Length > 0 && elementSelectorFind[0] == (ulong) node && !elementSelectorScrolled) {
+                ImGui.SetScrollHereY();
+                elementSelectorScrolled = true;
+            }
+            
             if ((int)node->Type < 1000)
-                PrintSimpleNode(node, treePrefix);
+                PrintSimpleNode(node, treePrefix, textOnly);
             else
-                PrintComponentNode(node, treePrefix);
+                PrintComponentNode(node, treePrefix, textOnly);
+            
+            if (elementSelectorFind.Length > 0 && elementSelectorFind[0] == (ulong) node) {
+                var bPos = ImGui.GetCursorScreenPos();
 
+                var dl = ImGui.GetWindowDrawList();
+                dl.AddRectFilled(aPos - new Vector2(5), bPos + new Vector2(ImGui.GetWindowWidth(), 5), ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 0, 0.5f * (elementSelectorCountdown / 100))));
+            }
+            
             if (printSiblings)
             {
                 var prevNode = node;
@@ -173,18 +421,22 @@ namespace SimpleTweaksPlugin.Debugging {
             }
         }
         
-        private void PrintSimpleNode(AtkResNode* node, string treePrefix)
+        private void PrintSimpleNode(AtkResNode* node, string treePrefix, bool textOnly = false)
         {
             bool popped = false;
             bool isVisible = (node->Flags & 0x10) == 0x10;
 
-            if (isVisible)
+            if (isVisible && !textOnly)
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0, 255, 0, 255));
 
+            if (elementSelectorFind.Length > 0) {
+                ImGui.SetNextItemOpen(elementSelectorFind.Contains((ulong) node), ImGuiCond.Always);
+            }
+            if (textOnly) ImGui.SetNextItemOpen(false, ImGuiCond.Always);
             if (ImGui.TreeNode($"{treePrefix}{node->Type} Node (ptr = {(long)node:X})###{(long)node}"))
             {
                 if (ImGui.IsItemHovered()) DrawOutline(node);
-                if (isVisible)
+                if (isVisible && !textOnly)
                 {
                     ImGui.PopStyleColor();
                     popped = true;
@@ -281,18 +533,18 @@ namespace SimpleTweaksPlugin.Debugging {
             }
             else if(ImGui.IsItemHovered()) DrawOutline(node);
 
-            if (isVisible && !popped)
+            if (isVisible && !popped && !textOnly)
                 ImGui.PopStyleColor();
         }
 
-        private void PrintComponentNode(AtkResNode* node, string treePrefix)
+        private void PrintComponentNode(AtkResNode* node, string treePrefix, bool textOnly = false)
         {
             var compNode = (AtkComponentNode*)node;
 
             bool popped = false;
             bool isVisible = (node->Flags & 0x10) == 0x10;
 
-            if (isVisible)
+            if (isVisible && !textOnly)
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0, 255, 0, 255));
 
             var componentInfo = compNode->Component->ULDData;
@@ -300,10 +552,14 @@ namespace SimpleTweaksPlugin.Debugging {
             var childCount = componentInfo.NodeListCount;
 
             var objectInfo = (ULDComponentInfo*)componentInfo.Objects;
+            if (elementSelectorFind.Length > 0) {
+                ImGui.SetNextItemOpen(elementSelectorFind.Contains((ulong) node), ImGuiCond.Always);
+            }
+            if (textOnly) ImGui.SetNextItemOpen(false, ImGuiCond.Always);
             if (ImGui.TreeNode($"{treePrefix}{objectInfo->ComponentType} Component Node (ptr = {(long)node:X}, component ptr = {(long)compNode->Component:X}) child count = {childCount}  ###{(long)node}"))
             {
                 if (ImGui.IsItemHovered()) DrawOutline(node);
-                if (isVisible)
+                if (isVisible && !textOnly)
                 {
                     ImGui.PopStyleColor();
                     popped = true;
@@ -366,7 +622,7 @@ namespace SimpleTweaksPlugin.Debugging {
             else if (ImGui.IsItemHovered()) DrawOutline(node);
 
 
-            if (isVisible && !popped)
+            if (isVisible && !popped && !textOnly)
                 ImGui.PopStyleColor();
         }
         
@@ -550,6 +806,25 @@ namespace SimpleTweaksPlugin.Debugging {
             
             var nodeVisible = GetNodeVisible(node);
             ImGui.GetForegroundDrawList().AddRect(position, position + size, nodeVisible ? 0xFF00FF00 : 0xFF0000FF);
+        }
+
+        private class NodeState {
+            public Vector2 Position;
+            public Vector2 SecondPosition;
+            public Vector2 Size;
+            public bool Visible;
+        }
+
+        private NodeState GetNodeState(AtkResNode* node) {
+            var position = GetNodePosition(node);
+            var scale = GetNodeScale(node);
+            var size = new Vector2(node->Width, node->Height) * scale;
+            return new NodeState() {
+                Position = position,
+                SecondPosition = position + size,
+                Visible = GetNodeVisible(node),
+                Size = size,
+            };
         }
         
         public override string Name => "UI Debugging";
