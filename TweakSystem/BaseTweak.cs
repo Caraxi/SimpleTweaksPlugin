@@ -4,8 +4,7 @@ using ImGuiNET;
 
 namespace SimpleTweaksPlugin.TweakSystem {
     public abstract class BaseTweak {
-
-        public SimpleTweaksPlugin Plugin;
+        protected SimpleTweaksPlugin Plugin;
         protected DalamudPluginInterface PluginInterface;
         protected SimpleTweaksPluginConfig PluginConfig;
 
@@ -23,16 +22,33 @@ namespace SimpleTweaksPlugin.TweakSystem {
             this.Plugin = plugin;
         }
 
-        public virtual void DrawConfig(ref bool hasChanged) {
-            ImGui.Indent(56);
-            ImGui.Text(Name);
+        private void DrawExperimentalNotice() {
             if (this.Experimental) {
                 ImGui.SameLine();
                 ImGui.TextColored(new Vector4(1, 0, 0, 1), "  Experimental");
             }
-            ImGui.Indent(-56);
+        }
+        
+        public virtual void DrawConfig(ref bool hasChanged) {
+            if (DrawConfigTree != null && Enabled) {
+                if (ImGui.TreeNode($"{Name}##treeConfig_{GetType().Name}")) {
+                    DrawExperimentalNotice();
+                    DrawConfigTree(ref hasChanged);
+                    ImGui.TreePop();
+                } else {
+                    DrawExperimentalNotice();
+                }
+            } else {
+                ImGui.Indent(56);
+                ImGui.Text(Name);
+                DrawExperimentalNotice();
+                ImGui.Indent(-56);
+            }
         }
 
+        protected delegate void DrawConfigDelegate(ref bool hasChanged);
+        protected virtual DrawConfigDelegate DrawConfigTree => null;
+        
         public virtual void Setup() {
             Ready = true;
         }

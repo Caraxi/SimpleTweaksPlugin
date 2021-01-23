@@ -16,6 +16,14 @@ namespace SimpleTweaksPlugin.Helper {
             node->Flags_2 |= 0x1;
         }
 
+        public static void SetVisible(AtkResNode* node, bool visible) {
+            if (visible) {
+                Show(node);
+            } else {
+                Hide(node);
+            }
+        }
+
         public static void SetText(AtkTextNode* textNode, SeString str) {
             if (!Ready) return;
             var bytes = str.Encode();
