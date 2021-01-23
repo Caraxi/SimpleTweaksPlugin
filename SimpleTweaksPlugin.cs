@@ -47,6 +47,9 @@ namespace SimpleTweaksPlugin {
             }
             Tweaks.Clear();
             Client.Dispose();
+            #if DEBUG
+            DebugManager.Dispose();
+            #endif
         }
 
         public int UpdateFrom = -1;

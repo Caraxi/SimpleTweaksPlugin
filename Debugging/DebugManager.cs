@@ -43,7 +43,7 @@ namespace SimpleTweaksPlugin.Debugging {
 
     }
     
-    public class DebugManager : IDisposable {
+    public static class DebugManager {
 
         private static Dictionary<string, Action> debugPages = new Dictionary<string, Action>();
 
@@ -138,7 +138,7 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.PopStyleColor();
         }
 
-        public void Dispose() {
+        public static void Dispose() {
             foreach (var debugger in DebugHelpers) {
                 RemoveDebugPage(debugger.Name);
                 debugger.Dispose();
