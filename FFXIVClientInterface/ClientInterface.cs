@@ -9,7 +9,7 @@ namespace FFXIVClientInterface {
     public unsafe class ClientInterface : IDisposable {
         private bool ready;
         internal static DataManager DataManager;
-        private SigScanner SigScanner;
+        internal static SigScanner SigScanner;
         
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate UiModuleStruct* GetUiModuleDelegate();
@@ -41,7 +41,7 @@ namespace FFXIVClientInterface {
 
         public ClientInterface(SigScanner scanner, DataManager dataManager) {
             DataManager = dataManager;
-            this.SigScanner = scanner;
+            SigScanner = scanner;
             this.getUiModule = Marshal.GetDelegateForFunctionPointer<GetUiModuleDelegate>(scanner.ScanText("E8 ?? ?? ?? ?? 48 8B C8 48 8B 10 FF 52 40 80 88 ?? ?? ?? ?? 01 E9"));
             ready = true;
         }

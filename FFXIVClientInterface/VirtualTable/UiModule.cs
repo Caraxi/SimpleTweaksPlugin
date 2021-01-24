@@ -24,6 +24,21 @@ namespace FFXIVClientInterface.VirtualTable {
         public IntPtr GetItemOrderModule;
         public IntPtr GetItemFinderModule;
         public void* vf18;
+        public void* vf19;
+        public void* vf20;
+        public void* vf21;
+        public void* vf22;
+        public void* vf23;
+        public void* vf24;
+        public void* vf25;
+        public void* vf26;
+        public void* vf27;
+        public void* vf28;
+        public void* vf29;
+        public void* vf30;
+        public void* vf31;
+        public void* vf32;
+        public void* vf33;
         public IntPtr GetAgentModule;
     }
 }
