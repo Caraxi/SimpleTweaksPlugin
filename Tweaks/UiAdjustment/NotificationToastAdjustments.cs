@@ -34,70 +34,61 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private bool isPreviewing = false;
         private Task test;
 
-        public override void DrawConfig(ref bool hasChanged) {
-            if (!Enabled) {
-                base.DrawConfig(ref hasChanged);
-                return;
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+            hasChanged |= ImGui.Checkbox("Hide", ref Config.Hide);
+            if (Config.Hide) {
+                ImGui.SameLine();
+                hasChanged |= ImGui.Checkbox("Show in combat", ref Config.ShowInCombat);
             }
 
-            if (ImGui.TreeNode($"{Name}")) {
-                hasChanged |= ImGui.Checkbox("Hide", ref Config.Hide);
-                if (Config.Hide) {
-                    ImGui.SameLine();
-                    hasChanged |= ImGui.Checkbox("Show in combat", ref Config.ShowInCombat);
+            if (!Config.Hide || Config.ShowInCombat) {
+                var offsetChanged = false;
+                ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
+                offsetChanged |= ImGui.InputInt("Horizontal Offset##offsetPosition", ref Config.OffsetXPosition, 1);
+                ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
+                offsetChanged |= ImGui.InputInt("Vertical Offset##offsetPosition", ref Config.OffsetYPosition, 1);
+                if (offsetChanged) {
+                    if (!isPreviewing) {
+                        isPreviewing = true;
+                        test = Task.Delay(5000).ContinueWith(t => {
+                            isPreviewing = false;
+                            UpdateNotificationToastText(true);
+                        });
+                    }
+                    hasChanged = true;
                 }
+            }
 
-                if (!Config.Hide || Config.ShowInCombat) {
-                    var offsetChanged = false;
-                    ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-                    offsetChanged |= ImGui.InputInt("Horizontal Offset##offsetPosition", ref Config.OffsetXPosition, 1);
-                    ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-                    offsetChanged |= ImGui.InputInt("Vertical Offset##offsetPosition", ref Config.OffsetYPosition, 1);
-                    if (offsetChanged) {
-                        if (!isPreviewing) {
-                            isPreviewing = true;
-                            test = Task.Delay(5000).ContinueWith(t => {
-                                isPreviewing = false;
-                                UpdateNotificationToastText(true);
-                            });
-                        }
+            if (!Config.Hide) {
+                ImGui.Text("Hide toast if text contains:");
+                for (int i = 0; i < Config.Exceptions.Count; i++) {
+                    ImGui.PushID($"Exception_{i}");
+                    var exception = Config.Exceptions[i];
+                    if (ImGui.InputText("##ToastTextException", ref exception, 500)) {
+                        Config.Exceptions[i] = exception;
                         hasChanged = true;
                     }
-                }
-
-                if (!Config.Hide) {
-                    ImGui.Text("Hide toast if text contains:");
-                    for (int i = 0; i < Config.Exceptions.Count; i++) {
-                        ImGui.PushID($"Exception_{i}");
-                        var exception = Config.Exceptions[i];
-                        if (ImGui.InputText("##ToastTextException", ref exception, 500)) {
-                            Config.Exceptions[i] = exception;
-                            hasChanged = true;
-                        }
-                        ImGui.SameLine();
-                        ImGui.PushFont(UiBuilder.IconFont);
-                        if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString())) {
-                            Config.Exceptions.RemoveAt(i--);
-                            hasChanged = true;
-                        }
-                        ImGui.PopFont();
-                        ImGui.PopID();
-                        if (i < 0) break;
-                    }
-                    ImGui.InputText("##NewToastTextException", ref newException, 500);
                     ImGui.SameLine();
                     ImGui.PushFont(UiBuilder.IconFont);
-                    if (ImGui.Button(FontAwesomeIcon.Plus.ToIconString())) {
-                        Config.Exceptions.Add(newException);
-                        newException = String.Empty;
+                    if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString())) {
+                        Config.Exceptions.RemoveAt(i--);
                         hasChanged = true;
                     }
                     ImGui.PopFont();
+                    ImGui.PopID();
+                    if (i < 0) break;
                 }
-
-                ImGui.TreePop();
+                ImGui.InputText("##NewToastTextException", ref newException, 500);
+                ImGui.SameLine();
+                ImGui.PushFont(UiBuilder.IconFont);
+                if (ImGui.Button(FontAwesomeIcon.Plus.ToIconString())) {
+                    Config.Exceptions.Add(newException);
+                    newException = String.Empty;
+                    hasChanged = true;
+                }
+                ImGui.PopFont();
             }
-        }
+        };
 
         public override void Enable() {
             PluginInterface.Framework.OnUpdateEvent += FrameworkOnUpdate;
