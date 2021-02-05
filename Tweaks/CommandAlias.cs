@@ -36,111 +36,102 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         }
 
-        public override void DrawConfig(ref bool change) {
-            if (!Enabled) {
-                base.DrawConfig(ref change);
-                return;
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool change) => {
+            ImGui.Text("Add list of command alias. Do not start command with the '/'");
+            ImGui.Text("These aliases, by design, do not work with macros.");
+            if (ImGui.IsItemHovered()) {
+                ImGui.SetNextWindowSize(new Vector2(280, -1));
+                ImGui.BeginTooltip();
+                ImGui.TextWrapped("Aliases are not supported in macros to prevent them from being sent to the server in the event you back them up on server.\nPlease use the original command in your macros.");
+                ImGui.EndTooltip();
+            }
+            ImGui.Separator();
+            ImGui.Columns(4);
+            var s = ImGui.GetIO().FontGlobalScale;
+            ImGui.SetColumnWidth(0, 60 * s );
+            ImGui.SetColumnWidth(1, 150 * s );
+            ImGui.SetColumnWidth(2, 150 * s );
+            ImGui.Text("Enabled");
+            ImGui.NextColumn();
+            ImGui.Text("Input Command");
+            ImGui.NextColumn();
+            ImGui.Text("Output Command");
+            ImGui.NextColumn();
+            ImGui.NextColumn();
+            ImGui.Separator();
+            
+            foreach (var aliasEntry in PluginConfig.CommandAlias.AliasList) {
+
+                if (aliasEntry.UniqueId == 0) {
+                    aliasEntry.UniqueId = PluginConfig.CommandAlias.AliasList.Max(a => a.UniqueId) + 1;
+                }
+
+                var focused = false;
+                ImGui.Separator();
+                if (aliasEntry.IsValid()) {
+                    change = ImGui.Checkbox($"###aliasToggle{aliasEntry.UniqueId}", ref aliasEntry.Enabled) || change;
+                } else {
+                    ImGui.Text("Invalid");
+                }
+                ImGui.NextColumn();
+                ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
+                ImGui.Text("/");
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(-5);
+                change |= ImGui.InputText($"###aliasInput{aliasEntry.UniqueId}", ref aliasEntry.Input, 500) || change;
+                focused = ImGui.IsItemFocused();
+                ImGui.PopStyleVar();
+                ImGui.NextColumn();
+                ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
+                ImGui.Text("/");
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(-5);
+                change |= ImGui.InputText($"###aliasOutput{aliasEntry.UniqueId}", ref aliasEntry.Output, 500) || change;
+                focused = focused || ImGui.IsItemFocused();
+                ImGui.PopStyleVar();
+                ImGui.NextColumn();
+                
+                if (AliasEntry.NoOverwrite.Contains(aliasEntry.Input)) {
+
+                    ImGui.TextColored(new Vector4(1, 0, 0, 1), $"'/{aliasEntry.Input}' is a protected command.");
+                } else if (string.IsNullOrEmpty(aliasEntry.Input)) {
+                    ImGui.TextColored(new Vector4(1, 0, 0, 1), "Input must not be empty.");
+                } else if (string.IsNullOrEmpty(aliasEntry.Output)) {
+                    ImGui.TextColored(new Vector4(1, 0, 0, 1), "Output must not be empty.");
+                } else if (aliasEntry.Input.StartsWith("/")) {
+                    ImGui.TextColored(new Vector4(1, 1, 0, 1), "Don't include the '/'");
+                }
+
+                ImGui.NextColumn();
+
+                if (string.IsNullOrWhiteSpace(aliasEntry.Input) && string.IsNullOrWhiteSpace(aliasEntry.Output)) {
+                    aliasEntry.Delete = true;
+                }
             }
 
-            if (ImGui.TreeNode($"{Name}###{GetType().Name}settingsNode")) {
-
-                ImGui.Text("Add list of command alias. Do not start command with the '/'");
-                ImGui.Text("These aliases, by design, do not work with macros.");
-                if (ImGui.IsItemHovered()) {
-                    ImGui.SetNextWindowSize(new Vector2(280, -1));
-                    ImGui.BeginTooltip();
-                    ImGui.TextWrapped("Aliases are not supported in macros to prevent them from being sent to the server in the event you back them up on server.\nPlease use the original command in your macros.");
-                    ImGui.EndTooltip();
-                }
-                ImGui.Separator();
-                ImGui.Columns(4);
-                var s = ImGui.GetIO().FontGlobalScale;
-                ImGui.SetColumnWidth(0, 60 * s );
-                ImGui.SetColumnWidth(1, 150 * s );
-                ImGui.SetColumnWidth(2, 150 * s );
-                ImGui.Text("Enabled");
-                ImGui.NextColumn();
-                ImGui.Text("Input Command");
-                ImGui.NextColumn();
-                ImGui.Text("Output Command");
-                ImGui.NextColumn();
-                ImGui.NextColumn();
-                ImGui.Separator();
-                
-                foreach (var aliasEntry in PluginConfig.CommandAlias.AliasList) {
-
-                    if (aliasEntry.UniqueId == 0) {
-                        aliasEntry.UniqueId = PluginConfig.CommandAlias.AliasList.Max(a => a.UniqueId) + 1;
-                    }
-
-                    var focused = false;
-                    ImGui.Separator();
-                    if (aliasEntry.IsValid()) {
-                        change = ImGui.Checkbox($"###aliasToggle{aliasEntry.UniqueId}", ref aliasEntry.Enabled) || change;
-                    } else {
-                        ImGui.Text("Invalid");
-                    }
-                    ImGui.NextColumn();
-                    ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
-                    ImGui.Text("/");
-                    ImGui.SameLine();
-                    ImGui.SetNextItemWidth(-5);
-                    change |= ImGui.InputText($"###aliasInput{aliasEntry.UniqueId}", ref aliasEntry.Input, 500) || change;
-                    focused = ImGui.IsItemFocused();
-                    ImGui.PopStyleVar();
-                    ImGui.NextColumn();
-                    ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
-                    ImGui.Text("/");
-                    ImGui.SameLine();
-                    ImGui.SetNextItemWidth(-5);
-                    change |= ImGui.InputText($"###aliasOutput{aliasEntry.UniqueId}", ref aliasEntry.Output, 500) || change;
-                    focused = focused || ImGui.IsItemFocused();
-                    ImGui.PopStyleVar();
-                    ImGui.NextColumn();
-                    
-                    if (AliasEntry.NoOverwrite.Contains(aliasEntry.Input)) {
-
-                        ImGui.TextColored(new Vector4(1, 0, 0, 1), $"'/{aliasEntry.Input}' is a protected command.");
-                    } else if (string.IsNullOrEmpty(aliasEntry.Input)) {
-                        ImGui.TextColored(new Vector4(1, 0, 0, 1), "Input must not be empty.");
-                    } else if (string.IsNullOrEmpty(aliasEntry.Output)) {
-                        ImGui.TextColored(new Vector4(1, 0, 0, 1), "Output must not be empty.");
-                    } else if (aliasEntry.Input.StartsWith("/")) {
-                        ImGui.TextColored(new Vector4(1, 1, 0, 1), "Don't include the '/'");
-                    }
-
-                    ImGui.NextColumn();
-
-                    if (string.IsNullOrWhiteSpace(aliasEntry.Input) && string.IsNullOrWhiteSpace(aliasEntry.Output)) {
-                        aliasEntry.Delete = true;
-                    }
-                }
-
-                if (PluginConfig.CommandAlias.AliasList.Count > 0 && PluginConfig.CommandAlias.AliasList.RemoveAll(a => a.Delete) > 0) {
-                    change = true;
-                }
-
-                ImGui.Separator();
-                var addNew = false;
-                var newEntry = new AliasEntry() { UniqueId = PluginConfig.CommandAlias.AliasList.Count == 0 ? 1 : PluginConfig.CommandAlias.AliasList.Max(a => a.UniqueId) + 1 };
-                ImGui.Text("New:");
-                ImGui.NextColumn();
-                ImGui.SetNextItemWidth(-1);
-                addNew = ImGui.InputText($"###aliasInput{newEntry.UniqueId}", ref newEntry.Input, 500) || addNew;
-                ImGui.NextColumn();
-                ImGui.SetNextItemWidth(-1);
-                addNew = ImGui.InputText($"###aliasOutput{newEntry.UniqueId}", ref newEntry.Output, 500) || addNew;
-                ImGui.NextColumn();
-
-                if (addNew) {
-                    PluginConfig.CommandAlias.AliasList.Add(newEntry);
-                    change = true;
-                }
-                
-                ImGui.Columns(1);
-                ImGui.TreePop();
+            if (PluginConfig.CommandAlias.AliasList.Count > 0 && PluginConfig.CommandAlias.AliasList.RemoveAll(a => a.Delete) > 0) {
+                change = true;
             }
-        }
+
+            ImGui.Separator();
+            var addNew = false;
+            var newEntry = new AliasEntry() { UniqueId = PluginConfig.CommandAlias.AliasList.Count == 0 ? 1 : PluginConfig.CommandAlias.AliasList.Max(a => a.UniqueId) + 1 };
+            ImGui.Text("New:");
+            ImGui.NextColumn();
+            ImGui.SetNextItemWidth(-1);
+            addNew = ImGui.InputText($"###aliasInput{newEntry.UniqueId}", ref newEntry.Input, 500) || addNew;
+            ImGui.NextColumn();
+            ImGui.SetNextItemWidth(-1);
+            addNew = ImGui.InputText($"###aliasOutput{newEntry.UniqueId}", ref newEntry.Output, 500) || addNew;
+            ImGui.NextColumn();
+
+            if (addNew) {
+                PluginConfig.CommandAlias.AliasList.Add(newEntry);
+                change = true;
+            }
+            
+            ImGui.Columns(1);
+        };
         #endregion
 
         public override string Name => "Command Alias";

@@ -36,7 +36,7 @@ namespace SimpleTweaksPlugin {
             var drawConfig = true;
             var scale = ImGui.GetIO().FontGlobalScale;
             var windowFlags = ImGuiWindowFlags.NoCollapse;
-            ImGui.SetNextWindowSizeConstraints(new Vector2(350 * scale, 200 * scale), new Vector2(600 * scale, 800 * scale));
+            ImGui.SetNextWindowSizeConstraints(new Vector2(600 * scale, 200 * scale), new Vector2(800 * scale, 800 * scale));
             ImGui.Begin($"{plugin.Name} Config", ref drawConfig, windowFlags);
 
             if (plugin.ErrorList.Count != 0) {
@@ -111,9 +111,13 @@ namespace SimpleTweaksPlugin {
             ImGui.Checkbox("###notARealCheckbox", ref a);
             ImGui.PopStyleColor(3);
             ImGui.SameLine();
+            var x = ImGui.GetCursorPosX();
             if (ImGui.TreeNode("General Options")) {
+                ImGui.SetCursorPosX(x);
+                ImGui.BeginGroup();
                 if (ImGui.Checkbox("Show Experimental Tweaks.", ref ShowExperimentalTweaks)) Save();
                 if (ImGui.Checkbox("Hide Ko-fi link.", ref HideKofi)) Save();
+                ImGui.EndGroup();
                 ImGui.TreePop();
             }
 

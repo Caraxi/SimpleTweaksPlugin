@@ -28,47 +28,39 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         }
 
         public Configs Config => PluginConfig.TooltipTweaks.MateriaStats;
-        
-        public override void DrawConfig(ref bool hasChanged) {
-            if (!Enabled) {
-                base.DrawConfig(ref hasChanged);
-                return;
+
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+            ImGui.BeginGroup();
+            if (ImGui.Checkbox("Show Total##materiaStatsTooltipTweak", ref Config.Total)) {
+                if (!Config.Total && !Config.Delta) {
+                    Config.Delta = true;
+                }
+
+                hasChanged = true;
             }
-            if (ImGui.TreeNode($"{Name}")) {
-                ImGui.BeginGroup();
-                if (ImGui.Checkbox("Show Total##materiaStatsTooltipTweak", ref Config.Total)) {
-                    if (!Config.Total && !Config.Delta) {
-                        Config.Delta = true;
-                    }
-
-                    hasChanged = true;
+            if (ImGui.Checkbox("Show Delta##materiaStatsTooltipTweak", ref Config.Delta)) {
+                if (!Config.Total && !Config.Delta) {
+                    Config.Total = true;
                 }
-                if (ImGui.Checkbox("Show Delta##materiaStatsTooltipTweak", ref Config.Delta)) {
-                    if (!Config.Total && !Config.Delta) {
-                        Config.Total = true;
-                    }
 
-                    hasChanged = true;
-                }
-                ImGui.EndGroup();
+                hasChanged = true;
+            }
+            ImGui.EndGroup();
                 
-                if (Config.Total && Config.Delta) {
-                    var y = ImGui.GetCursorPosY();
-                    var groupSize = ImGui.GetItemRectSize();
-                    ImGui.SameLine();
+            if (Config.Total && Config.Delta) {
+                var y = ImGui.GetCursorPosY();
+                var groupSize = ImGui.GetItemRectSize();
+                ImGui.SameLine();
                     
-                    var text = "Simplified Combined Display";
-                    var textSize = ImGui.CalcTextSize(text);
-                    ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (groupSize.Y / 2) - (textSize.Y / 2));
-                    hasChanged |= ImGui.Checkbox($"{text}##materiaStatSTooltipTweak", ref Config.SimpleCombined);
-                    ImGui.SetCursorPosY(y);
-                }
-                
-                hasChanged |= ImGui.Checkbox("Colour Value##materiaStatsTooltipTweak", ref Config.Colour);
-                ImGui.TreePop();
+                var text = "Simplified Combined Display";
+                var textSize = ImGui.CalcTextSize(text);
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (groupSize.Y / 2) - (textSize.Y / 2));
+                hasChanged |= ImGui.Checkbox($"{text}##materiaStatSTooltipTweak", ref Config.SimpleCombined);
+                ImGui.SetCursorPosY(y);
             }
-        }
-
+                
+            hasChanged |= ImGui.Checkbox("Colour Value##materiaStatsTooltipTweak", ref Config.Colour);
+        };
 
         public IEnumerable<TooltipTweaks.ItemTooltip.TooltipField> Fields() {
             yield return TooltipTweaks.ItemTooltip.TooltipField.Param0;

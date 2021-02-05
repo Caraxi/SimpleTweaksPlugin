@@ -40,13 +40,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private IntPtr examineIsValidPtr = IntPtr.Zero;
 
-        public override void DrawConfig(ref bool hasChanged) {
-            base.DrawConfig(ref hasChanged);
-            if (Enabled) {
-                ImGui.SameLine();
-                hasChanged |= ImGui.Checkbox("Show Item Level Icon", ref PluginConfig.UiAdjustments.ExamineItemLevel.ShowItemLevelIcon);
-            }
-        }
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+            hasChanged |= ImGui.Checkbox("Show Item Level Icon", ref PluginConfig.UiAdjustments.ExamineItemLevel.ShowItemLevelIcon);
+        };
 
         public override void Setup() {
 

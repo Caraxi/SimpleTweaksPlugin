@@ -129,71 +129,55 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             return true;
         }
 
-        public override void DrawConfig(ref bool hasChanged) {
-            if (Enabled) {
-                if (ImGui.TreeNode(Name)) {
-                    if (Experimental) {
-                        ImGui.SameLine();
-                        ImGui.TextColored(new Vector4(1, 0, 0, 1), "  Experimental");
-                    }
-
-                    var icons = GetClockIcons();
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+            var icons = GetClockIcons();
                     
-                    var c = PluginConfig.UiAdjustments.CustomTimeFormats;
+            var c = PluginConfig.UiAdjustments.CustomTimeFormats;
 
-                    // Safety
-                    var order = new[] { -1, -1, -1};
-                    if (c.Order.Length != 3) {
-                        c.Order = new[] { 0, 1, 2};
-                        SimpleLog.Error("Broken Config Detected. Automatically Fixed");
-                        hasChanged = true;
-                    }
-                    for (var i = 0; i < c.Order.Length; i++) {
-                        order[i] = c.Order[i];
-                    }
-                    if (!(order.Contains(0) && order.Contains(1) && order.Contains(2))) {
-                        order = new[] {0, 1, 2};
-                        c.Order = new[] { 0, 1, 2 };
-                        SimpleLog.Error("Broken Config Detected. Automatically Fixed");
-                        hasChanged = true;
-                    }
-
-                    MoveAction moveAction = null;
-                    for (var i = 0; i < order.Length; i++) {
-                        if (!DrawClockConfig(order[i], i, icons, ref hasChanged, ref moveAction)) {
-                            break;
-                        }
-                    }
-
-                    if (moveAction != null) {
-                        if (moveAction.MoveUp) {
-                            if (moveAction.Index > 0) {
-                                var moving = c.Order[moveAction.Index];
-                                var replacing = c.Order[moveAction.Index - 1];
-                                c.Order[moveAction.Index - 1] = moving;
-                                c.Order[moveAction.Index] = replacing;
-                                hasChanged = true;
-                            }
-                        } else {
-                            if (moveAction.Index < 2) {
-                                var moving = c.Order[moveAction.Index];
-                                var replacing = c.Order[moveAction.Index + 1];
-                                c.Order[moveAction.Index + 1] = moving;
-                                c.Order[moveAction.Index] = replacing;
-                                hasChanged = true;
-                            }
-                        }
-                    }
-
-                    ImGui.TreePop();
-                } else if (Experimental) {
-                    ImGui.SameLine();
-                    ImGui.TextColored(new Vector4(1, 0, 0, 1), "  Experimental");
-                }
-            } else {
-                base.DrawConfig(ref hasChanged);
+            // Safety
+            var order = new[] { -1, -1, -1};
+            if (c.Order.Length != 3) {
+                c.Order = new[] { 0, 1, 2};
+                SimpleLog.Error("Broken Config Detected. Automatically Fixed");
+                hasChanged = true;
             }
-        }
+            for (var i = 0; i < c.Order.Length; i++) {
+                order[i] = c.Order[i];
+            }
+            if (!(order.Contains(0) && order.Contains(1) && order.Contains(2))) {
+                order = new[] {0, 1, 2};
+                c.Order = new[] { 0, 1, 2 };
+                SimpleLog.Error("Broken Config Detected. Automatically Fixed");
+                hasChanged = true;
+            }
+
+            MoveAction moveAction = null;
+            for (var i = 0; i < order.Length; i++) {
+                if (!DrawClockConfig(order[i], i, icons, ref hasChanged, ref moveAction)) {
+                    break;
+                }
+            }
+
+            if (moveAction != null) {
+                if (moveAction.MoveUp) {
+                    if (moveAction.Index > 0) {
+                        var moving = c.Order[moveAction.Index];
+                        var replacing = c.Order[moveAction.Index - 1];
+                        c.Order[moveAction.Index - 1] = moving;
+                        c.Order[moveAction.Index] = replacing;
+                        hasChanged = true;
+                    }
+                } else {
+                    if (moveAction.Index < 2) {
+                        var moving = c.Order[moveAction.Index];
+                        var replacing = c.Order[moveAction.Index + 1];
+                        c.Order[moveAction.Index + 1] = moving;
+                        c.Order[moveAction.Index] = replacing;
+                        hasChanged = true;
+                    }
+                }
+            }
+        };
 
         public override string Name => "Custom Time Formats";
 

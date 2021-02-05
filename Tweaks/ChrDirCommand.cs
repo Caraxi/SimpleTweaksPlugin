@@ -51,19 +51,10 @@ namespace SimpleTweaksPlugin.Tweaks {
             });
         }
 
-        public override void DrawConfig(ref bool change) {
-            if (!Enabled) {
-                base.DrawConfig(ref change);
-                return;
-            }
-
-            if (ImGui.TreeNode($"{Name}###{GetType().Name}settingsNode")) {
-                ImGui.TextDisabled("/chrdir");
-                ImGui.TextDisabled("/chrdir open");
-                ImGui.TreePop();
-            }
-
-        }
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
+            ImGui.TextDisabled("/chrdir");
+            ImGui.TextDisabled("/chrdir open");
+        };
 
         public override void Disable() {
             PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.OpenFolderLink);

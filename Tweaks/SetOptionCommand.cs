@@ -72,48 +72,40 @@ namespace SimpleTweaksPlugin.Tweaks {
             }
         }
 
-        public override void DrawConfig(ref bool change) {
-            if (!Enabled) {
-                base.DrawConfig(ref change);
-                return;
-            }
-            if (ImGui.TreeNode($"{Name}###{GetType().Name}settingsNode")) {
-                ImGui.TextDisabled("/setopt list");
-                ImGui.TextDisabled("/setopt [option] [value]");
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
+            ImGui.TextDisabled("/setopt list");
+            ImGui.TextDisabled("/setopt [option] [value]");
 
-                if (ImGui.TreeNode("Available Options##optionListTree")) {
+            if (ImGui.TreeNode("Available Options##optionListTree")) {
                     
-                    ImGui.Columns(3);
-                    ImGui.Text("option");
-                    ImGui.NextColumn();
-                    ImGui.Text("values");
-                    ImGui.NextColumn();
-                    ImGui.Text("alias");
-                    ImGui.Separator();
+                ImGui.Columns(3);
+                ImGui.Text("option");
+                ImGui.NextColumn();
+                ImGui.Text("values");
+                ImGui.NextColumn();
+                ImGui.Text("alias");
+                ImGui.Separator();
 
-                    foreach (var o in optionKinds) {
-                        if (o.Value.type == OptionType.ToggleGamepadMode) continue;
-                        ImGui.NextColumn();
-                        ImGui.Text(o.Key);
-                        ImGui.NextColumn();
-                        ImGui.Text(optionTypeValueHints.ContainsKey(o.Value.type) ? optionTypeValueHints[o.Value.type] : "");
-                        ImGui.NextColumn();
-                        var sb = new StringBuilder();
-                        foreach (var a in o.Value.alias) {
-                            sb.Append(a);
-                            sb.Append(" ");
-                        }
-                        ImGui.Text(sb.ToString());
+                foreach (var o in optionKinds) {
+                    if (o.Value.type == OptionType.ToggleGamepadMode) continue;
+                    ImGui.NextColumn();
+                    ImGui.Text(o.Key);
+                    ImGui.NextColumn();
+                    ImGui.Text(optionTypeValueHints.ContainsKey(o.Value.type) ? optionTypeValueHints[o.Value.type] : "");
+                    ImGui.NextColumn();
+                    var sb = new StringBuilder();
+                    foreach (var a in o.Value.alias) {
+                        sb.Append(a);
+                        sb.Append(" ");
                     }
-
-
-                    ImGui.Columns();
-                    ImGui.TreePop();
+                    ImGui.Text(sb.ToString());
                 }
 
+
+                ImGui.Columns();
                 ImGui.TreePop();
             }
-        }
+        };
 
         public override void Enable() {
             if (!Ready) return;

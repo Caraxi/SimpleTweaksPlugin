@@ -58,25 +58,17 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             base.Disable();
         }
 
-        public override void DrawConfig(ref bool hasChanged) {
-            if (Enabled) {
-                if (ImGui.TreeNode(Name)) {
-                    hasChanged |= ImGui.Checkbox("###enabledRenameTab0", ref TweakConfig.DoRenameTab0);
-                    ImGui.SameLine();
-                    ImGui.SetNextItemWidth(90 * ImGui.GetIO().FontGlobalScale);
-                    hasChanged |= ImGui.InputTextWithHint("Tab 1###nameTab0", DefaultName0, ref TweakConfig.ChatTab0Name, 16);
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+            hasChanged |= ImGui.Checkbox("###enabledRenameTab0", ref TweakConfig.DoRenameTab0);
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(90 * ImGui.GetIO().FontGlobalScale);
+            hasChanged |= ImGui.InputTextWithHint("Tab 1###nameTab0", DefaultName0, ref TweakConfig.ChatTab0Name, 16);
 
-                    hasChanged |= ImGui.Checkbox("###enabledRenameTab1", ref TweakConfig.DoRenameTab1);
-                    ImGui.SameLine();
-                    ImGui.SetNextItemWidth(90 * ImGui.GetIO().FontGlobalScale);
-                    hasChanged |= ImGui.InputTextWithHint("Tab 2###nameTab1", DefaultName1, ref TweakConfig.ChatTab1Name, 16);
-
-                    ImGui.TreePop();
-                }
-            } else {
-                base.DrawConfig(ref hasChanged);
-            }
-        }
+            hasChanged |= ImGui.Checkbox("###enabledRenameTab1", ref TweakConfig.DoRenameTab1);
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(90 * ImGui.GetIO().FontGlobalScale);
+            hasChanged |= ImGui.InputTextWithHint("Tab 2###nameTab1", DefaultName1, ref TweakConfig.ChatTab1Name, 16);
+        };
 
         private void OnLogin(object sender, EventArgs e) {
             DoRename();

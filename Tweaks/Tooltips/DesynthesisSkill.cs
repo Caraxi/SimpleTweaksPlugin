@@ -51,11 +51,9 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 }
             }
         }
-        public override void DrawConfig(ref bool hasChanged) {
-            base.DrawConfig(ref hasChanged);
-            if (!Enabled) return;
-            ImGui.SameLine();
+
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             hasChanged |= ImGui.Checkbox($"Desynthesis Delta###{GetType().Name}DesynthesisDelta", ref PluginConfig.TooltipTweaks.DesynthesisDelta);
-        }
+        };
     }
 }

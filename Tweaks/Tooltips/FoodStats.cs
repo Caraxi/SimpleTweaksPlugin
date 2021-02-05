@@ -38,12 +38,9 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             }
         }
 
-        public override void DrawConfig(ref bool hasChanged) {
-            base.DrawConfig(ref hasChanged);
-            if (!Enabled) return;
-            ImGui.SameLine();
-            ImGui.Checkbox("Highlight Active", ref PluginConfig.TooltipTweaks.FoodStatsHighlight);
-        }
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+            hasChanged |= ImGui.Checkbox("Highlight Active", ref PluginConfig.TooltipTweaks.FoodStatsHighlight);
+        };
 
         public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
 

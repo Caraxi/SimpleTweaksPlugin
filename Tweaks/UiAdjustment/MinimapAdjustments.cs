@@ -26,29 +26,21 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public Configs Config => PluginConfig.UiAdjustments.MinimapAdjustments;
 
-        public override void DrawConfig(ref bool hasChanged) {
-            if (!Enabled) 
-                base.DrawConfig(ref hasChanged);
-            else {
-                if (ImGui.TreeNode($"{Name}")) {
-
-                    hasChanged |= ImGui.Checkbox("Hide Coordinates", ref Config.HideCoordinates);
-                    hasChanged |= ImGui.Checkbox("Hide Compass Lock", ref Config.HideCompassLock);
-                    hasChanged |= ImGui.Checkbox("Hide Compass Directions", ref Config.HideCompassDirections);
-                    hasChanged |= ImGui.Checkbox("Hide Zoom Buttons", ref Config.HideZoom);
-                    hasChanged |= ImGui.Checkbox("Hide Sun", ref Config.HideSun);
-                    hasChanged |= ImGui.Checkbox("Hide Weather", ref Config.HideWeather);
-                    hasChanged |= ImGui.Checkbox("Clean Border", ref Config.CleanBorder);
-                    if (Config.CleanBorder) {
-                        ImGui.SameLine();
-                        hasChanged |= ImGui.Checkbox("No Border", ref Config.NoBorder);
-                    }
-
-                    if (hasChanged) Update();
-                    ImGui.TreePop();
-                }
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+            hasChanged |= ImGui.Checkbox("Hide Coordinates", ref Config.HideCoordinates);
+            hasChanged |= ImGui.Checkbox("Hide Compass Lock", ref Config.HideCompassLock);
+            hasChanged |= ImGui.Checkbox("Hide Compass Directions", ref Config.HideCompassDirections);
+            hasChanged |= ImGui.Checkbox("Hide Zoom Buttons", ref Config.HideZoom);
+            hasChanged |= ImGui.Checkbox("Hide Sun", ref Config.HideSun);
+            hasChanged |= ImGui.Checkbox("Hide Weather", ref Config.HideWeather);
+            hasChanged |= ImGui.Checkbox("Clean Border", ref Config.CleanBorder);
+            if (Config.CleanBorder) {
+                ImGui.SameLine();
+                hasChanged |= ImGui.Checkbox("No Border", ref Config.NoBorder);
             }
-        }
+
+            if (hasChanged) Update();
+        };
 
         public override string Name => "Minimap Adjustments";
 

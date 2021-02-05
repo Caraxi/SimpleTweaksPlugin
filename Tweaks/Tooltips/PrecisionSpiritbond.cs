@@ -23,12 +23,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
         }
 
-        public override void DrawConfig(ref bool hasChanged) {
-            base.DrawConfig(ref hasChanged);
-            if (!Enabled) return;
-            ImGui.SameLine();
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             hasChanged |= ImGui.Checkbox($"Trailing Zeros###{GetType().Name}TrailingZeros", ref PluginConfig.TooltipTweaks.PrecisionSpiritbondTrailingZeros);
-        }
+        };
     }
 
 }

@@ -29,20 +29,26 @@ namespace SimpleTweaksPlugin.TweakSystem {
             }
         }
         
-        public virtual void DrawConfig(ref bool hasChanged) {
+        public void DrawConfig(ref bool hasChanged) {
             if (DrawConfigTree != null && Enabled) {
+                var x = ImGui.GetCursorPosX();
                 if (ImGui.TreeNode($"{Name}##treeConfig_{GetType().Name}")) {
                     DrawExperimentalNotice();
+                    ImGui.SetCursorPosX(x);
+                    ImGui.BeginGroup();
                     DrawConfigTree(ref hasChanged);
+                    ImGui.EndGroup();
                     ImGui.TreePop();
                 } else {
                     DrawExperimentalNotice();
                 }
             } else {
-                ImGui.Indent(56);
-                ImGui.Text(Name);
+                ImGui.PushStyleColor(ImGuiCol.HeaderHovered, 0x0);
+                ImGui.PushStyleColor(ImGuiCol.HeaderActive, 0x0);
+                ImGui.TreeNodeEx(Name, ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen);
+                ImGui.PopStyleColor();
+                ImGui.PopStyleColor();
                 DrawExperimentalNotice();
-                ImGui.Indent(-56);
             }
         }
 
