@@ -16,8 +16,6 @@ namespace SimpleTweaksPlugin {
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class TargetHP : UiAdjustments.SubTweak {
-        public override bool Experimental => true;
-
         public class Configs {
             public DisplayFormat DisplayFormat = DisplayFormat.OneDecimalPrecision;
         }
