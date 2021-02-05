@@ -20,6 +20,7 @@ namespace SimpleTweaksPlugin {
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class NotificationToastAdjustments : UiAdjustments.SubTweak {
         public override string Name => "Notification Toast Adjustments";
+        protected override string Author => "Aireil";
 
         public class Configs {
             public bool Hide = false;
