@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Dalamud.Game.Internal;
 using Dalamud.Interface;
@@ -32,7 +33,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private string newException = String.Empty;
         private bool isPreviewing = false;
-        private Task test;
+        private Task previewDelayTask;
+        private CancellationTokenSource tokenSource;
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             hasChanged |= ImGui.Checkbox("Hide", ref Config.Hide);
@@ -50,7 +52,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 if (offsetChanged) {
                     if (!isPreviewing) {
                         isPreviewing = true;
-                        test = Task.Delay(5000).ContinueWith(t => {
+                        tokenSource = new CancellationTokenSource();
+                        previewDelayTask = Task.Delay(5000, tokenSource.Token).ContinueWith(t => {
                             isPreviewing = false;
                             UpdateNotificationToastText(true);
                         });
@@ -97,6 +100,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Disable() {
             PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdate;
+            if (tokenSource != null && previewDelayTask != null) {
+                tokenSource.Cancel();
+                while (!previewDelayTask.IsCompleted) Thread.Sleep(1);
+            }
             UpdateNotificationToastText(true);
             base.Disable();
         }
