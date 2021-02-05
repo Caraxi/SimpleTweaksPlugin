@@ -122,6 +122,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         
         public unsafe void DoRename(AtkUnitBase* unitBase, bool reset = false) {
             if (unitBase == null) return;
+            if (unitBase->ULDData.NodeListCount < 14) return;
             SetTabName((AtkComponentNode*) unitBase->ULDData.NodeList[13], (reset || !TweakConfig.DoRenameTab0 || string.IsNullOrEmpty(TweakConfig.ChatTab0Name)) ? DefaultName0 : TweakConfig.ChatTab0Name);
             SetTabName((AtkComponentNode*) unitBase->ULDData.NodeList[12], (reset || !TweakConfig.DoRenameTab1 || string.IsNullOrEmpty(TweakConfig.ChatTab1Name)) ? DefaultName1 : TweakConfig.ChatTab1Name);
             
@@ -138,8 +139,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public unsafe void DoRenamePanel(AtkUnitBase* panel, bool reset = false) {
+            if (panel->ULDData.NodeListCount < 6) return;
             var baseComponent = (AtkComponentNode*) panel->ULDData.NodeList[5];
             if (baseComponent == null) return;
+            if (baseComponent->Component->ULDData.NodeListCount < 2) return;
             var textNode = (AtkTextNode*) baseComponent->Component->ULDData.NodeList[1];
             if (textNode == null) return;
 
@@ -162,6 +165,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             panel->ULDData.NodeList[4]->X = 29 + textNode->AtkResNode.Width;
             panel->ULDData.NodeList[4]->Flags_2 |= 0x1;
             
+            if (baseComponent->Component->ULDData.NodeListCount < 3) return;
             baseComponent->Component->ULDData.NodeList[0]->Width = baseComponent->AtkResNode.Width;
             baseComponent->Component->ULDData.NodeList[2]->Width = baseComponent->AtkResNode.Width;
         }
@@ -169,14 +173,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public unsafe void SetTabName(AtkComponentNode* tab, string name) {
             if (tab == null) return;
+            if (tab->Component->ULDData.NodeListCount < 4) return;
             var textNode = (AtkTextNode*)tab->Component->ULDData.NodeList[3];
             if (textNode == null) return;
             var str = Plugin.Common.ReadSeString(textNode->NodeText.StringPtr);
-            if (str.TextValue == name) return;
-            SimpleLog.Log($"Rename Tab: '{str.TextValue}' -> '{name}'");
-            textNode->AtkResNode.Width = 0; // Auto resizing only grows the box. Set to zero to guarantee it.
+            if (str.TextValue == name && textNode->AtkResNode.Width < 1000) return;
+            SimpleLog.Log($"Rename Tab: '{str.TextValue}' -> '{name}' [{textNode->AtkResNode.Width}]");
+            textNode->AtkResNode.Width = 0;
             UiHelper.SetText(textNode, name);
             textNode->AtkResNode.Width += 10;
+            if (textNode->AtkResNode.Width > 1000) textNode->AtkResNode.Width = 180;
             textNode->AtkResNode.Flags_2 |= 0x1;
 
             var tabWidth = (ushort) (textNode->AtkResNode.Width + 16);
