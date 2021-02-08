@@ -66,22 +66,22 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private void Update(bool reset = false) {
-            if (PluginInterface?.ClientState?.Targets?.CurrentTarget != null) {
-                var ui = (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName("_TargetInfo", 1);
+            if (PluginInterface?.ClientState?.Targets?.CurrentTarget != null || reset) {
+                var ui = (AtkUnitBase*) PluginInterface?.Framework.Gui.GetUiObjectByName("_TargetInfo", 1);
                 if (ui != null && (ui->IsVisible || reset)) {
-                    UpdateMainTarget(ui, PluginInterface.ClientState.Targets.CurrentTarget, reset);
+                    UpdateMainTarget(ui, PluginInterface?.ClientState?.Targets?.CurrentTarget, reset);
                 }
                 
-                var splitUi = (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName("_TargetInfoMainTarget", 1);
+                var splitUi = (AtkUnitBase*) PluginInterface?.Framework.Gui.GetUiObjectByName("_TargetInfoMainTarget", 1);
                 if (splitUi != null && (splitUi->IsVisible || reset)) {
-                    UpdateMainTargetSplit(splitUi, PluginInterface.ClientState.Targets.CurrentTarget, reset);
+                    UpdateMainTargetSplit(splitUi, PluginInterface?.ClientState?.Targets?.CurrentTarget, reset);
                 }
             }
             
-            if (PluginInterface?.ClientState?.Targets?.FocusTarget != null) {
-                var ui = (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName("_FocusTargetInfo", 1);
+            if (PluginInterface?.ClientState?.Targets?.FocusTarget != null || reset) {
+                var ui = (AtkUnitBase*) PluginInterface?.Framework.Gui.GetUiObjectByName("_FocusTargetInfo", 1);
                 if (ui != null && (ui->IsVisible || reset)) {
-                    UpdateFocusTarget(ui, PluginInterface.ClientState.Targets.FocusTarget, reset);
+                    UpdateFocusTarget(ui, PluginInterface?.ClientState?.Targets?.FocusTarget, reset);
                 }
             }
         }
@@ -90,7 +90,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (unitBase == null || unitBase->ULDData.NodeList == null || unitBase->ULDData.NodeListCount < 40) return;
             var gauge = (AtkComponentNode*) unitBase->ULDData.NodeList[36];
             var textNode = (AtkTextNode*) unitBase->ULDData.NodeList[39];
-            if (!reset) UiHelper.Hide(unitBase->ULDData.NodeList[37]);
+            UiHelper.SetSize(unitBase->ULDData.NodeList[37], reset ? 44 : 0, reset ? 20 : 0);
             UpdateGaugeBar(gauge, textNode, target, reset);
         }
         private void UpdateFocusTarget(AtkUnitBase* unitBase, Actor target, bool reset = false) {
@@ -103,7 +103,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (unitBase == null || unitBase->ULDData.NodeList == null || unitBase->ULDData.NodeListCount < 9) return;
             var gauge = (AtkComponentNode*) unitBase->ULDData.NodeList[5];
             var textNode = (AtkTextNode*) unitBase->ULDData.NodeList[8];
-            if (!reset) UiHelper.Hide(unitBase->ULDData.NodeList[6]);
+            UiHelper.SetSize(unitBase->ULDData.NodeList[6], reset ? 44 : 0, reset ? 20 : 0);
             UpdateGaugeBar(gauge, textNode, target, reset);
         }
 
