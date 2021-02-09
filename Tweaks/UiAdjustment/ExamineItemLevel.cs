@@ -35,6 +35,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
 
         private readonly uint[] canHaveOffhand = { 2, 6, 8, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32 };
+        private readonly uint[] ignoreCategory = { 105 };
 
         public override string Name => "Item Level in Examine";
 
@@ -127,11 +128,17 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             var inaccurate = false;
             var sum = 0U;
+            var c = 13;
             for (var i = 0; i < 13; i++) {
                 var slot = Common.GetContainerItem(container, i);
                 if (slot == null) continue;
                 var id = slot->ItemId;
                 var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow(id);
+                if (ignoreCategory.Contains(item.ItemUICategory.Row)) {
+                    if (i == 0) c -= 1;
+                    c-=1;
+                    continue;
+                }
                 if ((item.Unknown90 & 2) == 2) inaccurate = true;
                 if (i == 0 && !canHaveOffhand.Contains(item.ItemUICategory.Row)) {
                     sum += item.LevelItem.Row;
@@ -140,7 +147,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 sum += item.LevelItem.Row;
             }
 
-            var avgItemLevel = sum / 13;
+            var avgItemLevel = sum / c;
 
             var seStr = new SeString(new List<Payload>() {
                 new TextPayload($"{avgItemLevel:0000}"),
