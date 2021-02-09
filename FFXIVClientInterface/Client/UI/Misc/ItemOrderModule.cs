@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 using FFXIVClientInterface.Misc;
 
 namespace FFXIVClientInterface.Client.UI.Misc {
@@ -12,16 +13,27 @@ namespace FFXIVClientInterface.Client.UI.Misc {
     [StructLayout(LayoutKind.Explicit, Size = 0xD8)]
     public unsafe struct ItemOrderModuleStruct {
         [FieldOffset(0x00)] public void* vtbl;
+        [FieldOffset(0x08)]public long CharaDirId;
         [FieldOffset(0x30)] public fixed byte ModuleName[16];
         [FieldOffset(0x40)] public ItemOrderContainer* PlayerInventory;
         [FieldOffset(0x48)] public ItemOrderArmoury Armoury;
 
-        [FieldOffset(0xB0)] public ulong RetainerID;
-        [FieldOffset(0xB8)] public void* RetainerPtr;
+        [FieldOffset(0xB0)] public ulong CurrentRetainerID;
+        [FieldOffset(0xB8)] public StdMap<ulong, IntPtr>* RetainerMap;
         [FieldOffset(0xC0)] public uint RetainerCount;
         
-        [FieldOffset(0xC8)] public ItemOrderContainer* SaddleBagLeft;
-        [FieldOffset(0xD0)] public ItemOrderContainer* SaddleBagRight;
+        [FieldOffset(0xC8)] public ItemOrderContainer* Saddlebag;
+        [FieldOffset(0xD0)] public ItemOrderContainer* PremiumSaddlebag;
+
+        public ItemOrderContainer* GetCurrentRetainerInventory()
+        {
+            if (CurrentRetainerID == 0)
+                return null;
+            var dict = RetainerMap->ToDictionary();
+            if (!dict.TryGetValue(CurrentRetainerID, out var ret))
+                return null;
+            return (ItemOrderContainer*) ret;
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Size = 0x68)]
@@ -48,7 +60,7 @@ namespace FFXIVClientInterface.Client.UI.Misc {
         [FieldOffset(0x08)] public void* Unk08;
         [FieldOffset(0x10)] public void* Unk10;
         [FieldOffset(0x18)] public void* Unk18;
-        [FieldOffset(0x20)] public void* Unk20;
+        [FieldOffset(0x20)] public ItemOrder* ItemOrders;
         [FieldOffset(0x28)] public uint SlotPerContainer;
         [FieldOffset(0x2C)] public uint Unk2C;
         [FieldOffset(0x30)] public void* Unk30;
@@ -59,9 +71,14 @@ namespace FFXIVClientInterface.Client.UI.Misc {
         [FieldOffset(0x50)] public void* Unk50;
         [FieldOffset(0x58)] public int Unk58;
         [FieldOffset(0x5C)] public int Unk5C;
-
     }
     
-
+    [StructLayout(LayoutKind.Explicit, Size = 12)]
+    public struct ItemOrder
+    {
+        [FieldOffset(0x00)] public short ContainerIndex;
+        [FieldOffset(0x02)] public short SlotIndex;
+        // 8-bytes of unknown
+    }
 }
 
