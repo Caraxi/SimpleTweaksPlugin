@@ -6,6 +6,7 @@ using System.Net;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using Dalamud;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using Dalamud.Game.Internal;
 using ImGuiNET;
@@ -16,7 +17,7 @@ using SimpleTweaksPlugin.GameStructs.Client.UI;
 namespace SimpleTweaksPlugin {
     public partial class TooltipTweakConfig {
         public VK[] CopyHotkey = { VK.Ctrl, VK.C };
-        public bool CopyHotkeyEnabled = true;
+        public bool CopyHotkeyEnabled = false;
 
         public VK[] TeamcraftLinkHotkey = {VK.Ctrl, VK.T};
         public bool TeamcraftLinkHotkeyEnabled = false;
@@ -24,6 +25,9 @@ namespace SimpleTweaksPlugin {
 
         public VK[] GardlandToolsLinkHotkey = {VK.Ctrl, VK.G};
         public bool GardlandToolsLinkHotkeyEnabled = false;
+
+        public VK[] GamerEscapeLinkHotkey = {VK.Ctrl, VK.E};
+        public bool GamerEscapeLinkHotkeyEnabled = false;
 
         public bool HideHotkeysOnTooltip = false;
     }
@@ -51,6 +55,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             if (Config.CopyHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.CopyHotkey.Select(k => k.GetKeyName()))}  Copy item name"));
             if (Config.TeamcraftLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.TeamcraftLinkHotkey.Select(k => k.GetKeyName()))}  View on Teamcraft"));
             if (Config.GardlandToolsLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.GardlandToolsLinkHotkey.Select(k => k.GetKeyName()))}  View on Garland Tools"));
+            if (Config.GamerEscapeLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.GamerEscapeLinkHotkey.Select(k => k.GetKeyName()))}  View on Gamer Escape"));
 
             SimpleLog.Verbose(seStr.Payloads);
             tooltip[TooltipTweaks.ItemTooltip.TooltipField.ControlsDisplay] = seStr;
@@ -130,31 +135,23 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             }
         }
 
-        public override void DrawConfig(ref bool hasChanged) {
-            
-
-            if (Enabled) {
-                if (ImGui.TreeNode($"{this.Name}###configTreeNode")) {
-                    ImGui.Columns(2);
-                    ImGui.SetColumnWidth(0, 180 * ImGui.GetIO().FontGlobalScale);
-                    var c = Config;
-                    DrawHotkeyConfig("Copy Item Name", ref c.CopyHotkey, ref c.CopyHotkeyEnabled, ref hasChanged);
-                    ImGui.Separator();
-                    DrawHotkeyConfig("View on Teamcraft", ref c.TeamcraftLinkHotkey, ref c.TeamcraftLinkHotkeyEnabled, ref hasChanged);
-                    ImGui.SameLine();
-                    ImGui.Checkbox($"Browser Only###teamcraftIgnoreClient", ref Config.TeamcraftLinkHotkeyForceBrowser);
-                    ImGui.Separator();
-                    DrawHotkeyConfig("View on Garland Tools", ref c.GardlandToolsLinkHotkey, ref c.GardlandToolsLinkHotkeyEnabled, ref hasChanged);
-                    ImGui.Columns();
-                    ImGui.Dummy(new Vector2(5 * ImGui.GetIO().FontGlobalScale));
-                    hasChanged |= ImGui.Checkbox("Don't show hotkey help on Tooltip", ref c.HideHotkeysOnTooltip);
-                    ImGui.TreePop();
-                }
-            } else {
-                base.DrawConfig(ref hasChanged);
-            }
-
-        }
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+            ImGui.Columns(2);
+            ImGui.SetColumnWidth(0, 180 * ImGui.GetIO().FontGlobalScale);
+            var c = Config;
+            DrawHotkeyConfig("Copy Item Name", ref c.CopyHotkey, ref c.CopyHotkeyEnabled, ref hasChanged);
+            ImGui.Separator();
+            DrawHotkeyConfig("View on Teamcraft", ref c.TeamcraftLinkHotkey, ref c.TeamcraftLinkHotkeyEnabled, ref hasChanged);
+            ImGui.SameLine();
+            ImGui.Checkbox($"Browser Only###teamcraftIgnoreClient", ref Config.TeamcraftLinkHotkeyForceBrowser);
+            ImGui.Separator();
+            DrawHotkeyConfig("View on Garland Tools", ref c.GardlandToolsLinkHotkey, ref c.GardlandToolsLinkHotkeyEnabled, ref hasChanged);
+            ImGui.Separator();
+            DrawHotkeyConfig("View on Gamer Escape", ref c.GamerEscapeLinkHotkey, ref c.GamerEscapeLinkHotkeyEnabled, ref hasChanged);
+            ImGui.Columns();
+            ImGui.Dummy(new Vector2(5 * ImGui.GetIO().FontGlobalScale));
+            hasChanged |= ImGui.Checkbox("Don't show hotkey help on Tooltip", ref c.HideHotkeysOnTooltip);
+        };
 
         public override void Enable() {
             PluginInterface.Framework.OnUpdateEvent += FrameworkOnOnUpdateEvent;
@@ -202,6 +199,11 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         private void OpenGarlandTools(Item item) {
             Process.Start($"https://www.garlandtools.org/db/#item/{item.RowId}");
         }
+        
+        private void OpenGamerEscape(Item item) {
+            var name = Uri.EscapeUriString(item.Name);
+            Process.Start($"https://ffxiv.gamerescape.com/w/index.php?search={name}");
+        }
 
         private bool isHotkeyPress(VK[] keys) {
             for (var i = 0; i < 0xA0; i++) {
@@ -220,6 +222,8 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
                 Action<Item> action = null;
                 VK[] keys = null;
+
+                var language = PluginInterface.ClientState.ClientLanguage;
                 if (action == null && Config.CopyHotkeyEnabled && isHotkeyPress(Config.CopyHotkey)) {
                     action = CopyItemName;
                     keys = Config.CopyHotkey;
@@ -234,12 +238,18 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                     action = OpenGarlandTools;
                     keys = Config.GardlandToolsLinkHotkey;
                 }
+                
+                if (action == null && Config.GamerEscapeLinkHotkeyEnabled && isHotkeyPress(Config.GamerEscapeLinkHotkey)) {
+                    action = OpenGamerEscape;
+                    keys = Config.GamerEscapeLinkHotkey;
+                    language = ClientLanguage.English;
+                }
 
                 if (action != null) {
                     var id = PluginInterface.Framework.Gui.HoveredItem;
                     if (id >= 2000000) return;
                     id %= 500000;
-                    var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow((uint) id);
+                    var item = PluginInterface.Data.GetExcelSheet<Item>(language).GetRow((uint) id);
                     if (item == null) return;
                     action(item);
                     foreach (var k in keys) {

@@ -78,57 +78,47 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             ImGui.PopID();
             return changed;
         }
-
+        
         private float configAlignmentX;
+        
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+            hasChanged |= ImGui.Checkbox("Hide 'Casting' Text", ref Config.RemoveCastingText);
+            hasChanged |= ImGui.Checkbox("Hide Icon", ref Config.RemoveIcon);
+            hasChanged |= ImGui.Checkbox("Hide Countdown Text", ref Config.RemoveCounter);
+            if (Config.RemoveCastingText && !Config.RemoveCounter) {
+                ImGui.SameLine();
+                if (ImGui.GetCursorPosX() > configAlignmentX) configAlignmentX = ImGui.GetCursorPosX();
+                ImGui.SetCursorPosX(configAlignmentX);
+                hasChanged |= DrawAlignmentSelector("Align Countdown Text", ref Config.AlignCounter);
 
-        public override void DrawConfig(ref bool hasChanged) {
-            if (!Enabled) {
-                base.DrawConfig(ref hasChanged);
-                return;
+                ImGui.SetCursorPosX(configAlignmentX);
+                ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
+                hasChanged |= ImGui.InputInt("Offset##offsetCounterPosition", ref Config.OffsetCounterPosition);
+                if (Config.OffsetCounterPosition < -100) Config.OffsetCounterPosition = -100;
+                if (Config.OffsetCounterPosition > 100) Config.OffsetCounterPosition = 100;
+
+            }
+            hasChanged |= ImGui.Checkbox("Hide Ability Name", ref Config.RemoveName);
+            if (!Config.RemoveName) {
+                ImGui.SameLine();
+                if (ImGui.GetCursorPosX() > configAlignmentX) configAlignmentX = ImGui.GetCursorPosX();
+                ImGui.SetCursorPosX(configAlignmentX);
+                hasChanged |= DrawAlignmentSelector("Align Ability Name", ref Config.AlignName);
+                ImGui.SetCursorPosX(configAlignmentX);
+                ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
+                hasChanged |= ImGui.InputInt("Offset##offsetNamePosition", ref Config.OffsetNamePosition);
+
+                if (Config.OffsetNamePosition < -100) Config.OffsetNamePosition = -100;
+                if (Config.OffsetNamePosition > 100) Config.OffsetNamePosition = 100;
             }
 
-            if (ImGui.TreeNode($"{Name}")) {
-
-                hasChanged |= ImGui.Checkbox("Hide 'Casting' Text", ref Config.RemoveCastingText);
-                hasChanged |= ImGui.Checkbox("Hide Icon", ref Config.RemoveIcon);
-                hasChanged |= ImGui.Checkbox("Hide Countdown Text", ref Config.RemoveCounter);
-                if (Config.RemoveCastingText && !Config.RemoveCounter) {
-                    ImGui.SameLine();
-                    if (ImGui.GetCursorPosX() > configAlignmentX) configAlignmentX = ImGui.GetCursorPosX();
-                    ImGui.SetCursorPosX(configAlignmentX);
-                    hasChanged |= DrawAlignmentSelector("Align Countdown Text", ref Config.AlignCounter);
-
-                    ImGui.SetCursorPosX(configAlignmentX);
-                    ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-                    hasChanged |= ImGui.InputInt("Offset##offsetCounterPosition", ref Config.OffsetCounterPosition);
-                    if (Config.OffsetCounterPosition < -100) Config.OffsetCounterPosition = -100;
-                    if (Config.OffsetCounterPosition > 100) Config.OffsetCounterPosition = 100;
-
-                }
-                hasChanged |= ImGui.Checkbox("Hide Ability Name", ref Config.RemoveName);
-                if (!Config.RemoveName) {
-                    ImGui.SameLine();
-                    if (ImGui.GetCursorPosX() > configAlignmentX) configAlignmentX = ImGui.GetCursorPosX();
-                    ImGui.SetCursorPosX(configAlignmentX);
-                    hasChanged |= DrawAlignmentSelector("Align Ability Name", ref Config.AlignName);
-                    ImGui.SetCursorPosX(configAlignmentX);
-                    ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-                    hasChanged |= ImGui.InputInt("Offset##offsetNamePosition", ref Config.OffsetNamePosition);
-
-                    if (Config.OffsetNamePosition < -100) Config.OffsetNamePosition = -100;
-                    if (Config.OffsetNamePosition > 100) Config.OffsetNamePosition = 100;
-                }
-
-                ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
+            ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
 
 
-                if (hasChanged) {
-                    UpdateCastBar(true);
-                }
-
-                ImGui.TreePop();
+            if (hasChanged) {
+                UpdateCastBar(true);
             }
-        }
+        };
 
         public override void Enable() {
             PluginInterface.Framework.OnUpdateEvent += FrameworkOnUpdate;

@@ -26,53 +26,47 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Name => "Reposition Target Castbar Text";
         
         private readonly Vector2 buttonSize = new Vector2(26, 22);
-        public override void DrawConfig(ref bool changed) {
-            if (Enabled) {
-                if (ImGui.TreeNode($"{Name}###{GetType().Name}SettingsTreeNode")) {
-                    var bSize = buttonSize * ImGui.GetIO().FontGlobalScale;
-                    ImGui.SetNextItemWidth(90 * ImGui.GetIO().FontGlobalScale);
-                    if (ImGui.InputInt($"###{GetType().Name}_Offset", ref PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset)) {
-                        if (PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset > MaxOffset) PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = MaxOffset;
-                        if (PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset < MinOffset) PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = MinOffset;
-                        changed = true;
-                    }
-                    ImGui.SameLine();
-                    ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(2));
-                    ImGui.PushFont(UiBuilder.IconFont);
-                    if (ImGui.Button($"{(char)FontAwesomeIcon.ArrowUp}", bSize)) {
-                        PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = 8;
-                        changed = true;
-                    }
-                    ImGui.PopFont();
-                    if (ImGui.IsItemHovered()) ImGui.SetTooltip("Above progress bar");
 
-                    ImGui.SameLine();
-                    ImGui.PushFont(UiBuilder.IconFont);
-                    if (ImGui.Button($"{(char) FontAwesomeIcon.CircleNotch}", bSize)) {
-                        PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = 24;
-                        changed = true;
-                    }
-                    ImGui.PopFont();
-                    if (ImGui.IsItemHovered()) ImGui.SetTooltip("Original Position");
-
-                    
-                    ImGui.SameLine();
-                    ImGui.PushFont(UiBuilder.IconFont);
-                    if (ImGui.Button($"{(char)FontAwesomeIcon.ArrowDown}", bSize)) {
-                        PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = 32;
-                        changed = true;
-                    }
-                    ImGui.PopFont();
-                    if (ImGui.IsItemHovered()) ImGui.SetTooltip("Below progress bar");
-                    ImGui.PopStyleVar();
-                    ImGui.SameLine();
-                    ImGui.Text("Ability name vertical offset");
-                    ImGui.TreePop();
-                }
-            } else {
-                base.DrawConfig(ref changed);
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool changed) => {
+            var bSize = buttonSize * ImGui.GetIO().FontGlobalScale;
+            ImGui.SetNextItemWidth(90 * ImGui.GetIO().FontGlobalScale);
+            if (ImGui.InputInt($"###{GetType().Name}_Offset", ref PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset)) {
+                if (PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset > MaxOffset) PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = MaxOffset;
+                if (PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset < MinOffset) PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = MinOffset;
+                changed = true;
             }
-        }
+            ImGui.SameLine();
+            ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(2));
+            ImGui.PushFont(UiBuilder.IconFont);
+            if (ImGui.Button($"{(char)FontAwesomeIcon.ArrowUp}", bSize)) {
+                PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = 8;
+                changed = true;
+            }
+            ImGui.PopFont();
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Above progress bar");
+
+            ImGui.SameLine();
+            ImGui.PushFont(UiBuilder.IconFont);
+            if (ImGui.Button($"{(char) FontAwesomeIcon.CircleNotch}", bSize)) {
+                PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = 24;
+                changed = true;
+            }
+            ImGui.PopFont();
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Original Position");
+
+            
+            ImGui.SameLine();
+            ImGui.PushFont(UiBuilder.IconFont);
+            if (ImGui.Button($"{(char)FontAwesomeIcon.ArrowDown}", bSize)) {
+                PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = 32;
+                changed = true;
+            }
+            ImGui.PopFont();
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Below progress bar");
+            ImGui.PopStyleVar();
+            ImGui.SameLine();
+            ImGui.Text("Ability name vertical offset");
+        };
 
         public void OnFrameworkUpdate(Framework framework) {
             try {

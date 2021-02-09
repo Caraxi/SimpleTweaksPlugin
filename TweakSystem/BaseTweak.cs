@@ -12,6 +12,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
         public virtual bool Enabled { get; protected set; }
 
         public abstract string Name { get; }
+        protected virtual string Author => null;
         public virtual bool Experimental => false;
 
         public virtual bool CanLoad => true;
@@ -22,27 +23,38 @@ namespace SimpleTweaksPlugin.TweakSystem {
             this.Plugin = plugin;
         }
 
-        private void DrawExperimentalNotice() {
+        private void DrawCommon() {
             if (this.Experimental) {
                 ImGui.SameLine();
                 ImGui.TextColored(new Vector4(1, 0, 0, 1), "  Experimental");
             }
+
+            if (!string.IsNullOrEmpty(Author)) {
+                ImGui.SameLine();
+                ImGui.TextDisabled($"  by {Author}");
+            }
         }
         
-        public virtual void DrawConfig(ref bool hasChanged) {
+        public void DrawConfig(ref bool hasChanged) {
             if (DrawConfigTree != null && Enabled) {
+                var x = ImGui.GetCursorPosX();
                 if (ImGui.TreeNode($"{Name}##treeConfig_{GetType().Name}")) {
-                    DrawExperimentalNotice();
+                    DrawCommon();
+                    ImGui.SetCursorPosX(x);
+                    ImGui.BeginGroup();
                     DrawConfigTree(ref hasChanged);
+                    ImGui.EndGroup();
                     ImGui.TreePop();
                 } else {
-                    DrawExperimentalNotice();
+                    DrawCommon();
                 }
             } else {
-                ImGui.Indent(56);
-                ImGui.Text(Name);
-                DrawExperimentalNotice();
-                ImGui.Indent(-56);
+                ImGui.PushStyleColor(ImGuiCol.HeaderHovered, 0x0);
+                ImGui.PushStyleColor(ImGuiCol.HeaderActive, 0x0);
+                ImGui.TreeNodeEx(Name, ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen);
+                ImGui.PopStyleColor();
+                ImGui.PopStyleColor();
+                DrawCommon();
             }
         }
 

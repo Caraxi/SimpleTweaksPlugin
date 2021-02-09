@@ -138,5 +138,11 @@ namespace SimpleTweaksPlugin.Helper {
             if (!Ready) return;
             _atkUnitBaseClose(atkUnitBase, (byte) (unknownBool ? 1 : 0));
         }
+
+        public static T* CleanAlloc<T>() where T : unmanaged {
+            var alloc = Alloc(sizeof(T));
+            Marshal.Copy(new byte[sizeof(T)], 0, alloc, sizeof(T));
+            return (T*) alloc;
+        }
     }
 }

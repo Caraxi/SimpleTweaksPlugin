@@ -15,6 +15,7 @@ using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.GameStructs.Client.UI;
 using SimpleTweaksPlugin.Helper;
 using Action = System.Action;
+#pragma warning disable 659
 
 // Customised version of https://github.com/aers/FFXIVUIDebug
 

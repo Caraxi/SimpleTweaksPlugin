@@ -29,16 +29,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public Configs Config => PluginConfig.UiAdjustments.ExtendedDesynthesisWindow;
         
-        public override void DrawConfig(ref bool hasChanged) {
-            if (Enabled) {
-                if (ImGui.TreeNode($"{Name}###extendedDesynthesisConfig")) {
-                    hasChanged |= ImGui.Checkbox("Block clicking on gearset items.", ref Config.BlockClickOnGearset);
-                    ImGui.TreePop();
-                }
-            } else {
-                base.DrawConfig(ref hasChanged);
-            }
-        }
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+            hasChanged |= ImGui.Checkbox("Block clicking on gearset items.", ref Config.BlockClickOnGearset);
+        };
 
         public override string Name => "Extended Desynthesis Window";
 
