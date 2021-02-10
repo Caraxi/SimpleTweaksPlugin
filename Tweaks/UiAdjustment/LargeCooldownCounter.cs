@@ -53,7 +53,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (iconComponent == null) return;
             var cooldownTextNode = (AtkTextNode*)iconComponent->Component->ULDData.NodeList[13];
             if (cooldownTextNode->AtkResNode.Type != NodeType.Text) return;
-            if ((cooldownTextNode->AtkResNode.Flags & 0x10) != 0x10) return;
+            if (reset == false && (cooldownTextNode->AtkResNode.Flags & 0x10) != 0x10) return;
             if (cooldownTextNode == null) return;
             if (cooldownTextNode->EdgeColor.R != 0x33) reset = true;
             cooldownTextNode->AtkResNode.X = reset ? 3 : 0;
