@@ -31,15 +31,15 @@
     <ItemGroup>
         <Reference Include="Dalamud">
             <Private>false</Private>
-            <HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Dalamud.dll</HintPath>
+            <HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\Dalamud.dll</HintPath>
         </Reference>
         <Reference Include="Lumina">
             <Private>false</Private>
-            <HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Lumina.dll</HintPath>
+            <HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\Lumina.dll</HintPath>
         </Reference>
         <Reference Include="Lumina.Excel">
             <Private>false</Private>
-            <HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\Lumina.Excel.dll</HintPath>
+            <HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\Lumina.Excel.dll</HintPath>
         </Reference>
     </ItemGroup>
 </Project>
