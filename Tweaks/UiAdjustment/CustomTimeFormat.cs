@@ -65,7 +65,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             if (index > 0) {
                 ImGui.TextColored(hoveringUp ? other : white, up);
-                if (hoveringUp && ImGui.IsMouseClicked(0)) {
+                if (hoveringUp && ImGui.IsMouseClicked(ImGuiMouseButton.Left)) {
                     moveAction = new MoveAction() {Index = index, MoveUp = true};
                 }
             }
@@ -73,7 +73,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             ImGui.SetCursorPos(p3);
             if (index < 2) {
                 ImGui.TextColored(hoveringDown ? other : white, down);
-                if (hoveringDown && ImGui.IsMouseClicked(0)) {
+                if (hoveringDown && ImGui.IsMouseClicked(ImGuiMouseButton.Left)) {
                     moveAction = new MoveAction() { Index = index, MoveUp = false };
                 }
             }

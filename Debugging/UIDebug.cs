@@ -198,7 +198,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     
                     if (nSelected) ImGui.PopStyleColor();
 
-                    if (nSelected && ImGui.IsMouseClicked(0)) {
+                    if (nSelected && ImGui.IsMouseClicked(ImGuiMouseButton.Left)) {
                         elementSelectorActive = false;
                         FreeExclusiveDraw();
 
