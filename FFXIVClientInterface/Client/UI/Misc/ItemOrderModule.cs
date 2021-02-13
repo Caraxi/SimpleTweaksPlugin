@@ -13,7 +13,7 @@ namespace FFXIVClientInterface.Client.UI.Misc {
     [StructLayout(LayoutKind.Explicit, Size = 0xD8)]
     public unsafe struct ItemOrderModuleStruct {
         [FieldOffset(0x00)] public void* vtbl;
-        [FieldOffset(0x08)]public long CharaDirId;
+        [FieldOffset(0x08)] public long CharaDirId;
         [FieldOffset(0x30)] public fixed byte ModuleName[16];
         [FieldOffset(0x40)] public ItemOrderContainer* PlayerInventory;
         [FieldOffset(0x48)] public ItemOrderArmoury Armoury;
