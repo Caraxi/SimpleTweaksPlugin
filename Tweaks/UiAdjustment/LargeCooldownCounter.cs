@@ -5,6 +5,10 @@ using ImGuiNET;
 using SimpleTweaksPlugin.GameStructs.Client.UI;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using System;
+using FFXIVClientInterface.Client.UI.Misc;
+
+// TODO:
+// - Determine active WXHB page.
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
@@ -72,13 +76,17 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private void UpdateAll(bool reset = false) {
-            foreach (var actionBar in allActionBars) {
+            var hotbarModule = SimpleTweaksPlugin.Client.UiModule.RaptureHotbarModule;
+            for (var abIndex = 0; abIndex < allActionBars.Length; abIndex++) {
+                var actionBar = allActionBars[abIndex];
                 var ab = (AddonActionBarBase*) PluginInterface.Framework.Gui.GetUiObjectByName(actionBar, 1);
                 if (ab == null || ab->ActionBarSlotsAction == null) continue;
+                var bar = abIndex > 10 ? null : hotbarModule.GetBar(abIndex, HotBarType.All);
                 for (var i = 0; i < ab->HotbarSlotCount; i++) {
                     var slot = ab->ActionBarSlotsAction[i];
+                    var slotStruct = hotbarModule.GetBarSlot(bar, i);
                     if ((slot.PopUpHelpTextPtr != null || reset) && slot.Icon != null) {
-                        UpdateIcon(slot.Icon, reset);
+                        UpdateIcon(slot.Icon, slotStruct, reset);
                     }
                 }
             }
@@ -98,19 +106,40 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             return (byte) s;
         }
         
-        private void UpdateIcon(AtkComponentNode* iconComponent, bool reset = false) {
+        private void UpdateIcon(AtkComponentNode* iconComponent, HotBarSlot* slotStruct, bool reset = false) {
             if (iconComponent == null) return;
             var cooldownTextNode = (AtkTextNode*)iconComponent->Component->ULDData.NodeList[13];
             if (cooldownTextNode->AtkResNode.Type != NodeType.Text) return;
             if (reset == false && (cooldownTextNode->AtkResNode.Flags & 0x10) != 0x10) return;
             if (cooldownTextNode == null) return;
-            if (cooldownTextNode->EdgeColor.R != 0x33) reset = true;
-            cooldownTextNode->AtkResNode.X = reset ? 3 : 0;
-            cooldownTextNode->AtkResNode.Y = reset ? 37 : 0;
-            cooldownTextNode->AtkResNode.Width = (ushort)(reset ? 48 : 46);
-            cooldownTextNode->AtkResNode.Height = (ushort)(reset ? 12 : 46);
-            cooldownTextNode->AlignmentFontType = (byte)(reset ? (byte)AlignmentType.Left : (0x10 * (byte) Config.Font) | (byte) AlignmentType.Center);
-            cooldownTextNode->FontSize = (byte)(reset ? 12 : GetFontSize());
+            if (slotStruct != null && slotStruct->CommandType == HotbarSlotType.Action) {
+                var recastGroup = (int) SimpleTweaksPlugin.Client.ActionManager.GetRecastGroup((byte)slotStruct->CommandType, slotStruct->CommandId) + 1;
+                if (recastGroup == 0 || recastGroup == 58) {
+                    reset = true;
+                } else {
+                    var recastTimer = SimpleTweaksPlugin.Client.ActionManager.GetGroupRecastTime(recastGroup);
+                    if (recastTimer->IsActive == 0) reset = true;
+                }
+            } else {
+                if (cooldownTextNode->EdgeColor.R != 0x33) reset = true;
+            }
+
+            if (reset) {
+                cooldownTextNode->AtkResNode.X = 3;
+                cooldownTextNode->AtkResNode.Y = 37;
+                cooldownTextNode->AtkResNode.Width = 48;
+                cooldownTextNode->AtkResNode.Height = 12;
+                cooldownTextNode->AlignmentFontType = (byte)AlignmentType.Left;
+                cooldownTextNode->FontSize = 12;
+            } else {
+                cooldownTextNode->AtkResNode.X = 0;
+                cooldownTextNode->AtkResNode.Y = 0;
+                cooldownTextNode->AtkResNode.Width = 46;
+                cooldownTextNode->AtkResNode.Height = 46;
+                cooldownTextNode->AlignmentFontType = (byte)((0x10 * (byte) Config.Font) | (byte) AlignmentType.Center);
+                cooldownTextNode->FontSize = GetFontSize();
+            }
+            
             cooldownTextNode->AtkResNode.Flags_2 |= 0x1;
         }
 
