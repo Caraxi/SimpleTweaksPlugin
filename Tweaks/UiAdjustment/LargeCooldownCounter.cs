@@ -4,6 +4,13 @@ using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
 using SimpleTweaksPlugin.GameStructs.Client.UI;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+using System;
+
+namespace SimpleTweaksPlugin {
+    public partial class UiAdjustmentsConfig {
+        public LargeCooldownCounter.Configs LargeCooldownCounter = new();
+    }
+}
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
@@ -30,7 +37,35 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             "_ActionDoubleCrossL",
             "_ActionDoubleCrossR",
         };
+        public class Configs {
+            public Font Font = Font.Default;
+            public int FontSizeAdjust;
+        }
 
+        public Configs Config => PluginConfig.UiAdjustments.LargeCooldownCounter;
+        
+        public enum Font {
+            Default,
+            FontB,
+            FontC,
+            FontD,
+        }
+        
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+            ImGui.SetNextItemWidth(160 * ImGui.GetIO().FontGlobalScale);
+            if (ImGui.BeginCombo("Font###st_uiAdjustment_largeCooldownCounter_fontSelect", $"{Config.Font}")) {
+                foreach (var f in (Font[])Enum.GetValues(typeof(Font))) {
+                    if (ImGui.Selectable($"{f}##st_uiAdjustment_largeCooldownCount_fontOption", f == Config.Font)) {
+                        Config.Font = f;
+                        hasChanged = true;
+                    }
+                }
+                ImGui.EndCombo();
+            }
+            ImGui.SetNextItemWidth(160 * ImGui.GetIO().FontGlobalScale);
+            hasChanged |= ImGui.SliderInt("Font Size Adjust##st_uiAdjustment_largEcooldownCounter_fontSize", ref Config.FontSizeAdjust, -15, 30);
+            
+        };
 
         private void FrameworkUpdate(Framework framework) {
             UpdateAll();
@@ -48,6 +83,20 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 }
             }
         }
+
+        private byte DefaultFontSize => Config.Font switch {
+            Font.FontB => 14,
+            Font.FontC => 15,
+            Font.FontD => 34,
+            _ => 18,
+        };
+
+        private byte GetFontSize() {
+            var s = (Config.FontSizeAdjust * 2) + DefaultFontSize;
+            if (s < 4) s = 4;
+            if (s > 255) s = 255;
+            return (byte) s;
+        }
         
         private void UpdateIcon(AtkComponentNode* iconComponent, bool reset = false) {
             if (iconComponent == null) return;
@@ -60,8 +109,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             cooldownTextNode->AtkResNode.Y = reset ? 37 : 0;
             cooldownTextNode->AtkResNode.Width = (ushort)(reset ? 48 : 46);
             cooldownTextNode->AtkResNode.Height = (ushort)(reset ? 12 : 46);
-            cooldownTextNode->AlignmentFontType = (byte)(reset ? AlignmentType.Left : AlignmentType.Center);
-            cooldownTextNode->FontSize = (byte)(reset ? 12 : 18);
+            cooldownTextNode->AlignmentFontType = (byte)(reset ? (byte)AlignmentType.Left : (0x10 * (byte) Config.Font) | (byte) AlignmentType.Center);
+            cooldownTextNode->FontSize = (byte)(reset ? 12 : GetFontSize());
             cooldownTextNode->AtkResNode.Flags_2 |= 0x1;
         }
 
