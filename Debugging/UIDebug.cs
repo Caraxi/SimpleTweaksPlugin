@@ -353,6 +353,17 @@ namespace SimpleTweaksPlugin.Debugging {
             object addonObj = addonName switch {
                 "ActionDetail" => *(AddonActionDetail*) atkUnitBase,
                 "_ActionBar" => *(AddonActionBarBase*) atkUnitBase,
+                "_ActionBar02" => *(AddonActionBarBase*) atkUnitBase,
+                "_ActionBar03" => *(AddonActionBarBase*) atkUnitBase,
+                "_ActionBar04" => *(AddonActionBarBase*) atkUnitBase,
+                "_ActionBar05" => *(AddonActionBarBase*) atkUnitBase,
+                "_ActionBar06" => *(AddonActionBarBase*) atkUnitBase,
+                "_ActionBar07" => *(AddonActionBarBase*) atkUnitBase,
+                "_ActionBar08" => *(AddonActionBarBase*) atkUnitBase,
+                "_ActionBar09" => *(AddonActionBarBase*) atkUnitBase,
+                "_ActionCross" => *(AddonActionBarBase*) atkUnitBase,
+                "_ActionDoubleCrossL" => *(AddonActionBarBase*) atkUnitBase,
+                "_ActionDoubleCrossR" => *(AddonActionBarBase*) atkUnitBase,
                 "_MiniTalk" => *(AddonMiniTalk*) atkUnitBase,
                 _ => *atkUnitBase
             };
