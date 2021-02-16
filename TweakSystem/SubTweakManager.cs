@@ -100,7 +100,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
         }
 
         public override void Disable() {
-            foreach (var t in SubTweaks) {
+            foreach (var t in SubTweaks.Where(t => t.Enabled)) {
                 try {
                     SimpleLog.Log($"Disable: {t.Name} @ {Name}");
                     t.Disable();
@@ -115,7 +115,11 @@ namespace SimpleTweaksPlugin.TweakSystem {
         public override void Dispose() {
             foreach (var t in SubTweaks) {
                 try {
-                    t.Disable();
+                    if (t.Enabled) {
+                        SimpleLog.Log($"Disable: {t.Name}");
+                        t.Disable();
+                    }
+                    SimpleLog.Log($"Dispose: {t.Name}");
                     t.Dispose();
                 } catch (Exception ex) {
                     Plugin.Error(this, t, ex, true, $"Error in Dispose for '{t.Name}' @ '{this.Name}'");

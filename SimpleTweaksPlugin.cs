@@ -40,9 +40,11 @@ namespace SimpleTweaksPlugin {
             RemoveCommands();
 
             foreach (var t in Tweaks) {
-                SimpleLog.Debug($"Disable: {t.Name}");
-                t.Disable();
-                SimpleLog.Debug($"Dispose: {t.Name}");
+                if (t.Enabled) {
+                    SimpleLog.Log($"Disable: {t.Name}");
+                    t.Disable();
+                }
+                SimpleLog.Log($"Dispose: {t.Name}");
                 t.Dispose();
             }
             Tweaks.Clear();
