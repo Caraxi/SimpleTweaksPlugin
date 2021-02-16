@@ -49,6 +49,18 @@ Allows the renaming of the General and Battle chat tabs.
 ### Reposition Target Castbar Text
 Allows repositioning the text on castbars of your target and focus target 
 
+### Extended Desynthesis Window
+Shows the current desynthesis level on the `/ac desynthesis` menu.
+
+### Notification Toast Adjustments (by Aireil)
+Allows moving or hiding of the text that appears in the middle of the screen.
+
+### Minimap Adjustments
+Allows you to hide individual elements of the minimap UI to give an overall cleaner look
+
+### Target HP
+Shows the current HP value on your target.
+
 ## Tooltip Tweaks
 Tweaks that make changes to the item tooltips.
 
@@ -69,10 +81,6 @@ Displays the results of food or potions
 
 ![image](https://i.imgur.com/jPeUsv0.png)
 
-### Extended Desynthesis Menu
-Shows the current desynthesis level on the `/ac desynthesis` menu.
-
-
 ## Other Tweaks
 
 ### Disable Title Screen Movie
@@ -91,3 +99,9 @@ Adds commands to change settings that square wasn't kind enough to give us by de
 
 ### Long Veil
 Shows wedding veils using their Sanctum of the Twelve model everywhere.
+
+### Fix '/target' command
+When a `/target` command fails, SimpleTweaks will search for potential targets and make it work as you might expect.
+
+### Rename Chat Tabs
+Allows you to pick names for the first two chat tabs instead of 'General' and 'Battle'
