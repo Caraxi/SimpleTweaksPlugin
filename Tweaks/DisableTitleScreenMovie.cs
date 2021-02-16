@@ -17,8 +17,12 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
 
         private void FrameworkUpdate(Framework framework) {
-            if (PluginInterface.ClientState.LocalContentId == 0) {
-                SimpleTweaksPlugin.Client.UiModule.AgentModule.GetAgent<AgentLobby>().Data->IdleTime = 0;
+            try {
+                if (PluginInterface.ClientState.LocalContentId == 0) {
+                    SimpleTweaksPlugin.Client.UiModule.AgentModule.GetAgent<AgentLobby>().Data->IdleTime = 0;
+                }
+            } catch {
+                // Ignored
             }
         }
     }
