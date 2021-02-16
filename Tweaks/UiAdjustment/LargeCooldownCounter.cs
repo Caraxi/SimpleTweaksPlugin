@@ -72,7 +72,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         };
 
         private void FrameworkUpdate(Framework framework) {
-            UpdateAll();
+            try {
+                UpdateAll();
+            } catch (Exception ex) {
+                SimpleLog.Error("Exception in FrameworkUpdate");
+                SimpleLog.Error(ex);
+            }
         }
 
         private void UpdateAll(bool reset = false) {
