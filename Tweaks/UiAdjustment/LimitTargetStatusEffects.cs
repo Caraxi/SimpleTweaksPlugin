@@ -1,0 +1,65 @@
+﻿using Dalamud.Game.Internal;
+using ImGuiNET;
+using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+
+namespace SimpleTweaksPlugin {
+    public partial class UiAdjustmentsConfig {
+        public LimitTargetStatusEffects.Configs LimitTargetStatusEffects = new LimitTargetStatusEffects.Configs();
+    }
+}
+
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
+    public unsafe class LimitTargetStatusEffects : UiAdjustments.SubTweak {
+        public override string Name => "Limit Target Status Effects";
+        protected override string Author => "Aireil";
+
+        public class Configs {
+            public int NbStatusEffects = 30;
+        }
+
+        public Configs Config => PluginConfig.UiAdjustments.LimitTargetStatusEffects;
+
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+            ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
+            hasChanged |= ImGui.InputInt("Number of status effects displayed##nbStatusEffectsDisplayed", ref Config.NbStatusEffects, 1);
+            if (Config.NbStatusEffects < 0) Config.NbStatusEffects = 0;
+            if (Config.NbStatusEffects > 30) Config.NbStatusEffects = 30;
+
+            UpdateTargetStatus(true);
+        };
+
+        public override void Enable() {
+            PluginInterface.Framework.OnUpdateEvent += FrameworkOnUpdate;
+            base.Enable();
+        }
+
+        public override void Disable() {
+            PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdate;
+            UpdateTargetStatus(true);
+            base.Disable();
+        }
+
+        private void FrameworkOnUpdate(Framework framework) {
+            UpdateTargetStatus();
+        }
+
+        public void UpdateTargetStatus(bool reset = false) {
+            var targetInfoStatusUnitBase = Common.GetUnitBase("_TargetInfoBuffDebuff", 1);
+            if (targetInfoStatusUnitBase == null) return;
+            if (targetInfoStatusUnitBase->ULDData.NodeList == null || targetInfoStatusUnitBase->ULDData.NodeListCount < 32) return;
+
+            if (reset) {
+                for (var i = 31; i >= 2; i--) {
+                    targetInfoStatusUnitBase->ULDData.NodeList[i]->Color.A = 255;
+                }
+
+                return;
+            }
+
+            for (var i = 31 - Config.NbStatusEffects; i >= 2; i--) {
+                targetInfoStatusUnitBase->ULDData.NodeList[i]->Color.A = 0;
+            }
+        }
+    }
+}
