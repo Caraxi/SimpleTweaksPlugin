@@ -1,4 +1,6 @@
 ﻿using Dalamud.Hooking;
+using System.Numerics;
+using Dalamud.Game.ClientState;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks;
@@ -16,6 +18,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         public class Configs {
             public bool DisableRightClick = true;
             public bool DisableLeftClick;
+            public bool OnlyDisableInCombat;
         }
 
         public Configs Config => PluginConfig.DisableClickTargeting;
@@ -28,6 +31,9 @@ namespace SimpleTweaksPlugin.Tweaks {
                 ImGui.Text("It is doing nothing if both are disabled...");
             }
 
+            ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
+            hasChanged |= ImGui.Checkbox("Only disable in combat", ref Config.OnlyDisableInCombat);
+            
             if (hasChanged && Enabled) {
                 Disable();
                 Enable();
@@ -62,11 +68,17 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         private void* RightClickTargetDetour(void** a1, void* a2, bool a3) {
             if (a2 != null && a2 == a1[16]) return rightClickTargetHook.Original(a1, a2, a3);
+            if (Config.OnlyDisableInCombat && !PluginInterface.ClientState.Condition[ConditionFlag.InCombat]) {
+                return rightClickTargetHook.Original(a1, a2, a3);
+            }
             return null;
         }
         
         private void* LeftClickTargetDetour(void** a1, void* a2, bool a3) {
             if (a2 != null && a2 == a1[16]) return leftClickTargetHook.Original(a1, a2, a3);
+            if (Config.OnlyDisableInCombat && !PluginInterface.ClientState.Condition[ConditionFlag.InCombat]) {
+                return leftClickTargetHook.Original(a1, a2, a3);
+            }
             return null;
         }
     }
