@@ -63,10 +63,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private void WaitForUpdate(Framework framework) {
-            var unitBase = (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName("_NaviMap", 1);
-            if (unitBase == null) return;
-            Update();
-            framework.OnUpdateEvent -= WaitForUpdate;
+            try {
+                var unitBase = (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName("_NaviMap", 1);
+                if (unitBase == null) return;
+                Update();
+                framework.OnUpdateEvent -= WaitForUpdate;
+            } catch (Exception ex) {
+                SimpleLog.Error(ex);
+            }
         }
 
         public void Update() {

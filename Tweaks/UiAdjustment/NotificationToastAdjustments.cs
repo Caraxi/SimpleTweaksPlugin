@@ -110,7 +110,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private void FrameworkOnUpdate(Framework framework) {
-            UpdateNotificationToastText();
+            try {
+                UpdateNotificationToastText();
+            } catch (Exception ex) {
+                SimpleLog.Error(ex);
+            }
         }
 
         public void UpdateNotificationToastText(bool reset = false) {

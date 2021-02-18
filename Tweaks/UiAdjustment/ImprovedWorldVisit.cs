@@ -167,7 +167,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private void FrameworkOnOnUpdateEvent(Framework framework) {
-            CheckWindow();
+            try {
+                CheckWindow();
+            } catch (Exception ex) {
+                SimpleLog.Error(ex);
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using Dalamud.Game.Internal;
 using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -132,7 +133,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private void FrameworkOnUpdate(Framework framework) {
-            UpdateCastBar();
+            try {
+                UpdateCastBar();
+            } catch (Exception ex) {
+                SimpleLog.Error(ex);
+            }
         }
 
         public void UpdateCastBar(bool reset = false) {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Dalamud.Game.Internal;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
@@ -29,7 +30,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private void OnFrameworkUpdate(Framework framework) {
-            foreach (var w in windowsWithCommunityFinder) UpdateCommunityFinderButton(PluginInterface.Framework, w);
+            try {
+                foreach (var w in windowsWithCommunityFinder) UpdateCommunityFinderButton(PluginInterface.Framework, w);
+            } catch (Exception ex) {
+                SimpleLog.Error(ex);
+            }
         }
 
         private unsafe void UpdateCommunityFinderButton(Framework framework, string name, bool reset = false) {

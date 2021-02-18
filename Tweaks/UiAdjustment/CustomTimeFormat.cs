@@ -258,21 +258,28 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private unsafe void OnFrameworkUpdate(Framework framework) {
-            if (textNodePtr != null) {
-                if (textNodePtr->AtkResNode.AtkEventTarget.vtbl == textNodeVtablePtr) {
-                    UpdateTimeString(textNodePtr->NodeText);
-                } else {
-                    SimpleLog.Verbose("Lost Text Node");
-                    textNodePtr = null;
+            try {
+                if (textNodePtr != null) {
+                    if (textNodePtr->AtkResNode.AtkEventTarget.vtbl == textNodeVtablePtr) {
+                        UpdateTimeString(textNodePtr->NodeText);
+                    } else {
+                        SimpleLog.Verbose("Lost Text Node");
+                        textNodePtr = null;
+                    }
+
+                    return;
                 }
-                return;
+
+                var serverInfo = (AtkUnitBase*) framework.Gui.GetUiObjectByName("_DTR", 1);
+                if (serverInfo == null) return;
+                textNodePtr = (AtkTextNode*) UiAdjustments.GetResNodeByPath(serverInfo->RootNode, Child, Previous, Child);
+                if (textNodePtr == null) return;
+                SimpleLog.Verbose($"Found Text Node: {(ulong) textNodePtr:X}");
+                textNodeVtablePtr = textNodePtr->AtkResNode.AtkEventTarget.vtbl;
+            } catch (Exception ex) {
+                SimpleLog.Error(ex);
             }
-            var serverInfo = (AtkUnitBase*) framework.Gui.GetUiObjectByName("_DTR", 1);
-            if (serverInfo == null) return;
-            textNodePtr = (AtkTextNode*) UiAdjustments.GetResNodeByPath(serverInfo->RootNode, Child, Previous, Child);
-            if (textNodePtr == null) return;
-            SimpleLog.Verbose($"Found Text Node: {(ulong)textNodePtr:X}");
-            textNodeVtablePtr = textNodePtr->AtkResNode.AtkEventTarget.vtbl;
+            
         }
     }
 }

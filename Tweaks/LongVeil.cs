@@ -36,8 +36,12 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
         
         private bool FlagSlotUpdateDetour(IntPtr a1, uint a2, EquipData* a3) {
-            if (a2 == 0 && a3->Model == 208) a3->Model = 199; // Replace Short Veil with Long Veil
-            return flagSlotUpdateHook.Original(a1, a2, a3);
+            try {
+                if (a2 == 0 && a3->Model == 208) a3->Model = 199; // Replace Short Veil with Long Veil
+                return flagSlotUpdateHook.Original(a1, a2, a3);
+            } catch {
+                return flagSlotUpdateHook.Original(a1, a2, a3);
+            }
         }
     }
 }
