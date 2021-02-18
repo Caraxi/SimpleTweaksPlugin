@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Numerics;
 using Dalamud.Game.ClientState.Actors.Types;
 using Dalamud.Game.Internal;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -18,6 +19,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class TargetHP : UiAdjustments.SubTweak {
         public class Configs {
             public DisplayFormat DisplayFormat = DisplayFormat.OneDecimalPrecision;
+            public Vector2 Position = new Vector2(0);
         }
         
         public enum DisplayFormat {
@@ -42,6 +44,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 }
                 ImGui.EndCombo();
             }
+
+            ImGui.SetNextItemWidth(150);
+            hasChanged |= ImGui.InputFloat("X Offset##AdjustTargetHPPositionX", ref Config.Position.X, 1, 5, "%.0f");
+            ImGui.SetNextItemWidth(150);
+            hasChanged |= ImGui.InputFloat("Y Offset##AdjustTargetHPPositionY", ref Config.Position.Y, 1, 5, "%0.f");
         };
         
         public override string Name => "Target HP";
@@ -153,7 +160,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             textNode->AlignmentFontType = (byte)AlignmentType.BottomRight;
             
-            UiHelper.SetPosition(textNode, 0, 0);
+            UiHelper.SetPosition(textNode, Config.Position.X, Config.Position.Y);
             UiHelper.SetSize(textNode, gauge->AtkResNode.Width - 5, gauge->AtkResNode.Height);
             UiHelper.Show(textNode);
 
