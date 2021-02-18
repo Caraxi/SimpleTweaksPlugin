@@ -100,11 +100,16 @@ namespace SimpleTweaksPlugin.Debugging {
                     continue;
                 }
                 
+                var adjustedId = slot->CommandType == HotbarSlotType.Action ? SimpleTweaksPlugin.Client.ActionManager.GetAdjustedActionId((int)slot->CommandId) : slot->CommandId;
+
                 DebugManager.ClickToCopyText($"{i+1:00}", $"{(ulong)slot:X}");
                 
                 ImGui.NextColumn();
                 
                 ImGui.Text($"{slot->CommandType} : {slot->CommandId}");
+                if (slot->CommandType == HotbarSlotType.Action) {
+                    ImGui.Text($"Adjusted: {adjustedId}");
+                }
                 ImGui.NextColumn();
 
                 var iconGood = false;
@@ -209,7 +214,7 @@ namespace SimpleTweaksPlugin.Debugging {
                 
                 switch (slot->CommandType) {
                     case HotbarSlotType.Action: {
-                        var action = Plugin.PluginInterface.Data.Excel.GetSheet<Action>().GetRow(slot->CommandId);
+                        var action = Plugin.PluginInterface.Data.Excel.GetSheet<Action>().GetRow((uint)adjustedId);
                         if (action == null) {
                             ImGui.TextDisabled("Not Found");
                             break;

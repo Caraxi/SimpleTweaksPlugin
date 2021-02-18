@@ -118,7 +118,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (reset == false && (cooldownTextNode->AtkResNode.Flags & 0x10) != 0x10) return;
             if (cooldownTextNode == null) return;
             if (slotStruct != null && slotStruct->CommandType == HotbarSlotType.Action) {
-                var recastGroup = (int) SimpleTweaksPlugin.Client.ActionManager.GetRecastGroup((byte)slotStruct->CommandType, slotStruct->CommandId) + 1;
+                var adjustedActionId = SimpleTweaksPlugin.Client.ActionManager.GetAdjustedActionId(slotStruct->CommandId);
+                var recastGroup = (int) SimpleTweaksPlugin.Client.ActionManager.GetRecastGroup((byte)slotStruct->CommandType, adjustedActionId) + 1;
                 if (recastGroup == 0 || recastGroup == 58) {
                     reset = true;
                 } else {

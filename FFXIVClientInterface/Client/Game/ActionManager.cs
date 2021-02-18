@@ -12,11 +12,13 @@ namespace FFXIVClientInterface.Client.Game {
 
             public IntPtr GetRecastGroup;
             public IntPtr GetGroupTimer;
+            public IntPtr GetAdjustedActionId;
             
             protected override void Setup64Bit(SigScanner sig) {
                 BaseAddress = sig.GetStaticAddressFromSig("E8 ?? ?? ?? ?? 33 C0 E9 ?? ?? ?? ?? 8B 7D 0C");
                 GetRecastGroup = sig.ScanText("E8 ?? ?? ?? ?? 8B D0 48 8B CD 8B F0");
                 GetGroupTimer = sig.ScanText("E8 ?? ?? ?? ?? 0F 57 FF 48 85 C0");
+                GetAdjustedActionId = sig.ScanText("E8 ?? ?? ?? ?? 8B F8 3B DF");
             }
         }
         
@@ -25,6 +27,7 @@ namespace FFXIVClientInterface.Client.Game {
 
             getRecastGroup = Marshal.GetDelegateForFunctionPointer<GetRecastGroupDelegate>(address.GetRecastGroup);
             getGroupTimer = Marshal.GetDelegateForFunctionPointer<GetGroupTimerDelegate>(address.GetGroupTimer);
+            getAdjustedActionId = Marshal.GetDelegateForFunctionPointer<GetAdjustedActionIdDelegate>(address.GetAdjustedActionId);
         }
         
         
@@ -32,9 +35,12 @@ namespace FFXIVClientInterface.Client.Game {
         private delegate RecastTimer* GetGroupTimerDelegate(void* @this, int cooldownGroup);
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate ulong GetRecastGroupDelegate(void* @this, int a2, uint a3);
+        [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+        private delegate ulong GetAdjustedActionIdDelegate(void* @this, int a2);
         
         private readonly GetGroupTimerDelegate getGroupTimer;
         private readonly GetRecastGroupDelegate getRecastGroup;
+        private readonly GetAdjustedActionIdDelegate getAdjustedActionId;
 
         public RecastTimer* GetGroupRecastTime(int group) {
             return group < 1 ? null : getGroupTimer(this, group - 1);
@@ -44,6 +50,11 @@ namespace FFXIVClientInterface.Client.Game {
             return getRecastGroup(this, type, id);
         }
         
+        public uint GetAdjustedActionId(int action) {
+            return (uint)getAdjustedActionId(this, action);
+        }
+
+        public uint GetAdjustedActionId(uint action) => GetAdjustedActionId((int) action);
 
         public static implicit operator ActionManagerStruct*(ActionManager module) => module.Data;
         public static explicit operator ulong(ActionManager module) => (ulong) module.Data;
