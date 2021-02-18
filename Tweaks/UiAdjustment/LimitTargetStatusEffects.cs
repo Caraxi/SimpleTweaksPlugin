@@ -2,6 +2,7 @@
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+using System;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
@@ -41,7 +42,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private void FrameworkOnUpdate(Framework framework) {
-            UpdateTargetStatus();
+            try {
+                UpdateTargetStatus();
+            } catch (Exception ex) {
+                SimpleLog.Error(ex);
+            }
         }
 
         public void UpdateTargetStatus(bool reset = false) {
@@ -65,14 +70,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 return;
             }
 
-            if (targetInfoUnitBase->IsVisible) {
-                for (int i = 32 - Config.NbStatusEffects; i >= 3; i--) {
-                    targetInfoUnitBase->ULDData.NodeList[i]->Color.A = 0;
-                }
-            } else if (targetInfoStatusUnitBase->IsVisible) {
-                for (int i = 31 - Config.NbStatusEffects; i >= 2; i--) {
-                    targetInfoStatusUnitBase->ULDData.NodeList[i]->Color.A = 0;
-                }
+            for (int i = 32 - Config.NbStatusEffects; i >= 3; i--) {
+                targetInfoUnitBase->ULDData.NodeList[i]->Color.A = 0;
+            }
+
+            for (int i = 31 - Config.NbStatusEffects; i >= 2; i--) {
+                targetInfoStatusUnitBase->ULDData.NodeList[i]->Color.A = 0;
             }
         }
     }
