@@ -36,7 +36,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Name => "Extended Desynthesis Window";
 
         private const ushort OriginalWidth = 600;
-        private const ushort AddedWidth = 100;
+        private const ushort AddedWidth = 110;
         private const ushort NewWidth = OriginalWidth + AddedWidth;
 
         private delegate IntPtr UpdateItemDelegate(IntPtr a1, ulong index, IntPtr a3, ulong a4);
@@ -191,9 +191,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 
                 var gsHeaderItem = (AtkTextNode*)UiHelper.CloneNode(nodeList[6]);
                 gsHeaderItem->NodeText.StringPtr = (byte*)UiHelper.Alloc((ulong)gsHeaderItem->NodeText.BufSize);
-                UiHelper.SetText(gsHeaderItem, "GS");
+                UiHelper.SetText(gsHeaderItem, "Gear\nSet");
+                gsHeaderItem->TextFlags |= (byte) TextFlags.MultiLine;
                 gsHeaderItem->AtkResNode.X = NewWidth - 80;
-                gsHeaderItem->AlignmentFontType = (byte) AlignmentType.Right;
+                gsHeaderItem->AlignmentFontType = (byte) AlignmentType.Bottom;
                 gsHeaderItem->AtkResNode.Width = 30;
                 gsHeaderItem->AtkResNode.ParentNode = nodeList[5];
                 gsHeaderItem->AtkResNode.NextSiblingNode = (AtkResNode*) newHeaderItem;
@@ -229,7 +230,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     gearsetWarning->AtkResNode.Width = 30;
                     gearsetWarning->AtkResNode.ParentNode = (AtkResNode*)listItem;
                     gearsetWarning->AtkResNode.NextSiblingNode = (AtkResNode*) newRowItem;
-                    gearsetWarning->AlignmentFontType = (byte)AlignmentType.Right;
+                    gearsetWarning->AlignmentFontType = (byte)AlignmentType.Center;
                     newRowItem->AtkResNode.PrevSiblingNode = (AtkResNode*) gearsetWarning;
                     listItem->Component->ULDData.NodeList[listItem->Component->ULDData.NodeListCount++] = (AtkResNode*)gearsetWarning;
                     
