@@ -1,0 +1,68 @@
+﻿using System.Runtime.InteropServices;
+using Dalamud.Game.Internal;
+using ImGuiNET;
+using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.Tweaks;
+using SimpleTweaksPlugin.TweakSystem;
+
+namespace SimpleTweaksPlugin {
+    public partial class SimpleTweaksPluginConfig {
+        public FixedShadowDistance.Configs FixedShadowDistance = new();
+    }
+}
+
+namespace SimpleTweaksPlugin.Tweaks {
+    public unsafe class FixedShadowDistance : Tweak {
+        public override string Name => "Fixed Shadow Distance";
+
+        public class Configs {
+            public float ShadowDistance = 1800;
+        }
+        
+        [StructLayout(LayoutKind.Explicit, Size = 0x3E0)]
+        public struct ShadowManager {
+            [FieldOffset(0x2C)] public float BaseShadowDistance;
+            [FieldOffset(0x30)] public float ShadowDistance;
+            [FieldOffset(0x34)] public float ChangeRate;
+            [FieldOffset(0x38)] public float FlyingModifier;
+        }
+
+        private ShadowManager* shadowManager;
+        
+        public Configs Config => PluginConfig.FixedShadowDistance;
+
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+            hasChanged |= ImGui.SliderFloat("Shadow Distance", ref Config.ShadowDistance, 0, 1800, "%.0f");
+        };
+
+        public override void Setup() {
+            shadowManager = *(ShadowManager**)Common.Scanner.GetStaticAddressFromSig("89 50 28 48 8B 05 ?? ?? ?? ?? 8B 89 ?? ?? ?? ?? 89 48 2C C3 8B 4A 10");
+            if (shadowManager != null) base.Setup();
+        }
+
+        public override void Enable() {
+            if (shadowManager == null) return;
+            PluginInterface.Framework.OnUpdateEvent += SetupShadows;
+            base.Enable();
+        }
+
+        private void SetupShadows(Framework framework) {
+            if (shadowManager == null) return;
+            if (shadowManager->FlyingModifier != 1) shadowManager->FlyingModifier = 1;
+            if (shadowManager->BaseShadowDistance != Config.ShadowDistance) {
+                shadowManager->BaseShadowDistance = Config.ShadowDistance;
+                shadowManager->ShadowDistance = Config.ShadowDistance;
+            }
+        }
+        
+        public override void Disable() {
+            if (shadowManager != null) {
+                shadowManager->FlyingModifier = 8;
+                shadowManager->BaseShadowDistance = 225;
+            }
+            PluginInterface.Framework.OnUpdateEvent -= SetupShadows;
+            base.Disable();
+        }
+    }
+}
+
