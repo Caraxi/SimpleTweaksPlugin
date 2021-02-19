@@ -129,9 +129,6 @@ namespace SimpleTweaksPlugin {
                     t.DrawConfig(ref changed);
                     ImGui.Separator();
                 }
-                
-                
-                
             } else {
                 var flags = settingTab ? ImGuiTabBarFlags.AutoSelectNewTabs : ImGuiTabBarFlags.None;
                 if (ImGui.BeginTabBar("tweakCategoryTabBar", flags)) {
