@@ -1,7 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Dalamud.Game.Internal;
 using ImGuiNET;
-using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks;
 using SimpleTweaksPlugin.TweakSystem;
