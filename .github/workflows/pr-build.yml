@@ -1,10 +1,8 @@
-name: Build SimpleTweaksPlugin
+name: Build SimpleTweaksPlugin for PullRequest
 on:
-  push:
-    branches: 'main'
+  pull_request:
 jobs:
   build:
-    if: "! contains(toJSON(github.event.commits.*.message), '[skip-ci]')"
     runs-on: [windows-latest]
 
     steps:
@@ -36,4 +34,5 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v2.2.1
         with:
+          name: pr-artifact
           path: ./Artifact/*
