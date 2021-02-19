@@ -100,6 +100,8 @@ namespace SimpleTweaksPlugin {
                     }
                 }
 
+                ImGui.BeginChild("search_scroll", new Vector2(-1));
+                
                 foreach (var t in searchResults) {
                     var enabled = t.Enabled;
                     if (t.Experimental && !ShowExperimentalTweaks && !enabled) continue;
@@ -129,6 +131,8 @@ namespace SimpleTweaksPlugin {
                     t.DrawConfig(ref changed);
                     ImGui.Separator();
                 }
+                
+                ImGui.EndChild();
             } else {
                 var flags = settingTab ? ImGuiTabBarFlags.AutoSelectNewTabs : ImGuiTabBarFlags.None;
                 if (ImGui.BeginTabBar("tweakCategoryTabBar", flags)) {
