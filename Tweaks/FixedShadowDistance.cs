@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Dalamud.Game.Internal;
 using ImGuiNET;
+using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks;
 using SimpleTweaksPlugin.TweakSystem;
@@ -24,7 +25,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         public struct ShadowManager {
             [FieldOffset(0x2C)] public float BaseShadowDistance;
             [FieldOffset(0x30)] public float ShadowDistance;
-            [FieldOffset(0x34)] public float ChangeRate;
+            [FieldOffset(0x34)] public float ShitnessModifier;
             [FieldOffset(0x38)] public float FlyingModifier;
         }
 
@@ -49,7 +50,8 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         private void SetupShadows(Framework framework) {
             if (shadowManager == null) return;
-            if (shadowManager->FlyingModifier != 1) shadowManager->FlyingModifier = 1;
+            if (shadowManager->FlyingModifier > 1) shadowManager->FlyingModifier = 1;
+            if (shadowManager->ShitnessModifier > 0.075f) shadowManager->ShitnessModifier = 0.075f;
             if (shadowManager->BaseShadowDistance != Config.ShadowDistance) {
                 shadowManager->BaseShadowDistance = Config.ShadowDistance;
                 shadowManager->ShadowDistance = Config.ShadowDistance;
@@ -60,6 +62,7 @@ namespace SimpleTweaksPlugin.Tweaks {
             if (shadowManager != null) {
                 shadowManager->FlyingModifier = 8;
                 shadowManager->BaseShadowDistance = 225;
+                shadowManager->ShitnessModifier = 0.5f;
             }
             PluginInterface.Framework.OnUpdateEvent -= SetupShadows;
             base.Disable();
