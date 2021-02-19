@@ -20,6 +20,7 @@ namespace SimpleTweaksPlugin {
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class NotificationToastAdjustments : UiAdjustments.SubTweak {
         public override string Name => "Notification Toast Adjustments";
+        public override string Description => "Allow moving or hiding the notifications that appear in the middle of the screen at various times.";
         protected override string Author => "Aireil";
 
         public class Configs {

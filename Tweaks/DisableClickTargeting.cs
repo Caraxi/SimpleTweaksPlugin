@@ -41,6 +41,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         };
 
         public override string Name => "Disable Click Targeting";
+        public override string Description => "Allows disabling of the target function on left and right mouse clicks.";
 
         private delegate void* ClickTarget(void** a1, void* a2, bool a3);
         private Hook<ClickTarget> rightClickTargetHook;

@@ -6,6 +6,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public class RemoveCommunityFinder : UiAdjustments.SubTweak {
         public override string Name => "Remove Community Finder";
+        public override string Description => "Hide the community finder buttons from social windows.";
 
         private List<string> windowsWithCommunityFinder = new List<string>() {
             "Social",

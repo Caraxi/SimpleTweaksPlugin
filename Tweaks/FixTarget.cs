@@ -9,6 +9,7 @@ using SimpleTweaksPlugin.TweakSystem;
 namespace SimpleTweaksPlugin.Tweaks {
     public class FixTarget : Tweak {
         public override string Name => "Fix '/target' command";
+        public override string Description => "Allows using the default '/target' command for targeting players or NPCs by their names.";
 
         private Regex regex;
         

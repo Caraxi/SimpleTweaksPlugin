@@ -17,6 +17,7 @@ namespace SimpleTweaksPlugin {
 namespace SimpleTweaksPlugin.Tweaks.Tooltips {
     public class DesynthesisSkill : TooltipTweaks.SubTweak {
         public override string Name => "Show Desynthesis Skill";
+        public override string Description => "Shows your current desynthesis level when viewing a desynthesizable item.";
 
         private readonly uint[] desynthesisInDescription = { 46, 56, 65, 66, 67, 68, 69, 70, 71, 72 };
 

@@ -180,6 +180,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         };
 
         public override string Name => "Custom Time Formats";
+        public override string Description => "Allows setting custom time formats for the in game clock. Uses C# formatting strings.";
 
         public unsafe delegate void SetText(AtkTextNode* self, byte* strPtr);
         private Hook<SetText> setTextHook;

@@ -135,6 +135,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         #endregion
 
         public override string Name => "Command Alias";
+        public override string Description => "Allows replacing commands typed into chat box with other commands.";
 
         private IntPtr processChatInputAddress;
         private unsafe delegate byte ProcessChatInputDelegate(IntPtr uiModule, byte** a2, IntPtr a3);

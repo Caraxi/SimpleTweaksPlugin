@@ -13,6 +13,7 @@ namespace SimpleTweaksPlugin.Tweaks {
     public class SetOptionCommand : Tweak {
 
         public override string Name => "Set Option Command";
+        public override string Description => "Adds commands to change various settings.";
 
         private IntPtr setOptionAddress = IntPtr.Zero;
 

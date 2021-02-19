@@ -15,6 +15,7 @@ namespace SimpleTweaksPlugin {
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public class PrecisionSpiritbond : SubTweak {
         public override string Name => "Precise Spiritbond";
+        public override string Description => "Show partial percentages for Spiritbond.";
 
         public override void OnItemTooltip(ItemTooltip tooltip, InventoryItem itemInfo) {
             var c = tooltip[SpiritbondPercent];

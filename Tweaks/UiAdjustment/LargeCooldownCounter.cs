@@ -20,6 +20,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
         
         public override string Name => "Large Cooldown Counter";
+        public override string Description => "Increases the size of cooldown counters on hotbars.";
 
         public override void Enable() {
             PluginInterface.Framework.OnUpdateEvent += FrameworkUpdate;

@@ -13,6 +13,7 @@ namespace SimpleTweaksPlugin {
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class LimitTargetStatusEffects : UiAdjustments.SubTweak {
         public override string Name => "Limit Target Status Effects";
+        public override string Description => "Sets a limit on the number of status effects displayed on your target.";
         protected override string Author => "Aireil";
 
         public class Configs {

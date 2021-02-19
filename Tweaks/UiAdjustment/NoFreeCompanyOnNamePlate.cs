@@ -9,6 +9,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private delegate IntPtr PlayerNamePlateSetText(byte* a1, byte a2, byte a3, byte* a4, byte* a5, byte* a6, uint a7);
 
         public override string Name => "Hide FC Name on Name Plate";
+        public override string Description => "Hides the free company tags (and wanderer tag) from player nameplates.";
 
         public override void Setup() {
             try {

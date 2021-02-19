@@ -52,6 +52,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         };
         
         public override string Name => "Target HP";
+        public override string Description => "Displays the exact (or optionally rounded) value of target's hitpoints.";
 
         public override void Enable() {
             PluginInterface.Framework.OnUpdateEvent += FrameworkUpdate;

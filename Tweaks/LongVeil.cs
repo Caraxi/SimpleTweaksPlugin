@@ -16,6 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         private Hook<FlagSlotUpdateDelegate> flagSlotUpdateHook;
         
         public override string Name => "Long Veil";
+        public override string Description => "Replaces the wedding veils with their long variants that are usually only shown in the sanctum of the twelve.";
 
         public override void Enable() {
             flagSlotUpdateHook ??= new Hook<FlagSlotUpdateDelegate>(

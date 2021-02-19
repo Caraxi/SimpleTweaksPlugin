@@ -38,6 +38,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private readonly uint[] ignoreCategory = { 105 };
 
         public override string Name => "Item Level in Examine";
+        public override string Description => "Calculates the item level of other players when examining them.\nRed value means the player is wearing an item that scales to their level and it is showing the max level.";
 
         private IntPtr examineIsValidPtr = IntPtr.Zero;
 

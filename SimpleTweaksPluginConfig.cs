@@ -25,6 +25,8 @@ namespace SimpleTweaksPlugin {
         public bool HideKofi;
         public bool ShowExperimentalTweaks;
 
+        public bool ShowTweakDescriptions = true;
+
         public void Init(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface) {
             this.plugin = plugin;
             this.pluginInterface = pluginInterface;
@@ -66,7 +68,21 @@ namespace SimpleTweaksPlugin {
                 Save();
             }
             ImGui.SameLine();
-            t.DrawConfig(ref hasChange);
+            var descriptionX = ImGui.GetCursorPosX();
+            if (!t.DrawConfig(ref hasChange)) {
+                if (ShowTweakDescriptions && !string.IsNullOrEmpty(t.Description)) {
+                    ImGui.SetCursorPosX(descriptionX);
+                    ImGui.PushStyleColor(ImGuiCol.HeaderHovered, 0x0);
+                    ImGui.PushStyleColor(ImGuiCol.HeaderActive, 0x0);
+                    ImGui.TreeNodeEx(" ", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen);
+                    ImGui.PopStyleColor();
+                    ImGui.PopStyleColor();
+                    ImGui.SameLine();
+                    ImGui.PushStyleColor(ImGuiCol.Text, 0xFF888888);
+                    ImGui.TextWrapped($"{t.Description}");
+                    ImGui.PopStyleColor();
+                }
+            }
             ImGui.Separator();
         }
         
@@ -77,37 +93,35 @@ namespace SimpleTweaksPlugin {
             var windowFlags = ImGuiWindowFlags.NoCollapse;
             ImGui.SetNextWindowSizeConstraints(new Vector2(600 * scale, 200 * scale), new Vector2(800 * scale, 800 * scale));
             ImGui.Begin($"{plugin.Name} Config", ref drawConfig, windowFlags);
+            
+            var showbutton = plugin.ErrorList.Count != 0 || !HideKofi;
+            var buttonText = plugin.ErrorList.Count > 0 ? $"{plugin.ErrorList.Count} Errors Detected" : "Support on Ko-fi";
+            var buttonColor = (uint) (plugin.ErrorList.Count > 0 ? 0x000000FF : 0x005E5BFF);
+            
+            if (showbutton) {
+                ImGui.SetNextItemWidth(-(ImGui.CalcTextSize(buttonText).X + ImGui.GetStyle().FramePadding.X * 2 + ImGui.GetStyle().ItemSpacing.X));
+            } else {
+                ImGui.SetNextItemWidth(-1);
+            }
+            
+            ImGui.InputTextWithHint("###tweakSearchInput", "Search...", ref searchInput, 100);
 
-            if (plugin.ErrorList.Count != 0) {
-                ImGui.PushStyleColor(ImGuiCol.Button, 0x990000FF);
-                ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0x880000FF);
-                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA0000FF);
-                var c = ImGui.GetCursorPos();
-                var buttonText = $"{plugin.ErrorList.Count} Errors Detected";
-                ImGui.SetCursorPosX(ImGui.GetWindowContentRegionWidth() - ImGui.CalcTextSize(buttonText).X);
-                if (ImGui.Button(buttonText)) {
-                    plugin.ShowErrorWindow = true;
+            if (showbutton) {
+                ImGui.SameLine();
+                ImGui.PushStyleColor(ImGuiCol.Button, 0xFF000000 | buttonColor);
+                ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xDD000000 | buttonColor);
+                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | buttonColor);
+
+                if (ImGui.Button(buttonText, new Vector2(-1, ImGui.GetItemRectSize().Y))) {
+                    if (plugin.ErrorList.Count == 0) {
+                        Process.Start("https://ko-fi.com/Caraxi");
+                    } else {
+                        plugin.ShowErrorWindow = true;
+                    }
                 }
-                ImGui.SetCursorPos(c);
-                ImGui.PopStyleColor(3);
-            } else if (!HideKofi) {
-                ImGui.PushStyleColor(ImGuiCol.Button, 0xFF5E5BFF);
-                ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xFF5E5BAA);
-                ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xFF5E5BDD);
-                var c = ImGui.GetCursorPos();
-                ImGui.SetCursorPosX(ImGui.GetWindowContentRegionWidth() - ImGui.CalcTextSize("Support on Ko-fi").X);
-                if (ImGui.SmallButton("Support on Ko-fi")) {
-                    Process.Start("https://ko-fi.com/Caraxi");
-                }
-                ImGui.SetCursorPos(c);
                 ImGui.PopStyleColor(3);
             }
-
-            ImGui.Text("Enable or disable any tweaks here.\nAll tweaks are disabled by default.");
             
-            ImGui.Separator();
-            ImGui.SetNextItemWidth(-1);
-            ImGui.InputTextWithHint("###tweakSearchInput", "Search...", ref searchInput, 100);
             ImGui.Separator();
 
             if (!string.IsNullOrEmpty(searchInput)) {
@@ -215,10 +229,12 @@ namespace SimpleTweaksPlugin {
 
                     if (ImGui.BeginTabItem("General Options")) {
                         ImGui.BeginChild($"generalOptions-scroll", new Vector2(-1, -1));
-                        ImGui.BeginGroup();
                         if (ImGui.Checkbox("Show Experimental Tweaks.", ref ShowExperimentalTweaks)) Save();
+                        ImGui.Separator();
+                        if (ImGui.Checkbox("Show tweak descriptions.", ref ShowTweakDescriptions)) Save();
+                        ImGui.Separator();
                         if (ImGui.Checkbox("Hide Ko-fi link.", ref HideKofi)) Save();
-                        ImGui.EndGroup();
+                        ImGui.Separator();
                         ImGui.EndChild();
                         ImGui.EndTabItem();
                     }

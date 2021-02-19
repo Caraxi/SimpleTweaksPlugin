@@ -19,6 +19,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
     
     public class MateriaStats : TooltipTweaks.SubTweak {
         public override string Name => "Materia Stats";
+        public override string Description => "Includes an item's attached materia when displaying the stats.";
         
         public class Configs {
             public bool Total = true;

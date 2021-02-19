@@ -16,6 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     
     public class PrecisionDurability : TooltipTweaks.SubTweak {
         public override string Name => "Precise Durability";
+        public override string Description => "Show partial percentages for durability.";
 
         public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
             var c = tooltip[DurabilityPercent];

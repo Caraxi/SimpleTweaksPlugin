@@ -16,6 +16,7 @@ namespace SimpleTweaksPlugin {
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
         public override string Name => "Cast Bar Adjustments";
+        public override string Description => "Allows hiding or moving specific parts of the castbar.";
         public enum Alignment : byte {
             Left = 3,
             Center = 4,

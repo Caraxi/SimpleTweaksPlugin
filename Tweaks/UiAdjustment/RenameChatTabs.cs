@@ -26,6 +26,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public override string Name => "Rename Chat Tabs";
+        public override string Description => "Allows renaming the General and Battle tabs in the chat window.";
 
         private Task renameTask;
         private CancellationTokenSource cancellationToken;

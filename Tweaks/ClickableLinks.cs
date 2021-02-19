@@ -10,6 +10,7 @@ using SimpleTweaksPlugin.TweakSystem;
 namespace SimpleTweaksPlugin.Tweaks {
     class ClickableLinks : Tweak {
         public override string Name => "Clickable Links in Chat";
+        public override string Description => "Parses links posted in chat and allows them to be clicked.";
 
         public override void Enable() {
             urlLinkPayload = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.OpenUrlLink, UrlLinkHandle);

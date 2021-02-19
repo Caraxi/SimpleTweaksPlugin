@@ -24,6 +24,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public override string Name => "Reposition Target Castbar Text";
+        public override string Description => "Moves the text on target castbars to make it easier to read";
         
         private readonly Vector2 buttonSize = new Vector2(26, 22);
 

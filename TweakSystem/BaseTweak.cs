@@ -14,6 +14,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
         public virtual string Key => GetType().Name;
 
         public abstract string Name { get; }
+        public virtual string Description => null;
         protected virtual string Author => null;
         public virtual bool Experimental => false;
 
@@ -37,10 +38,12 @@ namespace SimpleTweaksPlugin.TweakSystem {
             }
         }
         
-        public void DrawConfig(ref bool hasChanged) {
+        public bool DrawConfig(ref bool hasChanged) {
+            var configTreeOpen = false;
             if (DrawConfigTree != null && Enabled) {
                 var x = ImGui.GetCursorPosX();
                 if (ImGui.TreeNode($"{Name}##treeConfig_{GetType().Name}")) {
+                    configTreeOpen = true;
                     DrawCommon();
                     ImGui.SetCursorPosX(x);
                     ImGui.BeginGroup();
@@ -58,6 +61,8 @@ namespace SimpleTweaksPlugin.TweakSystem {
                 ImGui.PopStyleColor();
                 DrawCommon();
             }
+
+            return configTreeOpen;
         }
 
         protected delegate void DrawConfigDelegate(ref bool hasChanged);

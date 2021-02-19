@@ -41,6 +41,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         private readonly string weirdTabChar = Encoding.UTF8.GetString(new byte[] {0xE3, 0x80, 0x80});
 
         public override string Name => "Item Hotkeys";
+        public override string Description => "Adds hotkeys for various actions when the item detail window is visible.";
         public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
             if (Config.HideHotkeysOnTooltip) return;
             var seStr = tooltip[TooltipTweaks.ItemTooltip.TooltipField.ControlsDisplay];

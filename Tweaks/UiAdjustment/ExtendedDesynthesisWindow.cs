@@ -34,6 +34,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         };
 
         public override string Name => "Extended Desynthesis Window";
+        public override string Description => "Shows your current desynthesis level and the item's optimal level on the desynthesis item selection window.\nAlso indicates if an item is part of a gear set, optionally preventing selection of gearset items.";
 
         private const ushort OriginalWidth = 600;
         private const ushort AddedWidth = 110;

@@ -43,6 +43,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         };
 
         public override string Name => "Minimap Adjustments";
+        public override string Description => "Allows hiding elements of the minimap display.";
 
         public override void Enable() {
             PluginInterface.ClientState.OnLogin += OnLogin;

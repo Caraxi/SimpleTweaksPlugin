@@ -16,6 +16,7 @@ namespace SimpleTweaksPlugin {
 namespace SimpleTweaksPlugin.Tweaks.Tooltips {
     public class FoodStats : TooltipTweaks.SubTweak {
         public override string Name => "Show expected food and potion stats";
+        public override string Description => "Calculates the stat results a consumable will have based on your current stats.";
 
         private IntPtr playerStaticAddress;
         private IntPtr getBaseParamAddress;
