@@ -98,6 +98,8 @@ namespace SimpleTweaksPlugin {
                             searchResults.Add(t);
                         }
                     }
+                    
+                    searchResults = searchResults.OrderBy(t => t.Name).ToList();
                 }
 
                 ImGui.BeginChild("search_scroll", new Vector2(-1));
