@@ -122,6 +122,7 @@ namespace SimpleTweaksPlugin {
                 ImGui.PopStyleColor(3);
             }
             
+            ImGui.Dummy(new Vector2(1, ImGui.GetStyle().WindowPadding.Y - ImGui.GetStyle().ItemSpacing.Y * 2));
             ImGui.Separator();
 
             if (!string.IsNullOrEmpty(searchInput)) {
