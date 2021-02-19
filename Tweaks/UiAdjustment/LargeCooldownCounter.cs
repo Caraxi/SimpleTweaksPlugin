@@ -44,6 +44,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public class Configs {
             public Font Font = Font.Default;
             public int FontSizeAdjust;
+            public bool SimpleMode;
         }
 
         public Configs Config => PluginConfig.UiAdjustments.LargeCooldownCounter;
@@ -68,7 +69,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
             ImGui.SetNextItemWidth(160 * ImGui.GetIO().FontGlobalScale);
             hasChanged |= ImGui.SliderInt("Font Size Adjust##st_uiAdjustment_largEcooldownCounter_fontSize", ref Config.FontSizeAdjust, -15, 30);
-            
+            hasChanged |= ImGui.Checkbox("Simple Mode##st_uiAdjustment_largeCooldownCounter_simpleMode", ref Config.SimpleMode);
+            if (ImGui.IsItemHovered()) {
+                ImGui.BeginTooltip();
+                ImGui.Text("Simple Mode");
+                ImGui.Separator();
+                ImGui.Text("Reverts to old cooldown checking.");
+                ImGui.Text("Fixes issues with XIVCombo.");
+                ImGui.Text("Has some issues when out of range.");
+                ImGui.EndTooltip();
+            }
         };
 
         private void FrameworkUpdate(Framework framework) {
@@ -117,7 +127,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (cooldownTextNode->AtkResNode.Type != NodeType.Text) return;
             if (reset == false && (cooldownTextNode->AtkResNode.Flags & 0x10) != 0x10) return;
             if (cooldownTextNode == null) return;
-            if (slotStruct != null && slotStruct->CommandType == HotbarSlotType.Action) {
+            if (!Config.SimpleMode && slotStruct != null && slotStruct->CommandType == HotbarSlotType.Action) {
                 var adjustedActionId = SimpleTweaksPlugin.Client.ActionManager.GetAdjustedActionId(slotStruct->CommandId);
                 var recastGroup = (int) SimpleTweaksPlugin.Client.ActionManager.GetRecastGroup((byte)slotStruct->CommandType, adjustedActionId) + 1;
                 if (recastGroup == 0 || recastGroup == 58) {
