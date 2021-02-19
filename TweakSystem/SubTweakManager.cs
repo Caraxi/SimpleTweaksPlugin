@@ -9,6 +9,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
 
     public abstract class SubTweakManager : Tweak {
         public abstract List<BaseTweak> GetTweakList();
+        public virtual bool AlwaysEnabled => false;
     } 
 
     public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {

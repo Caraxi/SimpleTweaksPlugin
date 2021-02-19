@@ -22,6 +22,7 @@ namespace SimpleTweaksPlugin {
 
 namespace SimpleTweaksPlugin.Tweaks {
     public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
+        public override bool AlwaysEnabled => true;
 
         public class ItemTooltip : IDisposable {
 

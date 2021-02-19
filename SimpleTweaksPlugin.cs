@@ -40,7 +40,7 @@ namespace SimpleTweaksPlugin {
             RemoveCommands();
 
             foreach (var t in Tweaks) {
-                if (t.Enabled) {
+                if (t.Enabled || t is SubTweakManager { AlwaysEnabled : true}) {
                     SimpleLog.Log($"Disable: {t.Name}");
                     t.Disable();
                 }
@@ -95,7 +95,7 @@ namespace SimpleTweaksPlugin {
                     tweak.InterfaceSetup(this, pluginInterface, PluginConfig);
                     if (tweak.CanLoad) {
                         tweak.Setup();
-                        if (tweak.Ready && PluginConfig.EnabledTweaks.Contains(t.Name)) {
+                        if (tweak.Ready && (PluginConfig.EnabledTweaks.Contains(t.Name) || tweak is SubTweakManager {AlwaysEnabled: true})) {
                             SimpleLog.Debug($"Enable: {t.Name}");
                             try {
                                 tweak.Enable();

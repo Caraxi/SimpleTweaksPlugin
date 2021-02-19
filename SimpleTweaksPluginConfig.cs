@@ -138,6 +138,7 @@ namespace SimpleTweaksPlugin {
                         if (ImGui.BeginTabItem("General Tweaks")) {
                             ImGui.BeginChild("generalTweaks", new Vector2(-1, -1), false);
                             foreach (var t in plugin.Tweaks.Where(t => t is SubTweakManager).Cast<SubTweakManager>()) {
+                                if (t.AlwaysEnabled) continue;
                                 var enabled = t.Enabled;
                                 if (t.Experimental && !ShowExperimentalTweaks && !enabled) continue;
                                 if (ImGui.Checkbox($"###{t.GetType().Name}enabledCheckbox", ref enabled)) {
@@ -207,7 +208,7 @@ namespace SimpleTweaksPlugin {
                         }
                     }
                     
-                    foreach (var stm in plugin.Tweaks.Where(t => t is SubTweakManager && t.Enabled)) {
+                    foreach (var stm in plugin.Tweaks.Where(t => t is SubTweakManager stm && (t.Enabled || stm.AlwaysEnabled))) {
                         if (settingTab == false && setTab == stm) {
                             settingTab = true;
                             continue;

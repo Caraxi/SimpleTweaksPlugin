@@ -14,6 +14,7 @@ namespace SimpleTweaksPlugin {
 
 namespace SimpleTweaksPlugin.Tweaks {
     public class UiAdjustments : SubTweakManager<UiAdjustments.SubTweak> {
+        public override bool AlwaysEnabled => true;
 
         public abstract class SubTweak : BaseTweak { }
 
