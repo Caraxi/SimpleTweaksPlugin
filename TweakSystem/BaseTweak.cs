@@ -11,6 +11,8 @@ namespace SimpleTweaksPlugin.TweakSystem {
         public virtual bool Ready { get; protected set; }
         public virtual bool Enabled { get; protected set; }
 
+        public virtual string Key => GetType().Name;
+
         public abstract string Name { get; }
         protected virtual string Author => null;
         public virtual bool Experimental => false;
@@ -55,12 +57,6 @@ namespace SimpleTweaksPlugin.TweakSystem {
                 ImGui.PopStyleColor();
                 ImGui.PopStyleColor();
                 DrawCommon();
-            }
-        }
-
-        public void DrawHeaderlessConfig(ref bool hasChanged) {
-            if (DrawConfigTree != null && Enabled) {
-                DrawConfigTree(ref hasChanged);
             }
         }
 

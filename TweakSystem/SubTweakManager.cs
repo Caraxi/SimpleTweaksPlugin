@@ -24,52 +24,6 @@ namespace SimpleTweaksPlugin.TweakSystem {
             return $"{GetType().Name}@{t.GetType().Name}";
         }
 
-        protected override DrawConfigDelegate DrawConfigTree => (ref bool change) => {
-            foreach (var t in SubTweaks) {
-                if (!t.Enabled && !PluginConfig.ShowExperimentalTweaks && t.Experimental) {
-                    continue;
-                }
-                
-                if (!t.Ready) continue;
-                var key = GetTweakKey(t);
-                var subTweakEnabled = Enabled && t.Enabled;
-                if (!Enabled) {
-                    ImGui.PushStyleColor(ImGuiCol.FrameBg, Vector4.Zero);
-                    ImGui.PushStyleColor(ImGuiCol.FrameBgHovered, Vector4.Zero);
-                    ImGui.PushStyleColor(ImGuiCol.FrameBgActive, Vector4.Zero);
-                }
-                if (ImGui.Checkbox($"###{GetTweakKey(t)}enabledCheckbox", ref subTweakEnabled)) {
-                    if (Enabled) {
-                        if (subTweakEnabled) {
-                            try {
-                                SimpleLog.Log($"Enable: {t.Name} @ {Name}");
-                                t.Enable();
-                                if (!this.PluginConfig.EnabledTweaks.Contains(key)) this.PluginConfig.EnabledTweaks.Add(key);
-                                change = true;
-                            } catch (Exception ex) {
-                                Plugin.Error(this, t, ex, true, "Error in Enable");
-                            }
-                            
-                        } else {
-                            try {
-                                SimpleLog.Log($"Disable: {t.Name} @ {Name}");
-                                t.Disable();
-                            } catch (Exception ex) {
-                                Plugin.Error(this, t, ex, true, "Error in Disable");
-                            }
-                            
-                            if (this.PluginConfig.EnabledTweaks.Contains(key)) this.PluginConfig.EnabledTweaks.Remove(key);
-                            change = true;
-                        }
-                    }
-                }
-                if (!Enabled) ImGui.PopStyleColor(3);
-                ImGui.SameLine();
-                t.DrawConfig(ref change);
-                ImGui.Separator();
-            }
-        };
-        
         public override void Setup() {
 
             var tweakList = new List<T>();

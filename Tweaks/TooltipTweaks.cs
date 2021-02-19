@@ -95,7 +95,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
 
         public abstract class SubTweak : BaseTweak {
-
+            public override string Key => $"{nameof(TooltipTweaks)}@{base.Key}";
             public virtual void OnItemTooltip(ItemTooltip tooltip, InventoryItem itemInfo) { }
             public virtual unsafe void OnActionTooltip(AddonActionDetail* addonActionDetail, HoveredAction action) { }
         }

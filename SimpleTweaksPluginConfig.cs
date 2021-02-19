@@ -40,6 +40,36 @@ namespace SimpleTweaksPlugin {
         [NonSerialized] private string lastSearchInput = string.Empty;
         [NonSerialized] private List<BaseTweak> searchResults = new List<BaseTweak>();
         
+        private void DrawTweakConfig(BaseTweak t, ref bool hasChange) {
+            var enabled = t.Enabled;
+            if (t.Experimental && !ShowExperimentalTweaks && !enabled) return;
+            if (ImGui.Checkbox($"###{t.Key}enabledCheckbox", ref enabled)) {
+                if (enabled) {
+                    SimpleLog.Debug($"Enable: {t.Name}");
+                    try {
+                        t.Enable();
+                        if (t.Enabled) {
+                            EnabledTweaks.Add(t.Key);
+                        }
+                    } catch (Exception ex) {
+                        plugin.Error(t, ex, false, $"Error in Enable for '{t.Name}'");
+                    }
+                } else {
+                    SimpleLog.Debug($"Disable: {t.Name}");
+                    try {
+                        t.Disable();
+                    } catch (Exception ex) {
+                        plugin.Error(t, ex, true, $"Error in Disable for '{t.Name}'");
+                    }
+                    EnabledTweaks.RemoveAll(a => a == t.Key);
+                }
+                Save();
+            }
+            ImGui.SameLine();
+            t.DrawConfig(ref hasChange);
+            ImGui.Separator();
+        }
+        
         public bool DrawConfigUI() {
             var drawConfig = true;
             var changed = false;
@@ -105,33 +135,7 @@ namespace SimpleTweaksPlugin {
                 ImGui.BeginChild("search_scroll", new Vector2(-1));
                 
                 foreach (var t in searchResults) {
-                    var enabled = t.Enabled;
-                    if (t.Experimental && !ShowExperimentalTweaks && !enabled) continue;
-                    if (ImGui.Checkbox($"###{t.GetType().Name}enabledCheckbox", ref enabled)) {
-                        if (enabled) {
-                            SimpleLog.Debug($"Enable: {t.Name}");
-                            try {
-                                t.Enable();
-                                if (t.Enabled) {
-                                    EnabledTweaks.Add(t.GetType().Name);
-                                }
-                            } catch (Exception ex) {
-                                plugin.Error(t, ex, false, $"Error in Enable for '{t.Name}'");
-                            }
-                        } else {
-                            SimpleLog.Debug($"Disable: {t.Name}");
-                            try {
-                                t.Disable();
-                            } catch (Exception ex) {
-                                plugin.Error(t, ex, true, $"Error in Disable for '{t.Name}'");
-                            }
-                            EnabledTweaks.RemoveAll(a => a == t.GetType().Name);
-                        }
-                        Save();
-                    }
-                    ImGui.SameLine();
-                    t.DrawConfig(ref changed);
-                    ImGui.Separator();
+                    DrawTweakConfig(t, ref changed);
                 }
                 
                 ImGui.EndChild();
@@ -180,33 +184,7 @@ namespace SimpleTweaksPlugin {
                             // ImGui.Separator();
                             foreach (var t in plugin.Tweaks) {
                                 if (t is SubTweakManager) continue;
-                                var enabled = t.Enabled;
-                                if (t.Experimental && !ShowExperimentalTweaks && !enabled) continue;
-                                if (ImGui.Checkbox($"###{t.GetType().Name}enabledCheckbox", ref enabled)) {
-                                    if (enabled) {
-                                        SimpleLog.Debug($"Enable: {t.Name}");
-                                        try {
-                                            t.Enable();
-                                            if (t.Enabled) {
-                                                EnabledTweaks.Add(t.GetType().Name);
-                                            }
-                                        } catch (Exception ex) {
-                                            plugin.Error(t, ex, false, $"Error in Enable for '{t.Name}'");
-                                        }
-                                    } else {
-                                        SimpleLog.Debug($"Disable: {t.Name}");
-                                        try {
-                                            t.Disable();
-                                        } catch (Exception ex) {
-                                            plugin.Error(t, ex, true, $"Error in Disable for '{t.Name}'");
-                                        }
-                                        EnabledTweaks.RemoveAll(a => a == t.GetType().Name);
-                                    }
-                                    Save();
-                                }
-                                ImGui.SameLine();
-                                t.DrawConfig(ref changed);
-                                ImGui.Separator();
+                                DrawTweakConfig(t, ref changed);
                             }
                             
                             ImGui.EndChild();
@@ -214,7 +192,7 @@ namespace SimpleTweaksPlugin {
                         }
                     }
                     
-                    foreach (var stm in plugin.Tweaks.Where(t => t is SubTweakManager stm && (t.Enabled || stm.AlwaysEnabled))) {
+                    foreach (var stm in plugin.Tweaks.Where(t => t is SubTweakManager stm && (t.Enabled || stm.AlwaysEnabled)).Cast<SubTweakManager>()) {
                         if (settingTab == false && setTab == stm) {
                             settingTab = true;
                             continue;
@@ -227,7 +205,9 @@ namespace SimpleTweaksPlugin {
                         
                         if (ImGui.BeginTabItem($"{stm.Name}##tweakCategoryTab")) {
                             ImGui.BeginChild($"{stm.Name}-scroll", new Vector2(-1, -1));
-                            stm.DrawHeaderlessConfig(ref changed);
+                            foreach (var tweak in stm.GetTweakList()) {
+                                DrawTweakConfig(tweak, ref changed);
+                            }
                             ImGui.EndChild();
                             ImGui.EndTabItem();
                         }
