@@ -139,6 +139,7 @@ namespace SimpleTweaksPlugin {
                         settingTab = false;
                     } else {
                         if (ImGui.BeginTabItem("General Tweaks")) {
+                            ImGui.BeginChild("generalTweaks", new Vector2(-1, -1), false);
                             foreach (var t in plugin.Tweaks.Where(t => t is SubTweakManager).Cast<SubTweakManager>()) {
                                 var enabled = t.Enabled;
                                 if (t.Experimental && !ShowExperimentalTweaks && !enabled) continue;
@@ -204,6 +205,7 @@ namespace SimpleTweaksPlugin {
                                 ImGui.Separator();
                             }
                             
+                            ImGui.EndChild();
                             ImGui.EndTabItem();
                         }
                     }
@@ -220,19 +222,20 @@ namespace SimpleTweaksPlugin {
                         }
                         
                         if (ImGui.BeginTabItem($"{stm.Name}##tweakCategoryTab")) {
-                            
+                            ImGui.BeginChild($"{stm.Name}-scroll", new Vector2(-1, -1));
                             stm.DrawHeaderlessConfig(ref changed);
-                            
+                            ImGui.EndChild();
                             ImGui.EndTabItem();
                         }
                     }
 
                     if (ImGui.BeginTabItem("General Options")) {
+                        ImGui.BeginChild($"generalOptions-scroll", new Vector2(-1, -1));
                         ImGui.BeginGroup();
                         if (ImGui.Checkbox("Show Experimental Tweaks.", ref ShowExperimentalTweaks)) Save();
                         if (ImGui.Checkbox("Hide Ko-fi link.", ref HideKofi)) Save();
                         ImGui.EndGroup();
-
+                        ImGui.EndChild();
                         ImGui.EndTabItem();
                     }
                     
