@@ -17,7 +17,7 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         public abstract class SubTweak : BaseTweak { }
 
-        public override string Name => "UI Adjustments";
+        public override string Name => "UI Tweaks";
 
         public enum Step {
             Parent,

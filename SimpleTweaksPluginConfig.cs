@@ -4,7 +4,9 @@ using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
@@ -32,8 +34,15 @@ namespace SimpleTweaksPlugin {
             pluginInterface.SavePluginConfig(this);
         }
 
+        [NonSerialized] private SubTweakManager setTab = null;
+        [NonSerialized] private bool settingTab = false;
+        [NonSerialized] private string searchInput = string.Empty;
+        [NonSerialized] private string lastSearchInput = string.Empty;
+        [NonSerialized] private List<BaseTweak> searchResults = new List<BaseTweak>();
+        
         public bool DrawConfigUI() {
             var drawConfig = true;
+            var changed = false;
             var scale = ImGui.GetIO().FontGlobalScale;
             var windowFlags = ImGuiWindowFlags.NoCollapse;
             ImGui.SetNextWindowSizeConstraints(new Vector2(600 * scale, 200 * scale), new Vector2(800 * scale, 800 * scale));
@@ -67,62 +76,176 @@ namespace SimpleTweaksPlugin {
             ImGui.Text("Enable or disable any tweaks here.\nAll tweaks are disabled by default.");
             
             ImGui.Separator();
+            ImGui.SetNextItemWidth(-1);
+            ImGui.InputTextWithHint("###tweakSearchInput", "Search...", ref searchInput, 100);
+            ImGui.Separator();
 
-            foreach (var t in plugin.Tweaks) {
-                var enabled = t.Enabled;
-                if (t.Experimental && !ShowExperimentalTweaks && !enabled) continue;
-                if (ImGui.Checkbox($"###{t.GetType().Name}enabledCheckbox", ref enabled)) {
-                    if (enabled) {
-                        SimpleLog.Debug($"Enable: {t.Name}");
-                        try {
-                            t.Enable();
-                            if (t.Enabled) {
-                                EnabledTweaks.Add(t.GetType().Name);
+            if (!string.IsNullOrEmpty(searchInput)) {
+                if (lastSearchInput != searchInput) {
+                    lastSearchInput = searchInput;
+                    searchResults = new List<BaseTweak>();
+                    var searchValue = searchInput.ToLowerInvariant();
+                    foreach (var t in plugin.Tweaks) {
+                        if (t is SubTweakManager stm) {
+                            foreach (var st in stm.GetTweakList()) {
+                                if (st.Name.ToLowerInvariant().Contains(searchValue)) {
+                                    searchResults.Add(st);
+                                }
                             }
-                        } catch (Exception ex) {
-                            plugin.Error(t, ex, false, $"Error in Enable for '{t.Name}'");
+                            continue;
                         }
-                    } else {
-                        SimpleLog.Debug($"Disable: {t.Name}");
-                        try {
-                            t.Disable();
-                        } catch (Exception ex) {
-                            plugin.Error(t, ex, true, $"Error in Disable for '{t.Name}'");
+                        if (t.Name.ToLowerInvariant().Contains(searchValue)) {
+                            searchResults.Add(t);
                         }
-                        EnabledTweaks.RemoveAll(a => a == t.GetType().Name);
                     }
-                    Save();
                 }
-                ImGui.SameLine();
 
-                var changed = false;
-                t.DrawConfig(ref changed);
-                if (changed) Save();
+                foreach (var t in searchResults) {
+                    var enabled = t.Enabled;
+                    if (t.Experimental && !ShowExperimentalTweaks && !enabled) continue;
+                    if (ImGui.Checkbox($"###{t.GetType().Name}enabledCheckbox", ref enabled)) {
+                        if (enabled) {
+                            SimpleLog.Debug($"Enable: {t.Name}");
+                            try {
+                                t.Enable();
+                                if (t.Enabled) {
+                                    EnabledTweaks.Add(t.GetType().Name);
+                                }
+                            } catch (Exception ex) {
+                                plugin.Error(t, ex, false, $"Error in Enable for '{t.Name}'");
+                            }
+                        } else {
+                            SimpleLog.Debug($"Disable: {t.Name}");
+                            try {
+                                t.Disable();
+                            } catch (Exception ex) {
+                                plugin.Error(t, ex, true, $"Error in Disable for '{t.Name}'");
+                            }
+                            EnabledTweaks.RemoveAll(a => a == t.GetType().Name);
+                        }
+                        Save();
+                    }
+                    ImGui.SameLine();
+                    t.DrawConfig(ref changed);
+                    ImGui.Separator();
+                }
+                
+                
+                
+            } else {
+                var flags = settingTab ? ImGuiTabBarFlags.AutoSelectNewTabs : ImGuiTabBarFlags.None;
+                if (ImGui.BeginTabBar("tweakCategoryTabBar", flags)) {
+                    if (settingTab && setTab == null) {
+                        settingTab = false;
+                    } else {
+                        if (ImGui.BeginTabItem("General Tweaks")) {
+                            foreach (var t in plugin.Tweaks.Where(t => t is SubTweakManager).Cast<SubTweakManager>()) {
+                                var enabled = t.Enabled;
+                                if (t.Experimental && !ShowExperimentalTweaks && !enabled) continue;
+                                if (ImGui.Checkbox($"###{t.GetType().Name}enabledCheckbox", ref enabled)) {
+                                    if (enabled) {
+                                        SimpleLog.Debug($"Enable: {t.Name}");
+                                        try {
+                                            t.Enable();
+                                            if (t.Enabled) {
+                                                EnabledTweaks.Add(t.GetType().Name);
+                                            }
+                                        } catch (Exception ex) {
+                                            plugin.Error(t, ex, false, $"Error in Enable for '{t.Name}'");
+                                        }
+                                    } else {
+                                        SimpleLog.Debug($"Disable: {t.Name}");
+                                        try {
+                                            t.Disable();
+                                        } catch (Exception ex) {
+                                            plugin.Error(t, ex, true, $"Error in Disable for '{t.Name}'");
+                                        }
+                                        EnabledTweaks.RemoveAll(a => a == t.GetType().Name);
+                                    }
+                                    Save();
+                                }
+                                ImGui.SameLine();
+                                ImGui.TreeNodeEx($"Category: {t.Name}", ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.NoTreePushOnOpen);
+                                if (ImGui.IsItemClicked() && t.Enabled) {
+                                    setTab = t;
+                                    settingTab = false;
+                                }
+                                ImGui.Separator();
+                            }
+                            // ImGui.Separator();
+                            foreach (var t in plugin.Tweaks) {
+                                if (t is SubTweakManager) continue;
+                                var enabled = t.Enabled;
+                                if (t.Experimental && !ShowExperimentalTweaks && !enabled) continue;
+                                if (ImGui.Checkbox($"###{t.GetType().Name}enabledCheckbox", ref enabled)) {
+                                    if (enabled) {
+                                        SimpleLog.Debug($"Enable: {t.Name}");
+                                        try {
+                                            t.Enable();
+                                            if (t.Enabled) {
+                                                EnabledTweaks.Add(t.GetType().Name);
+                                            }
+                                        } catch (Exception ex) {
+                                            plugin.Error(t, ex, false, $"Error in Enable for '{t.Name}'");
+                                        }
+                                    } else {
+                                        SimpleLog.Debug($"Disable: {t.Name}");
+                                        try {
+                                            t.Disable();
+                                        } catch (Exception ex) {
+                                            plugin.Error(t, ex, true, $"Error in Disable for '{t.Name}'");
+                                        }
+                                        EnabledTweaks.RemoveAll(a => a == t.GetType().Name);
+                                    }
+                                    Save();
+                                }
+                                ImGui.SameLine();
+                                t.DrawConfig(ref changed);
+                                ImGui.Separator();
+                            }
+                            
+                            ImGui.EndTabItem();
+                        }
+                    }
+                    
+                    foreach (var stm in plugin.Tweaks.Where(t => t is SubTweakManager && t.Enabled)) {
+                        if (settingTab == false && setTab == stm) {
+                            settingTab = true;
+                            continue;
+                        }
 
-                ImGui.Separator();
+                        if (settingTab && setTab == stm) {
+                            settingTab = false;
+                            setTab = null;
+                        }
+                        
+                        if (ImGui.BeginTabItem($"{stm.Name}##tweakCategoryTab")) {
+                            
+                            stm.DrawHeaderlessConfig(ref changed);
+                            
+                            ImGui.EndTabItem();
+                        }
+                    }
 
-               
+                    if (ImGui.BeginTabItem("General Options")) {
+                        ImGui.BeginGroup();
+                        if (ImGui.Checkbox("Show Experimental Tweaks.", ref ShowExperimentalTweaks)) Save();
+                        if (ImGui.Checkbox("Hide Ko-fi link.", ref HideKofi)) Save();
+                        ImGui.EndGroup();
+
+                        ImGui.EndTabItem();
+                    }
+                    
+                    ImGui.EndTabBar();
+                }
             }
             
-            var a = false;
-            ImGui.PushStyleColor(ImGuiCol.FrameBg, 0x0);
-            ImGui.PushStyleColor(ImGuiCol.FrameBgActive, 0x0);
-            ImGui.PushStyleColor(ImGuiCol.FrameBgHovered, 0x0);
-            ImGui.Checkbox("###notARealCheckbox", ref a);
-            ImGui.PopStyleColor(3);
-            ImGui.SameLine();
-            var x = ImGui.GetCursorPosX();
-            if (ImGui.TreeNode("General Options")) {
-                ImGui.SetCursorPosX(x);
-                ImGui.BeginGroup();
-                if (ImGui.Checkbox("Show Experimental Tweaks.", ref ShowExperimentalTweaks)) Save();
-                if (ImGui.Checkbox("Hide Ko-fi link.", ref HideKofi)) Save();
-                ImGui.EndGroup();
-                ImGui.TreePop();
-            }
-
             ImGui.End();
 
+            if (changed) {
+                Save();
+            }
+            
             return drawConfig;
         }
     }

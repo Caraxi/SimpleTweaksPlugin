@@ -58,6 +58,12 @@ namespace SimpleTweaksPlugin.TweakSystem {
             }
         }
 
+        public void DrawHeaderlessConfig(ref bool hasChanged) {
+            if (DrawConfigTree != null && Enabled) {
+                DrawConfigTree(ref hasChanged);
+            }
+        }
+
         protected delegate void DrawConfigDelegate(ref bool hasChanged);
         protected virtual DrawConfigDelegate DrawConfigTree => null;
         

@@ -8,12 +8,16 @@ using ImGuiNET;
 namespace SimpleTweaksPlugin.TweakSystem {
 
     public abstract class SubTweakManager : Tweak {
-
+        public abstract List<BaseTweak> GetTweakList();
     } 
 
     public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
 
         public List<T> SubTweaks = new List<T>();
+
+        public override List<BaseTweak> GetTweakList() {
+            return SubTweaks.Cast<BaseTweak>().ToList();
+        }
 
         public string GetTweakKey(T t) {
             return $"{GetType().Name}@{t.GetType().Name}";
@@ -61,6 +65,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
                 if (!Enabled) ImGui.PopStyleColor(3);
                 ImGui.SameLine();
                 t.DrawConfig(ref change);
+                ImGui.Separator();
             }
         };
         
