@@ -20,6 +20,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public class Configs {
             public DisplayFormat DisplayFormat = DisplayFormat.OneDecimalPrecision;
             public Vector2 Position = new Vector2(0);
+            public bool NoFocus;
+            public Vector2 FocusPosition = new Vector2(0);
         }
         
         public enum DisplayFormat {
@@ -49,6 +51,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             hasChanged |= ImGui.InputFloat("X Offset##AdjustTargetHPPositionX", ref Config.Position.X, 1, 5, "%.0f");
             ImGui.SetNextItemWidth(150);
             hasChanged |= ImGui.InputFloat("Y Offset##AdjustTargetHPPositionY", ref Config.Position.Y, 1, 5, "%0.f");
+            
+            ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
+            hasChanged |= ImGui.Checkbox("Disable Focus Target HP", ref Config.NoFocus);
+
+            if (!Config.NoFocus) {
+                ImGui.SetNextItemWidth(150);
+                hasChanged |= ImGui.InputFloat("Focus Target X Offset##AdjustTargetHPFocusPositionX", ref Config.FocusPosition.X, 1, 5, "%.0f");
+                ImGui.SetNextItemWidth(150);
+                hasChanged |= ImGui.InputFloat("Focus Target Y Offset##AdjustTargetHPFocusPositionY", ref Config.FocusPosition.Y, 1, 5, "%0.f");
+            }
         };
         
         public override string Name => "Target HP";
@@ -99,25 +111,26 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var gauge = (AtkComponentNode*) unitBase->ULDData.NodeList[36];
             var textNode = (AtkTextNode*) unitBase->ULDData.NodeList[39];
             UiHelper.SetSize(unitBase->ULDData.NodeList[37], reset ? 44 : 0, reset ? 20 : 0);
-            UpdateGaugeBar(gauge, textNode, target, reset);
+            UpdateGaugeBar(gauge, textNode, target, Config.Position, reset);
         }
         private void UpdateFocusTarget(AtkUnitBase* unitBase, Actor target, bool reset = false) {
+            if (Config.NoFocus) reset = true;
             if (unitBase == null || unitBase->ULDData.NodeList == null || unitBase->ULDData.NodeListCount < 11) return;
             var gauge = (AtkComponentNode*) unitBase->ULDData.NodeList[2];
             var textNode = (AtkTextNode*) unitBase->ULDData.NodeList[10];
-            UpdateGaugeBar(gauge, textNode, target, reset);
+            UpdateGaugeBar(gauge, textNode, target, Config.FocusPosition, reset);
         }
         private void UpdateMainTargetSplit(AtkUnitBase* unitBase, Actor target, bool reset = false) {
             if (unitBase == null || unitBase->ULDData.NodeList == null || unitBase->ULDData.NodeListCount < 9) return;
             var gauge = (AtkComponentNode*) unitBase->ULDData.NodeList[5];
             var textNode = (AtkTextNode*) unitBase->ULDData.NodeList[8];
             UiHelper.SetSize(unitBase->ULDData.NodeList[6], reset ? 44 : 0, reset ? 20 : 0);
-            UpdateGaugeBar(gauge, textNode, target, reset);
+            UpdateGaugeBar(gauge, textNode, target, Config.Position, reset);
         }
 
         private const int TargetHPNodeID = 99990001;
         
-        private void UpdateGaugeBar(AtkComponentNode* gauge, AtkTextNode* cloneTextNode, Actor target, bool reset = false) {
+        private void UpdateGaugeBar(AtkComponentNode* gauge, AtkTextNode* cloneTextNode, Actor target, Vector2 positionOffset, bool reset = false) {
             if (gauge == null || (ushort) gauge->AtkResNode.Type < 1000) return;
             
             AtkTextNode* textNode = null;
@@ -161,7 +174,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             textNode->AlignmentFontType = (byte)AlignmentType.BottomRight;
             
-            UiHelper.SetPosition(textNode, Config.Position.X, Config.Position.Y);
+            UiHelper.SetPosition(textNode, positionOffset.X, positionOffset.Y);
             UiHelper.SetSize(textNode, gauge->AtkResNode.Width - 5, gauge->AtkResNode.Height);
             UiHelper.Show(textNode);
 
