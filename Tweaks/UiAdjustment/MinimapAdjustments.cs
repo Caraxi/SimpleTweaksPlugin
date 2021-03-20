@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Dalamud.Game.Internal;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
@@ -13,6 +14,8 @@ namespace SimpleTweaksPlugin {
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
+        private Stopwatch sw = new();
+        
         public class Configs {
             public bool HideCoordinates;
             public bool HideCompassLock;
@@ -55,8 +58,15 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Enable() {
             PluginInterface.ClientState.OnLogin += OnLogin;
+            PluginInterface.ClientState.TerritoryChanged += OnTerritoryChanged;
             base.Enable();
             Update();
+        }
+
+        private void OnTerritoryChanged(object sender, ushort e) {
+            sw.Restart();
+            PluginInterface.Framework.OnUpdateEvent -= WaitForUpdate;
+            PluginInterface.Framework.OnUpdateEvent += WaitForUpdate;
         }
 
         public override void Disable() {
@@ -68,17 +78,27 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         
         private void OnLogin(object sender, EventArgs e) {
+            sw.Restart();
+            PluginInterface.Framework.OnUpdateEvent -= WaitForUpdate;
             PluginInterface.Framework.OnUpdateEvent += WaitForUpdate;
         }
 
         private void WaitForUpdate(Framework framework) {
             try {
+                if (!sw.IsRunning) sw.Restart();
                 var unitBase = (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName("_NaviMap", 1);
-                if (unitBase == null) return;
+                if (unitBase == null) {
+                    if (sw.ElapsedMilliseconds > 30000) {
+                        sw.Stop();
+                        framework.OnUpdateEvent -= WaitForUpdate;
+                    }
+                    return;
+                }
                 Update();
                 framework.OnUpdateEvent -= WaitForUpdate;
             } catch (Exception ex) {
                 SimpleLog.Error(ex);
+                framework.OnUpdateEvent -= WaitForUpdate;
             }
         }
 
