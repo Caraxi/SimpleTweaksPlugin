@@ -22,6 +22,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool NoBorder;
             public bool HideZoom;
             public bool HideWeather;
+
+            public float WeatherPosition = 5.51524f;
         }
 
         public Configs Config => PluginConfig.UiAdjustments.MinimapAdjustments;
@@ -33,6 +35,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             hasChanged |= ImGui.Checkbox("Hide Zoom Buttons", ref Config.HideZoom);
             hasChanged |= ImGui.Checkbox("Hide Sun", ref Config.HideSun);
             hasChanged |= ImGui.Checkbox("Hide Weather", ref Config.HideWeather);
+            if (!Config.HideWeather) {
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(150);
+                hasChanged |= ImGui.SliderAngle("Position##weatherPosition", ref Config.WeatherPosition, 0, 360);
+            }
+
             hasChanged |= ImGui.Checkbox("Clean Border", ref Config.CleanBorder);
             if (Config.CleanBorder) {
                 ImGui.SameLine();
@@ -86,6 +94,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var weatherIcon = unitBase->ULDData.NodeList[6];
             if (Enabled && Config.HideWeather) UiHelper.Hide(weatherIcon); else UiHelper.Show(weatherIcon);
             
+            if (Enabled && !Config.HideWeather) {
+                // Weather Position Set
+                var rad = 95f;
+                var x = 90 + rad * Math.Cos(Config.WeatherPosition);
+                var y = 90 + rad * Math.Sin(Config.WeatherPosition);
+                UiHelper.SetPosition(weatherIcon, (float)x, (float)y);
+            } else {
+                UiHelper.SetPosition(weatherIcon, 158, 24);
+            }
+
             var standardBorderImage = unitBase->ULDData.NodeList[5];
             if (Enabled && Config.CleanBorder && Config.NoBorder) UiHelper.Hide(standardBorderImage); else UiHelper.Show(standardBorderImage);
             
