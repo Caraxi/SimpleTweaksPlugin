@@ -26,7 +26,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool HideZoom;
             public bool HideWeather;
 
-            public float WeatherPosition = 5.51524f;
+            public float WeatherPosition = 0;
         }
 
         public Configs Config => PluginConfig.UiAdjustments.MinimapAdjustments;
@@ -117,8 +117,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (Enabled && !Config.HideWeather) {
                 // Weather Position Set
                 var rad = 95f;
-                var x = 90 + rad * Math.Cos(Config.WeatherPosition);
-                var y = 90 + rad * Math.Sin(Config.WeatherPosition);
+                var x = 90 + rad * Math.Cos(Config.WeatherPosition + 5.51524f);
+                var y = 90 + rad * Math.Sin(Config.WeatherPosition + 5.51524f);
                 UiHelper.SetPosition(weatherIcon, (float)x, (float)y);
             } else {
                 UiHelper.SetPosition(weatherIcon, 158, 24);
