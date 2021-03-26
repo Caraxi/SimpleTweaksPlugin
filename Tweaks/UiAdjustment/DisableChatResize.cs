@@ -6,7 +6,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Name => "Disable Chat Resize";
         public override string Description => "Prevents resizing of the chat window.";
 
-        private unsafe delegate void MainChatWindowControlDelegate(IntPtr uiObject, ulong controlCode, IntPtr a3, IntPtr* a4, IntPtr a5);
+        private unsafe delegate void MainChatWindowControlDelegate(IntPtr uiObject, ushort controlCode, IntPtr a3, IntPtr* a4, IntPtr a5);
         private unsafe delegate void SubChatWindowControlDelegate(IntPtr a1, ushort controlCode, uint a3, IntPtr a4, ushort* a5);
 
         private IntPtr mainChatWindowControlAddress = IntPtr.Zero;
@@ -47,7 +47,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             subChatWindowControlHook?.Original(a1, controlCode, a3, a4, a5);
         }
 
-        private unsafe void MainChatWindowControlDetour(IntPtr uiObject, ulong controlCode, IntPtr a3, IntPtr* a4, IntPtr a5) {
+        private unsafe void MainChatWindowControlDetour(IntPtr uiObject, ushort controlCode, IntPtr a3, IntPtr* a4, IntPtr a5) {
             if (controlCode == ResizeControlCode) return;
             mainChatWindowControlHook?.Original(uiObject, controlCode, a3, a4, a5);
         }
