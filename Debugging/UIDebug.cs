@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Dalamud.Interface;
 using Dalamud.Plugin;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
@@ -365,6 +366,10 @@ namespace SimpleTweaksPlugin.Debugging {
                 "_ActionDoubleCrossL" => *(AddonActionBarBase*) atkUnitBase,
                 "_ActionDoubleCrossR" => *(AddonActionBarBase*) atkUnitBase,
                 "_MiniTalk" => *(AddonMiniTalk*) atkUnitBase,
+                "ChatLogPanel_0" => *(AddonChatLogPanel*) atkUnitBase,
+                "ChatLogPanel_1" => *(AddonChatLogPanel*) atkUnitBase,
+                "ChatLogPanel_2" => *(AddonChatLogPanel*) atkUnitBase,
+                "ChatLogPanel_3" => *(AddonChatLogPanel*) atkUnitBase,
                 _ => *atkUnitBase
             };
 
