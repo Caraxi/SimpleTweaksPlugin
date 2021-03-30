@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Dalamud.Game;
 using Dalamud.Game.Chat.SeStringHandling;
+using Dalamud.Hooking;
 using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -139,5 +141,17 @@ namespace SimpleTweaksPlugin.Helper {
             var optionBase = (byte**)(PluginInterface.Framework.Address.BaseAddress + 0x2B28);
             return Marshal.PtrToStructure<T>(new IntPtr(*optionBase + 0xAAE0 + (16 * (uint)opt)));
         }
+
+        public static HookWrapper<T> Hook<T>(string signature, T detour, bool enable = true) where T : Delegate {
+            var addr = Common.Scanner.ScanText(signature);
+            var h = new Hook<T>(addr, detour);
+            var wh = new HookWrapper<T>(h);
+            if (enable) wh.Enable();
+            HookList.Add(wh);
+            return wh;
+        }
+
+        public static List<IHookWrapper> HookList = new();
+
     }
 }
