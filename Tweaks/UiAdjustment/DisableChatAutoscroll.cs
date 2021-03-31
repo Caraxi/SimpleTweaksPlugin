@@ -15,6 +15,8 @@ namespace SimpleTweaksPlugin {
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class DisableChatAutoscroll : UiAdjustments.SubTweak {
         public override string Name => "Disable Chat AutoScroll";
+        public override string Description => "Attempts to prevent autoscrolling when recieving new chat messages.";
+
         public class Configs {
             public bool DisablePanel0;
             public bool DisablePanel1;
