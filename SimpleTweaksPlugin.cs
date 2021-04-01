@@ -2,10 +2,12 @@
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using FFXIVClientInterface;
+using Newtonsoft.Json.Linq;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 #if DEBUG
@@ -78,9 +80,62 @@ namespace SimpleTweaksPlugin {
             #if DEBUG
             DebugManager.SetPlugin(this);
             #endif
-            if (PluginConfig.Version < 2) {
+            
+            if (PluginConfig.Version < 3) {
+                SimpleLog.Information($"Updating Config: {PluginConfig.Version} -> 3");
+                dynamic oldConfig = null;
+                try {
+                    var oldConfigPath = Path.Combine(pluginInterface.GetPluginConfigDirectory(), "..", "SimpleTweaksPlugin.json");
+                    if (File.Exists(oldConfigPath)) {
+                        var oldConfigText = File.ReadAllText(oldConfigPath);
+                        // SimpleLog.Log(oldConfigText);
+                        oldConfig = JObject.Parse(oldConfigText);
+                    }
+                } catch (Exception ex) {
+                    SimpleLog.Error(ex);
+                }
+                
                 UpdateFrom = PluginConfig.Version;
-                PluginConfig.Version = 2;
+                PluginConfig.Version = 3;
+                
+                var moveTweaks = new Dictionary<string, string>() {
+                    { "UiAdjustments@DisableChatMovement", "ChatTweaks@DisableChatMovement" },
+                    { "UiAdjustments@DisableChatResize", "ChatTweaks@DisableChatResize" },
+                    { "UiAdjustments@DisableChatAutoscroll", "ChatTweaks@DisableChatAutoscroll" },
+                    { "UiAdjustments@RenameChatTabs", "ChatTweaks@RenameChatTabs" },
+                    { "ClickableLinks", "ChatTweaks@ClickableLinks" },
+                };
+
+                foreach (var t in moveTweaks) {
+                    if (PluginConfig.EnabledTweaks.Contains(t.Key)) {
+                        PluginConfig.EnabledTweaks.Remove(t.Key);
+                        PluginConfig.EnabledTweaks.Add(t.Value);
+                        
+                    }
+                }
+
+                if (oldConfig != null) {
+                    try {
+                        PluginConfig.ChatTweaks.DisableChatAutoscroll.DisablePanel0 = oldConfig.UiAdjustments.DisableChatAutoscroll.DisablePanel0;
+                        PluginConfig.ChatTweaks.DisableChatAutoscroll.DisablePanel1 = oldConfig.UiAdjustments.DisableChatAutoscroll.DisablePanel1;
+                        PluginConfig.ChatTweaks.DisableChatAutoscroll.DisablePanel2 = oldConfig.UiAdjustments.DisableChatAutoscroll.DisablePanel2;
+                        PluginConfig.ChatTweaks.DisableChatAutoscroll.DisablePanel3 = oldConfig.UiAdjustments.DisableChatAutoscroll.DisablePanel3;
+                    } catch (Exception ex) {
+                        SimpleLog.Error(ex);
+                    }
+                    
+                    try {
+                        PluginConfig.ChatTweaks.RenameChatTabs.ChatTab0Name = oldConfig.UiAdjustments.RenameChatTabs.ChatTab0Name;
+                        PluginConfig.ChatTweaks.RenameChatTabs.ChatTab1Name = oldConfig.UiAdjustments.RenameChatTabs.ChatTab1Name;
+                        PluginConfig.ChatTweaks.RenameChatTabs.DoRenameTab0 = oldConfig.UiAdjustments.RenameChatTabs.DoRenameTab0;
+                        PluginConfig.ChatTweaks.RenameChatTabs.DoRenameTab1 = oldConfig.UiAdjustments.RenameChatTabs.DoRenameTab1;
+                    } catch (Exception ex) {
+                        SimpleLog.Error(ex);
+                    }
+                    
+                }
+                
+
                 PluginConfig.Save();
             }
             

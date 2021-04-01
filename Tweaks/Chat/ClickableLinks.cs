@@ -5,10 +5,9 @@ using Dalamud.Game.Chat;
 using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using SimpleTweaksPlugin.Enums;
-using SimpleTweaksPlugin.TweakSystem;
 
-namespace SimpleTweaksPlugin.Tweaks {
-    class ClickableLinks : Tweak {
+namespace SimpleTweaksPlugin.Tweaks.Chat {
+    class ClickableLinks : ChatTweaks.SubTweak {
         public override string Name => "Clickable Links in Chat";
         public override string Description => "Parses links posted in chat and allows them to be clicked.";
 

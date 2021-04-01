@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
-using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+using SimpleTweaksPlugin.Tweaks.Chat;
 
 namespace SimpleTweaksPlugin {
-    public partial class UiAdjustmentsConfig {
+    public partial class ChatTweaksConfig {
         public DisableChatAutoscroll.Configs DisableChatAutoscroll = new();
     }
 }
 
-namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
-    public unsafe class DisableChatAutoscroll : UiAdjustments.SubTweak {
+namespace SimpleTweaksPlugin.Tweaks.Chat {
+    public unsafe class DisableChatAutoscroll : ChatTweaks.SubTweak {
         public override string Name => "Disable Chat AutoScroll";
         public override string Description => "Attempts to prevent autoscrolling when recieving new chat messages.";
 
@@ -24,7 +23,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool DisablePanel3;
         }
 
-        public Configs Config => PluginConfig.UiAdjustments.DisableChatAutoscroll;
+        public Configs Config => PluginConfig.ChatTweaks.DisableChatAutoscroll;
         
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             ImGui.Text("Allow autoscrolling in:");

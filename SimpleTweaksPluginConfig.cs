@@ -16,7 +16,7 @@ namespace SimpleTweaksPlugin {
         [NonSerialized]
         private SimpleTweaksPlugin plugin;
 
-        public int Version { get; set; } = 2;
+        public int Version { get; set; } = 3;
 
         public SimpleTweaksPluginConfig() { }
 

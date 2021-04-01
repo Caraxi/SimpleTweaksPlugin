@@ -7,16 +7,16 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
-using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+using SimpleTweaksPlugin.Tweaks.Chat;
 
 namespace SimpleTweaksPlugin {
-    public partial class  UiAdjustmentsConfig {
-        public RenameChatTabs.Config RenameChatTabs = new RenameChatTabs.Config();
+    public partial class  ChatTweaksConfig {
+        public RenameChatTabs.Config RenameChatTabs = new();
     }
 }
 
-namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
-    public class RenameChatTabs : UiAdjustments.SubTweak {
+namespace SimpleTweaksPlugin.Tweaks.Chat {
+    public class RenameChatTabs : ChatTweaks.SubTweak {
 
         public class Config {
             public bool DoRenameTab0;
@@ -31,7 +31,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private Task renameTask;
         private CancellationTokenSource cancellationToken;
 
-        private Config TweakConfig => PluginConfig.UiAdjustments.RenameChatTabs;
+        private Config TweakConfig => PluginConfig.ChatTweaks.RenameChatTabs;
 
         public override void Enable() {
             if (Enabled) return;
