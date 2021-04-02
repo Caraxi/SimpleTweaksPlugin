@@ -16,9 +16,11 @@ namespace SimpleTweaksPlugin.Helper {
 
         public static void SetSize(AtkComponentNode* node, int? w, int? h) => SetSize((AtkResNode*) node, w, h);
         public static void SetSize(AtkTextNode* node, int? w, int? h) => SetSize((AtkResNode*) node, w, h);
+        public static void SetSize(AtkCollisionNode* node, int? w, int? h) => SetSize((AtkResNode*)node, w, h);
 
         public static void SetPosition(AtkComponentNode* node, float? x, float? y) => SetPosition((AtkResNode*) node, x, y);
         public static void SetPosition(AtkTextNode* node, float? x, float? y) => SetPosition((AtkResNode*) node, x, y);
+        public static void SetPosition(AtkCollisionNode* node, float? x, float? y) => SetPosition((AtkResNode*)node, x, y);
 
         public static AtkTextNode* CloneNode(AtkTextNode* node) => (AtkTextNode*) CloneNode((AtkResNode*) node);
     }
