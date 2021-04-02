@@ -80,7 +80,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 UiHelper.SetPosition(itemsInfoNode, null, 246);
                 UiHelper.SetSize(resNode, null, isHoh ? 616 : 540);
                 UiHelper.SetSize(windowCollisionNode, null, isHoh ? 616 : 540);
-                SetDeepdungeonWindow(windowNode, null, isHoh ? 616 : 540);
+                SetDeepdungeonWindow(windowNode, null, (ushort) (isHoh ? 616 : 540));
 
                 UiHelper.SetPosition(textNode, 78, 65);
                 textNode->FontSize = 12;
@@ -105,7 +105,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             UiHelper.SetPosition(itemsInfoNode, null, 30);
             UiHelper.SetSize(resNode, null, isHoh ? 398 : 322);
             UiHelper.SetSize(windowCollisionNode, null, isHoh ? 398 : 322);
-            SetDeepdungeonWindow(windowNode, null, isHoh ? 398 : 322);
+            SetDeepdungeonWindow(windowNode, null, (ushort) (isHoh ? 398 : 322));
 
             // Limit expensive SeString manipulations
             switch (limiter)
