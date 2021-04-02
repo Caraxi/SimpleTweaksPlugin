@@ -62,12 +62,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var armorAetherpoolTextNode = (AtkTextNode*) armorAetherpoolNode->Component->ULDData.NodeList[1];
             var textNode = (AtkTextNode*) deepDungeonUnitBase->ULDData.NodeList[77]; // "To next level:" node
 
-            var isHoh = deepDungeonUnitBase->ULDData.NodeList[23]->IsVisible;
+            var isHoh = magiciteInfoNode->IsVisible;
 
             if (reset) {
                 UiHelper.Show(gearInfoNode);
                 deepDungeonUnitBase->ULDData.NodeList[76]->Color.A = 255;
-                UiHelper.Show(deepDungeonUnitBase->ULDData.NodeList[76]); // job infos
+                UiHelper.Show(deepDungeonUnitBase->ULDData.NodeList[76]); // Job infos
                 UiHelper.Show(deepDungeonUnitBase->ULDData.NodeList[78]);
                 UiHelper.Show(deepDungeonUnitBase->ULDData.NodeList[79]);
                 UiHelper.Show(deepDungeonUnitBase->ULDData.NodeList[80]);
@@ -92,7 +92,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             UiHelper.Hide(gearInfoNode);
             deepDungeonUnitBase->ULDData.NodeList[76]->Color.A = 0;
-            UiHelper.Hide(deepDungeonUnitBase->ULDData.NodeList[76]); // job infos
+            UiHelper.Hide(deepDungeonUnitBase->ULDData.NodeList[76]); // Job infos
             UiHelper.Hide(deepDungeonUnitBase->ULDData.NodeList[78]);
             UiHelper.Hide(deepDungeonUnitBase->ULDData.NodeList[79]);
             UiHelper.Hide(deepDungeonUnitBase->ULDData.NodeList[80]);
@@ -170,25 +170,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             var payloads = new List<Payload>();
 
-            switch (aetherpoolSeStr.Payloads.Count) {
-                case 1:
-                    payloads.Add(new TextPayload(aetherpool));
-                    break;
-                case 7:
-                    payloads.Add(aetherpoolSeStr.Payloads[0]);
-                    payloads.Add(aetherpoolSeStr.Payloads[1]);
-                    payloads.Add(new TextPayload(aetherpool));
-                    payloads.Add(aetherpoolSeStr.Payloads[5]);
-                    payloads.Add(aetherpoolSeStr.Payloads[6]);
-                    break;
-                case 12:
-                    payloads.Add(aetherpoolSeStr.Payloads[4]);
-                    payloads.Add(aetherpoolSeStr.Payloads[5]);
-                    payloads.Add(new TextPayload(aetherpool));
-                    payloads.Add(aetherpoolSeStr.Payloads[7]);
-                    payloads.Add(aetherpoolSeStr.Payloads[8]);
-                    break;
+            if (aetherpool == "+99")
+            {
+                payloads.Add(new RawPayload(new byte[] { 2, 72, 4, 242, 1, 244, 3 })); // UIForeground
+                payloads.Add(new RawPayload(new byte[] { 2, 73, 4, 242, 1, 245, 3 })); // UIGlow
+                payloads.Add(new TextPayload(aetherpool));
+                payloads.Add(new RawPayload(new byte[] { 2, 73, 2, 1, 3 })); // UIGlow
+                payloads.Add(new RawPayload(new byte[] { 2, 72, 2, 1, 3 })); // UIForeground
             }
+            else
+                payloads.Add(new TextPayload(aetherpool));
 
             return payloads;
         }
