@@ -4,6 +4,8 @@ using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Dalamud.Game.Chat.SeStringHandling;
+using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using Dalamud.Interface;
 using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -485,6 +487,43 @@ namespace SimpleTweaksPlugin.Debugging {
                     case NodeType.Text:
                         var textNode = (AtkTextNode*)node;
                         ImGui.Text($"text: {Marshal.PtrToStringAnsi(new IntPtr(textNode->NodeText.StringPtr))}");
+                        ImGui.SameLine();
+                        ImGui.PushStyleColor(ImGuiCol.Text, 0xFF00FFFF);
+                        if (ImGui.TreeNode($"Payloads##{(ulong) textNode:X}")) {
+                            ImGui.PopStyleColor();
+                            var seStringBytes = new byte[textNode->NodeText.BufUsed];
+                            for (var i = 0L; i < textNode->NodeText.BufUsed; i++) {
+                                seStringBytes[i] = textNode->NodeText.StringPtr[i];
+                            }
+                            var seString = Plugin.PluginInterface.SeStringManager.Parse(seStringBytes);
+                            for (var i = 0; i < seString.Payloads.Count; i++) {
+                                var payload = seString.Payloads[i];
+                                ImGui.Text($"[{i}]");
+                                ImGui.SameLine();
+                                switch (payload.Type) {
+                                    case PayloadType.RawText when payload is TextPayload tp: {
+                                        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
+                                        ImGui.Text("Raw Text: '");
+                                        ImGui.SameLine();
+                                        ImGui.PushStyleColor(ImGuiCol.Text, 0xFFAAAAAA);
+                                        ImGui.Text(tp.Text);
+                                        ImGui.PopStyleColor();
+                                        ImGui.SameLine();
+                                        ImGui.PopStyleVar();
+                                        ImGui.Text("'");
+                                        break;
+                                    }
+                                    default: {
+                                        ImGui.Text(payload.ToString());
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            ImGui.TreePop();
+                        } else {
+                            ImGui.PopStyleColor();
+                        }
 
                         ImGui.InputText($"Replace Text##{(ulong) textNode:X}", new IntPtr(textNode->NodeText.StringPtr), (uint) textNode->NodeText.BufSize);
 
