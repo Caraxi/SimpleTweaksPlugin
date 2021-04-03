@@ -13,7 +13,6 @@ using ImGuiNET;
 using ImGuiScene;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.GameStructs;
-using SimpleTweaksPlugin.GameStructs.Client.UI;
 using SimpleTweaksPlugin.Helper;
 using Action = System.Action;
 #pragma warning disable 659
@@ -353,7 +352,7 @@ namespace SimpleTweaksPlugin.Debugging {
 
             object addonObj = addonName switch {
                 "ActionDetail" => *(AddonActionDetail*) atkUnitBase,
-                "_ActionBar" => *(AddonActionBarBase*) atkUnitBase,
+                "_ActionBar" => *(AddonActionBarMain*) atkUnitBase,
                 "_ActionBar02" => *(AddonActionBarBase*) atkUnitBase,
                 "_ActionBar03" => *(AddonActionBarBase*) atkUnitBase,
                 "_ActionBar04" => *(AddonActionBarBase*) atkUnitBase,

@@ -2,7 +2,7 @@
 using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using ImGuiNET;
-using SimpleTweaksPlugin.GameStructs.Client.UI;
+using SimpleTweaksPlugin.GameStructs;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltip.TooltipField;
 

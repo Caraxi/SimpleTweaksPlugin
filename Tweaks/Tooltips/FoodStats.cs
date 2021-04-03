@@ -5,7 +5,7 @@ using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.GameStructs.Client.UI;
+using SimpleTweaksPlugin.GameStructs;
 
 namespace SimpleTweaksPlugin {
     public partial class TooltipTweakConfig {

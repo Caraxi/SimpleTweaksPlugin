@@ -1,6 +1,5 @@
 ﻿using System.Runtime.InteropServices;
 using SimpleTweaksPlugin.Enums;
-using SimpleTweaksPlugin.GameStructs.Client.UI;
 
 namespace SimpleTweaksPlugin.GameStructs {
     

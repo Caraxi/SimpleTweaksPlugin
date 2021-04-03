@@ -2,10 +2,10 @@
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
-using SimpleTweaksPlugin.GameStructs.Client.UI;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using System;
 using FFXIVClientInterface.Client.UI.Misc;
+using SimpleTweaksPlugin.GameStructs;
 
 // TODO:
 // - Determine active WXHB page.

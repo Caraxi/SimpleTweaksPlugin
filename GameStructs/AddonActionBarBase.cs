@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
-namespace SimpleTweaksPlugin.GameStructs.Client.UI {
+namespace SimpleTweaksPlugin.GameStructs {
     [StructLayout(LayoutKind.Explicit, Size = 0x248)]
     public unsafe struct AddonActionBarBase {
         [FieldOffset(0x000)] public AtkUnitBase AtkUnitBase;

@@ -5,7 +5,7 @@ using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.Helper;
 
-namespace SimpleTweaksPlugin.GameStructs.Client.UI {
+namespace SimpleTweaksPlugin.GameStructs {
     
     [StructLayout(LayoutKind.Explicit, Size = 56)]
     public unsafe struct InventoryItem {

@@ -2,7 +2,7 @@
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Enums;
 
-namespace SimpleTweaksPlugin.GameStructs.Client.UI {
+namespace SimpleTweaksPlugin.GameStructs {
 
     [StructLayout(LayoutKind.Explicit, Size = 0x1CB0)]
     public unsafe struct AddonSalvageItemSelector {

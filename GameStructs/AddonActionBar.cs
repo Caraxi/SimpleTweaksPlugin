@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace SimpleTweaksPlugin.GameStructs.Client.UI {
+namespace SimpleTweaksPlugin.GameStructs {
 
     [StructLayout(LayoutKind.Explicit, Size = 0x298)]
     public unsafe struct AddonActionBar {

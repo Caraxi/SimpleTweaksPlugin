@@ -9,7 +9,6 @@ using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.GameStructs;
-using SimpleTweaksPlugin.GameStructs.Client.UI;
 
 namespace SimpleTweaksPlugin.Helper {
     internal unsafe class Common {

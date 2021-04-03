@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.GameStructs.Client.UI;
+using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.Tweaks.Tooltips;
 using BaseParam = SimpleTweaksPlugin.Sheets.BaseParam;

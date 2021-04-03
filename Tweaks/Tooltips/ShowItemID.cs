@@ -1,7 +1,6 @@
 ﻿using Dalamud.Game.Chat.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.GameStructs;
-using SimpleTweaksPlugin.GameStructs.Client.UI;
 using SimpleTweaksPlugin.Helper;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltip.TooltipField;
 namespace SimpleTweaksPlugin.Tweaks.Tooltips {
