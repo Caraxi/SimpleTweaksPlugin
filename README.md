@@ -6,7 +6,7 @@ Simple Tweaks aims to improve quality of life when playing the game by making sm
 
 # Tweaks
 
-## UI Adjustments
+## UI Tweaks
 Tweaks that make changes to the general Ui of the game
 
 ### Cleaner World Visit Menu
@@ -17,9 +17,6 @@ Removes the useless information from the World Visit menu and shows your current
 Change the display format of the in game clocks to your liking, showing extra information like the current second.
 
 ![image](https://i.imgur.com/xnt1FGO.png)
-
-### Disable Chat Movement and Resize
-(Individually) Disables the movement or resizing of the chat windows preventing them from being accidentally changed.
 
 ### Hide Free Company on Name Plate
 Disables the displaying of Free Company tags on player name plates.
@@ -61,6 +58,12 @@ Allows you to hide individual elements of the minimap UI to give an overall clea
 ### Target HP
 Shows the current HP value on your target.
 
+### Limit Target Status Effects (by Aireil)
+Reduces the number of effects allowed to be displayed on target UI
+
+### Reduced Deep Dungeon Info (by Aireil)
+Condenses the Deep Dungeon Character Info window to allow for a smaller size. 
+
 ## Tooltip Tweaks
 Tweaks that make changes to the item tooltips.
 
@@ -81,13 +84,24 @@ Displays the results of food or potions
 
 ![image](https://i.imgur.com/jPeUsv0.png)
 
+## Chat Tweaks
+
+### Rename Chat Tabs
+Allows you to pick names for the first two chat tabs instead of 'General' and 'Battle'
+
+### Clickable Links in Chat
+Makes links in chat clickable, opening the browser without needing to copy URLs
+
+### Disable Chat Movement and Resize
+(Individually) Disables the movement or resizing of the chat windows preventing them from being accidentally changed.
+
+### Smart Autoscroll
+Disables autoscrolling of chat when you have manually scrolled up.
+
 ## Other Tweaks
 
 ### Disable Title Screen Movie
 Prevents the game from showing the introduction movie after idling for 60 seconds on the title screen.
-
-### Clickable Links in Chat
-Makes links in chat clickable, opening the browser without needing to copy URLs
 
 ### Command Alias
 Create command aliases to automatically change typed commands into other commands.
@@ -103,5 +117,5 @@ Shows wedding veils using their Sanctum of the Twelve model everywhere.
 ### Fix '/target' command
 When a `/target` command fails, SimpleTweaks will search for potential targets and make it work as you might expect.
 
-### Rename Chat Tabs
-Allows you to pick names for the first two chat tabs instead of 'General' and 'Battle'
+### Legacy Camera Lock
+Prevents the camera from auto-rotating when using legacy movement.
