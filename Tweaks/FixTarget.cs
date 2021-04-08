@@ -1,9 +1,11 @@
 ﻿using System.Numerics;
+using System.Text;
 using System.Text.RegularExpressions;
 using Dalamud;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.ClientState.Actors.Types;
+using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks {
@@ -33,8 +35,13 @@ namespace SimpleTweaksPlugin.Tweaks {
             base.Disable();
         }
         
-        private void OnChatMessage(XivChatType type, uint senderid, ref SeString sender, ref SeString message, ref bool isHandled) {
+        private unsafe void OnChatMessage(XivChatType type, uint senderid, ref SeString sender, ref SeString message, ref bool isHandled) {
             if (type != XivChatType.ErrorMessage) return;
+            var lastCommandStr = Encoding.UTF8.GetString(Common.LastCommand->StringPtr, (int) Common.LastCommand->BufUsed);
+            if (!(lastCommandStr.StartsWith("/target ") || lastCommandStr.StartsWith("/ziel ") || lastCommandStr.StartsWith("/cibler "))) {
+                return;
+            }
+
             var match = regex.Match(message.TextValue);
             if (!match.Success) return;
             var searchName = match.Groups[1].Value.ToLowerInvariant();
