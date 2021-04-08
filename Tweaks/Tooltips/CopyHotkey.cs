@@ -7,7 +7,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Dalamud;
-using Dalamud.Game.Chat.SeStringHandling.Payloads;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Game.Internal;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;

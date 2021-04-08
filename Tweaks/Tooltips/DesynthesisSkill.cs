@@ -1,7 +1,7 @@
 ﻿
 using System;
 using System.Linq;
-using Dalamud.Game.Chat.SeStringHandling.Payloads;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Lumina.Excel.GeneratedSheets;
 using ImGuiNET;
 using SimpleTweaksPlugin.GameStructs;

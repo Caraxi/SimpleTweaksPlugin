@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Dalamud.Game.Chat.SeStringHandling;
+using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.GameStructs;

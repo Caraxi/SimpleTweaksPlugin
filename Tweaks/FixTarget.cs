@@ -1,8 +1,8 @@
 ﻿using System.Numerics;
 using System.Text.RegularExpressions;
 using Dalamud;
-using Dalamud.Game.Chat;
-using Dalamud.Game.Chat.SeStringHandling;
+using Dalamud.Game.Text;
+using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.ClientState.Actors.Types;
 using SimpleTweaksPlugin.TweakSystem;
 
