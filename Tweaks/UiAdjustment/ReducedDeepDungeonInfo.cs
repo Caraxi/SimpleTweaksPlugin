@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -6,7 +6,6 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Game.Internal;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Data.Parsing.Uld;
 using SimpleTweaksPlugin.Helper;
 using Lumina.Excel.GeneratedSheets;
 
@@ -110,14 +109,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             // Limit expensive SeString manipulations
             switch (limiter)
             {
-                case var _ when limiter > 0:
+                case > 0:
                     limiter--;
                     return;
                 // Burst when the window is created
-                case var _ when limiter < 0:
+                case < 0:
                     limiter++;
                     break;
-                case var _ when limiter == 0:
+                case 0:
                     limiter = 50;
                     break;
             }
@@ -152,7 +151,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             windowNode->AtkResNode.Flags_2 |= 0x1;
         }
 
-        private static IEnumerable<Payload> GetAetherpoolPayloads(SeString aetherpoolSeStr)
+        private IEnumerable<Payload> GetAetherpoolPayloads(SeString aetherpoolSeStr)
         {
             var aetherpool = string.Empty;
 
@@ -168,19 +167,25 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (string.IsNullOrEmpty(aetherpool))
                 aetherpool = "+0";
 
-            var payloads = new List<Payload>();
+            var isSynced = aetherpoolSeStr.Payloads.Any(payload =>
+                payload is EmphasisItalicPayload {IsEnabled: true});
 
+            var payloads = new List<Payload> {new TextPayload(aetherpool)};
+            
+            if (isSynced)
+            {
+                payloads.Insert(0, new EmphasisItalicPayload(true));
+                payloads.Insert(payloads.Count, new EmphasisItalicPayload(false));
+            }
+            
             if (aetherpool == "+99")
             {
-                payloads.Add(new RawPayload(new byte[] { 2, 72, 4, 242, 1, 244, 3 })); // UIForeground
-                payloads.Add(new RawPayload(new byte[] { 2, 73, 4, 242, 1, 245, 3 })); // UIGlow
-                payloads.Add(new TextPayload(aetherpool));
-                payloads.Add(new RawPayload(new byte[] { 2, 73, 2, 1, 3 })); // UIGlow
-                payloads.Add(new RawPayload(new byte[] { 2, 72, 2, 1, 3 })); // UIForeground
+                payloads.Insert(0, new UIGlowPayload(PluginInterface.Data, 501));
+                payloads.Insert(payloads.Count, new UIGlowPayload(PluginInterface.Data, 0));
+                payloads.Insert(0, new UIForegroundPayload(PluginInterface.Data, 500));
+                payloads.Insert(payloads.Count, new UIForegroundPayload(PluginInterface.Data, 0));
             }
-            else
-                payloads.Add(new TextPayload(aetherpool));
-
+            
             return payloads;
         }
     }
