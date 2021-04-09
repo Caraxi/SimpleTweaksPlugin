@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Dalamud.Game;
-using Dalamud.Game.Chat.SeStringHandling;
+using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Hooking;
 using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Client.System.String;
@@ -31,6 +31,10 @@ namespace SimpleTweaksPlugin.Helper {
 
         public static IntPtr PlayerStaticAddress { get; private set; }
 
+        private static IntPtr LastCommandAddress;
+        
+        public static Utf8String* LastCommand { get; private set; }
+
         public static SigScanner Scanner => PluginInterface.TargetModuleScanner;
 
         public Common(DalamudPluginInterface pluginInterface) {
@@ -43,6 +47,8 @@ namespace SimpleTweaksPlugin.Helper {
             var getContainerSlotPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 8B 5B 0C");
 
             PlayerStaticAddress = pluginInterface.TargetModuleScanner.GetStaticAddressFromSig("8B D7 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B7 E8");
+            LastCommandAddress = pluginInterface.TargetModuleScanner.GetStaticAddressFromSig("4C 8D 05 ?? ?? ?? ?? 41 B1 01 49 8B D4 E8 ?? ?? ?? ?? 83 EB 06");
+            LastCommand = (Utf8String*) (LastCommandAddress);
 
             _gameAlloc = Marshal.GetDelegateForFunctionPointer<GameAlloc>(gameAllocPtr);
             _getGameAllocator = Marshal.GetDelegateForFunctionPointer<GetGameAllocator>(getGameAllocatorPtr);

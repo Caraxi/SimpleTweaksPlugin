@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Dalamud;
-using Dalamud.Game.Chat;
+using Dalamud.Game.Text;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;

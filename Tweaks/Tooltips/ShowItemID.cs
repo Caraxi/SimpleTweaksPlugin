@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.Chat.SeStringHandling.Payloads;
+﻿using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;

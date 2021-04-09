@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Dalamud.Game.Chat.SeStringHandling;
-using Dalamud.Game.Chat.SeStringHandling.Payloads;
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using ImGuiNET;
 using SimpleTweaksPlugin.GameStructs;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks;

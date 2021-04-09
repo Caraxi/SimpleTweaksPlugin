@@ -13,8 +13,8 @@ namespace SimpleTweaksPlugin {
 
 namespace SimpleTweaksPlugin.Tweaks.Chat {
     public unsafe class DisableChatAutoscroll : ChatTweaks.SubTweak {
-        public override string Name => "Disable Chat AutoScroll";
-        public override string Description => "Attempts to prevent autoscrolling when recieving new chat messages.";
+        public override string Name => "Smart AutoScroll";
+        public override string Description => "Attempts to prevent autoscrolling when recieving new chat messages while scrolled up.";
 
         public class Configs {
             public bool DisablePanel0;
@@ -26,7 +26,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
         public Configs Config => PluginConfig.ChatTweaks.DisableChatAutoscroll;
         
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-            ImGui.Text("Allow autoscrolling in:");
+            ImGui.Text("Always allow autoscrolling in:");
             ImGui.Indent();
             hasChanged |= ImGui.Checkbox("Tab 1##allowAutoscroll", ref Config.DisablePanel0);
             hasChanged |= ImGui.Checkbox("Tab 2##allowAutoscroll", ref Config.DisablePanel1);

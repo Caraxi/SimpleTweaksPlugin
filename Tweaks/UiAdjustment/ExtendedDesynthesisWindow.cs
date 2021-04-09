@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Dalamud.Game.Chat;
+using Dalamud.Game.Text;
 using Dalamud.Hooking;
 using FFXIVClientInterface.Client.UI.Misc;
 using FFXIVClientStructs;
