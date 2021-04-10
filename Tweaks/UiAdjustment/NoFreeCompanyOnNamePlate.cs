@@ -4,7 +4,6 @@ using System.Text;
 using Dalamud;
 using Dalamud.Hooking;
 using Dalamud.Interface;
-using Dalamud.Interface.Components;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 
