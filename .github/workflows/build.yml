@@ -22,10 +22,17 @@ jobs:
         run: nuget restore SimpleTweaksPlugin.sln
 
       - name: Download Dalamud
+        if: "!contains(github.event.head_commit.message, '[stg]')"
         run: |
           Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
-          Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev\"
+          Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
 
+      - name: Download Dalamud staging
+        if: "contains(github.event.head_commit.message, '[stg]')"
+        run: |
+            Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/stg/latest.zip -OutFile latest.zip
+            Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
+            
       - name: Build
         run: msbuild SimpleTweaksPlugin.sln /p:Configuration=Release
 
