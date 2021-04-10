@@ -59,7 +59,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
             try {
                 var configDirectory = PluginInterface.GetPluginConfigDirectory();
                 var configFile = Path.Combine(configDirectory, this.Key + ".json");
-                var jsonString = JsonConvert.SerializeObject(config);
+                var jsonString = JsonConvert.SerializeObject(config, Formatting.Indented);
                 File.WriteAllText(configFile, jsonString);
             } catch (Exception ex) {
                 SimpleLog.Error($"Failed to write config for tweak: {this.Name}");
