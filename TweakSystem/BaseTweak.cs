@@ -1,6 +1,9 @@
 ﻿using System.Numerics;
+using System;
+using System.IO;
 using Dalamud.Plugin;
 using ImGuiNET;
+using Newtonsoft.Json;
 
 namespace SimpleTweaksPlugin.TweakSystem {
     public abstract class BaseTweak {
@@ -35,6 +38,32 @@ namespace SimpleTweaksPlugin.TweakSystem {
             if (!string.IsNullOrEmpty(Author)) {
                 ImGui.SameLine();
                 ImGui.TextDisabled($"  by {Author}");
+            }
+        }
+
+        protected T LoadConfig<T>() where T : TweakConfig {
+            try {
+                var configDirectory = PluginInterface.GetPluginConfigDirectory();
+                var configFile = Path.Combine(configDirectory, this.Key + ".json");
+                if (!File.Exists(configFile)) return default;
+                var jsonString = File.ReadAllText(configFile);
+                return JsonConvert.DeserializeObject<T>(jsonString);
+            } catch (Exception ex) {
+                SimpleLog.Error($"Failed to load config for tweak: {Name}");
+                SimpleLog.Error(ex);
+                return default;
+            }
+        }
+
+        protected void SaveConfig<T>(T config) where T : TweakConfig {
+            try {
+                var configDirectory = PluginInterface.GetPluginConfigDirectory();
+                var configFile = Path.Combine(configDirectory, this.Key + ".json");
+                var jsonString = JsonConvert.SerializeObject(config);
+                File.WriteAllText(configFile, jsonString);
+            } catch (Exception ex) {
+                SimpleLog.Error($"Failed to write config for tweak: {this.Name}");
+                SimpleLog.Error(ex);
             }
         }
         
