@@ -59,7 +59,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 for (i = 0; i < 20; i++) if (a6[i] == 0) break;
                 if (i >= 1) {
                     var str = Encoding.UTF8.GetString(a6, i).Trim(' ', '«', '»');
-                    SimpleLog.Log($"FC Tag: {str}");
                     var isWanderer = config.KeepWandererTag && PluginInterface.ClientState.ClientLanguage switch {
                         ClientLanguage.German => str == "Wanderin" || str == "Wanderer",
                         ClientLanguage.French => str == "Baroudeuse" || str == "Baroudeur",
