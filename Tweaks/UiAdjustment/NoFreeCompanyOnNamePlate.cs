@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud;
+using Dalamud.Game.Text;
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Hooking;
 using Dalamud.Interface;
 using ImGuiNET;
@@ -12,6 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public class Configs : TweakConfig {
             public bool KeepWandererTag;
+            public bool ShortenedWandererTag;
             public List<string> KeepNameVisible = new();
         }
 
@@ -19,6 +24,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         
         private IntPtr playerNamePlateSetTextAddress;
         private Hook<PlayerNamePlateSetText> playerNamePlateSetTextHook;
+        private IntPtr shortenedWandererTag;
         private delegate IntPtr PlayerNamePlateSetText(byte* a1, byte a2, byte a3, byte* a4, byte* a5, byte* a6, uint a7);
 
         public override string Name => "Hide FC Name on Name Plate";
@@ -26,6 +32,15 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Setup() {
             try {
+                shortenedWandererTag = Marshal.AllocHGlobal(60);
+                var seStr = new SeString(new List<Payload>() {
+                    new TextPayload(" «"),
+                    new IconPayload(BitmapFontIcon.CrossWorld),
+                    new TextPayload("»"),
+                });
+                var bytes = seStr.Encode();
+                Marshal.Copy(bytes, 0, shortenedWandererTag, bytes.Length);
+                Marshal.WriteByte(shortenedWandererTag, bytes.Length, 0);
                 playerNamePlateSetTextAddress = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8B 5C 24 ?? 45 38 A7 ?? ?? ?? ??");
                 base.Setup();
             } catch (Exception ex) {
@@ -47,6 +62,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public override void Dispose() {
+            Marshal.FreeHGlobal(shortenedWandererTag);
             playerNamePlateSetTextHook?.Dispose();
             base.Dispose();
         }
@@ -65,6 +81,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     };
 
                     if (isWanderer || config.KeepNameVisible.Contains(str)) {
+                        if (isWanderer && config.ShortenedWandererTag) {
+                            a6 = (byte*) shortenedWandererTag;
+                        }
                         isHidden = false;
                     }
                 }
@@ -78,6 +97,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private string inputStringIgnoreTag = string.Empty;
         protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
             ImGui.Checkbox("Don't Hide Wanderer Tag", ref config.KeepWandererTag);
+            if (config.KeepWandererTag) {
+                ImGui.SameLine();
+                ImGui.Checkbox($"Use '{(char) SeIconChar.CrossWorld}' for Wanderer", ref config.ShortenedWandererTag);
+            }
             ImGui.Text("Unhidden FC Tags:");
             ImGui.Indent();
             foreach (var keep in config.KeepNameVisible) {
