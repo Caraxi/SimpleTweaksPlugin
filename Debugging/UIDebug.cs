@@ -862,6 +862,7 @@ namespace SimpleTweaksPlugin.Debugging {
             var size = new Vector2(node->Width, node->Height) * scale;
             
             var nodeVisible = GetNodeVisible(node);
+            position += ImGui.GetMainViewport().Pos;
             ImGui.GetForegroundDrawList().AddRect(position, position + size, nodeVisible ? 0xFF00FF00 : 0xFF0000FF);
         }
 
