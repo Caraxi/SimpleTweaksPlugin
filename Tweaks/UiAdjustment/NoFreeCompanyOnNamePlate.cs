@@ -41,7 +41,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var bytes = seStr.Encode();
                 Marshal.Copy(bytes, 0, shortenedWandererTag, bytes.Length);
                 Marshal.WriteByte(shortenedWandererTag, bytes.Length, 0);
-                playerNamePlateSetTextAddress = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8B 5C 24 ?? 45 38 A7 ?? ?? ?? ??");
+                playerNamePlateSetTextAddress = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8B 5C 24");
                 base.Setup();
             } catch (Exception ex) {
                 SimpleLog.Log($"Failed Setup of {GetType().Name}: {ex.Message}");
