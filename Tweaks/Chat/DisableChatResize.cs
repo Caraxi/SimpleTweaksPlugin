@@ -27,7 +27,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
                 }
 
                 if (subChatWindowControlAddress == IntPtr.Zero) {
-                    subChatWindowControlAddress = PluginInterface.TargetModuleScanner.ScanText("40 53 55 56 41 56 41 57 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? F6 81 ?? ?? ?? ?? ??");
+                    subChatWindowControlAddress = PluginInterface.TargetModuleScanner.ScanText("40 55 53 56 41 54 41 56 41 57 48 8D AC 24");
                 }
 
                 if (mainChatWindowControlAddress == IntPtr.Zero || subChatWindowControlAddress == IntPtr.Zero) {
