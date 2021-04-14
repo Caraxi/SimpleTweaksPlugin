@@ -1,8 +1,10 @@
 ﻿using System.Runtime.InteropServices;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace SimpleTweaksPlugin.GameStructs {
     [StructLayout(LayoutKind.Explicit, Size = 0x248)]
+    [Addon("_ActionBar02", "_ActionBar03", "_ActionBar04", "_ActionBar05", "_ActionBar06", "_ActionBar07", "_ActionBar08", "_ActionBar09", "_ActionCross", "_ActionDoubleCross", "_ActionDoubleCrossR")]
     public unsafe struct AddonActionBarBase {
         [FieldOffset(0x000)] public AtkUnitBase AtkUnitBase;
         [FieldOffset(0x220)] public ActionBarSlotAction* ActionBarSlotsAction;

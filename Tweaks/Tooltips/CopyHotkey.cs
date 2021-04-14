@@ -10,9 +10,9 @@ using Dalamud;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Game.Internal;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.GameStructs;
+using SimpleTweaksPlugin.Sheets;
 
 namespace SimpleTweaksPlugin {
     public partial class TooltipTweakConfig {

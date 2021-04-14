@@ -6,6 +6,7 @@ using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using System;
 using FFXIVClientInterface.Client.UI.Misc;
 using SimpleTweaksPlugin.GameStructs;
+using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 
 // TODO:
 // - Determine active WXHB page.
@@ -124,7 +125,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         
         private void UpdateIcon(AtkComponentNode* iconComponent, HotBarSlot* slotStruct, bool reset = false) {
             if (iconComponent == null) return;
-            var cooldownTextNode = (AtkTextNode*)iconComponent->Component->ULDData.NodeList[13];
+            var cooldownTextNode = (AtkTextNode*)iconComponent->Component->UldManager.NodeList[13];
             if (cooldownTextNode->AtkResNode.Type != NodeType.Text) return;
             if (reset == false && (cooldownTextNode->AtkResNode.Flags & 0x10) != 0x10) return;
             if (cooldownTextNode == null) return;

@@ -1,8 +1,10 @@
 ﻿using System.Runtime.InteropServices;
+using FFXIVClientStructs.FFXIV.Client.UI;
 
 namespace SimpleTweaksPlugin.GameStructs {
 
     [StructLayout(LayoutKind.Explicit, Size = 0x298)]
+    [Addon("_ActionBar")]
     public unsafe struct AddonActionBar {
         [FieldOffset(0x000)] public AddonActionBarBase ActionBarBase;
         [FieldOffset(0x248)] public void* UnknownPtr248;

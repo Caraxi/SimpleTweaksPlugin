@@ -8,6 +8,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.Chat;
+using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 
 namespace SimpleTweaksPlugin {
     public partial class  ChatTweaksConfig {
@@ -123,15 +124,15 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
         
         public unsafe void DoRename(AtkUnitBase* unitBase, bool reset = false) {
             if (unitBase == null) return;
-            if (unitBase->ULDData.NodeListCount < 14) return;
-            SetTabName((AtkComponentNode*) unitBase->ULDData.NodeList[13], (reset || !TweakConfig.DoRenameTab0 || string.IsNullOrEmpty(TweakConfig.ChatTab0Name)) ? DefaultName0 : TweakConfig.ChatTab0Name);
-            SetTabName((AtkComponentNode*) unitBase->ULDData.NodeList[12], (reset || !TweakConfig.DoRenameTab1 || string.IsNullOrEmpty(TweakConfig.ChatTab1Name)) ? DefaultName1 : TweakConfig.ChatTab1Name);
+            if (unitBase->UldManager.NodeListCount < 14) return;
+            SetTabName((AtkComponentNode*) unitBase->UldManager.NodeList[13], (reset || !TweakConfig.DoRenameTab0 || string.IsNullOrEmpty(TweakConfig.ChatTab0Name)) ? DefaultName0 : TweakConfig.ChatTab0Name);
+            SetTabName((AtkComponentNode*) unitBase->UldManager.NodeList[12], (reset || !TweakConfig.DoRenameTab1 || string.IsNullOrEmpty(TweakConfig.ChatTab1Name)) ? DefaultName1 : TweakConfig.ChatTab1Name);
             
             // Redo Positions
             ushort x = 23;
             for (var i = 13; i > 3; i--) {
                 if (i == 5) continue;
-                var t = unitBase->ULDData.NodeList[i];
+                var t = unitBase->UldManager.NodeList[i];
                 if ((t->Flags & 0x10) != 0x10) continue;
                 t->X = x;
                 t->Flags_2 |= 0x1;
@@ -140,11 +141,11 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
         }
 
         public unsafe void DoRenamePanel(AtkUnitBase* panel, bool reset = false) {
-            if (panel->ULDData.NodeListCount < 6) return;
-            var baseComponent = (AtkComponentNode*) panel->ULDData.NodeList[5];
+            if (panel->UldManager.NodeListCount < 6) return;
+            var baseComponent = (AtkComponentNode*) panel->UldManager.NodeList[5];
             if (baseComponent == null) return;
-            if (baseComponent->Component->ULDData.NodeListCount < 2) return;
-            var textNode = (AtkTextNode*) baseComponent->Component->ULDData.NodeList[1];
+            if (baseComponent->Component->UldManager.NodeListCount < 2) return;
+            var textNode = (AtkTextNode*) baseComponent->Component->UldManager.NodeList[1];
             if (textNode == null) return;
 
             var name = $"{(char) SeIconChar.BoxedNumber2} {((reset || !TweakConfig.DoRenameTab1 || string.IsNullOrEmpty(TweakConfig.ChatTab1Name)) ? DefaultName1 : TweakConfig.ChatTab1Name)}";
@@ -158,24 +159,24 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
             textNode->AtkResNode.Width += 5;
             textNode->AtkResNode.Flags_2 |= 0x1;
 
-            baseComponent->Component->ULDData.NodeList[0]->Width = (ushort)(textNode->AtkResNode.Width + 6);
-            baseComponent->Component->ULDData.NodeList[0]->Flags_2 |= 0x1;
+            baseComponent->Component->UldManager.NodeList[0]->Width = (ushort)(textNode->AtkResNode.Width + 6);
+            baseComponent->Component->UldManager.NodeList[0]->Flags_2 |= 0x1;
             baseComponent->AtkResNode.Width = (ushort) (textNode->AtkResNode.Width + 6);
             baseComponent->AtkResNode.Flags_2 |= 0x1;
 
-            panel->ULDData.NodeList[4]->X = 29 + textNode->AtkResNode.Width;
-            panel->ULDData.NodeList[4]->Flags_2 |= 0x1;
+            panel->UldManager.NodeList[4]->X = 29 + textNode->AtkResNode.Width;
+            panel->UldManager.NodeList[4]->Flags_2 |= 0x1;
             
-            if (baseComponent->Component->ULDData.NodeListCount < 3) return;
-            baseComponent->Component->ULDData.NodeList[0]->Width = baseComponent->AtkResNode.Width;
-            baseComponent->Component->ULDData.NodeList[2]->Width = baseComponent->AtkResNode.Width;
+            if (baseComponent->Component->UldManager.NodeListCount < 3) return;
+            baseComponent->Component->UldManager.NodeList[0]->Width = baseComponent->AtkResNode.Width;
+            baseComponent->Component->UldManager.NodeList[2]->Width = baseComponent->AtkResNode.Width;
         }
 
 
         public unsafe void SetTabName(AtkComponentNode* tab, string name) {
             if (tab == null) return;
-            if (tab->Component->ULDData.NodeListCount < 4) return;
-            var textNode = (AtkTextNode*)tab->Component->ULDData.NodeList[3];
+            if (tab->Component->UldManager.NodeListCount < 4) return;
+            var textNode = (AtkTextNode*)tab->Component->UldManager.NodeList[3];
             if (textNode == null) return;
             var str = Plugin.Common.ReadSeString(textNode->NodeText.StringPtr);
             if (str.TextValue == name && textNode->AtkResNode.Width < 1000) return;
@@ -189,14 +190,14 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
             var tabWidth = (ushort) (textNode->AtkResNode.Width + 16);
 
 
-            tab->Component->ULDData.NodeList[0]->Width = tabWidth;
-            tab->Component->ULDData.NodeList[0]->Flags_2 |= 0x1;
+            tab->Component->UldManager.NodeList[0]->Width = tabWidth;
+            tab->Component->UldManager.NodeList[0]->Flags_2 |= 0x1;
 
-            tab->Component->ULDData.NodeList[1]->Width = tabWidth;
-            tab->Component->ULDData.NodeList[1]->Flags_2 |= 0x1;
+            tab->Component->UldManager.NodeList[1]->Width = tabWidth;
+            tab->Component->UldManager.NodeList[1]->Flags_2 |= 0x1;
 
-            tab->Component->ULDData.NodeList[2]->Width = textNode->AtkResNode.Width;
-            tab->Component->ULDData.NodeList[2]->Flags_2 |= 0x1;
+            tab->Component->UldManager.NodeList[2]->Width = textNode->AtkResNode.Width;
+            tab->Component->UldManager.NodeList[2]->Flags_2 |= 0x1;
 
             tab->AtkResNode.Width = tabWidth;
             tab->AtkResNode.Flags_2 |= 0x1;

@@ -19,8 +19,8 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         }
 
         public override unsafe void OnActionTooltip(AddonActionDetail* addon, TooltipTweaks.HoveredAction action) {
-            if (addon->AtkUnitBase.ULDData.NodeList == null || addon->AtkUnitBase.ULDData.NodeListCount < 29) return;
-            var categoryText = (AtkTextNode*) addon->AtkUnitBase.ULDData.NodeList[28];
+            if (addon->AtkUnitBase.UldManager.NodeList == null || addon->AtkUnitBase.UldManager.NodeListCount < 29) return;
+            var categoryText = (AtkTextNode*) addon->AtkUnitBase.UldManager.NodeList[28];
             if (categoryText == null) return;
             var seStr = Plugin.Common.ReadSeString(categoryText->NodeText.StringPtr);
             if (seStr.Payloads.Count <= 1) {

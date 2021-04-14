@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Helper;
 
 namespace SimpleTweaksPlugin.GameStructs {
     
     [StructLayout(LayoutKind.Explicit, Size = 0x488)]
+    [Addon("_MiniTalk")]
     public unsafe struct AddonMiniTalk {
         [FieldOffset(0x000)] public AtkUnitBase AtkUnitBase;
         [FieldOffset(0x220)] public void* Unk220; // Appears to be a function pointer

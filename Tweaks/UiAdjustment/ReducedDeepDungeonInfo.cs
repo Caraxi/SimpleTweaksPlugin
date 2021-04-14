@@ -44,34 +44,34 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 limiter = -10;
                 return;
             }
-            if (deepDungeonUnitBase->ULDData.NodeList == null ||
-                deepDungeonUnitBase->ULDData.NodeListCount < 84) return;
+            if (deepDungeonUnitBase->UldManager.NodeList == null ||
+                deepDungeonUnitBase->UldManager.NodeListCount < 84) return;
 
-            var resNode = deepDungeonUnitBase->ULDData.NodeList[0];
-            var windowCollisionNode = (AtkCollisionNode*) deepDungeonUnitBase->ULDData.NodeList[1];
-            var windowNode = (AtkComponentNode*) deepDungeonUnitBase->ULDData.NodeList[2];
-            var itemsEffectsInfoNode = deepDungeonUnitBase->ULDData.NodeList[3];
-            var magiciteInfoNode = deepDungeonUnitBase->ULDData.NodeList[23];
-            var itemsInfoNode = deepDungeonUnitBase->ULDData.NodeList[33];
-            var gearInfoNode = deepDungeonUnitBase->ULDData.NodeList[71];
+            var resNode = deepDungeonUnitBase->UldManager.NodeList[0];
+            var windowCollisionNode = (AtkCollisionNode*) deepDungeonUnitBase->UldManager.NodeList[1];
+            var windowNode = (AtkComponentNode*) deepDungeonUnitBase->UldManager.NodeList[2];
+            var itemsEffectsInfoNode = deepDungeonUnitBase->UldManager.NodeList[3];
+            var magiciteInfoNode = deepDungeonUnitBase->UldManager.NodeList[23];
+            var itemsInfoNode = deepDungeonUnitBase->UldManager.NodeList[33];
+            var gearInfoNode = deepDungeonUnitBase->UldManager.NodeList[71];
 
-            var armAetherpoolNode = (AtkComponentNode*) deepDungeonUnitBase->ULDData.NodeList[73];
-            var armAetherpoolTextNode = (AtkTextNode*) armAetherpoolNode->Component->ULDData.NodeList[1];
-            var armorAetherpoolNode = (AtkComponentNode*) deepDungeonUnitBase->ULDData.NodeList[72];
-            var armorAetherpoolTextNode = (AtkTextNode*) armorAetherpoolNode->Component->ULDData.NodeList[1];
-            var textNode = (AtkTextNode*) deepDungeonUnitBase->ULDData.NodeList[77]; // "To next level:" node
+            var armAetherpoolNode = (AtkComponentNode*) deepDungeonUnitBase->UldManager.NodeList[73];
+            var armAetherpoolTextNode = (AtkTextNode*) armAetherpoolNode->Component->UldManager.NodeList[1];
+            var armorAetherpoolNode = (AtkComponentNode*) deepDungeonUnitBase->UldManager.NodeList[72];
+            var armorAetherpoolTextNode = (AtkTextNode*) armorAetherpoolNode->Component->UldManager.NodeList[1];
+            var textNode = (AtkTextNode*) deepDungeonUnitBase->UldManager.NodeList[77]; // "To next level:" node
 
             var isHoh = magiciteInfoNode->IsVisible;
 
             if (reset) {
                 UiHelper.Show(gearInfoNode);
-                deepDungeonUnitBase->ULDData.NodeList[76]->Color.A = 255;
-                UiHelper.Show(deepDungeonUnitBase->ULDData.NodeList[76]); // Job infos
-                UiHelper.Show(deepDungeonUnitBase->ULDData.NodeList[78]);
-                UiHelper.Show(deepDungeonUnitBase->ULDData.NodeList[79]);
-                UiHelper.Show(deepDungeonUnitBase->ULDData.NodeList[80]);
-                UiHelper.Show(deepDungeonUnitBase->ULDData.NodeList[81]);
-                UiHelper.Show(deepDungeonUnitBase->ULDData.NodeList[82]);
+                deepDungeonUnitBase->UldManager.NodeList[76]->Color.A = 255;
+                UiHelper.Show(deepDungeonUnitBase->UldManager.NodeList[76]); // Job infos
+                UiHelper.Show(deepDungeonUnitBase->UldManager.NodeList[78]);
+                UiHelper.Show(deepDungeonUnitBase->UldManager.NodeList[79]);
+                UiHelper.Show(deepDungeonUnitBase->UldManager.NodeList[80]);
+                UiHelper.Show(deepDungeonUnitBase->UldManager.NodeList[81]);
+                UiHelper.Show(deepDungeonUnitBase->UldManager.NodeList[82]);
 
                 UiHelper.SetPosition(itemsEffectsInfoNode, null, isHoh ? 486 : 410);
                 if (isHoh)
@@ -90,13 +90,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
 
             UiHelper.Hide(gearInfoNode);
-            deepDungeonUnitBase->ULDData.NodeList[76]->Color.A = 0;
-            UiHelper.Hide(deepDungeonUnitBase->ULDData.NodeList[76]); // Job infos
-            UiHelper.Hide(deepDungeonUnitBase->ULDData.NodeList[78]);
-            UiHelper.Hide(deepDungeonUnitBase->ULDData.NodeList[79]);
-            UiHelper.Hide(deepDungeonUnitBase->ULDData.NodeList[80]);
-            UiHelper.Hide(deepDungeonUnitBase->ULDData.NodeList[81]);
-            UiHelper.Hide(deepDungeonUnitBase->ULDData.NodeList[82]);
+            deepDungeonUnitBase->UldManager.NodeList[76]->Color.A = 0;
+            UiHelper.Hide(deepDungeonUnitBase->UldManager.NodeList[76]); // Job infos
+            UiHelper.Hide(deepDungeonUnitBase->UldManager.NodeList[78]);
+            UiHelper.Hide(deepDungeonUnitBase->UldManager.NodeList[79]);
+            UiHelper.Hide(deepDungeonUnitBase->UldManager.NodeList[80]);
+            UiHelper.Hide(deepDungeonUnitBase->UldManager.NodeList[81]);
+            UiHelper.Hide(deepDungeonUnitBase->UldManager.NodeList[82]);
 
             UiHelper.SetPosition(itemsEffectsInfoNode, null, isHoh ? 270 : 194);
             if (isHoh)
@@ -140,7 +140,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             width ??= windowNode->AtkResNode.Width;
             height ??= windowNode->AtkResNode.Height;
 
-            var n = windowNode->Component->ULDData.RootNode;
+            var n = windowNode->Component->UldManager.RootNode;
             UiHelper.SetSize(windowNode, width, height);  // Window
             UiHelper.SetSize(n, width, height);  // Collision
             n = n->PrevSiblingNode->PrevSiblingNode;

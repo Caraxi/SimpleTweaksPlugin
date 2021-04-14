@@ -13,6 +13,7 @@ using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
@@ -161,8 +162,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (atkUnitBase == null) return;
             if ((atkUnitBase->Flags & 0x20) != 0x20) return;
 
-            var nodeList = atkUnitBase->ULDData.NodeList;
-            var windowNode = (AtkComponentNode*)atkUnitBase->ULDData.NodeList[1];
+            var nodeList = atkUnitBase->UldManager.NodeList;
+            var windowNode = (AtkComponentNode*)atkUnitBase->UldManager.NodeList[1];
 
             if (windowNode->AtkResNode.Width == 600) {
                 desynthRows.Clear();
@@ -172,8 +173,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 UiHelper.SetSize(nodeList[4], NewWidth - 25, null);
                 UiHelper.SetSize(nodeList[5], NewWidth - 32, null);
                 UiHelper.SetSize(nodeList[2], nodeList[2]->Width + AddedWidth, null);
-                var listComponent = (AtkComponentNode*)atkUnitBase->ULDData.NodeList[3];
-                var listNodeList = listComponent->Component->ULDData.NodeList;
+                var listComponent = (AtkComponentNode*)atkUnitBase->UldManager.NodeList[3];
+                var listNodeList = listComponent->Component->UldManager.NodeList;
                 UiHelper.SetSize(listNodeList[0], NewWidth - 32, null);
                 UiHelper.SetPosition(listNodeList[1], NewWidth - 40, null);
 
@@ -188,7 +189,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 newHeaderItem->AtkResNode.ParentNode = nodeList[5];
                 newHeaderItem->AtkResNode.NextSiblingNode = nodeList[8];
                 nodeList[8]->PrevSiblingNode = (AtkResNode*)newHeaderItem;
-                atkUnitBase->ULDData.NodeList[atkUnitBase->ULDData.NodeListCount++] = (AtkResNode*)newHeaderItem;
+                atkUnitBase->UldManager.NodeList[atkUnitBase->UldManager.NodeListCount++] = (AtkResNode*)newHeaderItem;
                 
                 var gsHeaderItem = (AtkTextNode*)UiHelper.CloneNode(nodeList[6]);
                 gsHeaderItem->NodeText.StringPtr = (byte*)UiHelper.Alloc((ulong)gsHeaderItem->NodeText.BufSize);
@@ -200,11 +201,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 gsHeaderItem->AtkResNode.ParentNode = nodeList[5];
                 gsHeaderItem->AtkResNode.NextSiblingNode = (AtkResNode*) newHeaderItem;
                 newHeaderItem->AtkResNode.PrevSiblingNode = (AtkResNode*)gsHeaderItem;
-                atkUnitBase->ULDData.NodeList[atkUnitBase->ULDData.NodeListCount++] = (AtkResNode*)gsHeaderItem;
+                atkUnitBase->UldManager.NodeList[atkUnitBase->UldManager.NodeListCount++] = (AtkResNode*)gsHeaderItem;
                 
                 for (var i = 2; i < 18; i++) {
                     var listItem = (AtkComponentNode*)listNodeList[i];
-                    var listItemNodes = listItem->Component->ULDData.NodeList;
+                    var listItemNodes = listItem->Component->UldManager.NodeList;
                     UiHelper.SetSize(listItem, NewWidth - 40, null);
                     UiHelper.SetSize(listItemNodes[0], NewWidth - 59, null);
                     UiHelper.SetSize(listItemNodes[1], NewWidth - 59, null);
@@ -222,7 +223,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     newRowItem->AtkResNode.NextSiblingNode = listItemNodes[7];
                     newRowItem->AlignmentFontType = (byte)AlignmentType.Center;
                     listItemNodes[7]->PrevSiblingNode = (AtkResNode*)newRowItem;
-                    listItem->Component->ULDData.NodeList[listItem->Component->ULDData.NodeListCount++] = (AtkResNode*)newRowItem;
+                    listItem->Component->UldManager.NodeList[listItem->Component->UldManager.NodeListCount++] = (AtkResNode*)newRowItem;
                     
                     var gearsetWarning = (AtkTextNode*)UiHelper.CloneNode(listItemNodes[3]);
                     gearsetWarning->NodeText.StringPtr = (byte*)UiHelper.Alloc((ulong)gearsetWarning->NodeText.BufSize);
@@ -233,7 +234,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     gearsetWarning->AtkResNode.NextSiblingNode = (AtkResNode*) newRowItem;
                     gearsetWarning->AlignmentFontType = (byte)AlignmentType.Center;
                     newRowItem->AtkResNode.PrevSiblingNode = (AtkResNode*) gearsetWarning;
-                    listItem->Component->ULDData.NodeList[listItem->Component->ULDData.NodeListCount++] = (AtkResNode*)gearsetWarning;
+                    listItem->Component->UldManager.NodeList[listItem->Component->UldManager.NodeListCount++] = (AtkResNode*)gearsetWarning;
                     
                     desynthRows.Add((ulong) listItem->Component, new DesynthRow() {
                         SkillTextNode = newRowItem,

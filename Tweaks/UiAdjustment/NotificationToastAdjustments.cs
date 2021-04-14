@@ -121,12 +121,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public void UpdateNotificationToastText(bool reset = false) {
             var toastUnitBase = Common.GetUnitBase("_WideText", 2);
             if (toastUnitBase == null) return;
-            if (toastUnitBase->ULDData.NodeList == null || toastUnitBase->ULDData.NodeListCount < 4) return;
+            if (toastUnitBase->UldManager.NodeList == null || toastUnitBase->UldManager.NodeListCount < 4) return;
 
-            var toastNode1 = toastUnitBase->ULDData.NodeList[0];
-            var toastNode2 = toastUnitBase->ULDData.NodeList[1];
-            var toastBackgroundNode = toastUnitBase->ULDData.NodeList[2];
-            var toastTextNode = (AtkTextNode*)toastUnitBase->ULDData.NodeList[3];
+            var toastNode1 = toastUnitBase->UldManager.NodeList[0];
+            var toastNode2 = toastUnitBase->UldManager.NodeList[1];
+            var toastBackgroundNode = toastUnitBase->UldManager.NodeList[2];
+            var toastTextNode = (AtkTextNode*)toastUnitBase->UldManager.NodeList[3];
 
             if (reset) {
                 isPreviewing = false;

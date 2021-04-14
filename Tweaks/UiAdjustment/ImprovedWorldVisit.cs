@@ -7,6 +7,7 @@ using FFXIVClientStructs.FFXIV.Client.Graphics;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using SimpleTweaksPlugin.Helper;
+using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class ImprovedWorldVisit : UiAdjustments.SubTweak {
@@ -103,7 +104,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
 
             public void TrySort() {
-                var nodeList = (AtkComponentNode**) WorldListComponent->Component->ULDData.NodeList;
+                var nodeList = (AtkComponentNode**) WorldListComponent->Component->UldManager.NodeList;
 
                 var c = 0;
                 var nodes = new AtkComponentNode*[18];
@@ -112,7 +113,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 for (var i = 0; i < nodes.Length; i++) {
                     var n = nodeList[i + 3];
                     if (n->AtkResNode.Y == 0) continue;
-                    var nameNode = (AtkTextNode*) n->Component->ULDData.NodeList[4];
+                    var nameNode = (AtkTextNode*) n->Component->UldManager.NodeList[4];
                     var name = Marshal.PtrToStringAnsi(new IntPtr(nameNode->NodeText.StringPtr));
                     names[c] = name;
                     nodes[c++] = n;

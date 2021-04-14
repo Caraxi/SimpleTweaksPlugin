@@ -8,6 +8,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
@@ -107,24 +108,24 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
         
         private void UpdateMainTarget(AtkUnitBase* unitBase, Actor target, bool reset = false) {
-            if (unitBase == null || unitBase->ULDData.NodeList == null || unitBase->ULDData.NodeListCount < 40) return;
-            var gauge = (AtkComponentNode*) unitBase->ULDData.NodeList[36];
-            var textNode = (AtkTextNode*) unitBase->ULDData.NodeList[39];
-            UiHelper.SetSize(unitBase->ULDData.NodeList[37], reset ? 44 : 0, reset ? 20 : 0);
+            if (unitBase == null || unitBase->UldManager.NodeList == null || unitBase->UldManager.NodeListCount < 40) return;
+            var gauge = (AtkComponentNode*) unitBase->UldManager.NodeList[36];
+            var textNode = (AtkTextNode*) unitBase->UldManager.NodeList[39];
+            UiHelper.SetSize(unitBase->UldManager.NodeList[37], reset ? 44 : 0, reset ? 20 : 0);
             UpdateGaugeBar(gauge, textNode, target, Config.Position, reset);
         }
         private void UpdateFocusTarget(AtkUnitBase* unitBase, Actor target, bool reset = false) {
             if (Config.NoFocus) reset = true;
-            if (unitBase == null || unitBase->ULDData.NodeList == null || unitBase->ULDData.NodeListCount < 11) return;
-            var gauge = (AtkComponentNode*) unitBase->ULDData.NodeList[2];
-            var textNode = (AtkTextNode*) unitBase->ULDData.NodeList[10];
+            if (unitBase == null || unitBase->UldManager.NodeList == null || unitBase->UldManager.NodeListCount < 11) return;
+            var gauge = (AtkComponentNode*) unitBase->UldManager.NodeList[2];
+            var textNode = (AtkTextNode*) unitBase->UldManager.NodeList[10];
             UpdateGaugeBar(gauge, textNode, target, Config.FocusPosition, reset);
         }
         private void UpdateMainTargetSplit(AtkUnitBase* unitBase, Actor target, bool reset = false) {
-            if (unitBase == null || unitBase->ULDData.NodeList == null || unitBase->ULDData.NodeListCount < 9) return;
-            var gauge = (AtkComponentNode*) unitBase->ULDData.NodeList[5];
-            var textNode = (AtkTextNode*) unitBase->ULDData.NodeList[8];
-            UiHelper.SetSize(unitBase->ULDData.NodeList[6], reset ? 44 : 0, reset ? 20 : 0);
+            if (unitBase == null || unitBase->UldManager.NodeList == null || unitBase->UldManager.NodeListCount < 9) return;
+            var gauge = (AtkComponentNode*) unitBase->UldManager.NodeList[5];
+            var textNode = (AtkTextNode*) unitBase->UldManager.NodeList[8];
+            UiHelper.SetSize(unitBase->UldManager.NodeList[6], reset ? 44 : 0, reset ? 20 : 0);
             UpdateGaugeBar(gauge, textNode, target, Config.Position, reset);
         }
 
@@ -135,8 +136,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             
             AtkTextNode* textNode = null;
 
-            for (var i = 5; i < gauge->Component->ULDData.NodeListCount; i++) {
-                var node = gauge->Component->ULDData.NodeList[i];
+            for (var i = 5; i < gauge->Component->UldManager.NodeListCount; i++) {
+                var node = gauge->Component->UldManager.NodeList[i];
                 if (node->Type == NodeType.Text && node->NodeID == TargetHPNodeID) {
                     textNode = (AtkTextNode*) node;
                     break;
@@ -153,9 +154,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 textNode->NodeText.BufSize = 512;
                 UiHelper.SetText(textNode, "");
                 UiHelper.ExpandNodeList(gauge, 1);
-                gauge->Component->ULDData.NodeList[gauge->Component->ULDData.NodeListCount++] = (AtkResNode*) textNode;
+                gauge->Component->UldManager.NodeList[gauge->Component->UldManager.NodeListCount++] = (AtkResNode*) textNode;
 
-                var nextNode = gauge->Component->ULDData.RootNode;
+                var nextNode = gauge->Component->UldManager.RootNode;
                 while (nextNode->PrevSiblingNode != null) {
                     nextNode = nextNode->PrevSiblingNode;
                 }

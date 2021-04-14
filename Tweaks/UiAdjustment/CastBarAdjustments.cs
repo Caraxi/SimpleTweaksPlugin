@@ -29,6 +29,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool RemoveCounter;
             public bool RemoveName;
 
+            public bool SlideCast;
+
             public Alignment AlignName = Alignment.Left;
             public Alignment AlignCounter = Alignment.Right;
 
@@ -114,6 +116,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 if (Config.OffsetNamePosition > 100) Config.OffsetNamePosition = 100;
             }
 
+            hasChanged |= ImGui.Checkbox("Show SlideCast Marker", ref Config.SlideCast);
+
             ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
 
 
@@ -140,18 +144,18 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 SimpleLog.Error(ex);
             }
         }
-
+        
         public void UpdateCastBar(bool reset = false) {
             var castBar = Common.GetUnitBase("_CastBar");
             if (castBar == null) return;
-            if (castBar->ULDData.NodeList == null || castBar->ULDData.NodeListCount < 12) return;
+            if (castBar->UldManager.NodeList == null || castBar->UldManager.NodeListCount < 12) return;
 
-            var barNode = castBar->ULDData.NodeList[3];
-
-            var icon = (AtkComponentNode*) castBar->ULDData.NodeList[7];
-            var countdownText = (AtkTextNode*) castBar->ULDData.NodeList[8];
-            var castingText = (AtkTextNode*) castBar->ULDData.NodeList[9];
-            var skillNameText = (AtkTextNode*) castBar->ULDData.NodeList[11];
+            var barNode = castBar->UldManager.NodeList[3];
+            
+            var icon = (AtkComponentNode*) castBar->UldManager.NodeList[7];
+            var countdownText = (AtkTextNode*) castBar->UldManager.NodeList[8];
+            var castingText = (AtkTextNode*) castBar->UldManager.NodeList[9];
+            var skillNameText = (AtkTextNode*) castBar->UldManager.NodeList[11];
 
             if (reset) {
                 UiHelper.Show(icon);

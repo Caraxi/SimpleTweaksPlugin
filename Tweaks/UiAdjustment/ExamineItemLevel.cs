@@ -47,13 +47,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         };
 
         public override void Setup() {
-
             examineIsValidPtr = PluginInterface.TargetModuleScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 C7 43 ?? ?? ?? ?? ??");
 
             examineUpdatedAddress = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 41 89 04 9F");
 
-            SimpleLog.Verbose($"ExamineIsValidPtr: {examineIsValidPtr.ToInt64():X}");
-            Ready = true;
+            SimpleLog.Log($"ExamineIsValidPtr: {examineIsValidPtr.ToInt64():X}");
+            Ready = false;
         }
 
         public override void Enable() {
@@ -74,15 +73,18 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private readonly IntPtr allocText = Marshal.AllocHGlobal(512);
 
         private unsafe void ShowItemLevel(bool reset = false) {
-
+            return;
             if (examineIsValidPtr == IntPtr.Zero) return;
             if (*(byte*)(examineIsValidPtr + 0x2A8) == 0) return;
+            SimpleLog.Log("Show Item Level");
             var container = Common.GetContainer(InventoryType.Examine);
             if (container == null) return;
-
-            var examineWindow = (AtkUnitBase*)PluginInterface.Framework.Gui.GetUiObjectByName("CharacterInspect", 1);
+            SimpleLog.Log($"Container Found: {(ulong)container:X}");
+            var examineWindow = Common.GetUnitBase("CharacterInspect");
             if (examineWindow == null) return;
             
+            SimpleLog.Log($"CharacterInspect Found: {(ulong)examineWindow:X}");
+
             var node = examineWindow->RootNode;
             if (node == null) return;
             node = node->ChildNode;
@@ -103,7 +105,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             while (node != null) {
                 if ((ushort) node->Type >= 1000) {
                     compNode = (AtkComponentNode*)node;
-                    compInfo = (ULDComponentInfo*)compNode->Component->ULDData.Objects;
+                    compInfo = (ULDComponentInfo*)compNode->Component->UldManager.Objects;
                     if (compInfo->ComponentType == ComponentType.Preview) {
                         break;
                     }
@@ -113,13 +115,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (node == null || compNode == null || compInfo == null) return;
 
             if (reset) {
-                compNode->Component->ULDData.NodeListCount = 4;
+                compNode->Component->UldManager.NodeListCount = 4;
                 return;
             }
 
 
 
-            node = compNode->Component->ULDData.RootNode;
+            node = compNode->Component->UldManager.RootNode;
             if (node == null) return;
             while (node->PrevSiblingNode != null) node = node->PrevSiblingNode;
             
@@ -172,13 +174,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             textNode->AtkResNode.X = 92;
             textNode->AtkResNode.Flags_2 |= 0x1;
 
-            var a = UiAdjustments.CopyNodeList(compNode->Component->ULDData.NodeList, compNode->Component->ULDData.NodeListCount, (ushort)(compNode->Component->ULDData.NodeListCount + 5));
-            compNode->Component->ULDData.NodeList = a;
-            compNode->Component->ULDData.NodeList[compNode->Component->ULDData.NodeListCount++] = (AtkResNode*)textNode;
+            var a = UiAdjustments.CopyNodeList(compNode->Component->UldManager.NodeList, compNode->Component->UldManager.NodeListCount, (ushort)(compNode->Component->UldManager.NodeListCount + 5));
+            compNode->Component->UldManager.NodeList = a;
+            compNode->Component->UldManager.NodeList[compNode->Component->UldManager.NodeListCount++] = (AtkResNode*)textNode;
 
             if (PluginConfig.UiAdjustments.ExamineItemLevel.ShowItemLevelIcon) {
                 
-                var iconNode = (AtkImageNode*)UiAdjustments.CloneNode(examineWindow->ULDData.NodeList[8]);
+                var iconNode = (AtkImageNode*)UiAdjustments.CloneNode(examineWindow->UldManager.NodeList[8]);
                 iconNode->PartId = 47;
 
                 iconNode->PartsList->Parts[47].Height = 24;
@@ -206,7 +208,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 textNode->AtkResNode.PrevSiblingNode = (AtkResNode*)iconNode;
 
-                compNode->Component->ULDData.NodeList[compNode->Component->ULDData.NodeListCount++] = (AtkResNode*)iconNode;
+                compNode->Component->UldManager.NodeList[compNode->Component->UldManager.NodeListCount++] = (AtkResNode*)iconNode;
             }
 
 

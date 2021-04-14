@@ -17,6 +17,8 @@ using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
 using Action = System.Action;
+using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
+
 #pragma warning disable 659
 
 // Customised version of https://github.com/aers/FFXIVUIDebug
@@ -193,7 +195,7 @@ namespace SimpleTweaksPlugin.Debugging {
                 foreach (var n in a.Nodes) {
                     var nSelected = i++ == elementSelectorIndex;
                     if (nSelected) ImGui.PushStyleColor(ImGuiCol.Text, 0xFF00FFFF);
-                    // ImGui.Text($"{((int)n.ResNode->Type >= 1000 ? ((ULDComponentInfo*)((AtkComponentNode*) n.ResNode)->Component->ULDData.Objects)->ComponentType.ToString() + "ComponentNode" : n.ResNode->Type.ToString() + "Node")}");
+                    // ImGui.Text($"{((int)n.ResNode->Type >= 1000 ? ((ULDComponentInfo*)((AtkComponentNode*) n.ResNode)->Component->UldManager.Objects)->ComponentType.ToString() + "ComponentNode" : n.ResNode->Type.ToString() + "Node")}");
                     
                     PrintNode(n.ResNode, false, null, true);
                     
@@ -256,7 +258,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     if (unitBase->X + unitBase->RootNode->Width < position.X) continue;
                     if (unitBase->Y + unitBase->RootNode->Height < position.Y) continue;
 
-                    addonResult.Nodes = GetAtkResNodeAtPosition(unitBase->ULDData, position);
+                    addonResult.Nodes = GetAtkResNodeAtPosition(unitBase->UldManager, position);
                     list.Add(addonResult);
                 }
             }
@@ -282,11 +284,14 @@ namespace SimpleTweaksPlugin.Debugging {
                 return nr.ResNode == ResNode;
             }
         }
+
+        private Dictionary<string, Type> addonMapping = new Dictionary<string, Type>();
         
-        private List<NodeResult> GetAtkResNodeAtPosition(ULDData uldData, Vector2 position, bool noReverse = false) {
+        
+        private List<NodeResult> GetAtkResNodeAtPosition(AtkUldManager UldManager, Vector2 position, bool noReverse = false) {
             var list = new List<NodeResult>();
-            for (var i = 0; i < uldData.NodeListCount; i++) {
-                var node = uldData.NodeList[i];
+            for (var i = 0; i < UldManager.NodeListCount; i++) {
+                var node = UldManager.NodeList[i];
                 var state = GetNodeState(node);
                 if (state.Visible) {
                     if (state.Position.X > position.X) continue;
@@ -297,7 +302,7 @@ namespace SimpleTweaksPlugin.Debugging {
 
                     if ((int) node->Type >= 1000) {
                         var compNode = (AtkComponentNode*) node;
-                        list.AddRange(GetAtkResNodeAtPosition(compNode->Component->ULDData, position, true));
+                        list.AddRange(GetAtkResNodeAtPosition(compNode->Component->UldManager, position, true));
                     }
                     
                     list.Add(new NodeResult() {
@@ -348,32 +353,39 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.Text($"Position: [ {atkUnitBase->X} , {atkUnitBase->Y} ]");
 #endif
             ImGui.Text($"Scale: {atkUnitBase->Scale*100}%%");
-            ImGui.Text($"Widget Count {atkUnitBase->ULDData.ObjectCount}");
+            ImGui.Text($"Widget Count {atkUnitBase->UldManager.ObjectCount}");
             
             ImGui.Separator();
 
-            object addonObj = addonName switch {
-                "ActionDetail" => *(AddonActionDetail*) atkUnitBase,
-                "_ActionBar" => *(AddonActionBarMain*) atkUnitBase,
-                "_ActionBar02" => *(AddonActionBarBase*) atkUnitBase,
-                "_ActionBar03" => *(AddonActionBarBase*) atkUnitBase,
-                "_ActionBar04" => *(AddonActionBarBase*) atkUnitBase,
-                "_ActionBar05" => *(AddonActionBarBase*) atkUnitBase,
-                "_ActionBar06" => *(AddonActionBarBase*) atkUnitBase,
-                "_ActionBar07" => *(AddonActionBarBase*) atkUnitBase,
-                "_ActionBar08" => *(AddonActionBarBase*) atkUnitBase,
-                "_ActionBar09" => *(AddonActionBarBase*) atkUnitBase,
-                "_ActionCross" => *(AddonActionBarBase*) atkUnitBase,
-                "_ActionDoubleCrossL" => *(AddonActionBarBase*) atkUnitBase,
-                "_ActionDoubleCrossR" => *(AddonActionBarBase*) atkUnitBase,
-                "_MiniTalk" => *(AddonMiniTalk*) atkUnitBase,
-                "ChatLogPanel_0" => *(AddonChatLogPanel*) atkUnitBase,
-                "ChatLogPanel_1" => *(AddonChatLogPanel*) atkUnitBase,
-                "ChatLogPanel_2" => *(AddonChatLogPanel*) atkUnitBase,
-                "ChatLogPanel_3" => *(AddonChatLogPanel*) atkUnitBase,
-                _ => *atkUnitBase
-            };
+            object addonObj;
 
+            if (addonName != null && addonMapping.ContainsKey(addonName)) {
+                if (addonMapping[addonName] == null) {
+                    addonObj = *atkUnitBase;
+                } else {
+                    addonObj = Marshal.PtrToStructure(new IntPtr(atkUnitBase), addonMapping[addonName]);
+                }
+                
+            } else if (addonName != null) {
+
+                addonMapping.Add(addonName, null);
+
+                foreach (var a in AppDomain.CurrentDomain.GetAssemblies()) {
+                    foreach (var t in a.GetTypes()) {
+                        if (!t.IsPublic) continue;
+                        var xivAddonAttr = (Addon) t.GetCustomAttribute(typeof(Addon), false);
+                        if (xivAddonAttr == null) continue;
+                        if (!xivAddonAttr.AddonIdentifiers.Contains(addonName)) continue;
+                        addonMapping[addonName] = t;
+                        break;
+                    }
+                }
+                
+                addonObj = *atkUnitBase;
+            } else {
+                addonObj = *atkUnitBase;
+            }
+            
             DebugManager.PrintOutObject(addonObj, (ulong) atkUnitBase, new List<string>());
 
             ImGui.Dummy(new Vector2(25 * ImGui.GetIO().FontGlobalScale));
@@ -383,15 +395,15 @@ namespace SimpleTweaksPlugin.Debugging {
                 PrintNode(atkUnitBase->RootNode);
 
             
-            if (atkUnitBase->ULDData.NodeListCount > 0) {
+            if (atkUnitBase->UldManager.NodeListCount > 0) {
                 ImGui.Dummy(new Vector2(25 * ImGui.GetIO().FontGlobalScale));
                 ImGui.Separator();
                 ImGui.PushStyleColor(ImGuiCol.Text, 0xFFFFAAAA);
                 if (ImGui.TreeNode($"Node List##{(ulong)atkUnitBase:X}")) {
                     ImGui.PopStyleColor();
 
-                    for (var j = 0; j < atkUnitBase->ULDData.NodeListCount; j++) {
-                        PrintNode(atkUnitBase->ULDData.NodeList[j], false, $"[{j}] ");
+                    for (var j = 0; j < atkUnitBase->UldManager.NodeListCount; j++) {
+                        PrintNode(atkUnitBase->UldManager.NodeList[j], false, $"[{j}] ");
                     }
                     ImGui.TreePop();
                 } else {
@@ -560,7 +572,7 @@ namespace SimpleTweaksPlugin.Debugging {
                             if (imageNode->PartId > imageNode->PartsList->PartCount) {
                                 ImGui.Text("part id > part count?");
                             } else {
-                                var textureInfo = imageNode->PartsList->Parts[imageNode->PartId].ULDTexture;
+                                var textureInfo = imageNode->PartsList->Parts[imageNode->PartId].UldAsset;
                                 var texType = textureInfo->AtkTexture.TextureType;
                                 ImGui.Text($"texture type: {texType} part_id={imageNode->PartId} part_id_count={imageNode->PartsList->PartCount}");
                                 if (texType == TextureType.Resource) {
@@ -604,7 +616,7 @@ namespace SimpleTweaksPlugin.Debugging {
             if (isVisible && !textOnly)
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0, 255, 0, 255));
 
-            var componentInfo = compNode->Component->ULDData;
+            var componentInfo = compNode->Component->UldManager;
 
             var childCount = componentInfo.NodeListCount;
 
@@ -665,8 +677,8 @@ namespace SimpleTweaksPlugin.Debugging {
                 if (ImGui.TreeNode($"Node List##{(ulong) node:X}")) {
                     ImGui.PopStyleColor();
 
-                    for (var i = 0; i < compNode->Component->ULDData.NodeListCount; i++) {
-                        PrintNode(compNode->Component->ULDData.NodeList[i], false, $"[{i}] ");
+                    for (var i = 0; i < compNode->Component->UldManager.NodeListCount; i++) {
+                        PrintNode(compNode->Component->UldManager.NodeList[i], false, $"[{i}] ");
                     }
 
                     ImGui.TreePop();

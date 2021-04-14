@@ -58,7 +58,7 @@ namespace SimpleTweaksPlugin.Helper {
         }
 
         public static void SetWindowSize(AtkComponentNode* windowNode, ushort? width, ushort? height) {
-            if (((ULDComponentInfo*) windowNode->Component->ULDData.Objects)->ComponentType != ComponentType.Window) return;
+            if (((ULDComponentInfo*) windowNode->Component->UldManager.Objects)->ComponentType != ComponentType.Window) return;
 
             width ??= windowNode->AtkResNode.Width;
             height ??= windowNode->AtkResNode.Height;
@@ -66,7 +66,7 @@ namespace SimpleTweaksPlugin.Helper {
             if (width < 64) width = 64;
 
             SetSize(windowNode, width, height);  // Window
-            var n = windowNode->Component->ULDData.RootNode;
+            var n = windowNode->Component->UldManager.RootNode;
             SetSize(n, width, height);  // Collision
             n = n->PrevSiblingNode;
             SetSize(n, (ushort)(width - 14), null); // Header Collision
@@ -89,13 +89,13 @@ namespace SimpleTweaksPlugin.Helper {
         }
 
         public static void ExpandNodeList(AtkComponentNode* componentNode, ushort addSize) {
-            var newNodeList = ExpandNodeList(componentNode->Component->ULDData.NodeList, componentNode->Component->ULDData.NodeListCount, (ushort) (componentNode->Component->ULDData.NodeListCount + addSize));
-            componentNode->Component->ULDData.NodeList = newNodeList;
+            var newNodeList = ExpandNodeList(componentNode->Component->UldManager.NodeList, componentNode->Component->UldManager.NodeListCount, (ushort) (componentNode->Component->UldManager.NodeListCount + addSize));
+            componentNode->Component->UldManager.NodeList = newNodeList;
         }
 
         public static void ExpandNodeList(AtkUnitBase* atkUnitBase, ushort addSize) {
-            var newNodeList = ExpandNodeList(atkUnitBase->ULDData.NodeList, atkUnitBase->ULDData.NodeListCount, (ushort)(atkUnitBase->ULDData.NodeListCount + addSize));
-            atkUnitBase->ULDData.NodeList = newNodeList;
+            var newNodeList = ExpandNodeList(atkUnitBase->UldManager.NodeList, atkUnitBase->UldManager.NodeListCount, (ushort)(atkUnitBase->UldManager.NodeListCount + addSize));
+            atkUnitBase->UldManager.NodeList = newNodeList;
         }
 
         private static AtkResNode** ExpandNodeList(AtkResNode** originalList, ushort originalSize, ushort newSize = 0) {

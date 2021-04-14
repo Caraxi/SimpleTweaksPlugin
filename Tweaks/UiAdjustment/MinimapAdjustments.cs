@@ -106,12 +106,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var unitBase = (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName("_NaviMap", 1);
             if (unitBase == null) return;
 
-            if (unitBase->ULDData.NodeListCount < 19) return;
+            if (unitBase->UldManager.NodeListCount < 19) return;
             
-            var sunImage = unitBase->ULDData.NodeList[4];
+            var sunImage = unitBase->UldManager.NodeList[4];
             if (Enabled && Config.HideSun) UiHelper.Hide(sunImage); else UiHelper.Show(sunImage);
             
-            var weatherIcon = unitBase->ULDData.NodeList[6];
+            var weatherIcon = unitBase->UldManager.NodeList[6];
             if (Enabled && Config.HideWeather) UiHelper.Hide(weatherIcon); else UiHelper.Show(weatherIcon);
             
             if (Enabled && !Config.HideWeather) {
@@ -124,25 +124,25 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 UiHelper.SetPosition(weatherIcon, 158, 24);
             }
 
-            var standardBorderImage = unitBase->ULDData.NodeList[5];
+            var standardBorderImage = unitBase->UldManager.NodeList[5];
             if (Enabled && Config.CleanBorder && Config.NoBorder) UiHelper.Hide(standardBorderImage); else UiHelper.Show(standardBorderImage);
             
-            var fancyBorderImage = unitBase->ULDData.NodeList[8];
+            var fancyBorderImage = unitBase->UldManager.NodeList[8];
             if (Enabled && Config.CleanBorder) UiHelper.Hide(fancyBorderImage); else UiHelper.Show(fancyBorderImage);
             
             for (var i = 9; i < 13; i++) {
-                var directionIcon = unitBase->ULDData.NodeList[i];
+                var directionIcon = unitBase->UldManager.NodeList[i];
                 if (Enabled && Config.HideCompassDirections) UiHelper.Hide(directionIcon); else UiHelper.Show(directionIcon);
             }
             
-            var coordinateDisplay = unitBase->ULDData.NodeList[13];
+            var coordinateDisplay = unitBase->UldManager.NodeList[13];
             if (Enabled && Config.HideCoordinates) UiHelper.Hide(coordinateDisplay); else UiHelper.Show(coordinateDisplay);
             
-            var compassLockButton = unitBase->ULDData.NodeList[16];
+            var compassLockButton = unitBase->UldManager.NodeList[16];
             if (Enabled && Config.HideCompassLock) UiHelper.Hide(compassLockButton); else UiHelper.Show(compassLockButton);
             
             for (var i = 17; i < 19; i++) {
-                var zoomButton = unitBase->ULDData.NodeList[i];
+                var zoomButton = unitBase->UldManager.NodeList[i];
                 if (Enabled && Config.HideZoom) UiHelper.Hide(zoomButton); else UiHelper.Show(zoomButton);
             }
         }

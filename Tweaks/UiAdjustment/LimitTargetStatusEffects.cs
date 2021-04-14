@@ -53,30 +53,30 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public void UpdateTargetStatus(bool reset = false) {
             var targetInfoUnitBase = Common.GetUnitBase("_TargetInfo", 1);
             if (targetInfoUnitBase == null) return;
-            if (targetInfoUnitBase->ULDData.NodeList == null || targetInfoUnitBase->ULDData.NodeListCount < 53) return;
+            if (targetInfoUnitBase->UldManager.NodeList == null || targetInfoUnitBase->UldManager.NodeListCount < 53) return;
 
             var targetInfoStatusUnitBase = Common.GetUnitBase("_TargetInfoBuffDebuff", 1);
             if (targetInfoStatusUnitBase == null) return;
-            if (targetInfoStatusUnitBase->ULDData.NodeList == null || targetInfoStatusUnitBase->ULDData.NodeListCount < 32) return;
+            if (targetInfoStatusUnitBase->UldManager.NodeList == null || targetInfoStatusUnitBase->UldManager.NodeListCount < 32) return;
 
             if (reset) {
                 for (int i = 32; i >= 3; i--) {
-                    targetInfoUnitBase->ULDData.NodeList[i]->Color.A = 255;
+                    targetInfoUnitBase->UldManager.NodeList[i]->Color.A = 255;
                 }
 
                 for (int i = 31; i >= 2; i--) {
-                    targetInfoStatusUnitBase->ULDData.NodeList[i]->Color.A = 255;
+                    targetInfoStatusUnitBase->UldManager.NodeList[i]->Color.A = 255;
                 }
 
                 return;
             }
 
             for (int i = 32 - Config.NbStatusEffects; i >= 3; i--) {
-                targetInfoUnitBase->ULDData.NodeList[i]->Color.A = 0;
+                targetInfoUnitBase->UldManager.NodeList[i]->Color.A = 0;
             }
 
             for (int i = 31 - Config.NbStatusEffects; i >= 2; i--) {
-                targetInfoStatusUnitBase->ULDData.NodeList[i]->Color.A = 0;
+                targetInfoStatusUnitBase->UldManager.NodeList[i]->Color.A = 0;
             }
         }
     }

@@ -77,7 +77,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             
             if (!(Config.Delta || Config.Total == false)) Config.Total = true; // Config invalid check
             try {
-                var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow(itemInfo.ItemId);
+                var item = PluginInterface.Data.Excel.GetSheet<Sheets.Item>().GetRow(itemInfo.ItemId);
                 if (item == null) return;
                 if (item.MateriaSlotCount == 0) return;
                 var itemLevel = CustomSheet.GetSheet<ItemLevel>().GetRow(item.LevelItem.Row);
