@@ -12,6 +12,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Enums;
+using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
@@ -52,7 +53,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             examineUpdatedAddress = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 41 89 04 9F");
 
             SimpleLog.Log($"ExamineIsValidPtr: {examineIsValidPtr.ToInt64():X}");
-            Ready = false;
+            Ready = true;
         }
 
         public override void Enable() {
@@ -73,146 +74,109 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private readonly IntPtr allocText = Marshal.AllocHGlobal(512);
 
         private unsafe void ShowItemLevel(bool reset = false) {
-            return;
-            if (examineIsValidPtr == IntPtr.Zero) return;
-            if (*(byte*)(examineIsValidPtr + 0x2A8) == 0) return;
-            SimpleLog.Log("Show Item Level");
-            var container = Common.GetContainer(InventoryType.Examine);
-            if (container == null) return;
-            SimpleLog.Log($"Container Found: {(ulong)container:X}");
-            var examineWindow = Common.GetUnitBase("CharacterInspect");
-            if (examineWindow == null) return;
-            
-            SimpleLog.Log($"CharacterInspect Found: {(ulong)examineWindow:X}");
+            SimpleLog.Log("Add ItemLevel to CharacterInspect");
+            try {
+                if (examineIsValidPtr == IntPtr.Zero) return;
+                if (*(byte*) (examineIsValidPtr + 0x2A8) == 0) return;
+                var container = Common.GetContainer(InventoryType.Examine);
+                if (container == null) return;
+                var examineWindow = (AddonCharacterInspect*) Common.GetUnitBase("CharacterInspect");
+                if (examineWindow == null) return;
+                var compInfo = (ULDComponentInfo*) examineWindow->PreviewComponent->UldManager.Objects;
+                if (compInfo == null || compInfo->ComponentType != ComponentType.Preview) return;
+                if (examineWindow->PreviewComponent->UldManager.NodeListCount < 4) return;
+                if (reset) {
+                    examineWindow->PreviewComponent->UldManager.NodeListCount = 4;
+                    return;
+                }
 
-            var node = examineWindow->RootNode;
-            if (node == null) return;
-            node = node->ChildNode;
-            if (node == null) return;
+                var nodeList = examineWindow->PreviewComponent->UldManager.NodeList;
+                var node = nodeList[3];
+                var textNode = UiAdjustments.CloneNode((AtkTextNode*) node);
 
-            while (node != null) {
-                if (node->Type == NodeType.Res) break;
-                node = node->PrevSiblingNode;
-            }
-
-            if (node == null) return;
-            node = node->ChildNode;
-            if (node == null) return;
-
-            AtkComponentNode* compNode = null;
-            ULDComponentInfo* compInfo = null;
-
-            while (node != null) {
-                if ((ushort) node->Type >= 1000) {
-                    compNode = (AtkComponentNode*)node;
-                    compInfo = (ULDComponentInfo*)compNode->Component->UldManager.Objects;
-                    if (compInfo->ComponentType == ComponentType.Preview) {
-                        break;
+                var inaccurate = false;
+                var sum = 0U;
+                var c = 13;
+                for (var i = 0; i < 13; i++) {
+                    var slot = Common.GetContainerItem(container, i);
+                    if (slot == null) continue;
+                    var id = slot->ItemId;
+                    var item = PluginInterface.Data.Excel.GetSheet<Sheets.Item>().GetRow(id);
+                    if (ignoreCategory.Contains(item.ItemUICategory.Row)) {
+                        if (i == 0) c -= 1;
+                        c -= 1;
+                        continue;
                     }
-                }
-                node = node->PrevSiblingNode;
-            }
-            if (node == null || compNode == null || compInfo == null) return;
 
-            if (reset) {
-                compNode->Component->UldManager.NodeListCount = 4;
-                return;
-            }
+                    if ((item.Unknown90 & 2) == 2) inaccurate = true;
+                    if (i == 0 && !canHaveOffhand.Contains(item.ItemUICategory.Row)) {
+                        sum += item.LevelItem.Row;
+                        i++;
+                    }
 
-
-
-            node = compNode->Component->UldManager.RootNode;
-            if (node == null) return;
-            while (node->PrevSiblingNode != null) node = node->PrevSiblingNode;
-            
-            if (node->Type != NodeType.Text) return;
-
-            var textNode = UiAdjustments.CloneNode((AtkTextNode*)node);
-
-            var inaccurate = false;
-            var sum = 0U;
-            var c = 13;
-            for (var i = 0; i < 13; i++) {
-                var slot = Common.GetContainerItem(container, i);
-                if (slot == null) continue;
-                var id = slot->ItemId;
-                var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow(id);
-                if (ignoreCategory.Contains(item.ItemUICategory.Row)) {
-                    if (i == 0) c -= 1;
-                    c-=1;
-                    continue;
-                }
-                if ((item.Unknown90 & 2) == 2) inaccurate = true;
-                if (i == 0 && !canHaveOffhand.Contains(item.ItemUICategory.Row)) {
                     sum += item.LevelItem.Row;
-                    i++;
                 }
-                sum += item.LevelItem.Row;
-            }
 
-            var avgItemLevel = sum / c;
+                var avgItemLevel = sum / c;
 
-            var seStr = new SeString(new List<Payload>() {
-                new TextPayload($"{avgItemLevel:0000}"),
-            });
+                var seStr = new SeString(new List<Payload>() {new TextPayload($"{avgItemLevel:0000}"),});
 
-            Plugin.Common.WriteSeString((byte*)allocText, seStr);
+                Plugin.Common.WriteSeString((byte*) allocText, seStr);
 
-            textNode->NodeText.StringPtr = (byte*)allocText;
+                textNode->NodeText.StringPtr = (byte*) allocText;
 
-            textNode->FontSize = 14;
-            textNode->AlignmentFontType = 37;
-            textNode->FontSize = 16;
-            textNode->CharSpacing = 0;
-            textNode->LineSpacing = 24;
-            textNode->TextColor = new ByteColor() { R = (byte)(inaccurate ? 0xFF : 0x45), G = (byte) (inaccurate ? (byte) 0x83 : (byte) 0xB2), B = (byte) (inaccurate ? 0x75 : 0xAE), A = 0xFF };
+                textNode->FontSize = 14;
+                textNode->AlignmentFontType = 37;
+                textNode->FontSize = 16;
+                textNode->CharSpacing = 0;
+                textNode->LineSpacing = 24;
+                textNode->TextColor = new ByteColor() {R = (byte) (inaccurate ? 0xFF : 0x45), G = (byte) (inaccurate ? (byte) 0x83 : (byte) 0xB2), B = (byte) (inaccurate ? 0x75 : 0xAE), A = 0xFF};
 
-            textNode->AtkResNode.Height = 24;
-            textNode->AtkResNode.Width = 80;
-            textNode->AtkResNode.Flags |= 0x10;
-            textNode->AtkResNode.Y = 0;
-            textNode->AtkResNode.X = 92;
-            textNode->AtkResNode.Flags_2 |= 0x1;
+                textNode->AtkResNode.Height = 24;
+                textNode->AtkResNode.Width = 80;
+                textNode->AtkResNode.Flags |= 0x10;
+                textNode->AtkResNode.Y = 0;
+                textNode->AtkResNode.X = 92;
+                textNode->AtkResNode.Flags_2 |= 0x1;
 
-            var a = UiAdjustments.CopyNodeList(compNode->Component->UldManager.NodeList, compNode->Component->UldManager.NodeListCount, (ushort)(compNode->Component->UldManager.NodeListCount + 5));
-            compNode->Component->UldManager.NodeList = a;
-            compNode->Component->UldManager.NodeList[compNode->Component->UldManager.NodeListCount++] = (AtkResNode*)textNode;
+                var a = UiAdjustments.CopyNodeList(examineWindow->PreviewComponent->UldManager.NodeList, examineWindow->PreviewComponent->UldManager.NodeListCount, (ushort) (examineWindow->PreviewComponent->UldManager.NodeListCount + 5));
+                examineWindow->PreviewComponent->UldManager.NodeList = a;
+                examineWindow->PreviewComponent->UldManager.NodeList[examineWindow->PreviewComponent->UldManager.NodeListCount++] = (AtkResNode*) textNode;
 
-            if (PluginConfig.UiAdjustments.ExamineItemLevel.ShowItemLevelIcon) {
-                
-                var iconNode = (AtkImageNode*)UiAdjustments.CloneNode(examineWindow->UldManager.NodeList[8]);
-                iconNode->PartId = 47;
+                if (PluginConfig.UiAdjustments.ExamineItemLevel.ShowItemLevelIcon) {
 
-                iconNode->PartsList->Parts[47].Height = 24;
-                iconNode->PartsList->Parts[47].Width = 24;
-                iconNode->PartsList->Parts[47].U = 176;
-                iconNode->PartsList->Parts[47].V = 138;
+                    var iconNode = (AtkImageNode*) UiAdjustments.CloneNode(examineWindow->AtkUnitBase.UldManager.NodeList[8]);
+                    iconNode->PartId = 47;
 
+                    iconNode->PartsList->Parts[47].Height = 24;
+                    iconNode->PartsList->Parts[47].Width = 24;
+                    iconNode->PartsList->Parts[47].U = 176;
+                    iconNode->PartsList->Parts[47].V = 138;
 
-                iconNode->AtkResNode.Height = 24;
-                iconNode->AtkResNode.Width = 24;
-                iconNode->AtkResNode.X = textNode->AtkResNode.X + 2;
-                iconNode->AtkResNode.Y = textNode->AtkResNode.Y + 3;
-                iconNode->AtkResNode.Flags |= 0x10;  // Visible
-                iconNode->AtkResNode.Flags_2 |= 0x1; // Update
+                    iconNode->AtkResNode.Height = 24;
+                    iconNode->AtkResNode.Width = 24;
+                    iconNode->AtkResNode.X = textNode->AtkResNode.X + 2;
+                    iconNode->AtkResNode.Y = textNode->AtkResNode.Y + 3;
+                    iconNode->AtkResNode.Flags |= 0x10; // Visible
+                    iconNode->AtkResNode.Flags_2 |= 0x1; // Update
 
-                iconNode->AtkResNode.ParentNode = textNode->AtkResNode.ParentNode;
-                iconNode->AtkResNode.PrevSiblingNode = textNode->AtkResNode.PrevSiblingNode;
-                if (iconNode->AtkResNode.PrevSiblingNode != null) {
-                    iconNode->AtkResNode.PrevSiblingNode->NextSiblingNode = (AtkResNode*)iconNode;
+                    iconNode->AtkResNode.ParentNode = textNode->AtkResNode.ParentNode;
+                    iconNode->AtkResNode.PrevSiblingNode = textNode->AtkResNode.PrevSiblingNode;
+                    if (iconNode->AtkResNode.PrevSiblingNode != null) {
+                        iconNode->AtkResNode.PrevSiblingNode->NextSiblingNode = (AtkResNode*) iconNode;
+                    }
+
+                    iconNode->AtkResNode.NextSiblingNode = (AtkResNode*) textNode;
+
+                    textNode->AtkResNode.PrevSiblingNode = (AtkResNode*) iconNode;
+
+                    examineWindow->PreviewComponent->UldManager.NodeList[examineWindow->PreviewComponent->UldManager.NodeListCount++] = (AtkResNode*) iconNode;
+
                 }
-                iconNode->AtkResNode.NextSiblingNode = (AtkResNode*)textNode;
-
-
-
-
-                textNode->AtkResNode.PrevSiblingNode = (AtkResNode*)iconNode;
-
-                compNode->Component->UldManager.NodeList[compNode->Component->UldManager.NodeListCount++] = (AtkResNode*)iconNode;
+            } catch (Exception ex) {
+                SimpleLog.Log(ex);
+                Plugin.Error(this, ex, true);
             }
-
-
-
         }
 
         public override void Disable() {
