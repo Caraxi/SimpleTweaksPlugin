@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Dalamud.Game.Internal;
+using Dalamud.Game.Internal.Gui.Toast;
+using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
@@ -20,7 +19,7 @@ namespace SimpleTweaksPlugin {
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class NotificationToastAdjustments : UiAdjustments.SubTweak {
         public override string Name => "Notification Toast Adjustments";
-        public override string Description => "Allow moving or hiding the notifications that appear in the middle of the screen at various times.";
+        public override string Description => "Allows moving or hiding of the notifications that appears in the middle of the screen at various times.";
         protected override string Author => "Aireil";
 
         public class Configs {
@@ -28,15 +27,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool ShowInCombat = false;
             public int OffsetXPosition = 0;
             public int OffsetYPosition = 0;
-            public List<string> Exceptions = new List<string>();
+            public readonly List<string> Exceptions = new List<string>();
         }
 
         public Configs Config => PluginConfig.UiAdjustments.NotificationToastAdjustments;
 
-        private string newException = String.Empty;
-        private bool isPreviewing = false;
-        private Task previewDelayTask;
-        private CancellationTokenSource tokenSource;
+        private string newException = string.Empty;
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             hasChanged |= ImGui.Checkbox("Hide", ref Config.Hide);
@@ -51,61 +47,55 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 offsetChanged |= ImGui.InputInt("Horizontal Offset##offsetPosition", ref Config.OffsetXPosition, 1);
                 ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
                 offsetChanged |= ImGui.InputInt("Vertical Offset##offsetPosition", ref Config.OffsetYPosition, 1);
-                if (offsetChanged) {
-                    if (!isPreviewing) {
-                        isPreviewing = true;
-                        tokenSource = new CancellationTokenSource();
-                        previewDelayTask = Task.Delay(5000, tokenSource.Token).ContinueWith(t => {
-                            isPreviewing = false;
-                            UpdateNotificationToastText(true);
-                        });
-                    }
+                if (offsetChanged)
+                {
+                    var toastNode = GetToastNode();
+                    if (toastNode != null && !toastNode->IsVisible)
+                        this.PluginInterface.Framework.Gui.Toast.ShowNormal("This is a preview of a toast message.");
                     hasChanged = true;
                 }
             }
 
-            if (!Config.Hide) {
-                ImGui.Text("Hide toast if text contains:");
-                for (int i = 0; i < Config.Exceptions.Count; i++) {
-                    ImGui.PushID($"Exception_{i}");
-                    var exception = Config.Exceptions[i];
-                    if (ImGui.InputText("##ToastTextException", ref exception, 500)) {
-                        Config.Exceptions[i] = exception;
-                        hasChanged = true;
-                    }
-                    ImGui.SameLine();
-                    ImGui.PushFont(UiBuilder.IconFont);
-                    if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString())) {
-                        Config.Exceptions.RemoveAt(i--);
-                        hasChanged = true;
-                    }
-                    ImGui.PopFont();
-                    ImGui.PopID();
-                    if (i < 0) break;
+            if (Config.Hide) return;
+
+            ImGui.Text("Hide toast if text contains:");
+            for (var  i = 0; i < Config.Exceptions.Count; i++) {
+                ImGui.PushID($"Exception_{i.ToString()}");
+                var exception = Config.Exceptions[i];
+                if (ImGui.InputText("##ToastTextException", ref exception, 500)) {
+                    Config.Exceptions[i] = exception;
+                    hasChanged = true;
                 }
-                ImGui.InputText("##NewToastTextException", ref newException, 500);
                 ImGui.SameLine();
                 ImGui.PushFont(UiBuilder.IconFont);
-                if (ImGui.Button(FontAwesomeIcon.Plus.ToIconString())) {
-                    Config.Exceptions.Add(newException);
-                    newException = String.Empty;
+                if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString())) {
+                    Config.Exceptions.RemoveAt(i--);
                     hasChanged = true;
                 }
                 ImGui.PopFont();
+                ImGui.PopID();
+                if (i < 0) break;
             }
+            ImGui.InputText("##NewToastTextException", ref newException, 500);
+            ImGui.SameLine();
+            ImGui.PushFont(UiBuilder.IconFont);
+            if (ImGui.Button(FontAwesomeIcon.Plus.ToIconString())) {
+                Config.Exceptions.Add(newException);
+                newException = string.Empty;
+                hasChanged = true;
+            }
+            ImGui.PopFont();
         };
 
         public override void Enable() {
             PluginInterface.Framework.OnUpdateEvent += FrameworkOnUpdate;
+            PluginInterface.Framework.Gui.Toast.OnToast += OnToast;
             base.Enable();
         }
 
         public override void Disable() {
             PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdate;
-            if (tokenSource != null && previewDelayTask != null) {
-                tokenSource.Cancel();
-                while (!previewDelayTask.IsCompleted) Thread.Sleep(1);
-            }
+            PluginInterface.Framework.Gui.Toast.OnToast -= OnToast;
             UpdateNotificationToastText(true);
             base.Disable();
         }
@@ -118,87 +108,52 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
         }
 
-        public void UpdateNotificationToastText(bool reset = false) {
-            var toastUnitBase = Common.GetUnitBase("_WideText", 2);
-            if (toastUnitBase == null) return;
-            if (toastUnitBase->UldManager.NodeList == null || toastUnitBase->UldManager.NodeListCount < 4) return;
-
-            var toastNode1 = toastUnitBase->UldManager.NodeList[0];
-            var toastNode2 = toastUnitBase->UldManager.NodeList[1];
-            var toastBackgroundNode = toastUnitBase->UldManager.NodeList[2];
-            var toastTextNode = (AtkTextNode*)toastUnitBase->UldManager.NodeList[3];
-
+        private void UpdateNotificationToastText(bool reset = false) {
+            var toastNode = GetToastNode();
+            if (toastNode == null) return;
+            
             if (reset) {
-                isPreviewing = false;
-
-                UiHelper.Show(toastBackgroundNode);
-                UiHelper.Show(toastTextNode);
-
-                SetOffsetPosition(toastNode1, 0.0f, 0.0f);
-
-                toastNode1->Color.A = 0;
-                toastNode2->Color.A = 0;
-
-                UiHelper.Hide(toastNode1);
-                UiHelper.Show(toastNode2);
-
-                toastUnitBase->Flags |= 0x10;
-                toastUnitBase->Flags &= unchecked((byte)~0x20);
-                toastUnitBase->Flags |= 0x40;
+                SetOffsetPosition(toastNode, 0.0f, 0.0f);
 
                 return;
             }
 
-            if (!isPreviewing && !toastUnitBase->IsVisible) return; // no point continuing
+            if (!toastNode->IsVisible) return;
 
-            var hide = Config.Hide;
-
-            if (Config.Exceptions.Any() && !Config.Hide && !isPreviewing) {
-                var text = Marshal.PtrToStringAnsi(new IntPtr(toastTextNode->NodeText.StringPtr));
-                hide = Config.Exceptions.Any(x => text.Contains(x));
-            }
-
-            if (Config.Hide && Config.ShowInCombat && !isPreviewing) {
-                var inCombat = PluginInterface.ClientState.Condition[Dalamud.Game.ClientState.ConditionFlag.InCombat];
-                if (inCombat) {
-                    hide = false;
-                }
-            }
-
-            if (hide && !isPreviewing) {
-                UiHelper.Hide(toastBackgroundNode);
-                UiHelper.Hide(toastTextNode);
-            }
-            else {
-                UiHelper.Show(toastBackgroundNode);
-                UiHelper.Show(toastTextNode);
-
-                SetOffsetPosition(toastNode1, Config.OffsetXPosition, Config.OffsetYPosition);
-
-                if (isPreviewing) {
-                    var text = Marshal.PtrToStringAnsi(new IntPtr(toastTextNode->NodeText.StringPtr));
-                    if (text == String.Empty) {
-                        UiHelper.SetText(toastTextNode, "No notification toast history, this is a preview.");
-                    }
-
-                    toastNode1->Color.A = 255;
-                    toastNode2->Color.A = 255;
-
-                    UiHelper.Show(toastNode1);
-                    UiHelper.Show(toastNode2);
-
-                    toastUnitBase->Flags &= unchecked((byte)~0x10);
-                    toastUnitBase->Flags |= 0x20;
-                    toastUnitBase->Flags &= unchecked((byte)~0x40);
-                }
-            }
+            SetOffsetPosition(toastNode, Config.OffsetXPosition, Config.OffsetYPosition);
         }
 
-        private void SetOffsetPosition(AtkResNode* node, float offsetX, float offsetY) {
+        private static AtkResNode* GetToastNode() {
+            var toastUnitBase = Common.GetUnitBase("_WideText", 2);
+            if (toastUnitBase == null) return null;
+            if (toastUnitBase->UldManager.NodeList == null || toastUnitBase->UldManager.NodeListCount < 4) return null;
+
+            return toastUnitBase->UldManager.NodeList[0];
+        }
+
+        private static void SetOffsetPosition(AtkResNode* node, float offsetX, float offsetY) {
             var defaultXPos = (ImGui.GetIO().DisplaySize.X * 1 / 2) - 512;
             var defaultYPos = (ImGui.GetIO().DisplaySize.Y * 3 / 5) - 20;
 
             UiHelper.SetPosition(node, defaultXPos + offsetX, defaultYPos - offsetY);
+        }
+
+        private void OnToast(ref SeString message, ref ToastOptions options, ref bool isHandled) {
+            try {
+                if (isHandled) return;
+
+                if (Config.Hide) {
+                    if (Config.ShowInCombat && PluginInterface.ClientState.Condition[Dalamud.Game.ClientState.ConditionFlag.InCombat])
+                        return;
+                } else {
+                    var messageStr = message.ToString();
+                    if (Config.Exceptions.All(x => !messageStr.Contains(x))) return;
+                }
+                
+                isHandled = true;
+            } catch (Exception ex) {
+                SimpleLog.Error(ex);
+            }
         }
     }
 }
