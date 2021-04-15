@@ -101,14 +101,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     var slot = Common.GetContainerItem(container, i);
                     if (slot == null) continue;
                     var id = slot->ItemId;
-                    var item = PluginInterface.Data.Excel.GetSheet<Sheets.Item>().GetRow(id);
+                    var item = PluginInterface.Data.Excel.GetSheet<Sheets.ExtendedItem>().GetRow(id);
                     if (ignoreCategory.Contains(item.ItemUICategory.Row)) {
                         if (i == 0) c -= 1;
                         c -= 1;
                         continue;
                     }
 
-                    if ((item.Unknown90 & 2) == 2) inaccurate = true;
+                    if ((item.LevelSyncFlag & 2) == 2) inaccurate = true;
                     if (i == 0 && !canHaveOffhand.Contains(item.ItemUICategory.Row)) {
                         sum += item.LevelItem.Row;
                         i++;

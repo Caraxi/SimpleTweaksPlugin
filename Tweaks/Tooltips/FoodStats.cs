@@ -50,7 +50,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             if (id < 2000000) {
                 var hq = id >= 500000;
                 id %= 500000;
-                var item = PluginInterface.Data.Excel.GetSheet<Sheets.Item>().GetRow((uint)id);
+                var item = PluginInterface.Data.Excel.GetSheet<Sheets.ExtendedItem>().GetRow((uint)id);
 
                 var action = item.ItemAction?.Value;
 

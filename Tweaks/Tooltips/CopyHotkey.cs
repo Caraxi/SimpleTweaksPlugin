@@ -164,45 +164,45 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             base.Disable();
         }
 
-        private void CopyItemName(Item item) {
-            ImGui.SetClipboardText(item.Name);
+        private void CopyItemName(ExtendedItem extendedItem) {
+            ImGui.SetClipboardText(extendedItem.Name);
         }
 
         private bool teamcraftLocalFailed = false;
 
-        private void OpenTeamcraft(Item item) {
+        private void OpenTeamcraft(ExtendedItem extendedItem) {
             if (teamcraftLocalFailed || Config.TeamcraftLinkHotkeyForceBrowser) {
-                Process.Start($"https://ffxivteamcraft.com/db/en/item/{item.RowId}");
+                Process.Start($"https://ffxivteamcraft.com/db/en/item/{extendedItem.RowId}");
                 return;
             }
             Task.Run(() => {
                 try {
-                    var wr = WebRequest.CreateHttp($"http://localhost:14500/db/en/item/{item.RowId}");
+                    var wr = WebRequest.CreateHttp($"http://localhost:14500/db/en/item/{extendedItem.RowId}");
                     wr.Timeout = 500;
                     wr.Method = "GET";
                     wr.GetResponse().Close();
                 } catch {
                     try {
                         if (System.IO.Directory.Exists(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ffxiv-teamcraft"))) {
-                            Process.Start($"teamcraft:///db/en/item/{item.RowId}");
+                            Process.Start($"teamcraft:///db/en/item/{extendedItem.RowId}");
                         } else {
                             teamcraftLocalFailed = true;
-                            Process.Start($"https://ffxivteamcraft.com/db/en/item/{item.RowId}");
+                            Process.Start($"https://ffxivteamcraft.com/db/en/item/{extendedItem.RowId}");
                         }
                     } catch {
                         teamcraftLocalFailed = true;
-                        Process.Start($"https://ffxivteamcraft.com/db/en/item/{item.RowId}");
+                        Process.Start($"https://ffxivteamcraft.com/db/en/item/{extendedItem.RowId}");
                     }
                 }
             });
         }
 
-        private void OpenGarlandTools(Item item) {
-            Process.Start($"https://www.garlandtools.org/db/#item/{item.RowId}");
+        private void OpenGarlandTools(ExtendedItem extendedItem) {
+            Process.Start($"https://www.garlandtools.org/db/#item/{extendedItem.RowId}");
         }
         
-        private void OpenGamerEscape(Item item) {
-            var name = Uri.EscapeUriString(item.Name);
+        private void OpenGamerEscape(ExtendedItem extendedItem) {
+            var name = Uri.EscapeUriString(extendedItem.Name);
             Process.Start($"https://ffxiv.gamerescape.com/w/index.php?search={name}");
         }
 
@@ -221,7 +221,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             try {
                 if (PluginInterface.Framework.Gui.HoveredItem == 0) return;
 
-                Action<Item> action = null;
+                Action<ExtendedItem> action = null;
                 VK[] keys = null;
 
                 var language = PluginInterface.ClientState.ClientLanguage;
@@ -250,7 +250,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                     var id = PluginInterface.Framework.Gui.HoveredItem;
                     if (id >= 2000000) return;
                     id %= 500000;
-                    var item = PluginInterface.Data.GetExcelSheet<Item>(language).GetRow((uint) id);
+                    var item = PluginInterface.Data.GetExcelSheet<ExtendedItem>(language).GetRow((uint) id);
                     if (item == null) return;
                     action(item);
                     foreach (var k in keys) {

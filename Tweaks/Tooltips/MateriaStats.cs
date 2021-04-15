@@ -6,8 +6,6 @@ using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.Tweaks.Tooltips;
-using BaseParam = SimpleTweaksPlugin.Sheets.BaseParam;
-using ItemLevel = SimpleTweaksPlugin.Sheets.ItemLevel;
 
 namespace SimpleTweaksPlugin {
     public partial class TooltipTweakConfig {
@@ -77,31 +75,27 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             
             if (!(Config.Delta || Config.Total == false)) Config.Total = true; // Config invalid check
             try {
-                var item = PluginInterface.Data.Excel.GetSheet<Sheets.Item>().GetRow(itemInfo.ItemId);
+                var item = PluginInterface.Data.Excel.GetSheet<Sheets.ExtendedItem>().GetRow(itemInfo.ItemId);
                 if (item == null) return;
                 if (item.MateriaSlotCount == 0) return;
-                var itemLevel = CustomSheet.GetSheet<ItemLevel>().GetRow(item.LevelItem.Row);
+                var itemLevel = PluginInterface.Data.Excel.GetSheet<ExtendedItemLevel>().GetRow(item.LevelItem.Row);
                 if (itemLevel == null) return;
-                var baseParams = new Dictionary<uint, BaseParam>();
+                var baseParams = new Dictionary<uint, ExtendedBaseParam>();
                 var baseParamDeltas = new Dictionary<uint, int>();
                 var baseParamOriginal = new Dictionary<uint, int>();
                 var baseParamLimits = new Dictionary<uint, int>();
-                foreach (var bp in item.UnkStruct60) {
-                    if (bp.BaseParam == 0) continue;
-                    var param = CustomSheet.GetSheet<BaseParam>().GetRow(bp.BaseParam);
-                    if (param == null) continue;
-                    baseParamDeltas.Add(param.RowId, 0);
-                    baseParamOriginal.Add(param.RowId, bp.BaseParamValue);
-                    baseParamLimits.Add(param.RowId, (int) Math.Ceiling(itemLevel.BaseParam[param.RowId] * (param.EquipSlotCategoryPct[item.EquipSlotCategory.Row] / 100f)) );
-                    baseParams.Add(param.RowId, param);
+                foreach (var bp in item.BaseParam) {
+                    if (bp.Value == 0 || bp.BaseParam.Row == 0) continue;
+                    baseParamDeltas.Add(bp.BaseParam.Row, 0);
+                    baseParamOriginal.Add(bp.BaseParam.Row, bp.Value);
+                    baseParamLimits.Add(bp.BaseParam.Row, (int) Math.Ceiling(itemLevel.BaseParam[bp.BaseParam.Row] * (bp.BaseParam.Value.EquipSlotCategoryPct[item.EquipSlotCategory.Row] / 100f)) );
+                    baseParams.Add(bp.BaseParam.Row, bp.BaseParam.Value);
                 }
 
                 if (itemInfo.IsHQ) {
-                    foreach (var bp in item.UnkStruct74) {
-                        if (bp.BaseParamSpecial == 0) continue;
-                        var param = CustomSheet.GetSheet<BaseParam>().GetRow(bp.BaseParamSpecial);
-                        if (param == null) continue;
-                        if (baseParamOriginal.ContainsKey(param.RowId)) baseParamOriginal[param.RowId] += bp.BaseParamValueSpecial;
+                    foreach (var bp in item.BaseParamSpecial) {
+                        if (bp.Value == 0 || bp.BaseParam.Row == 0) continue;
+                        if (baseParamOriginal.ContainsKey(bp.BaseParam.Row)) baseParamOriginal[bp.BaseParam.Row] += bp.Value;
                     }
                 }
 
