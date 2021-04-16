@@ -87,15 +87,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private void Update(bool reset = false) {
-            if (PluginInterface?.ClientState?.Targets?.CurrentTarget != null || reset) {
+            var target = PluginInterface.ClientState.Targets.SoftTarget ?? PluginInterface.ClientState.Targets.CurrentTarget;
+            if (target != null || reset) {
                 var ui = (AtkUnitBase*) PluginInterface?.Framework.Gui.GetUiObjectByName("_TargetInfo", 1);
                 if (ui != null && (ui->IsVisible || reset)) {
-                    UpdateMainTarget(ui, PluginInterface?.ClientState?.Targets?.CurrentTarget, reset);
+                    UpdateMainTarget(ui, target, reset);
                 }
                 
                 var splitUi = (AtkUnitBase*) PluginInterface?.Framework.Gui.GetUiObjectByName("_TargetInfoMainTarget", 1);
                 if (splitUi != null && (splitUi->IsVisible || reset)) {
-                    UpdateMainTargetSplit(splitUi, PluginInterface?.ClientState?.Targets?.CurrentTarget, reset);
+                    UpdateMainTargetSplit(splitUi, target, reset);
                 }
             }
             
