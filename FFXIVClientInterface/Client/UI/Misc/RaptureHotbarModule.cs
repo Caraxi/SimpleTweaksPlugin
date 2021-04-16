@@ -46,7 +46,7 @@ namespace FFXIVClientInterface.Client.UI.Misc {
                 if (--index < 0) return &Data->CrossHotBar01;
                 if (--index < 0) return &Data->CrossHotBar02;
                 if (--index < 0) return &Data->CrossHotBar03;
-                if (--index < 0) return &Data->CrossHotBar04;
+                if (--index < 0) return &Data->CrossHotBar04; 
                 if (--index < 0) return &Data->CrossHotBar05;
                 if (--index < 0) return &Data->CrossHotBar06;
                 if (--index < 0) return &Data->CrossHotBar07;
