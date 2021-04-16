@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game.Internal.Libc;
+using FFXIVClientStructs.FFXIV.Client.System.String;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Helper;
 
@@ -299,6 +300,30 @@ namespace SimpleTweaksPlugin.Debugging {
         }
         
         public static unsafe void PrintOutObject(object obj, ulong addr, List<string> path, bool autoExpand = false, string headerText = null) {
+            if (obj is Utf8String utf8String) {
+
+                var text = string.Empty;
+                Exception err = null;
+                try {
+                    var s = utf8String.BufUsed > int.MaxValue ? int.MaxValue : (int) utf8String.BufUsed;
+                    if (s > 1) {
+                        text = Encoding.UTF8.GetString(utf8String.StringPtr, s - 1);
+                    }
+                } catch (Exception ex) {
+                    err = ex;
+                }
+
+
+                if (err != null) {
+                    ImGui.TextDisabled(err.Message);
+                    ImGui.SameLine();
+                } else {
+                    ImGui.Text($"\"{text}\"");
+                    ImGui.SameLine();
+                }
+                
+            }
+            
             var pushedColor = 0;
             var openedNode = false;
             try {
