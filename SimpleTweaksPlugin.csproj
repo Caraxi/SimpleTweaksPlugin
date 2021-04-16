@@ -14,7 +14,7 @@
     </PropertyGroup>
     <PropertyGroup Label="Feature">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>1.4.0.2</Version>
+        <Version>1.4.0.3</Version>
     </PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
         <AppOutputBase>$(MSBuildProjectDirectory)\</AppOutputBase>

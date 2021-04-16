@@ -101,7 +101,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var itemData = PluginInterface.Data.Excel.GetSheet<Item>().GetRow(item->ItemId);
 
                 var classJobOffset = 2 * (int)(itemData.ClassJobRepair.Row - 8);
-                var desynthLevel = *(ushort*)(Common.PlayerStaticAddress + (0x69A + classJobOffset)) / 100f;
+                var desynthLevel = *(ushort*)(Common.PlayerStaticAddress + (0x6A6 + classJobOffset)) / 100f;
                 
                 skillTextNode->TextColor = new ByteColor() {
                     A = 0xFF,
