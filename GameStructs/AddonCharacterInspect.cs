@@ -1,8 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Data.Parsing.Uld;
-using SimpleTweaksPlugin.Debugging;
 
 namespace SimpleTweaksPlugin.GameStructs {
     
