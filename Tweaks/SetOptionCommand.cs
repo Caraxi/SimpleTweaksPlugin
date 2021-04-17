@@ -36,10 +36,10 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
 
         private readonly Dictionary<string, (OptionType type, ulong key, int offset, string[] alias)> optionKinds = new Dictionary<string, (OptionType, ulong, int, string[])> {
-            { "itemtooltips", (OptionType.Bool, 0x130, 0xBDE0, new [] {"itt"} )},
-            { "actiontooltips", (OptionType.Bool, 0x136, 0xBE40, new [] {"att"}) },
-            { "gamepadmode", (OptionType.ToggleGamepadMode, 0x89, 0xB370, new [] { "gp" })},
-            { "legacymovement", (OptionType.Bool, 0x8A, 0xB380, new [] { "lm"})},
+            { "itemtooltips", (OptionType.Bool, 0x132, 0xBE80, new [] {"itt"} )},
+            { "actiontooltips", (OptionType.Bool, 0x138, 0xBEE0, new [] {"att"}) },
+            { "gamepadmode", (OptionType.ToggleGamepadMode, 0x8B, 0xB430, new [] { "gp" })},
+            { "legacymovement", (OptionType.Bool, 0x8A, 0xB420, new [] { "lm"})},
         };
 
         private readonly Dictionary<OptionType, string> optionTypeValueHints = new Dictionary<OptionType, string> {
