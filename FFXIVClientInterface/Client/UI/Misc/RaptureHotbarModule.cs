@@ -86,34 +86,36 @@ namespace FFXIVClientInterface.Client.UI.Misc {
 
     }
     
-    [StructLayout(LayoutKind.Explicit, Size = 0x25BF0)]
+    [StructLayout(LayoutKind.Explicit, Size = 0x27278)]
     public unsafe struct RaptureHotbarModuleStruct {
+        private const int HotbarStart = 0x90;
+        
         [FieldOffset(0x00000)] public void* vtbl;
         
         [FieldOffset(0x00030)] public fixed byte ModuleName[16];
         
-        [FieldOffset(0x00088 + HotBar.Size * 00)] public HotBar HotBar01;
-        [FieldOffset(0x00088 + HotBar.Size * 01)] public HotBar HotBar02;
-        [FieldOffset(0x00088 + HotBar.Size * 02)] public HotBar HotBar03;
-        [FieldOffset(0x00088 + HotBar.Size * 03)] public HotBar HotBar04;
-        [FieldOffset(0x00088 + HotBar.Size * 04)] public HotBar HotBar05;
-        [FieldOffset(0x00088 + HotBar.Size * 05)] public HotBar HotBar06;
-        [FieldOffset(0x00088 + HotBar.Size * 06)] public HotBar HotBar07;
-        [FieldOffset(0x00088 + HotBar.Size * 07)] public HotBar HotBar08;
-        [FieldOffset(0x00088 + HotBar.Size * 08)] public HotBar HotBar09;
-        [FieldOffset(0x00088 + HotBar.Size * 09)] public HotBar HotBar10;
+        [FieldOffset(HotbarStart + HotBar.Size * 00)] public HotBar HotBar01;
+        [FieldOffset(HotbarStart + HotBar.Size * 01)] public HotBar HotBar02;
+        [FieldOffset(HotbarStart + HotBar.Size * 02)] public HotBar HotBar03;
+        [FieldOffset(HotbarStart + HotBar.Size * 03)] public HotBar HotBar04;
+        [FieldOffset(HotbarStart + HotBar.Size * 04)] public HotBar HotBar05;
+        [FieldOffset(HotbarStart + HotBar.Size * 05)] public HotBar HotBar06;
+        [FieldOffset(HotbarStart + HotBar.Size * 06)] public HotBar HotBar07;
+        [FieldOffset(HotbarStart + HotBar.Size * 07)] public HotBar HotBar08;
+        [FieldOffset(HotbarStart + HotBar.Size * 08)] public HotBar HotBar09;
+        [FieldOffset(HotbarStart + HotBar.Size * 09)] public HotBar HotBar10;
 
-        [FieldOffset(0x00088 + HotBar.Size * 10)] public HotBar CrossHotBar01;
-        [FieldOffset(0x00088 + HotBar.Size * 11)] public HotBar CrossHotBar02;
-        [FieldOffset(0x00088 + HotBar.Size * 12)] public HotBar CrossHotBar03;
-        [FieldOffset(0x00088 + HotBar.Size * 13)] public HotBar CrossHotBar04;
-        [FieldOffset(0x00088 + HotBar.Size * 14)] public HotBar CrossHotBar05;
-        [FieldOffset(0x00088 + HotBar.Size * 15)] public HotBar CrossHotBar06;
-        [FieldOffset(0x00088 + HotBar.Size * 16)] public HotBar CrossHotBar07;
-        [FieldOffset(0x00088 + HotBar.Size * 17)] public HotBar CrossHotBar08;
+        [FieldOffset(HotbarStart + HotBar.Size * 10)] public HotBar CrossHotBar01;
+        [FieldOffset(HotbarStart + HotBar.Size * 11)] public HotBar CrossHotBar02;
+        [FieldOffset(HotbarStart + HotBar.Size * 12)] public HotBar CrossHotBar03;
+        [FieldOffset(HotbarStart + HotBar.Size * 13)] public HotBar CrossHotBar04;
+        [FieldOffset(HotbarStart + HotBar.Size * 14)] public HotBar CrossHotBar05;
+        [FieldOffset(HotbarStart + HotBar.Size * 15)] public HotBar CrossHotBar06;
+        [FieldOffset(HotbarStart + HotBar.Size * 16)] public HotBar CrossHotBar07;
+        [FieldOffset(HotbarStart + HotBar.Size * 17)] public HotBar CrossHotBar08;
 
-        [FieldOffset(0x0FC88)] public HotBar PetHotBar;
-        [FieldOffset(0x10A88)] public HotBar CrossPetHotBar;
+        [FieldOffset(0x0FC90)] public HotBar PetHotBar;
+        [FieldOffset(0x10A90)] public HotBar CrossPetHotBar;
     }
 
     [StructLayout(LayoutKind.Sequential, Size = HotBar.Size)]
