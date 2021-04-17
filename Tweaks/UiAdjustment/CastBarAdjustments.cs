@@ -4,8 +4,10 @@ using Dalamud.Game.Internal;
 using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
+using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
@@ -23,23 +25,25 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             Right = 5,
         }
 
-        public class Configs {
+        public class Configs : TweakConfig {
             public bool RemoveCastingText;
             public bool RemoveIcon;
             public bool RemoveCounter;
             public bool RemoveName;
 
             public bool SlideCast;
+            public int SlideCastAdjust = 500;
+            public Vector4 SlideCastColor = new Vector4(0.8F, 0.3F, 0.3F, 1);
+            public Vector4 SlideCastReadyColor = new Vector4(0.3F, 0.8F, 0.3F, 1);
 
             public Alignment AlignName = Alignment.Left;
             public Alignment AlignCounter = Alignment.Right;
 
             public int OffsetNamePosition = 0;
             public int OffsetCounterPosition = 0;
-
         }
 
-        public Configs Config => PluginConfig.UiAdjustments.CastBarAdjustments;
+        public Configs Config { get; private set; }
 
         private bool DrawAlignmentSelector(string name, ref Alignment selectedAlignment) {
             var changed = false;
@@ -117,6 +121,15 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
 
             hasChanged |= ImGui.Checkbox("Show SlideCast Marker", ref Config.SlideCast);
+            if (Config.SlideCast) {
+                ImGui.Indent();
+                ImGui.Indent();
+                hasChanged |= ImGui.SliderInt("SlideCast Offset Time", ref Config.SlideCastAdjust, 0, 1000);
+                hasChanged |= ImGui.ColorEdit4("SlideCast Marker Colour", ref Config.SlideCastColor);
+                hasChanged |= ImGui.ColorEdit4("SlideCast Ready Colour", ref Config.SlideCastReadyColor);
+                ImGui.Unindent();
+                ImGui.Unindent();
+            }
 
             ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
 
@@ -127,6 +140,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         };
 
         public override void Enable() {
+            // TODO: Remove old config
+            // Migrate config from old config
+            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.CastBarAdjustments ?? new Configs();
             PluginInterface.Framework.OnUpdateEvent += FrameworkOnUpdate;
             base.Enable();
         }
@@ -134,6 +150,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override void Disable() {
             PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdate;
             UpdateCastBar(true);
+            SaveConfig(Config);
             base.Disable();
         }
 
@@ -144,19 +161,30 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 SimpleLog.Error(ex);
             }
         }
+
+        private const uint NodeSlideCastMarker = 999001; 
         
         public void UpdateCastBar(bool reset = false) {
-            var castBar = Common.GetUnitBase("_CastBar");
+            var castBar = Common.GetUnitBase<AddonCastBar>();
             if (castBar == null) return;
-            if (castBar->UldManager.NodeList == null || castBar->UldManager.NodeListCount < 12) return;
+            if (castBar->AtkUnitBase.UldManager.NodeList == null || castBar->AtkUnitBase.UldManager.NodeListCount < 12) return;
 
-            var barNode = castBar->UldManager.NodeList[3];
+            var barNode = castBar->AtkUnitBase.UldManager.NodeList[3];
             
-            var icon = (AtkComponentNode*) castBar->UldManager.NodeList[7];
-            var countdownText = (AtkTextNode*) castBar->UldManager.NodeList[8];
-            var castingText = (AtkTextNode*) castBar->UldManager.NodeList[9];
-            var skillNameText = (AtkTextNode*) castBar->UldManager.NodeList[11];
+            var icon = (AtkComponentNode*) castBar->AtkUnitBase.UldManager.NodeList[7];
+            var countdownText = (AtkTextNode*) castBar->AtkUnitBase.UldManager.NodeList[8];
+            var castingText = (AtkTextNode*) castBar->AtkUnitBase.UldManager.NodeList[9];
+            var skillNameText = (AtkTextNode*) castBar->AtkUnitBase.UldManager.NodeList[11];
+            var progressBar = (AtkNineGridNode*) castBar->AtkUnitBase.UldManager.NodeList[5];
+            var slideMarker = (AtkNineGridNode*) null;
 
+            for (var i = 13; i < castBar->AtkUnitBase.UldManager.NodeListCount; i++) {
+                if (castBar->AtkUnitBase.UldManager.NodeList[i]->NodeID == NodeSlideCastMarker) {
+                    slideMarker = (AtkNineGridNode*) castBar->AtkUnitBase.UldManager.NodeList[i];
+                    break;
+                }
+            }
+            
             if (reset) {
                 UiHelper.Show(icon);
                 UiHelper.Show(countdownText);
@@ -168,6 +196,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 UiHelper.SetSize(countdownText, 42, null);
                 UiHelper.SetPosition(countdownText, 170, null);
+
+
+                if (slideMarker != null) {
+                    UiHelper.Hide(slideMarker);
+                }
 
                 countdownText->AlignmentFontType = 0x25;
                 skillNameText->AlignmentFontType = 0x03;
@@ -194,6 +227,39 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 skillNameText->AlignmentFontType = (byte) (0x00 | (byte) Config.AlignName);
                 UiHelper.SetPosition(skillNameText, (barNode->X + 4) + Config.OffsetNamePosition, null);
                 UiHelper.SetSize(skillNameText, barNode->Width - 8, null);
+            }
+
+            if (Config.SlideCast) {
+                if (slideMarker == null) {
+                    // Create Node
+                    UiHelper.ExpandNodeList((AtkUnitBase*)castBar, 1);
+                    slideMarker = UiHelper.CloneNode(progressBar);
+                    slideMarker->AtkResNode.NodeID = NodeSlideCastMarker;
+                    castBar->AtkUnitBase.UldManager.NodeList[6]->PrevSiblingNode = (AtkResNode*) slideMarker;
+                    slideMarker->AtkResNode.NextSiblingNode = castBar->AtkUnitBase.UldManager.NodeList[6];
+                    slideMarker->AtkResNode.ParentNode = castBar->AtkUnitBase.UldManager.NodeList[3];
+                    castBar->AtkUnitBase.UldManager.NodeList[castBar->AtkUnitBase.UldManager.NodeListCount++] = (AtkResNode*)slideMarker;
+                }
+
+                if (slideMarker != null) {
+                    var slidePer = ((float)(castBar->CastTime * 10) - Config.SlideCastAdjust) / (castBar->CastTime * 10);
+                    var pos = 160 * slidePer;
+                    UiHelper.Show(slideMarker);
+                    UiHelper.SetSize(slideMarker, 168 - (int)pos, 20);
+                    UiHelper.SetPosition(slideMarker, pos - 8, 0);
+
+                    slideMarker->AtkResNode.AddRed = ushort.MaxValue;
+                    slideMarker->AtkResNode.AddGreen = ushort.MaxValue;
+                    slideMarker->AtkResNode.AddBlue = ushort.MaxValue;
+
+                    var c = (slidePer * 100) >= castBar->CastPercent ? Config.SlideCastColor : Config.SlideCastReadyColor;
+                    slideMarker->AtkResNode.MultiplyRed = (byte) (255 * c.X);
+                    slideMarker->AtkResNode.MultiplyGreen = (byte) (255 * c.Y);
+                    slideMarker->AtkResNode.MultiplyBlue = (byte) (255 * c.Z);
+                    slideMarker->AtkResNode.Color.A = (byte) (255 * c.W);
+                    slideMarker->PartID = 0;
+                    slideMarker->AtkResNode.Flags_2 |= 1;
+                }
             }
         }
     }
