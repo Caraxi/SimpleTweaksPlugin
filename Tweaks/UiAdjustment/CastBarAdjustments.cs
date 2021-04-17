@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Game.Internal;
 using Dalamud.Interface;
@@ -19,6 +20,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
         public override string Name => "Cast Bar Adjustments";
         public override string Description => "Allows hiding or moving specific parts of the castbar.";
+        public override IEnumerable<string> Tags => new[] {"SlideCast", "Slide Cast"};
         public enum Alignment : byte {
             Left = 3,
             Center = 4,

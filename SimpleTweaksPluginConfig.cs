@@ -133,13 +133,13 @@ namespace SimpleTweaksPlugin {
                     foreach (var t in plugin.Tweaks) {
                         if (t is SubTweakManager stm) {
                             foreach (var st in stm.GetTweakList()) {
-                                if (st.Name.ToLowerInvariant().Contains(searchValue)) {
+                                if (st.Name.ToLowerInvariant().Contains(searchValue) || st.Tags.Any(tag => tag.ToLowerInvariant().Contains(searchValue))) {
                                     searchResults.Add(st);
                                 }
                             }
                             continue;
                         }
-                        if (t.Name.ToLowerInvariant().Contains(searchValue)) {
+                        if (t.Name.ToLowerInvariant().Contains(searchValue) || t.Tags.Any(tag => tag.ToLowerInvariant().Contains(searchValue))) {
                             searchResults.Add(t);
                         }
                     }

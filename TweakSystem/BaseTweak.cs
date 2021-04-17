@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Dalamud.Plugin;
 using ImGuiNET;
@@ -20,6 +21,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
         public virtual string Description => null;
         protected virtual string Author => null;
         public virtual bool Experimental => false;
+        public virtual IEnumerable<string> Tags { get; } = new string[0];
 
         public virtual bool CanLoad => true;
 
