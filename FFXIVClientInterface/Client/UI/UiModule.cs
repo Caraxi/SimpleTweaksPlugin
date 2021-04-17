@@ -34,6 +34,7 @@ namespace FFXIVClientInterface.Client.UI {
             return wrapper;
         }
         
+        public ConfigModule ConfigModule => GetModuleSingleton<ConfigModule>(Data->vtbl->GetConfigModule);
         public RaptureHotbarModule RaptureHotbarModule => GetModuleSingleton<RaptureHotbarModule>(Data->vtbl->GetRaptureHotbarModule);
         public RaptureGearsetModule RaptureGearsetModule => GetModuleSingleton<RaptureGearsetModule>(Data->vtbl->GetRaptureGearsetModule);
         public RaptureMacroModule RaptureMacroModule => GetModuleSingleton<RaptureMacroModule>(Data->vtbl->GetRaptureMacroModule);

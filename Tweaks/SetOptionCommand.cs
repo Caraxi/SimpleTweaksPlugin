@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game.Command;
 using Dalamud.Hooking;
-using Dalamud.Plugin;
+using FFXIVClientInterface.Client.UI.Misc;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks {
-    public class SetOptionCommand : Tweak {
+    public unsafe class SetOptionCommand : Tweak {
 
         public override string Name => "Set Option Command";
         public override string Description => "Adds commands to change various settings.";
@@ -18,28 +18,26 @@ namespace SimpleTweaksPlugin.Tweaks {
         private IntPtr setOptionAddress = IntPtr.Zero;
 
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)] 
-        private delegate IntPtr SetOptionDelegate(IntPtr baseAddress, ulong kind, ulong value, ulong unknown);
+        private delegate IntPtr SetOptionDelegate(ConfigModuleStruct* configModule, ulong kind, ulong value, ulong unknown);
         
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)] 
-        private delegate void SetGamepadMode(IntPtr baseAddress, ulong value);
+        private delegate void SetGamepadMode(ConfigModuleStruct* configModule, ulong value);
 
         private SetOptionDelegate setOption;
         private SetGamepadMode setGamepadMode;
 
         private Hook<SetOptionDelegate> setOptionHook;
         
-        private IntPtr baseAddress = IntPtr.Zero;
-
         private enum OptionType {
             Bool,
             ToggleGamepadMode, // bool with extra shit
         }
 
-        private readonly Dictionary<string, (OptionType type, ulong key, int offset, string[] alias)> optionKinds = new Dictionary<string, (OptionType, ulong, int, string[])> {
-            { "itemtooltips", (OptionType.Bool, 0x132, 0xBE80, new [] {"itt"} )},
-            { "actiontooltips", (OptionType.Bool, 0x138, 0xBEE0, new [] {"att"}) },
-            { "gamepadmode", (OptionType.ToggleGamepadMode, 0x8B, 0xB430, new [] { "gp" })},
-            { "legacymovement", (OptionType.Bool, 0x8A, 0xB420, new [] { "lm"})},
+        private readonly Dictionary<string, (OptionType type, ulong key, string[] alias)> optionKinds = new() {
+            { "itemtooltips", (OptionType.Bool, 0x132, new [] {"itt"} )},
+            { "actiontooltips", (OptionType.Bool, 0x138, new [] {"att"}) },
+            { "gamepadmode", (OptionType.ToggleGamepadMode, 0x8B, new [] { "gp" })},
+            { "legacymovement", (OptionType.Bool, 0x8C, new [] { "lm"})},
         };
 
         private readonly Dictionary<OptionType, string> optionTypeValueHints = new Dictionary<OptionType, string> {
@@ -120,11 +118,8 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
 
         private void OptionCommand(string command, string arguments) {
-
-            if (baseAddress == IntPtr.Zero) {
-                PluginInterface.Framework.Gui.Chat.PrintError("Waiting for setup. Please switch zone.");
-                return;
-            }
+            var configModule = SimpleTweaksPlugin.Client.UiModule.ConfigModule;
+            if (configModule == null) return;
 
             var argList = arguments.ToLower().Split(' ');
 
@@ -143,7 +138,7 @@ namespace SimpleTweaksPlugin.Tweaks {
             
             var optionKind = argList[0];
 
-            (OptionType type, ulong key, int offset, string[] alias) optionDefinition;
+            (OptionType type, ulong key, string[] alias) optionDefinition;
             if (optionKinds.ContainsKey(optionKind)) {
                 optionDefinition = optionKinds[optionKind];
             } else {
@@ -172,25 +167,21 @@ namespace SimpleTweaksPlugin.Tweaks {
                         case "1":
                         case "true":
                         case "on":
-                            setOption(baseAddress, optionDefinition.key, 1, 2);
+                            setOption(configModule, optionDefinition.key, 1, 2);
                             setValue = 1;
                             break;
                         case "0":
                         case "false":
                         case "off":
-                            setOption(baseAddress, optionDefinition.key, 0, 2);
+                            setOption(configModule, optionDefinition.key, 0, 2);
                             setValue = 0;
                             break;
                         case "":
                         case "t":
                         case "toggle":
-                            if (optionDefinition.offset > 0) {
-                                var cVal = Marshal.ReadByte(baseAddress, optionDefinition.offset);
-                                setOption(baseAddress, optionDefinition.key, cVal == 1 ? 0UL : 1UL, 2);
-                                setValue = cVal == 1 ? 1 : 0UL;
-                            } else {
-                                PluginInterface.Framework.Gui.Chat.PrintError($"Toggle not available for {optionKind}");
-                            }
+                            var cVal = configModule.GetOptionBoolean(optionDefinition.key);
+                            setOption(configModule, optionDefinition.key, cVal ? 0UL : 1UL, 2);
+                            setValue = cVal ? 1 : 0UL;
                             break;
                         default:
                             PluginInterface.Framework.Gui.Chat.PrintError($"/setoption {optionKind} ({optionTypeValueHints[optionDefinition.type]})");
@@ -206,17 +197,16 @@ namespace SimpleTweaksPlugin.Tweaks {
 
             switch (optionDefinition.type) {
                 case OptionType.ToggleGamepadMode: {
-                    setGamepadMode(baseAddress, setValue);
+                    setGamepadMode(configModule, setValue);
                     break;
                 }
             }
             
         }
 
-        private IntPtr SetOptionDetour(IntPtr baseAddress, ulong kind, ulong value, ulong unknown) {
-            this.baseAddress = baseAddress;
-            SimpleLog.Verbose($"Set Option: {baseAddress.ToInt64():X} {kind:X}, {value:X}, {unknown:X}");
-            return setOptionHook.Original(baseAddress, kind, value, unknown);
+        private IntPtr SetOptionDetour(ConfigModuleStruct* configModule, ulong kind, ulong value, ulong unknown) {
+            SimpleLog.Verbose($"Set Option: {(ulong)configModule:X} {kind:X}, {value:X}, {unknown:X}");
+            return setOptionHook.Original(configModule, kind, value, unknown);
         }
 
         public override void Disable() {
