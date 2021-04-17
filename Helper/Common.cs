@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Dalamud.Game;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Hooking;
 using Dalamud.Plugin;
+using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Enums;
@@ -59,6 +62,19 @@ namespace SimpleTweaksPlugin.Helper {
 
         public static AtkUnitBase* GetUnitBase(string name, int index = 1) {
             return (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName(name, index);
+        }
+
+        public static T* GetUnitBase<T>(string name = null, int index = 1) where T : unmanaged {
+            if (string.IsNullOrEmpty(name)) {
+                var attr = (Addon) typeof(T).GetCustomAttribute(typeof(Addon));
+                if (attr != null) {
+                    name = attr.AddonIdentifiers.FirstOrDefault();
+                }
+            }
+
+            if (string.IsNullOrEmpty(name)) return null;
+            
+            return (T*) PluginInterface.Framework.Gui.GetUiObjectByName(name, index);
         }
 
         public static InventoryContainer* GetContainer(InventoryType inventoryType) {
