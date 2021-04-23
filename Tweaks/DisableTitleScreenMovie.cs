@@ -19,9 +19,9 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         private void FrameworkUpdate(Framework framework) {
             try {
-                if (PluginInterface.ClientState.LocalContentId == 0) {
-                    SimpleTweaksPlugin.Client.UiModule.AgentModule.GetAgent<AgentLobby>().Data->IdleTime = 0;
-                }
+                if (PluginInterface.ClientState?.Condition == null) return;
+                if (PluginInterface.ClientState.Condition.Any()) return;
+                SimpleTweaksPlugin.Client.UiModule.AgentModule.GetAgent<AgentLobby>().Data->IdleTime = 0;
             } catch {
                 // Ignored
             }
