@@ -132,8 +132,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private static void SetOffsetPosition(AtkResNode* node, float offsetX, float offsetY) {
-            var defaultXPos = (ImGui.GetIO().DisplaySize.X * 1 / 2) - 512;
-            var defaultYPos = (ImGui.GetIO().DisplaySize.Y * 3 / 5) - 20;
+            // default 1080p values
+            var defaultXPos = 448.0f;
+            var defaultYPos = 628.0f;
+            try {
+                defaultXPos = (ImGui.GetIO().DisplaySize.X * 1 / 2) - 512;
+                defaultYPos = (ImGui.GetIO().DisplaySize.Y * 3 / 5) - 20;
+            }
+            catch (NullReferenceException) { }
 
             UiHelper.SetPosition(node, defaultXPos + offsetX, defaultYPos - offsetY);
         }
