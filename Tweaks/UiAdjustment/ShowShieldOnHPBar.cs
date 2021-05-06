@@ -99,7 +99,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             try
             {
                 var player = PluginInterface.ClientState.LocalPlayer;
-                // Shield Percentage as byte is at address 0x1997
+                if (player == null) return;
+                // Shield Percentage as a byte is at address 0x1997
                 var shieldRawPercentage = (*(byte*) (player.Address + 0x1997))/ 100f;
                 var playerHpPercentage = (float)player.CurrentHp / player.MaxHp;
                 var playerHpDownPercentage = 1f - playerHpPercentage;
