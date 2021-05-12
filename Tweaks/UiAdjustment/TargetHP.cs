@@ -35,6 +35,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public enum DisplayFormat {
             [Description("Full Number")] 
             FullNumber,
+            [Description("Full Number, with Separators (5,555,555)")]
+            FullNumberSeparators,
             [Description("Short Number (5K, 5M)")]
             ZeroDecimalPrecision,
             [Description("1 Decimal (5.5K, 5.5M)")]
@@ -219,6 +221,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private string FormatNumber(int num) {
             if (Config.DisplayFormat == DisplayFormat.FullNumber) return $"{num}";
+            if (Config.DisplayFormat == DisplayFormat.FullNumberSeparators) return $"{num:N0}";
 
             var fStr = Config.DisplayFormat switch {
                 DisplayFormat.OneDecimalPrecision => "F1",
