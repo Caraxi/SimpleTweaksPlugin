@@ -31,6 +31,8 @@ namespace SimpleTweaksPlugin.Tweaks {
         private enum OptionType {
             Bool,
             ToggleGamepadMode, // bool with extra shit
+            NameDisplayModeBattle,
+            NameDisplayMode,
         }
 
         private readonly Dictionary<string, (OptionType type, ulong key, string[] alias)> optionKinds = new() {
@@ -38,11 +40,17 @@ namespace SimpleTweaksPlugin.Tweaks {
             { "actiontooltips", (OptionType.Bool, 0x138, new [] {"att"}) },
             { "gamepadmode", (OptionType.ToggleGamepadMode, 0x8B, new [] { "gp" })},
             { "legacymovement", (OptionType.Bool, 0x8C, new [] { "lm"})},
+            { "owndisplayname", (OptionType.NameDisplayModeBattle, 0x172, new [] { "odn" })},
+            { "partydisplayname", (OptionType.NameDisplayModeBattle, 0x17E, new [] { "pdn" })},
+            { "alliancedisplayname", (OptionType.NameDisplayModeBattle, 0x187, new [] {"adn"})},
+            { "otherpcdisplayname", (OptionType.NameDisplayModeBattle, 0x18E, new [] {"opcdn"})},
+            { "frienddisplayname", (OptionType.NameDisplayModeBattle, 0x1CB, new [] {"fdn"})},
         };
 
         private readonly Dictionary<OptionType, string> optionTypeValueHints = new Dictionary<OptionType, string> {
             {OptionType.Bool, "on | off | toggle"},
             {OptionType.ToggleGamepadMode, "on | off | toggle"},
+            {OptionType.NameDisplayModeBattle, "always | battle | targeted | never"},
         };
         
         public override void Setup() {
@@ -188,6 +196,28 @@ namespace SimpleTweaksPlugin.Tweaks {
                             break;
                         }
 
+                    break;
+                }
+                case OptionType.NameDisplayModeBattle: {
+                    switch (optionValue.ToLowerInvariant()) {
+                        case "a":
+                        case "always":
+                            setOption(configModule, optionDefinition.key, 0, 2);
+                            break;
+                        case "b":
+                        case "battle":
+                            setOption(configModule, optionDefinition.key, 1, 2);
+                            break;
+                        case "t":
+                        case "target":
+                        case "targeted":
+                            setOption(configModule, optionDefinition.key, 2, 2);
+                            break;
+                        case "n":
+                        case "never": 
+                            setOption(configModule, optionDefinition.key, 3, 2);
+                            break;
+                    }
                     break;
                 }
                 default:
