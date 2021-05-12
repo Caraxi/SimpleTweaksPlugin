@@ -176,7 +176,7 @@ namespace FFXIVClientInterface.Client.UI.Misc {
         [FieldOffset(0xC8)] public HotbarSlotType IconTypeA;
         [FieldOffset(0xC9)] public HotbarSlotType IconTypeB;
         
-        [FieldOffset(0xCC)] public uint Icon;
+        [FieldOffset(0xCC)] public int Icon;
         
 
 

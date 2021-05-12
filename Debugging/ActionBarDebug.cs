@@ -113,8 +113,8 @@ namespace SimpleTweaksPlugin.Debugging {
                 ImGui.NextColumn();
 
                 var iconGood = false;
-                if (slot->Icon <= ushort.MaxValue) {
-                    var icon = Plugin.IconManager.GetIconTexture((ushort)slot->Icon);
+                if (slot->Icon >= 0) {
+                    var icon = Plugin.IconManager.GetIconTexture(slot->Icon % 1000000, slot->Icon >= 1000000);
                     if (icon != null) {
                         ImGui.Image(icon.ImGuiHandle, new Vector2(32));
                         iconGood = true;
@@ -122,6 +122,8 @@ namespace SimpleTweaksPlugin.Debugging {
                 }
                 if (!iconGood) {
                     ImGui.GetWindowDrawList().AddRect(ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + new Vector2(32), 0xFF0000FF, 4);
+                    ImGui.GetWindowDrawList().AddText(ImGui.GetCursorScreenPos(), 0xFFFFFFFF, $"{slot->Icon}");
+                   
                     ImGui.Dummy(new Vector2(32));
                 }
                 ImGui.SameLine();
@@ -143,7 +145,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     }
 
                     case HotbarSlotType.Item: {
-                        var item = Plugin.PluginInterface.Data.GetExcelSheet<Item>().GetRow(slot->CommandId);
+                        var item = Plugin.PluginInterface.Data.GetExcelSheet<Item>().GetRow(slot->CommandId % 500000);
                         if (item == null) {
                             ImGui.TextDisabled("Not Found");
                         } else {
