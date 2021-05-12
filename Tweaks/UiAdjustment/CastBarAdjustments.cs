@@ -249,12 +249,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     UiHelper.Show(slideMarker);
                     UiHelper.SetSize(slideMarker, 168 - (int)pos, 20);
                     UiHelper.SetPosition(slideMarker, pos - 8, 0);
-
-                    slideMarker->AtkResNode.AddRed = ushort.MaxValue;
-                    slideMarker->AtkResNode.AddGreen = ushort.MaxValue;
-                    slideMarker->AtkResNode.AddBlue = ushort.MaxValue;
-
                     var c = (slidePer * 100) >= castBar->CastPercent ? Config.SlideCastColor : Config.SlideCastReadyColor;
+                    slideMarker->AtkResNode.AddRed = (byte) (255 * c.X);
+                    slideMarker->AtkResNode.AddGreen = (byte) (255 * c.Y);
+                    slideMarker->AtkResNode.AddBlue = (byte) (255 * c.Z);
                     slideMarker->AtkResNode.MultiplyRed = (byte) (255 * c.X);
                     slideMarker->AtkResNode.MultiplyGreen = (byte) (255 * c.Y);
                     slideMarker->AtkResNode.MultiplyBlue = (byte) (255 * c.Z);
