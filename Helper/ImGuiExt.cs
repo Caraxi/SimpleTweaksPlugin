@@ -15,5 +15,13 @@ namespace SimpleTweaksPlugin.Helper {
         }
 
         public static void SetColumnWidths(float firstWidth, params float[] widths) => SetColumnWidths(0, firstWidth, widths);
+
+        public static bool InputByte(string label, ref byte v) {
+            var vInt = (int) v;
+            if (!ImGui.InputInt(label, ref vInt, 1)) return false;
+            if (vInt < byte.MinValue || vInt > byte.MaxValue) return false;
+            v = (byte) vInt;
+            return true;
+        }
     }
 }
