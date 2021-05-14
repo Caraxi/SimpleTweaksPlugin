@@ -7,6 +7,7 @@
         GatherNote = 22,
         RecipeNote = 23,
         ItemSearch = 120,
+        Unknown = 100,
         // ChatLog,
         // Inventory,
         // Context,
