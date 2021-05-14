@@ -7,14 +7,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
-using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using SimpleTweaksPlugin.TweakSystem;
-
-namespace SimpleTweaksPlugin {
-    public partial class UiAdjustmentsConfig {
-        public CastBarAdjustments.Configs CastBarAdjustments = new CastBarAdjustments.Configs();
-    }
-}
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
@@ -142,9 +135,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         };
 
         public override void Enable() {
-            // TODO: Remove old config
-            // Migrate config from old config
-            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.CastBarAdjustments ?? new Configs();
+            Config = LoadConfig<Configs>() ?? new Configs();
             PluginInterface.Framework.OnUpdateEvent += FrameworkOnUpdate;
             base.Enable();
         }
