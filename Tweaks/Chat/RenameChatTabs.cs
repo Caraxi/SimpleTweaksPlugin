@@ -129,14 +129,14 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
             SetTabName((AtkComponentNode*) unitBase->UldManager.NodeList[12], (reset || !TweakConfig.DoRenameTab1 || string.IsNullOrEmpty(TweakConfig.ChatTab1Name)) ? DefaultName1 : TweakConfig.ChatTab1Name);
             
             // Redo Positions
-            ushort x = 23;
+            ushort x = (ushort) (23 * unitBase->UldManager.NodeList[13]->ScaleX);
             for (var i = 13; i > 3; i--) {
                 if (i == 5) continue;
                 var t = unitBase->UldManager.NodeList[i];
                 if ((t->Flags & 0x10) != 0x10) continue;
                 t->X = x;
                 t->Flags_2 |= 0x1;
-                x += t->Width;
+                x += (ushort) (t->Width * t->ScaleX);
             }
         }
 
