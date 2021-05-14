@@ -21,6 +21,9 @@ namespace SimpleTweaksPlugin.Helper
 
         private delegate AtkResNode* CreateAtkNode(void* unused, NodeType type);
         private static CreateAtkNode _createAtkNode;
+
+        private delegate ulong AtkResNodeSetScale(AtkResNode* atkResNode, float scaleX, float scaleY);
+        private static AtkResNodeSetScale _atkResNodeSetScale;
         
         public static bool Ready = false;
 
@@ -30,6 +33,7 @@ namespace SimpleTweaksPlugin.Helper
             _getGameAllocator = Marshal.GetDelegateForFunctionPointer<GetGameAllocator>(scanner.ScanText("E8 ?? ?? ?? ?? 8B 75 08"));
             _atkUnitBaseClose = Marshal.GetDelegateForFunctionPointer<AtkUnitBaseClose>(scanner.ScanText("40 53 48 83 EC 50 81 A1"));
             _createAtkNode = Marshal.GetDelegateForFunctionPointer<CreateAtkNode>(scanner.ScanText("E8 ?? ?? ?? ?? 48 8B 4C 24 ?? 48 8B 51 08"));
+            _atkResNodeSetScale = Marshal.GetDelegateForFunctionPointer<AtkResNodeSetScale>(scanner.ScanText("E8 ?? ?? ?? ?? 48 8D 7F 38"));
             Ready = true;
         }
 

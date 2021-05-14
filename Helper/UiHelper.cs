@@ -57,6 +57,14 @@ namespace SimpleTweaksPlugin.Helper {
             if (y >= short.MinValue && x <= short.MaxValue) atkUnitBase->Y = (short) y.Value;
         }
 
+        public static void SetScale(AtkResNode* atkResNode, float scale) {
+            _atkResNodeSetScale(atkResNode, scale, scale);
+        }
+
+        public static void SetScale(AtkResNode* atkResNode, float scaleX, float scaleY) {
+            _atkResNodeSetScale(atkResNode, scaleX, scaleY);
+        }
+
         public static void SetWindowSize(AtkComponentNode* windowNode, ushort? width, ushort? height) {
             if (((ULDComponentInfo*) windowNode->Component->UldManager.Objects)->ComponentType != ComponentType.Window) return;
 

@@ -27,6 +27,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool ShowInCombat = false;
             public int OffsetXPosition = 0;
             public int OffsetYPosition = 0;
+            public float Scale = 1;
             public readonly List<string> Exceptions = new List<string>();
         }
 
@@ -47,6 +48,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 offsetChanged |= ImGui.InputInt("Horizontal Offset##offsetPosition", ref Config.OffsetXPosition, 1);
                 ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
                 offsetChanged |= ImGui.InputInt("Vertical Offset##offsetPosition", ref Config.OffsetYPosition, 1);
+                ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
+                offsetChanged |= ImGui.SliderFloat("##toastScale", ref Config.Scale, 0.1f, 5f, "Toast Scale: %.1fx");
                 if (offsetChanged)
                 {
                     var toastNode = GetToastNode();
@@ -113,14 +116,15 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (toastNode == null) return;
             
             if (reset) {
-                SetOffsetPosition(toastNode, 0.0f, 0.0f);
-
+                SetOffsetPosition(toastNode, 0.0f, 0.0f, 1);
+                UiHelper.SetScale(toastNode, 1);
                 return;
             }
 
             if (!toastNode->IsVisible) return;
 
-            SetOffsetPosition(toastNode, Config.OffsetXPosition, Config.OffsetYPosition);
+            SetOffsetPosition(toastNode, Config.OffsetXPosition, Config.OffsetYPosition, Config.Scale);
+            UiHelper.SetScale(toastNode, Config.Scale);
         }
 
         private static AtkResNode* GetToastNode() {
@@ -131,13 +135,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             return toastUnitBase->UldManager.NodeList[0];
         }
 
-        private static void SetOffsetPosition(AtkResNode* node, float offsetX, float offsetY) {
+        private static void SetOffsetPosition(AtkResNode* node, float offsetX, float offsetY, float scale) {
             // default 1080p values
             var defaultXPos = 448.0f;
             var defaultYPos = 628.0f;
             try {
-                defaultXPos = (ImGui.GetIO().DisplaySize.X * 1 / 2) - 512;
-                defaultYPos = (ImGui.GetIO().DisplaySize.Y * 3 / 5) - 20;
+                defaultXPos = (ImGui.GetIO().DisplaySize.X * 1 / 2) - 512 * scale;
+                defaultYPos = (ImGui.GetIO().DisplaySize.Y * 3 / 5) - 20 * scale;
             }
             catch (NullReferenceException) { }
 
