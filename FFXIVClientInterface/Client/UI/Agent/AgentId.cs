@@ -63,7 +63,7 @@
         // Retainer,
         // Return,
         // Cutscene,
-        // CutsceneReplay,
+        CutsceneReplay = 68,
         MonsterNote = 69,
         // ItemSearch,
         FateReward = 72, // FateProgress (Shared FATE)
@@ -81,7 +81,7 @@
         // FreeCompanyPetition,
         ArmouryBoard = 85,
         HowtoList = 86,
-        // Cabinet,
+        Cabinet = 87,
         // LegacyItemStorage,
         // GrandCompanyRank,
         // GrandCompanySupply,
@@ -133,7 +133,7 @@
         // RelicSphere,
         // TradeMultiple,
         // RelicSphereUpgrade,
-        // Minigame,
+        Minigame = 145,
         Tryon = 146,
         AdventureNotebook = 147,
         // ArmouryNotebook,
@@ -163,5 +163,7 @@
         MountSpeed = 262,
         AetherCurrent = 191,
         CircleList = 336, //Fellowships
+        MiragePrismPrismBox = 291, //Glamour Dresser
+        MiragePrismMiragePlate = 291, //Glamour Plates
     }
 }
