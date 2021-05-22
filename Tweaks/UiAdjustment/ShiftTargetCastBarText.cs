@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using Dalamud.Game.ClientState.Actors.Types;
 using Dalamud.Game.Internal;
 using Dalamud.Interface;
-using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
@@ -27,10 +26,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         public class Config
         {
             public int Offset = 8;
-            public bool EnableCastTime = false;
+            public bool EnableCastTime;
             public int CastTimeFontSize = 15;
-            public int CastTimeOffsetX = 0;
-            public int CastTimeOffsetY = 0;
+            public int CastTimeOffsetX;
+            public int CastTimeOffsetY;
         }
 
         public override string Name => "Reposition Target Castbar Text";
@@ -204,33 +203,31 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             Marshal.WriteInt16(new IntPtr(skillTextNode), 0x92, reset ? (short) 24 : (short) p);
         }
 
-        private const int TargetCastNodeID = 99990002;
+        private const int TargetCastNodeId = 99990002;
 
-        private unsafe void AddCastTimeTextNode(AtkUnitBase* Unit, AtkTextNode* cloneTextNode, bool visible = false)
+        private unsafe void AddCastTimeTextNode(AtkUnitBase* unit, AtkTextNode* cloneTextNode, bool visible = false)
         {
-            AtkTextNode* textNode = null;
-
-            textNode = (AtkTextNode*)GetNodeById(Unit, TargetCastNodeID);
+            var textNode = (AtkTextNode*)GetNodeById(unit, TargetCastNodeId);
             
             if (textNode == null)
             {
                 textNode = UiHelper.CloneNode(cloneTextNode);
-                textNode->AtkResNode.NodeID = TargetCastNodeID;
+                textNode->AtkResNode.NodeID = TargetCastNodeId;
                 var newStrPtr = Common.Alloc(512);
                 textNode->NodeText.StringPtr = (byte*) newStrPtr;
                 textNode->NodeText.BufSize = 512;
                 UiHelper.SetText(textNode, "");
-                UiHelper.ExpandNodeList(Unit, 1);
-                Unit->UldManager.NodeList[Unit->UldManager.NodeListCount++] = (AtkResNode*) textNode;
+                UiHelper.ExpandNodeList(unit, 1);
+                unit->UldManager.NodeList[unit->UldManager.NodeListCount++] = (AtkResNode*) textNode;
 
-                var prevNode = GetNodeById(Unit, Unit->UldManager.NodeListCount-1);
+                var nextNode = (AtkTextNode*)GetNodeById(unit, cloneTextNode->AtkResNode.NodeID-1);
 
-                textNode->AtkResNode.ParentNode = cloneTextNode->AtkResNode.ParentNode;
+                textNode->AtkResNode.ParentNode = nextNode->AtkResNode.ParentNode;
                 textNode->AtkResNode.ChildNode = null;
-                textNode->AtkResNode.NextSiblingNode = null;
-                textNode->AtkResNode.PrevSiblingNode = prevNode;
-                prevNode->NextSiblingNode = (AtkResNode*) textNode;
-                cloneTextNode->AtkResNode.ParentNode->ChildCount += 1;
+                textNode->AtkResNode.NextSiblingNode = (AtkResNode*) nextNode;
+                textNode->AtkResNode.PrevSiblingNode = null;
+                nextNode->AtkResNode.PrevSiblingNode = (AtkResNode*) textNode;
+                nextNode->AtkResNode.ParentNode->ChildCount += 1;
             }
 
             if (!visible)
@@ -251,7 +248,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         }
 
 
-        private unsafe float GetTargetCastTime()
+        private float GetTargetCastTime()
         {
             if (PluginInterface.ClientState.LocalPlayer == null ||
                 PluginInterface.ClientState.Targets.CurrentTarget == null)
@@ -272,7 +269,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         }
 
         
-        private static unsafe AtkResNode* GetNodeById(AtkUnitBase* compBase, int id)
+        private static unsafe AtkResNode* GetNodeById(AtkUnitBase* compBase, uint id)
         {
             if (compBase == null) return null;
             if ((compBase->UldManager.Flags1 & 1) == 0 || id <= 0) return null;
@@ -280,7 +277,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             for (var i = 0; i < count; i++)
             {
                 
-                var node = compBase->UldManager.NodeList[i];;
+                var node = compBase->UldManager.NodeList[i];
                 //SimpleLog.Information(i+"@"+node->NodeID);
                 if (node->NodeID == id) return node;
             }
