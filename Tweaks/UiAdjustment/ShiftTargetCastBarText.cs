@@ -186,6 +186,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             var child = GetNodeById(addonStruct, 3);
             if (child == null) return;
             DoShift(child, reset);
+
+            
+            if (!PluginConfig.UiAdjustments.ShiftTargetCastBarText.EnableCastTime)
+                return;
+            var textNode = (AtkTextNode*) GetNodeById(addonStruct,5);
+            AddCastTimeTextNode(addonStruct, textNode, textNode->AtkResNode.IsVisible);
         }
 
         private const int MinOffset = 0;
