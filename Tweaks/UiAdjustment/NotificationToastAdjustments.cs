@@ -52,7 +52,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 offsetChanged |= ImGui.SliderFloat("##toastScale", ref Config.Scale, 0.1f, 5f, "Toast Scale: %.1fx");
                 if (offsetChanged)
                 {
-                    var toastNode = GetToastNode();
+                    var toastNode = GetToastNode(2);
                     if (toastNode != null && !toastNode->IsVisible)
                         this.PluginInterface.Framework.Gui.Toast.ShowNormal("This is a preview of a toast message.");
                     hasChanged = true;
@@ -99,20 +99,25 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override void Disable() {
             PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdate;
             PluginInterface.Framework.Gui.Toast.OnToast -= OnToast;
-            UpdateNotificationToastText(true);
+            UpdateNotificationToast(true);
             base.Disable();
         }
 
         private void FrameworkOnUpdate(Framework framework) {
             try {
-                UpdateNotificationToastText();
+                UpdateNotificationToast();
             } catch (Exception ex) {
                 SimpleLog.Error(ex);
             }
         }
 
-        private void UpdateNotificationToastText(bool reset = false) {
-            var toastNode = GetToastNode();
+        private void UpdateNotificationToast(bool reset = false) {
+            UpdateNotificationToastText(reset, 1);
+            UpdateNotificationToastText(reset, 2);
+        }
+
+        private void UpdateNotificationToastText(bool reset, int index) {
+            var toastNode = GetToastNode(index);
             if (toastNode == null) return;
             
             if (reset) {
@@ -127,8 +132,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             UiHelper.SetScale(toastNode, Config.Scale);
         }
 
-        private static AtkResNode* GetToastNode() {
-            var toastUnitBase = Common.GetUnitBase("_WideText", 2);
+        // index: 1 - special toast, e.g. BLU active actions set load/save
+        //        2 - common toast
+        private static AtkResNode* GetToastNode(int index) {
+            var toastUnitBase = Common.GetUnitBase("_WideText", index);
             if (toastUnitBase == null) return null;
             if (toastUnitBase->UldManager.NodeList == null || toastUnitBase->UldManager.NodeListCount < 4) return null;
 
