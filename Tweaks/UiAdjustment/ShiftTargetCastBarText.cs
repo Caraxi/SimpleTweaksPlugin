@@ -28,7 +28,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             public int Offset = 8;
             public bool EnableCastTime;
             public int CastTimeFontSize = 15;
-            public int CastTimeOffsetX;
+            public int CastTimeOffsetX = 8;
             public int CastTimeOffsetY;
         }
 
@@ -242,7 +242,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             }
             else
             {
-                textNode->AlignmentFontType = 0x27;
+                textNode->AlignmentFontType = 0x26;
                 UiHelper.SetPosition(textNode, PluginConfig.UiAdjustments.ShiftTargetCastBarText.CastTimeOffsetX,
                     PluginConfig.UiAdjustments.ShiftTargetCastBarText.CastTimeOffsetY);
                 UiHelper.SetSize(textNode, cloneTextNode->AtkResNode.Width, cloneTextNode->AtkResNode.Height);
