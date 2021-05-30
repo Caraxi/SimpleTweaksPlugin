@@ -19,6 +19,7 @@ namespace SimpleTweaksPlugin {
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public class ShiftTargetCastBarText : UiAdjustments.SubTweak {
+
         public class Config {
             public int Offset = 8;
             public bool EnableCastTime;
@@ -40,15 +41,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 if (PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset < MinOffset) PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = MinOffset;
                 changed = true;
             }
-
             ImGui.SameLine();
             ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(2));
             ImGui.PushFont(UiBuilder.IconFont);
-            if (ImGui.Button($"{(char) FontAwesomeIcon.ArrowUp}", bSize)) {
+            if (ImGui.Button($"{(char)FontAwesomeIcon.ArrowUp}", bSize)) {
                 PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = 8;
                 changed = true;
             }
-
             ImGui.PopFont();
             if (ImGui.IsItemHovered()) ImGui.SetTooltip("Above progress bar");
 
@@ -58,18 +57,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = 24;
                 changed = true;
             }
-
             ImGui.PopFont();
             if (ImGui.IsItemHovered()) ImGui.SetTooltip("Original Position");
 
 
             ImGui.SameLine();
             ImGui.PushFont(UiBuilder.IconFont);
-            if (ImGui.Button($"{(char) FontAwesomeIcon.ArrowDown}", bSize)) {
+            if (ImGui.Button($"{(char)FontAwesomeIcon.ArrowDown}", bSize)) {
                 PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = 32;
                 changed = true;
             }
-
             ImGui.PopFont();
             if (ImGui.IsItemHovered()) ImGui.SetTooltip("Below progress bar");
             ImGui.PopStyleVar();
@@ -117,9 +114,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private void HandleBars(Framework framework, bool reset = false) {
+
             var focusTargetInfo = framework.Gui.GetAddonByName("_FocusTargetInfo", 1);
-            if (focusTargetInfo != null && (focusTargetInfo.Visible || reset))
+            if (focusTargetInfo != null && (focusTargetInfo.Visible || reset)) {
                 HandleFocusTargetInfo(focusTargetInfo, reset);
+            }
 
             var seperatedCastBar = framework.Gui.GetAddonByName("_TargetInfoCastBar", 1);
             if (seperatedCastBar != null && (seperatedCastBar.Visible || reset)) {
@@ -128,12 +127,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
 
             var mainTargetInfo = framework.Gui.GetAddonByName("_TargetInfo", 1);
-            if (mainTargetInfo != null && (mainTargetInfo.Visible || reset))
+            if (mainTargetInfo != null && (mainTargetInfo.Visible || reset)) {
                 HandleMainTargetInfo(mainTargetInfo, reset);
+            }
         }
 
         private unsafe void HandleSeperatedCastBar(Addon addon, bool reset = false) {
-            var addonStruct = (AtkUnitBase*) addon.Address;
+            var addonStruct = (AtkUnitBase*) (addon.Address);
             if (addonStruct->RootNode == null) return;
             var rootNode = addonStruct->RootNode;
             if (rootNode->ChildNode == null) return;
@@ -146,7 +146,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private unsafe void HandleMainTargetInfo(Addon addon, bool reset = false) {
-            var addonStruct = (AtkUnitBase*) addon.Address;
+            var addonStruct = (AtkUnitBase*) (addon.Address);
             if (addonStruct->RootNode == null) return;
 
             var child = GetNodeById(addonStruct, 10);
@@ -165,7 +165,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (child == null) return;
             DoShift(child, reset);
 
-            
             if (!PluginConfig.UiAdjustments.ShiftTargetCastBarText.EnableCastTime)
                 return;
             var textNode = (AtkTextNode*) GetNodeById(addonStruct,5);
@@ -177,7 +176,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private unsafe void DoShift(AtkResNode* node, bool reset = false) {
             if (node == null) return;
-            if (node->ChildCount < 5) return; // Should have 5 children
+            if (node->ChildCount != 5) return; // Should have 5 children
             var skillTextNode = UiAdjustments.GetResNodeByPath(node, Child, Previous, Previous, Previous);
             if (skillTextNode == null) return;
             var p = PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset;
