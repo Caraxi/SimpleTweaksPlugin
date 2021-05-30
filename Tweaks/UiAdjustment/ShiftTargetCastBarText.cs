@@ -11,20 +11,15 @@ using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using static SimpleTweaksPlugin.Tweaks.UiAdjustments.Step;
 using Addon = Dalamud.Game.Internal.Gui.Addon.Addon;
 
-namespace SimpleTweaksPlugin
-{
-    public partial class UiAdjustmentsConfig
-    {
+namespace SimpleTweaksPlugin {
+    public partial class UiAdjustmentsConfig {
         public ShiftTargetCastBarText.Config ShiftTargetCastBarText = new();
     }
 }
 
-namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
-{
-    public class ShiftTargetCastBarText : UiAdjustments.SubTweak
-    {
-        public class Config
-        {
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
+    public class ShiftTargetCastBarText : UiAdjustments.SubTweak {
+        public class Config {
             public int Offset = 8;
             public bool EnableCastTime;
             public int CastTimeFontSize = 15;
@@ -37,25 +32,19 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         
         private readonly Vector2 buttonSize = new Vector2(26, 22);
 
-        protected override DrawConfigDelegate DrawConfigTree => (ref bool changed) =>
-        {
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool changed) => {
             var bSize = buttonSize * ImGui.GetIO().FontGlobalScale;
             ImGui.SetNextItemWidth(90 * ImGui.GetIO().FontGlobalScale);
-            if (ImGui.InputInt($"###{GetType().Name}_Offset",
-                ref PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset))
-            {
-                if (PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset > MaxOffset)
-                    PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = MaxOffset;
-                if (PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset < MinOffset)
-                    PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = MinOffset;
+            if (ImGui.InputInt($"###{GetType().Name}_Offset", ref PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset)) {
+                if (PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset > MaxOffset) PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = MaxOffset;
+                if (PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset < MinOffset) PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = MinOffset;
                 changed = true;
             }
 
             ImGui.SameLine();
             ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(2));
             ImGui.PushFont(UiBuilder.IconFont);
-            if (ImGui.Button($"{(char) FontAwesomeIcon.ArrowUp}", bSize))
-            {
+            if (ImGui.Button($"{(char) FontAwesomeIcon.ArrowUp}", bSize)) {
                 PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = 8;
                 changed = true;
             }
@@ -65,8 +54,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 
             ImGui.SameLine();
             ImGui.PushFont(UiBuilder.IconFont);
-            if (ImGui.Button($"{(char) FontAwesomeIcon.CircleNotch}", bSize))
-            {
+            if (ImGui.Button($"{(char) FontAwesomeIcon.CircleNotch}", bSize)) {
                 PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = 24;
                 changed = true;
             }
@@ -77,8 +65,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 
             ImGui.SameLine();
             ImGui.PushFont(UiBuilder.IconFont);
-            if (ImGui.Button($"{(char) FontAwesomeIcon.ArrowDown}", bSize))
-            {
+            if (ImGui.Button($"{(char) FontAwesomeIcon.ArrowDown}", bSize)) {
                 PluginConfig.UiAdjustments.ShiftTargetCastBarText.Offset = 32;
                 changed = true;
             }
@@ -121,27 +108,21 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             ImGui.Text("Cast Timer Y offset");
         };
 
-        public void OnFrameworkUpdate(Framework framework)
-        {
-            try
-            {
+        public void OnFrameworkUpdate(Framework framework) {
+            try {
                 HandleBars(framework);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 Plugin.Error(this, ex);
             }
         }
 
-        private void HandleBars(Framework framework, bool reset = false)
-        {
+        private void HandleBars(Framework framework, bool reset = false) {
             var focusTargetInfo = framework.Gui.GetAddonByName("_FocusTargetInfo", 1);
             if (focusTargetInfo != null && (focusTargetInfo.Visible || reset))
                 HandleFocusTargetInfo(focusTargetInfo, reset);
 
             var seperatedCastBar = framework.Gui.GetAddonByName("_TargetInfoCastBar", 1);
-            if (seperatedCastBar != null && (seperatedCastBar.Visible || reset))
-            {
+            if (seperatedCastBar != null && (seperatedCastBar.Visible || reset)) {
                 HandleSeperatedCastBar(seperatedCastBar, reset);
                 if (!reset) return;
             }
@@ -151,8 +132,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                 HandleMainTargetInfo(mainTargetInfo, reset);
         }
 
-        private unsafe void HandleSeperatedCastBar(Addon addon, bool reset = false)
-        {
+        private unsafe void HandleSeperatedCastBar(Addon addon, bool reset = false) {
             var addonStruct = (AtkUnitBase*) addon.Address;
             if (addonStruct->RootNode == null) return;
             var rootNode = addonStruct->RootNode;
@@ -165,8 +145,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             AddCastTimeTextNode(addonStruct, textNode, textNode->AtkResNode.IsVisible);
         }
 
-        private unsafe void HandleMainTargetInfo(Addon addon, bool reset = false)
-        {
+        private unsafe void HandleMainTargetInfo(Addon addon, bool reset = false) {
             var addonStruct = (AtkUnitBase*) addon.Address;
             if (addonStruct->RootNode == null) return;
 
@@ -180,8 +159,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             AddCastTimeTextNode(addonStruct, textNode, textNode->AtkResNode.IsVisible);
         }
 
-        private unsafe void HandleFocusTargetInfo(Addon addon, bool reset = false)
-        {
+        private unsafe void HandleFocusTargetInfo(Addon addon, bool reset = false) {
             var addonStruct = (AtkUnitBase*) addon.Address;
             var child = GetNodeById(addonStruct, 3);
             if (child == null) return;
@@ -197,8 +175,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         private const int MinOffset = 0;
         private const int MaxOffset = 48;
 
-        private unsafe void DoShift(AtkResNode* node, bool reset = false)
-        {
+        private unsafe void DoShift(AtkResNode* node, bool reset = false) {
             if (node == null) return;
             if (node->ChildCount < 5) return; // Should have 5 children
             var skillTextNode = UiAdjustments.GetResNodeByPath(node, Child, Previous, Previous, Previous);
@@ -290,15 +267,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             return null;
         }
 
-        public override void Enable()
-        {
+        public override void Enable() {
             if (Enabled) return;
             PluginInterface.Framework.OnUpdateEvent += OnFrameworkUpdate;
             Enabled = true;
         }
 
-        public override void Disable()
-        {
+        public override void Disable() {
             if (!Enabled) return;
             PluginInterface.Framework.OnUpdateEvent -= OnFrameworkUpdate;
             SimpleLog.Debug($"[{GetType().Name}] Reset");
@@ -306,8 +281,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             Enabled = false;
         }
 
-        public override void Dispose()
-        {
+        public override void Dispose() {
             PluginInterface.Framework.OnUpdateEvent -= OnFrameworkUpdate;
             Enabled = false;
             Ready = false;
