@@ -230,8 +230,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             };
 
             return num switch {
-                > 1000000 => $"{(num / 1000000f).ToString(fStr)}M",
-                > 1000 => $"{(num / 1000f).ToString(fStr)}K",
+                >= 1000000 => $"{(num / 1000000f).ToString(fStr)}M",
+                >= 1000 => $"{(num / 1000f).ToString(fStr)}K",
                 _ => $"{num}"
             };
         }
