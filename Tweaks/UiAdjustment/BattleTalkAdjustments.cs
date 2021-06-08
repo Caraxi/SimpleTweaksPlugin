@@ -60,18 +60,32 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Enable() {
             Config = LoadConfig<Configuration>() ?? new Configuration();
-            PluginInterface.Framework.OnUpdateEvent += FrameworkOnUpdateSetup;
+            PluginInterface.ClientState.OnLogin += OnLogin;
+            PluginInterface.ClientState.OnLogout += OnLogout;
+            if(PluginInterface.ClientState.LocalPlayer is not null) OnLogin(null!,null!);
             base.Enable();
         }
-
+        
         public override void Disable() {
-            PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdate;
-            PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdateSetup;
-            ResetBattleTalk();
+            PluginInterface.ClientState.OnLogin -= OnLogin;
+            PluginInterface.ClientState.OnLogout -= OnLogout;
+            OnLogout(null!,null!);
             SaveConfig(Config);
             base.Disable();
         }
 
+        private void OnLogin(object sender, EventArgs e)
+        {
+            PluginInterface.Framework.OnUpdateEvent += FrameworkOnUpdateSetup;
+        }
+        
+        private void OnLogout(object sender, EventArgs e)
+        {
+            PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdate;
+            PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdateSetup;
+            ResetBattleTalk();
+        }
+        
         private void FrameworkOnUpdateSetup(Framework framework)
         {
             try {
