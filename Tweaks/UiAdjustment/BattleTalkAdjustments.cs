@@ -5,13 +5,7 @@ using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
-using SimpleTweaksPlugin.Tweaks.UiAdjustment;
-
-namespace SimpleTweaksPlugin {
-    public partial class UiAdjustmentsConfig {
-        public BattleTalkAdjustments.Configs BattleTalkAdjustments = new();
-    }
-}
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class BattleTalkAdjustments : UiAdjustments.SubTweak {
@@ -19,13 +13,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Description => "Allows moving of the dialogue box that appears in the middle of battles.";
         protected override string Author => "Chivalrik";
 
-        public class Configs {
+        public class Configuration : TweakConfig {
             public int OffsetX = 0;
             public int OffsetY = 0;
             public float Scale = 1;
         }
 
-        public Configs Config => PluginConfig.UiAdjustments.BattleTalkAdjustments;
+        public Configuration Config { get; private set; }
 
         private float originalPositionX = 0f;
         private float originalPositionY = 0f;
@@ -37,9 +31,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             changed |= ImGui.InputInt("Y Offset##battletalkadjustments_offsetPosition", ref Config.OffsetY, 1);
             ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
             changed |= ImGui.SliderFloat("##battletalkadjustments_Scale", ref Config.Scale, 0.01f, 3f, "Scale: %.2fx");
-
-            PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdate;
-            PluginInterface.Framework.OnUpdateEvent += FrameworkOnUpdate;
+            
             const ImGuiWindowFlags flags = ImGuiWindowFlags.NoCollapse
                                            | ImGuiWindowFlags.NoDecoration
                                            | ImGuiWindowFlags.NoNav
@@ -57,15 +49,17 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 new Vector2(battleTalkResNode->Width * battleTalkResNode->ScaleX, battleTalkResNode->Height* battleTalkResNode->ScaleX)
                 , ImGuiCond.Always);
             ImGui.Begin("###BattleTalkAdjustments_PreviewWindow", flags);
-            ImGui.Text("");
-            ImGui.Text("");
-            ImGui.SameLine(25);
+            ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
+            ImGui.Dummy(new Vector2(25,0) * ImGui.GetIO().FontGlobalScale);
             ImGui.Text("NEW BATTLE TALK DIALOGUE BOX POSITION");
             ImGui.End();
-
+            if (!changed) return;
+            PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdate;
+            PluginInterface.Framework.OnUpdateEvent += FrameworkOnUpdate;
         };
 
         public override void Enable() {
+            Config = LoadConfig<Configuration>() ?? new Configuration();
             PluginInterface.Framework.OnUpdateEvent += FrameworkOnUpdateSetup;
             base.Enable();
         }
@@ -74,6 +68,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdate;
             PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdateSetup;
             ResetBattleTalk();
+            SaveConfig(Config);
             base.Disable();
         }
 
