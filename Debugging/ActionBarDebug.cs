@@ -203,6 +203,43 @@ namespace SimpleTweaksPlugin.Debugging {
                         ImGui.Text($"{(slot->CommandId >= 256 ? "Shared" : "Individual")} #{slot->CommandId%256}");
                         break;
                     }
+
+                    case HotbarSlotType.Emote: {
+                        ImGui.Text($"{Plugin.PluginInterface.Data.Excel.GetSheet<Emote>().GetRow(slot->CommandId)?.Name ?? "Invalid"}");
+                        break;
+                    }
+                    
+                    case HotbarSlotType.EventItem: {
+                        var item = Plugin.PluginInterface.Data.GetExcelSheet<EventItem>().GetRow(slot->CommandId);
+                        if (item == null) {
+                            ImGui.TextDisabled("Not Found");
+                        } else {
+                            ImGui.TextWrapped($"{item.Name}");
+                        }
+                        break;
+                    }
+                    
+                    case HotbarSlotType.Mount: {
+                        var m = Plugin.PluginInterface.Data.Excel.GetSheet<Mount>().GetRow(slot->CommandId);
+                        if (m == null) {
+                            ImGui.TextDisabled("Not Found");
+                        } else {
+                            ImGui.TextWrapped($"{m.Singular}");
+                        }
+
+                        break;
+                    }
+
+                    case HotbarSlotType.Minion: {
+                        var m = Plugin.PluginInterface.Data.Excel.GetSheet<Companion>().GetRow(slot->CommandId);
+                        if (m == null) {
+                            ImGui.TextDisabled("Not Found");
+                        } else {
+                            ImGui.TextWrapped($"{m.Singular}");
+                        }
+
+                        break;
+                    }
                     
                     default: {
                         ImGui.TextDisabled("Name Not Supprorted");
