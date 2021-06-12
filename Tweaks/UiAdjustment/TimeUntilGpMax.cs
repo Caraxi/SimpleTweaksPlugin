@@ -36,7 +36,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     if (diff < 20) {
                         gpPerTick = diff;
                         lastGp = PluginInterface.ClientState.LocalPlayer.CurrentGp;
-                        PluginLog.Log($"Update GP: {lastGpChangeStopwatch.ElapsedMilliseconds}ms [+{gpPerTick}]");
                         lastGpChangeStopwatch.Restart();
                     }
                 }
