@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using Dalamud.Game.Internal;
 using Dalamud.Hooking;
-using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Helper;
 
