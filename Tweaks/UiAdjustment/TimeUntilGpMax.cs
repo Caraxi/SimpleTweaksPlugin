@@ -15,49 +15,54 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private int lastGp = -100;
         private int gpPerTick = 5;
         private float timePerTick = 3f;
-        public delegate void UpdateGpDelegate(uint a1, uint* a2, byte a3);
-        private Hook<UpdateGpDelegate> updateGpHook;
+        public delegate void UpdateParamDelegate(uint a1, uint* a2, byte a3);
+        private Hook<UpdateParamDelegate> updateParamHook;
         
         public override void Enable() {
             lastUpdate.Restart();
-            updateGpHook ??= new Hook<UpdateGpDelegate>(Common.Scanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 83 3D ?? ?? ?? ?? ?? 41 0F B6 E8 48 8B DA 8B F1 0F 84 ?? ?? ?? ?? 48 89 7C 24"), new UpdateGpDelegate(UpdateGpDetour));
-            updateGpHook.Enable();
+            updateParamHook ??= new Hook<UpdateParamDelegate>(Common.Scanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 83 3D ?? ?? ?? ?? ?? 41 0F B6 E8 48 8B DA 8B F1 0F 84 ?? ?? ?? ?? 48 89 7C 24"), new UpdateParamDelegate(UpdateParamDetour));
+            updateParamHook.Enable();
             PluginInterface.Framework.OnUpdateEvent += FrameworkUpdate;
             base.Enable();
         }
 
-        private void UpdateGpDetour(uint a1, uint* a2, byte a3) {
-            if (!lastGpChangeStopwatch.IsRunning) {
-                lastGpChangeStopwatch.Restart();
-            } else {
-                if (PluginInterface.ClientState.LocalPlayer.CurrentGp > lastGp && lastGpChangeStopwatch.ElapsedMilliseconds > 1000 && lastGpChangeStopwatch.ElapsedMilliseconds < 4000) {
-                    var diff = PluginInterface.ClientState.LocalPlayer.CurrentGp - lastGp;
-                    if (diff < 20) {
-                        gpPerTick = diff;
+        private void UpdateParamDetour(uint a1, uint* a2, byte a3) {
+            updateParamHook.Original(a1, a2, a3);
+            if (PluginInterface?.ClientState?.LocalPlayer == null) return;
+            try {
+                if (!lastGpChangeStopwatch.IsRunning) {
+                    lastGpChangeStopwatch.Restart();
+                } else {
+                    if (PluginInterface.ClientState.LocalPlayer.CurrentGp > lastGp && lastGpChangeStopwatch.ElapsedMilliseconds > 1000 && lastGpChangeStopwatch.ElapsedMilliseconds < 4000) {
+                        var diff = PluginInterface.ClientState.LocalPlayer.CurrentGp - lastGp;
+                        if (diff < 20) {
+                            gpPerTick = diff;
+                            lastGp = PluginInterface.ClientState.LocalPlayer.CurrentGp;
+                            lastGpChangeStopwatch.Restart();
+                        }
+                    }
+
+                    if (PluginInterface.ClientState.LocalPlayer.CurrentGp != lastGp) {
                         lastGp = PluginInterface.ClientState.LocalPlayer.CurrentGp;
                         lastGpChangeStopwatch.Restart();
                     }
                 }
-
-                if (PluginInterface.ClientState.LocalPlayer.CurrentGp != lastGp) {
-                    lastGp = PluginInterface.ClientState.LocalPlayer.CurrentGp;
-                    lastGpChangeStopwatch.Restart();
-                }
+            } catch (Exception ex) {
+                Plugin.Error(this, ex, false, "Error in UpdateParamDetour");
             }
-            updateGpHook.Original(a1, a2, a3);
         }
 
         public override void Disable() {
             lastUpdate.Stop();
-            updateGpHook?.Disable();
+            updateParamHook?.Disable();
             PluginInterface.Framework.OnUpdateEvent -= FrameworkUpdate;
             Update(true);
             base.Disable();
         }
 
         public override void Dispose() {
-            updateGpHook?.Disable();
-            updateGpHook?.Dispose();
+            updateParamHook?.Disable();
+            updateParamHook?.Dispose();
             base.Dispose();
         }
 
