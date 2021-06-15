@@ -28,8 +28,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private void UpdateParamDetour(uint a1, uint* a2, byte a3) {
             updateParamHook.Original(a1, a2, a3);
-            if (PluginInterface?.ClientState?.LocalPlayer == null) return;
             try {
+                if (PluginInterface?.ClientState?.LocalPlayer == null) return;
                 if (!lastGpChangeStopwatch.IsRunning) {
                     lastGpChangeStopwatch.Restart();
                 } else {
