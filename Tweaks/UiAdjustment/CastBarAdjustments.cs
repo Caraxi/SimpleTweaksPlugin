@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Game.Internal;
-using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
+using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
@@ -14,11 +14,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Name => "Cast Bar Adjustments";
         public override string Description => "Allows hiding or moving specific parts of the castbar.";
         public override IEnumerable<string> Tags => new[] {"SlideCast", "Slide Cast"};
-        public enum Alignment : byte {
-            Left = 3,
-            Center = 4,
-            Right = 5,
-        }
 
         public class Configs : TweakConfig {
             public bool RemoveCastingText;
@@ -41,47 +36,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public Configs Config { get; private set; }
 
-        private bool DrawAlignmentSelector(string name, ref Alignment selectedAlignment) {
-            var changed = false;
 
-            ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 2);
-            ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.One);
-
-            ImGui.PushID(name);
-            ImGui.BeginGroup();
-            ImGui.PushFont(UiBuilder.IconFont);
-
-            ImGui.PushStyleColor(ImGuiCol.Border, selectedAlignment == Alignment.Left ? 0xFF00A5FF: 0x0);
-            if (ImGui.Button($"{(char) FontAwesomeIcon.AlignLeft}##{name}")) {
-                selectedAlignment = Alignment.Left;
-                changed = true;
-            }
-            ImGui.PopStyleColor();
-            ImGui.SameLine();
-            ImGui.PushStyleColor(ImGuiCol.Border, selectedAlignment == Alignment.Center ? 0xFF00A5FF : 0x0);
-            if (ImGui.Button($"{(char) FontAwesomeIcon.AlignCenter}##{name}")) {
-                selectedAlignment = Alignment.Center;
-                changed = true;
-            }
-            ImGui.PopStyleColor();
-            ImGui.SameLine();
-            ImGui.PushStyleColor(ImGuiCol.Border, selectedAlignment == Alignment.Right ? 0xFF00A5FF : 0x0);
-            if (ImGui.Button($"{(char) FontAwesomeIcon.AlignRight}##{name}")) {
-                selectedAlignment = Alignment.Right;
-                changed = true;
-            }
-            ImGui.PopStyleColor();
-
-            ImGui.PopFont();
-            ImGui.PopStyleVar();
-            ImGui.SameLine();
-            ImGui.Text(name);
-            ImGui.EndGroup();
-
-            ImGui.PopStyleVar();
-            ImGui.PopID();
-            return changed;
-        }
         
         private float configAlignmentX;
         
@@ -94,7 +49,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 ImGui.SameLine();
                 if (ImGui.GetCursorPosX() > configAlignmentX) configAlignmentX = ImGui.GetCursorPosX();
                 ImGui.SetCursorPosX(configAlignmentX);
-                hasChanged |= DrawAlignmentSelector("Align Countdown Text", ref Config.AlignCounter);
+                hasChanged |= ImGuiExt.DrawAlignmentSelector("Align Countdown Text", ref Config.AlignCounter);
 
                 ImGui.SetCursorPosX(configAlignmentX);
                 ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
@@ -108,7 +63,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 ImGui.SameLine();
                 if (ImGui.GetCursorPosX() > configAlignmentX) configAlignmentX = ImGui.GetCursorPosX();
                 ImGui.SetCursorPosX(configAlignmentX);
-                hasChanged |= DrawAlignmentSelector("Align Ability Name", ref Config.AlignName);
+                hasChanged |= ImGuiExt.DrawAlignmentSelector("Align Ability Name", ref Config.AlignName);
                 ImGui.SetCursorPosX(configAlignmentX);
                 ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
                 hasChanged |= ImGui.InputInt("Offset##offsetNamePosition", ref Config.OffsetNamePosition);
