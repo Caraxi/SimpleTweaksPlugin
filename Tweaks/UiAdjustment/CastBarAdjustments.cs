@@ -49,7 +49,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 ImGui.SameLine();
                 if (ImGui.GetCursorPosX() > configAlignmentX) configAlignmentX = ImGui.GetCursorPosX();
                 ImGui.SetCursorPosX(configAlignmentX);
-                hasChanged |= ImGuiExt.DrawAlignmentSelector("Align Countdown Text", ref Config.AlignCounter);
+                hasChanged |= ImGuiExt.HorizontalAlignmentSelector("Align Countdown Text", ref Config.AlignCounter);
 
                 ImGui.SetCursorPosX(configAlignmentX);
                 ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
@@ -63,7 +63,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 ImGui.SameLine();
                 if (ImGui.GetCursorPosX() > configAlignmentX) configAlignmentX = ImGui.GetCursorPosX();
                 ImGui.SetCursorPosX(configAlignmentX);
-                hasChanged |= ImGuiExt.DrawAlignmentSelector("Align Ability Name", ref Config.AlignName);
+                hasChanged |= ImGuiExt.HorizontalAlignmentSelector("Align Ability Name", ref Config.AlignName);
                 ImGui.SetCursorPosX(configAlignmentX);
                 ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
                 hasChanged |= ImGui.InputInt("Offset##offsetNamePosition", ref Config.OffsetNamePosition);
