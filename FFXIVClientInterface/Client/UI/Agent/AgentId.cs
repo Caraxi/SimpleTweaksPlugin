@@ -24,7 +24,6 @@
         // TargetCursor,
         // TargetCircle,
         GatheringNote = 22,
-        RecipeNote = 23,
         FishingNote = 27,
         FishGuide = 28,
         FishRecord = 29,

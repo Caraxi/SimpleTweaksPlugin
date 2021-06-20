@@ -76,11 +76,11 @@ namespace SimpleTweaksPlugin.Debugging {
                 }
 
                 if (ImGui.BeginTabItem("Agent Inspect")) {
-                    var lobbyAgent = SimpleTweaksPlugin.Client.UiModule.AgentModule.GetAgent<AgentLobby>();
-                    if (lobbyAgent != null) {
-                        DebugManager.PrintOutObject(lobbyAgent, 1234, new List<string>(), true);
+                    var agent = SimpleTweaksPlugin.Client.UiModule.AgentModule.GetAgent<AgentContentsTimer>();
+                    if (agent != null) {
+                        DebugManager.PrintOutObject(agent, 1234, new List<string>(), true);
                     } else {
-                        ImGui.Text("AgentLobby is null");
+                        ImGui.Text("Agent is null");
                     }
 
                     ImGui.EndTabItem();
