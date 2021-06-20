@@ -25,6 +25,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool RemoveIcon;
             public bool RemoveCounter;
             public bool RemoveName;
+            public bool RemoveInterruptedText;
 
             public bool SlideCast;
             public int SlideCastAdjust = 500;
@@ -88,6 +89,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             hasChanged |= ImGui.Checkbox("Hide 'Casting' Text", ref Config.RemoveCastingText);
             hasChanged |= ImGui.Checkbox("Hide Icon", ref Config.RemoveIcon);
             hasChanged |= ImGui.Checkbox("Hide Countdown Text", ref Config.RemoveCounter);
+            hasChanged |= ImGui.Checkbox("Hide Interrupted Text", ref Config.RemoveInterruptedText);
             if (Config.RemoveCastingText && !Config.RemoveCounter) {
                 ImGui.SameLine();
                 if (ImGui.GetCursorPosX() > configAlignmentX) configAlignmentX = ImGui.GetCursorPosX();
@@ -169,6 +171,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var castingText = (AtkTextNode*) castBar->AtkUnitBase.UldManager.NodeList[9];
             var skillNameText = (AtkTextNode*) castBar->AtkUnitBase.UldManager.NodeList[11];
             var progressBar = (AtkNineGridNode*) castBar->AtkUnitBase.UldManager.NodeList[5];
+            var interruptedText = (AtkTextNode*) castBar->AtkUnitBase.UldManager.NodeList[12];
             var slideMarker = (AtkNineGridNode*) null;
 
             for (var i = 13; i < castBar->AtkUnitBase.UldManager.NodeListCount; i++) {
@@ -189,6 +192,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 UiHelper.SetSize(countdownText, 42, null);
                 UiHelper.SetPosition(countdownText, 170, null);
+                UiHelper.SetScale(interruptedText, 1);
 
 
                 if (slideMarker != null) {
@@ -220,6 +224,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 skillNameText->AlignmentFontType = (byte) (0x00 | (byte) Config.AlignName);
                 UiHelper.SetPosition(skillNameText, (barNode->X + 4) + Config.OffsetNamePosition, null);
                 UiHelper.SetSize(skillNameText, barNode->Width - 8, null);
+            }
+
+            if (Config.RemoveInterruptedText) {
+                UiHelper.SetScale(interruptedText, 0);
             }
 
             if (Config.SlideCast) {
