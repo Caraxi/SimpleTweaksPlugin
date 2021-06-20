@@ -88,8 +88,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             hasChanged |= ImGui.Checkbox("Hide 'Casting' Text", ref Config.RemoveCastingText);
             hasChanged |= ImGui.Checkbox("Hide Icon", ref Config.RemoveIcon);
-            hasChanged |= ImGui.Checkbox("Hide Countdown Text", ref Config.RemoveCounter);
             hasChanged |= ImGui.Checkbox("Hide Interrupted Text", ref Config.RemoveInterruptedText);
+            hasChanged |= ImGui.Checkbox("Hide Countdown Text", ref Config.RemoveCounter);
             if (Config.RemoveCastingText && !Config.RemoveCounter) {
                 ImGui.SameLine();
                 if (ImGui.GetCursorPosX() > configAlignmentX) configAlignmentX = ImGui.GetCursorPosX();
