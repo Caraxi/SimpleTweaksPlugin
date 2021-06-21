@@ -4,14 +4,7 @@ using Dalamud.Game.ClientState.Structs;
 using Dalamud.Hooking;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
-using SimpleTweaksPlugin.Tweaks.UiAdjustment;
-
-namespace SimpleTweaksPlugin
-{
-    public partial class UiAdjustmentsConfig {
-        public SmartNameplates.Configs SmartNameplates = new();
-    }
-}
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public class SmartNameplates : UiAdjustments.SubTweak {
@@ -19,9 +12,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Description => "Provides options to hide other player's nameplates in combat under certain conditions.";
         protected override string Author => "UnknownX";
 
-        public Configs Config => PluginConfig.UiAdjustments.SmartNameplates;
-
-        public class Configs {
+        public class Configs : TweakConfig {
             public bool ShowHP = false;
             public bool IgnoreParty = false;
             public bool IgnoreAlliance = false;
@@ -30,24 +21,26 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool IgnoreTargets = false;
         }
 
+        private Configs config;
+
         private const int statusFlagsOffset = 0x19A0;
         private IntPtr targetManager = IntPtr.Zero;
         private delegate byte ShouldDisplayNameplateDelegate(IntPtr raptureAtkModule, IntPtr actor, IntPtr localPlayer, float distance);
         private Hook<ShouldDisplayNameplateDelegate> shouldDisplayNameplateHook;
 
-        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-            hasChanged |= ImGui.Checkbox("Show HP##SmartNameplatesShowHP", ref Config.ShowHP);
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
+            ImGui.Checkbox("Show HP##SmartNameplatesShowHP", ref config.ShowHP);
             if (ImGui.IsItemHovered())
                 ImGui.SetTooltip("Will not hide HP bars for affected players.");
 
             ImGui.Spacing();
             ImGui.Spacing();
             ImGui.TextUnformatted("The following options will disable the tweak for certain players.");
-            hasChanged |= ImGui.Checkbox("Ignore Party Members##SmartNameplatesIgnoreParty", ref Config.IgnoreParty);
-            hasChanged |= ImGui.Checkbox("Ignore Alliance Members##SmartNameplatesIgnoreAlliance", ref Config.IgnoreAlliance);
-            hasChanged |= ImGui.Checkbox("Ignore Friends##SmartNameplatesIgnoreFriends", ref Config.IgnoreFriends);
-            hasChanged |= ImGui.Checkbox("Ignore Dead Players##SmartNameplatesIgnoreDead", ref Config.IgnoreDead);
-            hasChanged |= ImGui.Checkbox("Ignore Targeted Players##SmartNameplatesIgnoreTargets", ref Config.IgnoreTargets);
+            ImGui.Checkbox("Ignore Party Members##SmartNameplatesIgnoreParty", ref config.IgnoreParty);
+            ImGui.Checkbox("Ignore Alliance Members##SmartNameplatesIgnoreAlliance", ref config.IgnoreAlliance);
+            ImGui.Checkbox("Ignore Friends##SmartNameplatesIgnoreFriends", ref config.IgnoreFriends);
+            ImGui.Checkbox("Ignore Dead Players##SmartNameplatesIgnoreDead", ref config.IgnoreDead);
+            ImGui.Checkbox("Ignore Targeted Players##SmartNameplatesIgnoreTargets", ref config.IgnoreTargets);
         };
 
         // Crashes the game if ANY Dalamud Actor is created from within it, which is why everything is using offsets
@@ -60,21 +53,22 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 || (*(byte*)(localPlayer + statusFlagsOffset) & 2) == 0 // Alternate in combat flag
                 || *(ObjectKind*)(actor + ActorOffsets.ObjectKind) != ObjectKind.Player // Ignore nonplayers
 
-                || (Config.IgnoreParty && (actorStatusFlags & 16) > 0) // Ignore party members
-                || (Config.IgnoreAlliance && (actorStatusFlags & 32) > 0) // Ignore alliance members
-                || (Config.IgnoreFriends && (actorStatusFlags & 64) > 0) // Ignore friends
-                || (Config.IgnoreDead && *(int*)(actor + ActorOffsets.CurrentHp) == 0) // Ignore dead players
+                || (config.IgnoreParty && (actorStatusFlags & 16) > 0) // Ignore party members
+                || (config.IgnoreAlliance && (actorStatusFlags & 32) > 0) // Ignore alliance members
+                || (config.IgnoreFriends && (actorStatusFlags & 64) > 0) // Ignore friends
+                || (config.IgnoreDead && *(int*)(actor + ActorOffsets.CurrentHp) == 0) // Ignore dead players
 
                 // Ignore targets
-                || (Config.IgnoreTargets && (*(IntPtr*)(targetManager + TargetOffsets.CurrentTarget) == actor
+                || (config.IgnoreTargets && (*(IntPtr*)(targetManager + TargetOffsets.CurrentTarget) == actor
                     || *(IntPtr*)(targetManager + TargetOffsets.SoftTarget) == actor
                     || *(IntPtr*)(targetManager + TargetOffsets.FocusTarget) == actor)))
                 return shouldDisplayNameplateHook.Original(raptureAtkModule, actor, localPlayer, distance);
 
-            return (byte)(Config.ShowHP ? (shouldDisplayNameplateHook.Original(raptureAtkModule, actor, localPlayer, distance) & ~1) : 0); // Ignore HP
+            return (byte)(config.ShowHP ? (shouldDisplayNameplateHook.Original(raptureAtkModule, actor, localPlayer, distance) & ~1) : 0); // Ignore HP
         }
 
         public override void Enable() {
+            config = LoadConfig<Configs>() ?? new Configs();
             targetManager = targetManager != IntPtr.Zero ? targetManager : Common.Scanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? FF 50 ?? 48 85 DB", 3); // Taken from Dalamud
             shouldDisplayNameplateHook ??= new Hook<ShouldDisplayNameplateDelegate>(Common.Scanner.ScanText("E8 ?? ?? ?? ?? 89 44 24 40 48 C7 85 88 15 02 00 00 00 00 00"), new ShouldDisplayNameplateDelegate(ShouldDisplayNameplateDetour));
             shouldDisplayNameplateHook?.Enable();
@@ -82,6 +76,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public override void Disable() {
+            SaveConfig(config);
             shouldDisplayNameplateHook?.Disable();
             base.Disable();
         }
