@@ -13,25 +13,29 @@ using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+using SimpleTweaksPlugin.TweakSystem;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
-        public ExtendedDesynthesisWindow.Configs ExtendedDesynthesisWindow = new ExtendedDesynthesisWindow.Configs();
+        public bool ShouldSerializeExtendedDesynthesisWindow() => false;
+        public ExtendedDesynthesisWindow.Configs ExtendedDesynthesisWindow = null;
     }
 }
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
 
-        public class Configs {
-            public bool BlockClickOnGearset = false;
+        public class Configs : TweakConfig {
+            public bool BlockClickOnGearset;
+            public bool YellowForSkillGain = true;
         }
 
-        public Configs Config => PluginConfig.UiAdjustments.ExtendedDesynthesisWindow;
+        public Configs Config { get; private set; }
         
-        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-            hasChanged |= ImGui.Checkbox("Block clicking on gearset items.", ref Config.BlockClickOnGearset);
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
+            ImGui.Checkbox("Block clicking on gearset items.", ref Config.BlockClickOnGearset);
+            ImGui.Checkbox("Highlight potential skill gains (Yellow)", ref Config.YellowForSkillGain);
         };
 
         public override string Name => "Extended Desynthesis Window";
@@ -48,6 +52,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private Hook<UpdateListDelegate> updateListHook;
         
         public override void Enable() {
+            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.ExtendedDesynthesisWindow ?? new Configs();
             updateItemHook ??= new Hook<UpdateItemDelegate>(PluginInterface.TargetModuleScanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 30 49 8B 38"), new UpdateItemDelegate(UpdateItemDetour));
             updateItemHook?.Enable();
             updateListHook ??= new Hook<UpdateListDelegate>(PluginInterface.TargetModuleScanner.ScanText("40 53 56 57 48 83 EC 20 48 8B D9 49 8B F0"), new UpdateListDelegate(UpdateListDetour));
@@ -62,6 +67,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public override void Disable() {
+            SaveConfig(Config);
             updateItemHook?.Disable();
             updateListHook?.Disable();
             Reset();
@@ -105,7 +111,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 
                 skillTextNode->TextColor = new ByteColor() {
                     A = 0xFF,
-                    R = (byte)(desynthLevel > itemData.LevelItem.Row ? 0x00 : 0xCC),
+                    R = (byte)(desynthLevel > itemData.LevelItem.Row ? ( desynthLevel - 50 > itemData.LevelItem.Row || !Config.YellowForSkillGain ? 0x00 : 0xCC) : 0xCC),
                     G = (byte)(desynthLevel <= itemData.LevelItem.Row ? 0x00 : 0xCC),
                     B = 0x00
                 };
