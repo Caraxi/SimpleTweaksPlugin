@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using Dalamud.Plugin;
 using ImGuiNET;
 using Newtonsoft.Json;
@@ -24,6 +26,8 @@ namespace SimpleTweaksPlugin.TweakSystem {
         public virtual IEnumerable<string> Tags { get; } = new string[0];
 
         public virtual bool CanLoad => true;
+
+        public virtual bool UseAutoConfig => false;
 
         public void InterfaceSetup(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface, SimpleTweaksPluginConfig config) {
             this.PluginInterface = pluginInterface;
@@ -71,14 +75,17 @@ namespace SimpleTweaksPlugin.TweakSystem {
         
         public bool DrawConfig(ref bool hasChanged) {
             var configTreeOpen = false;
-            if (DrawConfigTree != null && Enabled) {
+            if ((UseAutoConfig || DrawConfigTree != null) && Enabled) {
                 var x = ImGui.GetCursorPosX();
                 if (ImGui.TreeNode($"{Name}##treeConfig_{GetType().Name}")) {
                     configTreeOpen = true;
                     DrawCommon();
                     ImGui.SetCursorPosX(x);
                     ImGui.BeginGroup();
-                    DrawConfigTree(ref hasChanged);
+                    if (UseAutoConfig)
+                        DrawAutoConfig();
+                    else 
+                        DrawConfigTree(ref hasChanged);
                     ImGui.EndGroup();
                     ImGui.TreePop();
                 } else {
@@ -94,6 +101,34 @@ namespace SimpleTweaksPlugin.TweakSystem {
             }
 
             return configTreeOpen;
+        }
+
+        private void DrawAutoConfig() {
+
+            try {
+                // ReSharper disable once PossibleNullReferenceException
+                var configObj = this.GetType().GetProperties().FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(TweakConfig))).GetValue(this);
+
+
+                var fields = configObj.GetType().GetFields()
+                    .Select(f => (f, (TweakConfigOptionAttribute) f.GetCustomAttribute(typeof(TweakConfigOptionAttribute))))
+                    .OrderBy(a => a.Item2.Priority).ThenBy(a => a.Item2.Name);
+
+                foreach (var (f, attr) in fields) {
+                    if (f.FieldType == typeof(bool)) {
+                        var v = (bool) f.GetValue(configObj);
+                        if (ImGui.Checkbox($"{attr.Name}##{f.Name}_{this.GetType().Name}", ref v)) {
+                            f.SetValue(configObj, v);
+                        }
+                    } else {
+                        ImGui.Text($"Invalid Auto Field Type: {f.Name}");
+                    }
+
+                }
+
+            } catch {
+                ImGui.Text("Error with AutoConfig");
+            }
         }
 
         protected delegate void DrawConfigDelegate(ref bool hasChanged);

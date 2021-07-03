@@ -136,11 +136,20 @@ namespace SimpleTweaksPlugin.Helper {
             *(dst + bytes.Length) = 0;
         }
 
+        public SeString ReadSeString(Utf8String xivString) {
+            var len = (int) (xivString.BufUsed > int.MaxValue ? int.MaxValue : xivString.BufUsed);
+            var bytes = new byte[len];
+            Marshal.Copy(new IntPtr(xivString.StringPtr), bytes, 0, len);
+            return PluginInterface.SeStringManager.Parse(bytes);
+        }
+
         public void WriteSeString(Utf8String xivString, SeString s) {
             var bytes = s.Encode();
             int i;
+            xivString.BufUsed = 0;
             for (i = 0; i < bytes.Length && i < xivString.BufSize - 1; i++) {
                 *(xivString.StringPtr + i) = bytes[i];
+                xivString.BufUsed++;
             }
             *(xivString.StringPtr + i) = 0;
         }
@@ -163,9 +172,9 @@ namespace SimpleTweaksPlugin.Helper {
             return Marshal.PtrToStructure<T>(new IntPtr(*optionBase + 0xAAE0 + (16 * (uint)opt)));
         }
 
-        public static HookWrapper<T> Hook<T>(string signature, T detour, bool enable = true) where T : Delegate {
+        public static HookWrapper<T> Hook<T>(string signature, T detour, bool enable = true, int addressOffset = 0) where T : Delegate {
             var addr = Common.Scanner.ScanText(signature);
-            var h = new Hook<T>(addr, detour);
+            var h = new Hook<T>(addr + addressOffset, detour);
             var wh = new HookWrapper<T>(h);
             if (enable) wh.Enable();
             HookList.Add(wh);
