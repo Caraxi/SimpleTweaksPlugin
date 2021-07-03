@@ -116,6 +116,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     var priceString = Plugin.Common.ReadSeString(singlePriceNode->NodeText).TextValue
                         .Replace($"{(char) SeIconChar.Gil}", "")
                         .Replace($",", "")
+                        .Replace(" ", "")
                         .Replace($".", "");
 
                     if (!uint.TryParse(priceString, out var priceValue)) continue;
@@ -131,7 +132,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     }
 
                     if (Config.IncludeTaxInSinglePrice && isMarketOpen) {
-                        Plugin.Common.WriteSeString(singlePriceNode->NodeText, $" {realCostPerItem:N2}".Trim('0').Trim('.') + (char) SeIconChar.Gil);
+                        Plugin.Common.WriteSeString(singlePriceNode->NodeText, $" {realCostPerItem:N2}".Trim('0').Trim('.').Trim(',') + (char) SeIconChar.Gil);
                     }
 
                     if (Config.HighlightLazyTax && npcBuyPrice > 0 && realCostPerItem > npcBuyPrice && !hqImageNode->AtkResNode.IsVisible) {
