@@ -195,6 +195,15 @@ namespace SimpleTweaksPlugin {
             }
 #endif
             drawConfigWindow = !drawConfigWindow;
+            if (!drawConfigWindow) {
+                SaveAllConfig();
+            }
+        }
+
+        public void SaveAllConfig() {
+            foreach (var t in Tweaks) {
+                t.RequestSaveConfig();
+            }
         }
 
         public void RemoveCommands() {
@@ -207,8 +216,12 @@ namespace SimpleTweaksPlugin {
                 DebugManager.DrawDebugWindow(ref DebugManager.Enabled);
             }
 #endif
-
+            var windowWasOpen = drawConfigWindow;
             drawConfigWindow = drawConfigWindow && PluginConfig.DrawConfigUI();
+
+            if (windowWasOpen && !drawConfigWindow) {
+                SaveAllConfig();
+            }
             
             if (ShowErrorWindow) {
                 if (ErrorList.Count > 0) {

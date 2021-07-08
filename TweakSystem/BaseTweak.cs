@@ -63,12 +63,34 @@ namespace SimpleTweaksPlugin.TweakSystem {
 
         protected void SaveConfig<T>(T config) where T : TweakConfig {
             try {
+                #if DEBUG
+                SimpleLog.Log($"Save Config: {Name}");
+                #endif
                 var configDirectory = PluginInterface.GetPluginConfigDirectory();
                 var configFile = Path.Combine(configDirectory, this.Key + ".json");
                 var jsonString = JsonConvert.SerializeObject(config, Formatting.Indented);
+                #if DEBUG
+                foreach (var l in jsonString.Split('\n')) {
+                    SimpleLog.Log($"    [{Name} Config] {l}");
+                }
+                #endif
                 File.WriteAllText(configFile, jsonString);
             } catch (Exception ex) {
                 SimpleLog.Error($"Failed to write config for tweak: {this.Name}");
+                SimpleLog.Error(ex);
+            }
+        }
+
+        public virtual void RequestSaveConfig() {
+            try {
+                #if DEBUG
+                SimpleLog.Log($"Request Save Config: {Name}");
+                #endif
+                var configObj = this.GetType().GetProperties().FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(TweakConfig)))?.GetValue(this);
+                if (configObj == null) return;
+                SaveConfig((TweakConfig) configObj);
+            } catch (Exception ex) {
+                SimpleLog.Error($"Failed to save config for tweak: {this.Name}");
                 SimpleLog.Error(ex);
             }
         }
@@ -114,20 +136,44 @@ namespace SimpleTweaksPlugin.TweakSystem {
                     .Select(f => (f, (TweakConfigOptionAttribute) f.GetCustomAttribute(typeof(TweakConfigOptionAttribute))))
                     .OrderBy(a => a.Item2.Priority).ThenBy(a => a.Item2.Name);
 
+                var configOptionIndex = 0;
                 foreach (var (f, attr) in fields) {
                     if (f.FieldType == typeof(bool)) {
                         var v = (bool) f.GetValue(configObj);
-                        if (ImGui.Checkbox($"{attr.Name}##{f.Name}_{this.GetType().Name}", ref v)) {
+                        if (ImGui.Checkbox($"{attr.Name}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", ref v)) {
                             f.SetValue(configObj, v);
                         }
-                    } else {
+                    } else if (f.FieldType == typeof(int)) {
+                        var v = (int) f.GetValue(configObj);
+                        ImGui.SetNextItemWidth(attr.EditorSize == -1 ? -1 : attr.EditorSize * ImGui.GetIO().FontGlobalScale);
+                        var e = attr.IntType switch {
+                            TweakConfigOptionAttribute.IntEditType.Slider => ImGui.SliderInt($"{attr.Name}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", ref v, attr.IntMin, attr.IntMax),
+                            _ => false
+                        };
+                        
+                        if (v < attr.IntMin) {
+                            v = attr.IntMin;
+                            e = true;
+                        }
+
+                        if (v > attr.IntMax) {
+                            v = attr.IntMax;
+                            e = true;
+                        }
+                        
+                        if (e) {
+                            f.SetValue(configObj, v);
+                        }
+                    }
+                    else {
                         ImGui.Text($"Invalid Auto Field Type: {f.Name}");
                     }
 
                 }
 
-            } catch {
-                ImGui.Text("Error with AutoConfig");
+            } catch (Exception ex) {
+                ImGui.Text($"Error with AutoConfig: {ex.Message}");
+                ImGui.TextWrapped($"{ex.StackTrace}");
             }
         }
 

@@ -43,7 +43,14 @@ namespace SimpleTweaksPlugin.TweakSystem {
 
             Ready = true;
         }
-        
+
+        public override void RequestSaveConfig() {
+            base.RequestSaveConfig();
+            foreach (var t in SubTweaks) {
+                t.RequestSaveConfig();
+            }
+        }
+
         public override void Enable() {
             if (!Ready) return;
             foreach (var t in SubTweaks) {
