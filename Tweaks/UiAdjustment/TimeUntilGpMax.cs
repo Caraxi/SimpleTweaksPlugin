@@ -4,6 +4,7 @@ using Dalamud.Game.Internal;
 using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
@@ -18,7 +19,17 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public delegate void UpdateParamDelegate(uint a1, uint* a2, byte a3);
         private Hook<UpdateParamDelegate> updateParamHook;
         
+        public class Configs : TweakConfig {
+            [TweakConfigOption("Target GP", EditorSize = 200, IntMin = -1, IntMax = 1000, IntType = TweakConfigOptionAttribute.IntEditType.Slider)]
+            public int GpGoal = -1;
+        }
+
+        public override bool UseAutoConfig => true;
+
+        public Configs Config { get; private set; }
+
         public override void Enable() {
+            Config = LoadConfig<Configs>() ?? new Configs();
             lastUpdate.Restart();
             updateParamHook ??= new Hook<UpdateParamDelegate>(Common.Scanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 83 3D ?? ?? ?? ?? ?? 41 0F B6 E8 48 8B DA 8B F1 0F 84 ?? ?? ?? ?? 48 89 7C 24"), new UpdateParamDelegate(UpdateParamDetour));
             updateParamHook.Enable();
@@ -53,6 +64,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public override void Disable() {
+            SaveConfig(Config);
             lastUpdate.Stop();
             updateParamHook?.Disable();
             PluginInterface.Framework.OnUpdateEvent -= FrameworkUpdate;
@@ -125,7 +137,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 textNode->AlignmentFontType = 0x15;
                 
                 var gpPerSecond = gpPerTick / timePerTick;
-                var secondsUntilFull = (PluginInterface.ClientState.LocalPlayer.MaxGp - PluginInterface.ClientState.LocalPlayer.CurrentGp) / gpPerSecond;
+                var secondsUntilFull = (Math.Min(Config.GpGoal, PluginInterface.ClientState.LocalPlayer.MaxGp) - PluginInterface.ClientState.LocalPlayer.CurrentGp) / gpPerSecond;
 
                 if (gatheringWidget == null) {
                     secondsUntilFull += timePerTick - (float)lastGpChangeStopwatch.Elapsed.TotalSeconds;
