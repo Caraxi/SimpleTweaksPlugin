@@ -3,21 +3,23 @@ using Dalamud.Game.Internal;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
-        public HideAchievementsNotifications.Configs HideAchievementsNotifications = new();
+        public bool ShouldSerializeHideAchievementsNotifications() => HideAchievementsNotifications != null;
+        public HideAchievementsNotifications.Configs HideAchievementsNotifications = null;
     }
 }
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public class HideAchievementsNotifications : UiAdjustments.SubTweak {
-        public class Configs {
+        public class Configs : TweakConfig {
             public bool HideLogIn = true;
             public bool HideZoneIn = true;
         }
 
-        public Configs Config => this.PluginConfig.UiAdjustments.HideAchievementsNotifications;
+        public Configs Config { get; private set; }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             hasChanged |= ImGui.Checkbox("Hide the login notification.", ref this.Config.HideLogIn);
@@ -29,11 +31,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         protected override string Author => "Anna";
 
         public override void Enable() {
+            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.HideAchievementsNotifications ?? new Configs();
             this.Plugin.PluginInterface.Framework.OnUpdateEvent += this.HideNotifications;
             base.Enable();
         }
 
         public override void Disable() {
+            SaveConfig(Config);
+            PluginConfig.UiAdjustments.HideAchievementsNotifications = null;
             this.Plugin.PluginInterface.Framework.OnUpdateEvent -= this.HideNotifications;
             base.Disable();
         }

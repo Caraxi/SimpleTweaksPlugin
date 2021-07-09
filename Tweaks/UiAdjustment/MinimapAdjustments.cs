@@ -5,10 +5,12 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
-        public MinimapAdjustments.Configs MinimapAdjustments = new MinimapAdjustments.Configs();
+        public bool ShouldSerializeMinimapAdjustments() => MinimapAdjustments != null;
+        public MinimapAdjustments.Configs MinimapAdjustments = null;
     }
 }
 
@@ -16,7 +18,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
         private Stopwatch sw = new();
         
-        public class Configs {
+        public class Configs : TweakConfig {
             public bool HideCoordinates;
             public bool HideCompassLock;
             public bool HideCompassDirections;
@@ -29,7 +31,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public float WeatherPosition = 0;
         }
 
-        public Configs Config => PluginConfig.UiAdjustments.MinimapAdjustments;
+        public Configs Config { get; private set; }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             hasChanged |= ImGui.Checkbox("Hide Coordinates", ref Config.HideCoordinates);
@@ -57,6 +59,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Description => "Allows hiding elements of the minimap display.";
 
         public override void Enable() {
+            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.MinimapAdjustments ?? new Configs();
             PluginInterface.ClientState.OnLogin += OnLogin;
             PluginInterface.ClientState.TerritoryChanged += OnTerritoryChanged;
             base.Enable();
@@ -70,6 +73,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public override void Disable() {
+            SaveConfig(Config);
+            PluginConfig.UiAdjustments.MinimapAdjustments = null;
             PluginInterface.Framework.OnUpdateEvent -= WaitForUpdate;
             PluginInterface.ClientState.OnLogin -= OnLogin;
             base.Disable();

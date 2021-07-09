@@ -6,10 +6,12 @@ using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.Tweaks.Tooltips;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
     public partial class TooltipTweakConfig {
-        public MateriaStats.Configs MateriaStats = new MateriaStats.Configs();
+        public bool ShouldSerializeMateriaStats() => MateriaStats != null;
+        public MateriaStats.Configs MateriaStats = null;
     }
 }
 
@@ -19,14 +21,14 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         public override string Name => "Materia Stats";
         public override string Description => "Includes an item's attached materia when displaying the stats.";
         
-        public class Configs {
+        public class Configs : TweakConfig {
             public bool Total = true;
             public bool Delta;
             public bool Colour;
             public bool SimpleCombined;
         }
 
-        public Configs Config => PluginConfig.TooltipTweaks.MateriaStats;
+        public Configs Config { get; private set; }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             ImGui.BeginGroup();
@@ -68,6 +70,17 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             yield return TooltipTweaks.ItemTooltip.TooltipField.Param3;
             yield return TooltipTweaks.ItemTooltip.TooltipField.Param4;
             yield return TooltipTweaks.ItemTooltip.TooltipField.Param5;
+        }
+
+        public override void Enable() {
+            Config = LoadConfig<Configs>() ?? PluginConfig.TooltipTweaks.MateriaStats ?? new Configs();
+            base.Enable();
+        }
+
+        public override void Disable() {
+            SaveConfig(Config);
+            PluginConfig.TooltipTweaks.MateriaStats = null;
+            base.Disable();
         }
         
         public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {

@@ -18,7 +18,7 @@ using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
-        public bool ShouldSerializeExtendedDesynthesisWindow() => false;
+        public bool ShouldSerializeExtendedDesynthesisWindow() => ExtendedDesynthesisWindow != null;
         public ExtendedDesynthesisWindow.Configs ExtendedDesynthesisWindow = null;
     }
 }
@@ -68,6 +68,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Disable() {
             SaveConfig(Config);
+            PluginConfig.UiAdjustments.ExtendedDesynthesisWindow = null;
             updateItemHook?.Disable();
             updateListHook?.Disable();
             Reset();

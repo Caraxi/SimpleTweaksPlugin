@@ -6,6 +6,7 @@ using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using System;
 using FFXIVClientInterface.Client.UI.Misc;
 using SimpleTweaksPlugin.GameStructs;
+using SimpleTweaksPlugin.TweakSystem;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 
 // TODO:
@@ -13,7 +14,8 @@ using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
-        public LargeCooldownCounter.Configs LargeCooldownCounter = new();
+        public bool ShouldSerializeLargeCooldownCounter() => LargeCooldownCounter != null;
+        public LargeCooldownCounter.Configs LargeCooldownCounter = null;
     }
 }
 
@@ -24,6 +26,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Description => "Increases the size of cooldown counters on hotbars.";
 
         public override void Enable() {
+            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.LargeCooldownCounter ?? new Configs();
             PluginInterface.Framework.OnUpdateEvent += FrameworkUpdate;
             base.Enable();
         }
@@ -43,13 +46,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             "_ActionDoubleCrossL",
             "_ActionDoubleCrossR",
         };
-        public class Configs {
+        public class Configs : TweakConfig {
             public Font Font = Font.Default;
             public int FontSizeAdjust;
             public bool SimpleMode;
         }
 
-        public Configs Config => PluginConfig.UiAdjustments.LargeCooldownCounter;
+        public Configs Config { get; private set; }
         
         public enum Font {
             Default,
@@ -162,6 +165,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public override void Disable() {
+            SaveConfig(Config);
+            PluginConfig.UiAdjustments.LargeCooldownCounter = null;
             PluginInterface.Framework.OnUpdateEvent -= FrameworkUpdate;
             UpdateAll(true);
             base.Disable();

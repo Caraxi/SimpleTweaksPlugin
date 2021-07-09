@@ -6,6 +6,7 @@ using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {
+        public bool ShouldSerializeChatTweaks() => ChatTweaks.DisableChatAutoscroll != null || ChatTweaks.RenameChatTabs != null;
         public ChatTweaksConfig ChatTweaks = new();
     }
 

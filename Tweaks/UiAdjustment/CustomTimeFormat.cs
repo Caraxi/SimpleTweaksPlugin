@@ -13,17 +13,19 @@ using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+using SimpleTweaksPlugin.TweakSystem;
 using static SimpleTweaksPlugin.Tweaks.UiAdjustments.Step;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
-        public CustomTimeFormat.Config CustomTimeFormats = new CustomTimeFormat.Config();
+        public bool ShouldSerializeCustomTimeFormats() => CustomTimeFormats != null;
+        public CustomTimeFormat.Config CustomTimeFormats = null;
     }
 }
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public class CustomTimeFormat : UiAdjustments.SubTweak {
-        public class Config {
+        public class Config : TweakConfig {
 
             public bool ShowET = true;
             public bool ShowLT = true;
@@ -36,6 +38,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public int[] Order = { 0, 1, 2 };
         }
 
+        public Config TweakConfig { get; private set; }
+        
         private float maxX;
 
         private class MoveAction {
@@ -102,24 +106,23 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private unsafe bool DrawClockConfig(int id, int index, string[] icons, ref bool hasChanged, ref MoveAction moveAction) {
-            var c = PluginConfig.UiAdjustments.CustomTimeFormats;
             switch (id) {
                 case 0: {
                     var et = DateTimeOffset.FromUnixTimeSeconds(*(long*)(PluginInterface.Framework.Address.BaseAddress + 0x1608));
-                    DrawClockConfig(index, "Eorzea Time", icons[0], ref hasChanged, ref c.ShowET, ref c.CustomFormatET, ref moveAction, et);
+                    DrawClockConfig(index, "Eorzea Time", icons[0], ref hasChanged, ref TweakConfig.ShowET, ref TweakConfig.CustomFormatET, ref moveAction, et);
                     break;
                 }
                 case 1: {
-                    DrawClockConfig(index, "Local Time", icons[1], ref hasChanged, ref c.ShowLT, ref c.CustomFormatLT, ref moveAction, DateTimeOffset.Now);
+                    DrawClockConfig(index, "Local Time", icons[1], ref hasChanged, ref TweakConfig.ShowLT, ref TweakConfig.CustomFormatLT, ref moveAction, DateTimeOffset.Now);
                     break;
                 }
                 case 2: {
-                    DrawClockConfig(index, "Server Time", icons[2], ref hasChanged, ref c.ShowST, ref c.CustomFormatST, ref moveAction, DateTimeOffset.Now.UtcDateTime);
+                    DrawClockConfig(index, "Server Time", icons[2], ref hasChanged, ref TweakConfig.ShowST, ref TweakConfig.CustomFormatST, ref moveAction, DateTimeOffset.Now.UtcDateTime);
                     break;
                 }
                 default: {
                     // Broken
-                    c.Order = new[] {0, 1, 2};
+                    TweakConfig.Order = new[] {0, 1, 2};
                     SimpleLog.Error("Broken Config Detected. Automatically Fixed");
                     hasChanged = true;
                     return false;
@@ -131,22 +134,20 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             var icons = GetClockIcons();
-                    
-            var c = PluginConfig.UiAdjustments.CustomTimeFormats;
-
+            
             // Safety
             var order = new[] { -1, -1, -1};
-            if (c.Order.Length != 3) {
-                c.Order = new[] { 0, 1, 2};
+            if (TweakConfig.Order.Length != 3) {
+                TweakConfig.Order = new[] { 0, 1, 2};
                 SimpleLog.Error("Broken Config Detected. Automatically Fixed");
                 hasChanged = true;
             }
-            for (var i = 0; i < c.Order.Length; i++) {
-                order[i] = c.Order[i];
+            for (var i = 0; i < TweakConfig.Order.Length; i++) {
+                order[i] = TweakConfig.Order[i];
             }
             if (!(order.Contains(0) && order.Contains(1) && order.Contains(2))) {
                 order = new[] {0, 1, 2};
-                c.Order = new[] { 0, 1, 2 };
+                TweakConfig.Order = new[] { 0, 1, 2 };
                 SimpleLog.Error("Broken Config Detected. Automatically Fixed");
                 hasChanged = true;
             }
@@ -161,18 +162,18 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (moveAction != null) {
                 if (moveAction.MoveUp) {
                     if (moveAction.Index > 0) {
-                        var moving = c.Order[moveAction.Index];
-                        var replacing = c.Order[moveAction.Index - 1];
-                        c.Order[moveAction.Index - 1] = moving;
-                        c.Order[moveAction.Index] = replacing;
+                        var moving = TweakConfig.Order[moveAction.Index];
+                        var replacing = TweakConfig.Order[moveAction.Index - 1];
+                        TweakConfig.Order[moveAction.Index - 1] = moving;
+                        TweakConfig.Order[moveAction.Index] = replacing;
                         hasChanged = true;
                     }
                 } else {
                     if (moveAction.Index < 2) {
-                        var moving = c.Order[moveAction.Index];
-                        var replacing = c.Order[moveAction.Index + 1];
-                        c.Order[moveAction.Index + 1] = moving;
-                        c.Order[moveAction.Index] = replacing;
+                        var moving = TweakConfig.Order[moveAction.Index];
+                        var replacing = TweakConfig.Order[moveAction.Index + 1];
+                        TweakConfig.Order[moveAction.Index + 1] = moving;
+                        TweakConfig.Order[moveAction.Index] = replacing;
                         hasChanged = true;
                     }
                 }
@@ -187,6 +188,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private IntPtr setTextAddress = IntPtr.Zero;
 
         public override unsafe void Enable() {
+            TweakConfig = LoadConfig<Config>() ?? PluginConfig.UiAdjustments.CustomTimeFormats ?? new Config(); 
             if (setTextAddress == IntPtr.Zero) {
                 setTextAddress = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 49 8B FC") + 9;
                 SimpleLog.Verbose($"SetTextAddress: {setTextAddress.ToInt64():X}");
@@ -205,6 +207,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Disable() {
             setTextHook?.Disable();
+            SaveConfig(TweakConfig);
+            PluginConfig.UiAdjustments.CustomTimeFormats = null;
             PluginInterface.Framework.OnUpdateEvent -= OnFrameworkUpdate;
             base.Disable();
         }
@@ -230,21 +234,21 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var timeSeString = new SeString(new List<Payload>());
 
             try {
-                foreach (var c in PluginConfig.UiAdjustments.CustomTimeFormats.Order) {
+                foreach (var c in TweakConfig.Order) {
                     switch (c) {
                         case 0: {
-                            if (PluginConfig.UiAdjustments.CustomTimeFormats.ShowET)
-                                timeSeString.Payloads.Add(new TextPayload($"{icons[0]} {et.DateTime.ToString(PluginConfig.UiAdjustments.CustomTimeFormats.CustomFormatET)} "));
+                            if (TweakConfig.ShowET)
+                                timeSeString.Payloads.Add(new TextPayload($"{icons[0]} {et.DateTime.ToString(TweakConfig.CustomFormatET)} "));
                             break;
                         }
                         case 1: {
-                            if (PluginConfig.UiAdjustments.CustomTimeFormats.ShowLT)
-                                timeSeString.Payloads.Add(new TextPayload($"{icons[1]} {lt.DateTime.ToString(PluginConfig.UiAdjustments.CustomTimeFormats.CustomFormatLT)} "));
+                            if (TweakConfig.ShowLT)
+                                timeSeString.Payloads.Add(new TextPayload($"{icons[1]} {lt.DateTime.ToString(TweakConfig.CustomFormatLT)} "));
                             break;
                         }
                         case 2: {
-                            if (PluginConfig.UiAdjustments.CustomTimeFormats.ShowST)
-                                timeSeString.Payloads.Add(new TextPayload($"{icons[2]} {lt.UtcDateTime.ToString(PluginConfig.UiAdjustments.CustomTimeFormats.CustomFormatST)} "));
+                            if (TweakConfig.ShowST)
+                                timeSeString.Payloads.Add(new TextPayload($"{icons[2]} {lt.UtcDateTime.ToString(TweakConfig.CustomFormatST)} "));
                             break;
                         }
                     }

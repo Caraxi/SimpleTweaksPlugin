@@ -7,7 +7,8 @@ using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {
-        public FixedShadowDistance.Configs FixedShadowDistance = new();
+        public bool ShouldSerializeFixedShadowDistance() => FixedShadowDistance != null;
+        public FixedShadowDistance.Configs FixedShadowDistance = null;
     }
 }
 
@@ -16,7 +17,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         public override string Name => "Fixed Shadow Distance";
         public override string Description => "Sets a fixed value for the shadow rendering, preventing it from changing when flying.";
 
-        public class Configs {
+        public class Configs : TweakConfig {
             public float ShadowDistance = 1800;
         }
         
@@ -29,8 +30,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
 
         private ShadowManager* shadowManager;
-        
-        public Configs Config => PluginConfig.FixedShadowDistance;
+        public Configs Config { get; private set; }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             hasChanged |= ImGui.SliderFloat("Shadow Distance", ref Config.ShadowDistance, 1, 1800, "%.0f");
@@ -42,6 +42,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
 
         public override void Enable() {
+            Config = LoadConfig<Configs>() ?? PluginConfig.FixedShadowDistance ?? new Configs();
             if (shadowManager == null) return;
             PluginInterface.Framework.OnUpdateEvent += SetupShadows;
             base.Enable();
@@ -58,6 +59,8 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
         
         public override void Disable() {
+            SaveConfig(Config);
+            PluginConfig.FixedShadowDistance = null;
             if (shadowManager != null) {
                 shadowManager->FlyingModifier = 8;
                 shadowManager->BaseShadowDistance = 225;

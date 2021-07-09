@@ -6,9 +6,11 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.GameStructs;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
     public partial class TooltipTweakConfig {
+        public bool ShouldSerializeFoodStatsHighlight() => false;
         public bool FoodStatsHighlight = false;
     }
 }
@@ -22,6 +24,13 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         private IntPtr getBaseParamAddress;
         private delegate ulong GetBaseParam(IntPtr playerAddress, uint baseParamId);
         private GetBaseParam getBaseParam;
+
+        public class Configs : TweakConfig {
+            public bool Highlight = false;
+        }
+        
+        public Configs Config { get; private set; }
+        
 
         public override void Setup() {
             try {
@@ -39,8 +48,18 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             }
         }
 
+        public override void Enable() {
+            Config = LoadConfig<Configs>() ?? new Configs() { Highlight = PluginConfig.TooltipTweaks.FoodStatsHighlight };
+            base.Enable();
+        }
+
+        public override void Disable() {
+            SaveConfig(Config);
+            base.Disable();
+        }
+
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-            hasChanged |= ImGui.Checkbox("Highlight Active", ref PluginConfig.TooltipTweaks.FoodStatsHighlight);
+            hasChanged |= ImGui.Checkbox("Highlight Active", ref Config.Highlight);
         };
 
         public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
@@ -77,21 +96,21 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
                                 payloads.Add(new TextPayload($"{param.Name} +"));
 
-                                if (PluginConfig.TooltipTweaks.FoodStatsHighlight && change < max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
+                                if (Config.Highlight && change < max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
                                 payloads.Add(new TextPayload($"{value}%"));
                                 if (change < max) {
-                                    if (PluginConfig.TooltipTweaks.FoodStatsHighlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+                                    if (Config.Highlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
                                     payloads.Add(new TextPayload($" (Current "));
-                                    if (PluginConfig.TooltipTweaks.FoodStatsHighlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
+                                    if (Config.Highlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
                                     payloads.Add(new TextPayload($"{change}"));
-                                    if (PluginConfig.TooltipTweaks.FoodStatsHighlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+                                    if (Config.Highlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
                                     payloads.Add(new TextPayload($")"));
                                 }
 
                                 payloads.Add(new TextPayload(" (Max "));
-                                if (PluginConfig.TooltipTweaks.FoodStatsHighlight && change == max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
+                                if (Config.Highlight && change == max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
                                 payloads.Add(new TextPayload($"{max}"));
-                                if (PluginConfig.TooltipTweaks.FoodStatsHighlight && change == max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+                                if (Config.Highlight && change == max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
                                 payloads.Add(new TextPayload(")"));
                             } else {
                                 if (payloads.Count > 0) payloads.Add(new TextPayload("\n"));

@@ -4,10 +4,12 @@ using FFXIVClientStructs.FFXIV.Client.UI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.Chat;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
     public partial class ChatTweaksConfig {
-        public DisableChatAutoscroll.Configs DisableChatAutoscroll = new();
+        public bool ShouldSerializeDisableChatAutoscroll() => DisableChatAutoscroll != null;
+        public DisableChatAutoscroll.Configs DisableChatAutoscroll = null;
     }
 }
 
@@ -16,14 +18,14 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
         public override string Name => "Smart AutoScroll";
         public override string Description => "Attempts to prevent autoscrolling when recieving new chat messages while scrolled up.";
 
-        public class Configs {
+        public class Configs : TweakConfig {
             public bool DisablePanel0;
             public bool DisablePanel1;
             public bool DisablePanel2;
             public bool DisablePanel3;
         }
 
-        public Configs Config => PluginConfig.ChatTweaks.DisableChatAutoscroll;
+        public Configs Config { get; private set; }
         
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             ImGui.Text("Always allow autoscrolling in:");
@@ -40,6 +42,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
         private HookWrapper<ScrollToBottomDelegate> scrollToBottomHook;
         
         public override void Enable() {
+            Config = LoadConfig<Configs>() ?? PluginConfig.ChatTweaks.DisableChatAutoscroll ?? new Configs();
             scrollToBottomHook = Common.Hook<ScrollToBottomDelegate>("E8 ?? ?? ?? ?? 48 85 FF 75 0D", ScrollToBottomDetour);
             base.Enable();
         }
@@ -69,6 +72,8 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
         }
 
         public override void Disable() {
+            SaveConfig(Config);
+            PluginConfig.ChatTweaks.DisableChatAutoscroll = null;
             scrollToBottomHook?.Disable();
             base.Disable();
         }

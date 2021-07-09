@@ -6,10 +6,12 @@ using Lumina.Excel.GeneratedSheets;
 using ImGuiNET;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.TweakSystem;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltip.TooltipField;
 
 namespace SimpleTweaksPlugin {
     public partial class TooltipTweakConfig {
+        public bool ShouldSerializeDesynthesisDelta() => false;
         public bool DesynthesisDelta = false;
     }
 }
@@ -21,6 +23,21 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
         private readonly uint[] desynthesisInDescription = { 46, 56, 65, 66, 67, 68, 69, 70, 71, 72 };
 
+        public class Configs : TweakConfig {
+            public bool Delta = false;
+        }
+        
+        public Configs Config { get; private set; }
+
+        public override void Enable() {
+            Config = LoadConfig<Configs>() ?? new Configs() {Delta = PluginConfig.TooltipTweaks.DesynthesisDelta};
+            base.Enable();
+        }
+
+        public override void Disable() {
+            SaveConfig(Config);
+            base.Disable();
+        }
         public override unsafe void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
 
             var id = PluginInterface.Framework.Gui.HoveredItem;
@@ -39,7 +56,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
                     if (seStr != null) {
                         if (seStr.Payloads.Last() is TextPayload textPayload) {
-                            if (PluginConfig.TooltipTweaks.DesynthesisDelta) {
+                            if (Config.Delta) {
                                 textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthDelta:+#;-#}");
                                 textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({desynthDelta:+#;-#})");
                             } else {
@@ -54,7 +71,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-            hasChanged |= ImGui.Checkbox($"Desynthesis Delta###{GetType().Name}DesynthesisDelta", ref PluginConfig.TooltipTweaks.DesynthesisDelta);
+            hasChanged |= ImGui.Checkbox($"Desynthesis Delta###{GetType().Name}DesynthesisDelta", ref Config.Delta);
         };
     }
 }

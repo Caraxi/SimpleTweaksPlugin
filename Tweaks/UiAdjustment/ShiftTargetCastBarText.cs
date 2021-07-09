@@ -11,7 +11,8 @@ using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
-        public ShiftTargetCastBarText.Config ShiftTargetCastBarText = new();
+        public bool ShouldSerializeShiftTargetCastBarText() => ShiftTargetCastBarText != null;
+        public ShiftTargetCastBarText.Config ShiftTargetCastBarText = null;
     }
 }
 
@@ -132,6 +133,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override void Disable() {
             if (!Enabled) return;
             SaveConfig(LoadedConfig);
+            PluginConfig.UiAdjustments.ShiftTargetCastBarText = null;
             PluginInterface.Framework.OnUpdateEvent -= OnFrameworkUpdate;
             SimpleLog.Debug($"[{GetType().Name}] Reset");
             HandleBars(true);

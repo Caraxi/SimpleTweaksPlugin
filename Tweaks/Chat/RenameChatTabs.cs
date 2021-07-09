@@ -8,18 +8,20 @@ using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.Chat;
+using SimpleTweaksPlugin.TweakSystem;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 
 namespace SimpleTweaksPlugin {
     public partial class  ChatTweaksConfig {
-        public RenameChatTabs.Config RenameChatTabs = new();
+        public bool ShouldSerializeRenameChatTabs() => RenameChatTabs != null;
+        public RenameChatTabs.Config RenameChatTabs = null;
     }
 }
 
 namespace SimpleTweaksPlugin.Tweaks.Chat {
     public class RenameChatTabs : ChatTweaks.SubTweak {
 
-        public class Config {
+        public class Config : TweakConfig {
             public bool DoRenameTab0;
             public bool DoRenameTab1;
             public string ChatTab0Name = string.Empty;
@@ -32,10 +34,11 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
         private Task renameTask;
         private CancellationTokenSource cancellationToken;
 
-        private Config TweakConfig => PluginConfig.ChatTweaks.RenameChatTabs;
+        public Config TweakConfig { get; private set; }
 
         public override void Enable() {
             if (Enabled) return;
+            TweakConfig = LoadConfig<Config>() ?? Plugin.PluginConfig.ChatTweaks.RenameChatTabs ?? new Config();
 
             PluginInterface.ClientState.OnLogin += OnLogin;
             if (PluginInterface.ClientState.LocalPlayer != null) {
@@ -45,6 +48,8 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
         }
 
         public override void Disable() {
+            SaveConfig(TweakConfig);
+            PluginConfig.ChatTweaks.RenameChatTabs = null;
             PluginInterface.ClientState.OnLogin -= OnLogin;
             cancellationToken?.Cancel();
             if (renameTask != null) {

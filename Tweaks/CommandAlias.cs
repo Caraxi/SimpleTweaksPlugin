@@ -11,16 +11,20 @@ using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {
-        public CommandAlias.Config CommandAlias = new CommandAlias.Config();
+        public bool ShouldSerializeCommandAlias() => CommandAlias != null;
+        public CommandAlias.Config CommandAlias = null;
     }
 }
 
 namespace SimpleTweaksPlugin.Tweaks {
     public class CommandAlias : Tweak {
         #region Config
-        public class Config {
+        public class Config : TweakConfig {
             public List<AliasEntry> AliasList = new List<AliasEntry>();
         }
+        
+        public Config TweakConfig { get; private set; }
+        
 
         public class AliasEntry {
             public static readonly string[] NoOverwrite = { "xlplugins", "xlsettings", "xldclose", "xldev", "tweaks" };
@@ -60,10 +64,10 @@ namespace SimpleTweaksPlugin.Tweaks {
             ImGui.NextColumn();
             ImGui.Separator();
             
-            foreach (var aliasEntry in PluginConfig.CommandAlias.AliasList) {
+            foreach (var aliasEntry in TweakConfig.AliasList) {
 
                 if (aliasEntry.UniqueId == 0) {
-                    aliasEntry.UniqueId = PluginConfig.CommandAlias.AliasList.Max(a => a.UniqueId) + 1;
+                    aliasEntry.UniqueId = TweakConfig.AliasList.Max(a => a.UniqueId) + 1;
                 }
 
                 var focused = false;
@@ -109,13 +113,13 @@ namespace SimpleTweaksPlugin.Tweaks {
                 }
             }
 
-            if (PluginConfig.CommandAlias.AliasList.Count > 0 && PluginConfig.CommandAlias.AliasList.RemoveAll(a => a.Delete) > 0) {
+            if (TweakConfig.AliasList.Count > 0 && TweakConfig.AliasList.RemoveAll(a => a.Delete) > 0) {
                 change = true;
             }
 
             ImGui.Separator();
             var addNew = false;
-            var newEntry = new AliasEntry() { UniqueId = PluginConfig.CommandAlias.AliasList.Count == 0 ? 1 : PluginConfig.CommandAlias.AliasList.Max(a => a.UniqueId) + 1 };
+            var newEntry = new AliasEntry() { UniqueId = TweakConfig.AliasList.Count == 0 ? 1 : TweakConfig.AliasList.Max(a => a.UniqueId) + 1 };
             ImGui.Text("New:");
             ImGui.NextColumn();
             ImGui.SetNextItemWidth(-1);
@@ -126,7 +130,7 @@ namespace SimpleTweaksPlugin.Tweaks {
             ImGui.NextColumn();
 
             if (addNew) {
-                PluginConfig.CommandAlias.AliasList.Add(newEntry);
+                TweakConfig.AliasList.Add(newEntry);
                 change = true;
             }
             
@@ -154,6 +158,7 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         public override unsafe void Enable() {
             if (!Ready) return;
+            TweakConfig = LoadConfig<Config>() ?? PluginConfig.CommandAlias ?? new Config();
             processChatInputHook ??= new Hook<ProcessChatInputDelegate>(processChatInputAddress, new ProcessChatInputDelegate(ProcessChatInputDetour));
             processChatInputHook?.Enable();
             Enabled = true;
@@ -176,7 +181,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                     var splitString = inputString.Split(' ');
 
                     if (splitString.Length > 0 && splitString[0].Length >= 2) {
-                        var alias = PluginConfig.CommandAlias.AliasList.FirstOrDefault(a => {
+                        var alias = TweakConfig.AliasList.FirstOrDefault(a => {
                             if (!a.Enabled) return false;
                             if (!a.IsValid()) return false;
                             return splitString[0] == $"/{a.Input}";
@@ -214,6 +219,8 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
         
         public override void Disable() {
+            SaveConfig(TweakConfig);
+            PluginConfig.CommandAlias = null;
             processChatInputHook?.Disable();
             Enabled = false;
         }

@@ -3,10 +3,12 @@ using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using System;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
-        public LimitTargetStatusEffects.Configs LimitTargetStatusEffects = new LimitTargetStatusEffects.Configs();
+        public bool ShouldSerializeLimitTargetStatusEffects() => LimitTargetStatusEffects != null;
+        public LimitTargetStatusEffects.Configs LimitTargetStatusEffects = null;
     }
 }
 
@@ -16,12 +18,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Description => "Sets a limit on the number of status effects displayed on your target.";
         protected override string Author => "Aireil";
 
-        public class Configs {
+        public class Configs : TweakConfig {
             public int NbStatusEffects = 30;
             public bool LimitOnlyInCombat = false;
         }
 
-        public Configs Config => PluginConfig.UiAdjustments.LimitTargetStatusEffects;
+        public Configs Config { get; private set; }
         private bool isDirty = false;
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
@@ -35,11 +37,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         };
 
         public override void Enable() {
+            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.LimitTargetStatusEffects ?? new Configs();
             PluginInterface.Framework.OnUpdateEvent += FrameworkOnUpdate;
             base.Enable();
         }
 
         public override void Disable() {
+            SaveConfig(Config);
+            PluginConfig.UiAdjustments.LimitTargetStatusEffects = null;
             PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdate;
             UpdateTargetStatus(true);
             base.Disable();

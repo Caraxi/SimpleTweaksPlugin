@@ -9,10 +9,12 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
-        public NotificationToastAdjustments.Configs NotificationToastAdjustments = new NotificationToastAdjustments.Configs();
+        public bool ShouldSerializeNotificationToastAdjustments() => NotificationToastAdjustments != null;
+        public NotificationToastAdjustments.Configs NotificationToastAdjustments = null;
     }
 }
 
@@ -22,7 +24,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Description => "Allows moving or hiding of the notifications that appears in the middle of the screen at various times.";
         protected override string Author => "Aireil";
 
-        public class Configs {
+        public class Configs : TweakConfig {
             public bool Hide = false;
             public bool ShowInCombat = false;
             public int OffsetXPosition = 0;
@@ -31,7 +33,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public readonly List<string> Exceptions = new List<string>();
         }
 
-        public Configs Config => PluginConfig.UiAdjustments.NotificationToastAdjustments;
+        public Configs Config { get; private set; }
 
         private string newException = string.Empty;
 
@@ -91,12 +93,15 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         };
 
         public override void Enable() {
+            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.NotificationToastAdjustments ?? new Configs();
             PluginInterface.Framework.OnUpdateEvent += FrameworkOnUpdate;
             PluginInterface.Framework.Gui.Toast.OnToast += OnToast;
             base.Enable();
         }
 
         public override void Disable() {
+            SaveConfig(Config);
+            PluginConfig.UiAdjustments.NotificationToastAdjustments = null;
             PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdate;
             PluginInterface.Framework.Gui.Toast.OnToast -= OnToast;
             UpdateNotificationToast(true);

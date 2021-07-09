@@ -15,10 +15,12 @@ using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
-        public ExamineItemLevel.Config ExamineItemLevel = new ExamineItemLevel.Config();
+        public bool ShouldSerializeExamineItemLevel() => ExamineItemLevel != null;
+        public ExamineItemLevel.Config ExamineItemLevel = null;
     }
 }
 
@@ -26,9 +28,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
     public class ExamineItemLevel : UiAdjustments.SubTweak {
 
-        public class Config {
+        public class Config : TweakConfig {
             public bool ShowItemLevelIcon = true;
         }
+        
+        public Config TweakConfig { get; private set; }
         
         private delegate IntPtr ExamineUpdated(IntPtr a1, int a2, byte a3);
         private Hook<ExamineUpdated> examinedUpdatedHook;
@@ -44,7 +48,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private IntPtr examineIsValidPtr = IntPtr.Zero;
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-            hasChanged |= ImGui.Checkbox("Show Item Level Icon", ref PluginConfig.UiAdjustments.ExamineItemLevel.ShowItemLevelIcon);
+            hasChanged |= ImGui.Checkbox("Show Item Level Icon", ref TweakConfig.ShowItemLevelIcon);
         };
 
         public override void Setup() {
@@ -52,13 +56,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             examineUpdatedAddress = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 41 89 04 9F");
 
-            SimpleLog.Log($"ExamineIsValidPtr: {examineIsValidPtr.ToInt64():X}");
+            SimpleLog.Debug($"ExamineIsValidPtr: {examineIsValidPtr.ToInt64():X}");
             Ready = true;
         }
 
         public override void Enable() {
             if (!Ready) return;
-
+            TweakConfig = LoadConfig<Config>() ?? PluginConfig.UiAdjustments.ExamineItemLevel ?? new Config();
             examinedUpdatedHook ??= new Hook<ExamineUpdated>(examineUpdatedAddress, new ExamineUpdated(ExamineUpdatedDetour));
             examinedUpdatedHook?.Enable();
 
@@ -143,7 +147,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 examineWindow->PreviewComponent->UldManager.NodeList = a;
                 examineWindow->PreviewComponent->UldManager.NodeList[examineWindow->PreviewComponent->UldManager.NodeListCount++] = (AtkResNode*) textNode;
 
-                if (PluginConfig.UiAdjustments.ExamineItemLevel.ShowItemLevelIcon) {
+                if (TweakConfig.ShowItemLevelIcon) {
 
                     var iconNode = (AtkImageNode*) UiAdjustments.CloneNode(examineWindow->AtkUnitBase.UldManager.NodeList[8]);
                     iconNode->PartId = 47;
@@ -180,6 +184,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public override void Disable() {
+            SaveConfig(TweakConfig);
+            PluginConfig.UiAdjustments.ExamineItemLevel = null;
             examinedUpdatedHook?.Disable();
             ShowItemLevel(true);
             Enabled = false;

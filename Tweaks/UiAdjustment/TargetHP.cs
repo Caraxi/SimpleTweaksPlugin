@@ -8,17 +8,19 @@ using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+using SimpleTweaksPlugin.TweakSystem;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
-        public TargetHP.Configs TargetHP = new();
+        public bool ShouldSerializeTargetHP() => TargetHP != null;
+        public TargetHP.Configs TargetHP = null;
     }
 }
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class TargetHP : UiAdjustments.SubTweak {
-        public class Configs {
+        public class Configs : TweakConfig {
             public DisplayFormat DisplayFormat = DisplayFormat.OneDecimalPrecision;
             public Vector2 Position = new Vector2(0);
             public bool UseCustomColor = false;
@@ -45,7 +47,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             TwoDecimalPrecision,
         }
         
-        public Configs Config => PluginConfig.UiAdjustments.TargetHP;
+        public Configs Config { get; private set; }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             if (ImGui.BeginCombo("Display Format###targetHpFormat", Config.DisplayFormat.GetDescription())) {
@@ -89,11 +91,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Description => "Displays the exact (or optionally rounded) value of target's hitpoints.";
 
         public override void Enable() {
+            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.TargetHP ?? new Configs();
             PluginInterface.Framework.OnUpdateEvent += FrameworkUpdate;
             base.Enable();
         }
 
         public override void Disable() {
+            SaveConfig(Config);
+            PluginConfig.UiAdjustments.TargetHP = null;
             PluginInterface.Framework.OnUpdateEvent -= FrameworkUpdate;
             Update(true);
             base.Disable();

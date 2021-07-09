@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Helper;
@@ -6,6 +7,10 @@ using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {
+        public bool ShouldSerializeUiAdjustments() {
+            return UiAdjustments.GetType().GetFields().Any(v => v.GetValue(UiAdjustments) != null);
+        }
+        
         public UiAdjustmentsConfig UiAdjustments = new UiAdjustmentsConfig();
     }
 
