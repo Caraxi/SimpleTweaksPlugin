@@ -266,6 +266,17 @@ namespace SimpleTweaksPlugin {
                             PluginInterface.Framework.Gui.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
                             return;
                         }
+                        default: {
+                            var tweak = GetTweakById(splitArgString[0]);
+                            if (tweak != null) {
+                                tweak.HandleBasicCommand(splitArgString.Skip(1).ToArray());
+                                return;
+                            }
+
+                            PluginInterface.Framework.Gui.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
+                            return;
+                        }
+                        
                     }
                 }
             }
