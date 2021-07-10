@@ -45,6 +45,21 @@ namespace SimpleTweaksPlugin.TweakSystem {
                 ImGui.SameLine();
                 ImGui.TextDisabled($"  by {Author}");
             }
+
+            if (PluginConfig.ShowTweakIDs) {
+                ImGui.SameLine();
+                var minPos = ImGui.GetCursorPosX();
+                var text = $"[{this.Key}]";
+                var size = ImGui.CalcTextSize(text);
+                ImGui.SetCursorPosX(Math.Max(minPos, ImGui.GetWindowContentRegionWidth() - size.X));
+                ImGui.TextDisabled(text);
+                if (ImGui.IsItemHovered()) {
+                    ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
+                }
+                if (ImGui.IsItemClicked()) {
+                    ImGui.SetClipboardText(Key);
+                }
+            }
         }
 
         protected T LoadConfig<T>() where T : TweakConfig {

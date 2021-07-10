@@ -22,7 +22,7 @@ namespace SimpleTweaksPlugin {
         public DalamudPluginInterface PluginInterface { get; private set; }
         public SimpleTweaksPluginConfig PluginConfig { get; private set; }
 
-        public List<Tweak> Tweaks = new List<Tweak>();
+        public List<BaseTweak> Tweaks = new List<BaseTweak>();
 
         public IconManager IconManager { get; private set; }
         
@@ -146,7 +146,7 @@ namespace SimpleTweaksPlugin {
 
             SetupCommands();
 
-            var tweakList = new List<Tweak>();
+            var tweakList = new List<BaseTweak>();
 
             foreach (var t in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(Tweak)) && !t.IsAbstract)) {
                 SimpleLog.Debug($"Initalizing Tweak: {t.Name}");
@@ -188,16 +188,106 @@ namespace SimpleTweaksPlugin {
         }
 
         public void OnConfigCommandHandler(object command, object args) {
+            if (args is string argString) {
 #if DEBUG
-            if (args is string argString && argString == "Debug") {
-                DebugManager.Enabled = !DebugManager.Enabled;
-                return;
-            }
+                if (argString == "Debug") {
+                    DebugManager.Enabled = !DebugManager.Enabled;
+                    return;
+                }
 #endif
+                if (!string.IsNullOrEmpty(argString.Trim())) {
+                    var splitArgString = argString.Split(' ');
+                    switch (splitArgString[0].ToLowerInvariant()) {
+                        case "t":
+                        case "toggle": {
+                            if (splitArgString.Length < 2) {
+                                PluginInterface.Framework.Gui.Chat.PrintError("/tweaks toggle <tweakid>");
+                                return;
+                            }
+                            var tweak = GetTweakById(splitArgString[1]);
+                            if (tweak != null) {
+                                if (tweak.Enabled) {
+                                    tweak.Disable();
+                                    if (PluginConfig.EnabledTweaks.Contains(tweak.Key)) {
+                                        PluginConfig.EnabledTweaks.Remove(tweak.Key);
+                                    }
+                                } else {
+                                    tweak.Enable();
+                                    if (!PluginConfig.EnabledTweaks.Contains(tweak.Key)) {
+                                        PluginConfig.EnabledTweaks.Add(tweak.Key);
+                                    }
+                                }
+                                PluginConfig.Save();
+                                return;
+                            }
+
+                            PluginInterface.Framework.Gui.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
+                            return;
+                        }
+                        case "e":
+                        case "enable": {
+                            if (splitArgString.Length < 2) {
+                                PluginInterface.Framework.Gui.Chat.PrintError("/tweaks enable <tweakid>");
+                                return;
+                            }
+                            var tweak = GetTweakById(splitArgString[1]);
+                            if (tweak != null) {
+                                if (!tweak.Enabled) {
+                                    tweak.Enable();
+                                    if (!PluginConfig.EnabledTweaks.Contains(tweak.Key)) {
+                                        PluginConfig.EnabledTweaks.Add(tweak.Key);
+                                    }
+                                    PluginConfig.Save();
+                                }
+                                return;
+                            }
+
+                            PluginInterface.Framework.Gui.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
+                            return;
+                        }
+                        case "d":
+                        case "disable": {
+                            if (splitArgString.Length < 2) {
+                                PluginInterface.Framework.Gui.Chat.PrintError("/tweaks disable <tweakid>");
+                                return;
+                            }
+                            var tweak = GetTweakById(splitArgString[1]);
+                            if (tweak != null) {
+                                if (tweak.Enabled) {
+                                    tweak.Disable();
+                                    if (PluginConfig.EnabledTweaks.Contains(tweak.Key)) {
+                                        PluginConfig.EnabledTweaks.Remove(tweak.Key);
+                                    }
+                                    PluginConfig.Save();
+                                }
+                                return;
+                            }
+
+                            PluginInterface.Framework.Gui.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
+                            return;
+                        }
+                    }
+                }
+            }
+
             drawConfigWindow = !drawConfigWindow;
             if (!drawConfigWindow) {
                 SaveAllConfig();
             }
+        }
+
+        public BaseTweak GetTweakById(string s, List<BaseTweak> tweakList = null) {
+            tweakList ??= Tweaks;
+            
+            foreach (var t in tweakList) {
+                if (string.Equals(t.Key, s, StringComparison.InvariantCultureIgnoreCase)) return t;
+                if (t is SubTweakManager stm) {
+                    var fromSub = GetTweakById(s, stm.GetTweakList());
+                    if (fromSub != null) return fromSub;
+                }
+            }
+
+            return null;
         }
 
         public void SaveAllConfig() {
