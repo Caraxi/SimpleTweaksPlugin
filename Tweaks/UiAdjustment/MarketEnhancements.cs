@@ -119,7 +119,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                         .Replace(" ", "")
                         .Replace($".", "");
 
-                    if (!uint.TryParse(priceString, out var priceValue)) continue;
+                    if (!ulong.TryParse(priceString, out var priceValue)) continue;
                     if (!ushort.TryParse(Plugin.Common.ReadSeString(qtyTextNode->NodeText).TextValue.Replace(",", "").Replace(".", ""), out var qtyValue)) continue;
                     if (priceValue <= 0 || qtyValue <= 0) continue;
 
