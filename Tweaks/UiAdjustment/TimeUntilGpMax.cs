@@ -130,14 +130,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 return;
             }
             
-            
-            if (PluginInterface.ClientState.LocalPlayer.MaxGp - PluginInterface.ClientState.LocalPlayer.CurrentGp > 0) {
+            var targetGp = Config.GpGoal > 0 ? Math.Min(Config.GpGoal, PluginInterface.ClientState.LocalPlayer.MaxGp) : PluginInterface.ClientState.LocalPlayer.MaxGp;
+            if (targetGp - PluginInterface.ClientState.LocalPlayer.CurrentGp > 0) {
                 UiHelper.Show(textNode);
                 UiHelper.SetPosition(textNode, 210, null);
                 textNode->AlignmentFontType = 0x15;
                 
                 var gpPerSecond = gpPerTick / timePerTick;
-                var secondsUntilFull = (Math.Min(Config.GpGoal, PluginInterface.ClientState.LocalPlayer.MaxGp) - PluginInterface.ClientState.LocalPlayer.CurrentGp) / gpPerSecond;
+                var secondsUntilFull = (targetGp - PluginInterface.ClientState.LocalPlayer.CurrentGp) / gpPerSecond;
 
                 if (gatheringWidget == null) {
                     secondsUntilFull += timePerTick - (float)lastGpChangeStopwatch.Elapsed.TotalSeconds;
