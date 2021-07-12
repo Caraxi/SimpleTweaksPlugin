@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
@@ -115,7 +116,7 @@ namespace SimpleTweaksPlugin {
 
                 if (ImGui.Button(buttonText, new Vector2(-1, ImGui.GetItemRectSize().Y))) {
                     if (plugin.ErrorList.Count == 0) {
-                        Process.Start("https://ko-fi.com/Caraxi");
+                        Common.OpenBrowser("https://ko-fi.com/Caraxi");
                     } else {
                         plugin.ShowErrorWindow = true;
                     }

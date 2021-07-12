@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using SimpleTweaksPlugin.Enums;
+using SimpleTweaksPlugin.Helper;
 
 namespace SimpleTweaksPlugin.Tweaks.Chat {
     class ClickableLinks : ChatTweaks.SubTweak {
@@ -18,7 +18,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
         }
 
         private void UrlLinkHandle(uint id, SeString message) {
-            Process.Start(message.TextValue);
+            Common.OpenBrowser(message.TextValue);
         }
 
         public override void Disable() {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Numerics;
@@ -12,6 +11,7 @@ using Dalamud.Game.Internal;
 using ImGuiNET;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.GameStructs;
+using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -215,7 +215,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
         private void OpenTeamcraft(ExtendedItem extendedItem) {
             if (teamcraftLocalFailed || Config.TeamcraftLinkHotkeyForceBrowser) {
-                Process.Start($"https://ffxivteamcraft.com/db/en/item/{extendedItem.RowId}");
+                Common.OpenBrowser($"https://ffxivteamcraft.com/db/en/item/{extendedItem.RowId}");
                 return;
             }
             Task.Run(() => {
@@ -227,26 +227,26 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 } catch {
                     try {
                         if (System.IO.Directory.Exists(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ffxiv-teamcraft"))) {
-                            Process.Start($"teamcraft:///db/en/item/{extendedItem.RowId}");
+                            Common.OpenBrowser($"teamcraft:///db/en/item/{extendedItem.RowId}");
                         } else {
                             teamcraftLocalFailed = true;
-                            Process.Start($"https://ffxivteamcraft.com/db/en/item/{extendedItem.RowId}");
+                            Common.OpenBrowser($"https://ffxivteamcraft.com/db/en/item/{extendedItem.RowId}");
                         }
                     } catch {
                         teamcraftLocalFailed = true;
-                        Process.Start($"https://ffxivteamcraft.com/db/en/item/{extendedItem.RowId}");
+                        Common.OpenBrowser($"https://ffxivteamcraft.com/db/en/item/{extendedItem.RowId}");
                     }
                 }
             });
         }
 
         private void OpenGarlandTools(ExtendedItem extendedItem) {
-            Process.Start($"https://www.garlandtools.org/db/#item/{extendedItem.RowId}");
+            Common.OpenBrowser($"https://www.garlandtools.org/db/#item/{extendedItem.RowId}");
         }
         
         private void OpenGamerEscape(ExtendedItem extendedItem) {
             var name = Uri.EscapeUriString(extendedItem.Name);
-            Process.Start($"https://ffxiv.gamerescape.com/w/index.php?search={name}");
+            Common.OpenBrowser($"https://ffxiv.gamerescape.com/w/index.php?search={name}");
         }
 
         private bool isHotkeyPress(VK[] keys) {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -182,6 +183,10 @@ namespace SimpleTweaksPlugin.Helper {
         }
 
         public static List<IHookWrapper> HookList = new();
+
+        public static void OpenBrowser(string url) {
+            Process.Start(new ProcessStartInfo {FileName = url, UseShellExecute = true});
+        }
 
     }
 }
