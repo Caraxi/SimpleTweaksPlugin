@@ -8,9 +8,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleTweaksPlugin", "Simpl
 		{3DBAEE68-9D94-4807-BCB1-E42EDD52B489} = {3DBAEE68-9D94-4807-BCB1-E42EDD52B489}
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFXIVClientStructs", "lib\FFXIVClientStructs\FFXIVClientStructs.csproj", "{3DBAEE68-9D94-4807-BCB1-E42EDD52B489}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFXIVClientStructs", "lib\FFXIVClientStructs\FFXIVClientStructs\FFXIVClientStructs.csproj", "{3DBAEE68-9D94-4807-BCB1-E42EDD52B489}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVClientInterface", "FFXIVClientInterface\FFXIVClientInterface.csproj", "{D6FD765C-566C-4110-B422-3D87B43A7BFA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVClientStructs.Common", "lib\FFXIVClientStructs\FFXIVClientStructs.Common\FFXIVClientStructs.Common.csproj", "{0C060EA2-561F-44F6-8676-B84616004459}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVClientStructs.Generators", "lib\FFXIVClientStructs\FFXIVClientStructs.Generators\FFXIVClientStructs.Generators.csproj", "{CA9EC5FD-9E55-4A7C-8C5D-62BC3940CF15}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,6 +34,14 @@ Global
 		{D6FD765C-566C-4110-B422-3D87B43A7BFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6FD765C-566C-4110-B422-3D87B43A7BFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6FD765C-566C-4110-B422-3D87B43A7BFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C060EA2-561F-44F6-8676-B84616004459}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C060EA2-561F-44F6-8676-B84616004459}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C060EA2-561F-44F6-8676-B84616004459}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C060EA2-561F-44F6-8676-B84616004459}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA9EC5FD-9E55-4A7C-8C5D-62BC3940CF15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA9EC5FD-9E55-4A7C-8C5D-62BC3940CF15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA9EC5FD-9E55-4A7C-8C5D-62BC3940CF15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA9EC5FD-9E55-4A7C-8C5D-62BC3940CF15}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
