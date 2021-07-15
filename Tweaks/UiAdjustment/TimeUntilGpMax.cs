@@ -122,6 +122,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 textNode->AtkResNode.ChildNode = null;
                 textNode->AtkResNode.PrevSiblingNode = null;
                 textNode->AtkResNode.NextSiblingNode = paramWidget->UldManager.NodeList[3];
+                if(paramWidget->UldManager.NodeList[3]->PrevSiblingNode != null) {
+                    textNode->AtkResNode.PrevSiblingNode = paramWidget->UldManager.NodeList[3]->PrevSiblingNode;
+                }
                 paramWidget->UldManager.NodeList[3]->PrevSiblingNode = (AtkResNode*) textNode;
             }
 
