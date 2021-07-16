@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Dalamud.Game.Text.SeStringHandling;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 
 namespace SimpleTweaksPlugin.Helper {
@@ -19,7 +20,15 @@ namespace SimpleTweaksPlugin.Helper {
             } catch (Exception ex) {
                 return $"<<{ex.Message}>>";
             }
-            
         }
+
+        public static SeString GetSeString(this Utf8String utf8String) {
+            return SimpleTweaksPlugin.Plugin.Common.ReadSeString(utf8String);
+        }
+
+        public static void SetSeString(this Utf8String utf8String, SeString seString) {
+            SimpleTweaksPlugin.Plugin.Common.WriteSeString(utf8String, seString);
+        }
+        
     }
 }

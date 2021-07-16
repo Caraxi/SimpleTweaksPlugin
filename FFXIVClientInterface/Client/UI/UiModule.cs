@@ -41,6 +41,7 @@ namespace FFXIVClientInterface.Client.UI {
         public ItemOrderModule ItemOrderModule => GetModuleSingleton<ItemOrderModule>(Data->vtbl->GetItemOrderModule);
         public ItemFinderModule ItemFinderModule => GetModuleSingleton<ItemFinderModule>(Data->vtbl->GetItemFinderModule);
         public RaptureShellModule RaptureShellModule => GetModuleSingleton<RaptureShellModule>(Data->vtbl->GetRaptureShellModule);
+        public RaptureAtkModule RaptureAtkModule => GetModuleSingleton<RaptureAtkModule>(Data->vtbl->GetRaptureAtkModule);
         public AgentModule AgentModule => GetModuleSingleton<AgentModule>(Data->vtbl->GetAgentModule);
         
         

@@ -12,7 +12,7 @@ namespace FFXIVClientInterface.VirtualTable {
         public void* vf4;
         public void* vf5;
         public void* vf6;
-        public void* vf7;
+        public IntPtr GetRaptureAtkModule;
         public void* vf8;
         public IntPtr GetRaptureShellModule;
         public void* vf10;

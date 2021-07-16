@@ -34,6 +34,8 @@ namespace SimpleTweaksPlugin {
         internal Common Common;
 
         public static ClientInterface Client;
+
+        public static SimpleTweaksPlugin Plugin { get; private set; }
         
         public void Dispose() {
             SimpleLog.Debug("Dispose");
@@ -64,6 +66,7 @@ namespace SimpleTweaksPlugin {
         public int UpdateFrom = -1;
 
         public void Initialize(DalamudPluginInterface pluginInterface) {
+            Plugin = this;
 #if DEBUG
             SimpleLog.SetupBuildPath();
 #endif

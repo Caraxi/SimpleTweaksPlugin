@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using Dalamud.Data;
 using Dalamud.Game;
 using FFXIVClientInterface.Client.Game;
+using FFXIVClientInterface.Client.Game.Character;
 using FFXIVClientInterface.Client.UI;
 
 namespace FFXIVClientInterface {
@@ -36,6 +37,20 @@ namespace FFXIVClientInterface {
                 address.Setup(SigScanner);
                 actionManager = new ActionManager(address);
                 return actionManager;
+            }
+        }
+
+        private CharacterManager characterManager;
+
+        public CharacterManager CharacterManager {
+            get {
+                if (characterManager != null) return characterManager;
+                var address = new CharacterManagerAddressResolver();
+                address.Setup(SigScanner);
+                characterManager = new CharacterManager(address) {
+                    Data = (CharacterManagerStruct*) address.BaseAddress
+                };
+                return characterManager;
             }
         }
 
