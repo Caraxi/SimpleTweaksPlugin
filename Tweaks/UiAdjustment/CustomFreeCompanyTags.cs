@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientInterface.Client.UI.Misc;
@@ -312,6 +313,40 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             
                 if (tc.Enabled) {
                     ImGui.InputTextWithHint($"##fcList#{GetType().Name}_replacement_{name}", "Hidden", ref tc.Replacement, 200);
+                    if (ImGui.IsItemFocused() && ImGui.IsItemActive()) {
+                        
+                        ImGui.SetNextWindowPos(new Vector2(ImGui.GetCursorScreenPos().X + ImGui.GetItemRectSize().X - placeholderTooltipSize.X, ImGui.GetCursorScreenPos().Y));
+                        ImGui.BeginTooltip();
+                        if (ImGui.BeginTable("placeholdersTable", 2, ImGuiTableFlags.Borders)) {
+                            ImGui.TableSetupColumn("Placeholders", ImGuiTableColumnFlags.WidthFixed, 100 * ImGui.GetIO().FontGlobalScale);
+                            ImGui.TableSetupColumn("Description");
+                            
+                            ImGui.TableHeadersRow();
+
+                            ImGui.TableNextColumn();
+                            ImGui.Text("<fctag>");
+                            ImGui.TableNextColumn();
+                            ImGui.Text("The character's existing FC tag.");
+                            
+                            ImGui.TableNextColumn();
+                            ImGui.Text("<homeworld>");
+                            ImGui.TableNextColumn();
+                            ImGui.Text("The name of the character's homeworld.");
+                            
+                            ImGui.TableNextColumn();
+                            ImGui.Text("<crossworldicon>");
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"The {(char)SeIconChar.CrossWorld} icon.");
+                            ImGui.TableNextColumn();
+                            ImGui.Text("<colour:#>\n<glow:#>");
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"Change the colour of the tag.\nReplace # with a colour number.");
+                            ImGui.EndTable();
+                        }
+
+                        placeholderTooltipSize = ImGui.GetWindowSize();
+                        ImGui.EndTooltip();
+                    }
                 } else {
                     var s = string.Empty;
                     ImGui.InputTextWithHint($"##fcList#{GetType().Name}_replacement_{name}", "Unchanged", ref s, 50, ImGuiInputTextFlags.ReadOnly);
@@ -320,5 +355,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             
             return changeType;
         }
+
+        private Vector2 placeholderTooltipSize = new(0);
     }
 }
