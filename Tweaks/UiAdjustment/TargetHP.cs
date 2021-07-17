@@ -224,7 +224,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
         }
 
-        private string FormatNumber(int num) {
+        private string FormatNumber(uint num) {
             if (Config.DisplayFormat == DisplayFormat.FullNumber) return $"{num}";
             if (Config.DisplayFormat == DisplayFormat.FullNumberSeparators) return $"{num:N0}";
 

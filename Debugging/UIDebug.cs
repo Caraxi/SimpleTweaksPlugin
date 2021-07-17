@@ -71,9 +71,9 @@ namespace SimpleTweaksPlugin.Debugging {
         private bool SetExclusiveDraw(Action action) {
             // Possibly the most cursed shit I've ever done.
             if (originalHandler != null) return false;
-            var d = (Dalamud.Dalamud) typeof(DalamudPluginInterface).GetField("dalamud", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(Plugin.PluginInterface);
+            var d = typeof(DalamudPluginInterface).GetField("dalamud", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(Plugin.PluginInterface);
             if (d == null) return false;
-            var im = typeof(Dalamud.Dalamud).GetProperty("InterfaceManager", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(d);
+            var im = d.GetType().GetProperty("InterfaceManager", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(d);
             if (im == null) return false;
             var ef = im.GetType().GetField("OnDraw", BindingFlags.Instance | BindingFlags.NonPublic);
             if (ef == null) return false;
@@ -88,9 +88,9 @@ namespace SimpleTweaksPlugin.Debugging {
             // Undoing the cursed shit requires a little more of the same cursed shit
             if (originalHandler == null) return true;
             SimpleLog.Log($"Free Exclusive Draw");
-            var dalamud = (Dalamud.Dalamud) Plugin.PluginInterface.GetType().GetField("dalamud", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(Plugin.PluginInterface);
+            var dalamud = Plugin.PluginInterface.GetType().GetField("dalamud", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(Plugin.PluginInterface);
             if (dalamud == null) return false;
-            var interfaceManager = typeof(Dalamud.Dalamud).GetProperty("InterfaceManager", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(dalamud);
+            var interfaceManager = dalamud.GetType().GetProperty("InterfaceManager", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(dalamud);
             if (interfaceManager == null) return false;
 
             var eventField = interfaceManager.GetType().GetField("OnDraw", BindingFlags.Instance | BindingFlags.NonPublic);

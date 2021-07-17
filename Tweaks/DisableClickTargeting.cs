@@ -112,7 +112,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                     var target = PluginInterface.ClientState.Targets.SoftTarget ?? PluginInterface.ClientState.Targets.CurrentTarget;
                     if (target != null) {
                         if (ImGui.Button("Target")) {
-                            nameFilterNew = target.Name;
+                            nameFilterNew = target.Name.TextValue;
                         }
                     }
                     

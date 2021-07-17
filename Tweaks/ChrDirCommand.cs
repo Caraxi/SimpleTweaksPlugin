@@ -41,14 +41,14 @@ namespace SimpleTweaksPlugin.Tweaks {
                 return;
             }
             PluginInterface.Framework.Gui.Chat.PrintChat(new XivChatEntry() {
-                MessageBytes = new SeString(new List<Payload>() {
+                Message = new SeString(new List<Payload>() {
                     new TextPayload("Character Directory:\n"),
                     new UIForegroundPayload(PluginInterface.Data, 22),
                     linkPayload,
                     new TextPayload(saveDir),
                     RawPayload.LinkTerminator,
                     new UIForegroundPayload(PluginInterface.Data, 0)
-                }).Encode()
+                })
             });
         }
 

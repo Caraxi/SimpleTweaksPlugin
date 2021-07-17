@@ -47,14 +47,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     if (PluginInterface.ClientState.LocalPlayer.CurrentGp > lastGp && lastGpChangeStopwatch.ElapsedMilliseconds > 1000 && lastGpChangeStopwatch.ElapsedMilliseconds < 4000) {
                         var diff = PluginInterface.ClientState.LocalPlayer.CurrentGp - lastGp;
                         if (diff < 20) {
-                            gpPerTick = diff;
-                            lastGp = PluginInterface.ClientState.LocalPlayer.CurrentGp;
+                            gpPerTick = (int)diff;
+                            lastGp = (int)PluginInterface.ClientState.LocalPlayer.CurrentGp;
                             lastGpChangeStopwatch.Restart();
                         }
                     }
 
                     if (PluginInterface.ClientState.LocalPlayer.CurrentGp != lastGp) {
-                        lastGp = PluginInterface.ClientState.LocalPlayer.CurrentGp;
+                        lastGp = (int)PluginInterface.ClientState.LocalPlayer.CurrentGp;
                         lastGpChangeStopwatch.Restart();
                     }
                 }

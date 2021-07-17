@@ -1,6 +1,6 @@
 ﻿using System;
 using Dalamud.Game.ClientState.Actors;
-using Dalamud.Game.ClientState.Structs;
+using Dalamud.Game.ClientState.Actors.Types;
 using Dalamud.Hooking;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;

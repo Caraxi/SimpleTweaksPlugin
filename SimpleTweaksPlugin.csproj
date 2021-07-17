@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup Label="Target">
-        <PlatformTarget>AnyCPU</PlatformTarget>
-        <TargetFramework>net472</TargetFramework>
+        <PlatformTarget>x64</PlatformTarget>
+        <TargetFramework>net5.0-windows</TargetFramework>
         <LangVersion>preview</LangVersion>
-        <Platforms>AnyCPU</Platforms>
+        <Platforms>x64</Platforms>
         <Configurations>Debug;Release</Configurations>
     </PropertyGroup>
     <PropertyGroup Label="Build">
@@ -40,22 +40,32 @@
         <Compile Remove="Debugging\**" />
     </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="ILMerge" Version="3.0.41" />
+    <PackageReference Include="ILRepack" Version="2.0.18" GeneratePathProperty="true" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="FFXIVClientInterface\FFXIVClientInterface.csproj" />
       <ProjectReference Include="lib\FFXIVClientStructs\FFXIVClientStructs.csproj" Private="true" />
     </ItemGroup>
-	<Target Name="ILMerge" AfterTargets="PostBuildEvent">
-		<!-- Merge and rename -->
-		<Exec Command="$(ILMergeConsolePath) /target:library /out:$(TargetDir)/../SimpleTweaksPlugin.dll /log /lib:$(APPDATA)\XIVLauncher\addon\Hooks\dev $(TargetDir)SimpleTweaksPluginNoDeps.dll $(TargetDir)FFXIVClientStructs.dll $(TargetDir)FFXIVClientInterface.dll&#xD;&#xA;powershell -Command &quot;Remove-Item '$(TargetDir)\*.*';Move-Item '$(TargetDir)\..\SimpleTweaksPlugin.*' -Destination '$(TargetDir)';&quot;" />
-	</Target>
+   <PropertyGroup>
+    <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+  </PropertyGroup>
+   <Target Name="ILRepack" AfterTargets="PostBuildEvent">
+    <ItemGroup>
+      <InputAssemblies Include="$(TargetPath)" />
+      <InputAssemblies Include="$(TargetDir)*.dll" Exclude="$(TargetPath)" />
+    </ItemGroup>
+		<!--<Exec Command="$(ILMergeConsolePath) 
+        /target:library 
+        /out:$(TargetDir)/../SimpleTweaksPlugin.dll /log 
+        /lib:$(APPDATA)\XIVLauncher\addon\Hooks\dev $(TargetDir)SimpleTweaksPluginNoDeps.dll $(TargetDir)FFXIVClientStructs.dll $(TargetDir)FFXIVClientInterface.dll
+        &#xD;&#xA;powershell -Command &quot;Remove-Item '$(TargetDir)\*.*';Move-Item '$(TargetDir)\..\SimpleTweaksPlugin.*' -Destination '$(TargetDir)';&quot;" />-->
+    <Exec Command="$(PkgILRepack)\tools\ILRepack.exe /lib:$(DalamudLibPath) /out:$(TargetDir)$(TargetFileName) @(InputAssemblies, ' ')" />
+  </Target>
 	<ItemGroup>
 		<Reference Include="Dalamud">
             <Private>false</Private>
             <HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\Dalamud.dll</HintPath>
 		</Reference>
-		<Reference Include="Microsoft.CSharp" />
         <Reference Include="Newtonsoft.Json">
             <Private>false</Private>
             <HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\Newtonsoft.Json.dll</HintPath>
