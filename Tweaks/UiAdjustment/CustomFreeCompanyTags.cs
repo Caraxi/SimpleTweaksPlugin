@@ -59,11 +59,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var battleChara = (BattleChara*) gameObject;
             try {
                 var customization = config.DefaultCustomization;
+                string companyTag = string.Empty;
                 if (battleChara->Character.HomeWorld != battleChara->Character.CurrentWorld) {
                     // Wanderer
                     customization = config.WandererCustomization;
                 } else {
-                    var companyTag = Plugin.Common.ReadSeString(battleChara->Character.CompanyTag).TextValue.Trim();
+                    companyTag = Plugin.Common.ReadSeString(battleChara->Character.CompanyTag).TextValue.Trim();
 
                     customization = companyTag.Length switch {
                         <= 0 => null,
@@ -109,6 +110,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                                         case "<homeworld>": {
                                             var world = PluginInterface.Data.Excel.GetSheet<World>().GetRow(battleChara->Character.HomeWorld);
                                             payloads.Add(new TextPayload(world.Name));
+                                            break;
+                                        }
+                                        case "<fctag>": {
+                                            payloads.Add(new TextPayload(companyTag));
                                             break;
                                         }
     #if DEBUG
