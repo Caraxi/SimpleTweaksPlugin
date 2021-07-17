@@ -121,9 +121,19 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                                             payloads.Add(new TextPayload($"{namePlateInfo->Flags:X}"));
                                             break;
                                         }
-    #endif
-                                        case { } s when s.StartsWith("<foreground:"): {
-                                            var k = s.Substring(12, s.Length - 13);
+#endif
+                                        case { } s when s.StartsWith("<color:"): {
+                                            var k = s.Substring(7, s.Length - 8);
+                                            if (ushort.TryParse(k, out var colorKey)) {
+                                                payloads.Add(new UIForegroundPayload(PluginInterface.Data, colorKey));
+                                                resetForeground = colorKey != 0;
+                                            } else {
+                                                payloads.Add(new TextPayload(cText));
+                                            }
+                                            break;
+                                        }
+                                        case { } s when s.StartsWith("<colour:"): {
+                                            var k = s.Substring(8, s.Length - 9);
                                             if (ushort.TryParse(k, out var colorKey)) {
                                                 payloads.Add(new UIForegroundPayload(PluginInterface.Data, colorKey));
                                                 resetForeground = colorKey != 0;
