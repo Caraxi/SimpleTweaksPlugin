@@ -241,9 +241,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 
                 ImGui.TableNextColumn();
                 ImGui.SetNextItemWidth(-1);
-                ImGui.InputText($"##fcList#{GetType().Name}_new_name", ref newFcName, 5);
+                var addNew = ImGui.InputText($"##fcList#{GetType().Name}_new_name", ref newFcName, 5, ImGuiInputTextFlags.EnterReturnsTrue);
                 ImGui.TableNextColumn();
-                if (ImGui.Button($"Add##fcList#{GetType().Name}_new_button")) {
+                if (ImGui.Button($"Add##fcList#{GetType().Name}_new_button") || addNew) {
                     if (newFcName.Length > 0 && !config.FcCustomizations.ContainsKey(newFcName)) {
                         config.FcCustomizations.Add(newFcName, new TagCustomization());
                         newFcName = string.Empty;
