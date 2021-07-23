@@ -148,6 +148,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
 
 
                 var fields = configObj.GetType().GetFields()
+                    .Where(f => f.GetCustomAttribute(typeof(TweakConfigOptionAttribute)) != null)
                     .Select(f => (f, (TweakConfigOptionAttribute) f.GetCustomAttribute(typeof(TweakConfigOptionAttribute))))
                     .OrderBy(a => a.Item2.Priority).ThenBy(a => a.Item2.Name);
 
