@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace SimpleTweaksPlugin.TweakSystem {
     public class TweakConfigOptionAttribute : Attribute {
@@ -12,13 +13,25 @@ namespace SimpleTweaksPlugin.TweakSystem {
         public int IntMax { get; set; } = int.MaxValue;
         public IntEditType IntType { get; set; } = IntEditType.Slider;
 
+        public delegate bool ConfigOptionEditor(string name, ref object configOption);
+        
+        public MethodInfo Editor { get; set; }
+
         public enum IntEditType {
             Slider,
+            Drag,
         }
         
         public TweakConfigOptionAttribute(string name, int priority = 0) {
             Name = name;
             Priority = priority;
         }
+
+        public TweakConfigOptionAttribute(string name, string editorType, int priority = 0) {
+            Name = name;
+            Priority = priority;
+            Editor = typeof(TweakConfigEditor).GetMethod($"{editorType}Editor", BindingFlags.Public | BindingFlags.Static);
+        }
+        
     }
 }

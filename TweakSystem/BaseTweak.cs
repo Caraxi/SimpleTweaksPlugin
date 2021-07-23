@@ -154,7 +154,14 @@ namespace SimpleTweaksPlugin.TweakSystem {
 
                 var configOptionIndex = 0;
                 foreach (var (f, attr) in fields) {
-                    if (f.FieldType == typeof(bool)) {
+                    if (attr.Editor != null) {
+                        var v = f.GetValue(configObj);
+                        var arr = new [] {$"{attr.Name}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", v};
+                        var o = (bool) attr.Editor.Invoke(null, arr);
+                        if (o) {
+                            f.SetValue(configObj, arr[1]);
+                        }
+                    } else if (f.FieldType == typeof(bool)) {
                         var v = (bool) f.GetValue(configObj);
                         if (ImGui.Checkbox($"{attr.Name}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", ref v)) {
                             f.SetValue(configObj, v);
@@ -164,6 +171,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
                         ImGui.SetNextItemWidth(attr.EditorSize == -1 ? -1 : attr.EditorSize * ImGui.GetIO().FontGlobalScale);
                         var e = attr.IntType switch {
                             TweakConfigOptionAttribute.IntEditType.Slider => ImGui.SliderInt($"{attr.Name}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", ref v, attr.IntMin, attr.IntMax),
+                            TweakConfigOptionAttribute.IntEditType.Drag => ImGui.DragInt($"{attr.Name}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", ref v, 1f, attr.IntMin, attr.IntMax),
                             _ => false
                         };
                         
