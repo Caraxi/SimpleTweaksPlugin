@@ -100,7 +100,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             AtkTextNode* textNode = null;
             for (var i = 0; i < paramWidget->UldManager.NodeListCount; i++) {
                 var node = paramWidget->UldManager.NodeList[i];
-                if (node->Type == NodeType.Text && node->NodeID == CountdownNodeId) {
+                if (node->Type == NodeType.Text && node->NodeID == CustomNodes.TimeUntilGpMax) {
                     textNode = (AtkTextNode*) node;
                     break;
                 }
@@ -110,7 +110,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             if (textNode == null) {
                 textNode = UiHelper.CloneNode((AtkTextNode*) paramWidget->UldManager.NodeList[3]);
-                textNode->AtkResNode.NodeID = CountdownNodeId;
+                textNode->AtkResNode.NodeID = CustomNodes.TimeUntilGpMax;
                 var newStrPtr = Common.Alloc(512);
                 textNode->NodeText.StringPtr = (byte*) newStrPtr;
                 textNode->NodeText.BufSize = 512;
@@ -158,7 +158,5 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 UiHelper.Hide(textNode);
             }
         }
-        
-        private const int CountdownNodeId = 99990003;
     }
 }

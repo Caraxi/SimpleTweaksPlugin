@@ -155,8 +155,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             UiHelper.SetSize(unitBase->UldManager.NodeList[6], reset ? 44 : 0, reset ? 20 : 0);
             UpdateGaugeBar(gauge, textNode, target, Config.Position, Config.UseCustomColor ? Config.CustomColor : null, Config.FontSize, reset);
         }
-
-        private const int TargetHPNodeID = 99990001;
         
         private void UpdateGaugeBar(AtkComponentNode* gauge, AtkTextNode* cloneTextNode, Actor target, Vector2 positionOffset, Vector4? customColor, byte fontSize, bool reset = false) {
             if (gauge == null || (ushort) gauge->AtkResNode.Type < 1000) return;
@@ -165,7 +163,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             for (var i = 5; i < gauge->Component->UldManager.NodeListCount; i++) {
                 var node = gauge->Component->UldManager.NodeList[i];
-                if (node->Type == NodeType.Text && node->NodeID == TargetHPNodeID) {
+                if (node->Type == NodeType.Text && node->NodeID == CustomNodes.TargetHP) {
                     textNode = (AtkTextNode*) node;
                     break;
                 }
@@ -175,7 +173,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             
             if (textNode == null) {
                 textNode = UiHelper.CloneNode(cloneTextNode);
-                textNode->AtkResNode.NodeID = TargetHPNodeID;
+                textNode->AtkResNode.NodeID = CustomNodes.TargetHP;
                 var newStrPtr = Common.Alloc(512);
                 textNode->NodeText.StringPtr = (byte*) newStrPtr;
                 textNode->NodeText.BufSize = 512;
