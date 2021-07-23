@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ImGuiNET;
 using SimpleTweaksPlugin.Enums;
+using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
 
 namespace SimpleTweaksPlugin.Debugging {
@@ -40,10 +41,11 @@ namespace SimpleTweaksPlugin.Debugging {
                         if (ImGui.TreeNode("Items##containerItems")) {
                             
                             for (var i = 0; i < container->SlotCount; i++) {
-
                                 var item = container->Items[i];
+                                var itemAddr = ((ulong) container->Items) + (ulong)sizeof(InventoryItem) * (ulong)i;
+                                DebugManager.ClickToCopyText($"{itemAddr:X}");
+                                ImGui.SameLine();
                                 DebugManager.PrintOutObject(item, (ulong) &item, new List<string> {$"Items[{i}]"},false, $"[{i:00}] {item.Item?.Name ?? "<Not Found>"}" );
-                            
                             }
                             ImGui.TreePop();
                         }

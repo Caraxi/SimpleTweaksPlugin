@@ -539,7 +539,7 @@ namespace SimpleTweaksPlugin.Debugging {
                         ImGui.InputText($"Replace Text##{(ulong) textNode:X}", new IntPtr(textNode->NodeText.StringPtr), (uint) textNode->NodeText.BufSize);
 
 
-                        ImGui.Text($"AlignmentType: {(AlignmentType)textNode->AlignmentFontType}  FontSize: {textNode->FontSize}");
+                        ImGui.Text($"AlignmentType: {(AlignmentType)textNode->AlignmentFontType}  FontSize: {textNode->FontSize}  CharSpacing: {textNode->CharSpacing}  LineSpacing: {textNode->LineSpacing}");
                         int b = textNode->AlignmentFontType;
                         if (ImGui.InputInt($"###setAlignment{(ulong) textNode:X}", ref b, 1)) {
                             while (b > byte.MaxValue) b -= byte.MaxValue;
