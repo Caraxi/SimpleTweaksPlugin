@@ -114,7 +114,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
 
             if (combo->Action != 0 && !comboActions.ContainsKey(combo->Action)) {
-                comboActions.Add(combo->Action, PluginInterface.Data.Excel.GetSheet<Action>().FirstOrDefault(a => a.ActionCombo.Row == combo->Action)?.ClassJobLevel ?? 255);
+                comboActions.Add(combo->Action, PluginInterface.Data.Excel.GetSheet<Action>().OrderBy(a => a.ClassJobLevel).FirstOrDefault(a => a.ActionCombo.Row == combo->Action)?.ClassJobLevel ?? 255);
             }
             
             var comboAvailable = combo->Timer > 0 && combo->Action != 0 && comboActions.ContainsKey(combo->Action) && comboActions[combo->Action] <= PluginInterface.ClientState.LocalPlayer.Level;
