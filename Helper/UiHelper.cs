@@ -66,7 +66,7 @@ namespace SimpleTweaksPlugin.Helper {
         }
 
         public static void SetWindowSize(AtkComponentNode* windowNode, ushort? width, ushort? height) {
-            if (((ULDComponentInfo*) windowNode->Component->UldManager.Objects)->ComponentType != ComponentType.Window) return;
+            if (((AtkUldComponentInfo*) windowNode->Component->UldManager.Objects)->ComponentType != ComponentType.Window) return;
 
             width ??= windowNode->AtkResNode.Width;
             height ??= windowNode->AtkResNode.Height;

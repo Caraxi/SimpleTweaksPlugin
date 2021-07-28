@@ -44,7 +44,6 @@
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="FFXIVClientInterface\FFXIVClientInterface.csproj" />
-      <ProjectReference Include="lib\FFXIVClientStructs\FFXIVClientStructs.csproj" Private="true" />
     </ItemGroup>
 	<Target Name="ILMerge" AfterTargets="PostBuildEvent">
 		<!-- Merge and rename -->
@@ -54,6 +53,10 @@
 		<Reference Include="Dalamud">
             <Private>false</Private>
             <HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\Dalamud.dll</HintPath>
+		</Reference>
+		<Reference Include="FFXIVClientStructs">
+			<Private>true</Private>
+			<HintPath>$(SolutionDir)\lib\FFXIVClientStructs\bin\$(ConfigurationName)\FFXIVClientStructs.dll</HintPath>
 		</Reference>
 		<Reference Include="Microsoft.CSharp" />
         <Reference Include="Newtonsoft.Json">

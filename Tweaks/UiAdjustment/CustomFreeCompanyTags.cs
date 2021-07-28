@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
@@ -65,7 +66,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     // Wanderer
                     customization = config.WandererCustomization;
                 } else {
-                    companyTag = Plugin.Common.ReadSeString(battleChara->Character.CompanyTag).TextValue.Trim();
+                    companyTag = Encoding.UTF8.GetString(battleChara->Character.FreeCompanyTag, 6).Trim('\0', ' ');
 
                     customization = companyTag.Length switch {
                         <= 0 => null,

@@ -26,13 +26,14 @@
         <AssemblyName>FFXIVClientInterface</AssemblyName>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\lib\FFXIVClientStructs\FFXIVClientStructs.csproj" Private="true" />
-    </ItemGroup>
-    <ItemGroup>
         <Reference Include="Dalamud">
             <Private>false</Private>
             <HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\Dalamud.dll</HintPath>
         </Reference>
+	    <Reference Include="FFXIVClientStructs">
+		    <Private>true</Private>
+		    <HintPath>$(SolutionDir)\lib\FFXIVClientStructs\bin\$(ConfigurationName)\FFXIVClientStructs.dll</HintPath>
+	    </Reference>
         <Reference Include="Lumina">
             <Private>false</Private>
             <HintPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\Lumina.dll</HintPath>

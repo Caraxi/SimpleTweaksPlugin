@@ -576,7 +576,7 @@ namespace SimpleTweaksPlugin.Debugging {
                                 ImGui.Text($"texture type: {texType} part_id={imageNode->PartId} part_id_count={imageNode->PartsList->PartCount}");
                                 if (texType == TextureType.Resource) {
                                     var texFileNamePtr = textureInfo->AtkTexture.Resource->TexFileResourceHandle->ResourceHandle.FileName;
-                                    var texString = Marshal.PtrToStringAnsi(new IntPtr(texFileNamePtr));
+                                    var texString = Marshal.PtrToStringAnsi(new IntPtr(texFileNamePtr.BufferPtr));
                                     ImGui.Text($"texture path: {texString}");
                                     var kernelTexture = textureInfo->AtkTexture.Resource->KernelTextureObject;
                                     
@@ -619,7 +619,7 @@ namespace SimpleTweaksPlugin.Debugging {
 
             var childCount = componentInfo.NodeListCount;
 
-            var objectInfo = (ULDComponentInfo*)componentInfo.Objects;
+            var objectInfo = (AtkUldComponentInfo*)componentInfo.Objects;
             if (elementSelectorFind.Length > 0) {
                 ImGui.SetNextItemOpen(elementSelectorFind.Contains((ulong) node), ImGuiCond.Always);
             }

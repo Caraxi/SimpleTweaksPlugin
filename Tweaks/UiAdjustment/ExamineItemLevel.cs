@@ -86,7 +86,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 if (container == null) return;
                 var examineWindow = (AddonCharacterInspect*) Common.GetUnitBase("CharacterInspect");
                 if (examineWindow == null) return;
-                var compInfo = (ULDComponentInfo*) examineWindow->PreviewComponent->UldManager.Objects;
+                var compInfo = (AtkUldComponentInfo*) examineWindow->PreviewComponent->UldManager.Objects;
                 if (compInfo == null || compInfo->ComponentType != ComponentType.Preview) return;
                 if (examineWindow->PreviewComponent->UldManager.NodeListCount < 4) return;
                 if (reset) {

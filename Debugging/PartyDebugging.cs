@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game.ClientState.Actors.Types;
-using FFXIVClientStructs.FFXIV.Group;
+using FFXIVClientStructs.FFXIV.Client.Game.Group;
 using ImGuiNET;
-using PartyMember = FFXIVClientStructs.FFXIV.Group.PartyMember;
+using PartyMember = FFXIVClientStructs.FFXIV.Client.Game.Group.PartyMember;
 
 namespace SimpleTweaksPlugin.Debugging {
     public unsafe class PartyDebugging : DebugHelper {
