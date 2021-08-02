@@ -65,7 +65,8 @@ namespace SimpleTweaksPlugin {
 
         public int UpdateFrom = -1;
 
-        public void Initialize(DalamudPluginInterface pluginInterface) {
+        public void Initialize(DalamudPluginInterface pluginInterface) { 
+            FFXIVClientStructs.Resolver.Initialize();
             Plugin = this;
 #if DEBUG
             SimpleLog.SetupBuildPath();
