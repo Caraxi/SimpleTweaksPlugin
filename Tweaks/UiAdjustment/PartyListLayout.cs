@@ -1,5 +1,4 @@
 ﻿using System;
-using Dalamud.Game.Internal;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Helper;
@@ -77,7 +76,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 if (i == 6 && cNode->AtkResNode.IsVisible) {
                     // Chocobo Timer
-                    partyList->MpBarSpecialResNode->SetPositionFloat(153 + cNode->AtkResNode.X, 44 + cNode->AtkResNode.Y);
+                    partyList->MpBarSpecialResNode->SetPositionFloat(153 + cNode->AtkResNode.X, 60 + cNode->AtkResNode.Y);
                 }
             }
             
