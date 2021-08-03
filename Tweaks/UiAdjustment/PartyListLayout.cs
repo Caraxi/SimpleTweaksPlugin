@@ -69,6 +69,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     UpdateSlot(cNode, visibleIndex, ref maxX, ref maxY, reset);
                 }
                 if (cNode->AtkResNode.IsVisible) visibleIndex++;
+
+                if (i == 6 && cNode->AtkResNode.IsVisible) {
+                    // Chocobo Timer
+                    partyList->MpBarSpecialResNode->SetPositionFloat(153 + cNode->AtkResNode.X, 44 + cNode->AtkResNode.Y);
+                }
             }
             
             // Collision Node Update
