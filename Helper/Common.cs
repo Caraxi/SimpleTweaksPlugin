@@ -9,7 +9,9 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Hooking;
 using Dalamud.Plugin;
 using FFXIVClientStructs.Attributes;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.System.String;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.GameStructs;
@@ -60,6 +62,9 @@ namespace SimpleTweaksPlugin.Helper {
             _getInventoryContainer = Marshal.GetDelegateForFunctionPointer<GetInventoryContainer>(getInventoryContainerPtr);
             _getContainerSlot = Marshal.GetDelegateForFunctionPointer<GetContainerSlot>(getContainerSlotPtr);
         }
+
+        public static Framework* Framework => (Framework*) PluginInterface.Framework.Address.BaseAddress;
+        public static UIModule* UIModule => Framework->GetUiModule();
 
         public static AtkUnitBase* GetUnitBase(string name, int index = 1) {
             return (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName(name, index);
