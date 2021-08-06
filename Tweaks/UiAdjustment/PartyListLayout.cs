@@ -39,6 +39,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public ElementConfig ClassIcon = new();
             public ElementConfig Slot = new();
             public ElementConfig LeaderIcon = new();
+            public TextElementConfig ChocoboTimer = new() { Color = new Vector4(1), Glow = new Vector4(0x31/255f, 0x61/255f, 0x86/255f, 0xFF/255f)};
+            public TextElementConfig ChocoboTimerClockIcon = new() { Color = new Vector4(1), Glow = new Vector4(0x31/255f, 0x61/255f, 0x86/255f, 0xFF/255f)};
             
             public StatusEffectsConfig StatusEffects = new();
         }
@@ -256,6 +258,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             ElementConfigEditor("MP Number", Config.NumberMP, ref c);
             ElementConfigEditor("Oversheild Bar", Config.BarOvershield, ref c);
             ElementConfigEditor("Oversheild Icon", Config.IconOvershield, ref c);
+            ElementConfigEditor("Chocobo Timer", Config.ChocoboTimer, ref c);
+            ElementConfigEditor("Chocobo Timer Clock Icon", Config.ChocoboTimerClockIcon, ref c);
             ElementConfigEditor("Castbar", Config.Castbar, ref c);
             ElementConfigEditor("Slot Number", Config.Slot, ref c);
             ElementConfigEditor("Leader Icon", Config.LeaderIcon, ref c);
@@ -353,6 +357,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                     if (i == 11) {
                         partyList->MpBarSpecialResNode->SetPositionFloat(153 + cNode->AtkResNode.X, 60 + cNode->AtkResNode.Y);
+                        var cTextNode = partyList->MpBarSpecialResNode->ChildNode;
+                        HandleElementConfig(cTextNode, Config.ChocoboTimer, reset, defColor: DefaultConfig.ChocoboTimer.Color, defGlow: DefaultConfig.ChocoboTimer.Glow);
+                        if (cTextNode != null) HandleElementConfig(cTextNode->PrevSiblingNode, Config.ChocoboTimerClockIcon, reset, defColor: DefaultConfig.ChocoboTimerClockIcon.Color, defGlow: DefaultConfig.ChocoboTimerClockIcon.Glow, defPosX: 18);
                     }
 
                     if (partyListNumbers->IntArray[2] == i && cNode->AtkResNode.IsVisible) {
