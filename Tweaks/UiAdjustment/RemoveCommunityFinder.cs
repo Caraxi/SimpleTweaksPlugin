@@ -15,6 +15,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             "CrossWorldLinkshell",
             "CircleFinder",
             "CircleList",
+            "CircleBook",
             "ContactList",
             "PvPTeam"
         };
