@@ -160,7 +160,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
             
             textNode->AtkResNode.Width = 0; // Auto resizing only grows the box. Set to zero to guarantee it.
             textNode->AlignmentFontType = (byte) AlignmentType.Left; // Auto resizing doesn't work on Center aligned text.
-            UiHelper.SetText(textNode, $"{name}");
+            textNode->SetText(name);
             textNode->AtkResNode.Width += 5;
             textNode->AtkResNode.Flags_2 |= 0x1;
 
@@ -187,7 +187,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
             if (str.TextValue == name && textNode->AtkResNode.Width < 1000) return;
             SimpleLog.Log($"Rename Tab: '{str.TextValue}' -> '{name}' [{textNode->AtkResNode.Width}]");
             textNode->AtkResNode.Width = 0;
-            UiHelper.SetText(textNode, name);
+            textNode->SetText(name);
             textNode->AtkResNode.Width += 10;
             if (textNode->AtkResNode.Width > 1000) textNode->AtkResNode.Width = 180;
             textNode->AtkResNode.Flags_2 |= 0x1;

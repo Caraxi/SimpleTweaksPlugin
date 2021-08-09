@@ -25,16 +25,6 @@ namespace SimpleTweaksPlugin.Helper {
             }
         }
 
-        public static void SetText(AtkTextNode* textNode, SeString str) {
-            if (!Ready) return;
-            textNode->SetText(str.Encode());
-        }
-
-        public static void SetText(AtkTextNode* textNode, string str) {
-            if (!Ready) return;
-            textNode->SetText(str);
-        }
-
         public static void SetSize(AtkResNode* node, int? width, int? height) {
             if (width != null && width >= ushort.MinValue && width <= ushort.MaxValue) node->Width = (ushort) width.Value;
             if (height != null && height >= ushort.MinValue && height <= ushort.MaxValue) node->Height = (ushort) height.Value;

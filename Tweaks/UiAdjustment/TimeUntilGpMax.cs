@@ -114,7 +114,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var newStrPtr = Common.Alloc(512);
                 textNode->NodeText.StringPtr = (byte*) newStrPtr;
                 textNode->NodeText.BufSize = 512;
-                UiHelper.SetText(textNode, "00:00");
+                textNode->SetText("00:00");
                 UiHelper.ExpandNodeList(paramWidget, 1);
                 paramWidget->UldManager.NodeList[paramWidget->UldManager.NodeListCount++] = (AtkResNode*) textNode;
                 
@@ -153,7 +153,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     minutesUntilFull += 1;
                     secondsUntilFull -= 60;
                 }
-                UiHelper.SetText(textNode, $"{minutesUntilFull:00}:{(int)secondsUntilFull:00}");
+                textNode->SetText($"{minutesUntilFull:00}:{(int)secondsUntilFull:00}");
             } else {
                 UiHelper.Hide(textNode);
             }

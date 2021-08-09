@@ -84,7 +84,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 UiHelper.SetPosition(textNode, 78, 65);
                 textNode->FontSize = 12;
                 textNode->AlignmentFontType = 3;
-                UiHelper.SetText(textNode, PluginInterface.Data.Excel.GetSheet<Addon>().GetRow(10430).Text);
+                textNode->SetText(PluginInterface.Data.Excel.GetSheet<Addon>().GetRow(10430).Text);
 
                 return;
             }
@@ -132,7 +132,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             payloads.Add(new TextPayload("/"));
             payloads.AddRange(GetAetherpoolPayloads(armorAetherpoolSeStr));
 
-            UiHelper.SetText(textNode, new SeString(payloads));
+            textNode->SetText(new SeString(payloads).Encode());
         }
 
         private static void SetDeepdungeonWindow(AtkComponentNode* windowNode, ushort? width, ushort? height)

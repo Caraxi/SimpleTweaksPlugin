@@ -110,7 +110,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var addon = (AddonSalvageItemSelector*) PluginInterface.Framework.Gui.GetUiObjectByName("SalvageItemSelector", 1);
             if (addon != null) {
                 if (index > addon->ItemCount) {
-                    UiHelper.SetText(skillTextNode, "Error");
+                    skillTextNode->SetText("Error");
                     return;
                 }
 
@@ -141,7 +141,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 }
                 
                 skillTextNode->TextColor = c;
-                UiHelper.SetText(skillTextNode, $"{desynthLevel:F0}/{itemData.LevelItem.Row}");
+                skillTextNode->SetText($"{desynthLevel:F0}/{itemData.LevelItem.Row}");
 
                 var itemIdWithHQ = item->ItemId;
                 if ((item->Flags & ItemFlags.HQ) > 0) itemIdWithHQ += 1000000;
@@ -170,9 +170,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     if (Config.BlockClickOnGearset) {
                         UiHelper.Hide(desynthRow.CollisionNode);
                     }
-                    UiHelper.SetText(desynthRow.GearsetWarningNode, $"{(char) SeIconChar.BoxedStar}");
+                    desynthRow.GearsetWarningNode->SetText($"{(char) SeIconChar.BoxedStar}");
                 } else {
-                    UiHelper.SetText(desynthRow.GearsetWarningNode, "");
+                    desynthRow.GearsetWarningNode->SetText("");
                     
                 }
                 
@@ -214,7 +214,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 UiHelper.ExpandNodeList(atkUnitBase, 2);
                 var newHeaderItem = (AtkTextNode*)UiHelper.CloneNode(nodeList[6]);
                 newHeaderItem->NodeText.StringPtr = (byte*)UiHelper.Alloc((ulong)newHeaderItem->NodeText.BufSize);
-                UiHelper.SetText(newHeaderItem, "Skill");
+                newHeaderItem->SetText("Skill");
                 
                 newHeaderItem->AtkResNode.X = NewWidth - (AddedWidth + 60);
                 newHeaderItem->AtkResNode.Width = AddedWidth;
@@ -225,7 +225,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 
                 var gsHeaderItem = (AtkTextNode*)UiHelper.CloneNode(nodeList[6]);
                 gsHeaderItem->NodeText.StringPtr = (byte*)UiHelper.Alloc((ulong)gsHeaderItem->NodeText.BufSize);
-                UiHelper.SetText(gsHeaderItem, "Gear\nSet");
+                gsHeaderItem->SetText("Gear\nSet");
                 gsHeaderItem->TextFlags |= (byte) TextFlags.MultiLine;
                 gsHeaderItem->AtkResNode.X = NewWidth - 80;
                 gsHeaderItem->AlignmentFontType = (byte) AlignmentType.Bottom;
@@ -248,7 +248,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                      
                     var newRowItem = (AtkTextNode*)UiHelper.CloneNode(listItemNodes[3]);
                     newRowItem->NodeText.StringPtr = (byte*)UiHelper.Alloc((ulong)newRowItem->NodeText.BufSize);
-                    UiHelper.SetText(newRowItem, "Error");
+                    newRowItem->SetText("Error");
                     newRowItem->AtkResNode.X = NewWidth - (AddedWidth + 60);
                     newRowItem->AtkResNode.Width = AddedWidth;
                     newRowItem->AtkResNode.ParentNode = (AtkResNode*)listItem;
@@ -259,7 +259,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     
                     var gearsetWarning = (AtkTextNode*)UiHelper.CloneNode(listItemNodes[3]);
                     gearsetWarning->NodeText.StringPtr = (byte*)UiHelper.Alloc((ulong)gearsetWarning->NodeText.BufSize);
-                    UiHelper.SetText(gearsetWarning, "?");
+                    gearsetWarning->SetText("?");
                     gearsetWarning->AtkResNode.X = NewWidth - 80;
                     gearsetWarning->AtkResNode.Width = 30;
                     gearsetWarning->AtkResNode.ParentNode = (AtkResNode*)listItem;

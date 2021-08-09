@@ -30,7 +30,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 seStr.Payloads.Add(new UIForegroundPayload(PluginInterface.Data, 3));
                 seStr.Payloads.Add(new TextPayload($"[{action.Id}]"));
                 seStr.Payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
-                UiHelper.SetText(categoryText, seStr);
+                categoryText->SetText(seStr.Encode());
             }
             
         }
