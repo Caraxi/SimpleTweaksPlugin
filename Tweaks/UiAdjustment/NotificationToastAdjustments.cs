@@ -127,14 +127,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             
             if (reset) {
                 SetOffsetPosition(toastNode, 0.0f, 0.0f, 1);
-                UiHelper.SetScale(toastNode, 1);
+                toastNode->SetScale(1, 1);
                 return;
             }
 
             if (!toastNode->IsVisible) return;
 
             SetOffsetPosition(toastNode, Config.OffsetXPosition, Config.OffsetYPosition, Config.Scale);
-            UiHelper.SetScale(toastNode, Config.Scale);
+            toastNode->SetScale(Config.Scale, Config.Scale);
         }
 
         // index: 1 - special toast, e.g. BLU active actions set load/save

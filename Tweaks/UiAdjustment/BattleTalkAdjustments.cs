@@ -104,7 +104,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var battleTalkNode = GetBattleTalkNode();
                 if (battleTalkNode == null) return;
                 UiHelper.SetPosition(battleTalkNode, originalPositionX + Config.OffsetX, originalPositionY + Config.OffsetY);
-                UiHelper.SetScale(battleTalkNode, Config.Scale);
+                battleTalkNode->SetScale(Config.Scale, Config.Scale);
                 PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdate;
             } catch (Exception ex) {
                 SimpleLog.Error(ex);
@@ -116,7 +116,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var battleTalkNode = GetBattleTalkNode();
             if (battleTalkNode == null) return;
             UiHelper.SetPosition(battleTalkNode, originalPositionX, originalPositionY);
-            UiHelper.SetScale(battleTalkNode, 1);
+            battleTalkNode->SetScale(1, 1);
         }
         
         private static AtkResNode* GetBattleTalkNode() {

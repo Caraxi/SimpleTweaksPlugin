@@ -7,7 +7,5 @@ namespace SimpleTweaksPlugin.Helper {
         public static void SetSize<T>(T* node, int? w, int? h) where T : unmanaged => SetSize((AtkResNode*) node, w, h);
         public static void SetPosition<T>(T* node, float? x, float? y) where T : unmanaged => SetPosition((AtkResNode*) node, x, y);
         public static T* CloneNode<T>(T* original) where T : unmanaged => (T*) CloneNode((AtkResNode*) original);
-        public static void SetScale<T>(T* node, float scale) where T : unmanaged => SetScale((AtkResNode*) node, scale);
-        public static void SetScale<T>(T* node, float scaleX, float scaleY) where T : unmanaged => SetScale((AtkResNode*) node, scaleX, scaleY);
     }
 }

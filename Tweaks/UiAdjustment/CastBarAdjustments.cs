@@ -145,8 +145,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 UiHelper.SetSize(countdownText, 42, null);
                 UiHelper.SetPosition(countdownText, 170, null);
-                UiHelper.SetScale(interruptedText, 1);
-
+                interruptedText->AtkResNode.SetScale(1, 1);
 
                 if (slideMarker != null) {
                     UiHelper.Hide(slideMarker);
@@ -180,7 +179,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
 
             if (Config.RemoveInterruptedText) {
-                UiHelper.SetScale(interruptedText, 0);
+                interruptedText->AtkResNode.SetScale(0, 0);
             }
 
             if (Config.SlideCast) {
