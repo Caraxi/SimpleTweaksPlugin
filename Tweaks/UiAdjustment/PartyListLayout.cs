@@ -7,6 +7,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Newtonsoft.Json;
 using SimpleTweaksPlugin.Converter;
+using SimpleTweaksPlugin.GameStructs.NumberArray;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 #if DEBUG
@@ -37,7 +38,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public TextElementConfig NumberMP = new() { Color = new Vector4(1), Glow = new Vector4(0x31/255f, 0x61/255f, 0x86/255f, 0xFF/255f)};
             public ElementConfig BarOvershield = new();
             public ElementConfig IconOvershield = new();
-            public ElementConfig Name = new();
+            public TextElementConfig Name = new() { Color = new Vector4(1), Glow = new Vector4(0x31/255f, 0x61/255f, 0x86/255f, 0xFF/255f)};
             public ElementConfig Castbar = new();
             public ElementConfig ClassIcon = new();
             public ElementConfig Slot = new();
@@ -342,7 +343,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             
             var atkArrayDataHolder = Common.UIModule->RaptureAtkModule.AtkModule.AtkArrayDataHolder;
             var partyListNumbers = atkArrayDataHolder.NumberArrays[4];
-            
+            var partyIntList = (AddonPartyListIntArray*) partyListNumbers->IntArray;
             if (partyList->AtkUnitBase.UldManager.NodeListSize < 17) return;
             var visibleIndex = 0;
 
@@ -360,13 +361,18 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                         12 => partyList->Pet,
                         _ => throw new ArgumentOutOfRangeException()
                     };
+
+                    var intList = i switch {
+                        >= 0 and <= 7 => partyIntList->PartyMember[i],
+                        _ => default
+                    };
                     
                     var c = pm.PartyMemberComponent;
                     if (c == null) continue;
                     var cNode = c->OwnerNode;
                     if (cNode == null) continue;
                     
-                    if (cNode->AtkResNode.IsVisible || reset) UpdateSlot(cNode, visibleIndex, pm, ref maxX, ref maxY, reset);
+                    if (cNode->AtkResNode.IsVisible || reset) UpdateSlot(cNode, visibleIndex, pm, intList, ref maxX, ref maxY, reset);
                     if (cNode->AtkResNode.IsVisible) visibleIndex++;
 
                     if (i == 11) {
@@ -412,7 +418,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (eCfg.Hide && !reset) {
                 resNode->SetScale(0, 0);
             } else {
-                resNode->SetScale(reset ? defScaleX : eCfg.Scale.X, reset ? defScaleY : eCfg.Scale.Y);
+                resNode->SetScale(reset ? defScaleX : defScaleX * eCfg.Scale.X, reset ? defScaleY : defScaleY * eCfg.Scale.Y);
                 resNode->SetPositionFloat(reset ? defPosX : defPosX + eCfg.Position.X, reset ? defPosY : defPosY + eCfg.Position.Y);
 
                 if (eCfg is TextElementConfig tec && resNode->Type == NodeType.Text) {
@@ -424,7 +430,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
         }
         
-        private void UpdateSlot(AtkComponentNode* cNode, int visibleIndex, AddonPartyList.PartyListMemberStruct memberStruct, ref int maxX, ref int maxY, bool reset, int? forceColumnCount = null) {
+        private void UpdateSlot(AtkComponentNode* cNode, int visibleIndex, AddonPartyList.PartyListMemberStruct memberStruct, AddonPartyListMemberIntArray intArray, ref int maxX, ref int maxY, bool reset, int? forceColumnCount = null) {
             var c = cNode->Component;
             if (c == null) return;
             c->UldManager.NodeList[0]->SetWidth(reset ? (ushort)366 : (ushort)Config.SlotWidth); // Collision Node
@@ -477,7 +483,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             c->UldManager.NodeList[4]->SetScale(memberStruct.ClassJobIcon->AtkResNode.ScaleX, memberStruct.ClassJobIcon->AtkResNode.ScaleY);
             HandleElementConfig((AtkResNode*) memberStruct.GroupSlotIndicator, Config.Slot, reset);
             HandleElementConfig((AtkResNode*) memberStruct.CastingActionName, Config.Castbar, reset, defPosY: 10);
-            HandleElementConfig((AtkResNode*) memberStruct.CastingProgressBar, Config.Castbar, reset, defPosX: 8, defPosY: 7);
+            HandleElementConfig((AtkResNode*) memberStruct.CastingProgressBar, Config.Castbar, reset, defPosX: 8, defPosY: 7, defScaleX: intArray.CastingPercent >= 0 ? intArray.CastingPercent / 100f : 1f);
             HandleElementConfig((AtkResNode*) memberStruct.CastingProgressBarBackground, Config.Castbar, reset);
             
             if (reset) {
