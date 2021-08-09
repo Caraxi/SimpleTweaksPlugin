@@ -40,6 +40,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public ElementConfig IconOvershield = new();
             public TextElementConfig Name = new() { Color = new Vector4(1), Glow = new Vector4(0x31/255f, 0x61/255f, 0x86/255f, 0xFF/255f)};
             public ElementConfig Castbar = new();
+            public TextElementConfig CastbarText = new() { Color = new Vector4(1), Glow = new Vector4(0x9D / 255f, 0x83 / 255f, 0x5B / 255f, 0xFF / 255f) };
             public ElementConfig ClassIcon = new();
             public ElementConfig Slot = new();
             public ElementConfig LeaderIcon = new();
@@ -265,6 +266,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             ElementConfigEditor("Chocobo Timer", Config.ChocoboTimer, ref c);
             ElementConfigEditor("Chocobo Timer Clock Icon", Config.ChocoboTimerClockIcon, ref c);
             ElementConfigEditor("Castbar", Config.Castbar, ref c);
+            ElementConfigEditor("Castbar Text", Config.CastbarText, ref c);
             ElementConfigEditor("Slot Number", Config.Slot, ref c);
             ElementConfigEditor("Leader Icon", Config.LeaderIcon, ref c);
             ElementConfigEditor("Status Effects", Config.StatusEffects, ref c);
@@ -482,8 +484,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             c->UldManager.NodeList[4]->SetPositionFloat(memberStruct.ClassJobIcon->AtkResNode.X - 21 * (reset ? 1 : memberStruct.ClassJobIcon->AtkResNode.ScaleX), memberStruct.ClassJobIcon->AtkResNode.Y - 13 * (reset ? 1 : memberStruct.ClassJobIcon->AtkResNode.ScaleY));
             c->UldManager.NodeList[4]->SetScale(memberStruct.ClassJobIcon->AtkResNode.ScaleX, memberStruct.ClassJobIcon->AtkResNode.ScaleY);
             HandleElementConfig((AtkResNode*) memberStruct.GroupSlotIndicator, Config.Slot, reset);
-            HandleElementConfig((AtkResNode*) memberStruct.CastingActionName, Config.Castbar, reset, defPosY: 10);
-            HandleElementConfig((AtkResNode*) memberStruct.CastingProgressBar, Config.Castbar, reset, defPosX: 8, defPosY: 7, defScaleX: intArray.CastingPercent >= 0 ? intArray.CastingPercent / 100f : 1f);
+            HandleElementConfig((AtkResNode*) memberStruct.CastingActionName, Config.CastbarText, reset, defPosY: 10, defColor: DefaultConfig.CastbarText.Color, defGlow: DefaultConfig.CastbarText.Glow);
+            HandleElementConfig((AtkResNode*) memberStruct.CastingProgressBar, Config.Castbar, reset, defPosX: 8 * (reset ? 1 : Config.Castbar.Scale.X), defPosY: 7 * (reset ? 1 : Config.Castbar.Scale.Y), defScaleX: intArray.CastingPercent >= 0 ? intArray.CastingPercent / 100f : 1f);
             HandleElementConfig((AtkResNode*) memberStruct.CastingProgressBarBackground, Config.Castbar, reset);
             
             if (reset) {
