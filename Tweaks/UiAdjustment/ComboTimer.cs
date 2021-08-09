@@ -58,6 +58,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             base.Enable();
         }
         
+        public override void Setup() {
+            comboActions.Add(7526, 80); // Verholy to Scorch Combo
+            base.Setup();
+        }
+
         public override void Disable() {
             SaveConfig(Config);
             PluginInterface.Framework.OnUpdateEvent -= FrameworkUpdate;
