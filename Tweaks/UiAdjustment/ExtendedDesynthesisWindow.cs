@@ -51,6 +51,20 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private Hook<UpdateItemDelegate> updateItemHook;
         private Hook<UpdateListDelegate> updateListHook;
         
+        private static readonly ByteColor Red = new() { A = 0xFF, R = 0xCC, G = 0x00, B = 0x00 };
+        private static readonly ByteColor Green = new() { A = 0xFF, R = 0x00, G = 0xCC, B = 0x00 };
+        private static readonly ByteColor Yellow = new() { A = 0xFF, R = 0xCC, G = 0xCC, B = 0x00 };
+
+        private uint maxDesynthLevel = 520;
+
+        public override void Setup() {
+            foreach (var i in PluginInterface.Data.Excel.GetSheet<Item>()) {
+                if (i.Desynth > 0 && i.LevelItem.Row > maxDesynthLevel) maxDesynthLevel = i.LevelItem.Row;
+            }
+            SimpleLog.Debug("");
+            base.Setup();
+        }
+
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.ExtendedDesynthesisWindow ?? new Configs();
             updateItemHook ??= new Hook<UpdateItemDelegate>(PluginInterface.TargetModuleScanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 30 49 8B 38"), new UpdateItemDelegate(UpdateItemDetour));
@@ -109,13 +123,24 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 var classJobOffset = 2 * (int)(itemData.ClassJobRepair.Row - 8);
                 var desynthLevel = *(ushort*)(Common.PlayerStaticAddress + (0x6A6 + classJobOffset)) / 100f;
+
+                ByteColor c;
+
+                if (desynthLevel >= maxDesynthLevel) {
+                    c = Green;
+                } else {
+                    if (desynthLevel > itemData.LevelItem.Row) {
+                        if (Config.YellowForSkillGain && desynthLevel - 50 > itemData.LevelItem.Row) {
+                            c = Yellow;
+                        } else {
+                            c = Green;
+                        }
+                    } else {
+                        c = Red;
+                    }
+                }
                 
-                skillTextNode->TextColor = new ByteColor() {
-                    A = 0xFF,
-                    R = (byte)(desynthLevel > itemData.LevelItem.Row ? ( desynthLevel - 50 > itemData.LevelItem.Row || !Config.YellowForSkillGain ? 0x00 : 0xCC) : 0xCC),
-                    G = (byte)(desynthLevel <= itemData.LevelItem.Row ? 0x00 : 0xCC),
-                    B = 0x00
-                };
+                skillTextNode->TextColor = c;
                 UiHelper.SetText(skillTextNode, $"{desynthLevel:F0}/{itemData.LevelItem.Row}");
 
                 var itemIdWithHQ = item->ItemId;
