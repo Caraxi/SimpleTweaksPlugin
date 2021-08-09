@@ -4,8 +4,11 @@ using Dalamud.Game.ClientState;
 using Dalamud.Game.Internal;
 using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
+
+#if DEBUG
+using SimpleTweaksPlugin.Debugging;
+#endif
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class HideJobGauge : UiAdjustments.SubTweak {
@@ -46,7 +49,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var stage = AtkStage.GetSingleton();
             var loadedUnitsList = &stage->RaptureAtkUnitManager->AtkUnitManager.AllLoadedUnitsList;
             var addonList = &loadedUnitsList->AtkUnitEntries;
+            #if DEBUG
             PerformanceMonitor.Begin();
+            #endif
             for (var i = 0; i < loadedUnitsList->Count; i++) {
                 var addon = addonList[i];
                 var name = Marshal.PtrToStringAnsi(new IntPtr(addon->Name));
@@ -62,7 +67,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 }
 
             }
+            #if DEBUG
             PerformanceMonitor.End();
+            #endif
         }
 
         public override void Disable() {
