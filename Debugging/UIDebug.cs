@@ -37,6 +37,8 @@ namespace SimpleTweaksPlugin.Debugging {
         private int elementSelectorIndex = 0;
         private float elementSelectorCountdown = 0;
         private bool elementSelectorScrolled = false;
+        private int loadImageId = 0;
+        private int loadImageVersion = 0;
         private ulong[] elementSelectorFind = {};
         private AtkUnitBase* selectedUnitBase = null;
         
@@ -594,6 +596,19 @@ namespace SimpleTweaksPlugin.Debugging {
                         } else {
                             ImGui.Text("no texture loaded");
                         }
+
+                        ImGui.SetNextItemWidth(150);
+                        ImGui.InputInt($"###inputIconId__{(ulong)node:X}", ref loadImageId);
+                        ImGui.SameLine();
+                        ImGui.SetNextItemWidth(150);
+                        ImGui.InputInt($"###inputIconVersion__{(ulong)node:X}", ref loadImageVersion);
+                        ImGui.SameLine();
+                        if (ImGui.SmallButton("Load Icon")) {
+                            imageNode->LoadIconTexture(loadImageId, loadImageVersion);
+                        }
+                        
+                        
+                        
                         break;
                 }
 
@@ -717,13 +732,6 @@ namespace SimpleTweaksPlugin.Debugging {
                 $"RGBA: 0x{node->Color.R:X2}{node->Color.G:X2}{node->Color.B:X2}{node->Color.A:X2} " +
                 $"AddRGB: {node->AddRed} {node->AddGreen} {node->AddBlue} " +
                 $"MultiplyRGB: {node->MultiplyRed} {node->MultiplyGreen} {node->MultiplyBlue}");
-
-            var addR = (int) node->AddRed;
-            if (ImGui.InputInt("AddRed", ref addR)) {
-                node->AddRed = (ushort) addR;
-                node->Flags_2 |= 0x1;
-            }
-
         }
 
 

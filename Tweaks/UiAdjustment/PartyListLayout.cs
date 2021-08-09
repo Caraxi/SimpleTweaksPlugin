@@ -19,6 +19,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Description => "Change the number of columns used in the party list.";
         public override bool Experimental => true;
         public readonly Configs DefaultConfig = new();
+
+        private bool previewMode = false;
+        private Stopwatch previewModeTimer = new Stopwatch();
         
         public class Configs : TweakConfig {
             
@@ -269,6 +272,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             try {
                 if (c) {
                     statusSlotPositions = null;
+                    previewMode = true;
                     Update(Common.GetUnitBase<AddonPartyList>());
                 }
             } catch (Exception ex) {
@@ -324,6 +328,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
         
         private void Update(AddonPartyList* partyList, bool reset = false) {
+
+            if (previewMode) {
+                if (!previewModeTimer.IsRunning) previewModeTimer.Restart();
+                if (previewModeTimer.ElapsedMilliseconds > 5000) {
+                    previewMode = false;
+                    previewModeTimer.Stop();
+                    previewModeTimer.Reset();
+                }
+            }
+            
             if (partyList == null) return;
             
             var atkArrayDataHolder = Common.UIModule->RaptureAtkModule.AtkModule.AtkArrayDataHolder;
@@ -502,6 +516,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var y = 12 + ySlot * ((38 + (reset ? 0 : Config.StatusEffects.Separation.Y)) * (reset ? 1 : Config.StatusEffects.Scale.Y));
                 
                 HandleElementConfig((AtkResNode*) itcNode, Config.StatusEffects, reset, defPosX: x, defPosY: y);
+
+                if (previewMode && !itcNode->AtkResNode.IsVisible) {
+                    var imageNode = (AtkImageNode*)itcNode->Component->UldManager.NodeList[1]; 
+                    imageNode->LoadIconTexture(10205, 0);
+                    imageNode->AtkResNode.ToggleVisibility(true);
+                    itcNode->AtkResNode.ToggleVisibility(true);
+                }
             }
         }
     }

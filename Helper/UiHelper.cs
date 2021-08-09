@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -26,18 +27,12 @@ namespace SimpleTweaksPlugin.Helper {
 
         public static void SetText(AtkTextNode* textNode, SeString str) {
             if (!Ready) return;
-            var bytes = str.Encode();
-            var ptr = Marshal.AllocHGlobal(bytes.Length + 1);
-            Marshal.Copy(bytes, 0, ptr, bytes.Length);
-            Marshal.WriteByte(ptr, bytes.Length, 0);
-            _atkTextNodeSetText(textNode, (byte*) ptr);
-            Marshal.FreeHGlobal(ptr);
+            textNode->SetText(str.Encode());
         }
 
         public static void SetText(AtkTextNode* textNode, string str) {
             if (!Ready) return;
-            var seStr = new SeString(new Payload[] { new TextPayload(str) });
-            SetText(textNode, seStr);
+            textNode->SetText(str);
         }
 
         public static void SetSize(AtkResNode* node, int? width, int? height) {
