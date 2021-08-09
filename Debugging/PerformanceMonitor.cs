@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 
@@ -108,14 +109,20 @@ namespace SimpleTweaksPlugin.Debugging {
 
         private static readonly Dictionary<string, PerformanceLog> Logs = new();
 
-        public static void Begin(string key) {
-            if (!Logs.ContainsKey(key)) Logs.Add(key, new PerformanceLog());
-            Logs[key].Begin();
+        public static void Begin(string key = null, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFileName = null) {
+            var k = key;
+            if (k == null && (callerFileName == null || callerMemberName == null)) return;
+            k ??= $"{callerFileName}::{callerMemberName}";
+            if (!Logs.ContainsKey(k)) Logs.Add(k, new PerformanceLog());
+            Logs[k].Begin();
         }
 
-        public static void End(string key) {
-            if (!Logs.ContainsKey(key)) return;
-            Logs[key].End();
+        public static void End(string key = null, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFileName = null) {
+            var k = key;
+            if (k == null && (callerFileName == null || callerMemberName == null)) return;
+            k ??= $"{callerFileName}::{callerMemberName}";
+            if (!Logs.ContainsKey(k)) return;
+            Logs[k].End();
         }
 
         public static void ClearAll() {
