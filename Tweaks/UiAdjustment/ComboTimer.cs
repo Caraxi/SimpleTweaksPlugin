@@ -94,6 +94,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (textNode == null && reset) return;
 
             if (textNode == null) {
+                if (paramWidget->UldManager.NodeListSize < 4) return;
                 textNode = UiHelper.CloneNode((AtkTextNode*) paramWidget->UldManager.NodeList[3]);
                 textNode->AtkResNode.NodeID = CustomNodes.ComboTimer;
                 var newStrPtr = Common.Alloc(512);
@@ -122,7 +123,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 comboActions.Add(combo->Action, PluginInterface.Data.Excel.GetSheet<Action>().OrderBy(a => a.ClassJobLevel).FirstOrDefault(a => a.ActionCombo.Row == combo->Action)?.ClassJobLevel ?? 255);
             }
             
-            var comboAvailable = combo->Timer > 0 && combo->Action != 0 && comboActions.ContainsKey(combo->Action) && comboActions[combo->Action] <= PluginInterface.ClientState.LocalPlayer.Level;
+            var comboAvailable = PluginInterface.ClientState?.LocalPlayer != null && combo->Timer > 0 && combo->Action != 0 && comboActions.ContainsKey(combo->Action) && comboActions[combo->Action] <= PluginInterface.ClientState.LocalPlayer.Level;
             
             if (Config.AlwaysVisible || comboAvailable) {
                 UiHelper.Show(textNode);
