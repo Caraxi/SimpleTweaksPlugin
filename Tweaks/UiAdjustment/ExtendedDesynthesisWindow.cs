@@ -130,7 +130,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     c = Green;
                 } else {
                     if (desynthLevel > itemData.LevelItem.Row) {
-                        if (Config.YellowForSkillGain && desynthLevel - 50 > itemData.LevelItem.Row) {
+                        if (Config.YellowForSkillGain && desynthLevel < itemData.LevelItem.Row + 50) {
                             c = Yellow;
                         } else {
                             c = Green;
