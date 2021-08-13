@@ -36,9 +36,6 @@
       <EmbeddedResource Remove="FFXIVClientInterface\**" />
       <None Remove="FFXIVClientInterface\**" />
     </ItemGroup>
-    <ItemGroup Condition="'$(Configuration)'=='Release'">
-        <Compile Remove="Debugging\**" />
-    </ItemGroup>
     <ItemGroup>
       <PackageReference Include="ILMerge" Version="3.0.41" />
     </ItemGroup>

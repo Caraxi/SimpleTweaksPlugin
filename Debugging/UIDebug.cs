@@ -727,11 +727,21 @@ namespace SimpleTweaksPlugin.Debugging {
                 $"ScaleX: {node->ScaleX} ScaleY: {node->ScaleY} " +
                 $"Rotation: {node->Rotation} " +
                 $"Width: {node->Width} Height: {node->Height} " +
-                $"OriginX: {node->OriginX} OriginY: {node->OriginY}");
+                $"OriginX: {node->OriginX} OriginY: {node->OriginY} " +
+                $"Priority: {node->Priority}, Depth: {node->Depth}/{node->Depth_2} " +
+                $"Flags: {node->Flags:X} / {node->Flags_2:X} " +
+                $"DrawFlags: {node->DrawFlags:X}");
             ImGui.Text(
                 $"RGBA: 0x{node->Color.R:X2}{node->Color.G:X2}{node->Color.B:X2}{node->Color.A:X2} " +
                 $"AddRGB: {node->AddRed} {node->AddGreen} {node->AddBlue} " +
                 $"MultiplyRGB: {node->MultiplyRed} {node->MultiplyGreen} {node->MultiplyBlue}");
+
+            var v2 = new Vector2(node->X, node->Y);
+            if (ImGui.InputFloat2("Position", ref v2)) {
+                node->SetPositionFloat(v2.X, v2.Y);
+            }
+
+
         }
 
 
