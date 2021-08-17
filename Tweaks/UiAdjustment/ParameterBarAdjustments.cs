@@ -15,44 +15,27 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         protected override string Author => "Aireil";
         public override IEnumerable<string> Tags => new[] {"parameter", "hp", "mana", "bar"};
 
-        public class Configs : TweakConfig
-        {
-            public bool HideTargetCycling = false;
-            public int TargetCyclingOffsetX = DefaultValues.TargetCyclingOffsetX;
-            public int TargetCyclingOffsetY = DefaultValues.TargetCyclingOffsetY;
+        public class Configs : TweakConfig {
+            public HideAndOffsetConfig TargetCycling = new() { OffsetX = 100, OffsetY = 1 };
 
-            public bool HideManaBar = false;
-            public bool HideManaValue = false;
-            public bool HideManaTitle = false;
-            public int ManaBarOffsetX = DefaultValues.ManaBarOffsetX;
-            public int ManaBarOffsetY = DefaultValues.BarOffsetY;
-            public int ManaValueOffsetX = DefaultValues.ValueOffsetX;
-            public int ManaValueOffsetY = DefaultValues.ValueOffsetY;
+            public bool HideHpTitle;
+            public HideAndOffsetConfig HpBar = new() { OffsetX = 96, OffsetY = 12 };
+            public HideAndOffsetConfig HpValue = new() { OffsetX = 24, OffsetY = 7 };
 
-            public bool HideHpBar = false;
-            public bool HideHpValueText = false;
-            public bool HideHpTitle = false;
-            public int HpBarOffsetX = DefaultValues.HpBarOffsetX;
-            public int HpBarOffsetY = DefaultValues.BarOffsetY;
-            public int HpValueOffsetX = DefaultValues.ValueOffsetX;
-            public int HpValueOffsetY = DefaultValues.ValueOffsetY;
+            public bool HideMpTitle;
+            public HideAndOffsetConfig MpBar = new() { OffsetX = 256, OffsetY = 12 };
+            public HideAndOffsetConfig MpValue = new() { OffsetX = 24, OffsetY = 7 };
         }
 
-        private static class DefaultValues
-        {
-            public const int TargetCyclingOffsetX = 100;
-            public const int TargetCyclingOffsetY = 1;
-
-            public const int ManaBarOffsetX = 256;
-            public const int HpBarOffsetX = 96;
-
-
-            public const int BarOffsetY = 12;
-            public const int ValueOffsetX = 24;
-            public const int ValueOffsetY = 7;
+        public class HideAndOffsetConfig {
+            public bool Hide;
+            public int OffsetX;
+            public int OffsetY;
         }
 
         public Configs Config { get; private set; }
+
+        private static readonly Configs DefaultConfig = new();
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
@@ -76,124 +59,74 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
         }
 
-        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) =>
-        {
+        private bool VisibilityAndOffsetEditor(string label, ref HideAndOffsetConfig config, HideAndOffsetConfig defConfig) {
+            var hasChanged = false;
             var positionOffset = 185 * ImGui.GetIO().FontGlobalScale;
             var resetOffset = 250 * ImGui.GetIO().FontGlobalScale;
-            hasChanged |= ImGui.Checkbox("Hide Target Cycling", ref Config.HideTargetCycling);
-            if (!Config.HideTargetCycling) {
+
+            hasChanged |= ImGui.Checkbox(label, ref config.Hide);
+            if (!config.Hide) {
                 ImGui.SameLine();
                 ImGui.SetCursorPosX(positionOffset);
                 ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-                hasChanged |= ImGui.InputInt("##offsetTargetCyclingOffsetX", ref Config.TargetCyclingOffsetX);
+                hasChanged |= ImGui.InputInt($"##offsetX_{label}", ref config.OffsetX);
                 ImGui.SameLine();
                 ImGui.SetCursorPosX(positionOffset + (105 * ImGui.GetIO().FontGlobalScale));
                 ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-                hasChanged |= ImGui.InputInt("Offset##offsetTargetCyclingOffsetY", ref Config.TargetCyclingOffsetY);
+                hasChanged |= ImGui.InputInt($"Offset##offsetY_{label}", ref config.OffsetY);
                 ImGui.SameLine();
                 ImGui.SetCursorPosX(positionOffset + (105 * ImGui.GetIO().FontGlobalScale) + resetOffset);
                 ImGui.PushFont(UiBuilder.IconFont);
-                if (ImGui.Button($"{(char) FontAwesomeIcon.CircleNotch}##offsetTargetCyclingOffset")) {
-                    Config.TargetCyclingOffsetX = DefaultValues.TargetCyclingOffsetX;
-                    Config.TargetCyclingOffsetY = DefaultValues.TargetCyclingOffsetY;
+                if (ImGui.Button($"{(char) FontAwesomeIcon.CircleNotch}##resetOffset_{label}")) {
+                    config.OffsetX = defConfig.OffsetX;
+                    config.OffsetY = defConfig.OffsetY;
                     hasChanged = true;
                 }
                 ImGui.PopFont();
             }
 
+            return hasChanged;
+        }
+
+        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) =>
+        {
+            hasChanged |= VisibilityAndOffsetEditor("Hide Target Cycling", ref Config.TargetCycling, DefaultConfig.TargetCycling);
             ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
 
-            hasChanged |= ImGui.Checkbox("Hide HP Bar", ref Config.HideHpBar);
-            if (!Config.HideHpBar) {
-                ImGui.SameLine();
-                ImGui.SetCursorPosX(positionOffset);
-                ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-                hasChanged |= ImGui.InputInt("##offsetHpBarOffsetX", ref Config.HpBarOffsetX);
-                ImGui.SameLine();
-                ImGui.SetCursorPosX(positionOffset + (105 * ImGui.GetIO().FontGlobalScale));
-                ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-                hasChanged |= ImGui.InputInt("Offset##offsetHpBarOffsetY", ref Config.HpBarOffsetY);
-                ImGui.SameLine();
-                ImGui.SetCursorPosX(positionOffset + (105 * ImGui.GetIO().FontGlobalScale) + resetOffset);
-                ImGui.PushFont(UiBuilder.IconFont);
-                if (ImGui.Button($"{(char) FontAwesomeIcon.CircleNotch}##offsetHpBarOffset")) {
-                    Config.HpBarOffsetX = DefaultValues.HpBarOffsetX;
-                    Config.HpBarOffsetY = DefaultValues.BarOffsetY;
-                    hasChanged = true;
-                }
-                ImGui.PopFont();
-            }
+            hasChanged |= VisibilityAndOffsetEditor("Hide HP Bar", ref Config.HpBar, DefaultConfig.HpBar);
             hasChanged |= ImGui.Checkbox("Hide 'HP' Text", ref Config.HideHpTitle);
-            hasChanged |= ImGui.Checkbox("Hide HP Value", ref Config.HideHpValueText);
-            if (!Config.HideHpValueText) {
-                ImGui.SameLine();
-                ImGui.SetCursorPosX(positionOffset);
-                ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-                hasChanged |= ImGui.InputInt("##offsetHpValueOffsetX", ref Config.HpValueOffsetX);
-                ImGui.SameLine();
-                ImGui.SetCursorPosX(positionOffset + (105 * ImGui.GetIO().FontGlobalScale));
-                ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-                hasChanged |= ImGui.InputInt("Offset from the HP bar##offsetHpValueOffsetY", ref Config.HpValueOffsetY);
-                ImGui.SameLine();
-                ImGui.SetCursorPosX(positionOffset + (105 * ImGui.GetIO().FontGlobalScale) + resetOffset);
-                ImGui.PushFont(UiBuilder.IconFont);
-                if (ImGui.Button($"{(char) FontAwesomeIcon.CircleNotch}##offsetHpValueOffset")) {
-                    Config.HpValueOffsetX = DefaultValues.ValueOffsetX;
-                    Config.HpValueOffsetY = DefaultValues.ValueOffsetY;
-                    hasChanged = true;
-                }
-                ImGui.PopFont();
-            }
-
+            hasChanged |= VisibilityAndOffsetEditor("Hide HP Value", ref Config.HpValue, DefaultConfig.HpValue);
             ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
 
-            hasChanged |= ImGui.Checkbox("Hide Mana Bar", ref Config.HideManaBar);
-            if (!Config.HideManaBar) {
-                ImGui.SameLine();
-                ImGui.SetCursorPosX(positionOffset);
-                ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-                hasChanged |= ImGui.InputInt("##offsetManaBarOffsetX", ref Config.ManaBarOffsetX);
-                ImGui.SameLine();
-                ImGui.SetCursorPosX(positionOffset + (105 * ImGui.GetIO().FontGlobalScale));
-                ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-                hasChanged |= ImGui.InputInt("Offset##offsetManaBarOffsetY", ref Config.ManaBarOffsetY);
-                ImGui.SameLine();
-                ImGui.SetCursorPosX(positionOffset + (105 * ImGui.GetIO().FontGlobalScale) + resetOffset);
-                ImGui.PushFont(UiBuilder.IconFont);
-                if (ImGui.Button($"{(char) FontAwesomeIcon.CircleNotch}##offsetManaBarOffset")) {
-                    Config.ManaBarOffsetX = DefaultValues.ManaBarOffsetX;
-                    Config.ManaBarOffsetY = DefaultValues.BarOffsetY;
-                    hasChanged = true;
-                }
-                ImGui.PopFont();
-            }
-            hasChanged |= ImGui.Checkbox("Hide 'MP' Text", ref Config.HideManaTitle);
-            hasChanged |= ImGui.Checkbox("Hide Mana Value", ref Config.HideManaValue);
-            if (!Config.HideManaValue) {
-                ImGui.SameLine();
-                ImGui.SetCursorPosX(positionOffset);
-                ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-                hasChanged |= ImGui.InputInt("##offsetManaValueOffsetX", ref Config.ManaValueOffsetX);
-                ImGui.SameLine();
-                ImGui.SetCursorPosX(positionOffset + (105 * ImGui.GetIO().FontGlobalScale));
-                ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-                hasChanged |= ImGui.InputInt("Offset from the mana bar##offsetManaValueOffsetY", ref Config.ManaValueOffsetY);
-                ImGui.SameLine();
-                ImGui.SetCursorPosX(positionOffset + (105 * ImGui.GetIO().FontGlobalScale) + resetOffset);
-                ImGui.PushFont(UiBuilder.IconFont);
-                if (ImGui.Button($"{(char) FontAwesomeIcon.CircleNotch}##offsetManaValueOffset")) {
-                    Config.ManaValueOffsetX = DefaultValues.ValueOffsetX;
-                    Config.ManaValueOffsetY = DefaultValues.ValueOffsetY;
-                    hasChanged = true;
-                }
-                ImGui.PopFont();
-            }
+            hasChanged |= VisibilityAndOffsetEditor("Hide MP Bar", ref Config.MpBar, DefaultConfig.MpBar);
+            hasChanged |= ImGui.Checkbox("Hide 'MP' Text", ref Config.HideMpTitle);
+            hasChanged |= VisibilityAndOffsetEditor("Hide MP Value", ref Config.MpValue, DefaultConfig.MpValue);
 
-
-            if (hasChanged) {
-                UpdateParameterBar(true);
-            }
+            if (hasChanged) UpdateParameterBar(true);
         };
+
+        private const byte Byte00 = 0x00;
+        private const byte ByteFF = 0xFF;
+
+        private void UpdateParameter(AtkComponentNode* node, HideAndOffsetConfig barConfig, HideAndOffsetConfig valueConfig, bool hideTitle) {
+            var valueNode = node->Component->UldManager.SearchNodeById(3);
+            var titleNode = node->Component->UldManager.SearchNodeById(2);
+            var textureNode = node->Component->UldManager.SearchNodeById(8);
+            var textureNode2 = node->Component->UldManager.SearchNodeById(4);
+            var gridNode = node->Component->UldManager.SearchNodeById(7);
+            var grindNode2 = node->Component->UldManager.SearchNodeById(6);
+            var grindNode3= node->Component->UldManager.SearchNodeById(5);
+
+            node->AtkResNode.SetPositionFloat(barConfig.OffsetX, barConfig.OffsetY);
+            valueNode->SetPositionFloat(valueConfig.OffsetX, valueConfig.OffsetY);
+            valueNode->Color.A = valueConfig.Hide ? Byte00 : ByteFF;
+            titleNode->Color.A = hideTitle ? Byte00 : ByteFF;
+            gridNode->Color.A = barConfig.Hide ? Byte00 : ByteFF;
+            grindNode2->Color.A = barConfig.Hide ? Byte00 : ByteFF;
+            grindNode3->Color.A = barConfig.Hide ? Byte00 : ByteFF;
+            textureNode->Color.A = barConfig.Hide ? Byte00 : ByteFF;
+            textureNode2->Color.A = barConfig.Hide ? Byte00 : ByteFF;
+        }
 
         private void UpdateParameterBar(bool reset = false)
         {
@@ -202,90 +135,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             // Target cycling
             var targetCyclingNode = parameterWidgetUnitBase->UldManager.SearchNodeById(2);
-            targetCyclingNode->SetPositionFloat(Config.TargetCyclingOffsetX, Config.TargetCyclingOffsetY);
-            if (Config.HideTargetCycling) targetCyclingNode->Color.A = 0;
+            targetCyclingNode->SetPositionFloat(reset ? DefaultConfig.TargetCycling.OffsetX : Config.TargetCycling.OffsetX, reset ? DefaultConfig.TargetCycling.OffsetY : Config.TargetCycling.OffsetY);
+            targetCyclingNode->Color.A = Config.TargetCycling.Hide && !reset ? Byte00 : ByteFF;
 
-            // Mana
-            var manaNode = (AtkComponentNode*) parameterWidgetUnitBase->UldManager.SearchNodeById(4);
-            if (manaNode == null) return;
-            var manaValueNode = manaNode->Component->UldManager.SearchNodeById(3);
-            var manaTitleNode = manaNode->Component->UldManager.SearchNodeById(2);
-            var manaTextureNode = manaNode->Component->UldManager.SearchNodeById(8);
-            var manaTexture2Node = manaNode->Component->UldManager.SearchNodeById(4);
-            var manaNineGridNode = manaNode->Component->UldManager.SearchNodeById(7);
-            var manaNineGrid2Node = manaNode->Component->UldManager.SearchNodeById(6);
-            var manaNineGrid3Node= manaNode->Component->UldManager.SearchNodeById(5);
-
-            manaNode->AtkResNode.SetPositionFloat(Config.ManaBarOffsetX, Config.ManaBarOffsetY);
-            manaValueNode->SetPositionFloat(Config.ManaValueOffsetX, Config.ManaValueOffsetY);
-            if (Config.HideManaValue) manaValueNode->Color.A = 0;
-            if (Config.HideManaTitle) manaTitleNode->Color.A = 0;
-
-            if (Config.HideManaBar)
-            {
-                manaNineGridNode->Color.A = 0;
-                manaNineGrid2Node->Color.A = 0;
-                manaNineGrid3Node->Color.A = 0;
-                manaTextureNode->Color.A = 0;
-                manaTexture2Node->Color.A = 0;
-            }
+            // MP
+            var mpNode = (AtkComponentNode*) parameterWidgetUnitBase->UldManager.SearchNodeById(4);
+            if (mpNode != null) UpdateParameter(mpNode, reset ? DefaultConfig.MpBar : Config.MpBar, reset ? DefaultConfig.MpValue : Config.MpValue, reset ? DefaultConfig.HideHpTitle : Config.HideMpTitle);
 
             // HP
             var hpNode = (AtkComponentNode*) parameterWidgetUnitBase->UldManager.SearchNodeById(3);
-            if (hpNode == null) return;
-            var hpValueNode = hpNode->Component->UldManager.SearchNodeById(3);
-            var hpTitleNode = hpNode->Component->UldManager.SearchNodeById(2);
-            var hpTextureNode = hpNode->Component->UldManager.SearchNodeById(8);
-            var hpTexture2Node = hpNode->Component->UldManager.SearchNodeById(4);
-            var hpNineGridNode = hpNode->Component->UldManager.SearchNodeById(7);
-            var hpNineGrid2Node = hpNode->Component->UldManager.SearchNodeById(6);
-            var hpNineGrid3Node= hpNode->Component->UldManager.SearchNodeById(5);
-
-            hpNode->AtkResNode.SetPositionFloat(Config.HpBarOffsetX, Config.HpBarOffsetY);
-            hpValueNode->SetPositionFloat(Config.HpValueOffsetX, Config.HpValueOffsetY);
-            if (Config.HideHpValueText) hpValueNode->Color.A = 0;
-            if (Config.HideHpTitle) hpTitleNode->Color.A = 0;
-
-            if (Config.HideHpBar)
-            {
-                hpNineGridNode->Color.A = 0;
-                hpNineGrid2Node->Color.A = 0;
-                hpNineGrid3Node->Color.A = 0;
-                hpTextureNode->Color.A = 0;
-                hpTexture2Node->Color.A = 0;
-            }
-
-            if (reset) {
-                // Target cycling
-                targetCyclingNode->Color.A = 255;
-                targetCyclingNode->SetPositionFloat(DefaultValues.TargetCyclingOffsetX, DefaultValues.TargetCyclingOffsetY);
-
-                // Mana
-                manaNode->AtkResNode.SetPositionFloat(DefaultValues.ManaBarOffsetX, DefaultValues.BarOffsetY);
-                manaValueNode->SetPositionFloat(DefaultValues.ValueOffsetX, DefaultValues.ValueOffsetY);
-
-                manaNineGridNode->Color.A = 255;
-                manaNineGrid2Node->Color.A = 255;
-                manaNineGrid3Node->Color.A = 255;
-                manaTextureNode->Color.A = 255;
-                manaTexture2Node->Color.A = 255;
-
-                manaTitleNode->Color.A = 255;
-                manaValueNode->Color.A = 255;
-
-                // HP
-                hpNode->AtkResNode.SetPositionFloat(DefaultValues.HpBarOffsetX, DefaultValues.BarOffsetY);
-                hpValueNode->SetPositionFloat(DefaultValues.ValueOffsetX, DefaultValues.ValueOffsetY);
-
-                hpNineGridNode->Color.A = 255;
-                hpNineGrid2Node->Color.A = 255;
-                hpNineGrid3Node->Color.A = 255;
-                hpTextureNode->Color.A = 255;
-                hpTexture2Node->Color.A = 255;
-
-                hpTitleNode->Color.A = 255;
-                hpValueNode->Color.A = 255;
-            }
+            if (hpNode != null) UpdateParameter(hpNode, reset ? DefaultConfig.HpBar : Config.HpBar, reset ? DefaultConfig.HpValue : Config.HpValue, reset ? DefaultConfig.HideHpTitle : Config.HideHpTitle);
         }
     }
 }
