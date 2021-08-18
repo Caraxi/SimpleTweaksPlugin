@@ -102,8 +102,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             base.Enable();
         }
 
-        private readonly ulong[] updateValues = new ulong[8];
-        private readonly uint[] objIds = new uint[8];
+        private readonly ulong?[] updateValues = new ulong?[8];
+        private readonly uint?[] objIds = new uint?[8];
 
         private void UpdateSlotDetour(void* agentHud, NumberArrayData* numberArrayData, StringArrayData* stringArrayData, uint objectid, ulong a5, int slotindex) {
             if (slotindex is >= 0 and <= 7) {
@@ -118,7 +118,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private void FrameworkUpdate(Framework framework) {
             try {
                 if (!lastUpdate.IsRunning) lastUpdate.Start();
-                if (lastUpdate.ElapsedMilliseconds >= 125) {
+                if (lastUpdate.ElapsedMilliseconds >= 1000) {
                     lastUpdate.Restart();
                     Update();
                 }
@@ -134,15 +134,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (partyList == null) return;
 
             for (var i = 1; i < partyList->MemberCount && i < 8; i++) {
-                // SimpleLog.Log($"Force Update {i}");
-                var uiModule = Common.UIModule;
-                var atkArrayDataHolder = Common.Framework->GetUiModule()->RaptureAtkModule.AtkModule.AtkArrayDataHolder;
-
-                atkArrayDataHolder.NumberArrays[4]->AtkArrayData.HasModifiedData = 0xFF;
-
-
-                var agentHud = uiModule->GetAgentModule()->GetAgentByInternalID(4);
-                updateSlotHook.Original(agentHud, atkArrayDataHolder.NumberArrays[4], atkArrayDataHolder.StringArrays[3], objIds[i], updateValues[i], i);
+                if (objIds[i] != null && updateValues[i] != null) {
+                    var uiModule = Common.UIModule;
+                    var atkArrayDataHolder = Common.Framework->GetUiModule()->RaptureAtkModule.AtkModule.AtkArrayDataHolder;
+                    var agentHud = uiModule->GetAgentModule()->GetAgentByInternalID(4);
+                    updateSlotHook.Original(agentHud, atkArrayDataHolder.NumberArrays[4], atkArrayDataHolder.StringArrays[3], objIds[i].Value, updateValues[i].Value, i);
+                }
             }
 
             for (var pi = 0; pi < 8; pi++) {
