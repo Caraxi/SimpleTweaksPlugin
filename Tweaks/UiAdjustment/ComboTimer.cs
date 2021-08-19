@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Dalamud.Game.Internal;
+using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
@@ -84,9 +85,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             
             AtkTextNode* textNode = null;
             for (var i = 0; i < paramWidget->UldManager.NodeListCount; i++) {
-                var node = paramWidget->UldManager.NodeList[i];
-                if (node->Type == NodeType.Text && node->NodeID == CustomNodes.ComboTimer) {
-                    textNode = (AtkTextNode*) node;
+                if (paramWidget->UldManager.NodeList[i] == null) continue;
+                if (paramWidget->UldManager.NodeList[i]->NodeID == CustomNodes.ComboTimer) {
+                    textNode = (AtkTextNode*)paramWidget->UldManager.NodeList[i];
+                    if (reset) {
+                        paramWidget->UldManager.NodeList[i]->ToggleVisibility(false);
+                        continue;
+                    }
                     break;
                 }
             }
@@ -94,24 +99,63 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (textNode == null && reset) return;
 
             if (textNode == null) {
-                if (paramWidget->UldManager.NodeListSize < 4) return;
-                textNode = UiHelper.CloneNode((AtkTextNode*) paramWidget->UldManager.NodeList[3]);
-                textNode->AtkResNode.NodeID = CustomNodes.ComboTimer;
-                var newStrPtr = Common.Alloc(512);
-                textNode->NodeText.StringPtr = (byte*) newStrPtr;
-                textNode->NodeText.BufSize = 512;
-                textNode->SetText("00.00");
-                UiHelper.ExpandNodeList(paramWidget, 1);
-                paramWidget->UldManager.NodeList[paramWidget->UldManager.NodeListCount++] = (AtkResNode*) textNode;
-                
-                textNode->AtkResNode.ParentNode = paramWidget->UldManager.NodeList[3]->ParentNode;
-                textNode->AtkResNode.ChildNode = null;
-                textNode->AtkResNode.PrevSiblingNode = null;
-                textNode->AtkResNode.NextSiblingNode = paramWidget->UldManager.NodeList[3];
-                if(paramWidget->UldManager.NodeList[3]->PrevSiblingNode != null) {
-                    textNode->AtkResNode.PrevSiblingNode = paramWidget->UldManager.NodeList[3]->PrevSiblingNode;
+
+                var newTextNode = (AtkTextNode*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkTextNode), 8);
+                if (newTextNode != null) {
+
+                    var lastNode = paramWidget->RootNode;
+                    if (lastNode == null) return;
+
+                    IMemorySpace.Memset(newTextNode, 0, (ulong)sizeof(AtkTextNode));
+                    newTextNode->Ctor();
+                    textNode = newTextNode;
+
+                    newTextNode->AtkResNode.Type = NodeType.Text;
+                    newTextNode->AtkResNode.Flags = (short)(NodeFlags.AnchorLeft | NodeFlags.AnchorTop);
+                    newTextNode->AtkResNode.DrawFlags = 0;
+                    newTextNode->AtkResNode.SetPositionShort(1, 1);
+                    newTextNode->AtkResNode.SetWidth(200);
+                    newTextNode->AtkResNode.SetHeight(14);
+
+                    newTextNode->LineSpacing = 24;
+                    newTextNode->AlignmentFontType = 0x14;
+                    newTextNode->FontSize = 12;
+                    newTextNode->TextFlags = (byte)(TextFlags.Edge);
+                    newTextNode->TextFlags2 = 0;
+
+                    newTextNode->AtkResNode.NodeID = CustomNodes.ComboTimer;
+
+                    newTextNode->AtkResNode.Color.A = 0xFF;
+                    newTextNode->AtkResNode.Color.R = 0xFF;
+                    newTextNode->AtkResNode.Color.G = 0xFF;
+                    newTextNode->AtkResNode.Color.B = 0xFF;
+
+                    if (lastNode->ChildNode != null) {
+                        lastNode = lastNode->ChildNode;
+                        while (lastNode->PrevSiblingNode != null) {
+                            lastNode = lastNode->PrevSiblingNode;
+                        }
+
+                        newTextNode->AtkResNode.NextSiblingNode = lastNode;
+                        newTextNode->AtkResNode.ParentNode = paramWidget->RootNode;
+                        lastNode->PrevSiblingNode = (AtkResNode*) newTextNode;
+                    } else {
+                        lastNode->ChildNode = (AtkResNode*)newTextNode;
+                        newTextNode->AtkResNode.ParentNode = lastNode;
+                    }
+
+                    textNode->TextColor.A = 0xFF;
+                    textNode->TextColor.R = 0xFF;
+                    textNode->TextColor.G = 0xFF;
+                    textNode->TextColor.B = 0xFF;
+
+                    textNode->EdgeColor.A = 0xFF;
+                    textNode->EdgeColor.R = 0xF0;
+                    textNode->EdgeColor.G = 0x8E;
+                    textNode->EdgeColor.B = 0x37;
+
+                    paramWidget->UldManager.UpdateDrawNodeList();
                 }
-                paramWidget->UldManager.NodeList[3]->PrevSiblingNode = (AtkResNode*) textNode;
             }
 
             if (reset) {
