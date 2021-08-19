@@ -30,8 +30,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
-            PluginLog.Log("What?");
-            SimpleLog.Log("Enable");
             PluginInterface.Framework.OnUpdateEvent += FrameworkUpdate;
             base.Enable();
         }
@@ -84,4 +82,3 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
     }
 }
-
