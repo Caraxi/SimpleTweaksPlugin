@@ -56,11 +56,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 
                 if (name != null && name.StartsWith("JobHud")) {
                     if (reset || Config.ShowInDuty && PluginInterface.ClientState.Condition[ConditionFlag.BoundByDuty]) {
-                        addon->Show(0);
+                        if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
                     } else if (Config.ShowInCombat && PluginInterface.ClientState.Condition[ConditionFlag.InCombat]) {
-                        addon->Show(0);
+                        if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
                     } else {
-                        addon->Hide(false);
+                        addon->UldManager.NodeListCount = 0;
                     }
                 }
 
