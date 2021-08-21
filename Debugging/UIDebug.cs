@@ -466,7 +466,7 @@ namespace SimpleTweaksPlugin.Debugging {
                 ImGui.SetNextItemOpen(elementSelectorFind.Contains((ulong) node), ImGuiCond.Always);
             }
             if (textOnly) ImGui.SetNextItemOpen(false, ImGuiCond.Always);
-            if (ImGui.TreeNode($"{treePrefix}{node->Type} Node (ptr = {(long)node:X})###{(long)node}"))
+            if (ImGui.TreeNode($"{treePrefix} [#{node->NodeID}] {node->Type} Node (ptr = {(long)node:X})###{(long)node}"))
             {
                 if (ImGui.IsItemHovered()) DrawOutline(node);
                 if (isVisible && !textOnly)
@@ -639,7 +639,7 @@ namespace SimpleTweaksPlugin.Debugging {
                 ImGui.SetNextItemOpen(elementSelectorFind.Contains((ulong) node), ImGuiCond.Always);
             }
             if (textOnly) ImGui.SetNextItemOpen(false, ImGuiCond.Always);
-            if (ImGui.TreeNode($"{treePrefix}{objectInfo->ComponentType} Component Node (ptr = {(long)node:X}, component ptr = {(long)compNode->Component:X}) child count = {childCount}  ###{(long)node}"))
+            if (ImGui.TreeNode($"{treePrefix} [#{node->NodeID}] {objectInfo->ComponentType} Component Node (ptr = {(long)node:X}, component ptr = {(long)compNode->Component:X}) child count = {childCount}  ###{(long)node}"))
             {
                 if (ImGui.IsItemHovered()) DrawOutline(node);
                 if (isVisible && !textOnly)
