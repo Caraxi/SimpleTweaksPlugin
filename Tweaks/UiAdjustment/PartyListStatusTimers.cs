@@ -118,7 +118,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private void FrameworkUpdate(Framework framework) {
             try {
                 if (!lastUpdate.IsRunning) lastUpdate.Start();
-                if (lastUpdate.ElapsedMilliseconds >= 1000) {
+                if (lastUpdate.ElapsedMilliseconds >= 100) {
                     lastUpdate.Restart();
                     Update();
                 }
