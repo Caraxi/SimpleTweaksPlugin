@@ -1,0 +1,8 @@
+name: Simple Tweaks Plugin
+author: Caraxi
+description: |-
+  A collection of Quality of Life tweaks. Aiming to improve the experience without changing anything drastically.
+  All changes are toggleable, with everything disabled by default. Visit the Repo for a full list of tweaks. (Globe icon below)\
+punchline: This was supposed to be simple...
+repo_url: https://github.com/Caraxi/SimpleTweaksPlugin
+dalamud_api_level: 4
