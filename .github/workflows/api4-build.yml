@@ -1,4 +1,4 @@
-name: Build SimpleTweaksPlugin
+name: Build SimpleTweaksPlugin with API4
 on:
   push:
     branches:
