@@ -6,9 +6,12 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Dalamud;
+using Dalamud.Game;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Game.Internal;
 using ImGuiNET;
+using Lumina.Excel;
+using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
@@ -183,7 +186,11 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             hasChanged |= ImGui.Checkbox("Don't show hotkey help on Tooltip", ref c.HideHotkeysOnTooltip);
         };
 
+        private ExcelSheet<ExtendedItem> itemSheet;
+
         public override void Enable() {
+            this.itemSheet = External.Data.Excel.GetSheet<ExtendedItem>();
+            if (itemSheet == null) return;
             Config = LoadConfig<Configs>() ?? new Configs() {
                 CopyHotkey = PluginConfig.TooltipTweaks.CopyHotkey,
                 CopyHotkeyEnabled = PluginConfig.TooltipTweaks.CopyHotkeyEnabled,
@@ -197,13 +204,13 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 TeamcraftLinkHotkeyForceBrowser = PluginConfig.TooltipTweaks.TeamcraftLinkHotkeyForceBrowser
             };
             
-            PluginInterface.Framework.OnUpdateEvent += FrameworkOnOnUpdateEvent;
+            External.Framework.Update += FrameworkOnOnUpdateEvent;
             base.Enable();
         }
 
         public override void Disable() {
             SaveConfig(Config);
-            PluginInterface.Framework.OnUpdateEvent -= FrameworkOnOnUpdateEvent;
+            External.Framework.Update -= FrameworkOnOnUpdateEvent;
             base.Disable();
         }
 
@@ -252,9 +259,9 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         private bool isHotkeyPress(VK[] keys) {
             for (var i = 0; i < 0xA0; i++) {
                 if (keys.Contains((VK) i)) {
-                    if (!PluginInterface.ClientState.KeyState[i]) return false;
+                    if (!External.KeyState[i]) return false;
                 } else {
-                    if (PluginInterface.ClientState.KeyState[i]) return false;
+                    if (External.KeyState[i]) return false;
                 }
             }
             return true;
@@ -262,12 +269,12 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
         private void FrameworkOnOnUpdateEvent(Framework framework) {
             try {
-                if (PluginInterface.Framework.Gui.HoveredItem == 0) return;
+                if (External.GameGui.HoveredItem == 0) return;
 
                 Action<ExtendedItem> action = null;
                 VK[] keys = null;
 
-                var language = PluginInterface.ClientState.ClientLanguage;
+                var language = External.ClientState.ClientLanguage;
                 if (action == null && Config.CopyHotkeyEnabled && isHotkeyPress(Config.CopyHotkey)) {
                     action = CopyItemName;
                     keys = Config.CopyHotkey;
@@ -290,14 +297,14 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 }
 
                 if (action != null) {
-                    var id = PluginInterface.Framework.Gui.HoveredItem;
+                    var id = External.GameGui.HoveredItem;
                     if (id >= 2000000) return;
                     id %= 500000;
-                    var item = PluginInterface.Data.GetExcelSheet<ExtendedItem>(language).GetRow((uint) id);
+                    var item = itemSheet.GetRow((uint) id);
                     if (item == null) return;
                     action(item);
                     foreach (var k in keys) {
-                        PluginInterface.ClientState.KeyState[(int) k] = false;
+                        External.KeyState[(int) k] = false;
                     }
                 }
             } catch (Exception ex) {

@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Dalamud.Game.Internal;
-using Dalamud.Game.Internal.Gui.Toast;
+using Dalamud.Game;
+using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.Gui.Toast;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -56,7 +57,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 {
                     var toastNode = GetToastNode(2);
                     if (toastNode != null && !toastNode->IsVisible)
-                        this.PluginInterface.Framework.Gui.Toast.ShowNormal("This is a preview of a toast message.");
+                        External.Toasts.ShowNormal("This is a preview of a toast message.");
                     hasChanged = true;
                 }
             }
@@ -94,16 +95,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.NotificationToastAdjustments ?? new Configs();
-            PluginInterface.Framework.OnUpdateEvent += FrameworkOnUpdate;
-            PluginInterface.Framework.Gui.Toast.OnToast += OnToast;
+            External.Framework.Update += FrameworkOnUpdate;
+            External.Toasts.Toast += OnToast;
             base.Enable();
         }
 
         public override void Disable() {
             SaveConfig(Config);
             PluginConfig.UiAdjustments.NotificationToastAdjustments = null;
-            PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdate;
-            PluginInterface.Framework.Gui.Toast.OnToast -= OnToast;
+            External.Framework.Update -= FrameworkOnUpdate;
+            External.Toasts.Toast -= OnToast;
             UpdateNotificationToast(true);
             base.Disable();
         }
@@ -165,7 +166,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 if (isHandled) return;
 
                 if (Config.Hide) {
-                    if (Config.ShowInCombat && PluginInterface.ClientState.Condition[Dalamud.Game.ClientState.ConditionFlag.InCombat])
+                    if (Config.ShowInCombat && External.Condition[ConditionFlag.InCombat])
                         return;
                 } else {
                     var messageStr = message.ToString();

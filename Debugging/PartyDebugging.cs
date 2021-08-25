@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
-using Dalamud.Game.ClientState.Actors.Types;
+using Dalamud.Game.ClientState.Objects.SubKinds;
 using FFXIVClientStructs.FFXIV.Client.Game.Group;
 using ImGuiNET;
 using PartyMember = FFXIVClientStructs.FFXIV.Client.Game.Group.PartyMember;
@@ -16,7 +15,7 @@ namespace SimpleTweaksPlugin.Debugging {
         public override void Draw() {
 
             if (groupManager == null) {
-                groupManager = (GroupManager*) Plugin.PluginInterface.TargetModuleScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? 44 8B E7");
+                groupManager = (GroupManager*) External.SigScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? 44 8B E7");
             }
             
             DebugManager.ClickToCopyText($"{(ulong) groupManager:X}"); ImGui.SameLine();
@@ -39,10 +38,10 @@ namespace SimpleTweaksPlugin.Debugging {
 
                     PlayerCharacter chara = null;
 
-                    for (var a = 0; a < Plugin.PluginInterface.ClientState.Actors.Length; a += 2) {
-                        var actor = Plugin.PluginInterface.ClientState.Actors[a];
+                    for (var a = 0; a < External.Objects.Length; a += 2) {
+                        var actor = External.Objects[a];
                         if (actor == null) continue;
-                        if ((uint)actor.ActorId == partyMember.ObjectID && actor is PlayerCharacter pc) {
+                        if ((uint)actor.ObjectId == partyMember.ObjectID && actor is PlayerCharacter pc) {
                             chara = pc;
                         }
                     }

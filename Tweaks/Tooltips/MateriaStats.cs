@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using ImGuiNET;
+using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Sheets;
@@ -72,7 +73,17 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             yield return TooltipTweaks.ItemTooltip.TooltipField.Param5;
         }
 
+        private ExcelSheet<ExtendedItem> itemSheet;
+        private ExcelSheet<ExtendedItemLevel> itemLevelSheet;
+        private ExcelSheet<ExtendedBaseParam> bpSheet;
+        private ExcelSheet<Materia> materiaSheet;
+
         public override void Enable() {
+            itemSheet = External.Data.Excel.GetSheet<ExtendedItem>();
+            itemLevelSheet = External.Data.Excel.GetSheet<ExtendedItemLevel>();
+            bpSheet = External.Data.Excel.GetSheet<ExtendedBaseParam>();
+            materiaSheet = External.Data.Excel.GetSheet<Materia>();
+            if (itemSheet == null || itemLevelSheet == null || bpSheet == null || materiaSheet == null) return;
             Config = LoadConfig<Configs>() ?? PluginConfig.TooltipTweaks.MateriaStats ?? new Configs();
             base.Enable();
         }
@@ -88,10 +99,10 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             
             if (!(Config.Delta || Config.Total == false)) Config.Total = true; // Config invalid check
             try {
-                var item = PluginInterface.Data.Excel.GetSheet<Sheets.ExtendedItem>().GetRow(itemInfo.ItemId);
+                var item = itemSheet.GetRow(itemInfo.ItemId);
                 if (item == null) return;
                 if (item.MateriaSlotCount == 0) return;
-                var itemLevel = PluginInterface.Data.Excel.GetSheet<ExtendedItemLevel>().GetRow(item.LevelItem.Row);
+                var itemLevel = itemLevelSheet.GetRow(item.LevelItem.Row);
                 if (itemLevel == null) return;
                 var baseParams = new Dictionary<uint, ExtendedBaseParam>();
                 var baseParamDeltas = new Dictionary<uint, int>();
@@ -116,7 +127,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 
                 foreach (var (materiaId, level) in itemInfo.Materia()) {
                     if (level >= 10) continue;
-                    var materia = PluginInterface.Data.Excel.GetSheet<Materia>().GetRow(materiaId);
+                    var materia = materiaSheet.GetRow(materiaId);
                     if (materia == null) continue;
                     if (materia.BaseParam.Row == 0) continue;
                     if (!baseParamDeltas.ContainsKey(materia.BaseParam.Row)) continue;
@@ -142,9 +153,9 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                             }
                             if (Config.Delta) {
                                 if (!(Config.Total && Config.SimpleCombined)) data.Payloads.Add(new TextPayload($"+"));
-                                if (Config.Colour && !Config.Total) data.Payloads.Add(new UIForegroundPayload(PluginInterface.Data, (ushort) (exceedLimit ? 14 : 500)));
+                                if (Config.Colour && !Config.Total) data.Payloads.Add(new UIForegroundPayload((ushort) (exceedLimit ? 14 : 500)));
                                 data.Payloads.Add(new TextPayload($"{deltaValue}"));
-                                if (Config.Colour && !Config.Total) data.Payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+                                if (Config.Colour && !Config.Total) data.Payloads.Add(new UIForegroundPayload(0));
                                 if (Config.Total && !Config.SimpleCombined) {
                                     data.Payloads.Add(new TextPayload("="));
                                 } else if (Config.Total) {
@@ -152,9 +163,9 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                                 }
                             }
                             if (Config.Total) {
-                                if (Config.Colour) data.Payloads.Add(new UIForegroundPayload(PluginInterface.Data, (ushort) (exceedLimit ? 14 : 500)));
+                                if (Config.Colour) data.Payloads.Add(new UIForegroundPayload((ushort) (exceedLimit ? 14 : 500)));
                                 data.Payloads.Add(new TextPayload($"{totalValue}"));
-                                if (Config.Colour) data.Payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+                                if (Config.Colour) data.Payloads.Add(new UIForegroundPayload(0));
                             }
                             
                             data.Payloads.Add(new TextPayload("]"));

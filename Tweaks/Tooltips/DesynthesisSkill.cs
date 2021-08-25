@@ -4,8 +4,10 @@ using System.Linq;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Lumina.Excel.GeneratedSheets;
 using ImGuiNET;
+using Lumina.Excel;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltip.TooltipField;
 
@@ -29,7 +31,11 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         
         public Configs Config { get; private set; }
 
+        private ExcelSheet<ExtendedItem> itemSheet;
+
         public override void Enable() {
+            itemSheet = External.Data.Excel.GetSheet<ExtendedItem>();
+            if (itemSheet == null) return;
             Config = LoadConfig<Configs>() ?? new Configs() {Delta = PluginConfig.TooltipTweaks.DesynthesisDelta};
             base.Enable();
         }
@@ -40,11 +46,11 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         }
         public override unsafe void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
 
-            var id = PluginInterface.Framework.Gui.HoveredItem;
+            var id = External.GameGui.HoveredItem;
             if (id < 2000000) {
                 id %= 500000;
 
-                var item = PluginInterface.Data.Excel.GetSheet<Sheets.ExtendedItem>().GetRow((uint)id);
+                var item = itemSheet.GetRow((uint)id);
                 if (item != null && item.Desynth > 0) {
                     var classJobOffset = 2 * (int)(item.ClassJobRepair.Row - 8);
                     var desynthLevel = *(ushort*)(Common.PlayerStaticAddress + (0x6A6 + classJobOffset)) / 100f;

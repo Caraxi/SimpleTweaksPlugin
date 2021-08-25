@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Dalamud.Game.Internal.Libc;
+using Dalamud.Game.Libc;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ImGuiNET;
+using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
@@ -44,6 +45,22 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
             return defaultColourKey;
         }
 
+        private ExcelSheet<UIColor> uiColorSheet;
+        private ExcelSheet<World> worldSheet;
+
+        public override void Setup() {
+
+            this.uiColorSheet = External.Data.Excel.GetSheet<UIColor>();
+            this.worldSheet = External.Data.Excel.GetSheet<World>();
+
+            if (uiColorSheet == null || worldSheet == null) {
+                Ready = false;
+                return;
+            }
+
+            base.Setup();
+        }
+
         protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
 
             var buttonSize = new Vector2(22, 22) * ImGui.GetIO().FontGlobalScale;
@@ -66,14 +83,20 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
 
                     ImGui.TableNextColumn();
 
-                    var xivCol = PluginInterface.Data.Excel.GetSheet<UIColor>().GetRow(fc.ColourKey).UIForeground;
+                    var xivCol = External.Data.Excel.GetSheet<UIColor>()?.GetRow(fc.ColourKey)?.UIForeground;
 
-                    var fa = xivCol & 255;
-                    var fb = (xivCol>> 8) & 255;
-                    var fg = (xivCol >> 16) & 255;
-                    var fr = (xivCol >> 24) & 255;
+                    Vector4 fColor;
+                    if (xivCol != null) {
+                        var fa = xivCol.Value & 255;
+                        var fb = (xivCol.Value >> 8) & 255;
+                        var fg = (xivCol.Value >> 16) & 255;
+                        var fr = (xivCol.Value >> 24) & 255;
 
-                    var fColor = new Vector4(fr / 255f, fg / 255f, fb / 255f, fa / 255f);
+                        fColor = new Vector4(fr / 255f, fg / 255f, fb / 255f, fa / 255f);
+                    } else {
+                        fColor = new Vector4(1);
+                    }
+
 
                     ImGui.PushStyleColor(ImGuiCol.Text, fColor);
                     ImGui.Text($"{fc.PlayerName}");
@@ -87,10 +110,10 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
                         var foreground = 0U;
                         while (foreground == 0) {
                             if (c == 0) {
-                                c = PluginInterface.Data.Excel.GetSheet<UIColor>().Max(i => i.RowId);
+                                c = uiColorSheet.Max(i => i.RowId);
                             }
 
-                            var uiColor = PluginInterface.Data.Excel.GetSheet<UIColor>().GetRow(c);
+                            var uiColor = uiColorSheet.GetRow(c);
                             if (uiColor == null) {
                                 c--;
                             } else {
@@ -114,9 +137,9 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
                         var foreground = 0U;
                         while (foreground == 0) {
 
-                            var uiColor = PluginInterface.Data.Excel.GetSheet<UIColor>().GetRow(c);
+                            var uiColor = uiColorSheet.GetRow(c);
                             if (uiColor == null) {
-                                if (c > PluginInterface.Data.Excel.GetSheet<UIColor>().Max(i => i.RowId)) {
+                                if (c > uiColorSheet.Max(i => i.RowId)) {
                                     c = 0;
                                 } else {
                                     c++;
@@ -157,15 +180,15 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
                 }
                 ImGui.TableNextColumn();
 
-                if (PluginInterface.ClientState?.LocalPlayer != null) {
+                if (External.ClientState?.LocalPlayer != null) {
                     ImGui.SetNextItemWidth(-1);
                     ImGui.InputText("##inputNewPlayerName", ref inputNewPlayerName, 25);
                     ImGui.TableNextColumn();
 
-                    var serverList = PluginInterface.Data.Excel.GetSheet<World>().Where(w => w.DataCenter.Row == PluginInterface.ClientState.LocalPlayer.CurrentWorld.GameData.DataCenter.Row).Select(w => w.Name.ToString()).ToList();
+                    var serverList = worldSheet.Where(w => w.DataCenter.Row == External.ClientState.LocalPlayer.CurrentWorld.GameData.DataCenter.Row).Select(w => w.Name.ToString()).ToList();
                     var serverIndex = serverList.IndexOf(inputServerName);
                     if (serverIndex == -1) {
-                        serverIndex = serverList.IndexOf(PluginInterface.ClientState.LocalPlayer.CurrentWorld.GameData.Name.ToString());
+                        serverIndex = serverList.IndexOf(External.ClientState.LocalPlayer.CurrentWorld.GameData.Name.ToString());
                         inputServerName = serverList[serverIndex];
                     }
 
@@ -178,17 +201,15 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
                     ImGui.TextColored(new Vector4(1, 0, 0, 1), addError);
                 }
 
-
-
                 ImGui.EndTable();
-            };
+            }
         };
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
             printChatHook ??= Common.Hook<PrintMessage>("E8 ?? ?? ?? ?? 4C 8B BC 24 ?? ?? ?? ?? 4D 85 F6", PrintMessageDetour, false);
             printChatHook?.Enable();
-            PluginInterface.Framework.Gui.Chat.OnChatMessage += HandleChatMessage;
+            External.Chat.ChatMessage += HandleChatMessage;
             base.Enable();
         }
 
@@ -218,19 +239,19 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
                     waitingEnd = true;
                     var colourKey = GetColourKey(p.PlayerName, p.World.Name);
                     newPayloads.Add(p);
-                    newPayloads.Add(new UIForegroundPayload(PluginInterface.Data, colourKey));
+                    newPayloads.Add(new UIForegroundPayload(colourKey));
                     continue;
                 }
                 newPayloads.Add(payload);
                 if (waitingEnd) {
-                    newPayloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+                    newPayloads.Add(new UIForegroundPayload(0));
                     waitingEnd = false;
                 }
             }
 
             if (hasName) {
                 if (waitingEnd) {
-                    newPayloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+                    newPayloads.Add(new UIForegroundPayload(0));
                 }
 
                 seString =  new SeString(newPayloads);
@@ -251,13 +272,13 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
                 if (chatTypes.Contains(xivChatType)) {
                     // Need to hook it manually to handle changing the name until API4
                     var stdSender = StdString.ReadFromPointer(senderName);
-                    var parsedSender = PluginInterface.SeStringManager.Parse(stdSender.RawData);
+                    var parsedSender = External.SeStringManager.Parse(stdSender.RawData);
 
                     if (Parse(ref parsedSender)) {
                         stdSender.RawData = parsedSender.Encode();
-                        var allocatedString = PluginInterface.Framework.Libc.NewString(stdSender.RawData);
+                        var allocatedString = External.LibcFunction.NewString(stdSender.RawData);
                         var retVal = printChatHook.Original(raptureLogModule, xivChatType, allocatedString.Address, message, senderId, param);
-                        allocatedString?.Dispose();
+                        allocatedString.Dispose();
                         return retVal;
                     }
                 }
@@ -271,7 +292,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
 
         public override void Disable() {
             SaveConfig(Config);
-            PluginInterface.Framework.Gui.Chat.OnChatMessage -= HandleChatMessage;
+            External.Chat.ChatMessage -= HandleChatMessage;
             printChatHook?.Disable();
             base.Disable();
         }

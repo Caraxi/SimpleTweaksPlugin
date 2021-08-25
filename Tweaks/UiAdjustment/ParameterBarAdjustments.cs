@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Dalamud.Game.Internal;
+using Dalamud.Game;
 using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
@@ -39,12 +39,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
-            PluginInterface.Framework.OnUpdateEvent += OnFrameworkUpdate;
+            External.Framework.Update += OnFrameworkUpdate;
             base.Enable();
         }
 
         public override void Disable() {
-            PluginInterface.Framework.OnUpdateEvent -= OnFrameworkUpdate;
+            External.Framework.Update -= OnFrameworkUpdate;
             UpdateParameterBar(true);
             SaveConfig(Config);
             base.Disable();

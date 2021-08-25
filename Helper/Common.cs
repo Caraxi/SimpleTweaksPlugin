@@ -15,6 +15,7 @@ using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.GameStructs;
+using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 
 namespace SimpleTweaksPlugin.Helper {
     internal unsafe class Common {
@@ -41,19 +42,19 @@ namespace SimpleTweaksPlugin.Helper {
         
         public static Utf8String* LastCommand { get; private set; }
 
-        public static SigScanner Scanner => PluginInterface.TargetModuleScanner;
+        public static SigScanner Scanner => External.SigScanner;
 
         public Common(DalamudPluginInterface pluginInterface) {
             PluginInterface = pluginInterface;
-            var gameAllocPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 45 8D 67 23");
-            var getGameAllocatorPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 8B 75 08");
+            var gameAllocPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 45 8D 67 23");
+            var getGameAllocatorPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 8B 75 08");
 
-            InventoryManagerAddress = pluginInterface.TargetModuleScanner.GetStaticAddressFromSig("BA ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B F8 48 85 C0");
-            var getInventoryContainerPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 8B 55 BB");
-            var getContainerSlotPtr = pluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 8B 5B 0C");
+            InventoryManagerAddress = Scanner.GetStaticAddressFromSig("BA ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B F8 48 85 C0");
+            var getInventoryContainerPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 8B 55 BB");
+            var getContainerSlotPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 8B 5B 0C");
 
-            PlayerStaticAddress = pluginInterface.TargetModuleScanner.GetStaticAddressFromSig("8B D7 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B7 E8");
-            LastCommandAddress = pluginInterface.TargetModuleScanner.GetStaticAddressFromSig("4C 8D 05 ?? ?? ?? ?? 41 B1 01 49 8B D4 E8 ?? ?? ?? ?? 83 EB 06");
+            PlayerStaticAddress = Scanner.GetStaticAddressFromSig("8B D7 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B7 E8");
+            LastCommandAddress = Scanner.GetStaticAddressFromSig("4C 8D 05 ?? ?? ?? ?? 41 B1 01 49 8B D4 E8 ?? ?? ?? ?? 83 EB 06");
             LastCommand = (Utf8String*) (LastCommandAddress);
 
             _gameAlloc = Marshal.GetDelegateForFunctionPointer<GameAlloc>(gameAllocPtr);
@@ -63,11 +64,10 @@ namespace SimpleTweaksPlugin.Helper {
             _getContainerSlot = Marshal.GetDelegateForFunctionPointer<GetContainerSlot>(getContainerSlotPtr);
         }
 
-        public static Framework* Framework => (Framework*) PluginInterface.Framework.Address.BaseAddress;
-        public static UIModule* UIModule => Framework->GetUiModule();
+        public static UIModule* UIModule => Framework.Instance()->GetUiModule();
 
         public static AtkUnitBase* GetUnitBase(string name, int index = 1) {
-            return (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName(name, index);
+            return (AtkUnitBase*) External.GameGui.GetAddonByName(name, index);
         }
 
         public static T* GetUnitBase<T>(string name = null, int index = 1) where T : unmanaged {
@@ -80,7 +80,7 @@ namespace SimpleTweaksPlugin.Helper {
 
             if (string.IsNullOrEmpty(name)) return null;
             
-            return (T*) PluginInterface.Framework.Gui.GetUiObjectByName(name, index);
+            return (T*) External.GameGui.GetAddonByName(name, index);
         }
 
         public static InventoryContainer* GetContainer(InventoryType inventoryType) {
@@ -131,7 +131,7 @@ namespace SimpleTweaksPlugin.Helper {
             }
             var bytes = new byte[offset];
             Marshal.Copy(new IntPtr(ptr), bytes, 0, offset);
-            return PluginInterface.SeStringManager.Parse(bytes);
+            return External.SeStringManager.Parse(bytes);
         }
 
         public void WriteSeString(byte* dst, SeString s) {
@@ -146,7 +146,7 @@ namespace SimpleTweaksPlugin.Helper {
             var len = (int) (xivString.BufUsed > int.MaxValue ? int.MaxValue : xivString.BufUsed);
             var bytes = new byte[len];
             Marshal.Copy(new IntPtr(xivString.StringPtr), bytes, 0, len);
-            return PluginInterface.SeStringManager.Parse(bytes);
+            return External.SeStringManager.Parse(bytes);
         }
 
         public void WriteSeString(Utf8String xivString, SeString s) {
@@ -174,7 +174,7 @@ namespace SimpleTweaksPlugin.Helper {
 
 
         public T GetGameOption<T>(GameOptionKind opt) {
-            var optionBase = (byte**)(PluginInterface.Framework.Address.BaseAddress + 0x2B28);
+            var optionBase = (byte**)(External.Framework.Address.BaseAddress + 0x2B28);
             return Marshal.PtrToStructure<T>(new IntPtr(*optionBase + 0xAAE0 + (16 * (uint)opt)));
         }
 

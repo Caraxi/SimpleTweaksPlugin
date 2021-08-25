@@ -58,12 +58,12 @@ namespace SimpleTweaksPlugin.Tweaks {
 
             try {
                 if (setOptionAddress == IntPtr.Zero) {
-                    setOptionAddress = PluginInterface.TargetModuleScanner.ScanText("89 54 24 10 53 55 57 41 54 41 55 41 56 48 83 EC 48 8B C2 45 8B E0 44 8B D2 45 32 F6 44 8B C2 45 32 ED");
+                    setOptionAddress = External.SigScanner.ScanText("89 54 24 10 53 55 57 41 54 41 55 41 56 48 83 EC 48 8B C2 45 8B E0 44 8B D2 45 32 F6 44 8B C2 45 32 ED");
                     SimpleLog.Verbose($"SetOptionAddress: {setOptionAddress.ToInt64():X}");
                     setOption = Marshal.GetDelegateForFunctionPointer<SetOptionDelegate>(setOptionAddress);
                 }
 
-                var toggleGamepadModeAddress = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 40 0F B6 DF 49 8B CC");
+                var toggleGamepadModeAddress = External.SigScanner.ScanText("E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 40 0F B6 DF 49 8B CC");
                 SimpleLog.Verbose($"ToggleGamePadModeAddress: {toggleGamepadModeAddress.ToInt64():X}");
                 setGamepadMode = Marshal.GetDelegateForFunctionPointer<SetGamepadMode>(toggleGamepadModeAddress);
                 
@@ -119,8 +119,8 @@ namespace SimpleTweaksPlugin.Tweaks {
             setOptionHook ??= new Hook<SetOptionDelegate>(setOptionAddress, new SetOptionDelegate(SetOptionDetour));
             setOptionHook?.Enable();
 
-            PluginInterface.CommandManager.AddHandler("/setoption", new CommandInfo(OptionCommand) {HelpMessage = "Set the skill tooltips on or off.", ShowInHelp = true});
-            PluginInterface.CommandManager.AddHandler("/setopt", new CommandInfo(OptionCommand) {HelpMessage = "Set the skill tooltips on or off.", ShowInHelp = false});
+            External.Commands.AddHandler("/setoption", new CommandInfo(OptionCommand) {HelpMessage = "Set the skill tooltips on or off.", ShowInHelp = true});
+            External.Commands.AddHandler("/setopt", new CommandInfo(OptionCommand) {HelpMessage = "Set the skill tooltips on or off.", ShowInHelp = false});
 
             Enabled = true;
         }
@@ -139,7 +139,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                     if (optionKinds[o].type == OptionType.ToggleGamepadMode) continue;
                     sb.Append(o + " ");
                 }
-                PluginInterface.Framework.Gui.Chat.Print($"Options:\n{sb}");
+                External.Chat.Print($"Options:\n{sb}");
 
                 return;
             }
@@ -153,8 +153,8 @@ namespace SimpleTweaksPlugin.Tweaks {
                 var fromAlias = optionKinds.Values.Where(ok => ok.alias.Contains(optionKind)).ToArray();
 
                 if (fromAlias.Length == 0) {
-                    PluginInterface.Framework.Gui.Chat.PrintError("Unknown Option");
-                    PluginInterface.Framework.Gui.Chat.PrintError("/setoption list for a list of options");
+                    External.Chat.PrintError("Unknown Option");
+                    External.Chat.PrintError("/setoption list for a list of options");
                     return;
                 } 
                 optionDefinition = fromAlias[0];
@@ -192,7 +192,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                             setValue = cVal ? 1 : 0UL;
                             break;
                         default:
-                            PluginInterface.Framework.Gui.Chat.PrintError($"/setoption {optionKind} ({optionTypeValueHints[optionDefinition.type]})");
+                            External.Chat.PrintError($"/setoption {optionKind} ({optionTypeValueHints[optionDefinition.type]})");
                             break;
                         }
 
@@ -221,7 +221,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                     break;
                 }
                 default:
-                    PluginInterface.Framework.Gui.Chat.PrintError("Unsupported Option");
+                    External.Chat.PrintError("Unsupported Option");
                     return;
             }
 
@@ -241,8 +241,8 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         public override void Disable() {
             setOptionHook?.Disable();
-            PluginInterface.CommandManager.RemoveHandler("/setoption");
-            PluginInterface.CommandManager.RemoveHandler("/setopt");
+            External.Commands.RemoveHandler("/setoption");
+            External.Commands.RemoveHandler("/setopt");
             Enabled = false;
         }
 

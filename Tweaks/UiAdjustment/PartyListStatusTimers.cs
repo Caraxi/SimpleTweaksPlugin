@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Dalamud.Game.Internal;
+using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -37,7 +37,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             public void Set(uint statusId, ushort countdown, bool fromLocal) {
                 if (!timer.IsRunning || StatusID != statusId || countdown != lastCountdown) timer.Restart();
-                if (this.StatusID != statusId) Data = Common.PluginInterface.Data.Excel.GetSheet<Status>().GetRow(statusId);
+                if (this.StatusID != statusId) Data = External.Data.Excel.GetSheet<Status>().GetRow(statusId);
                 this.StatusID = statusId;
                 this.lastCountdown = countdown;
                 this.IsFromLocalPlayer = fromLocal;
@@ -98,7 +98,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             updateSlotHook ??= Common.Hook<UpdateSlotStatusEffects>("E8 ?? ?? ?? ?? 4D 8B CE 44 89 7C 24", UpdateSlotDetour, false);
             updateSlotHook?.Enable();
-            PluginInterface.Framework.OnUpdateEvent += FrameworkUpdate;
+            External.Framework.Update += FrameworkUpdate;
             base.Enable();
         }
 
@@ -136,7 +136,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             for (var i = 1; i < partyList->MemberCount && i < 8; i++) {
                 if (objIds[i] != null && updateValues[i] != null) {
                     var uiModule = Common.UIModule;
-                    var atkArrayDataHolder = Common.Framework->GetUiModule()->RaptureAtkModule.AtkModule.AtkArrayDataHolder;
+                    var atkArrayDataHolder = uiModule->RaptureAtkModule.AtkModule.AtkArrayDataHolder;
                     var agentHud = uiModule->GetAgentModule()->GetAgentByInternalID(4);
                     updateSlotHook.Original(agentHud, atkArrayDataHolder.NumberArrays[4], atkArrayDataHolder.StringArrays[3], objIds[i].Value, updateValues[i].Value, i);
                 }
@@ -274,7 +274,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override void Disable() {
             updatePartyListStatusEffectsHook?.Disable();
             updateSlotHook?.Disable();
-            PluginInterface.Framework.OnUpdateEvent -= FrameworkUpdate;
+            External.Framework.Update -= FrameworkUpdate;
             try {
                 Update(true);
             } catch (Exception ex) {

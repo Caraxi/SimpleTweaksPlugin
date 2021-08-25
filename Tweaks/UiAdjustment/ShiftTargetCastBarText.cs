@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Numerics;
-using Dalamud.Game.Internal;
+using Dalamud.Game;
 using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
@@ -126,7 +126,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override void Enable() {
             if (Enabled) return;
             LoadedConfig = LoadConfig<Config>() ?? PluginConfig.UiAdjustments.ShiftTargetCastBarText ?? new Config();
-            PluginInterface.Framework.OnUpdateEvent += OnFrameworkUpdate;
+            External.Framework.Update += OnFrameworkUpdate;
             Enabled = true;
         }
 
@@ -134,14 +134,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (!Enabled) return;
             SaveConfig(LoadedConfig);
             PluginConfig.UiAdjustments.ShiftTargetCastBarText = null;
-            PluginInterface.Framework.OnUpdateEvent -= OnFrameworkUpdate;
+            External.Framework.Update -= OnFrameworkUpdate;
             SimpleLog.Debug($"[{GetType().Name}] Reset");
             HandleBars(true);
             Enabled = false;
         }
 
         public override void Dispose() {
-            PluginInterface.Framework.OnUpdateEvent -= OnFrameworkUpdate;
+            External.Framework.Update -= OnFrameworkUpdate;
             Enabled = false;
             Ready = false;
         }

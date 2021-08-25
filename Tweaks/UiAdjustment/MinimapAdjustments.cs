@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using Dalamud.Game.Internal;
+using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
@@ -60,23 +60,23 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.MinimapAdjustments ?? new Configs();
-            PluginInterface.ClientState.OnLogin += OnLogin;
-            PluginInterface.ClientState.TerritoryChanged += OnTerritoryChanged;
+            External.ClientState.Login += OnLogin;
+            External.ClientState.TerritoryChanged += OnTerritoryChanged;
             base.Enable();
             Update();
         }
 
         private void OnTerritoryChanged(object sender, ushort e) {
             sw.Restart();
-            PluginInterface.Framework.OnUpdateEvent -= WaitForUpdate;
-            PluginInterface.Framework.OnUpdateEvent += WaitForUpdate;
+            External.Framework.Update -= WaitForUpdate;
+            External.Framework.Update += WaitForUpdate;
         }
 
         public override void Disable() {
             SaveConfig(Config);
             PluginConfig.UiAdjustments.MinimapAdjustments = null;
-            PluginInterface.Framework.OnUpdateEvent -= WaitForUpdate;
-            PluginInterface.ClientState.OnLogin -= OnLogin;
+            External.Framework.Update -= WaitForUpdate;
+            External.ClientState.Login -= OnLogin;
             base.Disable();
             Update();
         }
@@ -84,31 +84,31 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         
         private void OnLogin(object sender, EventArgs e) {
             sw.Restart();
-            PluginInterface.Framework.OnUpdateEvent -= WaitForUpdate;
-            PluginInterface.Framework.OnUpdateEvent += WaitForUpdate;
+            External.Framework.Update -= WaitForUpdate;
+            External.Framework.Update += WaitForUpdate;
         }
 
         private void WaitForUpdate(Framework framework) {
             try {
                 if (!sw.IsRunning) sw.Restart();
-                var unitBase = (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName("_NaviMap", 1);
+                var unitBase = (AtkUnitBase*) External.GameGui.GetAddonByName("_NaviMap", 1);
                 if (unitBase == null) {
                     if (sw.ElapsedMilliseconds > 30000) {
                         sw.Stop();
-                        framework.OnUpdateEvent -= WaitForUpdate;
+                        External.Framework.Update -= WaitForUpdate;
                     }
                     return;
                 }
                 Update();
-                framework.OnUpdateEvent -= WaitForUpdate;
+                External.Framework.Update -= WaitForUpdate;
             } catch (Exception ex) {
                 SimpleLog.Error(ex);
-                framework.OnUpdateEvent -= WaitForUpdate;
+                External.Framework.Update -= WaitForUpdate;
             }
         }
 
         public void Update() {
-            var unitBase = (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName("_NaviMap", 1);
+            var unitBase = (AtkUnitBase*) External.GameGui.GetAddonByName("_NaviMap", 1);
             if (unitBase == null) return;
 
             if (unitBase->UldManager.NodeListCount < 19) return;

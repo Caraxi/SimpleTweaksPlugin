@@ -71,6 +71,8 @@ namespace SimpleTweaksPlugin.Debugging {
         private RawDX11Scene.BuildUIDelegate originalHandler;
 
         private bool SetExclusiveDraw(Action action) {
+            return false;
+            /*
             // Possibly the most cursed shit I've ever done.
             if (originalHandler != null) return false;
             var d = (Dalamud.Dalamud) typeof(DalamudPluginInterface).GetField("dalamud", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(Plugin.PluginInterface);
@@ -84,9 +86,12 @@ namespace SimpleTweaksPlugin.Debugging {
             originalHandler = handler;
             ef.SetValue(im, new RawDX11Scene.BuildUIDelegate(action));
             return true;
+            */
         }
         
         private bool FreeExclusiveDraw() {
+            return false;
+            /*
             // Undoing the cursed shit requires a little more of the same cursed shit
             if (originalHandler == null) return true;
             SimpleLog.Log($"Free Exclusive Draw");
@@ -100,7 +105,9 @@ namespace SimpleTweaksPlugin.Debugging {
 
             eventField.SetValue(interfaceManager, originalHandler);
             originalHandler = null;
+
             return true;
+            */
         }
         
         public override void Draw() {
@@ -110,7 +117,7 @@ namespace SimpleTweaksPlugin.Debugging {
                 selectedUnitBase = (AtkUnitBase*) (Plugin.PluginConfig.Debugging.SelectedAtkUnitBase);
             }
             if (getAtkStageSingleton == null) {
-                var getSingletonAddr = Plugin.PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 41 B8 01 00 00 00 48 8D 15 ?? ?? ?? ?? 48 8B 48 20 E8 ?? ?? ?? ?? 48 8B CF");
+                var getSingletonAddr = External.SigScanner.ScanText("E8 ?? ?? ?? ?? 41 B8 01 00 00 00 48 8D 15 ?? ?? ?? ?? 48 8B 48 20 E8 ?? ?? ?? ?? 48 8B CF");
                 this.getAtkStageSingleton = Marshal.GetDelegateForFunctionPointer<GetAtkStageSingleton>(getSingletonAddr);
             }
 
@@ -123,7 +130,7 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.PushStyleColor(ImGuiCol.Text, elementSelectorActive ? 0xFF00FFFF : 0xFFFFFFFF);
             if (ImGui.Button($"{(char) FontAwesomeIcon.ObjectUngroup}", new Vector2(-1, ImGui.GetItemRectSize().Y))) {
                 elementSelectorActive = !elementSelectorActive;
-                Plugin.PluginInterface.UiBuilder.OnBuildUi -= DrawElementSelector;
+                External.PluginInterface.UiBuilder.Draw -= DrawElementSelector;
                 FreeExclusiveDraw();
                 
                 if (elementSelectorActive) {
@@ -508,7 +515,7 @@ namespace SimpleTweaksPlugin.Debugging {
                             for (var i = 0L; i < textNode->NodeText.BufUsed; i++) {
                                 seStringBytes[i] = textNode->NodeText.StringPtr[i];
                             }
-                            var seString = Plugin.PluginInterface.SeStringManager.Parse(seStringBytes);
+                            var seString = External.SeStringManager.Parse(seStringBytes);
                             for (var i = 0; i < seString.Payloads.Count; i++) {
                                 var payload = seString.Payloads[i];
                                 ImGui.Text($"[{i}]");

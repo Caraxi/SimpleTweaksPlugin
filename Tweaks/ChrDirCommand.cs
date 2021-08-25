@@ -23,7 +23,7 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         public override void Enable() {
             if (Enabled) return;
-            PluginInterface.CommandManager.AddHandler("/chrdir", new CommandInfo(CommandHandler) {ShowInHelp = true, HelpMessage = "Print your character save directory to chat. '/chrdir open' to open the directory in explorer."});
+            External.Commands.AddHandler("/chrdir", new CommandInfo(CommandHandler) {ShowInHelp = true, HelpMessage = "Print your character save directory to chat. '/chrdir open' to open the directory in explorer."});
 
             linkPayload = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.OpenFolderLink, OpenFolder);
             
@@ -35,20 +35,21 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
 
         private void CommandHandler(string command, string arguments) {
-            var saveDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "FINAL FANTASY XIV - A Realm Reborn", $"FFXIV_CHR{PluginInterface.ClientState.LocalContentId:X16}");
+            var saveDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "FINAL FANTASY XIV - A Realm Reborn", $"FFXIV_CHR{External.ClientState.LocalContentId:X16}");
             if (arguments == "open") {
                 Process.Start("explorer.exe", saveDir);
                 return;
             }
-            PluginInterface.Framework.Gui.Chat.PrintChat(new XivChatEntry() {
-                MessageBytes = new SeString(new List<Payload>() {
+
+            External.Chat.PrintChat(new XivChatEntry() {
+                Message= new SeString(new List<Payload>() {
                     new TextPayload("Character Directory:\n"),
-                    new UIForegroundPayload(PluginInterface.Data, 22),
+                    new UIForegroundPayload(22),
                     linkPayload,
                     new TextPayload(saveDir),
                     RawPayload.LinkTerminator,
-                    new UIForegroundPayload(PluginInterface.Data, 0)
-                }).Encode()
+                    new UIForegroundPayload(0)
+                })
             });
         }
 
@@ -59,7 +60,7 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         public override void Disable() {
             PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.OpenFolderLink);
-            PluginInterface.CommandManager.RemoveHandler("/chrdir");
+            External.Commands.RemoveHandler("/chrdir");
             Enabled = false;
         }
 

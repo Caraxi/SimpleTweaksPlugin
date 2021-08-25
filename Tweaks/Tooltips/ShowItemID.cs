@@ -10,11 +10,11 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
             var seStr = tooltip[ItemUiCategory];
             if (seStr == null) return;
-            var id = Plugin.PluginInterface.Framework.Gui.HoveredItem;
+            var id = External.GameGui.HoveredItem;
             if (id < 2000000) id %= 500000;
-            seStr.Payloads.Add(new UIForegroundPayload(PluginInterface.Data, 3));
+            seStr.Payloads.Add(new UIForegroundPayload(3));
             seStr.Payloads.Add(new TextPayload($"   [{id}]"));
-            seStr.Payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+            seStr.Payloads.Add(new UIForegroundPayload(0));
             tooltip[ItemUiCategory] = seStr;
         }
 
@@ -27,9 +27,9 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 if (seStr.Payloads.Count >= 1) {
                     seStr.Payloads.Add(new TextPayload("   "));
                 }
-                seStr.Payloads.Add(new UIForegroundPayload(PluginInterface.Data, 3));
+                seStr.Payloads.Add(new UIForegroundPayload(3));
                 seStr.Payloads.Add(new TextPayload($"[{action.Id}]"));
-                seStr.Payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+                seStr.Payloads.Add(new UIForegroundPayload(0));
                 categoryText->SetText(seStr.Encode());
             }
             

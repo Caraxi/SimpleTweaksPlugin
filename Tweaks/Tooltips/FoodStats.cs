@@ -4,8 +4,10 @@ using System.Runtime.InteropServices;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using ImGuiNET;
+using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.GameStructs;
+using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
@@ -35,12 +37,12 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         public override void Setup() {
             try {
                 if (getBaseParamAddress == IntPtr.Zero) {
-                    getBaseParamAddress = PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 44 8B C0 33 D2 48 8B CB E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 48 8D 0D");
+                    getBaseParamAddress = External.SigScanner.ScanText("E8 ?? ?? ?? ?? 44 8B C0 33 D2 48 8B CB E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 48 8D 0D");
                     getBaseParam = Marshal.GetDelegateForFunctionPointer<GetBaseParam>(getBaseParamAddress);
                 }
 
                 if (playerStaticAddress == IntPtr.Zero) {
-                    playerStaticAddress = PluginInterface.TargetModuleScanner.GetStaticAddressFromSig("8B D7 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B7 E8");
+                    playerStaticAddress = External.SigScanner.GetStaticAddressFromSig("8B D7 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B7 E8");
                 }
                 base.Setup();
             } catch (Exception ex) {
@@ -48,7 +50,15 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             }
         }
 
+        private ExcelSheet<ExtendedItem> itemSheet;
+        private ExcelSheet<ItemFood> foodSheet;
+        private ExcelSheet<BaseParam> bpSheet;
+
         public override void Enable() {
+            itemSheet = External.Data.Excel.GetSheet<ExtendedItem>();
+            foodSheet = External.Data.Excel.GetSheet<ItemFood>();
+            bpSheet = External.Data.Excel.GetSheet<BaseParam>();
+            if (itemSheet == null || foodSheet == null || bpSheet == null) return;
             Config = LoadConfig<Configs>() ?? new Configs() { Highlight = PluginConfig.TooltipTweaks.FoodStatsHighlight };
             base.Enable();
         }
@@ -64,25 +74,26 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
         public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
 
-            var id = PluginInterface.Framework.Gui.HoveredItem;
+            var id = External.GameGui.HoveredItem;
 
             if (id < 2000000) {
                 var hq = id >= 500000;
                 id %= 500000;
-                var item = PluginInterface.Data.Excel.GetSheet<Sheets.ExtendedItem>().GetRow((uint)id);
-
+                var item = itemSheet.GetRow((uint)id);
+                if (item == null) return;
                 var action = item.ItemAction?.Value;
 
-                if (action != null && (action.Type == 844 || action.Type == 845 || action.Type == 846)) {
+                if (action != null && action.Type is 844 or 845 or 846) {
 
-                    var itemFood = PluginInterface.Data.Excel.GetSheet<ItemFood>().GetRow(hq ? action.DataHQ[1] : action.Data[1]);
+                    var itemFood = foodSheet.GetRow(hq ? action.DataHQ[1] : action.Data[1]);
                     if (itemFood != null) {
                         var payloads = new List<Payload>();
                         var hasChange = false;
 
                         foreach (var bonus in itemFood.UnkStruct1) {
                             if (bonus.BaseParam == 0) continue;
-                            var param = PluginInterface.Data.Excel.GetSheet<BaseParam>().GetRow(bonus.BaseParam);
+                            var param = bpSheet.GetRow(bonus.BaseParam);
+                            if (param == null) continue;
                             var value = hq ? bonus.ValueHQ : bonus.Value;
                             var max = hq ? bonus.MaxHQ : bonus.Max;
                             if (bonus.IsRelative) {
@@ -96,21 +107,21 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
                                 payloads.Add(new TextPayload($"{param.Name} +"));
 
-                                if (Config.Highlight && change < max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
+                                if (Config.Highlight && change < max) payloads.Add(new UIForegroundPayload(500));
                                 payloads.Add(new TextPayload($"{value}%"));
                                 if (change < max) {
-                                    if (Config.Highlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+                                    if (Config.Highlight) payloads.Add(new UIForegroundPayload(0));
                                     payloads.Add(new TextPayload($" (Current "));
-                                    if (Config.Highlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
+                                    if (Config.Highlight) payloads.Add(new UIForegroundPayload(500));
                                     payloads.Add(new TextPayload($"{change}"));
-                                    if (Config.Highlight) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+                                    if (Config.Highlight) payloads.Add(new UIForegroundPayload(0));
                                     payloads.Add(new TextPayload($")"));
                                 }
 
                                 payloads.Add(new TextPayload(" (Max "));
-                                if (Config.Highlight && change == max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 500));
+                                if (Config.Highlight && change == max) payloads.Add(new UIForegroundPayload(500));
                                 payloads.Add(new TextPayload($"{max}"));
-                                if (Config.Highlight && change == max) payloads.Add(new UIForegroundPayload(PluginInterface.Data, 0));
+                                if (Config.Highlight && change == max) payloads.Add(new UIForegroundPayload(0));
                                 payloads.Add(new TextPayload(")"));
                             } else {
                                 if (payloads.Count > 0) payloads.Add(new TextPayload("\n"));

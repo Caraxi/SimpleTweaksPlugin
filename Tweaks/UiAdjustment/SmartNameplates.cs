@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Dalamud.Game.ClientState.Actors;
-using Dalamud.Game.ClientState.Structs;
+using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Hooking;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
-    public class SmartNameplates : UiAdjustments.SubTweak {
+    public unsafe class SmartNameplates : UiAdjustments.SubTweak {
         public override string Name => "Smart Nameplates";
         public override string Description => "Provides options to hide other player's nameplates in combat under certain conditions.";
         protected override string Author => "UnknownX";
@@ -26,9 +28,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private const int statusFlagsOffset = 0x19A0;
         private IntPtr targetManager = IntPtr.Zero;
-        private delegate byte ShouldDisplayNameplateDelegate(IntPtr raptureAtkModule, IntPtr actor, IntPtr localPlayer, float distance);
+        private delegate byte ShouldDisplayNameplateDelegate(IntPtr raptureAtkModule, GameObject* actor, GameObject* localPlayer, float distance);
         private Hook<ShouldDisplayNameplateDelegate> shouldDisplayNameplateHook;
-        private delegate byte GetTargetTypeDelegate(IntPtr actor);
+        private delegate byte GetTargetTypeDelegate(GameObject* actor);
         private GetTargetTypeDelegate GetTargetType;
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
@@ -48,26 +50,32 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         // Crashes the game if ANY Dalamud Actor is created from within it, which is why everything is using offsets
         // returns 2 bits (b01 == display name, b10 == display hp)
-        private unsafe byte ShouldDisplayNameplateDetour(IntPtr raptureAtkModule, IntPtr actor, IntPtr localPlayer, float distance) {
-            var actorStatusFlags = *(byte*)(actor + statusFlagsOffset);
+        private unsafe byte ShouldDisplayNameplateDetour(IntPtr raptureAtkModule, GameObject* actor, GameObject* localPlayer, float distance) {
+            if (actor->ObjectKind != (byte) ObjectKind.Pc) goto ReturnOriginal;
+            var pc = (BattleChara*) actor;
+
+            var targets = TargetSystem.Instance();
 
             if (actor == localPlayer // Ignore localplayer
-                || (*(byte*)(localPlayer + statusFlagsOffset) & 2) == 0 // Alternate in combat flag
-                || *(ObjectKind*)(actor + ActorOffsets.ObjectKind) != ObjectKind.Player // Ignore nonplayers
+                || (pc->Character.StatusFlags & 2) == 0 // Alternate in combat flag
                 || GetTargetType(actor) == 3
 
-                || (config.IgnoreParty && (actorStatusFlags & 16) > 0) // Ignore party members
-                || (config.IgnoreAlliance && (actorStatusFlags & 32) > 0) // Ignore alliance members
-                || (config.IgnoreFriends && (actorStatusFlags & 64) > 0) // Ignore friends
-                || (config.IgnoreDead && *(int*)(actor + ActorOffsets.CurrentHp) == 0) // Ignore dead players
+                || (config.IgnoreParty && (pc->Character.StatusFlags & 16) > 0) // Ignore party members
+                || (config.IgnoreAlliance && (pc->Character.StatusFlags & 32) > 0) // Ignore alliance members
+                || (config.IgnoreFriends && (pc->Character.StatusFlags & 64) > 0) // Ignore friends
+                || (config.IgnoreDead && pc->Character.Health == 0) // Ignore dead players
 
                 // Ignore targets
-                || (config.IgnoreTargets && (*(IntPtr*)(targetManager + TargetOffsets.CurrentTarget) == actor
-                    || *(IntPtr*)(targetManager + TargetOffsets.SoftTarget) == actor
-                    || *(IntPtr*)(targetManager + TargetOffsets.FocusTarget) == actor)))
-                return shouldDisplayNameplateHook.Original(raptureAtkModule, actor, localPlayer, distance);
+                || (config.IgnoreTargets && targets->Target == actor
+                    || targets->SoftTarget == actor
+                    || targets->FocusTarget == actor)) goto ReturnOriginal;
 
             return (byte)(config.ShowHP ? (shouldDisplayNameplateHook.Original(raptureAtkModule, actor, localPlayer, distance) & ~1) : 0); // Ignore HP
+
+
+            ReturnOriginal:
+            return shouldDisplayNameplateHook.Original(raptureAtkModule, actor, localPlayer, distance);
+
         }
 
         public override void Enable() {

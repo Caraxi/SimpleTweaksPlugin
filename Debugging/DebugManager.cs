@@ -11,7 +11,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using Dalamud.Game.Internal.Libc;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Helper;
