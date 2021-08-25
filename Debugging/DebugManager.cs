@@ -118,9 +118,10 @@ namespace SimpleTweaksPlugin.Debugging {
                         
                     }
 
-                    ImGui.EndChild();
+
                 }
 
+                ImGui.EndChild();
                 ImGui.SameLine();
 
                 if (ImGui.BeginChild("###debugView", new Vector2(-1, -1), true, ImGuiWindowFlags.HorizontalScrollbar)){
@@ -129,12 +130,12 @@ namespace SimpleTweaksPlugin.Debugging {
                     } else {
                         debugPages[_plugin.PluginConfig.Debugging.SelectedPage]();
                     }
-                    ImGui.EndChild();
                 }
 
-
-                ImGui.End();
+                ImGui.EndChild();
             }
+
+            ImGui.End();
             ImGui.PopStyleColor();
         }
 
