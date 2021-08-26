@@ -1,4 +1,5 @@
-﻿using Dalamud.Data;
+﻿using System.Diagnostics.CodeAnalysis;
+using Dalamud.Data;
 using Dalamud.Game;
 using Dalamud.Game.ClientState;
 using Dalamud.Game.ClientState.Buddy;
@@ -16,32 +17,35 @@ using Dalamud.Game.Gui.Toast;
 using Dalamud.Game.Libc;
 using Dalamud.Game.Network;
 using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.IoC;
 using Dalamud.Plugin;
 
 namespace SimpleTweaksPlugin {
-    public static class External {
-        public static DalamudPluginInterface PluginInterface;
-        public static BuddyList Buddies;
-        public static ChatGui Chat;
-        public static ChatHandlers ChatHandlers;
-        public static ClientState ClientState;
-        public static CommandManager Commands;
-        public static Condition Condition;
-        public static DataManager Data;
-        public static FateTable Fates;
-        public static FlyTextGui FlyText;
-        public static Framework Framework;
-        public static GameGui GameGui;
-        public static GameNetwork GameNetwork;
-        public static JobGauges Gauges;
-        public static KeyState KeyState;
-        public static LibcFunction LibcFunction;
-        public static ObjectTable Objects;
-        public static PartyFinderGui PartyFinderGui;
-        public static PartyList Party;
-        public static SeStringManager SeStringManager;
-        public static SigScanner SigScanner;
-        public static TargetManager Targets;
-        public static ToastGui Toasts;
+
+    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
+    public class External {
+        [PluginService] public static DalamudPluginInterface PluginInterface { get; private set; }
+        [PluginService] public static BuddyList Buddies { get; private set; }
+        [PluginService] public static ChatGui Chat { get; private set; }
+        [PluginService] public static ChatHandlers ChatHandlers { get; private set; }
+        [PluginService] public static ClientState ClientState { get; private set; }
+        [PluginService] public static CommandManager Commands { get; private set; }
+        [PluginService] public static Condition Condition { get; private set; }
+        [PluginService] public static DataManager Data { get; private set; }
+        [PluginService] public static FateTable Fates { get; private set; }
+        [PluginService] public static FlyTextGui FlyText { get; private set; }
+        [PluginService] public static Framework Framework { get; private set; }
+        [PluginService] public static GameGui GameGui { get; private set; }
+        [PluginService] public static GameNetwork GameNetwork { get; private set; }
+        [PluginService] public static JobGauges Gauges { get; private set; }
+        [PluginService] public static KeyState KeyState { get; private set; }
+        [PluginService] public static LibcFunction LibcFunction { get; private set; }
+        [PluginService] public static ObjectTable Objects { get; private set; }
+        [PluginService] public static PartyFinderGui PartyFinderGui { get; private set; }
+        [PluginService] public static PartyList Party { get; private set; }
+        [PluginService] public static SeStringManager SeStringManager { get; private set; }
+        [PluginService] public static SigScanner SigScanner { get; private set; }
+        [PluginService] public static TargetManager Targets { get; private set; }
+        [PluginService] public static ToastGui Toasts { get; private set; }
     }
 }

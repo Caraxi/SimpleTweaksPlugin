@@ -84,57 +84,10 @@ namespace SimpleTweaksPlugin {
 
         public int UpdateFrom = -1;
 
-        public SimpleTweaksPlugin(
-            DalamudPluginInterface pluginInterface,
-            BuddyList buddies,
-            ChatGui chat,
-            ChatHandlers chatHandlers,
-            ClientState clientState,
-            CommandManager commands,
-            Condition condition,
-            DataManager data,
-            FateTable fates,
-            FlyTextGui flyText,
-            Framework framework,
-            GameGui gameGui,
-            GameNetwork gameNetwork,
-            JobGauges gauges,
-            KeyState keyState,
-            LibcFunction libcFunction,
-            ObjectTable objects,
-            PartyFinderGui pfGui,
-            PartyList party,
-            SeStringManager seStringManager,
-            SigScanner sigScanner,
-            TargetManager targets,
-            ToastGui toasts
-            ) {
+        public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface) {
             FFXIVClientStructs.Resolver.Initialize();
 
-            External.PluginInterface = pluginInterface;
-            External.Buddies = buddies;
-            External.Chat = chat;
-            External.ChatHandlers = chatHandlers;
-            External.ClientState = clientState;
-            External.Commands = commands;
-            External.Condition = condition;
-            External.Data = data;
-            External.Fates = fates;
-            External.FlyText = flyText;
-            External.Framework = framework;
-            External.GameGui = gameGui;
-            External.GameNetwork = gameNetwork;
-            External.Gauges = gauges;
-            External.KeyState = keyState;
-            External.LibcFunction = libcFunction;
-            External.Objects = objects;
-            External.PartyFinderGui = pfGui;
-            External.Party = party;
-            External.SeStringManager = seStringManager;
-            External.SigScanner = sigScanner;
-            External.Targets = targets;
-            External.Toasts = toasts;
-
+            pluginInterface.Create<External>();
 
             Plugin = this;
 #if DEBUG
