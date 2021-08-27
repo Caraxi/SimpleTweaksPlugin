@@ -2,6 +2,7 @@
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -55,6 +56,26 @@ namespace SimpleTweaksPlugin {
         public static ClientInterface Client;
 
         public static SimpleTweaksPlugin Plugin { get; private set; }
+
+        private CultureInfo setCulture = null;
+
+        internal CultureInfo Culture {
+            get {
+                if (setCulture != null) return setCulture;
+                if (string.IsNullOrEmpty(PluginConfig.CustomCulture)) return setCulture = CultureInfo.CurrentUICulture;
+
+                try {
+                    var culture = CultureInfo.GetCultureInfo(PluginConfig.CustomCulture);
+                    return setCulture = culture;
+                } catch {
+                    //
+                }
+
+                return setCulture = CultureInfo.CurrentUICulture;
+            }
+            set => setCulture = value;
+        }
+
 
         public void Dispose() {
             SimpleLog.Debug("Dispose");

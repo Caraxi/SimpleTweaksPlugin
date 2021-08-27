@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -28,6 +29,8 @@ namespace SimpleTweaksPlugin.TweakSystem {
         public virtual bool CanLoad => true;
 
         public virtual bool UseAutoConfig => false;
+
+        protected CultureInfo Culture => Plugin.Culture;
 
         public void InterfaceSetup(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface, SimpleTweaksPluginConfig config) {
             this.PluginInterface = pluginInterface;
