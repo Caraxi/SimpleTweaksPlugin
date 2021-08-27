@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Numerics;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects.Types;
@@ -33,26 +34,26 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public Vector4 FocusCustomColor = new Vector4(1);
             public byte FocusFontSize = 14;
         }
-        
+
         public enum DisplayFormat {
-            [Description("Full Number")] 
+            [Description("Full Number")]
             FullNumber,
-            [Description("Full Number, with Separators (5,555,555)")]
+            [Description("Full Number, with Separators")]
             FullNumberSeparators,
-            [Description("Short Number (5K, 5M)")]
+            [Description("Short Number")]
             ZeroDecimalPrecision,
-            [Description("1 Decimal (5.5K, 5.5M)")]
+            [Description("1 Decimal")]
             OneDecimalPrecision,
-            [Description("2 Decimal (5.55K, 5.55M)")]
+            [Description("2 Decimal")]
             TwoDecimalPrecision,
         }
-        
+
         public Configs Config { get; private set; }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-            if (ImGui.BeginCombo("Display Format###targetHpFormat", Config.DisplayFormat.GetDescription())) {
+            if (ImGui.BeginCombo("Display Format###targetHpFormat", $"{Config.DisplayFormat.GetDescription()} ({FormatNumber(5555555, Config.DisplayFormat)})")) {
                 foreach (var v in (DisplayFormat[])Enum.GetValues(typeof(DisplayFormat))) {
-                    if (!ImGui.Selectable($"{v.GetDescription()}##targetHpFormatSelect", Config.DisplayFormat == v)) continue;
+                    if (!ImGui.Selectable($"{v.GetDescription()} ({FormatNumber(5555555, v)})##targetHpFormatSelect", Config.DisplayFormat == v)) continue;
                     Config.DisplayFormat = v;
                     hasChanged = true;
                 }
@@ -222,19 +223,20 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
         }
 
-        private string FormatNumber(uint num) {
-            if (Config.DisplayFormat == DisplayFormat.FullNumber) return $"{num}";
-            if (Config.DisplayFormat == DisplayFormat.FullNumberSeparators) return $"{num:N0}";
+        private string FormatNumber(uint num, DisplayFormat? displayFormat = null) {
+            displayFormat ??= Config.DisplayFormat;
+            if (displayFormat == DisplayFormat.FullNumber) return num.ToString(Culture);
+            if (displayFormat == DisplayFormat.FullNumberSeparators) return num.ToString("N0", Culture);
 
-            var fStr = Config.DisplayFormat switch {
+            var fStr = displayFormat switch {
                 DisplayFormat.OneDecimalPrecision => "F1",
                 DisplayFormat.TwoDecimalPrecision => "F2",
                 _ => "F0"
             };
 
             return num switch {
-                >= 1000000 => $"{(num / 1000000f).ToString(fStr)}M",
-                >= 1000 => $"{(num / 1000f).ToString(fStr)}K",
+                >= 1000000 => $"{(num / 1000000f).ToString(fStr, Culture)}M",
+                >= 1000 => $"{(num / 1000f).ToString(fStr, Culture)}K",
                 _ => $"{num}"
             };
         }
