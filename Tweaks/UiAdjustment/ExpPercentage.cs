@@ -59,7 +59,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     var expC = float.Parse(values.Groups[1].Value);
                     var expR = float.Parse(values.Groups[2].Value);
                     var percent = (expC / expR) * 100;
-                    SimpleLog.Log($"{expC} / {expR} = {percent}");
                     str.Payloads.Add(new TextPayload($" ({percent.ToString($"F{Config.Decimals}", Culture)}%)"));
                     var textNode = addonExp->GetTextNodeById(4);
                     if (textNode == null) goto ReturnOriginal;
