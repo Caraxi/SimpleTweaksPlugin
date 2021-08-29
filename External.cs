@@ -25,25 +25,16 @@ namespace SimpleTweaksPlugin {
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
     public class External {
         [PluginService] public static DalamudPluginInterface PluginInterface { get; private set; }
-        [PluginService] public static BuddyList Buddies { get; private set; }
         [PluginService] public static ChatGui Chat { get; private set; }
-        [PluginService] public static ChatHandlers ChatHandlers { get; private set; }
         [PluginService] public static ClientState ClientState { get; private set; }
         [PluginService] public static CommandManager Commands { get; private set; }
         [PluginService] public static Condition Condition { get; private set; }
         [PluginService] public static DataManager Data { get; private set; }
-        [PluginService] public static FateTable Fates { get; private set; }
-        [PluginService] public static FlyTextGui FlyText { get; private set; }
         [PluginService] public static Framework Framework { get; private set; }
         [PluginService] public static GameGui GameGui { get; private set; }
-        [PluginService] public static GameNetwork GameNetwork { get; private set; }
-        [PluginService] public static JobGauges Gauges { get; private set; }
         [PluginService] public static KeyState KeyState { get; private set; }
         [PluginService] public static LibcFunction LibcFunction { get; private set; }
         [PluginService] public static ObjectTable Objects { get; private set; }
-        [PluginService] public static PartyFinderGui PartyFinderGui { get; private set; }
-        [PluginService] public static PartyList Party { get; private set; }
-        [PluginService] public static SeStringManager SeStringManager { get; private set; }
         [PluginService] public static SigScanner SigScanner { get; private set; }
         [PluginService] public static TargetManager Targets { get; private set; }
         [PluginService] public static ToastGui Toasts { get; private set; }
