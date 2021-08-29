@@ -71,43 +71,57 @@ namespace SimpleTweaksPlugin.Debugging {
         private RawDX11Scene.BuildUIDelegate originalHandler;
 
         private bool SetExclusiveDraw(Action action) {
-            return false;
-            /*
             // Possibly the most cursed shit I've ever done.
             if (originalHandler != null) return false;
-            var d = (Dalamud.Dalamud) typeof(DalamudPluginInterface).GetField("dalamud", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(Plugin.PluginInterface);
-            if (d == null) return false;
-            var im = typeof(Dalamud.Dalamud).GetProperty("InterfaceManager", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(d);
-            if (im == null) return false;
-            var ef = im.GetType().GetField("OnDraw", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (ef == null) return false;
-            var handler = (RawDX11Scene.BuildUIDelegate) ef.GetValue(im);
-            if (handler == null) return false;
-            originalHandler = handler;
-            ef.SetValue(im, new RawDX11Scene.BuildUIDelegate(action));
-            return true;
-            */
+            try {
+                var dalamudAssembly = External.PluginInterface.GetType().Assembly;
+                var service1T = dalamudAssembly.GetType("Dalamud.Service`1");
+                var interfaceManagerT = dalamudAssembly.GetType("Dalamud.Interface.Internal.InterfaceManager");
+                if (service1T == null) return false;
+                if (interfaceManagerT == null) return false;
+                var serviceInterfaceManager = service1T.MakeGenericType(interfaceManagerT);
+                var getter = serviceInterfaceManager.GetMethod("Get", BindingFlags.Static | BindingFlags.Public);
+                if (getter == null) return false;
+                var interfaceManager = getter.Invoke(null, null);
+                if (interfaceManager == null) return false;
+                var ef = interfaceManagerT.GetField("Draw", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (ef == null) return false;
+                var handler = (RawDX11Scene.BuildUIDelegate) ef.GetValue(interfaceManager);
+                if (handler == null) return false;
+                originalHandler = handler;
+                ef.SetValue(interfaceManager, new RawDX11Scene.BuildUIDelegate(action));
+                return true;
+            } catch (Exception ex) {
+                SimpleLog.Fatal(ex);
+                SimpleLog.Fatal("This could be messy...");
+            }
+            return false;
         }
         
         private bool FreeExclusiveDraw() {
-            return false;
-            /*
-            // Undoing the cursed shit requires a little more of the same cursed shit
             if (originalHandler == null) return true;
-            SimpleLog.Log($"Free Exclusive Draw");
-            var dalamud = (Dalamud.Dalamud) Plugin.PluginInterface.GetType().GetField("dalamud", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(Plugin.PluginInterface);
-            if (dalamud == null) return false;
-            var interfaceManager = typeof(Dalamud.Dalamud).GetProperty("InterfaceManager", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(dalamud);
-            if (interfaceManager == null) return false;
+            try {
+                var dalamudAssembly = External.PluginInterface.GetType().Assembly;
+                var service1T = dalamudAssembly.GetType("Dalamud.Service`1");
+                var interfaceManagerT = dalamudAssembly.GetType("Dalamud.Interface.Internal.InterfaceManager");
+                if (service1T == null) return false;
+                if (interfaceManagerT == null) return false;
+                var serviceInterfaceManager = service1T.MakeGenericType(interfaceManagerT);
+                var getter = serviceInterfaceManager.GetMethod("Get", BindingFlags.Static | BindingFlags.Public);
+                if (getter == null) return false;
+                var interfaceManager = getter.Invoke(null, null);
+                if (interfaceManager == null) return false;
+                var ef = interfaceManagerT.GetField("Draw", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (ef == null) return false;
+                ef.SetValue(interfaceManager, originalHandler);
+                originalHandler = null;
+                return true;
+            } catch (Exception ex) {
+                SimpleLog.Fatal(ex);
+                SimpleLog.Fatal("This could be messy...");
+            }
 
-            var eventField = interfaceManager.GetType().GetField("OnDraw", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (eventField == null) return false;
-
-            eventField.SetValue(interfaceManager, originalHandler);
-            originalHandler = null;
-
-            return true;
-            */
+            return false;
         }
         
         public override void Draw() {
