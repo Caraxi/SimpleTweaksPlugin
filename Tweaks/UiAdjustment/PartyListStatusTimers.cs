@@ -146,6 +146,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var partySlot = partyList->PartyMember[pi];
                 for (var si = 0; si < 10; si++) {
                     var statusSlot = partySlot.StatusIcon[si];
+                    if (statusSlot == null) continue;
 
                     AtkTextNode* timerNode = null;
                     AtkResNode* lastNode = null;
