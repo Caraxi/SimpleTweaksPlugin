@@ -515,7 +515,7 @@ namespace SimpleTweaksPlugin.Debugging {
                             for (var i = 0L; i < textNode->NodeText.BufUsed; i++) {
                                 seStringBytes[i] = textNode->NodeText.StringPtr[i];
                             }
-                            var seString = External.SeStringManager.Parse(seStringBytes);
+                            var seString = SeString.Parse(seStringBytes);
                             for (var i = 0; i < seString.Payloads.Count; i++) {
                                 var payload = seString.Payloads[i];
                                 ImGui.Text($"[{i}]");

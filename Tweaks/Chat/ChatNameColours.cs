@@ -272,7 +272,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
                 if (chatTypes.Contains(xivChatType)) {
                     // Need to hook it manually to handle changing the name until API4
                     var stdSender = StdString.ReadFromPointer(senderName);
-                    var parsedSender = External.SeStringManager.Parse(stdSender.RawData);
+                    var parsedSender = SeString.Parse(stdSender.RawData);
 
                     if (Parse(ref parsedSender)) {
                         stdSender.RawData = parsedSender.Encode();

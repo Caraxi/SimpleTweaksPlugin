@@ -131,7 +131,7 @@ namespace SimpleTweaksPlugin.Helper {
             }
             var bytes = new byte[offset];
             Marshal.Copy(new IntPtr(ptr), bytes, 0, offset);
-            return External.SeStringManager.Parse(bytes);
+            return SeString.Parse(bytes);
         }
 
         public void WriteSeString(byte* dst, SeString s) {
@@ -146,7 +146,7 @@ namespace SimpleTweaksPlugin.Helper {
             var len = (int) (xivString.BufUsed > int.MaxValue ? int.MaxValue : xivString.BufUsed);
             var bytes = new byte[len];
             Marshal.Copy(new IntPtr(xivString.StringPtr), bytes, 0, len);
-            return External.SeStringManager.Parse(bytes);
+            return SeString.Parse(bytes);
         }
 
         public void WriteSeString(Utf8String xivString, SeString s) {
