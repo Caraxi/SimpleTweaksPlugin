@@ -590,27 +590,75 @@ namespace SimpleTweaksPlugin.Debugging {
                         break;
                     case NodeType.NineGrid:
                     case NodeType.Image:
-                        var imageNode = (AtkImageNode*)node;
-                        if (imageNode->PartsList != null) {
-                            if (imageNode->PartId > imageNode->PartsList->PartCount) {
-                                ImGui.Text("part id > part count?");
+                        var iNode = (AtkImageNode*)node;
+                        if (iNode->PartsList != null) {
+                            if (iNode->PartId > iNode->PartsList->PartCount) {
+                                ImGui.Text($"part id({iNode->PartId}) > part count({iNode->PartsList->PartCount})?");
                             } else {
-                                var textureInfo = imageNode->PartsList->Parts[imageNode->PartId].UldAsset;
+                                var part = iNode->PartsList->Parts[iNode->PartId];
+                                var textureInfo = part.UldAsset;
                                 var texType = textureInfo->AtkTexture.TextureType;
-                                ImGui.Text($"texture type: {texType} part_id={imageNode->PartId} part_id_count={imageNode->PartsList->PartCount}");
+                                ImGui.Text($"texture type: {texType} part_id={iNode->PartId} part_id_count={iNode->PartsList->PartCount}");
                                 if (texType == TextureType.Resource) {
                                     var texFileNamePtr = textureInfo->AtkTexture.Resource->TexFileResourceHandle->ResourceHandle.FileName;
                                     var texString = Marshal.PtrToStringAnsi(new IntPtr(texFileNamePtr.BufferPtr));
                                     ImGui.Text($"texture path: {texString}");
                                     var kernelTexture = textureInfo->AtkTexture.Resource->KernelTextureObject;
-                                    
+
                                     if (ImGui.TreeNode($"Texture##{(ulong) kernelTexture->D3D11ShaderResourceView:X}")) {
+                                        var textureSize = new Vector2(kernelTexture->Width, kernelTexture->Height);
                                         ImGui.Image(new IntPtr(kernelTexture->D3D11ShaderResourceView), new Vector2(kernelTexture->Width, kernelTexture->Height));
+
+                                        if (ImGui.TreeNode($"Parts##{(ulong)kernelTexture->D3D11ShaderResourceView:X}")) {
+
+                                            ImGui.BeginTable($"partsTable##{(ulong)kernelTexture->D3D11ShaderResourceView:X}", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg);
+                                            ImGui.TableSetupColumn("Part ID", ImGuiTableColumnFlags.WidthFixed, 80);
+                                            ImGui.TableSetupColumn("Switch", ImGuiTableColumnFlags.WidthFixed, 45);
+                                            ImGui.TableSetupColumn("Part Texture");
+                                            ImGui.TableHeadersRow();
+
+                                            for (ushort i = 0; i < iNode->PartsList->PartCount; i++) {
+                                                ImGui.TableNextColumn();
+
+                                                if (i == iNode->PartId) ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0, 1, 0, 1));
+                                                ImGui.Text($"#{i.ToString().PadLeft(iNode->PartsList->PartCount.ToString().Length, '0')}");
+                                                if (i == iNode->PartId) ImGui.PopStyleColor(1);
+                                                ImGui.TableNextColumn();
+
+                                                if (ImGui.Button($"Switch##{(ulong)kernelTexture->D3D11ShaderResourceView:X}p{i}", new Vector2(-1, 23))) {
+                                                    iNode->PartId = i;
+                                                }
+
+                                                ImGui.TableNextColumn();
+
+
+
+
+                                                var tPart = iNode->PartsList->Parts[i];
+
+                                                ImGui.Text($"[U: {tPart.U}  V: {tPart.V}  W: {tPart.Width}  H: {tPart.Height}]");
+
+
+
+
+                                                ImGui.Image(new IntPtr(kernelTexture->D3D11ShaderResourceView), new Vector2(tPart.Width, tPart.Height), new Vector2(tPart.U , tPart.V) / textureSize, new Vector2(tPart.U + tPart.Width, tPart.V + tPart.Height) / textureSize);
+
+
+
+                                            }
+                                            ImGui.EndTable();
+
+
+
+                                            ImGui.TreePop();
+                                        }
+
+
                                         ImGui.TreePop();
                                     }
                                 } else if (texType == TextureType.KernelTexture) {
                                     if (ImGui.TreeNode($"Texture##{(ulong) textureInfo->AtkTexture.KernelTexture->D3D11ShaderResourceView:X}")) {
-                                        ImGui.Image(new IntPtr(textureInfo->AtkTexture.KernelTexture->D3D11ShaderResourceView), new Vector2(textureInfo->AtkTexture.KernelTexture->Width, textureInfo->AtkTexture.KernelTexture->Height)); 
+                                        ImGui.Image(new IntPtr(textureInfo->AtkTexture.KernelTexture->D3D11ShaderResourceView), new Vector2(textureInfo->AtkTexture.KernelTexture->Width, textureInfo->AtkTexture.KernelTexture->Height));
                                         ImGui.TreePop();
                                     }
                                 }
@@ -627,7 +675,7 @@ namespace SimpleTweaksPlugin.Debugging {
                         ImGui.InputInt($"###inputIconVersion__{(ulong)node:X}", ref loadImageVersion);
                         ImGui.SameLine();
                         if (ImGui.SmallButton("Load Icon")) {
-                            imageNode->LoadIconTexture(loadImageId, loadImageVersion);
+                            iNode->LoadIconTexture(loadImageId, loadImageVersion);
                         }
                         
                         
