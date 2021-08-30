@@ -588,6 +588,7 @@ namespace SimpleTweaksPlugin.Debugging {
                         var counterNode = (AtkCounterNode*)node;
                         ImGui.Text($"text: {Marshal.PtrToStringAnsi(new IntPtr(counterNode->NodeText.StringPtr))}");
                         break;
+                    case NodeType.NineGrid:
                     case NodeType.Image:
                         var imageNode = (AtkImageNode*)node;
                         if (imageNode->PartsList != null) {
@@ -618,6 +619,7 @@ namespace SimpleTweaksPlugin.Debugging {
                             ImGui.Text("no texture loaded");
                         }
 
+                        if (node->Type != NodeType.Image) break;
                         ImGui.SetNextItemWidth(150);
                         ImGui.InputInt($"###inputIconId__{(ulong)node:X}", ref loadImageId);
                         ImGui.SameLine();
