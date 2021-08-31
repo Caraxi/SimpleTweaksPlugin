@@ -28,6 +28,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public HideAndOffsetConfig MpValue = new() { OffsetX = 24, OffsetY = 7 };
 
             public bool AutoHideMp;
+
+            public Vector4 HpColor = new Vector4(20 / ColorMultiplier, 75 / ColorMultiplier, 0 / ColorMultiplier, 1);
+            public Vector4 MpColor = new Vector4(120 / ColorMultiplier, 0 / ColorMultiplier, 60 / ColorMultiplier, 1);
+            public Vector4 GpColor = new Vector4(0 / ColorMultiplier, 70 / ColorMultiplier, 100 / ColorMultiplier, 1);
+            public Vector4 CpColor = new Vector4(70 / ColorMultiplier, 10 / ColorMultiplier, 100 / ColorMultiplier, 1);
         }
 
         public class HideAndOffsetConfig {
@@ -106,17 +111,24 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             hasChanged |= ImGui.Checkbox("Hide MP Bar on jobs that don't use MP", ref Config.AutoHideMp);
 
+            hasChanged |= ImGui.ColorEdit4("HP Bar Color", ref Config.HpColor);
+            hasChanged |= ImGui.ColorEdit4("MP Bar Color", ref Config.MpColor);
+            hasChanged |= ImGui.ColorEdit4("GP Bar Color", ref Config.GpColor);
+            hasChanged |= ImGui.ColorEdit4("CP Bar Color", ref Config.CpColor);
+
             if (hasChanged) UpdateParameterBar(true);
         };
 
         private const byte Byte00 = 0x00;
         private const byte ByteFF = 0xFF;
 
+        private const float ColorMultiplier = 120f;
+
         private readonly uint[] autoHideMpClassJobs = {
             1, 2, 3, 4, 5, 20, 21, 22, 23, 29, 30, 31, 34, 37, 38
         };
 
-        private void UpdateParameter(AtkComponentNode* node, HideAndOffsetConfig barConfig, HideAndOffsetConfig valueConfig, bool hideTitle, bool autoHideMp = false) {
+        private void UpdateParameter(AtkComponentNode* node, HideAndOffsetConfig barConfig, HideAndOffsetConfig valueConfig, Vector4 barColor, bool hideTitle, bool autoHideMp = false) {
             var valueNode = node->Component->UldManager.SearchNodeById(3);
             var titleNode = node->Component->UldManager.SearchNodeById(2);
             var textureNode = node->Component->UldManager.SearchNodeById(8);
@@ -138,6 +150,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             gridNode3->Color.A = autoHide || barConfig.Hide ? Byte00 : ByteFF;
             textureNode->Color.A = autoHide || barConfig.Hide ? Byte00 : ByteFF;
             textureNode2->Color.A = autoHide || barConfig.Hide ? Byte00 : ByteFF;
+
+            gridNode3->AddRed = (ushort)(barColor.X * ColorMultiplier);
+            gridNode3->AddGreen = (ushort)(barColor.Y * ColorMultiplier);
+            gridNode3->AddBlue = (ushort)(barColor.Z * ColorMultiplier);
         }
 
         private void UpdateParameterBar(bool reset = false) {
@@ -152,12 +168,18 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
 
             // MP
+            var mpColor = External.ClientState?.LocalPlayer?.ClassJob.GameData.ClassJobCategory.Row switch {
+                32 => reset ? DefaultConfig.GpColor : Config.GpColor,
+                33 => reset ? DefaultConfig.CpColor : Config.CpColor,
+                _ => reset ? DefaultConfig.MpColor : Config.MpColor
+            };
+
             var mpNode = (AtkComponentNode*) parameterWidgetUnitBase->UldManager.SearchNodeById(4);
-            if (mpNode != null) UpdateParameter(mpNode, reset ? DefaultConfig.MpBar : Config.MpBar, reset ? DefaultConfig.MpValue : Config.MpValue, reset ? DefaultConfig.HideHpTitle : Config.HideMpTitle, !reset && Config.AutoHideMp);
+            if (mpNode != null) UpdateParameter(mpNode, reset ? DefaultConfig.MpBar : Config.MpBar, reset ? DefaultConfig.MpValue : Config.MpValue, mpColor, reset ? DefaultConfig.HideHpTitle : Config.HideMpTitle, !reset && Config.AutoHideMp);
 
             // HP
             var hpNode = (AtkComponentNode*) parameterWidgetUnitBase->UldManager.SearchNodeById(3);
-            if (hpNode != null) UpdateParameter(hpNode, reset ? DefaultConfig.HpBar : Config.HpBar, reset ? DefaultConfig.HpValue : Config.HpValue, reset ? DefaultConfig.HideHpTitle : Config.HideHpTitle);
+            if (hpNode != null) UpdateParameter(hpNode, reset ? DefaultConfig.HpBar : Config.HpBar, reset ? DefaultConfig.HpValue : Config.HpValue, reset ? DefaultConfig.HpColor : Config.HpColor, reset ? DefaultConfig.HideHpTitle : Config.HideHpTitle);
         }
     }
 }
