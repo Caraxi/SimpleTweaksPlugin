@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Dalamud.Game;
 using Dalamud.Interface;
@@ -25,6 +26,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool HideMpTitle;
             public HideAndOffsetConfig MpBar = new() { OffsetX = 256, OffsetY = 12 };
             public HideAndOffsetConfig MpValue = new() { OffsetX = 24, OffsetY = 7 };
+
+            public bool AutoHideMp;
         }
 
         public class HideAndOffsetConfig {
@@ -101,30 +104,40 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             hasChanged |= ImGui.Checkbox("Hide 'MP' Text", ref Config.HideMpTitle);
             hasChanged |= VisibilityAndOffsetEditor("Hide MP Value", ref Config.MpValue, DefaultConfig.MpValue);
 
+            hasChanged |= ImGui.Checkbox("Hide MP Bar on jobs that don't use MP", ref Config.AutoHideMp);
+
             if (hasChanged) UpdateParameterBar(true);
         };
 
         private const byte Byte00 = 0x00;
         private const byte ByteFF = 0xFF;
 
-        private void UpdateParameter(AtkComponentNode* node, HideAndOffsetConfig barConfig, HideAndOffsetConfig valueConfig, bool hideTitle) {
+        private readonly uint[] autoHideMpClassJobs = {
+            1, 2, 3, 4, 5, 20, 21, 22, 23, 29, 30, 31, 34, 37, 38
+        };
+
+        private void UpdateParameter(AtkComponentNode* node, HideAndOffsetConfig barConfig, HideAndOffsetConfig valueConfig, bool hideTitle, bool autoHideMp = false) {
             var valueNode = node->Component->UldManager.SearchNodeById(3);
             var titleNode = node->Component->UldManager.SearchNodeById(2);
             var textureNode = node->Component->UldManager.SearchNodeById(8);
             var textureNode2 = node->Component->UldManager.SearchNodeById(4);
             var gridNode = node->Component->UldManager.SearchNodeById(7);
             var grindNode2 = node->Component->UldManager.SearchNodeById(6);
-            var grindNode3= node->Component->UldManager.SearchNodeById(5);
+            var gridNode3= node->Component->UldManager.SearchNodeById(5);
 
             node->AtkResNode.SetPositionFloat(barConfig.OffsetX, barConfig.OffsetY);
             valueNode->SetPositionFloat(valueConfig.OffsetX, valueConfig.OffsetY);
-            valueNode->Color.A = valueConfig.Hide ? Byte00 : ByteFF;
-            titleNode->Color.A = hideTitle ? Byte00 : ByteFF;
-            gridNode->Color.A = barConfig.Hide ? Byte00 : ByteFF;
-            grindNode2->Color.A = barConfig.Hide ? Byte00 : ByteFF;
-            grindNode3->Color.A = barConfig.Hide ? Byte00 : ByteFF;
-            textureNode->Color.A = barConfig.Hide ? Byte00 : ByteFF;
-            textureNode2->Color.A = barConfig.Hide ? Byte00 : ByteFF;
+
+            var cjId = External.ClientState?.LocalPlayer?.ClassJob.Id;
+            var autoHide = autoHideMp && cjId != null && autoHideMpClassJobs.Contains(cjId.Value);
+
+            valueNode->Color.A = autoHide || valueConfig.Hide ? Byte00 : ByteFF;
+            titleNode->Color.A = autoHide || hideTitle ? Byte00 : ByteFF;
+            gridNode->Color.A = autoHide || barConfig.Hide ? Byte00 : ByteFF;
+            grindNode2->Color.A = autoHide || barConfig.Hide ? Byte00 : ByteFF;
+            gridNode3->Color.A = autoHide || barConfig.Hide ? Byte00 : ByteFF;
+            textureNode->Color.A = autoHide || barConfig.Hide ? Byte00 : ByteFF;
+            textureNode2->Color.A = autoHide || barConfig.Hide ? Byte00 : ByteFF;
         }
 
         private void UpdateParameterBar(bool reset = false) {
@@ -140,7 +153,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             // MP
             var mpNode = (AtkComponentNode*) parameterWidgetUnitBase->UldManager.SearchNodeById(4);
-            if (mpNode != null) UpdateParameter(mpNode, reset ? DefaultConfig.MpBar : Config.MpBar, reset ? DefaultConfig.MpValue : Config.MpValue, reset ? DefaultConfig.HideHpTitle : Config.HideMpTitle);
+            if (mpNode != null) UpdateParameter(mpNode, reset ? DefaultConfig.MpBar : Config.MpBar, reset ? DefaultConfig.MpValue : Config.MpValue, reset ? DefaultConfig.HideHpTitle : Config.HideMpTitle, !reset && Config.AutoHideMp);
 
             // HP
             var hpNode = (AtkComponentNode*) parameterWidgetUnitBase->UldManager.SearchNodeById(3);
