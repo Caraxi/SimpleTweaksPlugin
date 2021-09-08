@@ -1,18 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Numerics;
 using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
-using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using SimpleTweaksPlugin.TweakSystem;
-
-namespace SimpleTweaksPlugin {
-    public partial class UiAdjustmentsConfig {
-        public bool ShouldSerializeMinimapAdjustments() => MinimapAdjustments != null;
-        public MinimapAdjustments.Configs MinimapAdjustments = null;
-    }
-}
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
@@ -29,12 +22,22 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool HideWeather;
 
             public float WeatherPosition = 0;
+
+            public Vector2 CoordinatesPosition = new();
         }
 
         public Configs Config { get; private set; }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             hasChanged |= ImGui.Checkbox("Hide Coordinates", ref Config.HideCoordinates);
+            if (!Config.HideCoordinates) {
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(300);
+                hasChanged |= ImGui.DragFloat2("Position##CoordinatePosition", ref Config.CoordinatesPosition, 0.1f);
+                if (ImGui.IsItemHovered()) {
+                    ImGui.SetTooltip("CTRL+Click to set exact value.");
+                }
+            }
             hasChanged |= ImGui.Checkbox("Hide Compass Lock", ref Config.HideCompassLock);
             hasChanged |= ImGui.Checkbox("Hide Compass Directions", ref Config.HideCompassDirections);
             hasChanged |= ImGui.Checkbox("Hide Zoom Buttons", ref Config.HideZoom);
@@ -59,7 +62,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Description => "Allows hiding elements of the minimap display.";
 
         public override void Enable() {
-            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.MinimapAdjustments ?? new Configs();
+            Config = LoadConfig<Configs>() ?? new Configs();
             External.ClientState.Login += OnLogin;
             External.ClientState.TerritoryChanged += OnTerritoryChanged;
             base.Enable();
@@ -74,7 +77,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Disable() {
             SaveConfig(Config);
-            PluginConfig.UiAdjustments.MinimapAdjustments = null;
             External.Framework.Update -= WaitForUpdate;
             External.ClientState.Login -= OnLogin;
             base.Disable();
@@ -142,6 +144,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             
             var coordinateDisplay = unitBase->UldManager.NodeList[13];
             if (Enabled && Config.HideCoordinates) UiHelper.Hide(coordinateDisplay); else UiHelper.Show(coordinateDisplay);
+            if (Enabled) {
+                coordinateDisplay->SetPositionFloat(44 + Config.CoordinatesPosition.X, 194 + Config.CoordinatesPosition.Y);
+            } else {
+                coordinateDisplay->SetPositionFloat(44, 194);
+            }
             
             var compassLockButton = unitBase->UldManager.NodeList[16];
             if (Enabled && Config.HideCompassLock) UiHelper.Hide(compassLockButton); else UiHelper.Show(compassLockButton);
