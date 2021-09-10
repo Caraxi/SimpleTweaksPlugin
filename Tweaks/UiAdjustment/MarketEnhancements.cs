@@ -47,7 +47,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             replacementUpdateResultDelegate = SetItemDetour;
             updateResultPointer = (void*) Common.Scanner.ScanText("48 89 74 24 ?? 57 48 83 EC 30 8B C2 4D 8B D1");
             updateResult = Marshal.GetDelegateForFunctionPointer<UpdateResultDelegate>(new IntPtr(updateResultPointer));
-            addonSetupHook = Common.Hook("E8 ?? ?? ?? ?? 41 B1 1E", new AddonSetupDelegate(SetupDetour));
+            addonSetupHook ??= Common.Hook("E8 ?? ?? ?? ?? 41 B1 1E", new AddonSetupDelegate(SetupDetour));
+            addonSetupHook?.Enable();
             UpdateItemList(Common.GetUnitBase("ItemSearchResult"));
             base.Enable();
         }

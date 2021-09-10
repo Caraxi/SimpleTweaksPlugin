@@ -178,11 +178,10 @@ namespace SimpleTweaksPlugin.Helper {
             return Marshal.PtrToStructure<T>(new IntPtr(*optionBase + 0xAAE0 + (16 * (uint)opt)));
         }
 
-        public static HookWrapper<T> Hook<T>(string signature, T detour, bool enable = true, int addressOffset = 0) where T : Delegate {
-            var addr = Common.Scanner.ScanText(signature);
+        public static HookWrapper<T> Hook<T>(string signature, T detour, int addressOffset = 0) where T : Delegate {
+            var addr = Scanner.ScanText(signature);
             var h = new Hook<T>(addr + addressOffset, detour);
             var wh = new HookWrapper<T>(h);
-            if (enable) wh.Enable();
             HookList.Add(wh);
             return wh;
         }

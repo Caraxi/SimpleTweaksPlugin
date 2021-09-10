@@ -105,8 +105,19 @@ namespace SimpleTweaksPlugin {
 
         public int UpdateFrom = -1;
 
-        public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface) {
-            FFXIVClientStructs.Resolver.Initialize();
+        public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface, SigScanner sigScanner) {
+            var sType = typeof(SigScanner);
+            var copyPtr = (IntPtr?) sType.GetField("moduleCopyPtr", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(sigScanner);
+            if (copyPtr == null) {
+                SimpleLog.Error("Initalizing FFXIVClientStructs without Copy");
+                FFXIVClientStructs.Resolver.Initialize();
+            } else {
+                SimpleLog.Error("Initalizing FFXIVClientStructs with Copy");
+                FFXIVClientStructs.Resolver.Initialize(copyPtr.Value);
+            }
+
+
+
 
             pluginInterface.Create<External>();
 

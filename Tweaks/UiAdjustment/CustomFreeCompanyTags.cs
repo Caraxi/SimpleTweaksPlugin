@@ -40,7 +40,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override void Enable() {
             if (Enabled) return;
             config = LoadConfig<Configs>() ?? new Configs();
-            updateNameplateHook ??= Common.Hook<UpdateNameplateDelegate>("40 53 55 56 41 56 48 81 EC ?? ?? ?? ?? 48 8B 84 24", UpdateNameplatesDetour, false);
+            updateNameplateHook ??= Common.Hook<UpdateNameplateDelegate>("40 53 55 56 41 56 48 81 EC ?? ?? ?? ?? 48 8B 84 24", UpdateNameplatesDetour);
             updateNameplateHook?.Enable();
             base.Enable();
         }

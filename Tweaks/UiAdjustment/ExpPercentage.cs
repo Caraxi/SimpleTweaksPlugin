@@ -33,7 +33,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 _ => new Regex(@"EXP(\d+)/(\d+)")
             };
 
-            addonExpOnUpdateHook ??= Common.Hook<AddonExpOnUpdateDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 83 EC 30 48 8B 72 18", AddonExpOnUpdateDetour, false);
+            addonExpOnUpdateHook ??= Common.Hook<AddonExpOnUpdateDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 83 EC 30 48 8B 72 18", AddonExpOnUpdateDetour);
             addonExpOnUpdateHook?.Enable();
 
             Config = LoadConfig<Configs>() ?? new Configs();

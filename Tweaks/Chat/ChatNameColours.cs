@@ -207,7 +207,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
-            printChatHook ??= Common.Hook<PrintMessage>("E8 ?? ?? ?? ?? 4C 8B BC 24 ?? ?? ?? ?? 4D 85 F6", PrintMessageDetour, false);
+            printChatHook ??= Common.Hook<PrintMessage>("E8 ?? ?? ?? ?? 4C 8B BC 24 ?? ?? ?? ?? 4D 85 F6", PrintMessageDetour);
             printChatHook?.Enable();
             External.Chat.ChatMessage += HandleChatMessage;
             base.Enable();

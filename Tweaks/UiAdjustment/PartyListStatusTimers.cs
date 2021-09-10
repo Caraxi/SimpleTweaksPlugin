@@ -93,10 +93,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public override void Enable() {
-            updatePartyListStatusEffectsHook ??= Common.Hook<UpdatePartyListStatusEffects>("E8 ?? ?? ?? ?? 0F BF 8F ?? ?? ?? ?? 4D 8B 07", UpdatePartyListStatusEffectsDetour, false);
+            updatePartyListStatusEffectsHook ??= Common.Hook<UpdatePartyListStatusEffects>("E8 ?? ?? ?? ?? 0F BF 8F ?? ?? ?? ?? 4D 8B 07", UpdatePartyListStatusEffectsDetour);
             updatePartyListStatusEffectsHook?.Enable();
 
-            updateSlotHook ??= Common.Hook<UpdateSlotStatusEffects>("E8 ?? ?? ?? ?? 4D 8B CE 44 89 7C 24", UpdateSlotDetour, false);
+            updateSlotHook ??= Common.Hook<UpdateSlotStatusEffects>("E8 ?? ?? ?? ?? 4D 8B CE 44 89 7C 24", UpdateSlotDetour);
             updateSlotHook?.Enable();
             External.Framework.Update += FrameworkUpdate;
             base.Enable();

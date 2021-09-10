@@ -298,7 +298,20 @@ namespace SimpleTweaksPlugin.Debugging {
             }
             
         }
-        
+
+        public static unsafe void PrintOutObject<T>(T* ptr, bool autoExpand = false, string headerText = null) where T : unmanaged {
+            PrintOutObject(ptr, new List<string>(), autoExpand, headerText);
+        }
+
+        public static unsafe void PrintOutObject<T>(T* ptr, List<string> path, bool autoExpand = false, string headerText = null) where T : unmanaged {
+            PrintOutObject(*ptr, (ulong) ptr, path, autoExpand, headerText);
+        }
+
+        public static unsafe void PrintOutObject(object obj, ulong addr, bool autoExpand = false, string headerText = null) {
+            PrintOutObject(obj, addr, new List<string>(), autoExpand, headerText);
+        }
+
+
         public static unsafe void PrintOutObject(object obj, ulong addr, List<string> path, bool autoExpand = false, string headerText = null) {
             if (obj is Utf8String utf8String) {
 
