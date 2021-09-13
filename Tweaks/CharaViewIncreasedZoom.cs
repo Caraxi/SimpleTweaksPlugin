@@ -42,6 +42,7 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         public override void Disable() {
             charaViewZoomHook?.Disable();
+            base.Disable();
         }
 
         public override void Dispose() {
