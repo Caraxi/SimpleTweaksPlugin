@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface;
@@ -179,7 +180,7 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.GetIO().WantCaptureKeyboard = true;
             ImGui.GetIO().WantCaptureMouse = true;
             ImGui.GetIO().WantTextInput = true;
-            if (ImGui.IsKeyPressed((int)VK.ESCAPE)) {
+            if (ImGui.IsKeyPressed((int)VirtualKey.ESCAPE)) {
                 elementSelectorActive = false;
                 FreeExclusiveDraw();
                 return;
