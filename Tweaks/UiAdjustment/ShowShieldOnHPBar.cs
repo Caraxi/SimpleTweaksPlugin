@@ -108,6 +108,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                 var shieldOverPercentage = shieldRawPercentage - playerHpDownPercentage;
                 shieldOverPercentage = shieldOverPercentage < 0 ? 0 : shieldOverPercentage;
                 var shieldPercentage = shieldRawPercentage - shieldOverPercentage;
+                if (shieldOverPercentage > 1) shieldOverPercentage = 1;
 
                 shieldGrid->AtkResNode.X = playerHpPercentage * 148;
                 shieldGrid->AtkResNode.Width = shieldPercentage > 0 ? (ushort)(shieldPercentage * 148 + 12 + 0.5f) : (ushort)0;
