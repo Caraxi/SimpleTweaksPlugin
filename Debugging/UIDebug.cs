@@ -8,13 +8,10 @@ using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface;
-using Dalamud.Plugin;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
 using ImGuiScene;
-using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.Helper;
 using Action = System.Action;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
@@ -42,10 +39,7 @@ namespace SimpleTweaksPlugin.Debugging {
         private int loadImageVersion = 0;
         private ulong[] elementSelectorFind = {};
         private AtkUnitBase* selectedUnitBase = null;
-        
-        private delegate AtkStage* GetAtkStageSingleton();
-        private GetAtkStageSingleton getAtkStageSingleton;
-        
+
         private const int UnitListCount = 18;
         private readonly bool[] selectedInList = new bool[UnitListCount];
         private readonly string[] listNames = new string[UnitListCount]{
@@ -130,10 +124,6 @@ namespace SimpleTweaksPlugin.Debugging {
             if (firstDraw) {
                 firstDraw = false;
                 selectedUnitBase = (AtkUnitBase*) (Plugin.PluginConfig.Debugging.SelectedAtkUnitBase);
-            }
-            if (getAtkStageSingleton == null) {
-                var getSingletonAddr = External.SigScanner.ScanText("E8 ?? ?? ?? ?? 41 B8 01 00 00 00 48 8D 15 ?? ?? ?? ?? 48 8B 48 20 E8 ?? ?? ?? ?? 48 8B CF");
-                this.getAtkStageSingleton = Marshal.GetDelegateForFunctionPointer<GetAtkStageSingleton>(getSingletonAddr);
             }
 
             ImGui.BeginChild("st_uiDebug_unitBaseSelect", new Vector2(250, -1), true);
@@ -265,7 +255,7 @@ namespace SimpleTweaksPlugin.Debugging {
         private List<AddonResult> GetAtkUnitBaseAtPosition(Vector2 position) {
             SimpleLog.Log($">> GetAtkUnitBaseAtPosition");
             var list = new List<AddonResult>();
-            var stage = getAtkStageSingleton();
+            var stage = AtkStage.GetSingleton();
             var unitManagers = &stage->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
             for (var i = 0; i < UnitListCount; i++) {
                 var unitManager = &unitManagers[i];
@@ -349,7 +339,7 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.PushStyleColor(ImGuiCol.Text, isVisible ? 0xFF00FF00 : 0xFF0000FF);
             ImGui.Text(isVisible ? "Visible" : "Not Visible");
             ImGui.PopStyleColor();
-            
+
             ImGui.SameLine(ImGui.GetWindowContentRegionWidth() - 25);
             if (ImGui.SmallButton("V")) {
                 atkUnitBase->Flags ^= 0x20;
@@ -838,7 +828,7 @@ namespace SimpleTweaksPlugin.Debugging {
 
             bool foundSelected = false;
             bool noResults = true;
-            var stage = getAtkStageSingleton();
+            var stage = AtkStage.GetSingleton();
                 
             var unitManagers = &stage->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
             
