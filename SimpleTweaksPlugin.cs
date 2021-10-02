@@ -127,7 +127,7 @@ namespace SimpleTweaksPlugin {
             DebugManager.SetPlugin(this);
             #endif
 
-            Common = new Common(pluginInterface);
+            Common = new Common();
 
             PluginInterface.UiBuilder.Draw += this.BuildUI;
             pluginInterface.UiBuilder.OpenConfigUi += OnOpenConfig;

@@ -19,8 +19,6 @@ using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 
 namespace SimpleTweaksPlugin.Helper {
     internal unsafe class Common {
-        public static DalamudPluginInterface PluginInterface { get; private set; }
-
         private delegate IntPtr GameAlloc(ulong size, IntPtr unk, IntPtr allocator, IntPtr alignment);
 
         private delegate IntPtr GetGameAllocator();
@@ -44,8 +42,7 @@ namespace SimpleTweaksPlugin.Helper {
 
         public static SigScanner Scanner => External.SigScanner;
 
-        public Common(DalamudPluginInterface pluginInterface) {
-            PluginInterface = pluginInterface;
+        public Common() {
             var gameAllocPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 45 8D 67 23");
             var getGameAllocatorPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 8B 75 08");
 
