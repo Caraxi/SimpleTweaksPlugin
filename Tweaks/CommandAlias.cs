@@ -149,7 +149,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         public override void Setup() {
             if (Ready) return;
             try {
-                processChatInputAddress = External.SigScanner.ScanText("E8 ?? ?? ?? ?? FE 86 ?? ?? ?? ?? C7 86 ?? ?? ?? ?? ?? ?? ?? ??");
+                processChatInputAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? FE 86 ?? ?? ?? ?? C7 86 ?? ?? ?? ?? ?? ?? ?? ??");
                 Ready = true;
             } catch {
                 SimpleLog.Log("Failed to find address for ProcessChatInput");
@@ -206,7 +206,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                                 return r;
                             }
                             SimpleLog.Log($"String longer than 500");
-                            External.Chat.PrintError("[Simple Tweaks] Command alias result is longer than the maximum of 500 characters. The command could not be executed.");
+                            Service.Chat.PrintError("[Simple Tweaks] Command alias result is longer than the maximum of 500 characters. The command could not be executed.");
                             return 0;
                         }
                     }

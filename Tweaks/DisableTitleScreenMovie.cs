@@ -9,19 +9,19 @@ namespace SimpleTweaksPlugin.Tweaks {
         public override string Description => "Prevents the title screen from playing the introduction movie after 60 seconds.";
 
         public override void Enable() {
-            External.Framework.Update += FrameworkUpdate;
+            Service.Framework.Update += FrameworkUpdate;
             base.Enable();
         }
         
         public override void Disable() {
-            External.Framework.Update -= FrameworkUpdate;
+            Service.Framework.Update -= FrameworkUpdate;
             base.Disable();
         }
 
         private void FrameworkUpdate(Framework framework) {
             try {
-                if (External.Condition == null) return;
-                if (External.Condition.Any()) return;
+                if (Service.Condition == null) return;
+                if (Service.Condition.Any()) return;
                 SimpleTweaksPlugin.Client.UiModule.AgentModule.GetAgent<AgentLobby>().Data->IdleTime = 0;
             } catch {
                 // Ignored

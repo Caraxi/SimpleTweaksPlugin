@@ -109,7 +109,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                         nameFilterNew = string.Empty;
                     }
                     ImGui.TableNextColumn();
-                    var target = External.Targets.SoftTarget ?? External.Targets.Target;
+                    var target = Service.Targets.SoftTarget ?? Service.Targets.Target;
                     if (target != null) {
                         if (ImGui.Button("Target")) {
                             nameFilterNew = target.Name.TextValue;
@@ -181,13 +181,13 @@ namespace SimpleTweaksPlugin.Tweaks {
                     var actorName = Encoding.UTF8.GetString(a2 + 0x30, l).Trim();
                     var nf = Config.NameFilters.FirstOrDefault(a => a.Name == actorName);
                     if (nf != default) {
-                        if ((nf.OnlyInCombat && !External.Condition[ConditionFlag.InCombat]) || (!nf.DisableRight)) return rightClickTargetHook.Original(a1, a2, a3);
+                        if ((nf.OnlyInCombat && !Service.Condition[ConditionFlag.InCombat]) || (!nf.DisableRight)) return rightClickTargetHook.Original(a1, a2, a3);
                         return null;
                     }
                 }
             }
             
-            if (!Config.DisableRightClick || (Config.OnlyDisableInCombat && !External.Condition[ConditionFlag.InCombat])) {
+            if (!Config.DisableRightClick || (Config.OnlyDisableInCombat && !Service.Condition[ConditionFlag.InCombat])) {
                 return rightClickTargetHook.Original(a1, a2, a3);
             }
             return null;
@@ -206,13 +206,13 @@ namespace SimpleTweaksPlugin.Tweaks {
                     var actorName = Encoding.UTF8.GetString(a2 + 0x30, l).Trim();
                     var nf = Config.NameFilters.FirstOrDefault(a => a.Name == actorName);
                     if (nf != default) {
-                        if ((nf.OnlyInCombat && !External.Condition[ConditionFlag.InCombat]) || (!nf.DisableLeft)) return leftClickTargetHook.Original(a1, a2, a3);
+                        if ((nf.OnlyInCombat && !Service.Condition[ConditionFlag.InCombat]) || (!nf.DisableLeft)) return leftClickTargetHook.Original(a1, a2, a3);
                         return null;
                     }
                 }
             }
             
-            if (!Config.DisableLeftClick || Config.OnlyDisableInCombat && !External.Condition[ConditionFlag.InCombat]) {
+            if (!Config.DisableLeftClick || Config.OnlyDisableInCombat && !Service.Condition[ConditionFlag.InCombat]) {
                 return leftClickTargetHook.Original(a1, a2, a3);
             }
             return null;

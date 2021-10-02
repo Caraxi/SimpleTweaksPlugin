@@ -5,7 +5,7 @@ namespace SimpleTweaksPlugin.Debugging {
     public class TargetDebugging : DebugHelper {
         public override void Draw() {
 
-            var targets = External.Targets;
+            var targets = Service.Targets;
             
             
             ImGui.Text("Current Target:");

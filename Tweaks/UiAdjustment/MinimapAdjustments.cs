@@ -63,22 +63,22 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
-            External.ClientState.Login += OnLogin;
-            External.ClientState.TerritoryChanged += OnTerritoryChanged;
+            Service.ClientState.Login += OnLogin;
+            Service.ClientState.TerritoryChanged += OnTerritoryChanged;
             base.Enable();
             Update();
         }
 
         private void OnTerritoryChanged(object sender, ushort e) {
             sw.Restart();
-            External.Framework.Update -= WaitForUpdate;
-            External.Framework.Update += WaitForUpdate;
+            Service.Framework.Update -= WaitForUpdate;
+            Service.Framework.Update += WaitForUpdate;
         }
 
         public override void Disable() {
             SaveConfig(Config);
-            External.Framework.Update -= WaitForUpdate;
-            External.ClientState.Login -= OnLogin;
+            Service.Framework.Update -= WaitForUpdate;
+            Service.ClientState.Login -= OnLogin;
             base.Disable();
             Update();
         }
@@ -86,31 +86,31 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         
         private void OnLogin(object sender, EventArgs e) {
             sw.Restart();
-            External.Framework.Update -= WaitForUpdate;
-            External.Framework.Update += WaitForUpdate;
+            Service.Framework.Update -= WaitForUpdate;
+            Service.Framework.Update += WaitForUpdate;
         }
 
         private void WaitForUpdate(Framework framework) {
             try {
                 if (!sw.IsRunning) sw.Restart();
-                var unitBase = (AtkUnitBase*) External.GameGui.GetAddonByName("_NaviMap", 1);
+                var unitBase = (AtkUnitBase*) Service.GameGui.GetAddonByName("_NaviMap", 1);
                 if (unitBase == null) {
                     if (sw.ElapsedMilliseconds > 30000) {
                         sw.Stop();
-                        External.Framework.Update -= WaitForUpdate;
+                        Service.Framework.Update -= WaitForUpdate;
                     }
                     return;
                 }
                 Update();
-                External.Framework.Update -= WaitForUpdate;
+                Service.Framework.Update -= WaitForUpdate;
             } catch (Exception ex) {
                 SimpleLog.Error(ex);
-                External.Framework.Update -= WaitForUpdate;
+                Service.Framework.Update -= WaitForUpdate;
             }
         }
 
         public void Update() {
-            var unitBase = (AtkUnitBase*) External.GameGui.GetAddonByName("_NaviMap", 1);
+            var unitBase = (AtkUnitBase*) Service.GameGui.GetAddonByName("_NaviMap", 1);
             if (unitBase == null) return;
 
             if (unitBase->UldManager.NodeListCount < 19) return;

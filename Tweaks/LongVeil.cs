@@ -20,7 +20,7 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         public override void Enable() {
             flagSlotUpdateHook ??= new Hook<FlagSlotUpdateDelegate>(
-                External.SigScanner.ScanText("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 8B DA 49 8B F0 48 8B F9 83 FA 0A"),
+                Service.SigScanner.ScanText("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 8B DA 49 8B F0 48 8B F9 83 FA 0A"),
                 new FlagSlotUpdateDelegate(FlagSlotUpdateDetour));
             flagSlotUpdateHook?.Enable();
             base.Enable();

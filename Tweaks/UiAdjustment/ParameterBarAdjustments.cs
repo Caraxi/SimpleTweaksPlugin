@@ -47,12 +47,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
-            External.Framework.Update += OnFrameworkUpdate;
+            Service.Framework.Update += OnFrameworkUpdate;
             base.Enable();
         }
 
         public override void Disable() {
-            External.Framework.Update -= OnFrameworkUpdate;
+            Service.Framework.Update -= OnFrameworkUpdate;
             UpdateParameterBar(true);
             SaveConfig(Config);
             base.Disable();
@@ -140,7 +140,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             node->AtkResNode.SetPositionFloat(barConfig.OffsetX, barConfig.OffsetY);
             valueNode->SetPositionFloat(valueConfig.OffsetX, valueConfig.OffsetY);
 
-            var cjId = External.ClientState?.LocalPlayer?.ClassJob.Id;
+            var cjId = Service.ClientState?.LocalPlayer?.ClassJob.Id;
             var autoHide = autoHideMp && cjId != null && autoHideMpClassJobs.Contains(cjId.Value);
 
             valueNode->Color.A = autoHide || valueConfig.Hide ? Byte00 : ByteFF;
@@ -168,7 +168,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
 
             // MP
-            var mpColor = External.ClientState?.LocalPlayer?.ClassJob.GameData.ClassJobCategory.Row switch {
+            var mpColor = Service.ClientState?.LocalPlayer?.ClassJob.GameData.ClassJobCategory.Row switch {
                 32 => reset ? DefaultConfig.GpColor : Config.GpColor,
                 33 => reset ? DefaultConfig.CpColor : Config.CpColor,
                 _ => reset ? DefaultConfig.MpColor : Config.MpColor

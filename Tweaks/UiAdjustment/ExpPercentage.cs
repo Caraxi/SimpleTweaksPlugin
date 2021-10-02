@@ -70,12 +70,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 if (!str.TextValue.Contains("-/-")) percent = numberArray->IntArray[16] / (float) numberArray->IntArray[18];
                 percent *= 100f;
                 if (Config.PercentageOnly) {
-                    var classJob = External.Data.Excel.GetSheet<ClassJob>()?.GetRow((uint)numberArray->IntArray[26]);
+                    var classJob = Service.Data.Excel.GetSheet<ClassJob>()?.GetRow((uint)numberArray->IntArray[26]);
                     if (classJob != null) {
                         str.Payloads.Clear();
                         str.Append(classJob.Abbreviation.ToDalamudString());
 
-                        var levelIcon = External.ClientState.ClientLanguage switch {
+                        var levelIcon = Service.ClientState.ClientLanguage switch {
                             ClientLanguage.French => SeIconChar.LevelFr,
                             ClientLanguage.German => SeIconChar.LevelDe,
                             _ => SeIconChar.LevelEn
@@ -84,7 +84,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                         str.Append($"  {(char)levelIcon}{LevelTextConvert(numberArray->IntArray[24])}    ");
 
                         if (percent < 100f) {
-                            str.Append(External.ClientState.ClientLanguage switch {
+                            str.Append(Service.ClientState.ClientLanguage switch {
                                 ClientLanguage.French => "Exp: ",
                                 ClientLanguage.German => "",
                                 _ => "EXP "

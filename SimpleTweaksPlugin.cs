@@ -106,8 +106,8 @@ namespace SimpleTweaksPlugin {
         public int UpdateFrom = -1;
 
         public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface) {
-            pluginInterface.Create<External>();
-            FFXIVClientStructs.Resolver.Initialize(External.SigScanner.SearchBase);
+            pluginInterface.Create<Service>();
+            FFXIVClientStructs.Resolver.Initialize(Service.SigScanner.SearchBase);
 
             Plugin = this;
 #if DEBUG
@@ -115,14 +115,14 @@ namespace SimpleTweaksPlugin {
 #endif
             this.PluginInterface = pluginInterface;
 
-            Client = new ClientInterface(External.SigScanner, External.Data);
+            Client = new ClientInterface(Service.SigScanner, Service.Data);
             
             this.PluginConfig = (SimpleTweaksPluginConfig)pluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
             this.PluginConfig.Init(this, pluginInterface);
             
             IconManager = new IconManager(pluginInterface);
             
-            UiHelper.Setup(External.SigScanner);
+            UiHelper.Setup(Service.SigScanner);
             #if DEBUG
             DebugManager.SetPlugin(this);
             #endif
@@ -169,7 +169,7 @@ namespace SimpleTweaksPlugin {
         }
 
         public void SetupCommands() {
-            External.Commands.AddHandler("/tweaks", new Dalamud.Game.Command.CommandInfo(OnConfigCommandHandler) {
+            Service.Commands.AddHandler("/tweaks", new Dalamud.Game.Command.CommandInfo(OnConfigCommandHandler) {
                 HelpMessage = $"Open config window for {this.Name}",
                 ShowInHelp = true
             });
@@ -190,7 +190,7 @@ namespace SimpleTweaksPlugin {
                         case "t":
                         case "toggle": {
                             if (splitArgString.Length < 2) {
-                                External.Chat.PrintError("/tweaks toggle <tweakid>");
+                                Service.Chat.PrintError("/tweaks toggle <tweakid>");
                                 return;
                             }
                             var tweak = GetTweakById(splitArgString[1]);
@@ -210,13 +210,13 @@ namespace SimpleTweaksPlugin {
                                 return;
                             }
 
-                            External.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
+                            Service.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
                             return;
                         }
                         case "e":
                         case "enable": {
                             if (splitArgString.Length < 2) {
-                                External.Chat.PrintError("/tweaks enable <tweakid>");
+                                Service.Chat.PrintError("/tweaks enable <tweakid>");
                                 return;
                             }
                             var tweak = GetTweakById(splitArgString[1]);
@@ -231,13 +231,13 @@ namespace SimpleTweaksPlugin {
                                 return;
                             }
 
-                            External.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
+                            Service.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
                             return;
                         }
                         case "d":
                         case "disable": {
                             if (splitArgString.Length < 2) {
-                                External.Chat.PrintError("/tweaks disable <tweakid>");
+                                Service.Chat.PrintError("/tweaks disable <tweakid>");
                                 return;
                             }
                             var tweak = GetTweakById(splitArgString[1]);
@@ -252,7 +252,7 @@ namespace SimpleTweaksPlugin {
                                 return;
                             }
 
-                            External.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
+                            Service.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
                             return;
                         }
                         default: {
@@ -262,7 +262,7 @@ namespace SimpleTweaksPlugin {
                                 return;
                             }
 
-                            External.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
+                            Service.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
                             return;
                         }
                         
@@ -297,7 +297,7 @@ namespace SimpleTweaksPlugin {
         }
 
         public void RemoveCommands() {
-            External.Commands.RemoveHandler("/tweaks");
+            Service.Commands.RemoveHandler("/tweaks");
         }
 
         private void BuildUI() {

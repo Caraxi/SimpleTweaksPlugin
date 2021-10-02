@@ -13,7 +13,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
 
         public override void Enable() {
             urlLinkPayload = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.OpenUrlLink, UrlLinkHandle);
-            External.Chat.ChatMessage += OnChatMessage;
+            Service.Chat.ChatMessage += OnChatMessage;
             base.Enable();
         }
 
@@ -23,7 +23,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
 
         public override void Disable() {
             if (!Enabled) return;
-            External.Chat.ChatMessage -= OnChatMessage;
+            Service.Chat.ChatMessage -= OnChatMessage;
             PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.OpenUrlLink);
             base.Disable();
         }

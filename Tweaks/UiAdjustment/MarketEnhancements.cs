@@ -86,12 +86,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var agent = SimpleTweaksPlugin.Client.UiModule.AgentModule.GetAgent<AgentMarket>();
                 
                 if (npcPriceId != agent.Data->MarketResultItemId) {
-                    var item = External.Data.Excel.GetSheet<Item>().GetRow(agent.Data->MarketResultItemId);
+                    var item = Service.Data.Excel.GetSheet<Item>().GetRow(agent.Data->MarketResultItemId);
                     npcPriceId = agent.Data->MarketResultItemId;
                     npcBuyPrice = 0;
                     npcSellPrice = item.PriceLow;
 
-                    var gilShopItem = External.Data.Excel.GetSheet<GilShopItem>().Where(a => a.Item.Row == agent.Data->MarketResultItemId).ToList();
+                    var gilShopItem = Service.Data.Excel.GetSheet<GilShopItem>().Where(a => a.Item.Row == agent.Data->MarketResultItemId).ToList();
                     if (gilShopItem.Count > 0) {
                         npcBuyPrice = item.PriceMid;
                     }

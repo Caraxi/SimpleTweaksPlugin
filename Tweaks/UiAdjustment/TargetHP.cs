@@ -93,14 +93,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.TargetHP ?? new Configs();
-            External.Framework.Update += FrameworkUpdate;
+            Service.Framework.Update += FrameworkUpdate;
             base.Enable();
         }
 
         public override void Disable() {
             SaveConfig(Config);
             PluginConfig.UiAdjustments.TargetHP = null;
-            External.Framework.Update -= FrameworkUpdate;
+            Service.Framework.Update -= FrameworkUpdate;
             Update(true);
             base.Disable();
         }
@@ -114,7 +114,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private void Update(bool reset = false) {
-            var target = External.Targets.SoftTarget ?? External.Targets.Target;
+            var target = Service.Targets.SoftTarget ?? Service.Targets.Target;
             if (target != null || reset) {
                 var ui = Common.GetUnitBase("_TargetInfo", 1);
                 if (ui != null && (ui->IsVisible || reset)) {
@@ -127,10 +127,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 }
             }
             
-            if (External.Targets.FocusTarget != null || reset) {
+            if (Service.Targets.FocusTarget != null || reset) {
                 var ui = Common.GetUnitBase("_FocusTargetInfo", 1);
                 if (ui != null && (ui->IsVisible || reset)) {
-                    UpdateFocusTarget(ui, External.Targets.FocusTarget, reset);
+                    UpdateFocusTarget(ui, Service.Targets.FocusTarget, reset);
                 }
             }
         }

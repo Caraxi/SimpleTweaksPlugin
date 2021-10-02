@@ -34,28 +34,28 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             lastUpdate.Restart();
             updateParamHook ??= new Hook<UpdateParamDelegate>(Common.Scanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 83 3D ?? ?? ?? ?? ?? 41 0F B6 E8 48 8B DA 8B F1 0F 84 ?? ?? ?? ?? 48 89 7C 24"), new UpdateParamDelegate(UpdateParamDetour));
             updateParamHook.Enable();
-            External.Framework.Update += FrameworkUpdate;
+            Service.Framework.Update += FrameworkUpdate;
             base.Enable();
         }
 
         private void UpdateParamDetour(uint a1, uint* a2, byte a3) {
             updateParamHook.Original(a1, a2, a3);
             try {
-                if (External.ClientState.LocalPlayer == null) return;
+                if (Service.ClientState.LocalPlayer == null) return;
                 if (!lastGpChangeStopwatch.IsRunning) {
                     lastGpChangeStopwatch.Restart();
                 } else {
-                    if (External.ClientState.LocalPlayer.CurrentGp > lastGp && lastGpChangeStopwatch.ElapsedMilliseconds > 1000 && lastGpChangeStopwatch.ElapsedMilliseconds < 4000) {
-                        var diff = (int) External.ClientState.LocalPlayer.CurrentGp - (int) lastGp;
+                    if (Service.ClientState.LocalPlayer.CurrentGp > lastGp && lastGpChangeStopwatch.ElapsedMilliseconds > 1000 && lastGpChangeStopwatch.ElapsedMilliseconds < 4000) {
+                        var diff = (int) Service.ClientState.LocalPlayer.CurrentGp - (int) lastGp;
                         if (diff < 20) {
                             gpPerTick = diff;
-                            lastGp = External.ClientState.LocalPlayer.CurrentGp;
+                            lastGp = Service.ClientState.LocalPlayer.CurrentGp;
                             lastGpChangeStopwatch.Restart();
                         }
                     }
 
-                    if (External.ClientState.LocalPlayer.CurrentGp != lastGp) {
-                        lastGp = External.ClientState.LocalPlayer.CurrentGp;
+                    if (Service.ClientState.LocalPlayer.CurrentGp != lastGp) {
+                        lastGp = Service.ClientState.LocalPlayer.CurrentGp;
                         lastGpChangeStopwatch.Restart();
                     }
                 }
@@ -68,7 +68,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             SaveConfig(Config);
             lastUpdate.Stop();
             updateParamHook?.Disable();
-            External.Framework.Update -= FrameworkUpdate;
+            Service.Framework.Update -= FrameworkUpdate;
             Update(true);
             base.Disable();
         }
@@ -91,7 +91,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private void Update(bool reset = false) {
-            if (External.ClientState?.LocalPlayer?.ClassJob?.GameData?.ClassJobCategory?.Row != 32) reset = true;
+            if (Service.ClientState?.LocalPlayer?.ClassJob?.GameData?.ClassJobCategory?.Row != 32) reset = true;
             var paramWidget = Common.GetUnitBase("_ParameterWidget");
             if (paramWidget == null) return;
 
@@ -178,12 +178,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 return;
             }
 
-            var targetGp = Config.GpGoal > 0 ? Math.Min(Config.GpGoal, External.ClientState.LocalPlayer.MaxGp) : External.ClientState.LocalPlayer.MaxGp;
-            if (targetGp - External.ClientState.LocalPlayer.CurrentGp > 0) {
+            var targetGp = Config.GpGoal > 0 ? Math.Min(Config.GpGoal, Service.ClientState.LocalPlayer.MaxGp) : Service.ClientState.LocalPlayer.MaxGp;
+            if (targetGp - Service.ClientState.LocalPlayer.CurrentGp > 0) {
                 textNode->AtkResNode.ToggleVisibility(true);
 
                 var gpPerSecond = gpPerTick / timePerTick;
-                var secondsUntilFull = (targetGp - External.ClientState.LocalPlayer.CurrentGp) / gpPerSecond;
+                var secondsUntilFull = (targetGp - Service.ClientState.LocalPlayer.CurrentGp) / gpPerSecond;
 
                 if (gatheringWidget == null) {
                     secondsUntilFull += timePerTick - (float)lastGpChangeStopwatch.Elapsed.TotalSeconds;

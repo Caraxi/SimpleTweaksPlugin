@@ -58,12 +58,12 @@ namespace SimpleTweaksPlugin.Tweaks {
 
             try {
                 if (setOptionAddress == IntPtr.Zero) {
-                    setOptionAddress = External.SigScanner.ScanText("89 54 24 10 53 55 57 41 54 41 55 41 56 48 83 EC 48 8B C2 45 8B E0 44 8B D2 45 32 F6 44 8B C2 45 32 ED");
+                    setOptionAddress = Service.SigScanner.ScanText("89 54 24 10 53 55 57 41 54 41 55 41 56 48 83 EC 48 8B C2 45 8B E0 44 8B D2 45 32 F6 44 8B C2 45 32 ED");
                     SimpleLog.Verbose($"SetOptionAddress: {setOptionAddress.ToInt64():X}");
                     setOption = Marshal.GetDelegateForFunctionPointer<SetOptionDelegate>(setOptionAddress);
                 }
 
-                var toggleGamepadModeAddress = External.SigScanner.ScanText("E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 40 0F B6 DF 49 8B CC");
+                var toggleGamepadModeAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 40 0F B6 DF 49 8B CC");
                 SimpleLog.Verbose($"ToggleGamePadModeAddress: {toggleGamepadModeAddress.ToInt64():X}");
                 setGamepadMode = Marshal.GetDelegateForFunctionPointer<SetGamepadMode>(toggleGamepadModeAddress);
                 
@@ -119,8 +119,8 @@ namespace SimpleTweaksPlugin.Tweaks {
             setOptionHook ??= new Hook<SetOptionDelegate>(setOptionAddress, new SetOptionDelegate(SetOptionDetour));
             setOptionHook?.Enable();
 
-            External.Commands.AddHandler("/setoption", new CommandInfo(OptionCommand) {HelpMessage = "Set the skill tooltips on or off.", ShowInHelp = true});
-            External.Commands.AddHandler("/setopt", new CommandInfo(OptionCommand) {HelpMessage = "Set the skill tooltips on or off.", ShowInHelp = false});
+            Service.Commands.AddHandler("/setoption", new CommandInfo(OptionCommand) {HelpMessage = "Set the skill tooltips on or off.", ShowInHelp = true});
+            Service.Commands.AddHandler("/setopt", new CommandInfo(OptionCommand) {HelpMessage = "Set the skill tooltips on or off.", ShowInHelp = false});
 
             Enabled = true;
         }
@@ -139,7 +139,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                     if (optionKinds[o].type == OptionType.ToggleGamepadMode) continue;
                     sb.Append(o + " ");
                 }
-                External.Chat.Print($"Options:\n{sb}");
+                Service.Chat.Print($"Options:\n{sb}");
 
                 return;
             }
@@ -153,8 +153,8 @@ namespace SimpleTweaksPlugin.Tweaks {
                 var fromAlias = optionKinds.Values.Where(ok => ok.alias.Contains(optionKind)).ToArray();
 
                 if (fromAlias.Length == 0) {
-                    External.Chat.PrintError("Unknown Option");
-                    External.Chat.PrintError("/setoption list for a list of options");
+                    Service.Chat.PrintError("Unknown Option");
+                    Service.Chat.PrintError("/setoption list for a list of options");
                     return;
                 } 
                 optionDefinition = fromAlias[0];
@@ -192,7 +192,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                             setValue = cVal ? 1 : 0UL;
                             break;
                         default:
-                            External.Chat.PrintError($"/setoption {optionKind} ({optionTypeValueHints[optionDefinition.type]})");
+                            Service.Chat.PrintError($"/setoption {optionKind} ({optionTypeValueHints[optionDefinition.type]})");
                             break;
                         }
 
@@ -221,7 +221,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                     break;
                 }
                 default:
-                    External.Chat.PrintError("Unsupported Option");
+                    Service.Chat.PrintError("Unsupported Option");
                     return;
             }
 
@@ -241,8 +241,8 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         public override void Disable() {
             setOptionHook?.Disable();
-            External.Commands.RemoveHandler("/setoption");
-            External.Commands.RemoveHandler("/setopt");
+            Service.Commands.RemoveHandler("/setoption");
+            Service.Commands.RemoveHandler("/setopt");
             Enabled = false;
         }
 

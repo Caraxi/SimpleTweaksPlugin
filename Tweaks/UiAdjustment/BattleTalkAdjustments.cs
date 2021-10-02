@@ -54,21 +54,21 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             ImGui.Text("NEW BATTLE TALK DIALOGUE BOX POSITION");
             ImGui.End();
             if (!changed) return;
-            External.Framework.Update -= FrameworkOnUpdate;
-            External.Framework.Update += FrameworkOnUpdate;
+            Service.Framework.Update -= FrameworkOnUpdate;
+            Service.Framework.Update += FrameworkOnUpdate;
         };
 
         public override void Enable() {
             Config = LoadConfig<Configuration>() ?? new Configuration();
-            External.ClientState.Login += OnLogin;
-            External.ClientState.Logout += OnLogout;
-            if(External.ClientState.LocalPlayer is not null) OnLogin(null!,null!);
+            Service.ClientState.Login += OnLogin;
+            Service.ClientState.Logout += OnLogout;
+            if(Service.ClientState.LocalPlayer is not null) OnLogin(null!,null!);
             base.Enable();
         }
         
         public override void Disable() {
-            External.ClientState.Login -= OnLogin;
-            External.ClientState.Logout -= OnLogout;
+            Service.ClientState.Login -= OnLogin;
+            Service.ClientState.Logout -= OnLogout;
             OnLogout(null!,null!);
             SaveConfig(Config);
             base.Disable();
@@ -76,13 +76,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private void OnLogin(object sender, EventArgs e)
         {
-            External.Framework.Update += FrameworkOnUpdateSetup;
+            Service.Framework.Update += FrameworkOnUpdateSetup;
         }
         
         private void OnLogout(object sender, EventArgs e)
         {
-            External.Framework.Update -= FrameworkOnUpdate;
-            External.Framework.Update -= FrameworkOnUpdateSetup;
+            Service.Framework.Update -= FrameworkOnUpdate;
+            Service.Framework.Update -= FrameworkOnUpdateSetup;
             ResetBattleTalk();
         }
         
@@ -93,8 +93,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 if (battleTalkNode == null) return;
                 originalPositionX = battleTalkNode->X;
                 originalPositionY = battleTalkNode->Y;
-                External.Framework.Update -= FrameworkOnUpdateSetup;
-                External.Framework.Update += FrameworkOnUpdate;
+                Service.Framework.Update -= FrameworkOnUpdateSetup;
+                Service.Framework.Update += FrameworkOnUpdate;
             } catch (Exception ex) {
                 SimpleLog.Error(ex);
             }
@@ -105,7 +105,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 if (battleTalkNode == null) return;
                 UiHelper.SetPosition(battleTalkNode, originalPositionX + Config.OffsetX, originalPositionY + Config.OffsetY);
                 battleTalkNode->SetScale(Config.Scale, Config.Scale);
-                External.Framework.Update -= FrameworkOnUpdate;
+                Service.Framework.Update -= FrameworkOnUpdate;
             } catch (Exception ex) {
                 SimpleLog.Error(ex);
             }

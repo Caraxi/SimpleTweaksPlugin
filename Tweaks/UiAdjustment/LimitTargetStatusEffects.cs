@@ -39,14 +39,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.LimitTargetStatusEffects ?? new Configs();
-            External.Framework.Update += FrameworkOnUpdate;
+            Service.Framework.Update += FrameworkOnUpdate;
             base.Enable();
         }
 
         public override void Disable() {
             SaveConfig(Config);
             PluginConfig.UiAdjustments.LimitTargetStatusEffects = null;
-            External.Framework.Update -= FrameworkOnUpdate;
+            Service.Framework.Update -= FrameworkOnUpdate;
             UpdateTargetStatus(true);
             base.Disable();
         }
@@ -69,7 +69,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (targetInfoStatusUnitBase->UldManager.NodeList == null || targetInfoStatusUnitBase->UldManager.NodeListCount < 32) return;
 
             var isInCombat =
-                External.Condition[ConditionFlag.InCombat];
+                Service.Condition[ConditionFlag.InCombat];
 
             if (reset || (Config.LimitOnlyInCombat && !isInCombat && this.isDirty)) {
                 for (var i = 32; i >= 3; i--) {

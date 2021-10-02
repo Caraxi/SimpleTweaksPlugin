@@ -16,12 +16,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         protected override string Author => "Aireil";
 
         public override void Enable() {
-            External.Framework.Update += OnFrameworkUpdate;
+            Service.Framework.Update += OnFrameworkUpdate;
             base.Enable();
         }
 
         public override void Disable() {
-            External.Framework.Update -= OnFrameworkUpdate;
+            Service.Framework.Update -= OnFrameworkUpdate;
             base.Disable();
             UpdateDeepDungeonStatus(true);
         }
@@ -84,7 +84,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 UiHelper.SetPosition(textNode, 78, 65);
                 textNode->FontSize = 12;
                 textNode->AlignmentFontType = 3;
-                textNode->SetText(External.Data.Excel.GetSheet<Addon>().GetRow(10430).Text);
+                textNode->SetText(Service.Data.Excel.GetSheet<Addon>().GetRow(10430).Text);
 
                 return;
             }

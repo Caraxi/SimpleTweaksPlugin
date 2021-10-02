@@ -34,7 +34,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         private ExcelSheet<ExtendedItem> itemSheet;
 
         public override void Enable() {
-            itemSheet = External.Data.Excel.GetSheet<ExtendedItem>();
+            itemSheet = Service.Data.Excel.GetSheet<ExtendedItem>();
             if (itemSheet == null) return;
             Config = LoadConfig<Configs>() ?? new Configs() {Delta = PluginConfig.TooltipTweaks.DesynthesisDelta};
             base.Enable();
@@ -46,7 +46,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         }
         public override unsafe void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
 
-            var id = External.GameGui.HoveredItem;
+            var id = Service.GameGui.HoveredItem;
             if (id < 2000000) {
                 id %= 500000;
 

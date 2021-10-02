@@ -122,11 +122,11 @@ namespace SimpleTweaksPlugin.Tweaks {
             if (Ready) return;
             try {
                 if (tooltipAddress == IntPtr.Zero) {
-                    tooltipAddress = External.SigScanner.ScanText("48 89 5C 24 ?? 55 56 57 41 54 41 55 41 56 41 57 48 83 EC 50 48 8B 42 ??");
+                    tooltipAddress = Service.SigScanner.ScanText("48 89 5C 24 ?? 55 56 57 41 54 41 55 41 56 41 57 48 83 EC 50 48 8B 42 ??");
                 }
 
                 if (itemHoveredAddress == IntPtr.Zero) {
-                    itemHoveredAddress = External.SigScanner.ScanText("E8 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? 48 89 B4 24 ?? ?? ?? ?? 48 89 BC 24 ?? ?? ?? ?? 48 8B 7D A7");
+                    itemHoveredAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? 48 89 B4 24 ?? ?? ?? ?? 48 89 BC 24 ?? ?? ?? ?? 48 8B 7D A7");
                 }
 
                 if (tooltipAddress == IntPtr.Zero || itemHoveredAddress == IntPtr.Zero) {
@@ -148,10 +148,10 @@ namespace SimpleTweaksPlugin.Tweaks {
             
             // 
             actionTooltipHook ??= new Hook<ActionTooltipDelegate>(
-                External.SigScanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 54 41 55 41 56 41 57 48 83 EC 20 48 8B AA"),
+                Service.SigScanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 54 41 55 41 56 41 57 48 83 EC 20 48 8B AA"),
                 new ActionTooltipDelegate(ActionTooltipDetour));
             actionHoveredHook ??= new Hook<ActionHoveredDelegate>(
-                External.SigScanner.ScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 83 F8 0F"),
+                Service.SigScanner.ScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 83 F8 0F"),
                 new ActionHoveredDelegate(ActionHoveredDetour));
             
             tooltipHook?.Enable();
@@ -222,7 +222,7 @@ namespace SimpleTweaksPlugin.Tweaks {
             await Task.Delay(5);
             unsafe {
                 var heightShort = (ushort)height;
-                var tooltipUi = (AtkUnitBase*)External.GameGui.GetAddonByName("ItemDetail", 1);
+                var tooltipUi = (AtkUnitBase*)Service.GameGui.GetAddonByName("ItemDetail", 1);
                 if (tooltipUi == null) return;
                 var bg = GetResNodeByPath(tooltipUi->RootNode, Child, PrevFinal, Child, Child);
                 if (bg != null) bg->Height = heightShort;

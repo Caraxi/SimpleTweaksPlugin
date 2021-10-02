@@ -45,7 +45,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.FixedShadowDistance ?? new Configs();
             if (shadowManager == null) return;
-            External.Framework.Update += SetupShadows;
+            Service.Framework.Update += SetupShadows;
             base.Enable();
         }
 
@@ -67,7 +67,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                 shadowManager->BaseShadowDistance = 225;
                 shadowManager->ShitnessModifier = 0.5f;
             }
-            External.Framework.Update -= SetupShadows;
+            Service.Framework.Update -= SetupShadows;
             base.Disable();
         }
     }

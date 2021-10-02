@@ -126,7 +126,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override void Enable() {
             if (Enabled) return;
             LoadedConfig = LoadConfig<Config>() ?? PluginConfig.UiAdjustments.ShiftTargetCastBarText ?? new Config();
-            External.Framework.Update += OnFrameworkUpdate;
+            Service.Framework.Update += OnFrameworkUpdate;
             Enabled = true;
         }
 
@@ -134,14 +134,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (!Enabled) return;
             SaveConfig(LoadedConfig);
             PluginConfig.UiAdjustments.ShiftTargetCastBarText = null;
-            External.Framework.Update -= OnFrameworkUpdate;
+            Service.Framework.Update -= OnFrameworkUpdate;
             SimpleLog.Debug($"[{GetType().Name}] Reset");
             HandleBars(true);
             Enabled = false;
         }
 
         public override void Dispose() {
-            External.Framework.Update -= OnFrameworkUpdate;
+            Service.Framework.Update -= OnFrameworkUpdate;
             Enabled = false;
             Ready = false;
         }

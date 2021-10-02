@@ -16,12 +16,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Description => "Cleans up the world visit menu and shows your current location in order on the list.";
 
         public override void Enable() {
-            External.Framework.Update += FrameworkOnOnUpdateEvent;
+            Service.Framework.Update += FrameworkOnOnUpdateEvent;
             base.Enable();
         }
 
         public override void Disable() {
-            External.Framework.Update -= FrameworkOnOnUpdateEvent;
+            Service.Framework.Update -= FrameworkOnOnUpdateEvent;
             base.Disable();
         }
         
@@ -154,7 +154,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
 
         public void CheckWindow() {
-            var ui = (AtkUnitBase*)External.GameGui.GetAddonByName("WorldTravelSelect", 1);
+            var ui = (AtkUnitBase*)Service.GameGui.GetAddonByName("WorldTravelSelect", 1);
             if (ui == null) return;
             var window = new WorldTravelSelect(ui);
             if (!window.IsValid) return;

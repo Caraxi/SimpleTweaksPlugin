@@ -39,7 +39,7 @@ namespace SimpleTweaksPlugin.GameStructs {
             if (Materia4 != 0) yield return (Materia4, MateriaLevel4);
         }
         
-        public Item Item => External.Data.Excel.GetSheet<Item>()?.GetRow(this.ItemId);
+        public Item Item => Service.Data.Excel.GetSheet<Item>()?.GetRow(this.ItemId);
     }
 
     [Flags]

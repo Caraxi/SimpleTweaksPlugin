@@ -52,9 +52,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         };
 
         public override void Setup() {
-            examineIsValidPtr = External.SigScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 C7 43 ?? ?? ?? ?? ??");
+            examineIsValidPtr = Service.SigScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 C7 43 ?? ?? ?? ?? ??");
 
-            examineUpdatedAddress = External.SigScanner.ScanText("E8 ?? ?? ?? ?? 41 89 04 9F");
+            examineUpdatedAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 41 89 04 9F");
 
             SimpleLog.Debug($"ExamineIsValidPtr: {examineIsValidPtr.ToInt64():X}");
             Ready = true;
@@ -105,7 +105,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     var slot = Common.GetContainerItem(container, i);
                     if (slot == null) continue;
                     var id = slot->ItemId;
-                    var item = External.Data.Excel.GetSheet<Sheets.ExtendedItem>().GetRow(id);
+                    var item = Service.Data.Excel.GetSheet<Sheets.ExtendedItem>().GetRow(id);
                     if (ignoreCategory.Contains(item.ItemUICategory.Row)) {
                         if (i == 0) c -= 1;
                         c -= 1;

@@ -15,7 +15,7 @@ namespace SimpleTweaksPlugin.Debugging {
         public override void Draw() {
 
             if (groupManager == null) {
-                groupManager = (GroupManager*) External.SigScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? 44 8B E7");
+                groupManager = (GroupManager*) Service.SigScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? 44 8B E7");
             }
             
             DebugManager.ClickToCopyText($"{(ulong) groupManager:X}"); ImGui.SameLine();
@@ -38,8 +38,8 @@ namespace SimpleTweaksPlugin.Debugging {
 
                     PlayerCharacter chara = null;
 
-                    for (var a = 0; a < External.Objects.Length; a += 2) {
-                        var actor = External.Objects[a];
+                    for (var a = 0; a < Service.Objects.Length; a += 2) {
+                        var actor = Service.Objects[a];
                         if (actor == null) continue;
                         if ((uint)actor.ObjectId == partyMember.ObjectID && actor is PlayerCharacter pc) {
                             chara = pc;

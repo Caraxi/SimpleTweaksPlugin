@@ -218,7 +218,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
             SimpleLog.Debug($"[{Key}] Command Handler: {string.Join(" , ", args)}");
             if (UseAutoConfig) {
                 if (!Enabled) {
-                    External.Chat.PrintError($"'{Name}' is not enabled.");
+                    Service.Chat.PrintError($"'{Name}' is not enabled.");
                     return;
                 }
                 var configObj = this.GetType().GetProperties().FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(TweakConfig)))?.GetValue(this);
@@ -256,7 +256,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
                                         break;
                                     }
                                     default: {
-                                        External.Chat.PrintError($"'{args[1]}' is not a valid value for a boolean.");
+                                        Service.Chat.PrintError($"'{args[1]}' is not a valid value for a boolean.");
                                         return;
                                     }
                                 }
@@ -268,7 +268,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
                                     field.f.SetValue(configObj, val);
                                     RequestSaveConfig();
                                 } else {
-                                    External.Chat.PrintError($"'{args[1]}' is not a valid integer between {field.Item2.IntMin} and {field.Item2.IntMax}.");
+                                    Service.Chat.PrintError($"'{args[1]}' is not a valid integer between {field.Item2.IntMin} and {field.Item2.IntMax}.");
                                 }
                             }
                             
@@ -277,7 +277,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
                     }
 
                     // Print all options
-                    if (args.Length == 0) External.Chat.PrintError($"'{Name}' Command Config:");
+                    if (args.Length == 0) Service.Chat.PrintError($"'{Name}' Command Config:");
                     foreach (var aField in fields) {
                         if (args.Length > 0) {
                             if (args[0] != aField.f.Name) continue;
@@ -291,7 +291,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
 
                         if (!string.IsNullOrEmpty(valuesString)) {
                             var line = $"/tweaks {Key} {aField.f.Name} [{valuesString}]";
-                            External.Chat.PrintError($"   - {line}");
+                            Service.Chat.PrintError($"   - {line}");
                         }
                     }
                     
@@ -302,7 +302,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
                 }
             }
             
-            External.Chat.PrintError($"'{Name}' does not support command usage.");
+            Service.Chat.PrintError($"'{Name}' does not support command usage.");
         }
 
         protected delegate void DrawConfigDelegate(ref bool hasChanged);

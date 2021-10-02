@@ -22,19 +22,19 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         };
 
         public override void Enable() {
-            External.Framework.Update += OnFrameworkUpdate;
+            Service.Framework.Update += OnFrameworkUpdate;
             base.Enable();
         }
 
         public override void Disable() {
-            External.Framework.Update -= OnFrameworkUpdate;
-            foreach(var w in windowsWithCommunityFinder) UpdateCommunityFinderButton(External.Framework, w, true);
+            Service.Framework.Update -= OnFrameworkUpdate;
+            foreach(var w in windowsWithCommunityFinder) UpdateCommunityFinderButton(Service.Framework, w, true);
             base.Disable();
         }
 
         private void OnFrameworkUpdate(Framework framework) {
             try {
-                foreach (var w in windowsWithCommunityFinder) UpdateCommunityFinderButton(External.Framework, w);
+                foreach (var w in windowsWithCommunityFinder) UpdateCommunityFinderButton(Service.Framework, w);
             } catch (Exception ex) {
                 SimpleLog.Error(ex);
             }

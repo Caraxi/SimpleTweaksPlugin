@@ -40,8 +40,8 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
             if (Enabled) return;
             TweakConfig = LoadConfig<Config>() ?? Plugin.PluginConfig.ChatTweaks.RenameChatTabs ?? new Config();
 
-            External.ClientState.Login += OnLogin;
-            if (External.ClientState.LocalPlayer != null) {
+            Service.ClientState.Login += OnLogin;
+            if (Service.ClientState.LocalPlayer != null) {
                 OnLogin(null, null);
             }
             base.Enable();
@@ -50,7 +50,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
         public override void Disable() {
             SaveConfig(TweakConfig);
             PluginConfig.ChatTweaks.RenameChatTabs = null;
-            External.ClientState.Login -= OnLogin;
+            Service.ClientState.Login -= OnLogin;
             cancellationToken?.Cancel();
             if (renameTask != null) {
                 var c = 0;
@@ -91,11 +91,11 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
                 while (true) {
                     try {
                         if (cancellationToken.IsCancellationRequested) break;
-                        var chatLog = (AtkUnitBase*) External.GameGui.GetAddonByName("ChatLog", 1);
+                        var chatLog = (AtkUnitBase*) Service.GameGui.GetAddonByName("ChatLog", 1);
                         if (chatLog != null) {
                             DoRename(chatLog);
 
-                            var chatLogPanel2 = (AtkUnitBase*) External.GameGui.GetAddonByName("ChatLogPanel_1", 1);
+                            var chatLogPanel2 = (AtkUnitBase*) Service.GameGui.GetAddonByName("ChatLogPanel_1", 1);
                             if (chatLogPanel2 != null) {
                                 DoRenamePanel(chatLogPanel2);
                             }
@@ -110,18 +110,18 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
         }
 
         public unsafe void ResetName() {
-            var chatLog = (AtkUnitBase*) External.GameGui.GetAddonByName("ChatLog", 1);
+            var chatLog = (AtkUnitBase*) Service.GameGui.GetAddonByName("ChatLog", 1);
             if (chatLog != null) DoRename(chatLog, true);
-            var chatLogPanel = (AtkUnitBase*) External.GameGui.GetAddonByName("ChatLogPanel_1", 1);
+            var chatLogPanel = (AtkUnitBase*) Service.GameGui.GetAddonByName("ChatLogPanel_1", 1);
             if (chatLogPanel != null) DoRenamePanel(chatLogPanel, true);
         }
 
-        public string DefaultName0 => External.ClientState.ClientLanguage switch {
+        public string DefaultName0 => Service.ClientState.ClientLanguage switch {
             ClientLanguage.French => "Général",
             ClientLanguage.German => "Allgemein",
             _ => "General"
         };
-        public string DefaultName1 => External.ClientState.ClientLanguage switch {
+        public string DefaultName1 => Service.ClientState.ClientLanguage switch {
             ClientLanguage.French => "Combat",
             ClientLanguage.German => "Kampf",
             _ => "Battle"

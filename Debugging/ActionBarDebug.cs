@@ -135,7 +135,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     case HotbarSlotType.Empty: { break; }
                     case HotbarSlotType.Action: {
 
-                        var action = External.Data.Excel.GetSheet<Action>().GetRow(slot->CommandId);
+                        var action = Service.Data.Excel.GetSheet<Action>().GetRow(slot->CommandId);
                         if (action == null) {
                             ImGui.TextDisabled("Not Found");
                         } else {
@@ -145,7 +145,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     }
 
                     case HotbarSlotType.Item: {
-                        var item = External.Data.GetExcelSheet<Item>().GetRow(slot->CommandId % 500000);
+                        var item = Service.Data.GetExcelSheet<Item>().GetRow(slot->CommandId % 500000);
                         if (item == null) {
                             ImGui.TextDisabled("Not Found");
                         } else {
@@ -155,7 +155,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     }
 
                     case HotbarSlotType.CraftAction: {
-                        var action = External.Data.GetExcelSheet<CraftAction>().GetRow(slot->CommandId);
+                        var action = Service.Data.GetExcelSheet<CraftAction>().GetRow(slot->CommandId);
                         if (action == null) {
                             ImGui.TextDisabled("Not Found");
                         } else {
@@ -165,7 +165,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     }
 
                     case HotbarSlotType.GeneralAction: {
-                        var action = External.Data.GetExcelSheet<GeneralAction>().GetRow(slot->CommandId);
+                        var action = Service.Data.GetExcelSheet<GeneralAction>().GetRow(slot->CommandId);
                         if (action == null) {
                             ImGui.TextDisabled("Not Found");
                         } else {
@@ -175,7 +175,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     }
                     
                     case HotbarSlotType.MainCommand: {
-                        var action = External.Data.GetExcelSheet<MainCommand>().GetRow(slot->CommandId);
+                        var action = Service.Data.GetExcelSheet<MainCommand>().GetRow(slot->CommandId);
                         if (action == null) {
                             ImGui.TextDisabled("Not Found");
                         } else {
@@ -185,7 +185,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     }
                     
                     case HotbarSlotType.ExtraCommand: {
-                        var rawSheet = External.Data.Excel.GetSheetRaw("ExtraCommand");
+                        var rawSheet = Service.Data.Excel.GetSheetRaw("ExtraCommand");
                         var parser = rawSheet.GetRowParser(slot->CommandId);
                         var name = parser.ReadColumn<SeString>(0);
                         ImGui.Text($"{name}");
@@ -205,12 +205,12 @@ namespace SimpleTweaksPlugin.Debugging {
                     }
 
                     case HotbarSlotType.Emote: {
-                        ImGui.Text($"{External.Data.Excel.GetSheet<Emote>().GetRow(slot->CommandId)?.Name ?? "Invalid"}");
+                        ImGui.Text($"{Service.Data.Excel.GetSheet<Emote>().GetRow(slot->CommandId)?.Name ?? "Invalid"}");
                         break;
                     }
                     
                     case HotbarSlotType.EventItem: {
-                        var item = External.Data.GetExcelSheet<EventItem>().GetRow(slot->CommandId);
+                        var item = Service.Data.GetExcelSheet<EventItem>().GetRow(slot->CommandId);
                         if (item == null) {
                             ImGui.TextDisabled("Not Found");
                         } else {
@@ -220,7 +220,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     }
                     
                     case HotbarSlotType.Mount: {
-                        var m = External.Data.Excel.GetSheet<Mount>().GetRow(slot->CommandId);
+                        var m = Service.Data.Excel.GetSheet<Mount>().GetRow(slot->CommandId);
                         if (m == null) {
                             ImGui.TextDisabled("Not Found");
                         } else {
@@ -231,7 +231,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     }
 
                     case HotbarSlotType.Minion: {
-                        var m = External.Data.Excel.GetSheet<Companion>().GetRow(slot->CommandId);
+                        var m = Service.Data.Excel.GetSheet<Companion>().GetRow(slot->CommandId);
                         if (m == null) {
                             ImGui.TextDisabled("Not Found");
                         } else {
@@ -253,7 +253,7 @@ namespace SimpleTweaksPlugin.Debugging {
                 
                 switch (slot->CommandType) {
                     case HotbarSlotType.Action: {
-                        var action = External.Data.Excel.GetSheet<Action>().GetRow((uint)adjustedId);
+                        var action = Service.Data.Excel.GetSheet<Action>().GetRow((uint)adjustedId);
                         if (action == null) {
                             ImGui.TextDisabled("Not Found");
                             break;
@@ -262,7 +262,7 @@ namespace SimpleTweaksPlugin.Debugging {
                         break;
                     }
                     case HotbarSlotType.Item: {
-                        var item = External.Data.Excel.GetSheet<Item>().GetRow(slot->CommandId);
+                        var item = Service.Data.Excel.GetSheet<Item>().GetRow(slot->CommandId);
                         if (item == null) {
                             ImGui.TextDisabled("Not Found");
                             break;
@@ -274,7 +274,7 @@ namespace SimpleTweaksPlugin.Debugging {
                         break;
                     }
                     case HotbarSlotType.GeneralAction: {
-                        var action = External.Data.Excel.GetSheet<GeneralAction>().GetRow(slot->CommandId);
+                        var action = Service.Data.Excel.GetSheet<GeneralAction>().GetRow(slot->CommandId);
                         if (action?.Action == null) {
                             ImGui.TextDisabled("Not Found");
                             break;

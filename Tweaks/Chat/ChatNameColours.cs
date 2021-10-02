@@ -50,8 +50,8 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
 
         public override void Setup() {
 
-            this.uiColorSheet = External.Data.Excel.GetSheet<UIColor>();
-            this.worldSheet = External.Data.Excel.GetSheet<World>();
+            this.uiColorSheet = Service.Data.Excel.GetSheet<UIColor>();
+            this.worldSheet = Service.Data.Excel.GetSheet<World>();
 
             if (uiColorSheet == null || worldSheet == null) {
                 Ready = false;
@@ -83,7 +83,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
 
                     ImGui.TableNextColumn();
 
-                    var xivCol = External.Data.Excel.GetSheet<UIColor>()?.GetRow(fc.ColourKey)?.UIForeground;
+                    var xivCol = Service.Data.Excel.GetSheet<UIColor>()?.GetRow(fc.ColourKey)?.UIForeground;
 
                     Vector4 fColor;
                     if (xivCol != null) {
@@ -180,15 +180,15 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
                 }
                 ImGui.TableNextColumn();
 
-                if (External.ClientState?.LocalPlayer != null) {
+                if (Service.ClientState?.LocalPlayer != null) {
                     ImGui.SetNextItemWidth(-1);
                     ImGui.InputText("##inputNewPlayerName", ref inputNewPlayerName, 25);
                     ImGui.TableNextColumn();
 
-                    var serverList = worldSheet.Where(w => w.DataCenter.Row == External.ClientState.LocalPlayer.CurrentWorld.GameData.DataCenter.Row).Select(w => w.Name.ToString()).ToList();
+                    var serverList = worldSheet.Where(w => w.DataCenter.Row == Service.ClientState.LocalPlayer.CurrentWorld.GameData.DataCenter.Row).Select(w => w.Name.ToString()).ToList();
                     var serverIndex = serverList.IndexOf(inputServerName);
                     if (serverIndex == -1) {
-                        serverIndex = serverList.IndexOf(External.ClientState.LocalPlayer.CurrentWorld.GameData.Name.ToString());
+                        serverIndex = serverList.IndexOf(Service.ClientState.LocalPlayer.CurrentWorld.GameData.Name.ToString());
                         inputServerName = serverList[serverIndex];
                     }
 
@@ -209,7 +209,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
             Config = LoadConfig<Configs>() ?? new Configs();
             printChatHook ??= Common.Hook<PrintMessage>("E8 ?? ?? ?? ?? 4C 8B BC 24 ?? ?? ?? ?? 4D 85 F6", PrintMessageDetour);
             printChatHook?.Enable();
-            External.Chat.ChatMessage += HandleChatMessage;
+            Service.Chat.ChatMessage += HandleChatMessage;
             base.Enable();
         }
 
@@ -276,7 +276,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
 
                     if (Parse(ref parsedSender)) {
                         stdSender.RawData = parsedSender.Encode();
-                        var allocatedString = External.LibcFunction.NewString(stdSender.RawData);
+                        var allocatedString = Service.LibcFunction.NewString(stdSender.RawData);
                         var retVal = printChatHook.Original(raptureLogModule, xivChatType, allocatedString.Address, message, senderId, param);
                         allocatedString.Dispose();
                         return retVal;
@@ -292,7 +292,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
 
         public override void Disable() {
             SaveConfig(Config);
-            External.Chat.ChatMessage -= HandleChatMessage;
+            Service.Chat.ChatMessage -= HandleChatMessage;
             printChatHook?.Disable();
             base.Disable();
         }

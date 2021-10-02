@@ -93,12 +93,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
-            External.Framework.Update += FrameworkOnUpdate;
+            Service.Framework.Update += FrameworkOnUpdate;
             base.Enable();
         }
 
         public override void Disable() {
-            External.Framework.Update -= FrameworkOnUpdate;
+            Service.Framework.Update -= FrameworkOnUpdate;
             UpdateCastBar(true);
             SaveConfig(Config);
             base.Disable();

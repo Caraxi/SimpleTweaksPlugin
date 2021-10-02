@@ -110,7 +110,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                                             break;
                                         }
                                         case "<homeworld>": {
-                                            var world = External.Data.Excel.GetSheet<World>().GetRow(battleChara->Character.HomeWorld);
+                                            var world = Service.Data.Excel.GetSheet<World>().GetRow(battleChara->Character.HomeWorld);
                                             payloads.Add(new TextPayload(world.Name));
                                             break;
                                         }

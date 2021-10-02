@@ -160,16 +160,16 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         private ExcelSheet<ExtendedItem> itemSheet;
 
         public override void Enable() {
-            this.itemSheet = External.Data.Excel.GetSheet<ExtendedItem>();
+            this.itemSheet = Service.Data.Excel.GetSheet<ExtendedItem>();
             if (itemSheet == null) return;
             Config = LoadConfig<Configs>() ?? new Configs();
-            External.Framework.Update += FrameworkOnOnUpdateEvent;
+            Service.Framework.Update += FrameworkOnOnUpdateEvent;
             base.Enable();
         }
 
         public override void Disable() {
             SaveConfig(Config);
-            External.Framework.Update -= FrameworkOnOnUpdateEvent;
+            Service.Framework.Update -= FrameworkOnOnUpdateEvent;
             base.Disable();
         }
 
@@ -216,11 +216,11 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         }
 
         private bool isHotkeyPress(VirtualKey[] keys) {
-            foreach (var vk in External.KeyState.GetValidVirtualKeys()) {
+            foreach (var vk in Service.KeyState.GetValidVirtualKeys()) {
                 if (keys.Contains(vk)) {
-                    if (!External.KeyState[vk]) return false;
+                    if (!Service.KeyState[vk]) return false;
                 } else {
-                    if (External.KeyState[vk]) return false;
+                    if (Service.KeyState[vk]) return false;
                 }
             }
             return true;
@@ -228,12 +228,12 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
         private void FrameworkOnOnUpdateEvent(Framework framework) {
             try {
-                if (External.GameGui.HoveredItem == 0) return;
+                if (Service.GameGui.HoveredItem == 0) return;
 
                 Action<ExtendedItem> action = null;
                 VirtualKey[] keys = null;
 
-                var language = External.ClientState.ClientLanguage;
+                var language = Service.ClientState.ClientLanguage;
                 if (action == null && Config.CopyHotkeyEnabled && isHotkeyPress(Config.CopyHotkey)) {
                     action = CopyItemName;
                     keys = Config.CopyHotkey;
@@ -256,14 +256,14 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 }
 
                 if (action != null) {
-                    var id = External.GameGui.HoveredItem;
+                    var id = Service.GameGui.HoveredItem;
                     if (id >= 2000000) return;
                     id %= 500000;
                     var item = itemSheet.GetRow((uint) id);
                     if (item == null) return;
                     action(item);
                     foreach (var k in keys) {
-                        External.KeyState[(int) k] = false;
+                        Service.KeyState[(int) k] = false;
                     }
                 }
             } catch (Exception ex) {

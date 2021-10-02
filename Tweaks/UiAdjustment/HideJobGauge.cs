@@ -31,7 +31,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
-            External.Framework.Update += FrameworkUpdate;
+            Service.Framework.Update += FrameworkUpdate;
             base.Enable();
         }
         
@@ -56,9 +56,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var name = Marshal.PtrToStringAnsi(new IntPtr(addon->Name));
                 
                 if (name != null && name.StartsWith("JobHud")) {
-                    if (reset || Config.ShowInDuty && External.Condition[ConditionFlag.BoundByDuty]) {
+                    if (reset || Config.ShowInDuty && Service.Condition[ConditionFlag.BoundByDuty]) {
                         if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
-                    } else if (Config.ShowInCombat && External.Condition[ConditionFlag.InCombat]) {
+                    } else if (Config.ShowInCombat && Service.Condition[ConditionFlag.InCombat]) {
                         if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
                     } else {
                         addon->UldManager.NodeListCount = 0;
@@ -72,7 +72,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public override void Disable() {
-            External.Framework.Update -= FrameworkUpdate;
+            Service.Framework.Update -= FrameworkUpdate;
             try {
                 Update(true);
             } catch {

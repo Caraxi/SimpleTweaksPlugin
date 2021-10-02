@@ -69,7 +69,7 @@ namespace SimpleTweaksPlugin.Debugging {
             // Possibly the most cursed shit I've ever done.
             if (originalHandler != null) return false;
             try {
-                var dalamudAssembly = External.PluginInterface.GetType().Assembly;
+                var dalamudAssembly = Service.PluginInterface.GetType().Assembly;
                 var service1T = dalamudAssembly.GetType("Dalamud.Service`1");
                 var interfaceManagerT = dalamudAssembly.GetType("Dalamud.Interface.Internal.InterfaceManager");
                 if (service1T == null) return false;
@@ -96,7 +96,7 @@ namespace SimpleTweaksPlugin.Debugging {
         private bool FreeExclusiveDraw() {
             if (originalHandler == null) return true;
             try {
-                var dalamudAssembly = External.PluginInterface.GetType().Assembly;
+                var dalamudAssembly = Service.PluginInterface.GetType().Assembly;
                 var service1T = dalamudAssembly.GetType("Dalamud.Service`1");
                 var interfaceManagerT = dalamudAssembly.GetType("Dalamud.Interface.Internal.InterfaceManager");
                 if (service1T == null) return false;
@@ -135,7 +135,7 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.PushStyleColor(ImGuiCol.Text, elementSelectorActive ? 0xFF00FFFF : 0xFFFFFFFF);
             if (ImGui.Button($"{(char) FontAwesomeIcon.ObjectUngroup}", new Vector2(-1, ImGui.GetItemRectSize().Y))) {
                 elementSelectorActive = !elementSelectorActive;
-                External.PluginInterface.UiBuilder.Draw -= DrawElementSelector;
+                Service.PluginInterface.UiBuilder.Draw -= DrawElementSelector;
                 FreeExclusiveDraw();
                 
                 if (elementSelectorActive) {

@@ -55,7 +55,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
             if (combo == null) combo = (Combo*) Common.Scanner.GetStaticAddressFromSig("48 89 2D ?? ?? ?? ?? 85 C0");
-            External.Framework.Update += FrameworkUpdate;
+            Service.Framework.Update += FrameworkUpdate;
             base.Enable();
         }
         
@@ -66,7 +66,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Disable() {
             SaveConfig(Config);
-            External.Framework.Update -= FrameworkUpdate;
+            Service.Framework.Update -= FrameworkUpdate;
             Update(true);
             base.Disable();
         }
@@ -164,10 +164,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
 
             if (combo->Action != 0 && !comboActions.ContainsKey(combo->Action)) {
-                comboActions.Add(combo->Action, External.Data.Excel.GetSheet<Action>().OrderBy(a => a.ClassJobLevel).FirstOrDefault(a => a.ActionCombo.Row == combo->Action)?.ClassJobLevel ?? 255);
+                comboActions.Add(combo->Action, Service.Data.Excel.GetSheet<Action>().OrderBy(a => a.ClassJobLevel).FirstOrDefault(a => a.ActionCombo.Row == combo->Action)?.ClassJobLevel ?? 255);
             }
             
-            var comboAvailable = External.ClientState?.LocalPlayer != null && combo->Timer > 0 && combo->Action != 0 && comboActions.ContainsKey(combo->Action) && comboActions[combo->Action] <= External.ClientState.LocalPlayer.Level;
+            var comboAvailable = Service.ClientState?.LocalPlayer != null && combo->Timer > 0 && combo->Action != 0 && comboActions.ContainsKey(combo->Action) && comboActions[combo->Action] <= Service.ClientState.LocalPlayer.Level;
             
             if (Config.AlwaysVisible || comboAvailable) {
                 UiHelper.Show(textNode);

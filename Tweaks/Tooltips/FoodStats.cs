@@ -37,12 +37,12 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         public override void Setup() {
             try {
                 if (getBaseParamAddress == IntPtr.Zero) {
-                    getBaseParamAddress = External.SigScanner.ScanText("E8 ?? ?? ?? ?? 44 8B C0 33 D2 48 8B CB E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 48 8D 0D");
+                    getBaseParamAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 44 8B C0 33 D2 48 8B CB E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 48 8D 0D");
                     getBaseParam = Marshal.GetDelegateForFunctionPointer<GetBaseParam>(getBaseParamAddress);
                 }
 
                 if (playerStaticAddress == IntPtr.Zero) {
-                    playerStaticAddress = External.SigScanner.GetStaticAddressFromSig("8B D7 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B7 E8");
+                    playerStaticAddress = Service.SigScanner.GetStaticAddressFromSig("8B D7 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B7 E8");
                 }
                 base.Setup();
             } catch (Exception ex) {
@@ -55,9 +55,9 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         private ExcelSheet<BaseParam> bpSheet;
 
         public override void Enable() {
-            itemSheet = External.Data.Excel.GetSheet<ExtendedItem>();
-            foodSheet = External.Data.Excel.GetSheet<ItemFood>();
-            bpSheet = External.Data.Excel.GetSheet<BaseParam>();
+            itemSheet = Service.Data.Excel.GetSheet<ExtendedItem>();
+            foodSheet = Service.Data.Excel.GetSheet<ItemFood>();
+            bpSheet = Service.Data.Excel.GetSheet<BaseParam>();
             if (itemSheet == null || foodSheet == null || bpSheet == null) return;
             Config = LoadConfig<Configs>() ?? new Configs() { Highlight = PluginConfig.TooltipTweaks.FoodStatsHighlight };
             base.Enable();
@@ -74,7 +74,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
         public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
 
-            var id = External.GameGui.HoveredItem;
+            var id = Service.GameGui.HoveredItem;
 
             if (id < 2000000) {
                 var hq = id >= 500000;

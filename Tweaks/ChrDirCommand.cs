@@ -23,7 +23,7 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         public override void Enable() {
             if (Enabled) return;
-            External.Commands.AddHandler("/chrdir", new CommandInfo(CommandHandler) {ShowInHelp = true, HelpMessage = "Print your character save directory to chat. '/chrdir open' to open the directory in explorer."});
+            Service.Commands.AddHandler("/chrdir", new CommandInfo(CommandHandler) {ShowInHelp = true, HelpMessage = "Print your character save directory to chat. '/chrdir open' to open the directory in explorer."});
 
             linkPayload = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.OpenFolderLink, OpenFolder);
             
@@ -35,13 +35,13 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
 
         private void CommandHandler(string command, string arguments) {
-            var saveDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "FINAL FANTASY XIV - A Realm Reborn", $"FFXIV_CHR{External.ClientState.LocalContentId:X16}");
+            var saveDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "FINAL FANTASY XIV - A Realm Reborn", $"FFXIV_CHR{Service.ClientState.LocalContentId:X16}");
             if (arguments == "open") {
                 Process.Start("explorer.exe", saveDir);
                 return;
             }
 
-            External.Chat.PrintChat(new XivChatEntry() {
+            Service.Chat.PrintChat(new XivChatEntry() {
                 Message= new SeString(new List<Payload>() {
                     new TextPayload("Character Directory:\n"),
                     new UIForegroundPayload(22),
@@ -60,7 +60,7 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         public override void Disable() {
             PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.OpenFolderLink);
-            External.Commands.RemoveHandler("/chrdir");
+            Service.Commands.RemoveHandler("/chrdir");
             Enabled = false;
         }
 

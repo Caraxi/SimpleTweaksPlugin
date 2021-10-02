@@ -33,14 +33,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.HideAchievementsNotifications ?? new Configs();
-            External.Framework.Update += this.HideNotifications;
+            Service.Framework.Update += this.HideNotifications;
             base.Enable();
         }
 
         public override void Disable() {
             SaveConfig(Config);
             PluginConfig.UiAdjustments.HideAchievementsNotifications = null;
-            External.Framework.Update -= this.HideNotifications;
+            Service.Framework.Update -= this.HideNotifications;
             base.Disable();
         }
 

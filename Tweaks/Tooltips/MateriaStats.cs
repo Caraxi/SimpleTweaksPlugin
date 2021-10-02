@@ -79,10 +79,10 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         private ExcelSheet<Materia> materiaSheet;
 
         public override void Enable() {
-            itemSheet = External.Data.Excel.GetSheet<ExtendedItem>();
-            itemLevelSheet = External.Data.Excel.GetSheet<ExtendedItemLevel>();
-            bpSheet = External.Data.Excel.GetSheet<ExtendedBaseParam>();
-            materiaSheet = External.Data.Excel.GetSheet<Materia>();
+            itemSheet = Service.Data.Excel.GetSheet<ExtendedItem>();
+            itemLevelSheet = Service.Data.Excel.GetSheet<ExtendedItemLevel>();
+            bpSheet = Service.Data.Excel.GetSheet<ExtendedBaseParam>();
+            materiaSheet = Service.Data.Excel.GetSheet<Materia>();
             if (itemSheet == null || itemLevelSheet == null || bpSheet == null || materiaSheet == null) return;
             Config = LoadConfig<Configs>() ?? PluginConfig.TooltipTweaks.MateriaStats ?? new Configs();
             base.Enable();

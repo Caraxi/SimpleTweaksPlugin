@@ -11,8 +11,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Description => "Shows the 45 second countdown after readying for a duty.";
 
         public override void Enable() {
-            External.Framework.Update += UpdateFramework;
-            prefix = External.Data.Excel.GetSheet<Addon>().GetRow(2780).Text.RawString;
+            Service.Framework.Update += UpdateFramework;
+            prefix = Service.Data.Excel.GetSheet<Addon>().GetRow(2780).Text.RawString;
             base.Enable();
         }
 
@@ -59,7 +59,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public override void Disable() {
-            External.Framework.Update -= UpdateFramework;
+            Service.Framework.Update -= UpdateFramework;
             sw.Stop();
             base.Disable();
         }

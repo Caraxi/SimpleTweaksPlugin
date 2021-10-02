@@ -37,7 +37,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             public void Set(uint statusId, ushort countdown, bool fromLocal) {
                 if (!timer.IsRunning || StatusID != statusId || countdown != lastCountdown) timer.Restart();
-                if (this.StatusID != statusId) Data = External.Data.Excel.GetSheet<Status>().GetRow(statusId);
+                if (this.StatusID != statusId) Data = Service.Data.Excel.GetSheet<Status>().GetRow(statusId);
                 this.StatusID = statusId;
                 this.lastCountdown = countdown;
                 this.IsFromLocalPlayer = fromLocal;
@@ -98,7 +98,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             updateSlotHook ??= Common.Hook<UpdateSlotStatusEffects>("E8 ?? ?? ?? ?? 4D 8B CE 44 89 7C 24", UpdateSlotDetour);
             updateSlotHook?.Enable();
-            External.Framework.Update += FrameworkUpdate;
+            Service.Framework.Update += FrameworkUpdate;
             base.Enable();
         }
 
@@ -275,7 +275,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override void Disable() {
             updatePartyListStatusEffectsHook?.Disable();
             updateSlotHook?.Disable();
-            External.Framework.Update -= FrameworkUpdate;
+            Service.Framework.Update -= FrameworkUpdate;
             try {
                 Update(true);
             } catch (Exception ex) {

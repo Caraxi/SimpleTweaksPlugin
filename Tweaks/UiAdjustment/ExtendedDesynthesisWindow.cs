@@ -58,7 +58,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private uint maxDesynthLevel = 520;
 
         public override void Setup() {
-            foreach (var i in External.Data.Excel.GetSheet<Item>()) {
+            foreach (var i in Service.Data.Excel.GetSheet<Item>()) {
                 if (i.Desynth > 0 && i.LevelItem.Row > maxDesynthLevel) maxDesynthLevel = i.LevelItem.Row;
             }
             SimpleLog.Debug("");
@@ -67,9 +67,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.ExtendedDesynthesisWindow ?? new Configs();
-            updateItemHook ??= new Hook<UpdateItemDelegate>(External.SigScanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 30 49 8B 38"), new UpdateItemDelegate(UpdateItemDetour));
+            updateItemHook ??= new Hook<UpdateItemDelegate>(Service.SigScanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 30 49 8B 38"), new UpdateItemDelegate(UpdateItemDetour));
             updateItemHook?.Enable();
-            updateListHook ??= new Hook<UpdateListDelegate>(External.SigScanner.ScanText("40 53 56 57 48 83 EC 20 48 8B D9 49 8B F0"), new UpdateListDelegate(UpdateListDetour));
+            updateListHook ??= new Hook<UpdateListDelegate>(Service.SigScanner.ScanText("40 53 56 57 48 83 EC 20 48 8B D9 49 8B F0"), new UpdateListDelegate(UpdateListDetour));
             updateListHook?.Enable();
             base.Enable();
         }
@@ -107,7 +107,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var skillTextNode = desynthRow.SkillTextNode;
             
             if (skillTextNode == null) return;
-            var addon = (AddonSalvageItemSelector*) External.GameGui.GetAddonByName("SalvageItemSelector", 1);
+            var addon = (AddonSalvageItemSelector*) Service.GameGui.GetAddonByName("SalvageItemSelector", 1);
             if (addon != null) {
                 if (index > addon->ItemCount) {
                     skillTextNode->SetText("Error");
@@ -119,7 +119,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 var item = Common.GetInventoryItem(salvageItem->Inventory, salvageItem->Slot);
 
-                var itemData = External.Data.Excel.GetSheet<Item>().GetRow(item->ItemId);
+                var itemData = Service.Data.Excel.GetSheet<Item>().GetRow(item->ItemId);
 
                 var classJobOffset = 2 * (int)(itemData.ClassJobRepair.Row - 8);
                 var desynthLevel = *(ushort*)(Common.PlayerStaticAddress + (0x6A6 + classJobOffset)) / 100f;
@@ -189,7 +189,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private void Update() {
 
-            var atkUnitBase = (AtkUnitBase*)External.GameGui.GetAddonByName("SalvageItemSelector", 1);
+            var atkUnitBase = (AtkUnitBase*)Service.GameGui.GetAddonByName("SalvageItemSelector", 1);
 
             if (atkUnitBase == null) return;
             if ((atkUnitBase->Flags & 0x20) != 0x20) return;
@@ -278,7 +278,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public void Reset() {
-            var atkUnitBase = (AtkUnitBase*)External.GameGui.GetAddonByName("SalvageItemSelector", 1);
+            var atkUnitBase = (AtkUnitBase*)Service.GameGui.GetAddonByName("SalvageItemSelector", 1);
             if (atkUnitBase == null) return;
             UiHelper.Close(atkUnitBase, true);
         }

@@ -10,7 +10,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
             var seStr = tooltip[ItemUiCategory];
             if (seStr == null) return;
-            var id = External.GameGui.HoveredItem;
+            var id = Service.GameGui.HoveredItem;
             if (id < 2000000) id %= 500000;
             seStr.Payloads.Add(new UIForegroundPayload(3));
             seStr.Payloads.Add(new TextPayload($"   [{id}]"));

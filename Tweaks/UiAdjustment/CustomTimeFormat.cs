@@ -108,7 +108,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private unsafe bool DrawClockConfig(int id, int index, string[] icons, ref bool hasChanged, ref MoveAction moveAction) {
             switch (id) {
                 case 0: {
-                    var et = DateTimeOffset.FromUnixTimeSeconds(*(long*)(External.Framework.Address.BaseAddress + 0x1608));
+                    var et = DateTimeOffset.FromUnixTimeSeconds(*(long*)(Service.Framework.Address.BaseAddress + 0x1608));
                     DrawClockConfig(index, "Eorzea Time", icons[0], ref hasChanged, ref TweakConfig.ShowET, ref TweakConfig.CustomFormatET, ref moveAction, et);
                     break;
                 }
@@ -190,13 +190,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override unsafe void Enable() {
             TweakConfig = LoadConfig<Config>() ?? PluginConfig.UiAdjustments.CustomTimeFormats ?? new Config(); 
             if (setTextAddress == IntPtr.Zero) {
-                setTextAddress = External.SigScanner.ScanText("E8 ?? ?? ?? ?? 49 8B FC") + 9;
+                setTextAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 49 8B FC") + 9;
                 SimpleLog.Verbose($"SetTextAddress: {setTextAddress.ToInt64():X}");
             }
 
             setTextHook ??= new Hook<SetText>(setTextAddress, new SetText(SetTextDetour));
             setTextHook?.Enable();
-            External.Framework.Update += OnFrameworkUpdate;
+            Service.Framework.Update += OnFrameworkUpdate;
             base.Enable();
         }
 
@@ -209,7 +209,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             setTextHook?.Disable();
             SaveConfig(TweakConfig);
             PluginConfig.UiAdjustments.CustomTimeFormats = null;
-            External.Framework.Update -= OnFrameworkUpdate;
+            Service.Framework.Update -= OnFrameworkUpdate;
             base.Disable();
         }
 
@@ -221,7 +221,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private unsafe AtkTextNode* textNodePtr = null;
         private unsafe void* textNodeVtablePtr = null;
 
-        private string[] GetClockIcons() => External.ClientState.ClientLanguage switch {
+        private string[] GetClockIcons() => Service.ClientState.ClientLanguage switch {
             ClientLanguage.German => new[] { $"{(char)SeIconChar.EorzeaTimeDe}", $"{(char)SeIconChar.LocalTimeDe}", $"{(char)SeIconChar.ServerTimeDe}" },
             ClientLanguage.French => new[] { $"{(char)SeIconChar.EorzeaTimeFr}", $"{(char)SeIconChar.LocalTimeFr}", $"{(char)SeIconChar.ServerTimeFr}" },
             _ => new[] { $"{(char)SeIconChar.EorzeaTimeEn}", $"{(char)SeIconChar.LocalTimeEn}", $"{(char)SeIconChar.ServerTimeEn}" },
@@ -229,7 +229,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private unsafe void UpdateTimeString(Utf8String xivString) {
             var icons = GetClockIcons();
-            var et = DateTimeOffset.FromUnixTimeSeconds(*(long*)(External.Framework.Address.BaseAddress + 0x1608));
+            var et = DateTimeOffset.FromUnixTimeSeconds(*(long*)(Service.Framework.Address.BaseAddress + 0x1608));
             var lt = DateTimeOffset.Now;
             var timeSeString = new SeString(new List<Payload>());
 
@@ -275,7 +275,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     return;
                 }
 
-                var serverInfo = (AtkUnitBase*) External.GameGui.GetAddonByName("_DTR", 1);
+                var serverInfo = (AtkUnitBase*) Service.GameGui.GetAddonByName("_DTR", 1);
                 if (serverInfo == null) return;
                 textNodePtr = (AtkTextNode*) UiAdjustments.GetResNodeByPath(serverInfo->RootNode, Child, Previous, Child);
                 if (textNodePtr == null) return;
