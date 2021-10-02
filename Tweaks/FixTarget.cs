@@ -37,6 +37,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         
         private unsafe void OnChatMessage(XivChatType type, uint senderid, ref SeString sender, ref SeString message, ref bool isHandled) {
             if (type != XivChatType.ErrorMessage) return;
+            if (Common.LastCommand == null || Common.LastCommand->StringPtr == null) return;
             var lastCommandStr = Encoding.UTF8.GetString(Common.LastCommand->StringPtr, (int) Common.LastCommand->BufUsed);
             if (!(lastCommandStr.StartsWith("/target ") || lastCommandStr.StartsWith("/ziel ") || lastCommandStr.StartsWith("/cibler "))) {
                 return;
