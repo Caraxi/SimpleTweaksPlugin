@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
@@ -26,7 +25,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private Configs config;
 
-        private const int statusFlagsOffset = 0x19A0;
         private IntPtr targetManager = IntPtr.Zero;
         private delegate byte ShouldDisplayNameplateDelegate(IntPtr raptureAtkModule, GameObject* actor, GameObject* localPlayer, float distance);
         private Hook<ShouldDisplayNameplateDelegate> shouldDisplayNameplateHook;
@@ -48,16 +46,15 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             ImGui.Checkbox("Ignore Targeted Players##SmartNameplatesIgnoreTargets", ref config.IgnoreTargets);
         };
 
-        // Crashes the game if ANY Dalamud Actor is created from within it, which is why everything is using offsets
         // returns 2 bits (b01 == display name, b10 == display hp)
-        private unsafe byte ShouldDisplayNameplateDetour(IntPtr raptureAtkModule, GameObject* actor, GameObject* localPlayer, float distance) {
+        private byte ShouldDisplayNameplateDetour(IntPtr raptureAtkModule, GameObject* actor, GameObject* localPlayer, float distance) {
             if (actor->ObjectKind != (byte) ObjectKind.Pc) goto ReturnOriginal;
             var pc = (BattleChara*) actor;
 
             var targets = TargetSystem.Instance();
 
             if (actor == localPlayer // Ignore localplayer
-                || (pc->Character.StatusFlags & 2) == 0 // Alternate in combat flag
+                || (((BattleChara*) localPlayer)->Character.StatusFlags & 2) == 0 // Alternate in combat flag
                 || GetTargetType(actor) == 3
 
                 || (config.IgnoreParty && (pc->Character.StatusFlags & 16) > 0) // Ignore party members
@@ -75,7 +72,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             ReturnOriginal:
             return shouldDisplayNameplateHook.Original(raptureAtkModule, actor, localPlayer, distance);
-
         }
 
         public override void Enable() {
