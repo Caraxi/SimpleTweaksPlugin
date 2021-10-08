@@ -5,12 +5,12 @@ namespace SimpleTweaksPlugin.Tweaks.Secret {
         public override string Name => "Disable AFK Kick";
 
         public override void Enable() {
-            External.Framework.Update += FrameworkOnUpdate;
+            Service.Framework.Update += FrameworkOnUpdate;
             base.Enable();
         }
 
         private void FrameworkOnUpdate(Dalamud.Game.Framework framework) {
-            if (External.Condition.Any()) {
+            if (Service.Condition.Any()) {
                 var atkModule = (byte*) Framework.Instance()->UIModule->GetRaptureAtkModule();
                 *(float*)(atkModule + 0x276C8) = 0;
                 *(float*)(atkModule + 0x276CC) = 0;
@@ -19,7 +19,7 @@ namespace SimpleTweaksPlugin.Tweaks.Secret {
         }
 
         public override void Disable() {
-            External.Framework.Update -= FrameworkOnUpdate;
+            Service.Framework.Update -= FrameworkOnUpdate;
             base.Disable();
         }
     }
