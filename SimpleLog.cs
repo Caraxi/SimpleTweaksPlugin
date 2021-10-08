@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Dalamud.Plugin;
+using Dalamud.Logging;
 
 namespace SimpleTweaksPlugin {
     internal static class SimpleLog {

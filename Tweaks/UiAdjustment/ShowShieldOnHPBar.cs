@@ -1,5 +1,5 @@
 ﻿using System;
-using Dalamud.Game.Internal;
+using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Helper;
 
@@ -16,14 +16,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         private AtkNineGridNode* shieldGridOver;
         public override void Enable()
         {
-            PluginInterface.Framework.OnUpdateEvent += FrameworkOnUpdateSetup;
+            Service.Framework.Update += FrameworkOnUpdateSetup;
             base.Enable();
         }
         
         public override void Disable()
         {
-            PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdateSetup;
-            PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdate;
+            Service.Framework.Update -= FrameworkOnUpdateSetup;
+            Service.Framework.Update -= FrameworkOnUpdate;
             if (shieldGrid != null)
             {
                 shieldGrid->AtkResNode.Width = 0;
@@ -86,8 +86,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 
                 shieldGrid = (AtkNineGridNode*) hpGaugeBar->Component->UldManager.NodeList[7];
                 shieldGridOver = (AtkNineGridNode*) hpGaugeBar->Component->UldManager.NodeList[8];
-                PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdateSetup;
-                PluginInterface.Framework.OnUpdateEvent += FrameworkOnUpdate;
+                Service.Framework.Update -= FrameworkOnUpdateSetup;
+                Service.Framework.Update += FrameworkOnUpdate;
             }
             catch (Exception ex)
             {
@@ -99,7 +99,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         {
             try
             {
-                var player = PluginInterface.ClientState.LocalPlayer;
+                var player = Service.ClientState.LocalPlayer;
                 if (player == null) return;
                 // Shield Percentage as a byte is at address 0x1997
                 var shieldRawPercentage = (*(byte*) (player.Address + 0x1997))/ 100f;
@@ -108,6 +108,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                 var shieldOverPercentage = shieldRawPercentage - playerHpDownPercentage;
                 shieldOverPercentage = shieldOverPercentage < 0 ? 0 : shieldOverPercentage;
                 var shieldPercentage = shieldRawPercentage - shieldOverPercentage;
+                if (shieldOverPercentage > 1) shieldOverPercentage = 1;
 
                 shieldGrid->AtkResNode.X = playerHpPercentage * 148;
                 shieldGrid->AtkResNode.Width = shieldPercentage > 0 ? (ushort)(shieldPercentage * 148 + 12 + 0.5f) : (ushort)0;

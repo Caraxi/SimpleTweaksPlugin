@@ -4,16 +4,14 @@ using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface;
-using Dalamud.Plugin;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
 using ImGuiScene;
-using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.Helper;
 using Action = System.Action;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
@@ -41,10 +39,7 @@ namespace SimpleTweaksPlugin.Debugging {
         private int loadImageVersion = 0;
         private ulong[] elementSelectorFind = {};
         private AtkUnitBase* selectedUnitBase = null;
-        
-        private delegate AtkStage* GetAtkStageSingleton();
-        private GetAtkStageSingleton getAtkStageSingleton;
-        
+
         private const int UnitListCount = 18;
         private readonly bool[] selectedInList = new bool[UnitListCount];
         private readonly string[] listNames = new string[UnitListCount]{
@@ -73,34 +68,55 @@ namespace SimpleTweaksPlugin.Debugging {
         private bool SetExclusiveDraw(Action action) {
             // Possibly the most cursed shit I've ever done.
             if (originalHandler != null) return false;
-            var d = (Dalamud.Dalamud) typeof(DalamudPluginInterface).GetField("dalamud", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(Plugin.PluginInterface);
-            if (d == null) return false;
-            var im = typeof(Dalamud.Dalamud).GetProperty("InterfaceManager", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(d);
-            if (im == null) return false;
-            var ef = im.GetType().GetField("OnDraw", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (ef == null) return false;
-            var handler = (RawDX11Scene.BuildUIDelegate) ef.GetValue(im);
-            if (handler == null) return false;
-            originalHandler = handler;
-            ef.SetValue(im, new RawDX11Scene.BuildUIDelegate(action));
-            return true;
+            try {
+                var dalamudAssembly = Service.PluginInterface.GetType().Assembly;
+                var service1T = dalamudAssembly.GetType("Dalamud.Service`1");
+                var interfaceManagerT = dalamudAssembly.GetType("Dalamud.Interface.Internal.InterfaceManager");
+                if (service1T == null) return false;
+                if (interfaceManagerT == null) return false;
+                var serviceInterfaceManager = service1T.MakeGenericType(interfaceManagerT);
+                var getter = serviceInterfaceManager.GetMethod("Get", BindingFlags.Static | BindingFlags.Public);
+                if (getter == null) return false;
+                var interfaceManager = getter.Invoke(null, null);
+                if (interfaceManager == null) return false;
+                var ef = interfaceManagerT.GetField("Draw", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (ef == null) return false;
+                var handler = (RawDX11Scene.BuildUIDelegate) ef.GetValue(interfaceManager);
+                if (handler == null) return false;
+                originalHandler = handler;
+                ef.SetValue(interfaceManager, new RawDX11Scene.BuildUIDelegate(action));
+                return true;
+            } catch (Exception ex) {
+                SimpleLog.Fatal(ex);
+                SimpleLog.Fatal("This could be messy...");
+            }
+            return false;
         }
         
         private bool FreeExclusiveDraw() {
-            // Undoing the cursed shit requires a little more of the same cursed shit
             if (originalHandler == null) return true;
-            SimpleLog.Log($"Free Exclusive Draw");
-            var dalamud = (Dalamud.Dalamud) Plugin.PluginInterface.GetType().GetField("dalamud", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(Plugin.PluginInterface);
-            if (dalamud == null) return false;
-            var interfaceManager = typeof(Dalamud.Dalamud).GetProperty("InterfaceManager", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(dalamud);
-            if (interfaceManager == null) return false;
+            try {
+                var dalamudAssembly = Service.PluginInterface.GetType().Assembly;
+                var service1T = dalamudAssembly.GetType("Dalamud.Service`1");
+                var interfaceManagerT = dalamudAssembly.GetType("Dalamud.Interface.Internal.InterfaceManager");
+                if (service1T == null) return false;
+                if (interfaceManagerT == null) return false;
+                var serviceInterfaceManager = service1T.MakeGenericType(interfaceManagerT);
+                var getter = serviceInterfaceManager.GetMethod("Get", BindingFlags.Static | BindingFlags.Public);
+                if (getter == null) return false;
+                var interfaceManager = getter.Invoke(null, null);
+                if (interfaceManager == null) return false;
+                var ef = interfaceManagerT.GetField("Draw", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (ef == null) return false;
+                ef.SetValue(interfaceManager, originalHandler);
+                originalHandler = null;
+                return true;
+            } catch (Exception ex) {
+                SimpleLog.Fatal(ex);
+                SimpleLog.Fatal("This could be messy...");
+            }
 
-            var eventField = interfaceManager.GetType().GetField("OnDraw", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (eventField == null) return false;
-
-            eventField.SetValue(interfaceManager, originalHandler);
-            originalHandler = null;
-            return true;
+            return false;
         }
         
         public override void Draw() {
@@ -108,10 +124,6 @@ namespace SimpleTweaksPlugin.Debugging {
             if (firstDraw) {
                 firstDraw = false;
                 selectedUnitBase = (AtkUnitBase*) (Plugin.PluginConfig.Debugging.SelectedAtkUnitBase);
-            }
-            if (getAtkStageSingleton == null) {
-                var getSingletonAddr = Plugin.PluginInterface.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 41 B8 01 00 00 00 48 8D 15 ?? ?? ?? ?? 48 8B 48 20 E8 ?? ?? ?? ?? 48 8B CF");
-                this.getAtkStageSingleton = Marshal.GetDelegateForFunctionPointer<GetAtkStageSingleton>(getSingletonAddr);
             }
 
             ImGui.BeginChild("st_uiDebug_unitBaseSelect", new Vector2(250, -1), true);
@@ -123,7 +135,7 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.PushStyleColor(ImGuiCol.Text, elementSelectorActive ? 0xFF00FFFF : 0xFFFFFFFF);
             if (ImGui.Button($"{(char) FontAwesomeIcon.ObjectUngroup}", new Vector2(-1, ImGui.GetItemRectSize().Y))) {
                 elementSelectorActive = !elementSelectorActive;
-                Plugin.PluginInterface.UiBuilder.OnBuildUi -= DrawElementSelector;
+                Service.PluginInterface.UiBuilder.Draw -= DrawElementSelector;
                 FreeExclusiveDraw();
                 
                 if (elementSelectorActive) {
@@ -158,7 +170,7 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.GetIO().WantCaptureKeyboard = true;
             ImGui.GetIO().WantCaptureMouse = true;
             ImGui.GetIO().WantTextInput = true;
-            if (ImGui.IsKeyPressed((int)VK.ESCAPE)) {
+            if (ImGui.IsKeyPressed((int)VirtualKey.ESCAPE)) {
                 elementSelectorActive = false;
                 FreeExclusiveDraw();
                 return;
@@ -243,7 +255,7 @@ namespace SimpleTweaksPlugin.Debugging {
         private List<AddonResult> GetAtkUnitBaseAtPosition(Vector2 position) {
             SimpleLog.Log($">> GetAtkUnitBaseAtPosition");
             var list = new List<AddonResult>();
-            var stage = getAtkStageSingleton();
+            var stage = AtkStage.GetSingleton();
             var unitManagers = &stage->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
             for (var i = 0; i < UnitListCount; i++) {
                 var unitManager = &unitManagers[i];
@@ -327,7 +339,7 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.PushStyleColor(ImGuiCol.Text, isVisible ? 0xFF00FF00 : 0xFF0000FF);
             ImGui.Text(isVisible ? "Visible" : "Not Visible");
             ImGui.PopStyleColor();
-            
+
             ImGui.SameLine(ImGui.GetWindowContentRegionWidth() - 25);
             if (ImGui.SmallButton("V")) {
                 atkUnitBase->Flags ^= 0x20;
@@ -508,7 +520,7 @@ namespace SimpleTweaksPlugin.Debugging {
                             for (var i = 0L; i < textNode->NodeText.BufUsed; i++) {
                                 seStringBytes[i] = textNode->NodeText.StringPtr[i];
                             }
-                            var seString = Plugin.PluginInterface.SeStringManager.Parse(seStringBytes);
+                            var seString = SeString.Parse(seStringBytes);
                             for (var i = 0; i < seString.Payloads.Count; i++) {
                                 var payload = seString.Payloads[i];
                                 ImGui.Text($"[{i}]");
@@ -567,28 +579,77 @@ namespace SimpleTweaksPlugin.Debugging {
                         var counterNode = (AtkCounterNode*)node;
                         ImGui.Text($"text: {Marshal.PtrToStringAnsi(new IntPtr(counterNode->NodeText.StringPtr))}");
                         break;
+                    case NodeType.NineGrid:
                     case NodeType.Image:
-                        var imageNode = (AtkImageNode*)node;
-                        if (imageNode->PartsList != null) {
-                            if (imageNode->PartId > imageNode->PartsList->PartCount) {
-                                ImGui.Text("part id > part count?");
+                        var iNode = (AtkImageNode*)node;
+                        if (iNode->PartsList != null) {
+                            if (iNode->PartId > iNode->PartsList->PartCount) {
+                                ImGui.Text($"part id({iNode->PartId}) > part count({iNode->PartsList->PartCount})?");
                             } else {
-                                var textureInfo = imageNode->PartsList->Parts[imageNode->PartId].UldAsset;
+                                var part = iNode->PartsList->Parts[iNode->PartId];
+                                var textureInfo = part.UldAsset;
                                 var texType = textureInfo->AtkTexture.TextureType;
-                                ImGui.Text($"texture type: {texType} part_id={imageNode->PartId} part_id_count={imageNode->PartsList->PartCount}");
+                                ImGui.Text($"texture type: {texType} part_id={iNode->PartId} part_id_count={iNode->PartsList->PartCount}");
                                 if (texType == TextureType.Resource) {
                                     var texFileNamePtr = textureInfo->AtkTexture.Resource->TexFileResourceHandle->ResourceHandle.FileName;
                                     var texString = Marshal.PtrToStringAnsi(new IntPtr(texFileNamePtr.BufferPtr));
                                     ImGui.Text($"texture path: {texString}");
                                     var kernelTexture = textureInfo->AtkTexture.Resource->KernelTextureObject;
-                                    
+
                                     if (ImGui.TreeNode($"Texture##{(ulong) kernelTexture->D3D11ShaderResourceView:X}")) {
+                                        var textureSize = new Vector2(kernelTexture->Width, kernelTexture->Height);
                                         ImGui.Image(new IntPtr(kernelTexture->D3D11ShaderResourceView), new Vector2(kernelTexture->Width, kernelTexture->Height));
+
+                                        if (ImGui.TreeNode($"Parts##{(ulong)kernelTexture->D3D11ShaderResourceView:X}")) {
+
+                                            ImGui.BeginTable($"partsTable##{(ulong)kernelTexture->D3D11ShaderResourceView:X}", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg);
+                                            ImGui.TableSetupColumn("Part ID", ImGuiTableColumnFlags.WidthFixed, 80);
+                                            ImGui.TableSetupColumn("Switch", ImGuiTableColumnFlags.WidthFixed, 45);
+                                            ImGui.TableSetupColumn("Part Texture");
+                                            ImGui.TableHeadersRow();
+
+                                            for (ushort i = 0; i < iNode->PartsList->PartCount; i++) {
+                                                ImGui.TableNextColumn();
+
+                                                if (i == iNode->PartId) ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0, 1, 0, 1));
+                                                ImGui.Text($"#{i.ToString().PadLeft(iNode->PartsList->PartCount.ToString().Length, '0')}");
+                                                if (i == iNode->PartId) ImGui.PopStyleColor(1);
+                                                ImGui.TableNextColumn();
+
+                                                if (ImGui.Button($"Switch##{(ulong)kernelTexture->D3D11ShaderResourceView:X}p{i}", new Vector2(-1, 23))) {
+                                                    iNode->PartId = i;
+                                                }
+
+                                                ImGui.TableNextColumn();
+
+
+
+
+                                                var tPart = iNode->PartsList->Parts[i];
+
+                                                ImGui.Text($"[U: {tPart.U}  V: {tPart.V}  W: {tPart.Width}  H: {tPart.Height}]");
+
+
+
+
+                                                ImGui.Image(new IntPtr(kernelTexture->D3D11ShaderResourceView), new Vector2(tPart.Width, tPart.Height), new Vector2(tPart.U , tPart.V) / textureSize, new Vector2(tPart.U + tPart.Width, tPart.V + tPart.Height) / textureSize);
+
+
+
+                                            }
+                                            ImGui.EndTable();
+
+
+
+                                            ImGui.TreePop();
+                                        }
+
+
                                         ImGui.TreePop();
                                     }
                                 } else if (texType == TextureType.KernelTexture) {
                                     if (ImGui.TreeNode($"Texture##{(ulong) textureInfo->AtkTexture.KernelTexture->D3D11ShaderResourceView:X}")) {
-                                        ImGui.Image(new IntPtr(textureInfo->AtkTexture.KernelTexture->D3D11ShaderResourceView), new Vector2(textureInfo->AtkTexture.KernelTexture->Width, textureInfo->AtkTexture.KernelTexture->Height)); 
+                                        ImGui.Image(new IntPtr(textureInfo->AtkTexture.KernelTexture->D3D11ShaderResourceView), new Vector2(textureInfo->AtkTexture.KernelTexture->Width, textureInfo->AtkTexture.KernelTexture->Height));
                                         ImGui.TreePop();
                                     }
                                 }
@@ -597,6 +658,7 @@ namespace SimpleTweaksPlugin.Debugging {
                             ImGui.Text("no texture loaded");
                         }
 
+                        if (node->Type != NodeType.Image) break;
                         ImGui.SetNextItemWidth(150);
                         ImGui.InputInt($"###inputIconId__{(ulong)node:X}", ref loadImageId);
                         ImGui.SameLine();
@@ -604,7 +666,7 @@ namespace SimpleTweaksPlugin.Debugging {
                         ImGui.InputInt($"###inputIconVersion__{(ulong)node:X}", ref loadImageVersion);
                         ImGui.SameLine();
                         if (ImGui.SmallButton("Load Icon")) {
-                            imageNode->LoadIconTexture(loadImageId, loadImageVersion);
+                            iNode->LoadIconTexture(loadImageId, loadImageVersion);
                         }
                         
                         
@@ -766,7 +828,7 @@ namespace SimpleTweaksPlugin.Debugging {
 
             bool foundSelected = false;
             bool noResults = true;
-            var stage = getAtkStageSingleton();
+            var stage = AtkStage.GetSingleton();
                 
             var unitManagers = &stage->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
             

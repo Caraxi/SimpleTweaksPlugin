@@ -1,8 +1,11 @@
-name: Build SimpleTweaksPlugin for PullRequest
+name: Build SimpleTweaksPlugin with API4
 on:
-  pull_request:
+  push:
+    branches:
+      - api4
 jobs:
   build:
+    if: "! contains(toJSON(github.event.commits.*.message), '[skip-ci]')"
     runs-on: [windows-latest]
 
     steps:
@@ -19,10 +22,11 @@ jobs:
       - name: Restore NuGet Packages
         run: nuget restore SimpleTweaksPlugin.sln
 
-      - name: Download Dalamud
+      - name: Download Dalamud staging
         run: |
             Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/stg/latest.zip -OutFile latest.zip
             Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
+            
       - name: Build
         run: msbuild SimpleTweaksPlugin.sln /p:Configuration=Release
 
@@ -33,5 +37,5 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v2.2.1
         with:
-          name: pr-artifact
+          name: api4-artifact
           path: ./Artifact/*

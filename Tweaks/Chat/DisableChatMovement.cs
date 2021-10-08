@@ -23,11 +23,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             try {
                 if (setUiPositionAddress == IntPtr.Zero) {
-                    setUiPositionAddress = PluginInterface.TargetModuleScanner.ScanText("40 53 48 83 EC 20 80 A2 ?? ?? ?? ?? ??");
+                    setUiPositionAddress = Service.SigScanner.ScanText("40 53 48 83 EC 20 80 A2 ?? ?? ?? ?? ??");
                 }
 
                 if (chatPanelControlAddress == IntPtr.Zero) {
-                    chatPanelControlAddress = PluginInterface.TargetModuleScanner.ScanText("40 55 57 48 81 EC ?? ?? ?? ?? 48 8B F9 45 8B C8");
+                    chatPanelControlAddress = Service.SigScanner.ScanText("40 55 57 48 81 EC ?? ?? ?? ?? 48 8B F9 45 8B C8");
                 }
                 
                 if (setUiPositionAddress == IntPtr.Zero || chatPanelControlAddress == IntPtr.Zero) {

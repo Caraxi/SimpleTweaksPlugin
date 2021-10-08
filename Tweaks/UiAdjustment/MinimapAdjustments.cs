@@ -1,18 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
-using Dalamud.Game.Internal;
+using System.Numerics;
+using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
-using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using SimpleTweaksPlugin.TweakSystem;
-
-namespace SimpleTweaksPlugin {
-    public partial class UiAdjustmentsConfig {
-        public bool ShouldSerializeMinimapAdjustments() => MinimapAdjustments != null;
-        public MinimapAdjustments.Configs MinimapAdjustments = null;
-    }
-}
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
@@ -29,12 +22,22 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool HideWeather;
 
             public float WeatherPosition = 0;
+
+            public Vector2 CoordinatesPosition = new();
         }
 
         public Configs Config { get; private set; }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             hasChanged |= ImGui.Checkbox("Hide Coordinates", ref Config.HideCoordinates);
+            if (!Config.HideCoordinates) {
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(300);
+                hasChanged |= ImGui.DragFloat2("Position##CoordinatePosition", ref Config.CoordinatesPosition, 0.1f);
+                if (ImGui.IsItemHovered()) {
+                    ImGui.SetTooltip("CTRL+Click to set exact value.");
+                }
+            }
             hasChanged |= ImGui.Checkbox("Hide Compass Lock", ref Config.HideCompassLock);
             hasChanged |= ImGui.Checkbox("Hide Compass Directions", ref Config.HideCompassDirections);
             hasChanged |= ImGui.Checkbox("Hide Zoom Buttons", ref Config.HideZoom);
@@ -59,24 +62,23 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Description => "Allows hiding elements of the minimap display.";
 
         public override void Enable() {
-            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.MinimapAdjustments ?? new Configs();
-            PluginInterface.ClientState.OnLogin += OnLogin;
-            PluginInterface.ClientState.TerritoryChanged += OnTerritoryChanged;
+            Config = LoadConfig<Configs>() ?? new Configs();
+            Service.ClientState.Login += OnLogin;
+            Service.ClientState.TerritoryChanged += OnTerritoryChanged;
             base.Enable();
             Update();
         }
 
         private void OnTerritoryChanged(object sender, ushort e) {
             sw.Restart();
-            PluginInterface.Framework.OnUpdateEvent -= WaitForUpdate;
-            PluginInterface.Framework.OnUpdateEvent += WaitForUpdate;
+            Service.Framework.Update -= WaitForUpdate;
+            Service.Framework.Update += WaitForUpdate;
         }
 
         public override void Disable() {
             SaveConfig(Config);
-            PluginConfig.UiAdjustments.MinimapAdjustments = null;
-            PluginInterface.Framework.OnUpdateEvent -= WaitForUpdate;
-            PluginInterface.ClientState.OnLogin -= OnLogin;
+            Service.Framework.Update -= WaitForUpdate;
+            Service.ClientState.Login -= OnLogin;
             base.Disable();
             Update();
         }
@@ -84,31 +86,31 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         
         private void OnLogin(object sender, EventArgs e) {
             sw.Restart();
-            PluginInterface.Framework.OnUpdateEvent -= WaitForUpdate;
-            PluginInterface.Framework.OnUpdateEvent += WaitForUpdate;
+            Service.Framework.Update -= WaitForUpdate;
+            Service.Framework.Update += WaitForUpdate;
         }
 
         private void WaitForUpdate(Framework framework) {
             try {
                 if (!sw.IsRunning) sw.Restart();
-                var unitBase = (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName("_NaviMap", 1);
+                var unitBase = (AtkUnitBase*) Service.GameGui.GetAddonByName("_NaviMap", 1);
                 if (unitBase == null) {
                     if (sw.ElapsedMilliseconds > 30000) {
                         sw.Stop();
-                        framework.OnUpdateEvent -= WaitForUpdate;
+                        Service.Framework.Update -= WaitForUpdate;
                     }
                     return;
                 }
                 Update();
-                framework.OnUpdateEvent -= WaitForUpdate;
+                Service.Framework.Update -= WaitForUpdate;
             } catch (Exception ex) {
                 SimpleLog.Error(ex);
-                framework.OnUpdateEvent -= WaitForUpdate;
+                Service.Framework.Update -= WaitForUpdate;
             }
         }
 
         public void Update() {
-            var unitBase = (AtkUnitBase*) PluginInterface.Framework.Gui.GetUiObjectByName("_NaviMap", 1);
+            var unitBase = (AtkUnitBase*) Service.GameGui.GetAddonByName("_NaviMap", 1);
             if (unitBase == null) return;
 
             if (unitBase->UldManager.NodeListCount < 19) return;
@@ -142,6 +144,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             
             var coordinateDisplay = unitBase->UldManager.NodeList[13];
             if (Enabled && Config.HideCoordinates) UiHelper.Hide(coordinateDisplay); else UiHelper.Show(coordinateDisplay);
+            if (Enabled) {
+                coordinateDisplay->SetPositionFloat(44 + Config.CoordinatesPosition.X, 194 + Config.CoordinatesPosition.Y);
+            } else {
+                coordinateDisplay->SetPositionFloat(44, 194);
+            }
             
             var compassLockButton = unitBase->UldManager.NodeList[16];
             if (Enabled && Config.HideCompassLock) UiHelper.Hide(compassLockButton); else UiHelper.Show(compassLockButton);

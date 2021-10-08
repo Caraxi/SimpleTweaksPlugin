@@ -3,7 +3,7 @@ using Dalamud.Plugin;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using SimpleTweaksPlugin.Helper;
@@ -28,6 +28,8 @@ namespace SimpleTweaksPlugin {
 
         public bool ShowTweakDescriptions = true;
         public bool ShowTweakIDs;
+
+        public string CustomCulture = string.Empty;
 
         public void Init(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface) {
             this.plugin = plugin;
@@ -237,6 +239,26 @@ namespace SimpleTweaksPlugin {
                         if (ImGui.Checkbox("Show tweak descriptions.", ref ShowTweakDescriptions)) Save();
                         ImGui.Separator();
                         if (ImGui.Checkbox("Show tweak IDs.", ref ShowTweakIDs)) Save();
+                        ImGui.Separator();
+
+                        ImGui.SetNextItemWidth(130);
+                        if (ImGui.BeginCombo("Formatting Culture", plugin.Culture.Name)) {
+
+                            var cultures = CultureInfo.GetCultures(CultureTypes.AllCultures);
+                            for (var i = 0; i < cultures.Length; i++) {
+                                var c = cultures[i];
+                                if (ImGui.Selectable($"{c.Name}", Equals(c, plugin.Culture))) {
+                                    CustomCulture = c.Name;
+                                    plugin.Culture = c;
+                                    Save();
+                                }
+                            }
+
+                            ImGui.EndCombo();
+                        }
+                        ImGui.SameLine();
+                        ImGui.TextDisabled("Changes number formatting, not all tweaks support this.");
+
                         ImGui.Separator();
                         if (ImGui.Checkbox("Hide Ko-fi link.", ref HideKofi)) Save();
                         ImGui.Separator();

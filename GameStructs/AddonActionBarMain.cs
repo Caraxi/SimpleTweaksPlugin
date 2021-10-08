@@ -1,5 +1,5 @@
 ﻿using System.Runtime.InteropServices;
-using Dalamud.Game.Internal.Gui.Structs;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace SimpleTweaksPlugin.GameStructs {
 

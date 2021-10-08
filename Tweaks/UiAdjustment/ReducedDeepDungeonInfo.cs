@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Game.Internal;
+using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Helper;
 using Lumina.Excel.GeneratedSheets;
@@ -16,12 +16,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         protected override string Author => "Aireil";
 
         public override void Enable() {
-            PluginInterface.Framework.OnUpdateEvent += OnFrameworkUpdate;
+            Service.Framework.Update += OnFrameworkUpdate;
             base.Enable();
         }
 
         public override void Disable() {
-            PluginInterface.Framework.OnUpdateEvent -= OnFrameworkUpdate;
+            Service.Framework.Update -= OnFrameworkUpdate;
             base.Disable();
             UpdateDeepDungeonStatus(true);
         }
@@ -84,7 +84,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 UiHelper.SetPosition(textNode, 78, 65);
                 textNode->FontSize = 12;
                 textNode->AlignmentFontType = 3;
-                textNode->SetText(PluginInterface.Data.Excel.GetSheet<Addon>().GetRow(10430).Text);
+                textNode->SetText(Service.Data.Excel.GetSheet<Addon>().GetRow(10430).Text);
 
                 return;
             }
@@ -180,10 +180,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             
             if (aetherpool == "+99")
             {
-                payloads.Insert(0, new UIGlowPayload(PluginInterface.Data, 501));
-                payloads.Insert(payloads.Count, new UIGlowPayload(PluginInterface.Data, 0));
-                payloads.Insert(0, new UIForegroundPayload(PluginInterface.Data, 500));
-                payloads.Insert(payloads.Count, new UIForegroundPayload(PluginInterface.Data, 0));
+                payloads.Insert(0, new UIGlowPayload(501));
+                payloads.Insert(payloads.Count, new UIGlowPayload(0));
+                payloads.Insert(0, new UIForegroundPayload(500));
+                payloads.Insert(payloads.Count, new UIForegroundPayload(0));
             }
             
             return payloads;

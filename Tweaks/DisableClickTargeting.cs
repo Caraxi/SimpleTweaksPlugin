@@ -3,7 +3,7 @@ using System.Linq;
 using Dalamud.Hooking;
 using System.Numerics;
 using System.Text;
-using Dalamud.Game.ClientState;
+using Dalamud.Game.ClientState.Conditions;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks;
@@ -109,10 +109,10 @@ namespace SimpleTweaksPlugin.Tweaks {
                         nameFilterNew = string.Empty;
                     }
                     ImGui.TableNextColumn();
-                    var target = PluginInterface.ClientState.Targets.SoftTarget ?? PluginInterface.ClientState.Targets.CurrentTarget;
+                    var target = Service.Targets.SoftTarget ?? Service.Targets.Target;
                     if (target != null) {
                         if (ImGui.Button("Target")) {
-                            nameFilterNew = target.Name;
+                            nameFilterNew = target.Name.TextValue;
                         }
                     }
                     
@@ -181,13 +181,13 @@ namespace SimpleTweaksPlugin.Tweaks {
                     var actorName = Encoding.UTF8.GetString(a2 + 0x30, l).Trim();
                     var nf = Config.NameFilters.FirstOrDefault(a => a.Name == actorName);
                     if (nf != default) {
-                        if ((nf.OnlyInCombat && !PluginInterface.ClientState.Condition[ConditionFlag.InCombat]) || (!nf.DisableRight)) return rightClickTargetHook.Original(a1, a2, a3);
+                        if ((nf.OnlyInCombat && !Service.Condition[ConditionFlag.InCombat]) || (!nf.DisableRight)) return rightClickTargetHook.Original(a1, a2, a3);
                         return null;
                     }
                 }
             }
             
-            if (!Config.DisableRightClick || (Config.OnlyDisableInCombat && !PluginInterface.ClientState.Condition[ConditionFlag.InCombat])) {
+            if (!Config.DisableRightClick || (Config.OnlyDisableInCombat && !Service.Condition[ConditionFlag.InCombat])) {
                 return rightClickTargetHook.Original(a1, a2, a3);
             }
             return null;
@@ -206,13 +206,13 @@ namespace SimpleTweaksPlugin.Tweaks {
                     var actorName = Encoding.UTF8.GetString(a2 + 0x30, l).Trim();
                     var nf = Config.NameFilters.FirstOrDefault(a => a.Name == actorName);
                     if (nf != default) {
-                        if ((nf.OnlyInCombat && !PluginInterface.ClientState.Condition[ConditionFlag.InCombat]) || (!nf.DisableLeft)) return leftClickTargetHook.Original(a1, a2, a3);
+                        if ((nf.OnlyInCombat && !Service.Condition[ConditionFlag.InCombat]) || (!nf.DisableLeft)) return leftClickTargetHook.Original(a1, a2, a3);
                         return null;
                     }
                 }
             }
             
-            if (!Config.DisableLeftClick || Config.OnlyDisableInCombat && !PluginInterface.ClientState.Condition[ConditionFlag.InCombat]) {
+            if (!Config.DisableLeftClick || Config.OnlyDisableInCombat && !Service.Condition[ConditionFlag.InCombat]) {
                 return leftClickTargetHook.Original(a1, a2, a3);
             }
             return null;

@@ -12,14 +12,14 @@ namespace SimpleTweaksPlugin.Debugging {
         public override void Draw() {
             if (ImGui.BeginTabBar(Name)) {
                 if (ImGui.BeginTabItem($"Sheet Cache##luminaDebugging")) {
-                    cacheField ??= Plugin.PluginInterface.Data.Excel.GetType().GetField("_sheetCache", BindingFlags.Instance | BindingFlags.NonPublic);
+                    cacheField ??= Service.Data.Excel.GetType().GetField("_sheetCache", BindingFlags.Instance | BindingFlags.NonPublic);
 
                     if (cacheField == null) {
                         ImGui.Text("Missing Field: _sheetCache");
                         return;
                     }
                     
-                    var cache = (Dictionary<Tuple<Language, ulong>, ExcelSheetImpl>) (cacheField.GetValue(Plugin.PluginInterface.Data.Excel));
+                    var cache = (Dictionary<Tuple<Language, ulong>, ExcelSheetImpl>) (cacheField.GetValue(Service.Data.Excel));
                     if (ImGui.Button("Clear all Cache")) {
                         cache.Clear();
                     }

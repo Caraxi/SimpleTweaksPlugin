@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Target Name="ILRepacker" AfterTargets="Build">
+
+        <ItemGroup>
+            <InputAssemblies Include="$(OutputPath)\SimpleTweaksPlugin.dll" />
+            <InputAssemblies Include="$(OutputPath)\FFXIVClientStructs.dll" />
+            <InputAssemblies Include="$(OutputPath)\FFXIVClientStructs.Common.dll" />
+            <InputAssemblies Include="$(OutputPath)\Serilog.dll" />
+        </ItemGroup>
+
+        <ILRepack
+                Parallel="true"
+                Internalize="true"
+                InternalizeExclude="@(DoNotInternalizeAssemblies)"
+                InputAssemblies="@(InputAssemblies)"
+                LibraryPath="$(OutputPath);$(AppData)\XIVLauncher\addon\Hooks\dev"
+                TargetKind="Dll"
+                DebugInfo="true"
+                OutputFile="$(OutputPath)..\$(Configuration).ILMerge\$(AssemblyName).dll"
+        />
+    </Target>
+</Project>

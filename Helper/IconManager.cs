@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dalamud;
-using Dalamud.Data.LuminaExtensions;
+using Dalamud.Logging;
 using Dalamud.Plugin;
+using Dalamud.Utility;
 using ImGuiScene;
 using Lumina.Data.Files;
 using Action = Lumina.Excel.GeneratedSheets.Action;
@@ -54,7 +55,7 @@ namespace SimpleTweaksPlugin.Helper {
             });
         }
         
-        public TexFile GetIcon(int iconId, bool hq = false) => this.GetIcon(pluginInterface.Data.Language, iconId, hq);
+        public TexFile GetIcon(int iconId, bool hq = false) => this.GetIcon(Service.Data.Language, iconId, hq);
 
         /// <summary>
         /// Get a <see cref="T:Lumina.Data.Files.TexFile" /> containing the icon with the given ID, of the given language.
@@ -80,7 +81,7 @@ namespace SimpleTweaksPlugin.Helper {
                     type = "fr/";
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("Language", "Unknown Language: " + pluginInterface.Data.Language.ToString());
+                    throw new ArgumentOutOfRangeException("Language", "Unknown Language: " + Service.Data.Language.ToString());
             }
             return this.GetIcon(type, iconId, hq);
         }
@@ -93,8 +94,8 @@ namespace SimpleTweaksPlugin.Helper {
                 type += "/";
             
             var formatStr = $"ui/icon/{{0:D3}}000/{(hq?"hq/":"")}{{1}}{{2:D6}}.tex";
-            TexFile file = pluginInterface.Data.GetFile<TexFile>(string.Format(formatStr, (object) (iconId / 1000), (object) type, (object) iconId));
-            return file != null || type.Length <= 0 ? file : pluginInterface.Data.GetFile<TexFile>(string.Format(formatStr, (object) (iconId / 1000), (object) string.Empty, (object) iconId));
+            TexFile file = Service.Data.GetFile<TexFile>(string.Format(formatStr, (object) (iconId / 1000), (object) type, (object) iconId));
+            return file != null || type.Length <= 0 ? file : Service.Data.GetFile<TexFile>(string.Format(formatStr, (object) (iconId / 1000), (object) string.Empty, (object) iconId));
         }
         
 

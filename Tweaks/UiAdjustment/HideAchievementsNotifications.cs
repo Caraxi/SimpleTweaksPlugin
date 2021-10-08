@@ -1,7 +1,8 @@
 ﻿using System;
-using Dalamud.Game.Internal;
+using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
+using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -32,14 +33,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.HideAchievementsNotifications ?? new Configs();
-            this.Plugin.PluginInterface.Framework.OnUpdateEvent += this.HideNotifications;
+            Service.Framework.Update += this.HideNotifications;
             base.Enable();
         }
 
         public override void Disable() {
             SaveConfig(Config);
             PluginConfig.UiAdjustments.HideAchievementsNotifications = null;
-            this.Plugin.PluginInterface.Framework.OnUpdateEvent -= this.HideNotifications;
+            Service.Framework.Update -= this.HideNotifications;
             base.Disable();
         }
 
@@ -56,13 +57,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private unsafe void HideNotification(string name) {
-            var dalamudAddon = this.Plugin.PluginInterface.Framework.Gui.GetAddonByName(name, 1);
-            if (dalamudAddon == null || dalamudAddon.Address == IntPtr.Zero) {
-                return;
-            }
-
             try {
-                var atkUnitBase = (AtkUnitBase*) dalamudAddon.Address;
+                var atkUnitBase = Common.GetUnitBase(name);
+                if (atkUnitBase == null) return;
                 atkUnitBase->Flags = (byte) (atkUnitBase->Flags & ~VisibilityFlag);
             } catch (Exception) {
                 // ignore

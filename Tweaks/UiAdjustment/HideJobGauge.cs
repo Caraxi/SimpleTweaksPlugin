@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Dalamud.Game.ClientState;
-using Dalamud.Game.Internal;
+using Dalamud.Game;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
@@ -30,7 +31,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
-            PluginInterface.Framework.OnUpdateEvent += FrameworkUpdate;
+            Service.Framework.Update += FrameworkUpdate;
             base.Enable();
         }
         
@@ -55,9 +56,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var name = Marshal.PtrToStringAnsi(new IntPtr(addon->Name));
                 
                 if (name != null && name.StartsWith("JobHud")) {
-                    if (reset || Config.ShowInDuty && PluginInterface.ClientState.Condition[ConditionFlag.BoundByDuty]) {
+                    if (reset || Config.ShowInDuty && Service.Condition[ConditionFlag.BoundByDuty]) {
                         if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
-                    } else if (Config.ShowInCombat && PluginInterface.ClientState.Condition[ConditionFlag.InCombat]) {
+                    } else if (Config.ShowInCombat && Service.Condition[ConditionFlag.InCombat]) {
                         if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
                     } else {
                         addon->UldManager.NodeListCount = 0;
@@ -71,7 +72,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public override void Disable() {
-            PluginInterface.Framework.OnUpdateEvent -= FrameworkUpdate;
+            Service.Framework.Update -= FrameworkUpdate;
             try {
                 Update(true);
             } catch {

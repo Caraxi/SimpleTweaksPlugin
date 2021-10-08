@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 namespace SimpleTweaksPlugin.GameStructs.NumberArray {
     [StructLayout(LayoutKind.Sequential, Size = 519 * 4)]

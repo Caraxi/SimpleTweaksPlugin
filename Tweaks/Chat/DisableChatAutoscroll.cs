@@ -44,6 +44,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.ChatTweaks.DisableChatAutoscroll ?? new Configs();
             scrollToBottomHook = Common.Hook<ScrollToBottomDelegate>("E8 ?? ?? ?? ?? 48 85 FF 75 0D", ScrollToBottomDetour);
+            scrollToBottomHook?.Enable();
             base.Enable();
         }
 

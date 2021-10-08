@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Dalamud.Game;
 using Dalamud.Game.Internal;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
@@ -44,7 +45,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.FixedShadowDistance ?? new Configs();
             if (shadowManager == null) return;
-            PluginInterface.Framework.OnUpdateEvent += SetupShadows;
+            Service.Framework.Update += SetupShadows;
             base.Enable();
         }
 
@@ -66,9 +67,8 @@ namespace SimpleTweaksPlugin.Tweaks {
                 shadowManager->BaseShadowDistance = 225;
                 shadowManager->ShitnessModifier = 0.5f;
             }
-            PluginInterface.Framework.OnUpdateEvent -= SetupShadows;
+            Service.Framework.Update -= SetupShadows;
             base.Disable();
         }
     }
 }
-

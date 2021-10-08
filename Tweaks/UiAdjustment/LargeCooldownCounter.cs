@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.Internal;
+﻿using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
@@ -27,7 +27,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.LargeCooldownCounter ?? new Configs();
-            PluginInterface.Framework.OnUpdateEvent += FrameworkUpdate;
+            Service.Framework.Update += FrameworkUpdate;
             base.Enable();
         }
 
@@ -99,7 +99,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var hotbarModule = SimpleTweaksPlugin.Client.UiModule.RaptureHotbarModule;
             for (var abIndex = 0; abIndex < allActionBars.Length; abIndex++) {
                 var actionBar = allActionBars[abIndex];
-                var ab = (AddonActionBarBase*) PluginInterface.Framework.Gui.GetUiObjectByName(actionBar, 1);
+                var ab = (AddonActionBarBase*) Service.GameGui.GetAddonByName(actionBar, 1);
                 if (ab == null || ab->ActionBarSlotsAction == null) continue;
                 var bar = abIndex > 10 ? null : hotbarModule.GetBar(abIndex, HotBarType.All);
                 for (var i = 0; i < ab->HotbarSlotCount; i++) {
@@ -167,7 +167,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override void Disable() {
             SaveConfig(Config);
             PluginConfig.UiAdjustments.LargeCooldownCounter = null;
-            PluginInterface.Framework.OnUpdateEvent -= FrameworkUpdate;
+            Service.Framework.Update -= FrameworkUpdate;
             UpdateAll(true);
             base.Disable();
         }

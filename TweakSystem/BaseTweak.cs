@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -28,6 +29,8 @@ namespace SimpleTweaksPlugin.TweakSystem {
         public virtual bool CanLoad => true;
 
         public virtual bool UseAutoConfig => false;
+
+        protected CultureInfo Culture => Plugin.Culture;
 
         public void InterfaceSetup(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface, SimpleTweaksPluginConfig config) {
             this.PluginInterface = pluginInterface;
@@ -137,11 +140,14 @@ namespace SimpleTweaksPlugin.TweakSystem {
                 DrawCommon();
             }
 
+            if (hasChanged) ConfigChanged();
             return configTreeOpen;
         }
 
-        private void DrawAutoConfig() {
+        protected virtual void ConfigChanged() { }
 
+        private void DrawAutoConfig() {
+            var configChanged = false;
             try {
                 // ReSharper disable once PossibleNullReferenceException
                 var configObj = this.GetType().GetProperties().FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(TweakConfig))).GetValue(this);
@@ -159,11 +165,13 @@ namespace SimpleTweaksPlugin.TweakSystem {
                         var arr = new [] {$"{attr.Name}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", v};
                         var o = (bool) attr.Editor.Invoke(null, arr);
                         if (o) {
+                            configChanged = true;
                             f.SetValue(configObj, arr[1]);
                         }
                     } else if (f.FieldType == typeof(bool)) {
                         var v = (bool) f.GetValue(configObj);
                         if (ImGui.Checkbox($"{attr.Name}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", ref v)) {
+                            configChanged = true;
                             f.SetValue(configObj, v);
                         }
                     } else if (f.FieldType == typeof(int)) {
@@ -187,6 +195,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
                         
                         if (e) {
                             f.SetValue(configObj, v);
+                            configChanged = true;
                         }
                     }
                     else {
@@ -199,13 +208,17 @@ namespace SimpleTweaksPlugin.TweakSystem {
                 ImGui.Text($"Error with AutoConfig: {ex.Message}");
                 ImGui.TextWrapped($"{ex.StackTrace}");
             }
+
+            if (configChanged) {
+                ConfigChanged();
+            }
         }
 
         public virtual void HandleBasicCommand(string[] args) {
             SimpleLog.Debug($"[{Key}] Command Handler: {string.Join(" , ", args)}");
             if (UseAutoConfig) {
                 if (!Enabled) {
-                    PluginInterface.Framework.Gui.Chat.PrintError($"'{Name}' is not enabled.");
+                    Service.Chat.PrintError($"'{Name}' is not enabled.");
                     return;
                 }
                 var configObj = this.GetType().GetProperties().FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(TweakConfig)))?.GetValue(this);
@@ -243,7 +256,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
                                         break;
                                     }
                                     default: {
-                                        PluginInterface.Framework.Gui.Chat.PrintError($"'{args[1]}' is not a valid value for a boolean.");
+                                        Service.Chat.PrintError($"'{args[1]}' is not a valid value for a boolean.");
                                         return;
                                     }
                                 }
@@ -255,7 +268,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
                                     field.f.SetValue(configObj, val);
                                     RequestSaveConfig();
                                 } else {
-                                    PluginInterface.Framework.Gui.Chat.PrintError($"'{args[1]}' is not a valid integer between {field.Item2.IntMin} and {field.Item2.IntMax}.");
+                                    Service.Chat.PrintError($"'{args[1]}' is not a valid integer between {field.Item2.IntMin} and {field.Item2.IntMax}.");
                                 }
                             }
                             
@@ -264,7 +277,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
                     }
 
                     // Print all options
-                    if (args.Length == 0) PluginInterface.Framework.Gui.Chat.PrintError($"'{Name}' Command Config:");
+                    if (args.Length == 0) Service.Chat.PrintError($"'{Name}' Command Config:");
                     foreach (var aField in fields) {
                         if (args.Length > 0) {
                             if (args[0] != aField.f.Name) continue;
@@ -278,7 +291,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
 
                         if (!string.IsNullOrEmpty(valuesString)) {
                             var line = $"/tweaks {Key} {aField.f.Name} [{valuesString}]";
-                            PluginInterface.Framework.Gui.Chat.PrintError($"   - {line}");
+                            Service.Chat.PrintError($"   - {line}");
                         }
                     }
                     
@@ -289,7 +302,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
                 }
             }
             
-            PluginInterface.Framework.Gui.Chat.PrintError($"'{Name}' does not support command usage.");
+            Service.Chat.PrintError($"'{Name}' does not support command usage.");
         }
 
         protected delegate void DrawConfigDelegate(ref bool hasChanged);

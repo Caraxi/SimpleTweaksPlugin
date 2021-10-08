@@ -11,7 +11,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using Dalamud.Game.Internal.Libc;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Helper;
@@ -119,9 +118,10 @@ namespace SimpleTweaksPlugin.Debugging {
                         
                     }
 
-                    ImGui.EndChild();
+
                 }
 
+                ImGui.EndChild();
                 ImGui.SameLine();
 
                 if (ImGui.BeginChild("###debugView", new Vector2(-1, -1), true, ImGuiWindowFlags.HorizontalScrollbar)){
@@ -130,12 +130,12 @@ namespace SimpleTweaksPlugin.Debugging {
                     } else {
                         debugPages[_plugin.PluginConfig.Debugging.SelectedPage]();
                     }
-                    ImGui.EndChild();
                 }
 
-
-                ImGui.End();
+                ImGui.EndChild();
             }
+
+            ImGui.End();
             ImGui.PopStyleColor();
         }
 
@@ -298,7 +298,20 @@ namespace SimpleTweaksPlugin.Debugging {
             }
             
         }
-        
+
+        public static unsafe void PrintOutObject<T>(T* ptr, bool autoExpand = false, string headerText = null) where T : unmanaged {
+            PrintOutObject(ptr, new List<string>(), autoExpand, headerText);
+        }
+
+        public static unsafe void PrintOutObject<T>(T* ptr, List<string> path, bool autoExpand = false, string headerText = null) where T : unmanaged {
+            PrintOutObject(*ptr, (ulong) ptr, path, autoExpand, headerText);
+        }
+
+        public static unsafe void PrintOutObject(object obj, ulong addr, bool autoExpand = false, string headerText = null) {
+            PrintOutObject(obj, addr, new List<string>(), autoExpand, headerText);
+        }
+
+
         public static unsafe void PrintOutObject(object obj, ulong addr, List<string> path, bool autoExpand = false, string headerText = null) {
             if (obj is Utf8String utf8String) {
 

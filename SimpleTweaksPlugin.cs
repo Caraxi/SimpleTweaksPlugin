@@ -2,10 +2,30 @@
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using Dalamud.Data;
+using Dalamud.Game;
+using Dalamud.Game.ClientState;
+using Dalamud.Game.ClientState.Buddy;
+using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Fates;
+using Dalamud.Game.ClientState.JobGauge;
+using Dalamud.Game.ClientState.Keys;
+using Dalamud.Game.ClientState.Objects;
+using Dalamud.Game.ClientState.Party;
+using Dalamud.Game.Command;
+using Dalamud.Game.Gui;
+using Dalamud.Game.Gui.FlyText;
+using Dalamud.Game.Gui.PartyFinder;
+using Dalamud.Game.Gui.Toast;
+using Dalamud.Game.Libc;
+using Dalamud.Game.Network;
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Logging;
 using FFXIVClientInterface;
 using Newtonsoft.Json.Linq;
 using SimpleTweaksPlugin.Helper;
@@ -36,11 +56,31 @@ namespace SimpleTweaksPlugin {
         public static ClientInterface Client;
 
         public static SimpleTweaksPlugin Plugin { get; private set; }
-        
+
+        private CultureInfo setCulture = null;
+
+        internal CultureInfo Culture {
+            get {
+                if (setCulture != null) return setCulture;
+                if (string.IsNullOrEmpty(PluginConfig.CustomCulture)) return setCulture = CultureInfo.CurrentUICulture;
+
+                try {
+                    var culture = CultureInfo.GetCultureInfo(PluginConfig.CustomCulture);
+                    return setCulture = culture;
+                } catch {
+                    //
+                }
+
+                return setCulture = CultureInfo.CurrentUICulture;
+            }
+            set => setCulture = value;
+        }
+
+
         public void Dispose() {
             SimpleLog.Debug("Dispose");
             
-            PluginInterface.UiBuilder.OnBuildUi -= this.BuildUI;
+            PluginInterface.UiBuilder.Draw -= this.BuildUI;
             RemoveCommands();
 
             foreach (var t in Tweaks) {
@@ -65,88 +105,32 @@ namespace SimpleTweaksPlugin {
 
         public int UpdateFrom = -1;
 
-        public void Initialize(DalamudPluginInterface pluginInterface) { 
-            FFXIVClientStructs.Resolver.Initialize();
+        public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface) {
+            pluginInterface.Create<Service>();
+            FFXIVClientStructs.Resolver.Initialize(Service.SigScanner.SearchBase);
+
             Plugin = this;
 #if DEBUG
             SimpleLog.SetupBuildPath();
 #endif
             this.PluginInterface = pluginInterface;
 
-            Client = new ClientInterface(pluginInterface.TargetModuleScanner, pluginInterface.Data);
+            Client = new ClientInterface(Service.SigScanner, Service.Data);
             
             this.PluginConfig = (SimpleTweaksPluginConfig)pluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
             this.PluginConfig.Init(this, pluginInterface);
             
             IconManager = new IconManager(pluginInterface);
             
-            UiHelper.Setup(pluginInterface.TargetModuleScanner);
+            UiHelper.Setup(Service.SigScanner);
             #if DEBUG
             DebugManager.SetPlugin(this);
             #endif
-            
-            if (PluginConfig.Version < 3) {
-                SimpleLog.Information($"Updating Config: {PluginConfig.Version} -> 3");
-                dynamic oldConfig = null;
-                try {
-                    var oldConfigPath = Path.Combine(pluginInterface.GetPluginConfigDirectory(), "..", "SimpleTweaksPlugin.json");
-                    if (File.Exists(oldConfigPath)) {
-                        var oldConfigText = File.ReadAllText(oldConfigPath);
-                        // SimpleLog.Log(oldConfigText);
-                        oldConfig = JObject.Parse(oldConfigText);
-                    }
-                } catch (Exception ex) {
-                    SimpleLog.Error(ex);
-                }
-                
-                UpdateFrom = PluginConfig.Version;
-                PluginConfig.Version = 3;
-                
-                var moveTweaks = new Dictionary<string, string>() {
-                    { "UiAdjustments@DisableChatMovement", "ChatTweaks@DisableChatMovement" },
-                    { "UiAdjustments@DisableChatResize", "ChatTweaks@DisableChatResize" },
-                    { "UiAdjustments@DisableChatAutoscroll", "ChatTweaks@DisableChatAutoscroll" },
-                    { "UiAdjustments@RenameChatTabs", "ChatTweaks@RenameChatTabs" },
-                    { "ClickableLinks", "ChatTweaks@ClickableLinks" },
-                };
 
-                foreach (var t in moveTweaks) {
-                    if (PluginConfig.EnabledTweaks.Contains(t.Key)) {
-                        PluginConfig.EnabledTweaks.Remove(t.Key);
-                        PluginConfig.EnabledTweaks.Add(t.Value);
-                        
-                    }
-                }
+            Common = new Common();
 
-                if (oldConfig != null) {
-                    try {
-                        PluginConfig.ChatTweaks.DisableChatAutoscroll.DisablePanel0 = oldConfig.UiAdjustments.DisableChatAutoscroll.DisablePanel0;
-                        PluginConfig.ChatTweaks.DisableChatAutoscroll.DisablePanel1 = oldConfig.UiAdjustments.DisableChatAutoscroll.DisablePanel1;
-                        PluginConfig.ChatTweaks.DisableChatAutoscroll.DisablePanel2 = oldConfig.UiAdjustments.DisableChatAutoscroll.DisablePanel2;
-                        PluginConfig.ChatTweaks.DisableChatAutoscroll.DisablePanel3 = oldConfig.UiAdjustments.DisableChatAutoscroll.DisablePanel3;
-                    } catch (Exception ex) {
-                        SimpleLog.Error(ex);
-                    }
-                    
-                    try {
-                        PluginConfig.ChatTweaks.RenameChatTabs.ChatTab0Name = oldConfig.UiAdjustments.RenameChatTabs.ChatTab0Name;
-                        PluginConfig.ChatTweaks.RenameChatTabs.ChatTab1Name = oldConfig.UiAdjustments.RenameChatTabs.ChatTab1Name;
-                        PluginConfig.ChatTweaks.RenameChatTabs.DoRenameTab0 = oldConfig.UiAdjustments.RenameChatTabs.DoRenameTab0;
-                        PluginConfig.ChatTweaks.RenameChatTabs.DoRenameTab1 = oldConfig.UiAdjustments.RenameChatTabs.DoRenameTab1;
-                    } catch (Exception ex) {
-                        SimpleLog.Error(ex);
-                    }
-                    
-                }
-                
-
-                PluginConfig.Save();
-            }
-            
-            Common = new Common(pluginInterface);
-
-            PluginInterface.UiBuilder.OnBuildUi += this.BuildUI;
-            pluginInterface.UiBuilder.OnOpenConfigUi += OnConfigCommandHandler;
+            PluginInterface.UiBuilder.Draw += this.BuildUI;
+            pluginInterface.UiBuilder.OpenConfigUi += OnOpenConfig;
 
             SetupCommands();
 
@@ -185,12 +169,13 @@ namespace SimpleTweaksPlugin {
         }
 
         public void SetupCommands() {
-            PluginInterface.CommandManager.AddHandler("/tweaks", new Dalamud.Game.Command.CommandInfo(OnConfigCommandHandler) {
+            Service.Commands.AddHandler("/tweaks", new Dalamud.Game.Command.CommandInfo(OnConfigCommandHandler) {
                 HelpMessage = $"Open config window for {this.Name}",
                 ShowInHelp = true
             });
         }
 
+        private void OnOpenConfig() => OnConfigCommandHandler(null, null);
         public void OnConfigCommandHandler(object command, object args) {
             if (args is string argString) {
 #if DEBUG
@@ -205,7 +190,7 @@ namespace SimpleTweaksPlugin {
                         case "t":
                         case "toggle": {
                             if (splitArgString.Length < 2) {
-                                PluginInterface.Framework.Gui.Chat.PrintError("/tweaks toggle <tweakid>");
+                                Service.Chat.PrintError("/tweaks toggle <tweakid>");
                                 return;
                             }
                             var tweak = GetTweakById(splitArgString[1]);
@@ -225,13 +210,13 @@ namespace SimpleTweaksPlugin {
                                 return;
                             }
 
-                            PluginInterface.Framework.Gui.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
+                            Service.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
                             return;
                         }
                         case "e":
                         case "enable": {
                             if (splitArgString.Length < 2) {
-                                PluginInterface.Framework.Gui.Chat.PrintError("/tweaks enable <tweakid>");
+                                Service.Chat.PrintError("/tweaks enable <tweakid>");
                                 return;
                             }
                             var tweak = GetTweakById(splitArgString[1]);
@@ -246,13 +231,13 @@ namespace SimpleTweaksPlugin {
                                 return;
                             }
 
-                            PluginInterface.Framework.Gui.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
+                            Service.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
                             return;
                         }
                         case "d":
                         case "disable": {
                             if (splitArgString.Length < 2) {
-                                PluginInterface.Framework.Gui.Chat.PrintError("/tweaks disable <tweakid>");
+                                Service.Chat.PrintError("/tweaks disable <tweakid>");
                                 return;
                             }
                             var tweak = GetTweakById(splitArgString[1]);
@@ -267,7 +252,7 @@ namespace SimpleTweaksPlugin {
                                 return;
                             }
 
-                            PluginInterface.Framework.Gui.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
+                            Service.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
                             return;
                         }
                         default: {
@@ -277,7 +262,7 @@ namespace SimpleTweaksPlugin {
                                 return;
                             }
 
-                            PluginInterface.Framework.Gui.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
+                            Service.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
                             return;
                         }
                         
@@ -312,7 +297,7 @@ namespace SimpleTweaksPlugin {
         }
 
         public void RemoveCommands() {
-            PluginInterface.CommandManager.RemoveHandler("/tweaks");
+            Service.Commands.RemoveHandler("/tweaks");
         }
 
         private void BuildUI() {

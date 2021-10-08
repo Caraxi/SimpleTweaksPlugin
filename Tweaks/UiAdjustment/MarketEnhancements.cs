@@ -47,7 +47,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             replacementUpdateResultDelegate = SetItemDetour;
             updateResultPointer = (void*) Common.Scanner.ScanText("48 89 74 24 ?? 57 48 83 EC 30 8B C2 4D 8B D1");
             updateResult = Marshal.GetDelegateForFunctionPointer<UpdateResultDelegate>(new IntPtr(updateResultPointer));
-            addonSetupHook = Common.Hook("E8 ?? ?? ?? ?? 41 B1 1E", new AddonSetupDelegate(SetupDetour));
+            addonSetupHook ??= Common.Hook("E8 ?? ?? ?? ?? 41 B1 1E", new AddonSetupDelegate(SetupDetour));
+            addonSetupHook?.Enable();
             UpdateItemList(Common.GetUnitBase("ItemSearchResult"));
             base.Enable();
         }
@@ -85,12 +86,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var agent = SimpleTweaksPlugin.Client.UiModule.AgentModule.GetAgent<AgentMarket>();
                 
                 if (npcPriceId != agent.Data->MarketResultItemId) {
-                    var item = PluginInterface.Data.Excel.GetSheet<Item>().GetRow(agent.Data->MarketResultItemId);
+                    var item = Service.Data.Excel.GetSheet<Item>().GetRow(agent.Data->MarketResultItemId);
                     npcPriceId = agent.Data->MarketResultItemId;
                     npcBuyPrice = 0;
                     npcSellPrice = item.PriceLow;
 
-                    var gilShopItem = PluginInterface.Data.Excel.GetSheet<GilShopItem>().Where(a => a.Item.Row == agent.Data->MarketResultItemId).ToList();
+                    var gilShopItem = Service.Data.Excel.GetSheet<GilShopItem>().Where(a => a.Item.Row == agent.Data->MarketResultItemId).ToList();
                     if (gilShopItem.Count > 0) {
                         npcBuyPrice = item.PriceMid;
                     }

@@ -1,8 +1,9 @@
-﻿using Dalamud.Game.Internal;
+﻿using Dalamud.Game;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using System;
+using Dalamud.Game.ClientState.Conditions;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
@@ -38,14 +39,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.LimitTargetStatusEffects ?? new Configs();
-            PluginInterface.Framework.OnUpdateEvent += FrameworkOnUpdate;
+            Service.Framework.Update += FrameworkOnUpdate;
             base.Enable();
         }
 
         public override void Disable() {
             SaveConfig(Config);
             PluginConfig.UiAdjustments.LimitTargetStatusEffects = null;
-            PluginInterface.Framework.OnUpdateEvent -= FrameworkOnUpdate;
+            Service.Framework.Update -= FrameworkOnUpdate;
             UpdateTargetStatus(true);
             base.Disable();
         }
@@ -68,7 +69,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (targetInfoStatusUnitBase->UldManager.NodeList == null || targetInfoStatusUnitBase->UldManager.NodeListCount < 32) return;
 
             var isInCombat =
-                this.PluginInterface.ClientState.Condition[Dalamud.Game.ClientState.ConditionFlag.InCombat];
+                Service.Condition[ConditionFlag.InCombat];
 
             if (reset || (Config.LimitOnlyInCombat && !isInCombat && this.isDirty)) {
                 for (var i = 32; i >= 3; i--) {
