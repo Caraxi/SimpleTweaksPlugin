@@ -11,6 +11,7 @@ using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Game.Internal;
 using ImGuiNET;
+using Lumina.Data;
 using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Enums;
@@ -216,11 +217,16 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         }
         
         private void OpenGamerEscape(ExtendedItem extendedItem) {
-            var name = Uri.EscapeUriString(extendedItem.Name);
+            var enItem = Service.Data.Excel.GetSheet<ExtendedItem>(Language.English)?.GetRow(extendedItem.RowId);
+            if (enItem == null) return;
+            var name = Uri.EscapeUriString(enItem.Name);
             Common.OpenBrowser($"https://ffxiv.gamerescape.com/w/index.php?search={name}");
         }
+
         private void OpenEriones(ExtendedItem extendedItem) {
-            var name = Uri.EscapeUriString(extendedItem.Name);
+            var jpItem = Service.Data.Excel.GetSheet<ExtendedItem>(Language.Japanese)?.GetRow(extendedItem.RowId);
+            if (jpItem == null) return;
+            var name = Uri.EscapeUriString(jpItem.Name);
             Common.OpenBrowser($"https://eriones.com/search?i={name}");
         }
 
