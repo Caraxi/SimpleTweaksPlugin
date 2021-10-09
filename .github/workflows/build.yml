@@ -38,7 +38,7 @@ jobs:
 
       - name: Extract Publish
         run: |
-          Expand-Archive -Force ./Publish/latest.zip ./Artifact
+          Expand-Archive -Force ./bin/x64/Release.ILMerge/SimpleTweaksPlugin/latest.zip ./Artifact
           
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v2.2.1
