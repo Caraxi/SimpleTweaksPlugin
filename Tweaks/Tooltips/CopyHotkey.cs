@@ -35,6 +35,9 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
             public VirtualKey[] GamerEscapeLinkHotkey = {VirtualKey.CONTROL, VirtualKey.E};
             public bool GamerEscapeLinkHotkeyEnabled = false;
+            
+            public VirtualKey[] ErionesLinkHotkey = {VirtualKey.SHIFT, VirtualKey.E};
+            public bool ErionesLinkHotkeyEnabled = false;
 
             public bool HideHotkeysOnTooltip = false;
         }
@@ -60,6 +63,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             if (Config.TeamcraftLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.TeamcraftLinkHotkey.Select(k => k.GetKeyName()))}  View on Teamcraft"));
             if (Config.GardlandToolsLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.GardlandToolsLinkHotkey.Select(k => k.GetKeyName()))}  View on Garland Tools"));
             if (Config.GamerEscapeLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.GamerEscapeLinkHotkey.Select(k => k.GetKeyName()))}  View on Gamer Escape"));
+            if (Config.ErionesLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.ErionesLinkHotkey.Select(k => k.GetKeyName()))}  View on Eriones (JP)"));
 
             tooltip[TooltipTweaks.ItemTooltip.TooltipField.ControlsDisplay] = seStr;
         }
@@ -151,6 +155,8 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             DrawHotkeyConfig("View on Garland Tools", ref c.GardlandToolsLinkHotkey, ref c.GardlandToolsLinkHotkeyEnabled, ref hasChanged);
             ImGui.Separator();
             DrawHotkeyConfig("View on Gamer Escape", ref c.GamerEscapeLinkHotkey, ref c.GamerEscapeLinkHotkeyEnabled, ref hasChanged);
+            ImGui.Separator();
+            DrawHotkeyConfig("View on Eriones (JP)", ref c.ErionesLinkHotkey, ref c.ErionesLinkHotkeyEnabled, ref hasChanged);
             ImGui.Columns();
             ImGui.Dummy(new Vector2(5 * ImGui.GetIO().FontGlobalScale));
             hasChanged |= ImGui.Checkbox("Don't show hotkey help on Tooltip", ref c.HideHotkeysOnTooltip);
@@ -213,6 +219,10 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             var name = Uri.EscapeUriString(extendedItem.Name);
             Common.OpenBrowser($"https://ffxiv.gamerescape.com/w/index.php?search={name}");
         }
+        private void OpenEriones(ExtendedItem extendedItem) {
+            var name = Uri.EscapeUriString(extendedItem.Name);
+            Common.OpenBrowser($"https://eriones.com/search?i={name}");
+        }
 
         private bool isHotkeyPress(VirtualKey[] keys) {
             foreach (var vk in Service.KeyState.GetValidVirtualKeys()) {
@@ -252,6 +262,10 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                     action = OpenGamerEscape;
                     keys = Config.GamerEscapeLinkHotkey;
                     language = ClientLanguage.English;
+                }
+                if (action == null && Config.ErionesLinkHotkeyEnabled && isHotkeyPress(Config.ErionesLinkHotkey)) {
+                    action = OpenEriones;
+                    keys = Config.ErionesLinkHotkey;
                 }
 
                 if (action != null) {
