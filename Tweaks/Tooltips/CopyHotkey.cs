@@ -61,7 +61,6 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             if (Config.GardlandToolsLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.GardlandToolsLinkHotkey.Select(k => k.GetKeyName()))}  View on Garland Tools"));
             if (Config.GamerEscapeLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.GamerEscapeLinkHotkey.Select(k => k.GetKeyName()))}  View on Gamer Escape"));
 
-            SimpleLog.Verbose(seStr.Payloads);
             tooltip[TooltipTweaks.ItemTooltip.TooltipField.ControlsDisplay] = seStr;
         }
 
