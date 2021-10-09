@@ -5,7 +5,6 @@ VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleTweaksPlugin", "SimpleTweaksPlugin.csproj", "{FAF7F5F2-708A-4FEA-BAE7-F73A3438A0D5}"
 	ProjectSection(ProjectDependencies) = postProject
-		{19A35A4C-BB27-4509-8871-4758FAD51CDA} = {19A35A4C-BB27-4509-8871-4758FAD51CDA}
 		{3DBAEE68-9D94-4807-BCB1-E42EDD52B489} = {3DBAEE68-9D94-4807-BCB1-E42EDD52B489}
 	EndProjectSection
 EndProject
