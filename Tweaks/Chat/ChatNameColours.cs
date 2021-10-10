@@ -29,6 +29,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
 
         public class Configs : TweakConfig {
             public List<ForcedColour> ForcedColours = new();
+            public bool RandomColours = true;
         }
 
         public Configs Config { get; private set; }
@@ -37,9 +38,10 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
         private string inputServerName = string.Empty;
         private string addError = string.Empty;
 
-        private ushort GetColourKey(string playerName, string worldName) {
+        private ushort? GetColourKey(string playerName, string worldName, bool forceRandom = false) {
             var forced = Config.ForcedColours.FirstOrDefault(f => f.PlayerName == playerName && f.WorldName == worldName);
             if (forced != null) return forced.ColourKey;
+            if (!forceRandom && !Config.RandomColours) return null;
             var key = (uint) $"${playerName}@{worldName}".GetHashCode();
             var defaultColourKey = nameColours[key % nameColours.Length];
             return defaultColourKey;
@@ -64,6 +66,8 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
         protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
 
             var buttonSize = new Vector2(22, 22) * ImGui.GetIO().FontGlobalScale;
+
+            ImGui.Checkbox("Use random colours for unlisted players", ref Config.RandomColours);
 
             if (ImGui.BeginTable("forcedPlayerNames", 4)) {
                 ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed, buttonSize.X);
@@ -172,7 +176,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
                         Config.ForcedColours.Add(new ForcedColour() {
                             PlayerName = inputNewPlayerName,
                             WorldName = inputServerName,
-                            ColourKey = GetColourKey(inputNewPlayerName, inputServerName)
+                            ColourKey = GetColourKey(inputNewPlayerName, inputServerName, true) ?? 0
                         });
                         SaveConfig(Config);
                         inputNewPlayerName = string.Empty;
@@ -235,11 +239,13 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
 
             foreach (var payload in seString.Payloads) {
                 if (payload is PlayerPayload p) {
-                    hasName = true;
-                    waitingEnd = true;
-                    var colourKey = GetColourKey(p.PlayerName, p.World.Name);
                     newPayloads.Add(p);
-                    newPayloads.Add(new UIForegroundPayload(colourKey));
+                    var colourKey = GetColourKey(p.PlayerName, p.World.Name);
+                    if (colourKey != null) {
+                        hasName = true;
+                        waitingEnd = true;
+                        newPayloads.Add(new UIForegroundPayload(colourKey.Value));
+                    }
                     continue;
                 }
                 newPayloads.Add(payload);
