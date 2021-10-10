@@ -1,20 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Sheets;
-using SimpleTweaksPlugin.Tweaks.Tooltips;
 using SimpleTweaksPlugin.TweakSystem;
-
-namespace SimpleTweaksPlugin {
-    public partial class TooltipTweakConfig {
-        public bool ShouldSerializeMateriaStats() => MateriaStats != null;
-        public MateriaStats.Configs MateriaStats = null;
-    }
-}
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips {
     
@@ -64,13 +57,13 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             hasChanged |= ImGui.Checkbox("Colour Value##materiaStatsTooltipTweak", ref Config.Colour);
         };
 
-        public IEnumerable<TooltipTweaks.ItemTooltip.TooltipField> Fields() {
-            yield return TooltipTweaks.ItemTooltip.TooltipField.Param0;
-            yield return TooltipTweaks.ItemTooltip.TooltipField.Param1;
-            yield return TooltipTweaks.ItemTooltip.TooltipField.Param2;
-            yield return TooltipTweaks.ItemTooltip.TooltipField.Param3;
-            yield return TooltipTweaks.ItemTooltip.TooltipField.Param4;
-            yield return TooltipTweaks.ItemTooltip.TooltipField.Param5;
+        public IEnumerable<TooltipTweaks.ItemTooltipField> Fields() {
+            yield return TooltipTweaks.ItemTooltipField.Param0;
+            yield return TooltipTweaks.ItemTooltipField.Param1;
+            yield return TooltipTweaks.ItemTooltipField.Param2;
+            yield return TooltipTweaks.ItemTooltipField.Param3;
+            yield return TooltipTweaks.ItemTooltipField.Param4;
+            yield return TooltipTweaks.ItemTooltipField.Param5;
         }
 
         private ExcelSheet<ExtendedItem> itemSheet;
@@ -84,22 +77,20 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             bpSheet = Service.Data.Excel.GetSheet<ExtendedBaseParam>();
             materiaSheet = Service.Data.Excel.GetSheet<Materia>();
             if (itemSheet == null || itemLevelSheet == null || bpSheet == null || materiaSheet == null) return;
-            Config = LoadConfig<Configs>() ?? PluginConfig.TooltipTweaks.MateriaStats ?? new Configs();
+            Config = LoadConfig<Configs>() ?? new Configs();
             base.Enable();
         }
 
         public override void Disable() {
             SaveConfig(Config);
-            PluginConfig.TooltipTweaks.MateriaStats = null;
             base.Disable();
         }
-        
-        public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
-            
-            
+
+
+        public override unsafe void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
             if (!(Config.Delta || Config.Total == false)) Config.Total = true; // Config invalid check
             try {
-                var item = itemSheet.GetRow(itemInfo.ItemId);
+                var item = itemSheet.GetRow(Item.ItemId);
                 if (item == null) return;
                 if (item.MateriaSlotCount == 0) return;
                 var itemLevel = itemLevelSheet.GetRow(item.LevelItem.Row);
@@ -112,11 +103,13 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                     if (bp.Value == 0 || bp.BaseParam.Row == 0) continue;
                     baseParamDeltas.Add(bp.BaseParam.Row, 0);
                     baseParamOriginal.Add(bp.BaseParam.Row, bp.Value);
-                    baseParamLimits.Add(bp.BaseParam.Row, (int) Math.Ceiling(itemLevel.BaseParam[bp.BaseParam.Row] * (bp.BaseParam.Value.EquipSlotCategoryPct[item.EquipSlotCategory.Row] / 100f)) );
-                    baseParams.Add(bp.BaseParam.Row, bp.BaseParam.Value);
+                    if (bp.BaseParam.Value != null) {
+                        baseParamLimits.Add(bp.BaseParam.Row, (int)Math.Ceiling(itemLevel.BaseParam[bp.BaseParam.Row] * (bp.BaseParam.Value.EquipSlotCategoryPct[item.EquipSlotCategory.Row] / 100f)));
+                        baseParams.Add(bp.BaseParam.Row, bp.BaseParam.Value);
+                    }
                 }
 
-                if (itemInfo.IsHQ) {
+                if (Item.IsHQ) {
                     foreach (var bp in item.BaseParamSpecial) {
                         if (bp.Value == 0 || bp.BaseParam.Row == 0) continue;
                         if (baseParamOriginal.ContainsKey(bp.BaseParam.Row)) baseParamOriginal[bp.BaseParam.Row] += bp.Value;
@@ -125,54 +118,49 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
                 if (baseParamDeltas.Count == 0) return;
                 
-                foreach (var (materiaId, level) in itemInfo.Materia()) {
+                foreach (var (materiaId, level) in Item.Materia()) {
                     if (level >= 10) continue;
                     var materia = materiaSheet.GetRow(materiaId);
                     if (materia == null) continue;
                     if (materia.BaseParam.Row == 0) continue;
-                    if (!baseParamDeltas.ContainsKey(materia.BaseParam.Row)) continue;
+                    if (materia.BaseParam.Value == null) continue;
+                    if (!baseParamDeltas.ContainsKey(materia.BaseParam.Row)) {
+                        var bp = Service.Data.Excel.GetSheet<ExtendedBaseParam>()?.GetRow(materia.BaseParam.Row);
+                        if (bp == null) continue;
+                        baseParams.Add(materia.BaseParam.Row, bp);
+                        baseParamDeltas.Add(materia.BaseParam.Row, materia.Value[level]);
+                        baseParamOriginal.Add(materia.BaseParam.Row, 0);
+                        baseParamLimits.Add(materia.BaseParam.Row, (int) Math.Ceiling(itemLevel.BaseParam[materia.BaseParam.Row] * (bp.EquipSlotCategoryPct[item.EquipSlotCategory.Row] / 100f)));
+                        continue;
+                    }
                     baseParamDeltas[materia.BaseParam.Row] += materia.Value[level];
                 }
                 foreach (var bp in baseParamDeltas) {
                     var param = baseParams[bp.Key];
                     if (bp.Value == 0) continue;
-
+                    var hasApplied = false;
                     foreach (var field in Fields()) {
-                        var data = tooltip[field];
+                        var data = GetTooltipString(stringArrayData, field);
                         if (data == null) continue;
-                        
                         if (data.TextValue.Contains(param.Name)) {
-                            data.Payloads.Add(new TextPayload($" ["));
-                            var totalValue = baseParamOriginal[bp.Key] + bp.Value;
-                            var deltaValue = bp.Value;
-                            var exceedLimit = false;
-                            if (totalValue > baseParamLimits[bp.Key]) {
-                                exceedLimit = true;
-                                totalValue = baseParamLimits[bp.Key];
-                                deltaValue = baseParamLimits[bp.Key] - baseParamOriginal[bp.Key];
-                            }
-                            if (Config.Delta) {
-                                if (!(Config.Total && Config.SimpleCombined)) data.Payloads.Add(new TextPayload($"+"));
-                                if (Config.Colour && !Config.Total) data.Payloads.Add(new UIForegroundPayload((ushort) (exceedLimit ? 14 : 500)));
-                                data.Payloads.Add(new TextPayload($"{deltaValue}"));
-                                if (Config.Colour && !Config.Total) data.Payloads.Add(new UIForegroundPayload(0));
-                                if (Config.Total && !Config.SimpleCombined) {
-                                    data.Payloads.Add(new TextPayload("="));
-                                } else if (Config.Total) {
-                                    data.Payloads.Add(new TextPayload(" "));
-                                }
-                            }
-                            if (Config.Total) {
-                                if (Config.Colour) data.Payloads.Add(new UIForegroundPayload((ushort) (exceedLimit ? 14 : 500)));
-                                data.Payloads.Add(new TextPayload($"{totalValue}"));
-                                if (Config.Colour) data.Payloads.Add(new UIForegroundPayload(0));
-                            }
-                            
-                            data.Payloads.Add(new TextPayload("]"));
-
-                            tooltip[field] = data;
+                            hasApplied = true;
+                            if (data.TextValue.EndsWith("]")) continue;
+                            ApplyMateriaDifference(data, baseParamDeltas[param.RowId], baseParamOriginal[param.RowId], baseParamLimits[param.RowId]);
+                            stringArrayData->SetValue((int) field, data.Encode(), false);
                         }
 
+                    }
+
+                    if (!hasApplied) {
+                        var baseParamLines = numberArrayData->IntArray[21];
+                        if (baseParamLines < 8) {
+                            var seString = new SeString();
+                            seString.Payloads.Add(new TextPayload(param.Name));
+                            seString.Payloads.Add(new TextPayload($" +{baseParamOriginal[param.RowId]}"));
+                            ApplyMateriaDifference(seString, baseParamDeltas[param.RowId], baseParamOriginal[param.RowId], baseParamLimits[param.RowId]);
+                            stringArrayData->SetValue(37 + baseParamLines, seString.Encode(), false);
+                            numberArrayData->IntArray[21] += 1;
+                        }
                     }
                 }
 
@@ -181,5 +169,36 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             }
 
         }
+
+        private void ApplyMateriaDifference(SeString data, int delta, int original, int limit) {
+            data.Payloads.Add(new TextPayload($" ["));
+            var totalValue = original + delta;
+            var deltaValue = delta;
+            var exceedLimit = false;
+            if (totalValue > limit) {
+                exceedLimit = true;
+                totalValue = limit;
+                deltaValue = limit - original;
+            }
+            if (Config.Delta) {
+                if (!(Config.Total && Config.SimpleCombined)) data.Payloads.Add(new TextPayload($"+"));
+                if (Config.Colour && !Config.Total) data.Payloads.Add(new UIForegroundPayload((ushort) (exceedLimit ? 14 : 500)));
+                data.Payloads.Add(new TextPayload($"{deltaValue}"));
+                if (Config.Colour && !Config.Total) data.Payloads.Add(new UIForegroundPayload(0));
+                if (Config.Total && !Config.SimpleCombined) {
+                    data.Payloads.Add(new TextPayload("="));
+                } else if (Config.Total) {
+                    data.Payloads.Add(new TextPayload(" "));
+                }
+            }
+            if (Config.Total) {
+                if (Config.Colour) data.Payloads.Add(new UIForegroundPayload((ushort) (exceedLimit ? 14 : 500)));
+                data.Payloads.Add(new TextPayload($"{totalValue}"));
+                if (Config.Colour) data.Payloads.Add(new UIForegroundPayload(0));
+            }
+
+            data.Payloads.Add(new TextPayload("]"));
+        }
+
     }
 }

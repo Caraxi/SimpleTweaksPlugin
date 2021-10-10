@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -28,7 +28,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         private GetBaseParam getBaseParam;
 
         public class Configs : TweakConfig {
-            public bool Highlight = false;
+            public bool Highlight;
         }
         
         public Configs Config { get; private set; }
@@ -72,10 +72,8 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             hasChanged |= ImGui.Checkbox("Highlight Active", ref Config.Highlight);
         };
 
-        public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
-
+        public override unsafe void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
             var id = Service.GameGui.HoveredItem;
-
             if (id < 2000000) {
                 var hq = id >= 500000;
                 id %= 500000;
@@ -83,8 +81,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 if (item == null) return;
                 var action = item.ItemAction?.Value;
 
-                if (action != null && action.Type is 844 or 845 or 846) {
-
+                if (action is { Type: 844 or 845 or 846 }) {
                     var itemFood = foodSheet.GetRow(hq ? action.DataHQ[1] : action.Data[1]);
                     if (itemFood != null) {
                         var payloads = new List<Payload>();
@@ -131,9 +128,8 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
                         if (payloads.Count > 0 && hasChange) {
                             var seStr = new SeString(payloads);
-                            tooltip[TooltipTweaks.ItemTooltip.TooltipField.Effects] = seStr;
+                            stringArrayData->SetValue((int) TooltipTweaks.ItemTooltipField.Effects, seStr.Encode(), false);
                         }
-
                     }
 
                 }

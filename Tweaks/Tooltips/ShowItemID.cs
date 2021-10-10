@@ -1,21 +1,23 @@
 ﻿using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.GameStructs;
-using SimpleTweaksPlugin.Helper;
-using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltip.TooltipField;
+using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltipField;
+
 namespace SimpleTweaksPlugin.Tweaks.Tooltips {
     public class ShowItemID : TooltipTweaks.SubTweak {
         public override string Name => "Show ID";
         public override string Description => "Show the ID of actions and items on their tooltips.";
-        public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
-            var seStr = tooltip[ItemUiCategory];
+
+        public override unsafe void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
+            var seStr = GetTooltipString(stringArrayData, ItemUiCategory);
             if (seStr == null) return;
+            if (seStr.TextValue.EndsWith("]")) return;
             var id = Service.GameGui.HoveredItem;
             if (id < 2000000) id %= 500000;
             seStr.Payloads.Add(new UIForegroundPayload(3));
             seStr.Payloads.Add(new TextPayload($"   [{id}]"));
             seStr.Payloads.Add(new UIForegroundPayload(0));
-            tooltip[ItemUiCategory] = seStr;
+            stringArrayData->SetValue((int) ItemUiCategory, seStr.Encode(), false);
         }
 
         public override unsafe void OnActionTooltip(AddonActionDetail* addon, TooltipTweaks.HoveredAction action) {

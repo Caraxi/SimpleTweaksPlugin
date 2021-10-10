@@ -1,22 +1,12 @@
-﻿
-using System;
-using System.Linq;
+﻿using System.Linq;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Lumina.Excel.GeneratedSheets;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel;
-using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
-using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltip.TooltipField;
-
-namespace SimpleTweaksPlugin {
-    public partial class TooltipTweakConfig {
-        public bool ShouldSerializeDesynthesisDelta() => false;
-        public bool DesynthesisDelta = false;
-    }
-}
+using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltipField;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips {
     public class DesynthesisSkill : TooltipTweaks.SubTweak {
@@ -26,7 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         private readonly uint[] desynthesisInDescription = { 46, 56, 65, 66, 67, 68, 69, 70, 71, 72 };
 
         public class Configs : TweakConfig {
-            public bool Delta = false;
+            public bool Delta;
         }
         
         public Configs Config { get; private set; }
@@ -36,7 +26,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         public override void Enable() {
             itemSheet = Service.Data.Excel.GetSheet<ExtendedItem>();
             if (itemSheet == null) return;
-            Config = LoadConfig<Configs>() ?? new Configs() {Delta = PluginConfig.TooltipTweaks.DesynthesisDelta};
+            Config = LoadConfig<Configs>() ?? new Configs();
             base.Enable();
         }
 
@@ -44,8 +34,8 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             SaveConfig(Config);
             base.Disable();
         }
-        public override unsafe void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
 
+        public override unsafe void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
             var id = Service.GameGui.HoveredItem;
             if (id < 2000000) {
                 id %= 500000;
@@ -58,7 +48,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
                     var useDescription = desynthesisInDescription.Contains(item.ItemSearchCategory.Row);
 
-                    var seStr = tooltip[useDescription ? ItemDescription : ExtractableProjectableDesynthesizable];
+                    var seStr = GetTooltipString(stringArrayData, useDescription ? ItemDescription : ExtractableProjectableDesynthesizable);
 
                     if (seStr != null) {
                         if (seStr.Payloads.Last() is TextPayload textPayload) {
@@ -69,7 +59,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                                 textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
                                 textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
                             }
-                            tooltip[useDescription ? ItemDescription : ExtractableProjectableDesynthesizable] = seStr;
+                            stringArrayData->SetValue((int) ( useDescription ? ItemDescription : ExtractableProjectableDesynthesizable), seStr.Encode(), false);
                         }
                     }
                 }

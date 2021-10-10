@@ -5,42 +5,39 @@ using System.Net;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Dalamud;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Game.Internal;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Data;
 using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.Enums;
-using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
+using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltipField;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips {
-    public class CopyHotkey : TooltipTweaks.SubTweak {
+    public unsafe class CopyHotkey : TooltipTweaks.SubTweak {
 
         public class Configs : TweakConfig {
             public VirtualKey[] CopyHotkey = { VirtualKey.CONTROL, VirtualKey.C };
-            public bool CopyHotkeyEnabled = false;
+            public bool CopyHotkeyEnabled;
 
             public VirtualKey[] TeamcraftLinkHotkey = {VirtualKey.CONTROL, VirtualKey.T};
-            public bool TeamcraftLinkHotkeyEnabled = false;
-            public bool TeamcraftLinkHotkeyForceBrowser = false;
+            public bool TeamcraftLinkHotkeyEnabled;
+            public bool TeamcraftLinkHotkeyForceBrowser;
 
             public VirtualKey[] GardlandToolsLinkHotkey = {VirtualKey.CONTROL, VirtualKey.G};
-            public bool GardlandToolsLinkHotkeyEnabled = false;
+            public bool GardlandToolsLinkHotkeyEnabled;
 
             public VirtualKey[] GamerEscapeLinkHotkey = {VirtualKey.CONTROL, VirtualKey.E};
-            public bool GamerEscapeLinkHotkeyEnabled = false;
+            public bool GamerEscapeLinkHotkeyEnabled;
             
             public VirtualKey[] ErionesLinkHotkey = {VirtualKey.SHIFT, VirtualKey.E};
-            public bool ErionesLinkHotkeyEnabled = false;
+            public bool ErionesLinkHotkeyEnabled;
 
-            public bool HideHotkeysOnTooltip = false;
+            public bool HideHotkeysOnTooltip;
         }
         
         public Configs Config { get; private set; }
@@ -49,12 +46,12 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
         public override string Name => "Item Hotkeys";
         public override string Description => "Adds hotkeys for various actions when the item detail window is visible.";
-        public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
-            if (Config.HideHotkeysOnTooltip) return;
-            var seStr = tooltip[TooltipTweaks.ItemTooltip.TooltipField.ControlsDisplay];
-            if (seStr == null) return;
 
-            var split = seStr.TextValue.Split(new string[] { weirdTabChar }, StringSplitOptions.None);
+        public override void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
+            if (Config.HideHotkeysOnTooltip) return;
+            var seStr = GetTooltipString(stringArrayData, ControlsDisplay);
+            if (seStr == null) return;
+            var split = seStr.TextValue.Split(new[] { weirdTabChar }, StringSplitOptions.None);
             if (split.Length > 0) {
                 seStr.Payloads.Clear();
                 seStr.Payloads.Add(new TextPayload(string.Join("\n", split)));
@@ -66,13 +63,13 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             if (Config.GamerEscapeLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.GamerEscapeLinkHotkey.Select(k => k.GetKeyName()))}  View on Gamer Escape"));
             if (Config.ErionesLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.ErionesLinkHotkey.Select(k => k.GetKeyName()))}  View on Eriones (JP)"));
 
-            tooltip[TooltipTweaks.ItemTooltip.TooltipField.ControlsDisplay] = seStr;
+            stringArrayData->SetValue((int) ControlsDisplay, seStr.Encode(), false);
         }
 
-        private string settingKey = null;
-        private string focused = null;
+        private string settingKey;
+        private string focused;
         
-        private readonly List<VirtualKey> newKeys = new List<VirtualKey>();
+        private readonly List<VirtualKey> newKeys = new();
 
         public void DrawHotkeyConfig(string name, ref VirtualKey[] keys, ref bool enabled, ref bool hasChanged) {
             while (ImGui.GetColumnIndex() != 0) ImGui.NextColumn();
@@ -165,25 +162,54 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
         private ExcelSheet<ExtendedItem> itemSheet;
 
+        private HookWrapper<Common.AddonOnUpdate> itemDetailOnUpdateHook;
+
         public override void Enable() {
             this.itemSheet = Service.Data.Excel.GetSheet<ExtendedItem>();
             if (itemSheet == null) return;
             Config = LoadConfig<Configs>() ?? new Configs();
             Service.Framework.Update += FrameworkOnOnUpdateEvent;
+
+            itemDetailOnUpdateHook ??= Common.Hook<Common.AddonOnUpdate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 54 41 55 41 56 41 57 48 83 EC 20 4C 8B AA", AddonItemDetailOnUpdate);
+            itemDetailOnUpdateHook?.Enable();
+
             base.Enable();
+        }
+
+        private void* AddonItemDetailOnUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** nums, StringArrayData** strings) {
+            var ret = itemDetailOnUpdateHook.Original(atkUnitBase, nums, strings);
+            if (Config.HideHotkeysOnTooltip) return ret;
+            var textNineGridComponentNode = (AtkComponentNode*) atkUnitBase->GetNodeById(3);
+            if (textNineGridComponentNode == null) return ret;
+            var textNode = (AtkTextNode*) textNineGridComponentNode->Component->UldManager.SearchNodeById(2);
+            var nineGrid = (AtkNineGridNode*) textNineGridComponentNode->Component->UldManager.SearchNodeById(3);
+            if (textNode == null || nineGrid == null) return ret;
+            ushort textWidth = 0;
+            ushort textHeight = 0;
+            textNode->GetTextDrawSize(&textWidth, &textHeight);
+            if (textHeight is 0 or > 1000) return ret;
+            textHeight += (ushort)(textNode->AtkResNode.Y * 2);
+            nineGrid->AtkResNode.SetHeight(textHeight);
+            return ret;
         }
 
         public override void Disable() {
             SaveConfig(Config);
+            itemDetailOnUpdateHook?.Disable();
             Service.Framework.Update -= FrameworkOnOnUpdateEvent;
             base.Disable();
+        }
+
+        public override void Dispose() {
+            itemDetailOnUpdateHook?.Dispose();
+            base.Dispose();
         }
 
         private void CopyItemName(ExtendedItem extendedItem) {
             ImGui.SetClipboardText(extendedItem.Name);
         }
 
-        private bool teamcraftLocalFailed = false;
+        private bool teamcraftLocalFailed;
 
         private void OpenTeamcraft(ExtendedItem extendedItem) {
             if (teamcraftLocalFailed || Config.TeamcraftLinkHotkeyForceBrowser) {
@@ -248,8 +274,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 Action<ExtendedItem> action = null;
                 VirtualKey[] keys = null;
 
-                var language = Service.ClientState.ClientLanguage;
-                if (action == null && Config.CopyHotkeyEnabled && isHotkeyPress(Config.CopyHotkey)) {
+                if (Config.CopyHotkeyEnabled && isHotkeyPress(Config.CopyHotkey)) {
                     action = CopyItemName;
                     keys = Config.CopyHotkey;
                 }
@@ -267,7 +292,6 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 if (action == null && Config.GamerEscapeLinkHotkeyEnabled && isHotkeyPress(Config.GamerEscapeLinkHotkey)) {
                     action = OpenGamerEscape;
                     keys = Config.GamerEscapeLinkHotkey;
-                    language = ClientLanguage.English;
                 }
                 if (action == null && Config.ErionesLinkHotkeyEnabled && isHotkeyPress(Config.ErionesLinkHotkey)) {
                     action = OpenEriones;

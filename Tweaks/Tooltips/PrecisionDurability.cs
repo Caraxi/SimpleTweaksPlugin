@@ -1,20 +1,9 @@
-﻿using System.Collections.Generic;
-using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Game.Text.SeStringHandling.Payloads;
+﻿using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.TweakSystem;
-using static SimpleTweaksPlugin.Tweaks.TooltipTweaks;
-using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltip.TooltipField;
+using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltipField;
 
-namespace SimpleTweaksPlugin {
-    public partial class TooltipTweakConfig {
-        public bool ShouldSerializePrecisionDurabilityTrailingZeros() => false;
-        public bool PrecisionDurabilityTrailingZeros = true;
-    }
-}
-
-namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
+namespace SimpleTweaksPlugin.Tweaks.Tooltips {
     
     public class PrecisionDurability : TooltipTweaks.SubTweak {
         public override string Name => "Precise Durability";
@@ -27,7 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public Configs Config { get; private set; }
 
         public override void Enable() {
-            Config = LoadConfig<Configs>() ?? new Configs() {TrailingZero = PluginConfig.TooltipTweaks.PrecisionDurabilityTrailingZeros};
+            Config = LoadConfig<Configs>() ?? new Configs();
             base.Enable();
         }
 
@@ -36,12 +25,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             base.Disable();
         }
 
-        public override void OnItemTooltip(TooltipTweaks.ItemTooltip tooltip, InventoryItem itemInfo) {
-            var c = tooltip[DurabilityPercent];
-            if (c != null && !(c.Payloads[0] is TextPayload tp && tp.Text.StartsWith("?"))) {
-                tooltip[DurabilityPercent] = new SeString(new List<Payload>() { new TextPayload((itemInfo.Condition / 300f).ToString(Config.TrailingZero ? "F2" : "0.##") + "%") });
-            }
-
+        public override unsafe void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
+            var c = GetTooltipString(stringArrayData, DurabilityPercent);
+            if (c == null || c.TextValue.StartsWith("?")) return;
+            stringArrayData->SetValue((int)DurabilityPercent, (Item.Condition / 300f).ToString(Config.TrailingZero ? "F2" : "0.##") + "%", false);
         }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
