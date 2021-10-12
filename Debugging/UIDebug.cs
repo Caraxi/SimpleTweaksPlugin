@@ -729,6 +729,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     case ComponentType.RadioButton: DebugManager.PrintOutObject(*(AtkComponentRadioButton*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
                     case ComponentType.TextInput: DebugManager.PrintOutObject(*(AtkComponentTextInput*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
                     case ComponentType.Icon: DebugManager.PrintOutObject(*(AtkComponentIcon*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    case ComponentType.NumericInput: DebugManager.PrintOutObject(*(AtkComponentNumericInput*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
                     default: DebugManager.PrintOutObject(*compNode->Component, (ulong) compNode->Component, new List<string>()); break;
                 }
 
