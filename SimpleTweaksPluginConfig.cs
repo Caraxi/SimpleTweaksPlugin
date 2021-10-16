@@ -136,6 +136,7 @@ namespace SimpleTweaksPlugin {
                     var searchValue = searchInput.ToLowerInvariant();
                     foreach (var t in plugin.Tweaks) {
                         if (t is SubTweakManager stm) {
+                            if (!stm.Enabled) continue;
                             foreach (var st in stm.GetTweakList()) {
                                 if (st.Name.ToLowerInvariant().Contains(searchValue) || st.Tags.Any(tag => tag.ToLowerInvariant().Contains(searchValue))) {
                                     searchResults.Add(st);
