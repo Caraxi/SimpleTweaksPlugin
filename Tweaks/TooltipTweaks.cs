@@ -25,8 +25,12 @@ namespace SimpleTweaksPlugin.Tweaks {
             public virtual unsafe void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) { }
 
             protected static unsafe SeString GetTooltipString(StringArrayData* stringArrayData, TooltipTweaks.ItemTooltipField field) {
-                var stringAddress = new IntPtr(stringArrayData->StringArray[(int)field]);
-                return stringAddress == IntPtr.Zero ? null : MemoryHelper.ReadSeStringNullTerminated(stringAddress);
+                try {
+                    var stringAddress = new IntPtr(stringArrayData->StringArray[(int)field]);
+                    return stringAddress == IntPtr.Zero ? null : MemoryHelper.ReadSeStringNullTerminated(stringAddress);
+                } catch {
+                    return null;
+                }
             }
 
             protected static InventoryItem Item => HoveredItem;
