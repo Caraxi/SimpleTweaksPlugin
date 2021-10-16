@@ -15,6 +15,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class ExpPercentage : UiAdjustments.SubTweak {
         public override string Name => "Show Experience Percentage";
 
+        public override string Description => "Calculate and display the current EXP percentage on the EXP bar.";
+
         public class Configs : TweakConfig {
             [TweakConfigOption("Decimals", EditorSize = 140, IntMin = 0, IntMax = 3, IntType = TweakConfigOptionAttribute.IntEditType.Slider)]
             public int Decimals = 1;
