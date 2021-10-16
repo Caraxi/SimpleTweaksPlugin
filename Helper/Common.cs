@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using Dalamud.Game;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Hooking;
@@ -16,6 +17,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.GameStructs;
 using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
+using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace SimpleTweaksPlugin.Helper {
     internal unsafe class Common {
@@ -191,6 +193,54 @@ namespace SimpleTweaksPlugin.Helper {
 
         public static void OpenBrowser(string url) {
             Process.Start(new ProcessStartInfo {FileName = url, UseShellExecute = true});
+        }
+
+        public static void GenerateCallback(AtkUnitBase* unitBase, params object[] values) {
+            var atkValues = (AtkValue*) Marshal.AllocHGlobal(values.Length * sizeof(AtkValue));
+            if (atkValues == null) return;
+            try {
+                for (var i = 0; i < values.Length; i++) {
+                    var v = values[i];
+                    switch (v) {
+                        case uint uintValue:
+                            atkValues[i].Type = ValueType.UInt;
+                            atkValues[i].UInt = uintValue;
+                            break;
+                        case int intValue:
+                            atkValues[i].Type = ValueType.Int;
+                            atkValues[i].Int = intValue;
+                            break;
+                        case float floatValue:
+                            atkValues[i].Type = ValueType.Float;
+                            atkValues[i].Float = floatValue;
+                            break;
+                        case bool boolValue:
+                            atkValues[i].Type = ValueType.Bool;
+                            atkValues[i].Byte = (byte) (boolValue ? 1 : 0);
+                            break;
+                        case string stringValue: {
+                            atkValues[i].Type = ValueType.String;
+                            var stringBytes = Encoding.UTF8.GetBytes(stringValue);
+                            var stringAlloc = Marshal.AllocHGlobal(stringBytes.Length + 1);
+                            Marshal.Copy(stringBytes, 0, stringAlloc, stringBytes.Length);
+                            Marshal.WriteByte(stringAlloc, stringBytes.Length, 0);
+                            atkValues[i].String = (byte*)stringAlloc;
+                            break;
+                        }
+                        default:
+                            throw new ArgumentException($"Unable to convert type {v.GetType()} to AtkValue");
+                    }
+                }
+
+                unitBase->FireCallback(values.Length, atkValues);
+            } finally {
+                for (var i = 0; i < values.Length; i++) {
+                    if (atkValues[i].Type == ValueType.String) {
+                        Marshal.FreeHGlobal(new IntPtr(atkValues[i].String));
+                    }
+                }
+                Marshal.FreeHGlobal(new IntPtr(atkValues));
+            }
         }
 
     }
