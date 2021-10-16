@@ -166,40 +166,7 @@ namespace SimpleTweaksPlugin {
                     } else {
                         if (ImGui.BeginTabItem("General Tweaks")) {
                             ImGui.BeginChild("generalTweaks", new Vector2(-1, -1), false);
-                            foreach (var t in plugin.Tweaks.Where(t => t is SubTweakManager).Cast<SubTweakManager>()) {
-                                if (t.AlwaysEnabled) continue;
-                                var enabled = t.Enabled;
-                                if (t.Experimental && !ShowExperimentalTweaks && !enabled) continue;
-                                if (ImGui.Checkbox($"###{t.GetType().Name}enabledCheckbox", ref enabled)) {
-                                    if (enabled) {
-                                        SimpleLog.Debug($"Enable: {t.Name}");
-                                        try {
-                                            t.Enable();
-                                            if (t.Enabled) {
-                                                EnabledTweaks.Add(t.GetType().Name);
-                                            }
-                                        } catch (Exception ex) {
-                                            plugin.Error(t, ex, false, $"Error in Enable for '{t.Name}'");
-                                        }
-                                    } else {
-                                        SimpleLog.Debug($"Disable: {t.Name}");
-                                        try {
-                                            t.Disable();
-                                        } catch (Exception ex) {
-                                            plugin.Error(t, ex, true, $"Error in Disable for '{t.Name}'");
-                                        }
-                                        EnabledTweaks.RemoveAll(a => a == t.GetType().Name);
-                                    }
-                                    Save();
-                                }
-                                ImGui.SameLine();
-                                ImGui.TreeNodeEx($"Category: {t.Name}", ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.NoTreePushOnOpen);
-                                if (ImGui.IsItemClicked() && t.Enabled) {
-                                    setTab = t;
-                                    settingTab = false;
-                                }
-                                ImGui.Separator();
-                            }
+
                             // ImGui.Separator();
                             foreach (var t in plugin.Tweaks) {
                                 if (t is SubTweakManager) continue;
@@ -262,6 +229,42 @@ namespace SimpleTweaksPlugin {
                         ImGui.Separator();
                         if (ImGui.Checkbox("Hide Ko-fi link.", ref HideKofi)) Save();
                         ImGui.Separator();
+
+                        foreach (var t in plugin.Tweaks.Where(t => t is SubTweakManager).Cast<SubTweakManager>()) {
+                            if (t.AlwaysEnabled) continue;
+                            var enabled = t.Enabled;
+                            if (t.Experimental && !ShowExperimentalTweaks && !enabled) continue;
+                            if (ImGui.Checkbox($"###{t.GetType().Name}enabledCheckbox", ref enabled)) {
+                                if (enabled) {
+                                    SimpleLog.Debug($"Enable: {t.Name}");
+                                    try {
+                                        t.Enable();
+                                        if (t.Enabled) {
+                                            EnabledTweaks.Add(t.GetType().Name);
+                                        }
+                                    } catch (Exception ex) {
+                                        plugin.Error(t, ex, false, $"Error in Enable for '{t.Name}'");
+                                    }
+                                } else {
+                                    SimpleLog.Debug($"Disable: {t.Name}");
+                                    try {
+                                        t.Disable();
+                                    } catch (Exception ex) {
+                                        plugin.Error(t, ex, true, $"Error in Disable for '{t.Name}'");
+                                    }
+                                    EnabledTweaks.RemoveAll(a => a == t.GetType().Name);
+                                }
+                                Save();
+                            }
+                            ImGui.SameLine();
+                            ImGui.TreeNodeEx($"Enable Category: {t.Name}", ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.NoTreePushOnOpen);
+                            if (ImGui.IsItemClicked() && t.Enabled) {
+                                setTab = t;
+                                settingTab = false;
+                            }
+                            ImGui.Separator();
+                        }
+
                         ImGui.EndChild();
                         ImGui.EndTabItem();
                     }
