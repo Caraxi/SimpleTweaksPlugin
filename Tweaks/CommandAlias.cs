@@ -190,7 +190,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                             // https://git.sr.ht/~jkcclemens/CCMM/tree/master/Custom%20Commands%20and%20Macro%20Macros/GameFunctions.cs#L44
                             var newStr = $"/{alias.Output}{inputString.Substring(alias.Input.Length + 1)}";
                             if (newStr.Length <= 500) {
-                                SimpleLog.Log($"Aliasing Command: {inputString} -> {newStr}");
+                                SimpleLog.Verbose($"Aliasing Command: {inputString} -> {newStr}");
                                 var bytes = Encoding.UTF8.GetBytes(newStr);
                                 var mem1 = Marshal.AllocHGlobal(400);
                                 var mem2 = Marshal.AllocHGlobal(bytes.Length + 30);
@@ -205,7 +205,6 @@ namespace SimpleTweaksPlugin.Tweaks {
                                 Marshal.FreeHGlobal(mem2);
                                 return r;
                             }
-                            SimpleLog.Log($"String longer than 500");
                             Service.Chat.PrintError("[Simple Tweaks] Command alias result is longer than the maximum of 500 characters. The command could not be executed.");
                             return 0;
                         }
