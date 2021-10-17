@@ -25,6 +25,7 @@ using Dalamud.Game.Gui.Toast;
 using Dalamud.Game.Libc;
 using Dalamud.Game.Network;
 using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Interface.Internal.Notifications;
 using Dalamud.Logging;
 using FFXIVClientInterface;
 using Newtonsoft.Json.Linq;
@@ -200,11 +201,13 @@ namespace SimpleTweaksPlugin {
                                     if (PluginConfig.EnabledTweaks.Contains(tweak.Key)) {
                                         PluginConfig.EnabledTweaks.Remove(tweak.Key);
                                     }
+                                    Service.PluginInterface.UiBuilder.AddNotification($"Disabled {tweak.Name}", "Simple Tweaks", NotificationType.Info);
                                 } else {
                                     tweak.Enable();
                                     if (!PluginConfig.EnabledTweaks.Contains(tweak.Key)) {
                                         PluginConfig.EnabledTweaks.Add(tweak.Key);
                                     }
+                                    Service.PluginInterface.UiBuilder.AddNotification($"Enabled {tweak.Name}", "Simple Tweaks", NotificationType.Info);
                                 }
                                 PluginConfig.Save();
                                 return;
@@ -226,6 +229,7 @@ namespace SimpleTweaksPlugin {
                                     if (!PluginConfig.EnabledTweaks.Contains(tweak.Key)) {
                                         PluginConfig.EnabledTweaks.Add(tweak.Key);
                                     }
+                                    Service.PluginInterface.UiBuilder.AddNotification($"Enabled {tweak.Name}", "Simple Tweaks", NotificationType.Info);
                                     PluginConfig.Save();
                                 }
                                 return;
@@ -247,6 +251,7 @@ namespace SimpleTweaksPlugin {
                                     if (PluginConfig.EnabledTweaks.Contains(tweak.Key)) {
                                         PluginConfig.EnabledTweaks.Remove(tweak.Key);
                                     }
+                                    Service.PluginInterface.UiBuilder.AddNotification($"Disabled {tweak.Name}", "Simple Tweaks", NotificationType.Info);
                                     PluginConfig.Save();
                                 }
                                 return;
