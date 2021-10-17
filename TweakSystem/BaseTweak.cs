@@ -82,14 +82,14 @@ namespace SimpleTweaksPlugin.TweakSystem {
         protected void SaveConfig<T>(T config) where T : TweakConfig {
             try {
                 #if DEBUG
-                SimpleLog.Log($"Save Config: {Name}");
+                SimpleLog.Verbose($"Save Config: {Name}");
                 #endif
                 var configDirectory = PluginInterface.GetPluginConfigDirectory();
                 var configFile = Path.Combine(configDirectory, this.Key + ".json");
                 var jsonString = JsonConvert.SerializeObject(config, Formatting.Indented);
                 #if DEBUG
                 foreach (var l in jsonString.Split('\n')) {
-                    SimpleLog.Log($"    [{Name} Config] {l}");
+                    SimpleLog.Verbose($"    [{Name} Config] {l}");
                 }
                 #endif
                 File.WriteAllText(configFile, jsonString);
