@@ -23,6 +23,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool RemoveInterruptedText;
 
             public bool SlideCast;
+            public bool SlideCastSetWidth;
+            public int SlideCastWidth = 14;
             public int SlideCastAdjust = 500;
             public Vector4 SlideCastColor = new Vector4(0.8F, 0.3F, 0.3F, 1);
             public Vector4 SlideCastReadyColor = new Vector4(0.3F, 0.8F, 0.3F, 1);
@@ -76,6 +78,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (Config.SlideCast) {
                 ImGui.Indent();
                 ImGui.Indent();
+                hasChanged |= ImGui.Checkbox("Set SlideCast Width", ref Config.SlideCastSetWidth);
+                if (Config.SlideCastSetWidth)
+                {
+                    hasChanged |= ImGui.DragInt("SlideCast Width", ref Config.SlideCastWidth, 1, 14, 200);
+                }
                 hasChanged |= ImGui.SliderInt("SlideCast Offset Time", ref Config.SlideCastAdjust, 0, 1000);
                 hasChanged |= ImGui.ColorEdit4("SlideCast Marker Colour", ref Config.SlideCastColor);
                 hasChanged |= ImGui.ColorEdit4("SlideCast Ready Colour", ref Config.SlideCastReadyColor);
@@ -198,7 +205,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     var slidePer = ((float)(castBar->CastTime * 10) - Config.SlideCastAdjust) / (castBar->CastTime * 10);
                     var pos = 160 * slidePer;
                     UiHelper.Show(slideMarker);
-                    UiHelper.SetSize(slideMarker, 168 - (int)pos, 20);
+                    UiHelper.SetSize(slideMarker, Config.SlideCastSetWidth ? Config.SlideCastWidth : 168 - (int)pos, 20);
                     UiHelper.SetPosition(slideMarker, pos - 8, 0);
                     var c = (slidePer * 100) >= castBar->CastPercent ? Config.SlideCastColor : Config.SlideCastReadyColor;
                     slideMarker->AtkResNode.AddRed = (byte) (255 * c.X);
