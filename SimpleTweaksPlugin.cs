@@ -306,6 +306,12 @@ namespace SimpleTweaksPlugin {
         }
 
         private void BuildUI() {
+            foreach (var e in ErrorList.Where(e => e.IsNew && e.Tweak != null)) {
+                e.IsNew = false;
+                e.Tweak.Disable();
+                Service.PluginInterface.UiBuilder.AddNotification($"{e.Tweak.Name} has been disabled due to an error.", "Simple Tweaks", NotificationType.Error, 5000);
+            }
+
 #if DEBUG
             if (DebugManager.Enabled) {
                 DebugManager.DrawDebugWindow(ref DebugManager.Enabled);
@@ -325,12 +331,6 @@ namespace SimpleTweaksPlugin {
 
                     for (var i = 0; i < ErrorList.Count && i < 5; i++) {
                         var e = ErrorList[i];
-
-                        if (e.IsNew && e.Tweak != null) {
-                            e.IsNew = false;
-                            e.Tweak.Disable();
-                        }
-
                         ImGui.Text($"Error caught in {(e.Manager != null ? $"{e.Manager.Name}@" : "")}{(e.Tweak != null ? e.Tweak.Name : "Tweak Loader")}:");
                         if (!string.IsNullOrEmpty(e.Message)) {
                             ImGui.Text(e.Message);
