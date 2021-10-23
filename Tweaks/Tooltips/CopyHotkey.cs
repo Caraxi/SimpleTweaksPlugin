@@ -51,6 +51,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             if (Config.HideHotkeysOnTooltip) return;
             var seStr = GetTooltipString(stringArrayData, ControlsDisplay);
             if (seStr == null) return;
+            if (seStr.TextValue.Contains('\n')) return;
             var split = seStr.TextValue.Split(new[] { weirdTabChar }, StringSplitOptions.None);
             if (split.Length > 0) {
                 seStr.Payloads.Clear();
