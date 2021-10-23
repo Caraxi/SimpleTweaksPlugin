@@ -32,7 +32,6 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         }
         
         public Configs Config { get; private set; }
-        
 
         public override void Setup() {
             try {
@@ -54,13 +53,77 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         private ExcelSheet<ItemFood> foodSheet;
         private ExcelSheet<BaseParam> bpSheet;
 
+        private TextPayload potionPercentPayload = new TextPayload("??%");
+        private TextPayload potionMaxPayload = new TextPayload("????");
+        private TextPayload potionActualValuePayload = new TextPayload("????");
+
+        private SeString hpPotionEffectString;
+        private SeString hpPotionCappedEffectString;
+
         public override void Enable() {
             itemSheet = Service.Data.Excel.GetSheet<ExtendedItem>();
             foodSheet = Service.Data.Excel.GetSheet<ItemFood>();
             bpSheet = Service.Data.Excel.GetSheet<BaseParam>();
             if (itemSheet == null || foodSheet == null || bpSheet == null) return;
             Config = LoadConfig<Configs>() ?? new Configs() { Highlight = PluginConfig.TooltipTweaks.FoodStatsHighlight };
+            BuildPotionEffectStrings();
             base.Enable();
+        }
+
+        private void BuildPotionEffectStrings() {
+            hpPotionEffectString = new SeString();
+            hpPotionCappedEffectString = new SeString();
+
+            var hpEffectString = (SeString) Service.Data.Excel.GetSheet<Addon>()?.GetRow(998)?.Text;
+
+            var removePercent = false;
+
+            foreach (var p in hpEffectString.Payloads) {
+                if (p is RawPayload rp) {
+                    switch (rp.Data[^2]) {
+                        case 2:
+                            if(Config.Highlight) hpPotionEffectString.Payloads.Add(new UIForegroundPayload(500));
+                            hpPotionEffectString.Payloads.Add(potionPercentPayload);
+                            if(Config.Highlight) hpPotionEffectString.Payloads.Add(new UIForegroundPayload(0));
+
+                            hpPotionEffectString.Payloads.Add(new TextPayload(" ("));
+                            if(Config.Highlight) hpPotionEffectString.Payloads.Add(new UIForegroundPayload(500));
+                            hpPotionEffectString.Payloads.Add(potionActualValuePayload);
+                            if(Config.Highlight) hpPotionEffectString.Payloads.Add(new UIForegroundPayload(0));
+                            hpPotionEffectString.Payloads.Add(new TextPayload(")"));
+
+                            hpPotionCappedEffectString.Payloads.Add(potionPercentPayload);
+                            removePercent = true;
+                            break;
+                        case 3:
+                            hpPotionEffectString.Payloads.Add(potionMaxPayload);
+
+                            if(Config.Highlight) hpPotionCappedEffectString.Payloads.Add(new UIForegroundPayload(500));
+                            hpPotionCappedEffectString.Payloads.Add(potionMaxPayload);
+                            if(Config.Highlight) hpPotionCappedEffectString.Payloads.Add(new UIForegroundPayload(0));
+
+                            break;
+                        default:
+                            hpPotionEffectString.Payloads.Add(p);
+                            break;
+                    }
+                } else {
+                    if (removePercent) {
+                        removePercent = false;
+                        if (p is TextPayload tp && tp.Text.StartsWith("%")) {
+                            hpPotionEffectString.Payloads.Add(new TextPayload(tp.Text[1..]));
+                            hpPotionCappedEffectString.Payloads.Add(new TextPayload(tp.Text[1..]));
+                        }
+                        continue;
+                    }
+                    hpPotionEffectString.Payloads.Add(p);
+                    hpPotionCappedEffectString.Payloads.Add(p);
+                }
+            }
+
+            foreach (var p in hpPotionEffectString.Payloads) {
+                SimpleLog.Log($"Payload: {p}");
+            }
         }
 
         public override void Disable() {
@@ -70,9 +133,11 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             hasChanged |= ImGui.Checkbox("Highlight Active", ref Config.Highlight);
+            if (hasChanged) BuildPotionEffectStrings();
         };
 
         public override unsafe void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
+            if (Service.ClientState.LocalPlayer == null) return;
             var id = Service.GameGui.HoveredItem;
             if (id < 2000000) {
                 var hq = id >= 500000;
@@ -80,6 +145,30 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 var item = itemSheet.GetRow((uint)id);
                 if (item == null) return;
                 var action = item.ItemAction?.Value;
+
+
+                if (action is { Type : 847 }) {
+                    // Healing Potion
+                    var percentNumber = hq ? action.DataHQ[0] : action.Data[0];
+                    var percent = percentNumber / 100f;
+
+                    var max = hq ? action.DataHQ[1] : action.Data[1];
+                    var actual = Math.Floor(Service.ClientState.LocalPlayer.MaxHp * percent);
+
+                    var seStr = hpPotionEffectString;
+
+                    if (actual > max) {
+                        actual = max;
+                        if (Config.Highlight) seStr = hpPotionCappedEffectString;
+                    }
+
+                    potionPercentPayload.Text = $"{percentNumber}%";
+                    potionMaxPayload.Text = $"{max}";
+                    potionActualValuePayload.Text = $"{actual}";
+
+                    stringArrayData->SetValue((int) TooltipTweaks.ItemTooltipField.Effects, seStr.Encode(), false);
+                }
+
 
                 if (action is { Type: 844 or 845 or 846 }) {
                     var itemFood = foodSheet.GetRow(hq ? action.DataHQ[1] : action.Data[1]);
