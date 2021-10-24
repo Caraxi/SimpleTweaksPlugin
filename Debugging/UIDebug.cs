@@ -384,13 +384,18 @@ namespace SimpleTweaksPlugin.Debugging {
                 addonMapping.Add(addonName, null);
 
                 foreach (var a in AppDomain.CurrentDomain.GetAssemblies()) {
-                    foreach (var t in a.GetTypes()) {
-                        if (!t.IsPublic) continue;
-                        var xivAddonAttr = (Addon) t.GetCustomAttribute(typeof(Addon), false);
-                        if (xivAddonAttr == null) continue;
-                        if (!xivAddonAttr.AddonIdentifiers.Contains(addonName)) continue;
-                        addonMapping[addonName] = t;
-                        break;
+                    try {
+                        foreach (var t in a.GetTypes()) {
+                            if (!t.IsPublic) continue;
+                            var xivAddonAttr = (Addon) t.GetCustomAttribute(typeof(Addon), false);
+                            if (xivAddonAttr == null) continue;
+                            if (!xivAddonAttr.AddonIdentifiers.Contains(addonName)) continue;
+                            addonMapping[addonName] = t;
+                            break;
+                        }
+                    }
+                    catch {
+                        // ignored
                     }
                 }
                 
