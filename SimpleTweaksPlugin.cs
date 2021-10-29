@@ -31,6 +31,7 @@ using FFXIVClientInterface;
 using Newtonsoft.Json.Linq;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
+using XivCommon;
 #if DEBUG
 using System.Runtime.CompilerServices;
 using SimpleTweaksPlugin.Debugging;
@@ -46,6 +47,7 @@ namespace SimpleTweaksPlugin {
         public List<BaseTweak> Tweaks = new List<BaseTweak>();
 
         public IconManager IconManager { get; private set; }
+        public XivCommonBase XivCommon { get; private set; }
         
 
         private bool drawConfigWindow = false;
@@ -102,6 +104,7 @@ namespace SimpleTweaksPlugin {
                 hook.Dispose();
             }
             Common.HookList.Clear();
+            this.XivCommon.Dispose();
         }
 
         public int UpdateFrom = -1;
@@ -122,6 +125,7 @@ namespace SimpleTweaksPlugin {
             this.PluginConfig.Init(this, pluginInterface);
             
             IconManager = new IconManager(pluginInterface);
+            this.XivCommon = new XivCommonBase(Hooks.ContextMenu);
             
             UiHelper.Setup(Service.SigScanner);
             #if DEBUG
