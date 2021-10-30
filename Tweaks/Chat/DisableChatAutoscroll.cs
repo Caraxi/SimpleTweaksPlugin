@@ -16,7 +16,7 @@ namespace SimpleTweaksPlugin {
 namespace SimpleTweaksPlugin.Tweaks.Chat {
     public unsafe class DisableChatAutoscroll : ChatTweaks.SubTweak {
         public override string Name => "Smart AutoScroll";
-        public override string Description => "Attempts to prevent autoscrolling when recieving new chat messages while scrolled up.";
+        public override string Description => "Attempts to prevent autoscrolling when receiving new chat messages while scrolled up.";
 
         public class Configs : TweakConfig {
             public bool DisablePanel0;
