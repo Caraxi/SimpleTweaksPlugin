@@ -36,7 +36,7 @@
     "description": "[ClickableLinks] Tweak Name"
   },
   "ChatTweaks@DisableChatAutoscroll / Description": {
-    "message": "Attempts to prevent autoscrolling when recieving new chat messages while scrolled up.",
+    "message": "Attempts to prevent autoscrolling when receiving new chat messages while scrolled up.",
     "description": "[DisableChatAutoscroll] Tweak Description"
   },
   "ChatTweaks@DisableChatAutoscroll / Name": {
@@ -142,6 +142,10 @@
   "General Options / TabHeader": {
     "message": "General Options",
     "description": "General Options / TabHeader - General Options"
+  },
+  "General Tweaks": {
+    "message": "General Tweaks",
+    "description": "General Tweaks Tab Header"
   },
   "LegacyCameraLock / Description": {
     "message": "Prevents camera rotation when using Legacy movement type.",
