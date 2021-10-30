@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Numerics;
 using Dalamud.Game;
 using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -17,15 +19,26 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private uint lastGp = uint.MaxValue;
         private int gpPerTick = 5;
         private float timePerTick = 3f;
+        private int forceVisible = 0;
         public delegate void UpdateParamDelegate(uint a1, uint* a2, byte a3);
         private Hook<UpdateParamDelegate> updateParamHook;
         
         public class Configs : TweakConfig {
-            [TweakConfigOption("Target GP", EditorSize = 200, IntMin = -1, IntMax = 1000, IntType = TweakConfigOptionAttribute.IntEditType.Slider)]
             public int GpGoal = -1;
+            public Vector2 PositionOffset = new(0);
         }
 
-        public override bool UseAutoConfig => true;
+        protected override DrawConfigDelegate DrawConfigTree => ((ref bool hasChanged) => {
+            ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
+            hasChanged |= ImGui.SliderInt("Target GP##timeUntilGpMax", ref Config.GpGoal, -1, 1000);
+            ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
+            if (ImGui.DragFloat2("Position##timeUntilGpMax", ref Config.PositionOffset)) {
+                forceVisible = 5;
+                hasChanged = true;
+            }
+
+            if (hasChanged) Update();
+        });
 
         public Configs Config { get; private set; }
 
@@ -128,7 +141,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     newTextNode->AtkResNode.Type = NodeType.Text;
                     newTextNode->AtkResNode.Flags = (short)(NodeFlags.AnchorLeft | NodeFlags.AnchorTop);
                     newTextNode->AtkResNode.DrawFlags = 0;
-                    newTextNode->AtkResNode.SetPositionShort(210, 1);
+                    textNode->AtkResNode.SetPositionFloat(210 + Config.PositionOffset.X, 1 + Config.PositionOffset.Y);
                     newTextNode->AtkResNode.SetWidth(200);
                     newTextNode->AtkResNode.SetHeight(14);
 
@@ -179,8 +192,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
 
             var targetGp = Config.GpGoal > 0 ? Math.Min(Config.GpGoal, Service.ClientState.LocalPlayer.MaxGp) : Service.ClientState.LocalPlayer.MaxGp;
-            if (targetGp - Service.ClientState.LocalPlayer.CurrentGp > 0) {
+            if (targetGp - Service.ClientState.LocalPlayer.CurrentGp > 0 || forceVisible > 0) {
+                if (forceVisible > 0) forceVisible--;
                 textNode->AtkResNode.ToggleVisibility(true);
+                textNode->AtkResNode.SetPositionFloat(210 + Config.PositionOffset.X, 1 + Config.PositionOffset.Y);
 
                 var gpPerSecond = gpPerTick / timePerTick;
                 var secondsUntilFull = (targetGp - Service.ClientState.LocalPlayer.CurrentGp) / gpPerSecond;
@@ -190,7 +205,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 } else {
                     lastGpChangeStopwatch.Restart();
                 }
-            
+
+                if (secondsUntilFull < 0) secondsUntilFull = 0;
                 var minutesUntilFull = 0;
                 while (secondsUntilFull >= 60) {
                     minutesUntilFull += 1;
