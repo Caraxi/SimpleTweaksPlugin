@@ -1,34 +1,43 @@
 ﻿using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
-using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using System;
+using System.Numerics;
 using FFXIVClientInterface.Client.UI.Misc;
 using SimpleTweaksPlugin.GameStructs;
+using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 
 // TODO:
 // - Determine active WXHB page.
 
-namespace SimpleTweaksPlugin {
-    public partial class UiAdjustmentsConfig {
-        public bool ShouldSerializeLargeCooldownCounter() => LargeCooldownCounter != null;
-        public LargeCooldownCounter.Configs LargeCooldownCounter = null;
-    }
-}
-
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
-        
+
+        private delegate byte ActionBarBaseUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData);
+
+        private HookWrapper<ActionBarBaseUpdate> actionBarBaseUpdateHook;
+
         public override string Name => "Large Cooldown Counter";
         public override string Description => "Increases the size of cooldown counters on hotbars.";
 
         public override void Enable() {
-            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.LargeCooldownCounter ?? new Configs();
-            Service.Framework.Update += FrameworkUpdate;
+            actionBarBaseUpdateHook ??= Common.Hook<ActionBarBaseUpdate>("E8 ?? ?? ?? ?? 83 BB ?? ?? ?? ?? ?? 75 09", ActionBarBaseUpdateDetour);
+            Config = LoadConfig<Configs>() ?? new Configs();
+            actionBarBaseUpdateHook?.Enable();
+            // Service.Framework.Update += FrameworkUpdate;
             base.Enable();
+        }
+
+        private byte ActionBarBaseUpdateDetour(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
+            var ret = actionBarBaseUpdateHook.Original(atkUnitBase, numberArrayData, stringArrayData);
+            try {
+                UpdateAll();
+            } catch {
+                //
+            }
+            return ret;
         }
 
         private readonly string[] allActionBars = {
@@ -50,6 +59,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public Font Font = Font.Default;
             public int FontSizeAdjust;
             public bool SimpleMode;
+            public Vector4 CooldownColour = new(1, 1, 1, 1);
+            public Vector4 CooldownEdgeColour = new(0.2F, 0.2F, 0.2F, 1);
         }
 
         public Configs Config { get; private set; }
@@ -82,8 +93,15 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 ImGui.Text("Reverts to old cooldown checking.");
                 ImGui.Text("Fixes issues with XIVCombo.");
                 ImGui.Text("Has some issues when out of range.");
+                ImGui.Text("Cannot change colour of text with Simple Mode enabled.");
                 ImGui.EndTooltip();
             }
+
+            if (!Config.SimpleMode) {
+                hasChanged |= ImGui.ColorEdit4("Text Colour##largeCooldownCounter", ref Config.CooldownColour);
+                hasChanged |= ImGui.ColorEdit4("Edge Colour##largeCooldownCounter", ref Config.CooldownEdgeColour);
+            }
+
         };
 
         private void FrameworkUpdate(Framework framework) {
@@ -159,17 +177,34 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 cooldownTextNode->AtkResNode.Height = 46;
                 cooldownTextNode->AlignmentFontType = (byte)((0x10 * (byte) Config.Font) | (byte) AlignmentType.Center);
                 cooldownTextNode->FontSize = GetFontSize();
+
+                if (!Config.SimpleMode) {
+                    cooldownTextNode->TextColor.R = (byte)(Config.CooldownColour.X * 255f);
+                    cooldownTextNode->TextColor.G = (byte)(Config.CooldownColour.Y * 255f);
+                    cooldownTextNode->TextColor.B = (byte)(Config.CooldownColour.Z * 255f);
+                    cooldownTextNode->TextColor.A = (byte)(Config.CooldownColour.W * 255f);
+
+                    cooldownTextNode->EdgeColor.R = (byte)(Config.CooldownEdgeColour.X * 255f);
+                    cooldownTextNode->EdgeColor.G = (byte)(Config.CooldownEdgeColour.Y * 255f);
+                    cooldownTextNode->EdgeColor.B = (byte)(Config.CooldownEdgeColour.Z * 255f);
+                    cooldownTextNode->EdgeColor.A = (byte)(Config.CooldownEdgeColour.W * 255f);
+                }
             }
             
             cooldownTextNode->AtkResNode.Flags_2 |= 0x1;
         }
 
         public override void Disable() {
+            actionBarBaseUpdateHook?.Disable();
             SaveConfig(Config);
-            PluginConfig.UiAdjustments.LargeCooldownCounter = null;
             Service.Framework.Update -= FrameworkUpdate;
             UpdateAll(true);
             base.Disable();
+        }
+
+        public override void Dispose() {
+            actionBarBaseUpdateHook?.Dispose();
+            base.Dispose();
         }
     }
 }
