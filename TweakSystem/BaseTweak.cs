@@ -38,6 +38,11 @@ namespace SimpleTweaksPlugin.TweakSystem {
             this.Plugin = plugin;
         }
 
+        public string LocString(string key, string fallback, string description = null) {
+            description ??= $"{Name} - {fallback}";
+            return Loc.Localize($"{this.Key} / {key}", fallback, $"[{this.GetType().Name}] {description}");
+        }
+
         private void DrawCommon() {
             if (this.Experimental) {
                 ImGui.SameLine();
@@ -115,9 +120,10 @@ namespace SimpleTweaksPlugin.TweakSystem {
         
         public bool DrawConfig(ref bool hasChanged) {
             var configTreeOpen = false;
+            var tweakName = LocString("Name", Name, $"Tweak Name");
             if ((UseAutoConfig || DrawConfigTree != null) && Enabled) {
                 var x = ImGui.GetCursorPosX();
-                if (ImGui.TreeNode($"{Name}##treeConfig_{GetType().Name}")) {
+                if (ImGui.TreeNode($"{tweakName}##treeConfig_{GetType().Name}")) {
                     configTreeOpen = true;
                     DrawCommon();
                     ImGui.SetCursorPosX(x);
@@ -134,7 +140,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
             } else {
                 ImGui.PushStyleColor(ImGuiCol.HeaderHovered, 0x0);
                 ImGui.PushStyleColor(ImGuiCol.HeaderActive, 0x0);
-                ImGui.TreeNodeEx(Name, ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen);
+                ImGui.TreeNodeEx(tweakName, ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen);
                 ImGui.PopStyleColor();
                 ImGui.PopStyleColor();
                 DrawCommon();

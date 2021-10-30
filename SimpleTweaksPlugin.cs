@@ -5,8 +5,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Numerics;
 using System.Reflection;
+using System.Threading.Tasks;
+using Dalamud;
 using Dalamud.Data;
 using Dalamud.Game;
 using Dalamud.Game.ClientState;
@@ -61,6 +64,8 @@ namespace SimpleTweaksPlugin {
         public static SimpleTweaksPlugin Plugin { get; private set; }
 
         private CultureInfo setCulture = null;
+
+        public bool LoadingTranslations { get; private set; } = false;
 
         internal CultureInfo Culture {
             get {
@@ -126,6 +131,7 @@ namespace SimpleTweaksPlugin {
             
             IconManager = new IconManager(pluginInterface);
             this.XivCommon = new XivCommonBase(Hooks.ContextMenu);
+            SetupLocalization();
             
             UiHelper.Setup(Service.SigScanner);
             #if DEBUG
@@ -171,6 +177,18 @@ namespace SimpleTweaksPlugin {
             drawConfigWindow = true;
 #endif
 
+        }
+
+        public void SetupLocalization() {
+            this.PluginConfig.Language ??= Service.ClientState.ClientLanguage switch {
+                ClientLanguage.English => "en",
+                ClientLanguage.French => "fr",
+                ClientLanguage.German => "de",
+                ClientLanguage.Japanese => "ja",
+                _ => "en"
+            };
+
+            Loc.LoadLanguage(PluginConfig.Language);
         }
 
         public void SetupCommands() {

@@ -4,6 +4,7 @@ using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using SimpleTweaksPlugin.Helper;
@@ -30,6 +31,7 @@ namespace SimpleTweaksPlugin {
         public bool ShowTweakIDs;
 
         public string CustomCulture = string.Empty;
+        public string Language = null;
 
         public void Init(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface) {
             this.plugin = plugin;
@@ -83,7 +85,8 @@ namespace SimpleTweaksPlugin {
                     ImGui.PopStyleColor();
                     ImGui.SameLine();
                     ImGui.PushStyleColor(ImGuiCol.Text, 0xFF888888);
-                    ImGui.TextWrapped($"{t.Description}");
+                    var tweakDescription = t.LocString("Description", t.Description, "Tweak Description");
+                    ImGui.TextWrapped($"{tweakDescription}");
                     ImGui.PopStyleColor();
                 }
             }
@@ -138,13 +141,13 @@ namespace SimpleTweaksPlugin {
                         if (t is SubTweakManager stm) {
                             if (!stm.Enabled) continue;
                             foreach (var st in stm.GetTweakList()) {
-                                if (st.Name.ToLowerInvariant().Contains(searchValue) || st.Tags.Any(tag => tag.ToLowerInvariant().Contains(searchValue))) {
+                                if (st.Name.ToLowerInvariant().Contains(searchValue) || st.Tags.Any(tag => tag.ToLowerInvariant().Contains(searchValue)) || st.LocString("Name", st.Name, "Tweak Name").ToLowerInvariant().Contains(searchValue)) {
                                     searchResults.Add(st);
                                 }
                             }
                             continue;
                         }
-                        if (t.Name.ToLowerInvariant().Contains(searchValue) || t.Tags.Any(tag => tag.ToLowerInvariant().Contains(searchValue))) {
+                        if (t.Name.ToLowerInvariant().Contains(searchValue) || t.Tags.Any(tag => tag.ToLowerInvariant().Contains(searchValue))|| t.LocString("Name", t.Name, "Tweak Name").ToLowerInvariant().Contains(searchValue)) {
                             searchResults.Add(t);
                         }
                     }
@@ -165,7 +168,7 @@ namespace SimpleTweaksPlugin {
                     if (settingTab && setTab == null) {
                         settingTab = false;
                     } else {
-                        if (ImGui.BeginTabItem("General Tweaks")) {
+                        if (ImGui.BeginTabItem(Loc.Localize("General Tweaks", "General Tweaks", "General Tweaks Tab Header") + "###generalTweaksTab")) {
                             ImGui.BeginChild("generalTweaks", new Vector2(-1, -1), false);
 
                             // ImGui.Separator();
@@ -189,9 +192,10 @@ namespace SimpleTweaksPlugin {
                             settingTab = false;
                             setTab = null;
                         }
-                        
-                        if (ImGui.BeginTabItem($"{stm.Name}##tweakCategoryTab")) {
-                            ImGui.BeginChild($"{stm.Name}-scroll", new Vector2(-1, -1));
+
+                        var stmName = stm.LocString("Name", stm.Name, "Tweak Name");
+                        if (ImGui.BeginTabItem($"{stmName}###tweakCategoryTab_{stm.Key}")) {
+                            ImGui.BeginChild($"{stm.Key}-scroll", new Vector2(-1, -1));
                             foreach (var tweak in stm.GetTweakList()) {
                                 DrawTweakConfig(tweak, ref changed);
                             }
@@ -200,17 +204,69 @@ namespace SimpleTweaksPlugin {
                         }
                     }
 
-                    if (ImGui.BeginTabItem("General Options")) {
+                    if (ImGui.BeginTabItem(Loc.Localize("General Options / TabHeader", "General Options") + $"###generalOptionsTab")) {
                         ImGui.BeginChild($"generalOptions-scroll", new Vector2(-1, -1));
-                        if (ImGui.Checkbox("Show Experimental Tweaks.", ref ShowExperimentalTweaks)) Save();
+                        if (ImGui.Checkbox(Loc.Localize("General Options / Show Experimental Tweaks", "Show Experimental Tweaks."), ref ShowExperimentalTweaks)) Save();
                         ImGui.Separator();
-                        if (ImGui.Checkbox("Show tweak descriptions.", ref ShowTweakDescriptions)) Save();
+                        if (ImGui.Checkbox(Loc.Localize("General Options / Show Tweak Descriptions","Show tweak descriptions."), ref ShowTweakDescriptions)) Save();
                         ImGui.Separator();
-                        if (ImGui.Checkbox("Show tweak IDs.", ref ShowTweakIDs)) Save();
+                        if (ImGui.Checkbox(Loc.Localize("General Options / Show Tweak IDs", "Show tweak IDs."), ref ShowTweakIDs)) Save();
+                        ImGui.Separator();
+
+                        if (Loc.DownloadError != null) {
+                            ImGui.TextColored(new Vector4(1, 0, 0, 1), Loc.DownloadError.ToString());
+                        }
+
+                        if (Loc.LoadingTranslations) {
+                            ImGui.Text("Downloading Translations...");
+                        } else {
+                            ImGui.SetNextItemWidth(130);
+                            if (ImGui.BeginCombo(Loc.Localize("General Options / Language", "Language"), plugin.PluginConfig.Language)) {
+
+                                if (ImGui.Selectable("en", Language == "en")) {
+                                    Language = "en";
+                                    plugin.SetupLocalization();
+                                    Save();
+                                }
+
+                                var locDir = pluginInterface.GetPluginLocDirectory();
+
+                                var locFiles = Directory.GetDirectories(locDir);
+
+                                foreach (var f in locFiles) {
+                                    var dir = new DirectoryInfo(f);
+                                    if (ImGui.Selectable($"{dir.Name}##LanguageSelection", Language == dir.Name)) {
+                                        Language = dir.Name;
+                                        plugin.SetupLocalization();
+                                        Save();
+                                    }
+                                }
+
+                                ImGui.EndCombo();
+                            }
+
+                            ImGui.SameLine();
+
+                            if (ImGui.SmallButton("Update Translations")) {
+                                Loc.UpdateTranslations();
+                            }
+
+#if DEBUG
+                            ImGui.SameLine();
+                            if (ImGui.SmallButton("Export Localizable")) {
+                                try {
+                                    ImGui.SetClipboardText(Loc.ExportLoadedDictionary());
+                                } catch (Exception ex) {
+                                    SimpleLog.Error(ex);
+                                }
+                            }
+#endif
+                        }
+
                         ImGui.Separator();
 
                         ImGui.SetNextItemWidth(130);
-                        if (ImGui.BeginCombo("Formatting Culture", plugin.Culture.Name)) {
+                        if (ImGui.BeginCombo(Loc.Localize("General Options / Formatting Culture", "Formatting Culture"), plugin.Culture.Name)) {
 
                             var cultures = CultureInfo.GetCultures(CultureTypes.AllCultures);
                             for (var i = 0; i < cultures.Length; i++) {
@@ -228,7 +284,7 @@ namespace SimpleTweaksPlugin {
                         ImGui.TextDisabled("Changes number formatting, not all tweaks support this.");
 
                         ImGui.Separator();
-                        if (ImGui.Checkbox("Hide Ko-fi link.", ref HideKofi)) Save();
+                        if (ImGui.Checkbox(Loc.Localize("General Options / Hide KoFi", "Hide Ko-fi link."), ref HideKofi)) Save();
                         ImGui.Separator();
 
                         foreach (var t in plugin.Tweaks.Where(t => t is SubTweakManager).Cast<SubTweakManager>()) {
@@ -258,7 +314,8 @@ namespace SimpleTweaksPlugin {
                                 Save();
                             }
                             ImGui.SameLine();
-                            ImGui.TreeNodeEx($"Enable Category: {t.Name}", ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.NoTreePushOnOpen);
+                            var stmName = t.LocString("Name", t.Name, "Tweak Name");
+                            ImGui.TreeNodeEx($"Enable Category: {stmName}", ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.NoTreePushOnOpen);
                             if (ImGui.IsItemClicked() && t.Enabled) {
                                 setTab = t;
                                 settingTab = false;
