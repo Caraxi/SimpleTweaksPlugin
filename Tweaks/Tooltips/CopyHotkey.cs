@@ -64,7 +64,8 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             if (Config.GamerEscapeLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.GamerEscapeLinkHotkey.Select(k => k.GetKeyName()))}  View on Gamer Escape"));
             if (Config.ErionesLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.ErionesLinkHotkey.Select(k => k.GetKeyName()))}  View on Eriones (JP)"));
 
-            stringArrayData->SetValue((int) ControlsDisplay, seStr.Encode(), false);
+
+            SetTooltipString(stringArrayData, ControlsDisplay, seStr);
         }
 
         private string settingKey;

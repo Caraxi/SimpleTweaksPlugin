@@ -65,7 +65,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             foodSheet = Service.Data.Excel.GetSheet<ItemFood>();
             bpSheet = Service.Data.Excel.GetSheet<BaseParam>();
             if (itemSheet == null || foodSheet == null || bpSheet == null) return;
-            Config = LoadConfig<Configs>() ?? new Configs() { Highlight = PluginConfig.TooltipTweaks.FoodStatsHighlight };
+            Config = LoadConfig<Configs>() ?? new Configs();
             BuildPotionEffectStrings();
             base.Enable();
         }
@@ -217,7 +217,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
                         if (payloads.Count > 0 && hasChange) {
                             var seStr = new SeString(payloads);
-                            stringArrayData->SetValue((int) TooltipTweaks.ItemTooltipField.Effects, seStr.Encode(), false);
+                            SetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.Effects, seStr);
                         }
                     }
 

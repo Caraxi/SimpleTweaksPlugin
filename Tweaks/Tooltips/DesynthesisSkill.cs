@@ -59,7 +59,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                                 textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
                                 textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({desynthLevel:F0})");
                             }
-                            stringArrayData->SetValue((int) ( useDescription ? ItemDescription : ExtractableProjectableDesynthesizable), seStr.Encode(), false);
+                            SetTooltipString(stringArrayData, useDescription ? ItemDescription : ExtractableProjectableDesynthesizable, seStr);
                         }
                     }
                 }

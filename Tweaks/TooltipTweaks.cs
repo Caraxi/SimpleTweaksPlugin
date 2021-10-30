@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -7,17 +9,11 @@ using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 
-namespace SimpleTweaksPlugin {
-    public partial class SimpleTweaksPluginConfig {
-        public TooltipTweakConfig TooltipTweaks = new TooltipTweakConfig();
-    }
-
-    public partial class TooltipTweakConfig { }
-}
-
 namespace SimpleTweaksPlugin.Tweaks {
     public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         public override bool AlwaysEnabled => true;
+
+        public static Dictionary<ItemTooltipField, IntPtr> ItemStringPointers = new();
 
         public abstract class SubTweak : BaseTweak {
             public override string Key => $"{nameof(TooltipTweaks)}@{base.Key}";
@@ -30,6 +26,18 @@ namespace SimpleTweaksPlugin.Tweaks {
                     return stringAddress == IntPtr.Zero ? null : MemoryHelper.ReadSeStringNullTerminated(stringAddress);
                 } catch {
                     return null;
+                }
+            }
+
+            protected static unsafe void SetTooltipString(StringArrayData* stringArrayData, TooltipTweaks.ItemTooltipField field, SeString seString) {
+                try {
+                    if (!ItemStringPointers.ContainsKey(field)) ItemStringPointers.Add(field, Marshal.AllocHGlobal(4096));
+                    var bytes = seString.Encode();
+                    Marshal.Copy(bytes, 0, ItemStringPointers[field], bytes.Length);
+                    Marshal.WriteByte(ItemStringPointers[field], bytes.Length, 0);
+                    stringArrayData->StringArray[(int)field] = (byte*)ItemStringPointers[field];
+                } catch {
+                    //
                 }
             }
 
@@ -119,6 +127,10 @@ namespace SimpleTweaksPlugin.Tweaks {
             actionTooltipHook?.Dispose();
             actionHoveredHook?.Dispose();
             generateItemTooltipHook?.Dispose();
+            foreach (var i in ItemStringPointers.Values) {
+                Marshal.FreeHGlobal(i);
+            }
+            ItemStringPointers.Clear();
             base.Dispose();
         }
 

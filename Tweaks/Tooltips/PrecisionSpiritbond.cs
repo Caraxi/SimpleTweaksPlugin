@@ -28,7 +28,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         public override unsafe void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
             var c = GetTooltipString(stringArrayData, SpiritbondPercent);
             if (c == null || c.TextValue.StartsWith("?")) return;
-            stringArrayData->SetValue((int)SpiritbondPercent, (Item.Spiritbond / 100f).ToString(Config.TrailingZero ? "F2" : "0.##") + "%", false);
+            SetTooltipString(stringArrayData, SpiritbondPercent, (Item.Spiritbond / 100f).ToString(Config.TrailingZero ? "F2" : "0.##") + "%");
         }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {

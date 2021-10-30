@@ -17,7 +17,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             seStr.Payloads.Add(new UIForegroundPayload(3));
             seStr.Payloads.Add(new TextPayload($"   [{id}]"));
             seStr.Payloads.Add(new UIForegroundPayload(0));
-            stringArrayData->SetValue((int) ItemUiCategory, seStr.Encode(), false);
+            SetTooltipString(stringArrayData, ItemUiCategory, seStr);
         }
 
         public override unsafe void OnActionTooltip(AddonActionDetail* addon, TooltipTweaks.HoveredAction action) {
