@@ -1,0 +1,482 @@
+{
+  "AutoOpenLootWindow / Description": {
+    "message": "Open the loot rolling window when new items are added to be rolled on.",
+    "description": "[AutoOpenLootWindow] Tweak Description"
+  },
+  "AutoOpenLootWindow / Name": {
+    "message": "Open loot window when items are added.",
+    "description": "[AutoOpenLootWindow] Tweak Name"
+  },
+  "CharaViewIncreasedZoom / Description": {
+    "message": "Allows zooming in near infinitely on character preview views, such as Try On and Examine.",
+    "description": "[CharaViewIncreasedZoom] Tweak Description"
+  },
+  "CharaViewIncreasedZoom / Name": {
+    "message": "Increased zoom on character previews.",
+    "description": "[CharaViewIncreasedZoom] Tweak Name"
+  },
+  "ChatTweaks / Name": {
+    "message": "Chat Tweaks",
+    "description": "[ChatTweaks] Tweak Name"
+  },
+  "ChatTweaks@ChatNameColours / Description": {
+    "message": "Gives players a random colour in chat, or set the name manually.",
+    "description": "[ChatNameColours] Tweak Description"
+  },
+  "ChatTweaks@ChatNameColours / Name": {
+    "message": "Chat Name Colours",
+    "description": "[ChatNameColours] Tweak Name"
+  },
+  "ChatTweaks@ClickableLinks / Description": {
+    "message": "Parses links posted in chat and allows them to be clicked.",
+    "description": "[ClickableLinks] Tweak Description"
+  },
+  "ChatTweaks@ClickableLinks / Name": {
+    "message": "Clickable Links in Chat",
+    "description": "[ClickableLinks] Tweak Name"
+  },
+  "ChatTweaks@DisableChatAutoscroll / Description": {
+    "message": "Attempts to prevent autoscrolling when recieving new chat messages while scrolled up.",
+    "description": "[DisableChatAutoscroll] Tweak Description"
+  },
+  "ChatTweaks@DisableChatAutoscroll / Name": {
+    "message": "Smart AutoScroll",
+    "description": "[DisableChatAutoscroll] Tweak Name"
+  },
+  "ChatTweaks@DisableChatMovement / Description": {
+    "message": "Prevents movement of the chat window.",
+    "description": "[DisableChatMovement] Tweak Description"
+  },
+  "ChatTweaks@DisableChatMovement / Name": {
+    "message": "Disable Chat Movement",
+    "description": "[DisableChatMovement] Tweak Name"
+  },
+  "ChatTweaks@DisableChatResize / Description": {
+    "message": "Prevents resizing of the chat window.",
+    "description": "[DisableChatResize] Tweak Description"
+  },
+  "ChatTweaks@DisableChatResize / Name": {
+    "message": "Disable Chat Resize",
+    "description": "[DisableChatResize] Tweak Name"
+  },
+  "ChatTweaks@RenameChatTabs / Description": {
+    "message": "Allows renaming the General and Battle tabs in the chat window.",
+    "description": "[RenameChatTabs] Tweak Description"
+  },
+  "ChatTweaks@RenameChatTabs / Name": {
+    "message": "Rename Chat Tabs",
+    "description": "[RenameChatTabs] Tweak Name"
+  },
+  "ChrDirCommand / Description": {
+    "message": "Adds a command to open the directory when client side character data is stored.",
+    "description": "[ChrDirCommand] Tweak Description"
+  },
+  "ChrDirCommand / Name": {
+    "message": "Character Directory Command",
+    "description": "[ChrDirCommand] Tweak Name"
+  },
+  "CommandAlias / Description": {
+    "message": "Allows replacing commands typed into chat box with other commands.",
+    "description": "[CommandAlias] Tweak Description"
+  },
+  "CommandAlias / Name": {
+    "message": "Command Alias",
+    "description": "[CommandAlias] Tweak Name"
+  },
+  "DisableClickTargeting / Description": {
+    "message": "Allows disabling of the target function on left and right mouse clicks.",
+    "description": "[DisableClickTargeting] Tweak Description"
+  },
+  "DisableClickTargeting / Name": {
+    "message": "Disable Click Targeting",
+    "description": "[DisableClickTargeting] Tweak Name"
+  },
+  "DisableTitleScreenMovie / Description": {
+    "message": "Prevents the title screen from playing the introduction movie after 60 seconds.",
+    "description": "[DisableTitleScreenMovie] Tweak Description"
+  },
+  "DisableTitleScreenMovie / Name": {
+    "message": "Disable Title Screen Movie",
+    "description": "[DisableTitleScreenMovie] Tweak Name"
+  },
+  "FixedShadowDistance / Description": {
+    "message": "Sets a fixed value for the shadow rendering, preventing it from changing when flying.",
+    "description": "[FixedShadowDistance] Tweak Description"
+  },
+  "FixedShadowDistance / Name": {
+    "message": "Fixed Shadow Distance",
+    "description": "[FixedShadowDistance] Tweak Name"
+  },
+  "FixTarget / Description": {
+    "message": "Allows using the default '/target' command for targeting players or NPCs by their names.",
+    "description": "[FixTarget] Tweak Description"
+  },
+  "FixTarget / Name": {
+    "message": "Fix '/target' command",
+    "description": "[FixTarget] Tweak Name"
+  },
+  "General Options / Formatting Culture": {
+    "message": "Formatting Culture",
+    "description": "General Options / Formatting Culture - Formatting Culture"
+  },
+  "General Options / Hide KoFi": {
+    "message": "Hide Ko-fi link.",
+    "description": "General Options / Hide KoFi - Hide Ko-fi link."
+  },
+  "General Options / Language": {
+    "message": "Language",
+    "description": "General Options / Language - Language"
+  },
+  "General Options / Show Experimental Tweaks": {
+    "message": "Show Experimental Tweaks.",
+    "description": "General Options / Show Experimental Tweaks - Show Experimental Tweaks."
+  },
+  "General Options / Show Tweak Descriptions": {
+    "message": "Show tweak descriptions.",
+    "description": "General Options / Show Tweak Descriptions - Show tweak descriptions."
+  },
+  "General Options / Show Tweak IDs": {
+    "message": "Show tweak IDs.",
+    "description": "General Options / Show Tweak IDs - Show tweak IDs."
+  },
+  "General Options / TabHeader": {
+    "message": "General Options",
+    "description": "General Options / TabHeader - General Options"
+  },
+  "LegacyCameraLock / Description": {
+    "message": "Prevents camera rotation when using Legacy movement type.",
+    "description": "[LegacyCameraLock] Tweak Description"
+  },
+  "LegacyCameraLock / Name": {
+    "message": "Legacy Camera Lock",
+    "description": "[LegacyCameraLock] Tweak Name"
+  },
+  "LongVeil / Description": {
+    "message": "Replaces the wedding veils with their long variants that are usually only shown in the sanctum of the twelve.",
+    "description": "[LongVeil] Tweak Description"
+  },
+  "LongVeil / Name": {
+    "message": "Long Veil",
+    "description": "[LongVeil] Tweak Name"
+  },
+  "MainCommandCommand / Description": {
+    "message": "Adds the command '/maincommand [name]' to allow using any Main Command from chat or macro.",
+    "description": "[MainCommandCommand] Tweak Description"
+  },
+  "MainCommandCommand / Name": {
+    "message": "Main Command Command",
+    "description": "[MainCommandCommand] Tweak Name"
+  },
+  "MoreGearSets / Description": {
+    "message": "Increases maximum gear sets to 100.",
+    "description": "[MoreGearSets] Tweak Description"
+  },
+  "MoreGearSets / Name": {
+    "message": "More Gear Sets",
+    "description": "[MoreGearSets] Tweak Name"
+  },
+  "SetOptionCommand / Description": {
+    "message": "Adds commands to change various settings.",
+    "description": "[SetOptionCommand] Tweak Description"
+  },
+  "SetOptionCommand / Name": {
+    "message": "Set Option Command",
+    "description": "[SetOptionCommand] Tweak Name"
+  },
+  "TooltipTweaks / Name": {
+    "message": "Tooltip Tweaks",
+    "description": "[TooltipTweaks] Tweak Name"
+  },
+  "TooltipTweaks@CopyHotkey / Description": {
+    "message": "Adds hotkeys for various actions when the item detail window is visible.",
+    "description": "[CopyHotkey] Tweak Description"
+  },
+  "TooltipTweaks@CopyHotkey / Name": {
+    "message": "Item Hotkeys",
+    "description": "[CopyHotkey] Tweak Name"
+  },
+  "TooltipTweaks@DesynthesisSkill / Description": {
+    "message": "Shows your current desynthesis level when viewing a desynthesizable item.",
+    "description": "[DesynthesisSkill] Tweak Description"
+  },
+  "TooltipTweaks@DesynthesisSkill / Name": {
+    "message": "Show Desynthesis Skill",
+    "description": "[DesynthesisSkill] Tweak Name"
+  },
+  "TooltipTweaks@FoodStats / Description": {
+    "message": "Calculates the stat results a consumable will have based on your current stats.",
+    "description": "[FoodStats] Tweak Description"
+  },
+  "TooltipTweaks@FoodStats / Name": {
+    "message": "Show expected food and potion stats",
+    "description": "[FoodStats] Tweak Name"
+  },
+  "TooltipTweaks@MateriaStats / Description": {
+    "message": "Includes an item's attached materia when displaying the stats.",
+    "description": "[MateriaStats] Tweak Description"
+  },
+  "TooltipTweaks@MateriaStats / Name": {
+    "message": "Materia Stats",
+    "description": "[MateriaStats] Tweak Name"
+  },
+  "TooltipTweaks@PrecisionDurability / Description": {
+    "message": "Show partial percentages for durability.",
+    "description": "[PrecisionDurability] Tweak Description"
+  },
+  "TooltipTweaks@PrecisionDurability / Name": {
+    "message": "Precise Durability",
+    "description": "[PrecisionDurability] Tweak Name"
+  },
+  "TooltipTweaks@PrecisionSpiritbond / Description": {
+    "message": "Show partial percentages for Spiritbond.",
+    "description": "[PrecisionSpiritbond] Tweak Description"
+  },
+  "TooltipTweaks@PrecisionSpiritbond / Name": {
+    "message": "Precise Spiritbond",
+    "description": "[PrecisionSpiritbond] Tweak Name"
+  },
+  "TooltipTweaks@ShowItemID / Description": {
+    "message": "Show the ID of actions and items on their tooltips.",
+    "description": "[ShowItemID] Tweak Description"
+  },
+  "TooltipTweaks@ShowItemID / Name": {
+    "message": "Show ID",
+    "description": "[ShowItemID] Tweak Name"
+  },
+  "UiAdjustments / Name": {
+    "message": "UI Tweaks",
+    "description": "[UiAdjustments] Tweak Name"
+  },
+  "UiAdjustments@BattleTalkAdjustments / Description": {
+    "message": "Allows moving of the dialogue box that appears in the middle of battles.",
+    "description": "[BattleTalkAdjustments] Tweak Description"
+  },
+  "UiAdjustments@BattleTalkAdjustments / Name": {
+    "message": "Battle Talk Adjustments",
+    "description": "[BattleTalkAdjustments] Tweak Name"
+  },
+  "UiAdjustments@CastBarAdjustments / Description": {
+    "message": "Allows hiding or moving specific parts of the castbar.",
+    "description": "[CastBarAdjustments] Tweak Description"
+  },
+  "UiAdjustments@CastBarAdjustments / Name": {
+    "message": "Cast Bar Adjustments",
+    "description": "[CastBarAdjustments] Tweak Name"
+  },
+  "UiAdjustments@ComboTimer / Description": {
+    "message": "Shows a countdown for combo actions.",
+    "description": "[ComboTimer] Tweak Description"
+  },
+  "UiAdjustments@ComboTimer / Name": {
+    "message": "Combo Timer",
+    "description": "[ComboTimer] Tweak Name"
+  },
+  "UiAdjustments@CustomFreeCompanyTags / Description": {
+    "message": "Allows hiding or customizing Free Company and Wanderer tags.",
+    "description": "[CustomFreeCompanyTags] Tweak Description"
+  },
+  "UiAdjustments@CustomFreeCompanyTags / Name": {
+    "message": "Custom Free Company Tags",
+    "description": "[CustomFreeCompanyTags] Tweak Name"
+  },
+  "UiAdjustments@CustomTimeFormat / Description": {
+    "message": "Allows setting custom time formats for the in game clock. Uses C# formatting strings.",
+    "description": "[CustomTimeFormat] Tweak Description"
+  },
+  "UiAdjustments@CustomTimeFormat / Name": {
+    "message": "Custom Time Formats",
+    "description": "[CustomTimeFormat] Tweak Name"
+  },
+  "UiAdjustments@ExamineItemLevel / Description": {
+    "message": "Calculates the item level of other players when examining them.\nRed value means the player is wearing an item that scales to their level and it is showing the max level.",
+    "description": "[ExamineItemLevel] Tweak Description"
+  },
+  "UiAdjustments@ExamineItemLevel / Name": {
+    "message": "Item Level in Examine",
+    "description": "[ExamineItemLevel] Tweak Name"
+  },
+  "UiAdjustments@ExpPercentage / Description": {
+    "message": "Calculate and display the current EXP percentage on the EXP bar.",
+    "description": "[ExpPercentage] Tweak Description"
+  },
+  "UiAdjustments@ExpPercentage / Name": {
+    "message": "Show Experience Percentage",
+    "description": "[ExpPercentage] Tweak Name"
+  },
+  "UiAdjustments@ExtendedDesynthesisWindow / Description": {
+    "message": "Shows your current desynthesis level and the item's optimal level on the desynthesis item selection window.\nAlso indicates if an item is part of a gear set, optionally preventing selection of gearset items.",
+    "description": "[ExtendedDesynthesisWindow] Tweak Description"
+  },
+  "UiAdjustments@ExtendedDesynthesisWindow / Name": {
+    "message": "Extended Desynthesis Window",
+    "description": "[ExtendedDesynthesisWindow] Tweak Name"
+  },
+  "UiAdjustments@ExtraEstateTeleportation / Description": {
+    "message": "Add the Estate Teleportation option to more locations.",
+    "description": "[ExtraEstateTeleportation] Tweak Description"
+  },
+  "UiAdjustments@ExtraEstateTeleportation / Name": {
+    "message": "Extra Estate Teleportation",
+    "description": "[ExtraEstateTeleportation] Tweak Name"
+  },
+  "UiAdjustments@HideAchievementsNotifications / Description": {
+    "message": "Completely hides the login/zone-in notification for achievements nearing completion.",
+    "description": "[HideAchievementsNotifications] Tweak Description"
+  },
+  "UiAdjustments@HideAchievementsNotifications / Name": {
+    "message": "Hide Achievements Nearing Completion Notifications",
+    "description": "[HideAchievementsNotifications] Tweak Name"
+  },
+  "UiAdjustments@HideJobGauge / Description": {
+    "message": "Allow hiding the job gauge while not in combat or dungeons.",
+    "description": "[HideJobGauge] Tweak Description"
+  },
+  "UiAdjustments@HideJobGauge / Name": {
+    "message": "Hide Job Gauge",
+    "description": "[HideJobGauge] Tweak Name"
+  },
+  "UiAdjustments@ImprovedWorldVisit / Description": {
+    "message": "Cleans up the world visit menu and shows your current location in order on the list.",
+    "description": "[ImprovedWorldVisit] Tweak Description"
+  },
+  "UiAdjustments@ImprovedWorldVisit / Name": {
+    "message": "Cleaner World Visit Menu",
+    "description": "[ImprovedWorldVisit] Tweak Name"
+  },
+  "UiAdjustments@LargeCooldownCounter / Description": {
+    "message": "Increases the size of cooldown counters on hotbars.",
+    "description": "[LargeCooldownCounter] Tweak Description"
+  },
+  "UiAdjustments@LargeCooldownCounter / Name": {
+    "message": "Large Cooldown Counter",
+    "description": "[LargeCooldownCounter] Tweak Name"
+  },
+  "UiAdjustments@LimitTargetStatusEffects / Description": {
+    "message": "Sets a limit on the number of status effects displayed on your target.",
+    "description": "[LimitTargetStatusEffects] Tweak Description"
+  },
+  "UiAdjustments@LimitTargetStatusEffects / Name": {
+    "message": "Limit Target Status Effects",
+    "description": "[LimitTargetStatusEffects] Tweak Name"
+  },
+  "UiAdjustments@MarketEnhancements / Description": {
+    "message": "UI Enhancements for market board such as including tax and highlighting laxy tax.",
+    "description": "[MarketEnhancements] Tweak Description"
+  },
+  "UiAdjustments@MarketEnhancements / Name": {
+    "message": "Market Enhancements",
+    "description": "[MarketEnhancements] Tweak Name"
+  },
+  "UiAdjustments@MinimapAdjustments / Description": {
+    "message": "Allows hiding elements of the minimap display.",
+    "description": "[MinimapAdjustments] Tweak Description"
+  },
+  "UiAdjustments@MinimapAdjustments / Name": {
+    "message": "Minimap Adjustments",
+    "description": "[MinimapAdjustments] Tweak Name"
+  },
+  "UiAdjustments@NotificationToastAdjustments / Description": {
+    "message": "Allows moving or hiding of the notifications that appears in the middle of the screen at various times.",
+    "description": "[NotificationToastAdjustments] Tweak Description"
+  },
+  "UiAdjustments@NotificationToastAdjustments / Name": {
+    "message": "Notification Toast Adjustments",
+    "description": "[NotificationToastAdjustments] Tweak Name"
+  },
+  "UiAdjustments@OldNameplatesTweak / Description": {
+    "message": "Reverts the change to nameplates.",
+    "description": "[OldNameplatesTweak] Tweak Description"
+  },
+  "UiAdjustments@OldNameplatesTweak / Name": {
+    "message": "Old Nameplates Tweak",
+    "description": "[OldNameplatesTweak] Tweak Name"
+  },
+  "UiAdjustments@ParameterBarAdjustments / Description": {
+    "message": "Allows hiding or moving specific parts of the parameter bar (HP and mana bars).",
+    "description": "[ParameterBarAdjustments] Tweak Description"
+  },
+  "UiAdjustments@ParameterBarAdjustments / Name": {
+    "message": "Parameter Bar Adjustments",
+    "description": "[ParameterBarAdjustments] Tweak Name"
+  },
+  "UiAdjustments@PartyListStatusTimers / Description": {
+    "message": "Show timers on status effects on the party list.",
+    "description": "[PartyListStatusTimers] Tweak Description"
+  },
+  "UiAdjustments@PartyListStatusTimers / Name": {
+    "message": "Party List Status Timers",
+    "description": "[PartyListStatusTimers] Tweak Name"
+  },
+  "UiAdjustments@ReducedDeepDungeonInfo / Description": {
+    "message": "Removes the redundant infos from the deep dungeon character info.",
+    "description": "[ReducedDeepDungeonInfo] Tweak Description"
+  },
+  "UiAdjustments@ReducedDeepDungeonInfo / Name": {
+    "message": "Reduced Deep Dungeon Info",
+    "description": "[ReducedDeepDungeonInfo] Tweak Name"
+  },
+  "UiAdjustments@RemoveCommunityFinder / Description": {
+    "message": "Hide the community finder buttons from social windows.",
+    "description": "[RemoveCommunityFinder] Tweak Description"
+  },
+  "UiAdjustments@RemoveCommunityFinder / Name": {
+    "message": "Remove Community Finder",
+    "description": "[RemoveCommunityFinder] Tweak Name"
+  },
+  "UiAdjustments@SellMaxTripleTriadCards / Description": {
+    "message": "Set the default number of cards to sell at the Triple Triad Trader to the number of cards you have.",
+    "description": "[SellMaxTripleTriadCards] Tweak Description"
+  },
+  "UiAdjustments@SellMaxTripleTriadCards / Name": {
+    "message": "Default to max when selling Triple Triad Cards",
+    "description": "[SellMaxTripleTriadCards] Tweak Name"
+  },
+  "UiAdjustments@ShiftTargetCastBarText / Description": {
+    "message": "Moves the text on target castbars to make it easier to read",
+    "description": "[ShiftTargetCastBarText] Tweak Description"
+  },
+  "UiAdjustments@ShiftTargetCastBarText / Name": {
+    "message": "Reposition Target Castbar Text",
+    "description": "[ShiftTargetCastBarText] Tweak Name"
+  },
+  "UiAdjustments@ShowShieldOnHPBar / Description": {
+    "message": "Show approximate shield on the HP Bar.",
+    "description": "[ShowShieldOnHPBar] Tweak Description"
+  },
+  "UiAdjustments@ShowShieldOnHPBar / Name": {
+    "message": "Shield on HP Bar",
+    "description": "[ShowShieldOnHPBar] Tweak Name"
+  },
+  "UiAdjustments@SmartNameplates / Description": {
+    "message": "Provides options to hide other player's nameplates in combat under certain conditions.",
+    "description": "[SmartNameplates] Tweak Description"
+  },
+  "UiAdjustments@SmartNameplates / Name": {
+    "message": "Smart Nameplates",
+    "description": "[SmartNameplates] Tweak Name"
+  },
+  "UiAdjustments@TargetHP / Description": {
+    "message": "Displays the exact (or optionally rounded) value of target's hitpoints.",
+    "description": "[TargetHP] Tweak Description"
+  },
+  "UiAdjustments@TargetHP / Name": {
+    "message": "Target HP",
+    "description": "[TargetHP] Tweak Name"
+  },
+  "UiAdjustments@TimerOnDutyWaiting / Description": {
+    "message": "Shows the 45 second countdown after readying for a duty.",
+    "description": "[TimerOnDutyWaiting] Tweak Description"
+  },
+  "UiAdjustments@TimerOnDutyWaiting / Name": {
+    "message": "Timer on Duty Waiting",
+    "description": "[TimerOnDutyWaiting] Tweak Name"
+  },
+  "UiAdjustments@TimeUntilGpMax / Description": {
+    "message": "Shows a countdown when playing Gathering classes to estimate the time until their GP is capped.",
+    "description": "[TimeUntilGpMax] Tweak Description"
+  },
+  "UiAdjustments@TimeUntilGpMax / Name": {
+    "message": "Time Until GP Max",
+    "description": "[TimeUntilGpMax] Tweak Name"
+  }
+}
