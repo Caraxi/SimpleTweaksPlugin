@@ -2,8 +2,8 @@
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Dalamud.Logging;
 using ImGuiNET;
+using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.TweakSystem;
 using XivCommon.Functions.ContextMenu;
 using XivCommon.Functions.FriendList;
@@ -88,7 +88,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             index += 1;
 
-            args.Items.Insert(index, new NormalContextMenuItem("Estate Teleportation", _ => {
+            var estateTeleportationString = Service.Data.Excel.GetSheet<Addon>()?.GetRow(6865)?.Text.RawString;
+            args.Items.Insert(index, new NormalContextMenuItem(estateTeleportationString ?? "Estate Teleportation", _ => {
                 if (this.ShowEstateTeleportation == null) {
                     return;
                 }
