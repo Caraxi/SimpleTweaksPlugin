@@ -50,7 +50,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
                     var seStr = GetTooltipString(stringArrayData, useDescription ? ItemDescription : ExtractableProjectableDesynthesizable);
 
-                    if (seStr != null) {
+                    if (seStr != null && seStr.Payloads.Count > 0) {
                         if (seStr.Payloads.Last() is TextPayload textPayload) {
                             if (Config.Delta) {
                                 textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthDelta:+#;-#}");
