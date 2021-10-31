@@ -583,13 +583,41 @@
     "message": "Y Position Offset",
     "description": "[ComboTimer] [Config] Y Position Offset"
   },
+  "UiAdjustments@CustomFreeCompanyTags / AddButton": {
+    "message": "Add",
+    "description": "[CustomFreeCompanyTags] Custom Free Company Tags - Add"
+  },
   "UiAdjustments@CustomFreeCompanyTags / Description": {
     "message": "Allows hiding or customizing Free Company and Wanderer tags.",
     "description": "[CustomFreeCompanyTags] Tweak Description"
   },
+  "UiAdjustments@CustomFreeCompanyTags / DuplicateNameError": {
+    "message": "This name is already added.",
+    "description": "[CustomFreeCompanyTags] Custom Free Company Tags - This name is already added."
+  },
+  "UiAdjustments@CustomFreeCompanyTags / FC Tag": {
+    "message": "FC Tag",
+    "description": "[CustomFreeCompanyTags] Custom Free Company Tags - FC Tag"
+  },
+  "UiAdjustments@CustomFreeCompanyTags / FCAlreadyAddedError": {
+    "message": "FC is already on list.",
+    "description": "[CustomFreeCompanyTags] Custom Free Company Tags - FC is already on list."
+  },
   "UiAdjustments@CustomFreeCompanyTags / Name": {
     "message": "Custom Free Company Tags",
     "description": "[CustomFreeCompanyTags] Tweak Name"
+  },
+  "UiAdjustments@CustomFreeCompanyTags / NoFCNote": {
+    "message": "Enter name to add FC to list.",
+    "description": "[CustomFreeCompanyTags] Custom Free Company Tags - Enter name to add FC to list."
+  },
+  "UiAdjustments@CustomFreeCompanyTags / Replace": {
+    "message": "Replace",
+    "description": "[CustomFreeCompanyTags] Custom Free Company Tags - Replace"
+  },
+  "UiAdjustments@CustomFreeCompanyTags / Replacement": {
+    "message": "Replacement",
+    "description": "[CustomFreeCompanyTags] Custom Free Company Tags - Replacement"
   },
   "UiAdjustments@CustomTimeFormat / Description": {
     "message": "Allows setting custom time formats for the in game clock. Uses C# formatting strings.",
