@@ -34,8 +34,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public Configs Config { get; private set; }
         
         protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
-            ImGui.Checkbox("Block clicking on gearset items.", ref Config.BlockClickOnGearset);
-            ImGui.Checkbox("Highlight potential skill gains (Yellow)", ref Config.YellowForSkillGain);
+            ImGui.Checkbox(LocString("BlockClickOnGearset", "Block clicking on gearset items."), ref Config.BlockClickOnGearset);
+            ImGui.Checkbox(LocString("YellowForSkillGain", "Highlight potential skill gains (Yellow)"), ref Config.YellowForSkillGain);
         };
 
         public override string Name => "Extended Desynthesis Window";

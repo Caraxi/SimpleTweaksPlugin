@@ -655,6 +655,10 @@
     "message": "Show Experience Percentage",
     "description": "[ExpPercentage] Tweak Name"
   },
+  "UiAdjustments@ExtendedDesynthesisWindow / BlockClickOnGearset": {
+    "message": "Block clicking on gearset items.",
+    "description": "[ExtendedDesynthesisWindow] Extended Desynthesis Window - Block clicking on gearset items."
+  },
   "UiAdjustments@ExtendedDesynthesisWindow / Description": {
     "message": "Shows your current desynthesis level and the item's optimal level on the desynthesis item selection window.\nAlso indicates if an item is part of a gear set, optionally preventing selection of gearset items.",
     "description": "[ExtendedDesynthesisWindow] Tweak Description"
@@ -662,6 +666,10 @@
   "UiAdjustments@ExtendedDesynthesisWindow / Name": {
     "message": "Extended Desynthesis Window",
     "description": "[ExtendedDesynthesisWindow] Tweak Name"
+  },
+  "UiAdjustments@ExtendedDesynthesisWindow / YellowForSkillGain": {
+    "message": "Highlight potential skill gains (Yellow)",
+    "description": "[ExtendedDesynthesisWindow] Extended Desynthesis Window - Highlight potential skill gains (Yellow)"
   },
   "UiAdjustments@ExtraEstateTeleportation / Description": {
     "message": "Add the Estate Teleportation option to more locations.",
