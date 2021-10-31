@@ -4,6 +4,7 @@ using Dalamud.Hooking;
 using System.Numerics;
 using System.Text;
 using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Utility;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks;
@@ -41,34 +42,34 @@ namespace SimpleTweaksPlugin.Tweaks {
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
 
             if (!Config.UseNameFilter) {
-                hasChanged |= ImGui.Checkbox("Disable Right Click Targeting", ref Config.DisableRightClick);
-                hasChanged |= ImGui.Checkbox("Disable Left Click Targeting", ref Config.DisableLeftClick);
+                hasChanged |= ImGui.Checkbox(LocString("SimpleDisableRightClick","Disable Right Click Targeting"), ref Config.DisableRightClick);
+                hasChanged |= ImGui.Checkbox(LocString("SimpleDisableLeftClick","Disable Left Click Targeting"), ref Config.DisableLeftClick);
 
                 ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
-                hasChanged |= ImGui.Checkbox("Only disable in combat", ref Config.OnlyDisableInCombat);
+                hasChanged |= ImGui.Checkbox(LocString("SimpleCombatOnly", "Only disable in combat"), ref Config.OnlyDisableInCombat);
                 ImGui.Dummy(new Vector2(10) * ImGui.GetIO().FontGlobalScale);
             }
            
-            hasChanged |= ImGui.Checkbox("Enable Name Filtering", ref Config.UseNameFilter);
+            hasChanged |= ImGui.Checkbox(LocString("NameFiltering", "Enable Name Filtering"), ref Config.UseNameFilter);
 
             if (!(Config.DisableLeftClick || Config.DisableRightClick || Config.UseNameFilter)) {
-                ImGui.Text("It is doing nothing if everything is disabled...");
+                ImGui.Text(LocString("EverythingDisabled", "It is doing nothing if everything is disabled..."));
             }
 
             if (Config.UseNameFilter) {
                 
-                ImGui.Text("Name Filters:");
+                ImGui.Text(LocString("NameFiltersLabel", "Name Filters:"));
                 ImGui.SameLine();
-                ImGui.TextDisabled("Per actor options for ");
+                ImGui.TextDisabled(LocString("NameFiltersHelp", "Per actor options for "));
                 var i = 0;
 
 
                 if (ImGui.BeginTable("nameFilterTable", 5)) {
                     ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed, 28 * ImGui.GetIO().FontGlobalScale);
-                    ImGui.TableSetupColumn("\nName");
-                    ImGui.TableSetupColumn("Disable\nLeft", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoClip, 50 * ImGui.GetIO().FontGlobalScale);
-                    ImGui.TableSetupColumn("Disable\nRight", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoClip, 50 * ImGui.GetIO().FontGlobalScale);
-                    ImGui.TableSetupColumn("Only in\nCombat", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoClip, 50 * ImGui.GetIO().FontGlobalScale);
+                    ImGui.TableSetupColumn(LocString("NameHeader", "\nName"));
+                    ImGui.TableSetupColumn(LocString("LeftHeader", "Disable\nLeft"), ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoClip, 50 * ImGui.GetIO().FontGlobalScale);
+                    ImGui.TableSetupColumn(LocString("RightHeader", "Disable\nRight"), ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoClip, 50 * ImGui.GetIO().FontGlobalScale);
+                    ImGui.TableSetupColumn(LocString("CombatHeader", "Only in\nCombat"), ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoClip, 50 * ImGui.GetIO().FontGlobalScale);
                     
                     ImGui.TableHeadersRow();
                     NameFilter deleteNf = null;
@@ -77,7 +78,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                         if (ImGui.Button($"X##namefilter_delete_{++i}", new Vector2(-1, 24 * ImGui.GetIO().FontGlobalScale))) {
                             deleteNf = nf;
                         }
-                        if (ImGui.IsItemHovered()) ImGui.SetTooltip($"Remove {nf.Name}");
+                        if (ImGui.IsItemHovered()) ImGui.SetTooltip(LocString("RemoveTooltip", "Remove {0}").Format(nf.Name));
                         ImGui.TableNextColumn();
                         ImGui.Text(nf.Name);
                         ImGui.TableNextColumn();
@@ -96,10 +97,10 @@ namespace SimpleTweaksPlugin.Tweaks {
                     ImGui.TableNextColumn();
                     ImGui.TableNextColumn();
                     ImGui.SetNextItemWidth(-1);
-                    ImGui.InputTextWithHint($"##nameFilter_name{++i}", "Name", ref nameFilterNew, 30);
+                    ImGui.InputTextWithHint($"##nameFilter_name{++i}", LocString("NamePlaceholder", "Name"), ref nameFilterNew, 30);
                     
                     ImGui.TableNextColumn();
-                    if (ImGui.Button("Add")) {
+                    if (ImGui.Button(LocString("AddButton", "Add"))) {
                         if (Config.NameFilters.All(nf => nf.Name != nameFilterNew)) {
                             Config.NameFilters.Add(new NameFilter() {
                                 Name = nameFilterNew
@@ -119,7 +120,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                     ImGui.TableNextRow();
                     ImGui.TableNextColumn();
                     ImGui.TableNextColumn();
-                    ImGui.Text("Default (Unmatched Names)");
+                    ImGui.Text(LocString("DefaultNameText", "Default (Unmatched Names)"));
                     ImGui.TableNextColumn();
                     hasChanged |= ImGui.Checkbox($"##nameFilter_disableLeft{i}", ref Config.DisableLeftClick);
                     ImGui.TableNextColumn();

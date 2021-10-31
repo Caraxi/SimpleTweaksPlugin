@@ -119,13 +119,73 @@
     "message": "'/{0}' is a protected command.",
     "description": "[CommandAlias] Command Alias - '/{0}' is a protected command."
   },
+  "DisableClickTargeting / AddButton": {
+    "message": "Add",
+    "description": "[DisableClickTargeting] Disable Click Targeting - Add"
+  },
+  "DisableClickTargeting / CombatHeader": {
+    "message": "Only in\nCombat",
+    "description": "[DisableClickTargeting] Disable Click Targeting - Only in\nCombat"
+  },
+  "DisableClickTargeting / DefaultNameText": {
+    "message": "Default (Unmatched Names)",
+    "description": "[DisableClickTargeting] Disable Click Targeting - Default (Unmatched Names)"
+  },
   "DisableClickTargeting / Description": {
     "message": "Allows disabling of the target function on left and right mouse clicks.",
     "description": "[DisableClickTargeting] Tweak Description"
   },
+  "DisableClickTargeting / EverythingDisabled": {
+    "message": "It is doing nothing if everything is disabled...",
+    "description": "[DisableClickTargeting] Disable Click Targeting - It is doing nothing if everything is disabled..."
+  },
+  "DisableClickTargeting / LeftHeader": {
+    "message": "Disable\nLeft",
+    "description": "[DisableClickTargeting] Disable Click Targeting - Disable\nLeft"
+  },
   "DisableClickTargeting / Name": {
     "message": "Disable Click Targeting",
     "description": "[DisableClickTargeting] Tweak Name"
+  },
+  "DisableClickTargeting / NameFiltering": {
+    "message": "Enable Name Filtering",
+    "description": "[DisableClickTargeting] Disable Click Targeting - Enable Name Filtering"
+  },
+  "DisableClickTargeting / NameFiltersHelp": {
+    "message": "Per actor options for ",
+    "description": "[DisableClickTargeting] Disable Click Targeting - Per actor options for "
+  },
+  "DisableClickTargeting / NameFiltersLabel": {
+    "message": "Name Filters:",
+    "description": "[DisableClickTargeting] Disable Click Targeting - Name Filters:"
+  },
+  "DisableClickTargeting / NameHeader": {
+    "message": "\nName",
+    "description": "[DisableClickTargeting] Disable Click Targeting - \nName"
+  },
+  "DisableClickTargeting / NamePlaceholder": {
+    "message": "Name",
+    "description": "[DisableClickTargeting] Disable Click Targeting - Name"
+  },
+  "DisableClickTargeting / RemoveTooltip": {
+    "message": "Remove {0}",
+    "description": "[DisableClickTargeting] Disable Click Targeting - Remove {0}"
+  },
+  "DisableClickTargeting / RightHeader": {
+    "message": "Disable\nRight",
+    "description": "[DisableClickTargeting] Disable Click Targeting - Disable\nRight"
+  },
+  "DisableClickTargeting / SimpleCombatOnly": {
+    "message": "Only disable in combat",
+    "description": "[DisableClickTargeting] Disable Click Targeting - Only disable in combat"
+  },
+  "DisableClickTargeting / SimpleDisableLeftClick": {
+    "message": "Disable Left Click Targeting",
+    "description": "[DisableClickTargeting] Disable Click Targeting - Disable Left Click Targeting"
+  },
+  "DisableClickTargeting / SimpleDisableRightClick": {
+    "message": "Disable Right Click Targeting",
+    "description": "[DisableClickTargeting] Disable Click Targeting - Disable Right Click Targeting"
   },
   "DisableTitleScreenMovie / Description": {
     "message": "Prevents the title screen from playing the introduction movie after 60 seconds.",
