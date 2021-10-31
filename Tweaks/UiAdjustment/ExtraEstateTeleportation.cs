@@ -30,8 +30,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-            hasChanged |= ImGui.Checkbox("Party Member List (Social window)", ref this.Config.PartyMemberList);
-            hasChanged |= ImGui.Checkbox("Party List", ref this.Config.PartyList);
+            hasChanged |= ImGui.Checkbox(LocString("PartyMemberList", "Party Member List (Social window)"), ref this.Config.PartyMemberList);
+            hasChanged |= ImGui.Checkbox(LocString("PartyList", "Party List"), ref this.Config.PartyList);
         };
 
         public override void Enable() {

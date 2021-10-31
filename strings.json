@@ -679,6 +679,14 @@
     "message": "Extra Estate Teleportation",
     "description": "[ExtraEstateTeleportation] Tweak Name"
   },
+  "UiAdjustments@ExtraEstateTeleportation / PartyList": {
+    "message": "Party List",
+    "description": "[ExtraEstateTeleportation] Extra Estate Teleportation - Party List"
+  },
+  "UiAdjustments@ExtraEstateTeleportation / PartyMemberList": {
+    "message": "Party Member List (Social window)",
+    "description": "[ExtraEstateTeleportation] Extra Estate Teleportation - Party Member List (Social window)"
+  },
   "UiAdjustments@HideAchievementsNotifications / Description": {
     "message": "Completely hides the login/zone-in notification for achievements nearing completion.",
     "description": "[HideAchievementsNotifications] Tweak Description"
