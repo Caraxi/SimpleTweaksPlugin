@@ -735,9 +735,33 @@
     "message": "Increases the size of cooldown counters on hotbars.",
     "description": "[LargeCooldownCounter] Tweak Description"
   },
+  "UiAdjustments@LargeCooldownCounter / Edge Colour": {
+    "message": "Edge Colour",
+    "description": "[LargeCooldownCounter] Large Cooldown Counter - Edge Colour"
+  },
+  "UiAdjustments@LargeCooldownCounter / Font": {
+    "message": "Font",
+    "description": "[LargeCooldownCounter] Large Cooldown Counter - Font"
+  },
+  "UiAdjustments@LargeCooldownCounter / Font Size Adjust": {
+    "message": "Font Size Adjust",
+    "description": "[LargeCooldownCounter] Large Cooldown Counter - Font Size Adjust"
+  },
   "UiAdjustments@LargeCooldownCounter / Name": {
     "message": "Large Cooldown Counter",
     "description": "[LargeCooldownCounter] Tweak Name"
+  },
+  "UiAdjustments@LargeCooldownCounter / Simple Mode": {
+    "message": "Simple Mode",
+    "description": "[LargeCooldownCounter] Large Cooldown Counter - Simple Mode"
+  },
+  "UiAdjustments@LargeCooldownCounter / SimpleModeDescription": {
+    "message": "Reverts to old cooldown checking.\nFixes issues with XIVCombo.\nHas some issues when out of range.\nCannot change colour of text with Simple Mode enabled.",
+    "description": "[LargeCooldownCounter] Large Cooldown Counter - Reverts to old cooldown checking.\nFixes issues with XIVCombo.\nHas some issues when out of range.\nCannot change colour of text with Simple Mode enabled."
+  },
+  "UiAdjustments@LargeCooldownCounter / Text Colour": {
+    "message": "Text Colour",
+    "description": "[LargeCooldownCounter] Large Cooldown Counter - Text Colour"
   },
   "UiAdjustments@LimitTargetStatusEffects / Description": {
     "message": "Sets a limit on the number of status effects displayed on your target.",

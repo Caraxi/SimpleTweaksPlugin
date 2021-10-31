@@ -74,7 +74,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             ImGui.SetNextItemWidth(160 * ImGui.GetIO().FontGlobalScale);
-            if (ImGui.BeginCombo("Font###st_uiAdjustment_largeCooldownCounter_fontSelect", $"{Config.Font}")) {
+            if (ImGui.BeginCombo(LocString("Font") + "###st_uiAdjustment_largeCooldownCounter_fontSelect", $"{Config.Font}")) {
                 foreach (var f in (Font[])Enum.GetValues(typeof(Font))) {
                     if (ImGui.Selectable($"{f}##st_uiAdjustment_largeCooldownCount_fontOption", f == Config.Font)) {
                         Config.Font = f;
@@ -84,22 +84,19 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 ImGui.EndCombo();
             }
             ImGui.SetNextItemWidth(160 * ImGui.GetIO().FontGlobalScale);
-            hasChanged |= ImGui.SliderInt("Font Size Adjust##st_uiAdjustment_largEcooldownCounter_fontSize", ref Config.FontSizeAdjust, -15, 30);
-            hasChanged |= ImGui.Checkbox("Simple Mode##st_uiAdjustment_largeCooldownCounter_simpleMode", ref Config.SimpleMode);
+            hasChanged |= ImGui.SliderInt(LocString("Font Size Adjust") + "##st_uiAdjustment_largEcooldownCounter_fontSize", ref Config.FontSizeAdjust, -15, 30);
+            hasChanged |= ImGui.Checkbox(LocString("Simple Mode") + "##st_uiAdjustment_largeCooldownCounter_simpleMode", ref Config.SimpleMode);
             if (ImGui.IsItemHovered()) {
                 ImGui.BeginTooltip();
-                ImGui.Text("Simple Mode");
+                ImGui.Text(LocString("Simple Mode"));
                 ImGui.Separator();
-                ImGui.Text("Reverts to old cooldown checking.");
-                ImGui.Text("Fixes issues with XIVCombo.");
-                ImGui.Text("Has some issues when out of range.");
-                ImGui.Text("Cannot change colour of text with Simple Mode enabled.");
+                ImGui.Text(LocString("SimpleModeDescription", "Reverts to old cooldown checking.\nFixes issues with XIVCombo.\nHas some issues when out of range.\nCannot change colour of text with Simple Mode enabled."));
                 ImGui.EndTooltip();
             }
 
             if (!Config.SimpleMode) {
-                hasChanged |= ImGui.ColorEdit4("Text Colour##largeCooldownCounter", ref Config.CooldownColour);
-                hasChanged |= ImGui.ColorEdit4("Edge Colour##largeCooldownCounter", ref Config.CooldownEdgeColour);
+                hasChanged |= ImGui.ColorEdit4(LocString("Text Colour") + "##largeCooldownCounter", ref Config.CooldownColour);
+                hasChanged |= ImGui.ColorEdit4(LocString("Edge Colour") + "##largeCooldownCounter", ref Config.CooldownEdgeColour);
             }
 
         };
