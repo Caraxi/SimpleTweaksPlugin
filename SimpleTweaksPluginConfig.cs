@@ -283,6 +283,11 @@ namespace SimpleTweaksPlugin {
                                     SimpleLog.Error(ex);
                                 }
                             }
+                            ImGui.SameLine();
+                            if (ImGui.SmallButton("Import")) {
+                                var json = ImGui.GetClipboardText();
+                                Loc.ImportDictionary(json);
+                            }
 #endif
                         }
 

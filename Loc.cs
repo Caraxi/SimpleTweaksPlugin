@@ -72,6 +72,14 @@ namespace SimpleTweaksPlugin {
             return JsonConvert.SerializeObject(_localizationStrings, Formatting.Indented);
         }
 
+        internal static void ImportDictionary(string json) {
+            try {
+                _localizationStrings = JsonConvert.DeserializeObject<SortedDictionary<string, LocalizedString>>(json);
+            } catch {
+                //
+            }
+        }
+
         public static void UpdateTranslations() {
             DownloadError = null;
             var downloadPath = Service.PluginInterface.GetPluginLocDirectory();
