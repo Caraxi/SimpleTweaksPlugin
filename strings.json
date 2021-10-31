@@ -491,13 +491,61 @@
     "message": "Y Offset",
     "description": "[BattleTalkAdjustments] Battle Talk Adjustments - Y Offset"
   },
+  "UiAdjustments@CastBarAdjustments / Align Ability Name": {
+    "message": "Align Ability Name",
+    "description": "[CastBarAdjustments] Cast Bar Adjustments - Align Ability Name"
+  },
+  "UiAdjustments@CastBarAdjustments / Align Countdown Text": {
+    "message": "Align Countdown Text",
+    "description": "[CastBarAdjustments] Cast Bar Adjustments - Align Countdown Text"
+  },
   "UiAdjustments@CastBarAdjustments / Description": {
     "message": "Allows hiding or moving specific parts of the castbar.",
     "description": "[CastBarAdjustments] Tweak Description"
   },
+  "UiAdjustments@CastBarAdjustments / Hide Ability Name": {
+    "message": "Hide Ability Name",
+    "description": "[CastBarAdjustments] Cast Bar Adjustments - Hide Ability Name"
+  },
+  "UiAdjustments@CastBarAdjustments / Hide Casting": {
+    "message": "Hide 'Casting' Text",
+    "description": "[CastBarAdjustments] Cast Bar Adjustments - Hide 'Casting' Text"
+  },
+  "UiAdjustments@CastBarAdjustments / Hide Countdown Text": {
+    "message": "Hide Countdown Text",
+    "description": "[CastBarAdjustments] Cast Bar Adjustments - Hide Countdown Text"
+  },
+  "UiAdjustments@CastBarAdjustments / Hide Icon": {
+    "message": "Hide Icon",
+    "description": "[CastBarAdjustments] Cast Bar Adjustments - Hide Icon"
+  },
+  "UiAdjustments@CastBarAdjustments / Hide Interrupted Text": {
+    "message": "Hide Interrupted Text",
+    "description": "[CastBarAdjustments] Cast Bar Adjustments - Hide Interrupted Text"
+  },
   "UiAdjustments@CastBarAdjustments / Name": {
     "message": "Cast Bar Adjustments",
     "description": "[CastBarAdjustments] Tweak Name"
+  },
+  "UiAdjustments@CastBarAdjustments / Offset": {
+    "message": "Offset",
+    "description": "[CastBarAdjustments] Cast Bar Adjustments - Offset"
+  },
+  "UiAdjustments@CastBarAdjustments / Show SlideCast Marker": {
+    "message": "Show SlideCast Marker",
+    "description": "[CastBarAdjustments] Cast Bar Adjustments - Show SlideCast Marker"
+  },
+  "UiAdjustments@CastBarAdjustments / SlideCast Marker Colour": {
+    "message": "SlideCast Marker Colour",
+    "description": "[CastBarAdjustments] Cast Bar Adjustments - SlideCast Marker Colour"
+  },
+  "UiAdjustments@CastBarAdjustments / SlideCast Offset Time": {
+    "message": "SlideCast Offset Time",
+    "description": "[CastBarAdjustments] Cast Bar Adjustments - SlideCast Offset Time"
+  },
+  "UiAdjustments@CastBarAdjustments / SlideCast Ready Colour": {
+    "message": "SlideCast Ready Colour",
+    "description": "[CastBarAdjustments] Cast Bar Adjustments - SlideCast Ready Colour"
   },
   "UiAdjustments@ComboTimer / Description": {
     "message": "Shows a countdown for combo actions.",
