@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.Tweaks;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin {
@@ -262,6 +263,20 @@ namespace SimpleTweaksPlugin {
 #if DEBUG
                             ImGui.SameLine();
                             if (ImGui.SmallButton("Export Localizable")) {
+
+                                // Auto fill dictionary with all Name/Description
+                                foreach (var t in plugin.Tweaks) {
+                                    t.LocString("Name", t.Name, "Tweak Name");
+                                    if (t.Description != null) t.LocString("Description", t.Description, "Tweak Description");
+
+                                    if (t is SubTweakManager stm) {
+                                        foreach (var st in stm.GetTweakList()) {
+                                            st.LocString("Name", st.Name, "Tweak Name");
+                                            if (st.Description != null) st.LocString("Description", st.Description, "Tweak Description");
+                                        }
+                                    }
+                                }
+
                                 try {
                                     ImGui.SetClipboardText(Loc.ExportLoadedDictionary());
                                 } catch (Exception ex) {
