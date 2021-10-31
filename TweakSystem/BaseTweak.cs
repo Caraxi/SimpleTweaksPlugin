@@ -43,6 +43,10 @@ namespace SimpleTweaksPlugin.TweakSystem {
             return Loc.Localize($"{this.Key} / {key}", fallback, $"[{this.GetType().Name}] {description}");
         }
 
+        public string LocString(string keyAndFallback) {
+            return LocString(keyAndFallback, keyAndFallback);
+        }
+
         private void DrawCommon() {
             if (this.Experimental) {
                 ImGui.SameLine();

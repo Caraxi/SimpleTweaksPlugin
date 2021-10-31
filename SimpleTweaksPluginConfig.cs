@@ -229,6 +229,14 @@ namespace SimpleTweaksPlugin {
                                     Save();
                                 }
 
+                                #if DEBUG
+                                if (ImGui.Selectable("DEBUG", Language == "DEBUG")) {
+                                    Language = "DEBUG";
+                                    plugin.SetupLocalization();
+                                    Save();
+                                }
+                                #endif
+
                                 var locDir = pluginInterface.GetPluginLocDirectory();
 
                                 var locFiles = Directory.GetDirectories(locDir);

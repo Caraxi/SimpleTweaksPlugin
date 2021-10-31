@@ -24,7 +24,11 @@ namespace SimpleTweaksPlugin {
         internal static void LoadLanguage(string langCode) {
             currentLanguage = "en";
             _localizationStrings = new SortedDictionary<string, LocalizedString>();
-            if (langCode.ToLower() == "en") return;
+            if (langCode == "en") return;
+            if (langCode == "DEBUG") {
+                currentLanguage = "DEBUG";
+                return;
+            }
 
             string json = null;
             var locDir = Service.PluginInterface.GetPluginLocDirectory();
@@ -51,6 +55,7 @@ namespace SimpleTweaksPlugin {
         }
 
         internal static string Localize(string key, string fallbackValue, string description = null) {
+            if (currentLanguage == "DEBUG") return $"#{key}#";
             try {
                 return _localizationStrings[key].Message;
             } catch {
