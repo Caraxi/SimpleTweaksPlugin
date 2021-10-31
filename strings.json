@@ -83,6 +83,10 @@
     "message": "Rename Chat Tabs",
     "description": "[RenameChatTabs] Tweak Name"
   },
+  "ChatTweaks@RenameChatTabs / TabLabel": {
+    "message": "Tab {0}",
+    "description": "[RenameChatTabs] Rename Chat Tabs - Tab {0}"
+  },
   "ChrDirCommand / Description": {
     "message": "Adds a command to open the directory when client side character data is stored.",
     "description": "[ChrDirCommand] Tweak Description"

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dalamud;
 using Dalamud.Game.Text;
+using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
@@ -69,12 +70,12 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
             hasChanged |= ImGui.Checkbox("###enabledRenameTab0", ref TweakConfig.DoRenameTab0);
             ImGui.SameLine();
             ImGui.SetNextItemWidth(90 * ImGui.GetIO().FontGlobalScale);
-            hasChanged |= ImGui.InputTextWithHint("Tab 1###nameTab0", DefaultName0, ref TweakConfig.ChatTab0Name, 16);
+            hasChanged |= ImGui.InputTextWithHint(LocString("TabLabel", "Tab {0}").Format(1) + "###nameTab0", DefaultName0, ref TweakConfig.ChatTab0Name, 16);
 
             hasChanged |= ImGui.Checkbox("###enabledRenameTab1", ref TweakConfig.DoRenameTab1);
             ImGui.SameLine();
             ImGui.SetNextItemWidth(90 * ImGui.GetIO().FontGlobalScale);
-            hasChanged |= ImGui.InputTextWithHint("Tab 2###nameTab1", DefaultName1, ref TweakConfig.ChatTab1Name, 16);
+            hasChanged |= ImGui.InputTextWithHint(LocString("TabLabel", "Tab {0}").Format(2) + "###nameTab1", DefaultName1, ref TweakConfig.ChatTab1Name, 16);
         };
 
         private void OnLogin(object sender, EventArgs e) {
