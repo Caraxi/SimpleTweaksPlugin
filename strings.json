@@ -751,6 +751,22 @@
     "message": "UI Enhancements for market board such as including tax and highlighting laxy tax.",
     "description": "[MarketEnhancements] Tweak Description"
   },
+  "UiAdjustments@MarketEnhancements / Highlight items that can be purchased from an NPC for cheaper. (Red)": {
+    "message": "Highlight items that can be purchased from an NPC for cheaper. (Red)",
+    "description": "[MarketEnhancements] [Config] Highlight items that can be purchased from an NPC for cheaper. (Red)"
+  },
+  "UiAdjustments@MarketEnhancements / Highlight items that can be sold to NPC for more. (Green)": {
+    "message": "Highlight items that can be sold to NPC for more. (Green)",
+    "description": "[MarketEnhancements] [Config] Highlight items that can be sold to NPC for more. (Green)"
+  },
+  "UiAdjustments@MarketEnhancements / Include tax in single price.": {
+    "message": "Include tax in single price.",
+    "description": "[MarketEnhancements] [Config] Include tax in single price."
+  },
+  "UiAdjustments@MarketEnhancements / Include tax in total price.": {
+    "message": "Include tax in total price.",
+    "description": "[MarketEnhancements] [Config] Include tax in total price."
+  },
   "UiAdjustments@MarketEnhancements / Name": {
     "message": "Market Enhancements",
     "description": "[MarketEnhancements] Tweak Name"
