@@ -45,7 +45,7 @@ namespace SimpleTweaksPlugin.Tweaks {
             if (ImGui.IsItemHovered()) {
                 ImGui.SetNextWindowSize(new Vector2(280, -1));
                 ImGui.BeginTooltip();
-                ImGui.TextWrapped("Aliases are not supported in macros to prevent them from being sent to the server in the event you back them up on server.\nPlease use the original command in your macros.");
+                ImGui.TextWrapped(LocString("MacroHelp", "Aliases are not supported in macros to prevent them from being sent to the server in the event you back them up on server.\nPlease use the original command in your macros.", "Macro Help Tooltip"));
                 ImGui.EndTooltip();
             }
             ImGui.Separator();

@@ -79,6 +79,14 @@
     "message": "Allows replacing commands typed into chat box with other commands.",
     "description": "[CommandAlias] Tweak Description"
   },
+  "CommandAlias / EmptyInputError": {
+    "message": "Input must not be empty.",
+    "description": "[CommandAlias] Command Alias - Input must not be empty."
+  },
+  "CommandAlias / EmptyOutputError": {
+    "message": "Output must not be empty.",
+    "description": "[CommandAlias] Command Alias - Output must not be empty."
+  },
   "CommandAlias / Enabled": {
     "message": "Enabled",
     "description": "[CommandAlias] Command Alias - Enabled"
@@ -90,6 +98,10 @@
   "CommandAlias / Instruction": {
     "message": "Add list of command alias. Do not start command with the '/'\nThese aliases, by design, do not work with macros.",
     "description": "[CommandAlias] Command Alias - Add list of command alias. Do not start command with the '/'\nThese aliases, by design, do not work with macros."
+  },
+  "CommandAlias / MacroHelp": {
+    "message": "Aliases are not supported in macros to prevent them from being sent to the server in the event you back them up on server.\nPlease use the original command in your macros.",
+    "description": "[CommandAlias] Macro Help Tooltip"
   },
   "CommandAlias / Name": {
     "message": "Command Alias",
