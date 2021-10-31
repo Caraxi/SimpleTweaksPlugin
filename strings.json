@@ -651,6 +651,10 @@
     "message": "Item Level in Examine",
     "description": "[ExamineItemLevel] Tweak Name"
   },
+  "UiAdjustments@ExpPercentage / Decimals": {
+    "message": "Decimals",
+    "description": "[ExpPercentage] [Config] Decimals"
+  },
   "UiAdjustments@ExpPercentage / Description": {
     "message": "Calculate and display the current EXP percentage on the EXP bar.",
     "description": "[ExpPercentage] Tweak Description"
@@ -658,6 +662,10 @@
   "UiAdjustments@ExpPercentage / Name": {
     "message": "Show Experience Percentage",
     "description": "[ExpPercentage] Tweak Name"
+  },
+  "UiAdjustments@ExpPercentage / Only show percentage": {
+    "message": "Only show percentage",
+    "description": "[ExpPercentage] [Config] Only show percentage"
   },
   "UiAdjustments@ExtendedDesynthesisWindow / BlockClickOnGearset": {
     "message": "Block clicking on gearset items.",
