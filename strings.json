@@ -623,9 +623,21 @@
     "message": "Allows setting custom time formats for the in game clock. Uses C# formatting strings.",
     "description": "[CustomTimeFormat] Tweak Description"
   },
+  "UiAdjustments@CustomTimeFormat / Eorzea Time": {
+    "message": "Eorzea Time",
+    "description": "[CustomTimeFormat] Custom Time Formats - Eorzea Time"
+  },
+  "UiAdjustments@CustomTimeFormat / Local Time": {
+    "message": "Local Time",
+    "description": "[CustomTimeFormat] Custom Time Formats - Local Time"
+  },
   "UiAdjustments@CustomTimeFormat / Name": {
     "message": "Custom Time Formats",
     "description": "[CustomTimeFormat] Tweak Name"
+  },
+  "UiAdjustments@CustomTimeFormat / Server Time": {
+    "message": "Server Time",
+    "description": "[CustomTimeFormat] Custom Time Formats - Server Time"
   },
   "UiAdjustments@ExamineItemLevel / Description": {
     "message": "Calculates the item level of other players when examining them.\nRed value means the player is wearing an item that scales to their level and it is showing the max level.",

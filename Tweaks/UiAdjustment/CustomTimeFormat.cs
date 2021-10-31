@@ -109,15 +109,15 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             switch (id) {
                 case 0: {
                     var et = DateTimeOffset.FromUnixTimeSeconds(*(long*)(Service.Framework.Address.BaseAddress + 0x1608));
-                    DrawClockConfig(index, "Eorzea Time", icons[0], ref hasChanged, ref TweakConfig.ShowET, ref TweakConfig.CustomFormatET, ref moveAction, et);
+                    DrawClockConfig(index, LocString("Eorzea Time"), icons[0], ref hasChanged, ref TweakConfig.ShowET, ref TweakConfig.CustomFormatET, ref moveAction, et);
                     break;
                 }
                 case 1: {
-                    DrawClockConfig(index, "Local Time", icons[1], ref hasChanged, ref TweakConfig.ShowLT, ref TweakConfig.CustomFormatLT, ref moveAction, DateTimeOffset.Now);
+                    DrawClockConfig(index, LocString("Local Time"), icons[1], ref hasChanged, ref TweakConfig.ShowLT, ref TweakConfig.CustomFormatLT, ref moveAction, DateTimeOffset.Now);
                     break;
                 }
                 case 2: {
-                    DrawClockConfig(index, "Server Time", icons[2], ref hasChanged, ref TweakConfig.ShowST, ref TweakConfig.CustomFormatST, ref moveAction, DateTimeOffset.Now.UtcDateTime);
+                    DrawClockConfig(index, LocString("Server Time"), icons[2], ref hasChanged, ref TweakConfig.ShowST, ref TweakConfig.CustomFormatST, ref moveAction, DateTimeOffset.Now.UtcDateTime);
                     break;
                 }
                 default: {
