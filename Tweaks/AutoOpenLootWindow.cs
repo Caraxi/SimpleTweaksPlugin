@@ -50,7 +50,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
 
         public override void Disable() {
-            Service.Chat.ChatMessage -= HandleChat;
+            Service.Chat.CheckMessageHandled -= HandleChat;
             base.Disable();
         }
     }
