@@ -443,6 +443,10 @@
     "message": "Precise Spiritbond",
     "description": "[PrecisionSpiritbond] Tweak Name"
   },
+  "TooltipTweaks@PrecisionSpiritbond / Trailing Zeros": {
+    "message": "Trailing Zeros",
+    "description": "[PrecisionSpiritbond] Precise Spiritbond - Trailing Zeros"
+  },
   "TooltipTweaks@ShowItemID / Description": {
     "message": "Show the ID of actions and items on their tooltips.",
     "description": "[ShowItemID] Tweak Description"
