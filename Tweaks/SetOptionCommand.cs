@@ -83,14 +83,14 @@ namespace SimpleTweaksPlugin.Tweaks {
             ImGui.TextDisabled("/setopt list");
             ImGui.TextDisabled("/setopt [option] [value]");
 
-            if (ImGui.TreeNode("Available Options##optionListTree")) {
+            if (ImGui.TreeNode(LocString("Available Options") + "##optionListTree")) {
                     
                 ImGui.Columns(3);
-                ImGui.Text("option");
+                ImGui.Text(LocString("option"));
                 ImGui.NextColumn();
-                ImGui.Text("values");
+                ImGui.Text(LocString("values"));
                 ImGui.NextColumn();
-                ImGui.Text("alias");
+                ImGui.Text(LocString("alias"));
                 ImGui.Separator();
 
                 foreach (var o in optionKinds) {

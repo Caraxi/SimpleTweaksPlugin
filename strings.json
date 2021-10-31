@@ -279,6 +279,14 @@
     "message": "More Gear Sets",
     "description": "[MoreGearSets] Tweak Name"
   },
+  "SetOptionCommand / alias": {
+    "message": "alias",
+    "description": "[SetOptionCommand] Set Option Command - alias"
+  },
+  "SetOptionCommand / Available Options": {
+    "message": "Available Options",
+    "description": "[SetOptionCommand] Set Option Command - Available Options"
+  },
   "SetOptionCommand / Description": {
     "message": "Adds commands to change various settings.",
     "description": "[SetOptionCommand] Tweak Description"
@@ -286,6 +294,14 @@
   "SetOptionCommand / Name": {
     "message": "Set Option Command",
     "description": "[SetOptionCommand] Tweak Name"
+  },
+  "SetOptionCommand / option": {
+    "message": "option",
+    "description": "[SetOptionCommand] Set Option Command - option"
+  },
+  "SetOptionCommand / values": {
+    "message": "values",
+    "description": "[SetOptionCommand] Set Option Command - values"
   },
   "TooltipTweaks / Name": {
     "message": "Tooltip Tweaks",
