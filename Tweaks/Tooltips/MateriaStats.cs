@@ -27,14 +27,14 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             ImGui.BeginGroup();
-            if (ImGui.Checkbox("Show Total##materiaStatsTooltipTweak", ref Config.Total)) {
+            if (ImGui.Checkbox(LocString("Show Total") + "##materiaStatsTooltipTweak", ref Config.Total)) {
                 if (!Config.Total && !Config.Delta) {
                     Config.Delta = true;
                 }
 
                 hasChanged = true;
             }
-            if (ImGui.Checkbox("Show Delta##materiaStatsTooltipTweak", ref Config.Delta)) {
+            if (ImGui.Checkbox(LocString("Show Delta") + "##materiaStatsTooltipTweak", ref Config.Delta)) {
                 if (!Config.Total && !Config.Delta) {
                     Config.Total = true;
                 }
@@ -48,14 +48,14 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 var groupSize = ImGui.GetItemRectSize();
                 ImGui.SameLine();
                     
-                var text = "Simplified Combined Display";
+                var text = LocString("Simplified Combined Display");
                 var textSize = ImGui.CalcTextSize(text);
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (groupSize.Y / 2) - (textSize.Y / 2));
                 hasChanged |= ImGui.Checkbox($"{text}##materiaStatSTooltipTweak", ref Config.SimpleCombined);
                 ImGui.SetCursorPosY(y);
             }
                 
-            hasChanged |= ImGui.Checkbox("Colour Value##materiaStatsTooltipTweak", ref Config.Colour);
+            hasChanged |= ImGui.Checkbox(LocString("Colour Value") + "##materiaStatsTooltipTweak", ref Config.Colour);
         };
 
         public IEnumerable<TooltipTweaks.ItemTooltipField> Fields() {

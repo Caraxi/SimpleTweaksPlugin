@@ -399,6 +399,10 @@
     "message": "Show expected food and potion stats",
     "description": "[FoodStats] Tweak Name"
   },
+  "TooltipTweaks@MateriaStats / Colour Value": {
+    "message": "Colour Value",
+    "description": "[MateriaStats] Materia Stats - Colour Value"
+  },
   "TooltipTweaks@MateriaStats / Description": {
     "message": "Includes an item's attached materia when displaying the stats.",
     "description": "[MateriaStats] Tweak Description"
@@ -406,6 +410,18 @@
   "TooltipTweaks@MateriaStats / Name": {
     "message": "Materia Stats",
     "description": "[MateriaStats] Tweak Name"
+  },
+  "TooltipTweaks@MateriaStats / Show Delta": {
+    "message": "Show Delta",
+    "description": "[MateriaStats] Materia Stats - Show Delta"
+  },
+  "TooltipTweaks@MateriaStats / Show Total": {
+    "message": "Show Total",
+    "description": "[MateriaStats] Materia Stats - Show Total"
+  },
+  "TooltipTweaks@MateriaStats / Simplified Combined Display": {
+    "message": "Simplified Combined Display",
+    "description": "[MateriaStats] Materia Stats - Simplified Combined Display"
   },
   "TooltipTweaks@PrecisionDurability / Description": {
     "message": "Show partial percentages for durability.",
