@@ -907,6 +907,14 @@
     "message": "Reduced Deep Dungeon Info",
     "description": "[ReducedDeepDungeonInfo] Tweak Name"
   },
+  "UiAdjustments@RememberTitleSorting / Description": {
+    "message": "Remember the selected sorting option in the title selection menu.",
+    "description": "[RememberTitleSorting] Tweak Description"
+  },
+  "UiAdjustments@RememberTitleSorting / Name": {
+    "message": "Remember Title Sorting",
+    "description": "[RememberTitleSorting] Tweak Name"
+  },
   "UiAdjustments@RemoveCommunityFinder / Description": {
     "message": "Hide the community finder buttons from social windows.",
     "description": "[RemoveCommunityFinder] Tweak Description"
