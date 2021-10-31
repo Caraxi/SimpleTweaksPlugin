@@ -67,7 +67,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-            hasChanged |= ImGui.Checkbox($"Desynthesis Delta###{GetType().Name}DesynthesisDelta", ref Config.Delta);
+            hasChanged |= ImGui.Checkbox(LocString("Desynthesis Delta") + $"###{GetType().Name}DesynthesisDelta", ref Config.Delta);
         };
     }
 }

@@ -387,6 +387,10 @@
     "message": "Shows your current desynthesis level when viewing a desynthesizable item.",
     "description": "[DesynthesisSkill] Tweak Description"
   },
+  "TooltipTweaks@DesynthesisSkill / Desynthesis Delta": {
+    "message": "Desynthesis Delta",
+    "description": "[DesynthesisSkill] Show Desynthesis Skill - Desynthesis Delta"
+  },
   "TooltipTweaks@DesynthesisSkill / Name": {
     "message": "Show Desynthesis Skill",
     "description": "[DesynthesisSkill] Tweak Name"
