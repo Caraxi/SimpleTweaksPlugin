@@ -547,13 +547,41 @@
     "message": "SlideCast Ready Colour",
     "description": "[CastBarAdjustments] Cast Bar Adjustments - SlideCast Ready Colour"
   },
+  "UiAdjustments@ComboTimer / Always Visible": {
+    "message": "Always Visible",
+    "description": "[ComboTimer] [Config] Always Visible"
+  },
   "UiAdjustments@ComboTimer / Description": {
     "message": "Shows a countdown for combo actions.",
     "description": "[ComboTimer] Tweak Description"
   },
+  "UiAdjustments@ComboTimer / Font Size": {
+    "message": "Font Size",
+    "description": "[ComboTimer] [Config] Font Size"
+  },
+  "UiAdjustments@ComboTimer / Hide 'COMBO' Text": {
+    "message": "Hide 'COMBO' Text",
+    "description": "[ComboTimer] [Config] Hide 'COMBO' Text"
+  },
   "UiAdjustments@ComboTimer / Name": {
     "message": "Combo Timer",
     "description": "[ComboTimer] Tweak Name"
+  },
+  "UiAdjustments@ComboTimer / Text Color": {
+    "message": "Text Color",
+    "description": "[ComboTimer] [Config] Text Color"
+  },
+  "UiAdjustments@ComboTimer / Text Outline Color": {
+    "message": "Text Outline Color",
+    "description": "[ComboTimer] [Config] Text Outline Color"
+  },
+  "UiAdjustments@ComboTimer / X Position Offset": {
+    "message": "X Position Offset",
+    "description": "[ComboTimer] [Config] X Position Offset"
+  },
+  "UiAdjustments@ComboTimer / Y Position Offset": {
+    "message": "Y Position Offset",
+    "description": "[ComboTimer] [Config] Y Position Offset"
   },
   "UiAdjustments@CustomFreeCompanyTags / Description": {
     "message": "Allows hiding or customizing Free Company and Wanderer tags.",
