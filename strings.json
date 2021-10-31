@@ -79,9 +79,33 @@
     "message": "Allows replacing commands typed into chat box with other commands.",
     "description": "[CommandAlias] Tweak Description"
   },
+  "CommandAlias / Enabled": {
+    "message": "Enabled",
+    "description": "[CommandAlias] Command Alias - Enabled"
+  },
+  "CommandAlias / Input Command": {
+    "message": "Input Command",
+    "description": "[CommandAlias] Command Alias - Input Command"
+  },
+  "CommandAlias / Instruction": {
+    "message": "Add list of command alias. Do not start command with the '/'\nThese aliases, by design, do not work with macros.",
+    "description": "[CommandAlias] Command Alias - Add list of command alias. Do not start command with the '/'\nThese aliases, by design, do not work with macros."
+  },
   "CommandAlias / Name": {
     "message": "Command Alias",
     "description": "[CommandAlias] Tweak Name"
+  },
+  "CommandAlias / New Label": {
+    "message": "New:",
+    "description": "[CommandAlias] Command Alias - New:"
+  },
+  "CommandAlias / Output Command": {
+    "message": "Output Command",
+    "description": "[CommandAlias] Command Alias - Output Command"
+  },
+  "CommandAlias / ProtectedCommandError": {
+    "message": "'/{0}' is a protected command.",
+    "description": "[CommandAlias] Command Alias - '/{0}' is a protected command."
   },
   "DisableClickTargeting / Description": {
     "message": "Allows disabling of the target function on left and right mouse clicks.",
