@@ -23,8 +23,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public Configs Config { get; private set; }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-            hasChanged |= ImGui.Checkbox("Hide the login notification.", ref this.Config.HideLogIn);
-            hasChanged |= ImGui.Checkbox("Hide the zone-in notification.", ref this.Config.HideZoneIn);
+            hasChanged |= ImGui.Checkbox(LocString("HideLogIn", "Hide the login notification."), ref this.Config.HideLogIn);
+            hasChanged |= ImGui.Checkbox(LocString("HideZoneIn", "Hide the zone-in notification."), ref this.Config.HideZoneIn);
         };
 
         public override string Name => "Hide Achievements Nearing Completion Notifications";

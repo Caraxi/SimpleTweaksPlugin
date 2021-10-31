@@ -691,6 +691,14 @@
     "message": "Completely hides the login/zone-in notification for achievements nearing completion.",
     "description": "[HideAchievementsNotifications] Tweak Description"
   },
+  "UiAdjustments@HideAchievementsNotifications / HideLogIn": {
+    "message": "Hide the login notification.",
+    "description": "[HideAchievementsNotifications] Hide Achievements Nearing Completion Notifications - Hide the login notification."
+  },
+  "UiAdjustments@HideAchievementsNotifications / HideZoneIn": {
+    "message": "Hide the zone-in notification.",
+    "description": "[HideAchievementsNotifications] Hide Achievements Nearing Completion Notifications - Hide the zone-in notification."
+  },
   "UiAdjustments@HideAchievementsNotifications / Name": {
     "message": "Hide Achievements Nearing Completion Notifications",
     "description": "[HideAchievementsNotifications] Tweak Name"
