@@ -431,6 +431,10 @@
     "message": "Precise Durability",
     "description": "[PrecisionDurability] Tweak Name"
   },
+  "TooltipTweaks@PrecisionDurability / Trailing Zeros": {
+    "message": "Trailing Zeros",
+    "description": "[PrecisionDurability] Precise Durability - Trailing Zeros"
+  },
   "TooltipTweaks@PrecisionSpiritbond / Description": {
     "message": "Show partial percentages for Spiritbond.",
     "description": "[PrecisionSpiritbond] Tweak Description"
