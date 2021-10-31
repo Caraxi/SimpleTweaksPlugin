@@ -29,10 +29,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-            hasChanged |= ImGui.InputInt("Number of status effects displayed##nbStatusEffectsDisplayed", ref Config.NbStatusEffects, 1);
+            hasChanged |= ImGui.InputInt(LocString("NbStatusEffects", "Number of status effects displayed##nbStatusEffectsDisplayed"), ref Config.NbStatusEffects, 1);
             if (Config.NbStatusEffects < 0) Config.NbStatusEffects = 0;
             if (Config.NbStatusEffects > 30) Config.NbStatusEffects = 30;
-            hasChanged |= ImGui.Checkbox("Only limit in combat##LimitOnlyInCombat", ref Config.LimitOnlyInCombat);
+            hasChanged |= ImGui.Checkbox(LocString("LimitOnlyInCombat", "Only limit in combat##LimitOnlyInCombat"), ref Config.LimitOnlyInCombat);
 
             UpdateTargetStatus(true);
         };

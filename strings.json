@@ -775,9 +775,17 @@
     "message": "Sets a limit on the number of status effects displayed on your target.",
     "description": "[LimitTargetStatusEffects] Tweak Description"
   },
+  "UiAdjustments@LimitTargetStatusEffects / LimitOnlyInCombat": {
+    "message": "Only limit in combat##LimitOnlyInCombat",
+    "description": "[LimitTargetStatusEffects] Limit Target Status Effects - Only limit in combat##LimitOnlyInCombat"
+  },
   "UiAdjustments@LimitTargetStatusEffects / Name": {
     "message": "Limit Target Status Effects",
     "description": "[LimitTargetStatusEffects] Tweak Name"
+  },
+  "UiAdjustments@LimitTargetStatusEffects / NbStatusEffects": {
+    "message": "Number of status effects displayed##nbStatusEffectsDisplayed",
+    "description": "[LimitTargetStatusEffects] Limit Target Status Effects - Number of status effects displayed##nbStatusEffectsDisplayed"
   },
   "UiAdjustments@MarketEnhancements / Description": {
     "message": "UI Enhancements for market board such as including tax and highlighting laxy tax.",
