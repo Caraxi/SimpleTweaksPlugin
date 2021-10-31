@@ -203,6 +203,10 @@
     "message": "Fixed Shadow Distance",
     "description": "[FixedShadowDistance] Tweak Name"
   },
+  "FixedShadowDistance / Shadow Distance": {
+    "message": "Shadow Distance",
+    "description": "[FixedShadowDistance] Fixed Shadow Distance - Shadow Distance"
+  },
   "FixTarget / Description": {
     "message": "Allows using the default '/target' command for targeting players or NPCs by their names.",
     "description": "[FixTarget] Tweak Description"

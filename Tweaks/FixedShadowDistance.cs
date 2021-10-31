@@ -34,7 +34,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         public Configs Config { get; private set; }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-            hasChanged |= ImGui.SliderFloat("Shadow Distance", ref Config.ShadowDistance, 1, 1800, "%.0f");
+            hasChanged |= ImGui.SliderFloat(LocString("Shadow Distance"), ref Config.ShadowDistance, 1, 1800, "%.0f");
         };
 
         public override void Setup() {
