@@ -399,6 +399,10 @@
     "message": "Calculates the stat results a consumable will have based on your current stats.",
     "description": "[FoodStats] Tweak Description"
   },
+  "TooltipTweaks@FoodStats / Highlight Active": {
+    "message": "Highlight Active",
+    "description": "[FoodStats] Show expected food and potion stats - Highlight Active"
+  },
   "TooltipTweaks@FoodStats / Name": {
     "message": "Show expected food and potion stats",
     "description": "[FoodStats] Tweak Name"

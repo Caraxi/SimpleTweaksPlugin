@@ -132,7 +132,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-            hasChanged |= ImGui.Checkbox("Highlight Active", ref Config.Highlight);
+            hasChanged |= ImGui.Checkbox(LocString("Highlight Active"), ref Config.Highlight);
             if (hasChanged) BuildPotionEffectStrings();
         };
 
