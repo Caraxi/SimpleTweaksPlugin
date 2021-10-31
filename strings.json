@@ -711,6 +711,14 @@
     "message": "Hide Job Gauge",
     "description": "[HideJobGauge] Tweak Name"
   },
+  "UiAdjustments@HideJobGauge / Show In Combat": {
+    "message": "Show In Combat",
+    "description": "[HideJobGauge] [Config] Show In Combat"
+  },
+  "UiAdjustments@HideJobGauge / Show In Duty": {
+    "message": "Show In Duty",
+    "description": "[HideJobGauge] [Config] Show In Duty"
+  },
   "UiAdjustments@ImprovedWorldVisit / Description": {
     "message": "Cleans up the world visit menu and shows your current location in order on the list.",
     "description": "[ImprovedWorldVisit] Tweak Description"
