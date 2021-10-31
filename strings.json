@@ -643,6 +643,10 @@
     "message": "Calculates the item level of other players when examining them.\nRed value means the player is wearing an item that scales to their level and it is showing the max level.",
     "description": "[ExamineItemLevel] Tweak Description"
   },
+  "UiAdjustments@ExamineItemLevel / ItemLevelIcon": {
+    "message": "Show Item Level Icon",
+    "description": "[ExamineItemLevel] Item Level in Examine - Show Item Level Icon"
+  },
   "UiAdjustments@ExamineItemLevel / Name": {
     "message": "Item Level in Examine",
     "description": "[ExamineItemLevel] Tweak Name"

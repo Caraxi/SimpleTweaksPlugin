@@ -48,7 +48,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private IntPtr examineIsValidPtr = IntPtr.Zero;
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-            hasChanged |= ImGui.Checkbox("Show Item Level Icon", ref TweakConfig.ShowItemLevelIcon);
+            hasChanged |= ImGui.Checkbox(LocString("ItemLevelIcon", "Show Item Level Icon"), ref TweakConfig.ShowItemLevelIcon);
         };
 
         public override void Setup() {
