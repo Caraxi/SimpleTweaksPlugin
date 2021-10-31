@@ -26,11 +26,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         
         protected override DrawConfigDelegate DrawConfigTree => (ref bool changed) => {
             ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-            changed |= ImGui.InputInt("X Offset##battletalkadjustments_offsetPosition", ref Config.OffsetX, 1);
+            changed |= ImGui.InputInt(LocString("X Offset") + "##battletalkadjustments_offsetPosition", ref Config.OffsetX, 1);
             ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-            changed |= ImGui.InputInt("Y Offset##battletalkadjustments_offsetPosition", ref Config.OffsetY, 1);
+            changed |= ImGui.InputInt(LocString("Y Offset") + "##battletalkadjustments_offsetPosition", ref Config.OffsetY, 1);
             ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
-            changed |= ImGui.SliderFloat("##battletalkadjustments_Scale", ref Config.Scale, 0.01f, 3f, "Scale: %.2fx");
+            changed |= ImGui.SliderFloat("##battletalkadjustments_Scale", ref Config.Scale, 0.01f, 3f, LocString("Scale") + ": %.2fx");
             
             const ImGuiWindowFlags flags = ImGuiWindowFlags.NoCollapse
                                            | ImGuiWindowFlags.NoDecoration
@@ -51,7 +51,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             ImGui.Begin("###BattleTalkAdjustments_PreviewWindow", flags);
             ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
             ImGui.Dummy(new Vector2(25,0) * ImGui.GetIO().FontGlobalScale);
-            ImGui.Text("NEW BATTLE TALK DIALOGUE BOX POSITION");
+            ImGui.Text(LocString("PositionPreviewText", "NEW BATTLE TALK DIALOGUE BOX POSITION"));
             ImGui.End();
             if (!changed) return;
             Service.Framework.Update -= FrameworkOnUpdate;

@@ -475,6 +475,22 @@
     "message": "Battle Talk Adjustments",
     "description": "[BattleTalkAdjustments] Tweak Name"
   },
+  "UiAdjustments@BattleTalkAdjustments / PositionPreviewText": {
+    "message": "NEW BATTLE TALK DIALOGUE BOX POSITION",
+    "description": "[BattleTalkAdjustments] Battle Talk Adjustments - NEW BATTLE TALK DIALOGUE BOX POSITION"
+  },
+  "UiAdjustments@BattleTalkAdjustments / Scale": {
+    "message": "Scale",
+    "description": "[BattleTalkAdjustments] Battle Talk Adjustments - Scale"
+  },
+  "UiAdjustments@BattleTalkAdjustments / X Offset": {
+    "message": "X Offset",
+    "description": "[BattleTalkAdjustments] Battle Talk Adjustments - X Offset"
+  },
+  "UiAdjustments@BattleTalkAdjustments / Y Offset": {
+    "message": "Y Offset",
+    "description": "[BattleTalkAdjustments] Battle Talk Adjustments - Y Offset"
+  },
   "UiAdjustments@CastBarAdjustments / Description": {
     "message": "Allows hiding or moving specific parts of the castbar.",
     "description": "[CastBarAdjustments] Tweak Description"
