@@ -51,6 +51,10 @@
     "message": "Clickable Links in Chat",
     "description": "[ClickableLinks] Tweak Name"
   },
+  "ChatTweaks@DisableChatAutoscroll / AllowAutoscrollLabel": {
+    "message": "Always allow autoscrolling in:",
+    "description": "[DisableChatAutoscroll] Smart AutoScroll - Always allow autoscrolling in:"
+  },
   "ChatTweaks@DisableChatAutoscroll / Description": {
     "message": "Attempts to prevent autoscrolling when receiving new chat messages while scrolled up.",
     "description": "[DisableChatAutoscroll] Tweak Description"
@@ -58,6 +62,10 @@
   "ChatTweaks@DisableChatAutoscroll / Name": {
     "message": "Smart AutoScroll",
     "description": "[DisableChatAutoscroll] Tweak Name"
+  },
+  "ChatTweaks@DisableChatAutoscroll / TabLabel": {
+    "message": "Tab {0}",
+    "description": "[DisableChatAutoscroll] Smart AutoScroll - Tab {0}"
   },
   "ChatTweaks@DisableChatMovement / Description": {
     "message": "Prevents movement of the chat window.",
