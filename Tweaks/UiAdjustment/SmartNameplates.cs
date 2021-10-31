@@ -34,18 +34,18 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private GetTargetTypeDelegate GetTargetType;
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
-            ImGui.Checkbox("Show HP##SmartNameplatesShowHP", ref config.ShowHP);
+            ImGui.Checkbox(LocString("Show HP") + "##SmartNameplatesShowHP", ref config.ShowHP);
             if (ImGui.IsItemHovered())
-                ImGui.SetTooltip("Will not hide HP bars for affected players.");
+                ImGui.SetTooltip(LocString("ShopHpTooltip", "Will not hide HP bars for affected players."));
 
             ImGui.Spacing();
             ImGui.Spacing();
-            ImGui.TextUnformatted("The following options will disable the tweak for certain players.");
-            ImGui.Checkbox("Ignore Party Members##SmartNameplatesIgnoreParty", ref config.IgnoreParty);
-            ImGui.Checkbox("Ignore Alliance Members##SmartNameplatesIgnoreAlliance", ref config.IgnoreAlliance);
-            ImGui.Checkbox("Ignore Friends##SmartNameplatesIgnoreFriends", ref config.IgnoreFriends);
-            ImGui.Checkbox("Ignore Dead Players##SmartNameplatesIgnoreDead", ref config.IgnoreDead);
-            ImGui.Checkbox("Ignore Targeted Players##SmartNameplatesIgnoreTargets", ref config.IgnoreTargets);
+            ImGui.TextUnformatted(LocString("IgnorePlayersNote", "The following options will disable the tweak for certain players."));
+            ImGui.Checkbox(LocString("Ignore Party Members") + "##SmartNameplatesIgnoreParty", ref config.IgnoreParty);
+            ImGui.Checkbox(LocString("Ignore Alliance Members") + "##SmartNameplatesIgnoreAlliance", ref config.IgnoreAlliance);
+            ImGui.Checkbox(LocString("Ignore Friends") + "##SmartNameplatesIgnoreFriends", ref config.IgnoreFriends);
+            ImGui.Checkbox(LocString("Ignore Dead Players") + "##SmartNameplatesIgnoreDead", ref config.IgnoreDead);
+            ImGui.Checkbox(LocString("Ignore Targeted Players") + "##SmartNameplatesIgnoreTargets", ref config.IgnoreTargets);
         };
 
         // Crashes the game if ANY Dalamud Actor is created from within it, which is why everything is using offsets

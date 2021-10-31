@@ -935,9 +935,37 @@
     "message": "Provides options to hide other player's nameplates in combat under certain conditions.",
     "description": "[SmartNameplates] Tweak Description"
   },
+  "UiAdjustments@SmartNameplates / Ignore Alliance Members": {
+    "message": "Ignore Alliance Members",
+    "description": "[SmartNameplates] Smart Nameplates - Ignore Alliance Members"
+  },
+  "UiAdjustments@SmartNameplates / Ignore Dead Players": {
+    "message": "Ignore Dead Players",
+    "description": "[SmartNameplates] Smart Nameplates - Ignore Dead Players"
+  },
+  "UiAdjustments@SmartNameplates / Ignore Friends": {
+    "message": "Ignore Friends",
+    "description": "[SmartNameplates] Smart Nameplates - Ignore Friends"
+  },
+  "UiAdjustments@SmartNameplates / Ignore Party Members": {
+    "message": "Ignore Party Members",
+    "description": "[SmartNameplates] Smart Nameplates - Ignore Party Members"
+  },
+  "UiAdjustments@SmartNameplates / Ignore Targeted Players": {
+    "message": "Ignore Targeted Players",
+    "description": "[SmartNameplates] Smart Nameplates - Ignore Targeted Players"
+  },
+  "UiAdjustments@SmartNameplates / IgnorePlayersNote": {
+    "message": "The following options will disable the tweak for certain players.",
+    "description": "[SmartNameplates] Smart Nameplates - The following options will disable the tweak for certain players."
+  },
   "UiAdjustments@SmartNameplates / Name": {
     "message": "Smart Nameplates",
     "description": "[SmartNameplates] Tweak Name"
+  },
+  "UiAdjustments@SmartNameplates / Show HP": {
+    "message": "Show HP",
+    "description": "[SmartNameplates] Smart Nameplates - Show HP"
   },
   "UiAdjustments@TargetHP / Description": {
     "message": "Displays the exact (or optionally rounded) value of target's hitpoints.",
