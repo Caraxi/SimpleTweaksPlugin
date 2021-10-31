@@ -119,7 +119,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                     focused = name;
                 } else {
                     ImGui.SameLine();
-                    if (ImGui.Button(newKeys.Count > 0 ? $"Confirm##{name}" : $"Cancel##{name}")) {
+                    if (ImGui.Button(newKeys.Count > 0 ? LocString("Confirm") + $"##{name}" : LocString("Cancel") + $"##{name}")) {
                         settingKey = null;
                         if (newKeys.Count > 0) keys = newKeys.ToArray();
                         newKeys.Clear();
@@ -136,7 +136,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                 }
             } else {
                 ImGui.SameLine();
-                if (ImGui.Button($"Set Keybind###setHotkeyButton{name}")) {
+                if (ImGui.Button(LocString("Set Keybind") + $"###setHotkeyButton{name}")) {
                     settingKey = name;
                 }
             }
@@ -146,20 +146,20 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             ImGui.Columns(2);
             ImGui.SetColumnWidth(0, 180 * ImGui.GetIO().FontGlobalScale);
             var c = Config;
-            DrawHotkeyConfig("Copy Item Name", ref c.CopyHotkey, ref c.CopyHotkeyEnabled, ref hasChanged);
+            DrawHotkeyConfig(LocString("Copy Item Name"), ref c.CopyHotkey, ref c.CopyHotkeyEnabled, ref hasChanged);
             ImGui.Separator();
-            DrawHotkeyConfig("View on Teamcraft", ref c.TeamcraftLinkHotkey, ref c.TeamcraftLinkHotkeyEnabled, ref hasChanged);
+            DrawHotkeyConfig(LocString("View on Teamcraft"), ref c.TeamcraftLinkHotkey, ref c.TeamcraftLinkHotkeyEnabled, ref hasChanged);
             ImGui.SameLine();
-            ImGui.Checkbox($"Browser Only###teamcraftIgnoreClient", ref Config.TeamcraftLinkHotkeyForceBrowser);
+            ImGui.Checkbox(LocString("Browser Only") + "###teamcraftIgnoreClient", ref Config.TeamcraftLinkHotkeyForceBrowser);
             ImGui.Separator();
-            DrawHotkeyConfig("View on Garland Tools", ref c.GardlandToolsLinkHotkey, ref c.GardlandToolsLinkHotkeyEnabled, ref hasChanged);
+            DrawHotkeyConfig(LocString("View on Garland Tools"), ref c.GardlandToolsLinkHotkey, ref c.GardlandToolsLinkHotkeyEnabled, ref hasChanged);
             ImGui.Separator();
-            DrawHotkeyConfig("View on Gamer Escape", ref c.GamerEscapeLinkHotkey, ref c.GamerEscapeLinkHotkeyEnabled, ref hasChanged);
+            DrawHotkeyConfig(LocString("View on Gamer Escape"), ref c.GamerEscapeLinkHotkey, ref c.GamerEscapeLinkHotkeyEnabled, ref hasChanged);
             ImGui.Separator();
-            DrawHotkeyConfig("View on Eriones (JP)", ref c.ErionesLinkHotkey, ref c.ErionesLinkHotkeyEnabled, ref hasChanged);
+            DrawHotkeyConfig(LocString("View on Eriones (JP)"), ref c.ErionesLinkHotkey, ref c.ErionesLinkHotkeyEnabled, ref hasChanged);
             ImGui.Columns();
             ImGui.Dummy(new Vector2(5 * ImGui.GetIO().FontGlobalScale));
-            hasChanged |= ImGui.Checkbox("Don't show hotkey help on Tooltip", ref c.HideHotkeysOnTooltip);
+            hasChanged |= ImGui.Checkbox(LocString("NoHelpText", "Don't show hotkey help on Tooltip"), ref c.HideHotkeysOnTooltip);
         };
 
         private ExcelSheet<ExtendedItem> itemSheet;

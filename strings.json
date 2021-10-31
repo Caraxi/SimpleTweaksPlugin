@@ -335,6 +335,22 @@
     "message": "Tooltip Tweaks",
     "description": "[TooltipTweaks] Tweak Name"
   },
+  "TooltipTweaks@CopyHotkey / Browser Only": {
+    "message": "Browser Only",
+    "description": "[CopyHotkey] Item Hotkeys - Browser Only"
+  },
+  "TooltipTweaks@CopyHotkey / Cancel": {
+    "message": "Cancel",
+    "description": "[CopyHotkey] Item Hotkeys - Cancel"
+  },
+  "TooltipTweaks@CopyHotkey / Confirm": {
+    "message": "Confirm",
+    "description": "[CopyHotkey] Item Hotkeys - Confirm"
+  },
+  "TooltipTweaks@CopyHotkey / Copy Item Name": {
+    "message": "Copy Item Name",
+    "description": "[CopyHotkey] Item Hotkeys - Copy Item Name"
+  },
   "TooltipTweaks@CopyHotkey / Description": {
     "message": "Adds hotkeys for various actions when the item detail window is visible.",
     "description": "[CopyHotkey] Tweak Description"
@@ -342,6 +358,30 @@
   "TooltipTweaks@CopyHotkey / Name": {
     "message": "Item Hotkeys",
     "description": "[CopyHotkey] Tweak Name"
+  },
+  "TooltipTweaks@CopyHotkey / NoHelpText": {
+    "message": "Don't show hotkey help on Tooltip",
+    "description": "[CopyHotkey] Item Hotkeys - Don't show hotkey help on Tooltip"
+  },
+  "TooltipTweaks@CopyHotkey / Set Keybind": {
+    "message": "Set Keybind",
+    "description": "[CopyHotkey] Item Hotkeys - Set Keybind"
+  },
+  "TooltipTweaks@CopyHotkey / View on Eriones (JP)": {
+    "message": "View on Eriones (JP)",
+    "description": "[CopyHotkey] Item Hotkeys - View on Eriones (JP)"
+  },
+  "TooltipTweaks@CopyHotkey / View on Gamer Escape": {
+    "message": "View on Gamer Escape",
+    "description": "[CopyHotkey] Item Hotkeys - View on Gamer Escape"
+  },
+  "TooltipTweaks@CopyHotkey / View on Garland Tools": {
+    "message": "View on Garland Tools",
+    "description": "[CopyHotkey] Item Hotkeys - View on Garland Tools"
+  },
+  "TooltipTweaks@CopyHotkey / View on Teamcraft": {
+    "message": "View on Teamcraft",
+    "description": "[CopyHotkey] Item Hotkeys - View on Teamcraft"
   },
   "TooltipTweaks@DesynthesisSkill / Description": {
     "message": "Shows your current desynthesis level when viewing a desynthesizable item.",
