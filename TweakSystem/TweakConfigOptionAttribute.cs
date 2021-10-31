@@ -5,6 +5,9 @@ namespace SimpleTweaksPlugin.TweakSystem {
     public class TweakConfigOptionAttribute : Attribute {
         
         public string Name { get; }
+
+        public string LocalizeKey { get; }
+
         public int Priority { get; } = 0;
         public int EditorSize { get; set; } = -1;
         
@@ -22,14 +25,16 @@ namespace SimpleTweaksPlugin.TweakSystem {
             Drag,
         }
         
-        public TweakConfigOptionAttribute(string name, int priority = 0) {
+        public TweakConfigOptionAttribute(string name, int priority = 0, string localizeKey = null) {
             Name = name;
+            LocalizeKey = localizeKey ?? name;
             Priority = priority;
         }
 
-        public TweakConfigOptionAttribute(string name, string editorType, int priority = 0) {
+        public TweakConfigOptionAttribute(string name, string editorType, int priority = 0, string localizeKey = null) {
             Name = name;
             Priority = priority;
+            LocalizeKey = localizeKey ?? name;
             Editor = typeof(TweakConfigEditor).GetMethod($"{editorType}Editor", BindingFlags.Public | BindingFlags.Static);
         }
         

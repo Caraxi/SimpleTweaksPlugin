@@ -170,9 +170,10 @@ namespace SimpleTweaksPlugin.TweakSystem {
 
                 var configOptionIndex = 0;
                 foreach (var (f, attr) in fields) {
+                    var localizedName = LocString(attr.LocalizeKey, attr.Name, $"[Config] {attr.Name}");
                     if (attr.Editor != null) {
                         var v = f.GetValue(configObj);
-                        var arr = new [] {$"{attr.Name}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", v};
+                        var arr = new [] {$"{localizedName}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", v};
                         var o = (bool) attr.Editor.Invoke(null, arr);
                         if (o) {
                             configChanged = true;
@@ -180,7 +181,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
                         }
                     } else if (f.FieldType == typeof(bool)) {
                         var v = (bool) f.GetValue(configObj);
-                        if (ImGui.Checkbox($"{attr.Name}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", ref v)) {
+                        if (ImGui.Checkbox($"{localizedName}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", ref v)) {
                             configChanged = true;
                             f.SetValue(configObj, v);
                         }
@@ -188,8 +189,8 @@ namespace SimpleTweaksPlugin.TweakSystem {
                         var v = (int) f.GetValue(configObj);
                         ImGui.SetNextItemWidth(attr.EditorSize == -1 ? -1 : attr.EditorSize * ImGui.GetIO().FontGlobalScale);
                         var e = attr.IntType switch {
-                            TweakConfigOptionAttribute.IntEditType.Slider => ImGui.SliderInt($"{attr.Name}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", ref v, attr.IntMin, attr.IntMax),
-                            TweakConfigOptionAttribute.IntEditType.Drag => ImGui.DragInt($"{attr.Name}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", ref v, 1f, attr.IntMin, attr.IntMax),
+                            TweakConfigOptionAttribute.IntEditType.Slider => ImGui.SliderInt($"{localizedName}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", ref v, attr.IntMin, attr.IntMax),
+                            TweakConfigOptionAttribute.IntEditType.Drag => ImGui.DragInt($"{localizedName}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", ref v, 1f, attr.IntMin, attr.IntMax),
                             _ => false
                         };
                         
