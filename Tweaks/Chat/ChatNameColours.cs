@@ -67,12 +67,12 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
 
             var buttonSize = new Vector2(22, 22) * ImGui.GetIO().FontGlobalScale;
 
-            ImGui.Checkbox("Use random colours for unlisted players", ref Config.RandomColours);
+            ImGui.Checkbox(LocString("RandomColours", "Use random colours for unlisted players"), ref Config.RandomColours);
 
             if (ImGui.BeginTable("forcedPlayerNames", 4)) {
                 ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed, buttonSize.X);
-                ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthFixed, 180 * ImGui.GetIO().FontGlobalScale);
-                ImGui.TableSetupColumn("Server", ImGuiTableColumnFlags.WidthFixed, 100 * ImGui.GetIO().FontGlobalScale);
+                ImGui.TableSetupColumn(LocString("Player Name"), ImGuiTableColumnFlags.WidthFixed, 180 * ImGui.GetIO().FontGlobalScale);
+                ImGui.TableSetupColumn(LocString("Server"), ImGuiTableColumnFlags.WidthFixed, 100 * ImGui.GetIO().FontGlobalScale);
                 ImGui.TableSetupColumn("");
 
                 ImGui.TableHeadersRow();
@@ -171,7 +171,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
                 if (ImGui.Button("+##newPlayerName", buttonSize)) {
                     addError = string.Empty;
                     if (Config.ForcedColours.Any(f => f.PlayerName == inputNewPlayerName && f.WorldName == inputServerName)) {
-                        addError = "Name is already in list.";
+                        addError = LocString("NameAlreadyAddedError", "Name is already in list.");
                     } else {
                         Config.ForcedColours.Add(new ForcedColour() {
                             PlayerName = inputNewPlayerName,

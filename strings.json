@@ -27,6 +27,22 @@
     "message": "Chat Name Colours",
     "description": "[ChatNameColours] Tweak Name"
   },
+  "ChatTweaks@ChatNameColours / NameAlreadyAddedError": {
+    "message": "Name is already in list.",
+    "description": "[ChatNameColours] Chat Name Colours - Name is already in list."
+  },
+  "ChatTweaks@ChatNameColours / Player Name": {
+    "message": "Player Name",
+    "description": "[ChatNameColours] Chat Name Colours - Player Name"
+  },
+  "ChatTweaks@ChatNameColours / RandomColours": {
+    "message": "Use random colours for unlisted players",
+    "description": "[ChatNameColours] Chat Name Colours - Use random colours for unlisted players"
+  },
+  "ChatTweaks@ChatNameColours / Server": {
+    "message": "Server",
+    "description": "[ChatNameColours] Chat Name Colours - Server"
+  },
   "ChatTweaks@ClickableLinks / Description": {
     "message": "Parses links posted in chat and allows them to be clicked.",
     "description": "[ClickableLinks] Tweak Description"
