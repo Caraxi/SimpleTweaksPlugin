@@ -275,6 +275,10 @@
     "message": "General Tweaks",
     "description": "General Tweaks Tab Header"
   },
+  "Hide Tweak": {
+    "message": "Hide Tweak",
+    "description": "Hide Tweak - Hide Tweak"
+  },
   "LegacyCameraLock / Description": {
     "message": "Prevents camera rotation when using Legacy movement type.",
     "description": "[LegacyCameraLock] Tweak Description"
@@ -1006,5 +1010,9 @@
   "UiAdjustments@TimeUntilGpMax / Name": {
     "message": "Time Until GP Max",
     "description": "[TimeUntilGpMax] Tweak Name"
+  },
+  "Unhide Tweak": {
+    "message": "Unhide Tweak",
+    "description": "Unhide Tweak - Unhide Tweak"
   }
 }
