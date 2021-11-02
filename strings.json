@@ -719,6 +719,14 @@
     "message": "Hide Achievements Nearing Completion Notifications",
     "description": "[HideAchievementsNotifications] Tweak Name"
   },
+  "UiAdjustments@HideExperienceBar / Description": {
+    "message": "Hides the experience bar when at max level.",
+    "description": "[HideExperienceBar] Tweak Description"
+  },
+  "UiAdjustments@HideExperienceBar / Name": {
+    "message": "Hide Experience Bar at Max Level",
+    "description": "[HideExperienceBar] Tweak Name"
+  },
   "UiAdjustments@HideJobGauge / Description": {
     "message": "Allow hiding the job gauge while not in combat or dungeons.",
     "description": "[HideJobGauge] Tweak Description"
