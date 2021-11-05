@@ -1,16 +1,15 @@
-﻿using Dalamud.Game;
-using FFXIVClientStructs.FFXIV.Component.GUI;
+﻿using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using System;
 using System.Numerics;
-using FFXIVClientInterface.Client.UI.Misc;
+using System.Runtime.InteropServices;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
-
-// TODO:
-// - Determine active WXHB page.
+using HotBarSlot = FFXIVClientStructs.FFXIV.Client.UI.Misc.HotBarSlot;
+using HotbarSlotType = FFXIVClientStructs.FFXIV.Client.UI.Misc.HotbarSlotType;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
@@ -26,7 +25,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             actionBarBaseUpdateHook ??= Common.Hook<ActionBarBaseUpdate>("E8 ?? ?? ?? ?? 83 BB ?? ?? ?? ?? ?? 75 09", ActionBarBaseUpdateDetour);
             Config = LoadConfig<Configs>() ?? new Configs();
             actionBarBaseUpdateHook?.Enable();
-            // Service.Framework.Update += FrameworkUpdate;
             base.Enable();
         }
 
@@ -101,28 +99,31 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         };
 
-        private void FrameworkUpdate(Framework framework) {
-            try {
-                UpdateAll();
-            } catch (Exception ex) {
-                SimpleLog.Error("Exception in FrameworkUpdate");
-                SimpleLog.Error(ex);
+        private void UpdateAll(bool reset = false) {
+            foreach (var actionBar in allActionBars) {
+                var ab = (AddonActionBarBase*) Service.GameGui.GetAddonByName(actionBar, 1);
+                Update(ab, reset);
             }
         }
 
-        private void UpdateAll(bool reset = false) {
-            var hotbarModule = SimpleTweaksPlugin.Client.UiModule.RaptureHotbarModule;
-            for (var abIndex = 0; abIndex < allActionBars.Length; abIndex++) {
-                var actionBar = allActionBars[abIndex];
-                var ab = (AddonActionBarBase*) Service.GameGui.GetAddonByName(actionBar, 1);
-                if (ab == null || ab->ActionBarSlotsAction == null) continue;
-                var bar = abIndex > 10 ? null : hotbarModule.GetBar(abIndex, HotBarType.All);
-                for (var i = 0; i < ab->HotbarSlotCount; i++) {
-                    var slot = ab->ActionBarSlotsAction[i];
-                    var slotStruct = hotbarModule.GetBarSlot(bar, i);
-                    if ((slot.PopUpHelpTextPtr != null || reset) && slot.Icon != null) {
-                        UpdateIcon(slot.Icon, slotStruct, reset);
-                    }
+        private void Update(AddonActionBarBase* ab, bool reset = false) {
+            if (ab == null || ab->ActionBarSlotsAction == null) return;
+            var hotbarModule = Framework.Instance()->GetUiModule()->GetRaptureHotbarModule();
+            var name = Marshal.PtrToStringUTF8(new IntPtr(ab->AtkUnitBase.Name));
+            if (name == null) return;
+
+            for (var i = 0; i < ab->HotbarSlotCount; i++) {
+                var slot = ab->ActionBarSlotsAction[i];
+
+                var slotStruct = hotbarModule->HotBar[ab->HotbarID]->Slot[i];
+
+                if (name.StartsWith("_ActionDoubleCross")) {
+                    var dcBar = (AddonActionDoubleCrossBase*)ab;
+                    slotStruct = hotbarModule->HotBar[dcBar->BarTarget]->Slot[i + (dcBar->UseLeftSide != 0 ? 0 : 8)];
+                }
+
+                if ((slot.PopUpHelpTextPtr != null || reset) && slot.Icon != null) {
+                    UpdateIcon(slot.Icon, slotStruct, reset);
                 }
             }
         }
@@ -194,7 +195,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override void Disable() {
             actionBarBaseUpdateHook?.Disable();
             SaveConfig(Config);
-            Service.Framework.Update -= FrameworkUpdate;
             UpdateAll(true);
             base.Disable();
         }

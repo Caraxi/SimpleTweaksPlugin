@@ -4,7 +4,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace SimpleTweaksPlugin.GameStructs {
     [StructLayout(LayoutKind.Explicit, Size = 0x248)]
-    [Addon("_ActionBar02", "_ActionBar03", "_ActionBar04", "_ActionBar05", "_ActionBar06", "_ActionBar07", "_ActionBar08", "_ActionBar09", "_ActionCross", "_ActionDoubleCross", "_ActionDoubleCrossR")]
+    [Addon("_ActionBar02", "_ActionBar03", "_ActionBar04", "_ActionBar05", "_ActionBar06", "_ActionBar07", "_ActionBar08", "_ActionBar09", "_ActionCross")]
     public unsafe struct AddonActionBarBase {
         [FieldOffset(0x000)] public AtkUnitBase AtkUnitBase;
         [FieldOffset(0x220)] public ActionBarSlotAction* ActionBarSlotsAction;
@@ -12,7 +12,7 @@ namespace SimpleTweaksPlugin.GameStructs {
         [FieldOffset(0x230)] public void* UnknownPtr230; // Points to same location as +0x228 ??
         [FieldOffset(0x238)] public int UnknownInt238;
         [FieldOffset(0x23C)] public byte HotbarID;
-        [FieldOffset(0x23D)] public byte HotbarIDOther;
+        [FieldOffset(0x23D)] public sbyte HotbarIDOther;
         [FieldOffset(0x23E)] public byte HotbarSlotCount;
         [FieldOffset(0x23F)] public int UnknownInt23F;
         [FieldOffset(0x243)] public int UnknownInt243; // Flags of some kind
