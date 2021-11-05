@@ -189,6 +189,13 @@ namespace SimpleTweaksPlugin.Helper {
             return wh;
         }
 
+        public static HookWrapper<T> Hook<T>(void* address, T detour) where T : Delegate {
+            var h = new Hook<T>(new IntPtr(address), detour);
+            var wh = new HookWrapper<T>(h);
+            HookList.Add(wh);
+            return wh;
+        }
+
         public static List<IHookWrapper> HookList = new();
 
         public static void OpenBrowser(string url) {
