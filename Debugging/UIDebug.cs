@@ -340,6 +340,15 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.Text(isVisible ? "Visible" : "Not Visible");
             ImGui.PopStyleColor();
 
+            ImGui.SameLine();
+
+            if (!AddonCallbacks.IsSetupHooked(atkUnitBase)) {
+                if (ImGui.SmallButton("Hook Setup")) {
+                    AddonCallbacks.HookOnSetup(atkUnitBase);
+                }
+            }
+
+
             ImGui.SameLine(ImGui.GetWindowContentRegionWidth() - 25);
             if (ImGui.SmallButton("V")) {
                 atkUnitBase->Flags ^= 0x20;
