@@ -20,7 +20,7 @@ using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace SimpleTweaksPlugin.Helper {
-    internal unsafe class Common {
+    public unsafe class Common {
 
         // Common Delegates
         public delegate void* AddonOnUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** nums, StringArrayData** strings);
