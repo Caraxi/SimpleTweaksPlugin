@@ -28,7 +28,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
 
             var tweakList = new List<T>();
 
-            foreach (var t in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(T)))) {
+            foreach (var t in GetType().Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(T)))) {
                 try {
                     var tweak = (T) Activator.CreateInstance(t);
                     tweak.InterfaceSetup(this.Plugin, this.PluginInterface, this.PluginConfig);

@@ -80,6 +80,10 @@ namespace SimpleTweaksPlugin {
             }
         }
 
+        public static void ClearCache() {
+            _localizationStrings.Clear();
+        }
+
         public static void UpdateTranslations() {
             DownloadError = null;
             var downloadPath = Service.PluginInterface.GetPluginLocDirectory();

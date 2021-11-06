@@ -25,7 +25,7 @@ namespace SimpleTweaksPlugin {
         public DalamudPluginInterface PluginInterface { get; private set; }
         public SimpleTweaksPluginConfig PluginConfig { get; private set; }
 
-        public List<BaseTweak> Tweaks = new List<BaseTweak>();
+        public List<TweakProvider> TweakProviders = new();
 
         public IconManager IconManager { get; private set; }
         public XivCommonBase XivCommon { get; private set; }
@@ -45,6 +45,8 @@ namespace SimpleTweaksPlugin {
 
         public bool LoadingTranslations { get; private set; } = false;
 
+        public IEnumerable<BaseTweak> Tweaks => TweakProviders.Where(tp => !tp.IsDisposed).SelectMany(tp => tp.Tweaks).OrderBy(t => t.Name);
+
         internal CultureInfo Culture {
             get {
                 if (setCulture != null) return setCulture;
@@ -62,22 +64,16 @@ namespace SimpleTweaksPlugin {
             set => setCulture = value;
         }
 
-
         public void Dispose() {
             SimpleLog.Debug("Dispose");
             
             PluginInterface.UiBuilder.Draw -= this.BuildUI;
             RemoveCommands();
 
-            foreach (var t in Tweaks) {
-                if (t.Enabled || t is SubTweakManager { AlwaysEnabled : true}) {
-                    SimpleLog.Log($"Disable: {t.Name}");
-                    t.Disable();
-                }
-                SimpleLog.Log($"Dispose: {t.Name}");
+            foreach (var t in TweakProviders.Where(t => !t.IsDisposed)) {
                 t.Dispose();
             }
-            Tweaks.Clear();
+            TweakProviders.Clear();
             Client.Dispose();
             #if DEBUG
             DebugManager.Dispose();
@@ -123,32 +119,14 @@ namespace SimpleTweaksPlugin {
 
             SetupCommands();
 
-            var tweakList = new List<BaseTweak>();
+            var simpleTweakProvider = new TweakProvider(Assembly.GetExecutingAssembly());
+            simpleTweakProvider.LoadTweaks();
+            TweakProviders.Add(simpleTweakProvider);
 
-            foreach (var t in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(Tweak)) && !t.IsAbstract)) {
-                SimpleLog.Debug($"Initalizing Tweak: {t.Name}");
-                try {
-                    var tweak = (Tweak) Activator.CreateInstance(t);
-                    tweak.InterfaceSetup(this, pluginInterface, PluginConfig);
-                    if (tweak.CanLoad) {
-                        tweak.Setup();
-                        if (tweak.Ready && (PluginConfig.EnabledTweaks.Contains(t.Name) || tweak is SubTweakManager {AlwaysEnabled: true})) {
-                            SimpleLog.Debug($"Enable: {t.Name}");
-                            try {
-                                tweak.Enable();
-                            } catch (Exception ex) {
-                                this.Error(tweak, ex, true, $"Error in Enable for '{tweak.Name}");
-                            }
-                        }
-
-                        tweakList.Add(tweak);
-                    }
-                } catch (Exception ex) {
-                    PluginLog.Error(ex, $"Failed loading tweak '{t.Name}'.");
-                }
+            foreach (var provider in PluginConfig.CustomProviders) {
+                LoadCustomProvider(provider);
             }
 
-            Tweaks = tweakList.OrderBy(t => t.Name).ToList();
 
 #if DEBUG
             DebugManager.Enabled = true;
@@ -281,7 +259,7 @@ namespace SimpleTweaksPlugin {
             }
         }
 
-        public BaseTweak GetTweakById(string s, List<BaseTweak> tweakList = null) {
+        public BaseTweak? GetTweakById(string s, IEnumerable<BaseTweak>? tweakList = null) {
             tweakList ??= Tweaks;
             
             foreach (var t in tweakList) {
@@ -296,8 +274,10 @@ namespace SimpleTweaksPlugin {
         }
 
         public void SaveAllConfig() {
-            foreach (var t in Tweaks) {
-                t.RequestSaveConfig();
+            foreach (var tp in TweakProviders.Where(tp => !tp.IsDisposed)) {
+                foreach (var t in tp.Tweaks) {
+                    t.RequestSaveConfig();
+                }
             }
         }
 
@@ -451,6 +431,12 @@ namespace SimpleTweaksPlugin {
             if (ErrorList.Count > 50) {
                 ErrorList.RemoveRange(50, ErrorList.Count - 50);
             }
+        }
+
+        public void LoadCustomProvider(string path) {
+            var tweakProvider = new CustomTweakProvider(path);
+            tweakProvider.LoadTweaks();
+            TweakProviders.Add(tweakProvider);
         }
     }
 }
