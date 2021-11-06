@@ -14,10 +14,6 @@ namespace SimpleTweaksPlugin.TweakSystem {
             Assembly = loadContext.LoadFromFile(path);
         }
 
-        public bool
-
-
-
         public override void Dispose() {
             SimpleLog.Log($"Unloading Tweak Provider: {AssemblyPath}");
             base.Dispose();
