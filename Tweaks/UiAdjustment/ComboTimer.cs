@@ -192,7 +192,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 textNode->FontSize = (byte) (this.Config.FontSize);
                 textNode->LineSpacing = (byte) (this.Config.FontSize);
-                textNode->CharSpacing = 1\;
+                textNode->CharSpacing = 1;
                 var comboTimer = (comboAvailable ? combo->Timer : 0.0f).ToString($"{(Config.LeadingZero ? "00" : "0")}{(Config.DecimalPlaces>0 ? "." + new string('0', Config.DecimalPlaces) : "")}");
                 textNode->SetText(Config.NoComboText ? $"{comboTimer}" : $"Combo\n{comboTimer}");
             } else { 
