@@ -39,6 +39,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             [TweakConfigOption("Text Outline Color", "Color", 4)]
             public Vector4 EdgeColor = new Vector4(0xF0, 0x8E, 0x37, 0xFF) / 0xFF;
             
+            [TweakConfigOption("Leading Zero")]
+            public bool LeadingZero = true;
+
+            [TweakConfigOption("Decimal Places", 3, IntMin = 0, IntMax = 4, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EditorSize = 150)]
+            public int DecimalPlaces = 2;
         }
         
         public Configs Config { get; private set; }
@@ -187,13 +192,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 textNode->FontSize = (byte) (this.Config.FontSize);
                 textNode->LineSpacing = (byte) (this.Config.FontSize);
-                textNode->CharSpacing = 1;
-                if (comboAvailable) {
-                    textNode->SetText(Config.NoComboText ? $"{combo->Timer:00.00}" : $"Combo\n{combo->Timer:00.00}");
-                } else {
-                    textNode->SetText(Config.NoComboText ? $"00.00" : $"Combo\n00.00");;
-                }
-                
+                textNode->CharSpacing = 1\;
+                var comboTimer = (comboAvailable ? combo->Timer : 0.0f).ToString($"{(Config.LeadingZero ? "00" : "0")}{(Config.DecimalPlaces>0 ? "." + new string('0', Config.DecimalPlaces) : "")}");
+                textNode->SetText(Config.NoComboText ? $"{comboTimer}" : $"Combo\n{comboTimer}");
             } else { 
                 UiHelper.Hide(textNode);
             }
