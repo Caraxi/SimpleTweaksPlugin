@@ -434,6 +434,7 @@ namespace SimpleTweaksPlugin {
         }
 
         public void LoadCustomProvider(string path) {
+            TweakProviders.RemoveAll(t => t.IsDisposed);
             var tweakProvider = new CustomTweakProvider(path);
             tweakProvider.LoadTweaks();
             TweakProviders.Add(tweakProvider);
