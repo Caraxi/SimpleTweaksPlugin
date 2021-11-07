@@ -47,7 +47,7 @@ namespace SimpleTweaksPlugin.Debugging {
     
     public static class DebugManager {
 
-        private static Dictionary<string, Action> debugPages = new Dictionary<string, Action>();
+        private static SortedDictionary<string, Action> debugPages = new();
 
         private static float sidebarSize = 0;
         
