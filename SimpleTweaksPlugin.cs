@@ -438,6 +438,8 @@ namespace SimpleTweaksPlugin {
             var tweakProvider = new CustomTweakProvider(path);
             tweakProvider.LoadTweaks();
             TweakProviders.Add(tweakProvider);
+            Loc.ClearCache();
+            DebugManager.Reload();
         }
     }
 }

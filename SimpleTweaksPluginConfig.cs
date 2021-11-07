@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -439,6 +440,7 @@ namespace SimpleTweaksPlugin {
                                     ctp.Dispose();
                                 }
                             }
+                            DebugManager.Reload();
 
                             Save();
                         }

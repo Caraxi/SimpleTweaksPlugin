@@ -10,7 +10,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
         public bool IsDisposed { get; protected set; } = false;
         public List<BaseTweak> Tweaks { get; } = new();
 
-        protected Assembly Assembly { get; init; } = null!;
+        public Assembly Assembly { get; init; } = null!;
 
         public TweakProvider(Assembly assembly) {
             Assembly = assembly;
