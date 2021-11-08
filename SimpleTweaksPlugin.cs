@@ -13,9 +13,9 @@ using FFXIVClientInterface;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 using XivCommon;
+using SimpleTweaksPlugin.Debugging;
 #if DEBUG
 using System.Runtime.CompilerServices;
-using SimpleTweaksPlugin.Debugging;
 #endif
 
 #pragma warning disable CS0659
