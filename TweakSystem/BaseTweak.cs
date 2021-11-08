@@ -158,6 +158,8 @@ namespace SimpleTweaksPlugin.TweakSystem {
 
         protected virtual void ConfigChanged() { }
 
+        public virtual void LanguageChanged() { }
+
         private void DrawAutoConfig() {
             var configChanged = false;
             try {

@@ -3,12 +3,12 @@ using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using Dalamud;
 using Dalamud.Interface.Internal.Notifications;
-using Dalamud.Logging;
 using FFXIVClientInterface;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
@@ -145,6 +145,7 @@ namespace SimpleTweaksPlugin {
             };
 
             Loc.LoadLanguage(PluginConfig.Language);
+            foreach (var t in Tweaks) t.LanguageChanged();
         }
 
         public void SetupCommands() {
@@ -434,6 +435,7 @@ namespace SimpleTweaksPlugin {
         }
 
         public void LoadCustomProvider(string path) {
+            if (!File.Exists(path)) return;
             TweakProviders.RemoveAll(t => t.IsDisposed);
             var tweakProvider = new CustomTweakProvider(path);
             tweakProvider.LoadTweaks();
