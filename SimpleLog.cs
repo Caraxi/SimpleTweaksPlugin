@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using Dalamud.Logging;
 
 namespace SimpleTweaksPlugin {
-    internal static class SimpleLog {
+    public static class SimpleLog {
 
 #if DEBUG
         private static int _subStrIndex;
