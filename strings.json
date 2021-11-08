@@ -799,6 +799,30 @@
     "message": "Number of status effects displayed##nbStatusEffectsDisplayed",
     "description": "[LimitTargetStatusEffects] Limit Target Status Effects - Number of status effects displayed##nbStatusEffectsDisplayed"
   },
+  "UiAdjustments@LockWindowPosition / Description": {
+    "message": "Allows locking the position of almost any UI window.",
+    "description": "[LockWindowPosition] Tweak Description"
+  },
+  "UiAdjustments@LockWindowPosition / HelpMessage": {
+    "message": "You can lock or unlock windows from their context menu (right click the window).",
+    "description": "[LockWindowPosition] Lock Window Positions - You can lock or unlock windows from their context menu (right click the window)."
+  },
+  "UiAdjustments@LockWindowPosition / Lock Window Position": {
+    "message": "Lock Window Position",
+    "description": "[LockWindowPosition] Lock Window Positions - Lock Window Position"
+  },
+  "UiAdjustments@LockWindowPosition / Name": {
+    "message": "Lock Window Positions",
+    "description": "[LockWindowPosition] Tweak Name"
+  },
+  "UiAdjustments@LockWindowPosition / Unlock": {
+    "message": "Unlock",
+    "description": "[LockWindowPosition] Lock Window Positions - Unlock"
+  },
+  "UiAdjustments@LockWindowPosition / Unlock Window Position": {
+    "message": "Unlock Window Position",
+    "description": "[LockWindowPosition] Lock Window Positions - Unlock Window Position"
+  },
   "UiAdjustments@MarketEnhancements / Description": {
     "message": "UI Enhancements for market board such as including tax and highlighting laxy tax.",
     "description": "[MarketEnhancements] Tweak Description"
