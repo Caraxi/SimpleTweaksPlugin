@@ -16,6 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Description => "Shows a countdown for combo actions.";
 
         private readonly Dictionary<uint, byte> comboActions = new();
+        private bool usingScreenText = false;
         
         public class Configs : TweakConfig {
             [TweakConfigOption("Always Visible")]
@@ -44,6 +45,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             [TweakConfigOption("Decimal Places", 3, IntMin = 0, IntMax = 4, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EditorSize = 150)]
             public int DecimalPlaces = 2;
+
+            [TweakConfigOption("Alternative UI Attachment", 1)]
+            public bool UseScreenText = false;
         }
         
         public Configs Config { get; private set; }
@@ -85,7 +89,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private void Update(bool reset = false) {
-            var paramWidget = Common.GetUnitBase("_ParameterWidget");
+            var addon = usingScreenText ? "_ScreenText" : "_ParameterWidget";
+            if (usingScreenText != Config.UseScreenText) {
+                reset = true;
+                usingScreenText = Config.UseScreenText;
+            }
+
+            var paramWidget = Common.GetUnitBase(addon);
             if (paramWidget == null) return;
             
             AtkTextNode* textNode = null;
