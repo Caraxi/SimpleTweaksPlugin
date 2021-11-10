@@ -23,6 +23,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             [TweakConfigOption("Only show percentage")]
             public bool PercentageOnly;
+
+            [TweakConfigOption("Show Rested Experience")]
+            public bool ShowRestedExperience;
         }
 
         public Configs Config { get; private set; }
@@ -67,6 +70,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var ret =  addonExpOnUpdateHook.Original(addonExp, numberArrays, stringArrays, a4);
 
             try {
+                var textNode = addonExp->GetTextNodeById(4);
+                if (textNode == null) goto ReturnOriginal;
+
                 var str = MemoryHelper.ReadSeStringNullTerminated(new IntPtr(strPtr));
                 var percent = 1f;
                 if (!str.TextValue.Contains("-/-")) percent = numberArray->IntArray[16] / (float) numberArray->IntArray[18];
@@ -99,8 +105,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     str.Payloads.Add(new TextPayload($" ({percent.ToString($"F{Config.Decimals}", Culture)}%)"));
                 }
 
-                var textNode = addonExp->GetTextNodeById(4);
-                if (textNode == null) goto ReturnOriginal;
+                if (Config.ShowRestedExperience) {
+                    var restedExperience = (numberArray->IntArray[19] / (float) numberArray->IntArray[18]) / 0.03f;
+                    str.Append($"  {(char) SeIconChar.ExperienceFilled} {restedExperience.ToString($"F{Config.Decimals}", Culture)}%");
+                }
+
                 textNode->SetText(str.Encode());
             } catch (Exception ex) {
                 SimpleLog.Error(ex);
@@ -117,7 +126,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var atkArrayDataHolder = Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder;
                 addonExp->OnUpdate(atkArrayDataHolder.NumberArrays, atkArrayDataHolder.StringArrays);
             }
-            base.ConfigChanged();
         }
 
         public override void Disable() {
