@@ -34,7 +34,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Name => "Remove Quest Marker Limit";
         public override string Description => "Allow the map and minimap to display markers for more than 5 active quests.";
 
-        private delegate void* SetQuestMarkerInfoDelegate(Map* thisPtr, uint index, ushort questId, Utf8String* name, ushort recommendedLevel);
+        private delegate void* SetQuestMarkerInfoDelegate(Map* map, uint index, ushort questId, Utf8String* name, ushort recommendedLevel);
         private HookWrapper<SetQuestMarkerInfoDelegate> setQuestMarkerInfoHook;
 
         public override void Enable() {
