@@ -132,6 +132,7 @@ namespace SimpleTweaksPlugin {
             DebugManager.Enabled = true;
             drawConfigWindow = true;
 #endif
+            DebugManager.Reload();
 
         }
 
