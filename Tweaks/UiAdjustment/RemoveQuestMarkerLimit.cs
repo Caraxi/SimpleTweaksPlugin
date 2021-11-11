@@ -1,35 +1,10 @@
-﻿using FFXIVClientStructs.FFXIV.Client.System.String;
+﻿using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.System.String;
 using SimpleTweaksPlugin.Helper;
-using System.Runtime.InteropServices;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using Microsoft.VisualBasic;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
-    // Unknown size and I really don't want to work it out.
-    [StructLayout(LayoutKind.Explicit)]
-    public unsafe struct Map {
-        [FieldOffset(0x78)] public QuestMarkerArray QuestMarkers;
-
-        [StructLayout(LayoutKind.Sequential, Size = 30 * 0x90)]
-        public struct QuestMarkerArray {
-            private fixed byte data[30 * 0x90];
-            public MapMarkerInfo* this[int index] {
-                get {
-                    if (index < 0 || index > 30) {
-                        return null;
-                    }
-
-                    fixed (byte* pointer = this.data) {
-                        return (MapMarkerInfo*)(pointer + sizeof(MapMarkerInfo) * index);
-                    }
-                }
-            }
-        }
-    }
-
-    [StructLayout(LayoutKind.Explicit, Size = 0x90)]
-    public struct MapMarkerInfo {
-        [FieldOffset(0x8B)] public byte ShouldRender;
-    }
-
     public unsafe class RemoveQuestMarkerLimit : UiAdjustments.SubTweak {
         public override string Name => "Remove Quest Marker Limit";
         public override string Description => "Allow the map and minimap to display markers for more than 5 active quests.";
@@ -59,8 +34,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private void* SetQuestMarkerInfoDetour(Map* map, uint index, ushort questId, Utf8String* name, ushort recommendedLevel) {
             var result = this.setQuestMarkerInfoHook.Original(map, index, questId, name, recommendedLevel);
-
-            map->QuestMarkers[(int)index]->ShouldRender = 1;
+            if (!QuestManager.Instance()->Quest[(int)index]->IsHidden) {
+                map->QuestMarkers[(int)index]->ShouldRender = 1;
+            }
 
             return result;
         }
