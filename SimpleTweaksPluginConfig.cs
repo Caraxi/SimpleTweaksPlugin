@@ -407,55 +407,56 @@ namespace SimpleTweaksPlugin {
                             ImGui.Separator();
                         }
 
-
-                        ImGui.Text("Tweak Providers:");
-                        string? deleteCustomProvider = null;
-                        for (var i = 0; i < CustomProviders.Count; i++) {
-                            if (ImGui.Button($"X##deleteCustomProvider_{i}")) {
-                                deleteCustomProvider = CustomProviders[i];
+                        if (CustomProviders.Count > 0 || ShowExperimentalTweaks) {
+                            ImGui.Text("Tweak Providers:");
+                            string? deleteCustomProvider = null;
+                            for (var i = 0; i < CustomProviders.Count; i++) {
+                                if (ImGui.Button($"X##deleteCustomProvider_{i}")) {
+                                    deleteCustomProvider = CustomProviders[i];
+                                }
+                                ImGui.SameLine();
+                                if (ImGui.Button($"R##reloadcustomProvider_{i}")) {
+                                    foreach (var tp in SimpleTweaksPlugin.Plugin.TweakProviders) {
+                                        if (tp.IsDisposed) continue;
+                                        if (tp is not CustomTweakProvider ctp) continue;
+                                        if (ctp.AssemblyPath == CustomProviders[i]) {
+                                            ctp.Dispose();
+                                        }
+                                    }
+                                    plugin.LoadCustomProvider(CustomProviders[i]);
+                                    Loc.ClearCache();
+                                }
+                                ImGui.SameLine();
+                                ImGui.Text(CustomProviders[i]);
                             }
-                            ImGui.SameLine();
-                            if (ImGui.Button($"R##reloadcustomProvider_{i}")) {
+
+                            if (deleteCustomProvider != null) {
+                                CustomProviders.Remove(deleteCustomProvider);
+
                                 foreach (var tp in SimpleTweaksPlugin.Plugin.TweakProviders) {
                                     if (tp.IsDisposed) continue;
                                     if (tp is not CustomTweakProvider ctp) continue;
-                                    if (ctp.AssemblyPath == CustomProviders[i]) {
+                                    if (ctp.AssemblyPath == deleteCustomProvider) {
                                         ctp.Dispose();
                                     }
                                 }
-                                plugin.LoadCustomProvider(CustomProviders[i]);
-                                Loc.ClearCache();
-                            }
-                            ImGui.SameLine();
-                            ImGui.Text(CustomProviders[i]);
-                        }
+                                DebugManager.Reload();
 
-                        if (deleteCustomProvider != null) {
-                            CustomProviders.Remove(deleteCustomProvider);
-
-                            foreach (var tp in SimpleTweaksPlugin.Plugin.TweakProviders) {
-                                if (tp.IsDisposed) continue;
-                                if (tp is not CustomTweakProvider ctp) continue;
-                                if (ctp.AssemblyPath == deleteCustomProvider) {
-                                    ctp.Dispose();
-                                }
-                            }
-                            DebugManager.Reload();
-
-                            Save();
-                        }
-
-                        if (ImGui.Button("+##addCustomProvider")) {
-                            if (!string.IsNullOrWhiteSpace(addCustomProviderInput) && !CustomProviders.Contains(addCustomProviderInput)) {
-                                CustomProviders.Add(addCustomProviderInput);
-                                SimpleTweaksPlugin.Plugin.LoadCustomProvider(addCustomProviderInput);
-                                addCustomProviderInput = string.Empty;
                                 Save();
                             }
-                        }
 
-                        ImGui.SameLine();
-                        ImGui.InputText("##addCustomProviderInput", ref addCustomProviderInput, 500);
+                            if (ImGui.Button("+##addCustomProvider")) {
+                                if (!string.IsNullOrWhiteSpace(addCustomProviderInput) && !CustomProviders.Contains(addCustomProviderInput)) {
+                                    CustomProviders.Add(addCustomProviderInput);
+                                    SimpleTweaksPlugin.Plugin.LoadCustomProvider(addCustomProviderInput);
+                                    addCustomProviderInput = string.Empty;
+                                    Save();
+                                }
+                            }
+
+                            ImGui.SameLine();
+                            ImGui.InputText("##addCustomProviderInput", ref addCustomProviderInput, 500);
+                        }
 
                         ImGui.EndChild();
                         ImGui.EndTabItem();
