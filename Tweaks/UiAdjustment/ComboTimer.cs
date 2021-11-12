@@ -28,10 +28,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             [TweakConfigOption("Font Size", 1, IntMin = 6, IntMax = 255, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EditorSize = 150)]
             public int FontSize = 12;
             
-            [TweakConfigOption("X Position Offset", 2, IntMin = -2000, IntMax = 2000, IntType = TweakConfigOptionAttribute.IntEditType.Drag, EditorSize = 150)]
+            [TweakConfigOption("X Position Offset", 2, IntMin = -5000, IntMax = 5000, EnforcedLimit = false, IntType = TweakConfigOptionAttribute.IntEditType.Drag, EditorSize = 150)]
             public int OffsetX;
             
-            [TweakConfigOption("Y Position Offset", 2, IntMin = -2000, IntMax = 2000, IntType = TweakConfigOptionAttribute.IntEditType.Drag, EditorSize = 150)]
+            [TweakConfigOption("Y Position Offset", 2, IntMin = -5000, IntMax = 5000, EnforcedLimit = false, IntType = TweakConfigOptionAttribute.IntEditType.Drag, EditorSize = 150)]
             public int OffsetY;
             
             [TweakConfigOption("Text Color", "Color", 3)]
