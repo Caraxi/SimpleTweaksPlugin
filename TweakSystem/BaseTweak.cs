@@ -198,12 +198,12 @@ namespace SimpleTweaksPlugin.TweakSystem {
                             _ => false
                         };
                         
-                        if (v < attr.IntMin) {
+                        if (attr.EnforcedLimit && v < attr.IntMin) {
                             v = attr.IntMin;
                             e = true;
                         }
 
-                        if (v > attr.IntMax) {
+                        if (attr.EnforcedLimit &&v > attr.IntMax) {
                             v = attr.IntMax;
                             e = true;
                         }

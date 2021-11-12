@@ -16,6 +16,8 @@ namespace SimpleTweaksPlugin.TweakSystem {
         public int IntMax { get; set; } = int.MaxValue;
         public IntEditType IntType { get; set; } = IntEditType.Slider;
 
+        public bool EnforcedLimit { get; set; } = true;
+
         public delegate bool ConfigOptionEditor(string name, ref object configOption);
         
         public MethodInfo Editor { get; set; }
