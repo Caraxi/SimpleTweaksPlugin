@@ -348,6 +348,19 @@ namespace SimpleTweaksPlugin {
                     ShowErrorWindow = false;
                 }
             }
+
+            if (Service.PluginInterface.IsDebugging && Service.PluginInterface.IsDev) {
+                if (ImGui.BeginMainMenuBar()) {
+                    if (ImGui.MenuItem("Simple Tweaks")) {
+                        if (ImGui.GetIO().KeyShift) {
+                            DebugManager.Enabled = !DebugManager.Enabled;
+                        } else {
+                            drawConfigWindow = !drawConfigWindow;
+                        }
+                    }
+                    ImGui.EndMainMenuBar();
+                }
+            }
         }
 
 

@@ -31,6 +31,7 @@ namespace SimpleTweaksPlugin.Debugging {
 
     public partial class DebugConfig {
         public string SelectedPage = String.Empty;
+        public Dictionary<string, object> SavedValues = new();
     }
 
     public abstract class DebugHelper : IDisposable {
@@ -177,7 +178,12 @@ namespace SimpleTweaksPlugin.Debugging {
                     if (string.IsNullOrEmpty(_plugin.PluginConfig.Debugging.SelectedPage) || !debugPages.ContainsKey(_plugin.PluginConfig.Debugging.SelectedPage)) {
                         ImGui.Text("Select Debug Page");
                     } else {
-                        debugPages[_plugin.PluginConfig.Debugging.SelectedPage]();
+                        try {
+                            debugPages[_plugin.PluginConfig.Debugging.SelectedPage]();
+                        } catch (Exception ex) {
+                            ImGui.TextColored(new Vector4(1, 0, 0, 1), ex.ToString());
+                        }
+
                     }
                 }
 
@@ -361,6 +367,17 @@ namespace SimpleTweaksPlugin.Debugging {
             PrintOutObject(obj, addr, new List<string>(), autoExpand, headerText);
         }
 
+        private static Dictionary<string, object> _savedValues = new();
+        public static void SetSavedValue<T>(string key, T value){
+            if (_plugin.PluginConfig.Debugging.SavedValues.ContainsKey(key)) _plugin.PluginConfig.Debugging.SavedValues.Remove(key);
+            _plugin.PluginConfig.Debugging.SavedValues.Add(key, value);
+            _plugin.PluginConfig.Save();
+        }
+
+        public static T GetSavedValue<T>(string key, T defaultValue) {
+            if (!_plugin.PluginConfig.Debugging.SavedValues.ContainsKey(key)) return defaultValue;
+            return (T)_plugin.PluginConfig.Debugging.SavedValues[key];
+        }
 
         public static unsafe void PrintOutObject(object obj, ulong addr, List<string> path, bool autoExpand = false, string headerText = null) {
             if (obj is Utf8String utf8String) {
