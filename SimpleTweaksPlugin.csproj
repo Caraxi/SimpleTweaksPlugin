@@ -5,7 +5,6 @@
         <LangVersion>preview</LangVersion>
         <Platforms>x64</Platforms>
         <Configurations>Debug;Release</Configurations>
-        <Nullable>enable</Nullable>
     </PropertyGroup>
     <PropertyGroup Label="Build">
         <OutputType>Library</OutputType>
