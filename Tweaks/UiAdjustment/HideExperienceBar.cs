@@ -1,46 +1,38 @@
 ﻿using System;
-using System.Linq;
-using Dalamud.Game;
+using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Helper;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
-    public class HideExperienceBar : UiAdjustments.SubTweak {
+    public unsafe class HideExperienceBar : UiAdjustments.SubTweak {
         public override string Name => "Hide Experience Bar at Max Level";
         public override string Description => "Hides the experience bar when at max level.";
         protected override string Author => "Anna";
 
-        private uint MaxLevel { get; }
-
-        public HideExperienceBar() {
-            var oneAbove = Service.Data.Excel.GetSheet<ParamGrow>()!
-                .Where(row => row.ExpToNext == 0)
-                .Min(row => row.RowId);
-            this.MaxLevel = oneAbove - 1;
-        }
-
+        private delegate void* AddonExpOnUpdateDelegate(AtkUnitBase* addonExp, NumberArrayData** numberArrayData, StringArrayData** stringArrayData, void* a4);
+        private HookWrapper<AddonExpOnUpdateDelegate> addonExpOnUpdateHook;
         public override void Enable() {
-            Service.Framework.Update += this.UpdateFramework;
+            addonExpOnUpdateHook ??= Common.Hook<AddonExpOnUpdateDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 83 EC 30 48 8B 72 18", AddonExpOnUpdateDetour);
+            addonExpOnUpdateHook?.Enable();
             base.Enable();
         }
 
-        public override void Disable() {
-            Service.Framework.Update -= this.UpdateFramework;
+        private void* AddonExpOnUpdateDetour(AtkUnitBase* addonExp, NumberArrayData** numberArrays, StringArrayData** stringArrays, void* a4) {
+            var ret =  addonExpOnUpdateHook.Original(addonExp, numberArrays, stringArrays, a4);
+            var stringArray = stringArrays[2];
+            if (stringArray == null) goto Return;
+            var strPtr = stringArray->StringArray[69];
+            if (strPtr == null) goto Return;
+
             try {
-                SetExperienceBarVisible(true);
+                var str = MemoryHelper.ReadSeStringNullTerminated(new IntPtr(strPtr));
+                SetExperienceBarVisible(!str.TextValue.Contains("-/-"));
             } catch {
-                // ignored
+                // Ignored
             }
 
-            base.Disable();
-        }
-
-        private void UpdateFramework(Framework framework) {
-            try {
-                this.Update();
-            } catch {
-                // ignored
-            }
+            Return:
+            return ret;
         }
 
         private static unsafe void SetExperienceBarVisible(bool visible) {
@@ -53,15 +45,15 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             addon->IsVisible = visible;
         }
 
-        private void Update() {
-            var player = Service.ClientState.LocalPlayer;
-            if (player == null) {
-                return;
-            }
+        public override void Disable() {
+            SetExperienceBarVisible(true);
+            addonExpOnUpdateHook?.Disable();
+            base.Disable();
+        }
 
-            var isLimited = player.ClassJob.GameData.IsLimitedJob;
-            var visible = player.Level < (isLimited ? this.MaxLevel - 10 : this.MaxLevel);
-            SetExperienceBarVisible(visible);
+        public override void Dispose() {
+            addonExpOnUpdateHook?.Dispose();
+            base.Dispose();
         }
     }
 }
