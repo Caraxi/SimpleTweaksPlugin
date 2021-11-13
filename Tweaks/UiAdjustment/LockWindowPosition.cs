@@ -74,7 +74,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (args.ParentAddonName == null) return;
             var index = args.Items.FindIndex(i => i is NativeContextMenuItem ni && ni.Name.TextValue == defaultText);
             if (index >= 0) {
-                args.Items.Insert(index + 1, new NormalContextMenuItem(Config.LockedWindows.Contains(args.ParentAddonName) ? unlockText : lockText, ToggleWindowPositionLock));
+                args.Items.Add(new NormalContextMenuItem(Config.LockedWindows.Contains(args.ParentAddonName) ? unlockText : lockText, ToggleWindowPositionLock));
             }
         }
 
