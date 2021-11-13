@@ -1,9 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Dalamud.Game.ClientState;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -24,12 +23,17 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             [TweakConfigOption("Show In Combat", 2)]
             public bool ShowInCombat;
 
+            public bool ShouldShowCombatBuffer() => ShowInCombat;
+            [TweakConfigOption("Out of Combat Time (Seconds)", 3, EditorSize = 100, IntMin = 0, IntMax = 300, ConditionalDisplay = true)]
+            public int CombatBuffer;
         }
 
         public Configs Config { get; private set; }
         public override bool UseAutoConfig => true;
+        private readonly Stopwatch outOfCombatTimer = new Stopwatch();
         
         public override void Enable() {
+            outOfCombatTimer.Restart();
             Config = LoadConfig<Configs>() ?? new Configs();
             Service.Framework.Update += FrameworkUpdate;
             base.Enable();
@@ -59,6 +63,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     if (reset || Config.ShowInDuty && Service.Condition[ConditionFlag.BoundByDuty]) {
                         if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
                     } else if (Config.ShowInCombat && Service.Condition[ConditionFlag.InCombat]) {
+                        outOfCombatTimer.Restart();
+                        if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
+                    } else if (Config.ShowInCombat && outOfCombatTimer.ElapsedMilliseconds < Config.CombatBuffer * 1000) {
                         if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
                     } else {
                         addon->UldManager.NodeListCount = 0;
