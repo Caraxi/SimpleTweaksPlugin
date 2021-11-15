@@ -14,7 +14,7 @@ using HotbarSlotType = FFXIVClientStructs.FFXIV.Client.UI.Misc.HotbarSlotType;
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
 
-        private delegate byte ActionBarBaseUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData);
+        private delegate byte ActionBarBaseUpdate(AddonActionBarBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData);
 
         private HookWrapper<ActionBarBaseUpdate> actionBarBaseUpdateHook;
 
@@ -28,10 +28,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             base.Enable();
         }
 
-        private byte ActionBarBaseUpdateDetour(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
+        private byte ActionBarBaseUpdateDetour(AddonActionBarBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
             var ret = actionBarBaseUpdateHook.Original(atkUnitBase, numberArrayData, stringArrayData);
             try {
-                UpdateAll();
+                Update(atkUnitBase);
             } catch {
                 //
             }
