@@ -467,6 +467,14 @@
     "message": "Show ID",
     "description": "[ShowItemID] Tweak Name"
   },
+  "TooltipTweaks@ShowItemID / Show Both HEX and Decimal": {
+    "message": "Show Both HEX and Decimal",
+    "description": "[ShowItemID] [Config] Show Both HEX and Decimal"
+  },
+  "TooltipTweaks@ShowItemID / Use Hexadecimal ID": {
+    "message": "Use Hexadecimal ID",
+    "description": "[ShowItemID] [Config] Use Hexadecimal ID"
+  },
   "UiAdjustments / Name": {
     "message": "UI Tweaks",
     "description": "[UiAdjustments] Tweak Name"
