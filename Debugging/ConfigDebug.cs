@@ -46,6 +46,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     ImGui.Text($"{i:X}");
                     ImGui.TableNextColumn();
                     DebugManager.ClickToCopyText($"{(ulong)option:X}");
+                    DebugManager.ClickToCopyText($"{(ulong)value:X}");
 
                     foreach (var f in oFields) {
                         ImGui.TableNextColumn();
