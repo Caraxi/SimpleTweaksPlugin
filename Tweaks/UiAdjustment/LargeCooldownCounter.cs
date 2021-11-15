@@ -3,6 +3,9 @@ using ImGuiNET;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
@@ -25,6 +28,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             actionBarBaseUpdateHook ??= Common.Hook<ActionBarBaseUpdate>("E8 ?? ?? ?? ?? 83 BB ?? ?? ?? ?? ?? 75 09", ActionBarBaseUpdateDetour);
             Config = LoadConfig<Configs>() ?? new Configs();
             actionBarBaseUpdateHook?.Enable();
+            actionManager = ActionManager.Instance();
             base.Enable();
         }
 
@@ -59,6 +63,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool SimpleMode;
             public Vector4 CooldownColour = new(1, 1, 1, 1);
             public Vector4 CooldownEdgeColour = new(0.2F, 0.2F, 0.2F, 1);
+            public Vector4 InvalidColour = new(0.85f, 0.25f, 0.25f, 1);
+            public Vector4 InvalidEdgeColour = new(0.34f, 0, 0, 1);
         }
 
         public Configs Config { get; private set; }
@@ -95,6 +101,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (!Config.SimpleMode) {
                 hasChanged |= ImGui.ColorEdit4(LocString("Text Colour") + "##largeCooldownCounter", ref Config.CooldownColour);
                 hasChanged |= ImGui.ColorEdit4(LocString("Edge Colour") + "##largeCooldownCounter", ref Config.CooldownEdgeColour);
+                hasChanged |= ImGui.ColorEdit4(LocString("Out Of Range Colour") + "##largeCooldownCounter", ref Config.InvalidColour);
+                hasChanged |= ImGui.ColorEdit4(LocString("Out Of Range Edge Colour") + "##largeCooldownCounter", ref Config.InvalidEdgeColour);
             }
 
         };
@@ -134,6 +142,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             Font.FontD => 34,
             _ => 18,
         };
+
+        private ActionManager* actionManager;
 
         private byte GetFontSize() {
             var s = (Config.FontSizeAdjust * 2) + DefaultFontSize;
@@ -176,16 +186,39 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 cooldownTextNode->AlignmentFontType = (byte)((0x10 * (byte) Config.Font) | (byte) AlignmentType.Center);
                 cooldownTextNode->FontSize = GetFontSize();
 
-                if (!Config.SimpleMode) {
-                    cooldownTextNode->TextColor.R = (byte)(Config.CooldownColour.X * 255f);
-                    cooldownTextNode->TextColor.G = (byte)(Config.CooldownColour.Y * 255f);
-                    cooldownTextNode->TextColor.B = (byte)(Config.CooldownColour.Z * 255f);
-                    cooldownTextNode->TextColor.A = (byte)(Config.CooldownColour.W * 255f);
+                if (!Config.SimpleMode && slotStruct->CommandType == HotbarSlotType.Action) {
 
-                    cooldownTextNode->EdgeColor.R = (byte)(Config.CooldownEdgeColour.X * 255f);
-                    cooldownTextNode->EdgeColor.G = (byte)(Config.CooldownEdgeColour.Y * 255f);
-                    cooldownTextNode->EdgeColor.B = (byte)(Config.CooldownEdgeColour.Z * 255f);
-                    cooldownTextNode->EdgeColor.A = (byte)(Config.CooldownEdgeColour.W * 255f);
+                    var self = GameObjectManager.GetGameObjectByIndex(0);
+                    if (self != null) {
+                        var actionId = actionManager->GetAdjustedActionId(slotStruct->CommandId);
+                        var currentTarget = TargetSystem.Instance()->GetCurrentTarget();
+                        if (currentTarget == null) currentTarget = self;
+
+                        var rangeError = ActionManager.GetActionInRangeOrLoS(actionId, self, currentTarget);
+
+                        if (rangeError == 566) { // Out of Range
+                            cooldownTextNode->TextColor.R = (byte)(Config.InvalidColour.X * 255f);
+                            cooldownTextNode->TextColor.G = (byte)(Config.InvalidColour.Y * 255f);
+                            cooldownTextNode->TextColor.B = (byte)(Config.InvalidColour.Z * 255f);
+                            cooldownTextNode->TextColor.A = (byte)(Config.InvalidColour.W * 255f);
+
+                            cooldownTextNode->EdgeColor.R = (byte)(Config.InvalidEdgeColour.X * 255f);
+                            cooldownTextNode->EdgeColor.G = (byte)(Config.InvalidEdgeColour.Y * 255f);
+                            cooldownTextNode->EdgeColor.B = (byte)(Config.InvalidEdgeColour.Z * 255f);
+                            cooldownTextNode->EdgeColor.A = (byte)(Config.InvalidEdgeColour.W * 255f);
+
+                        } else {
+                            cooldownTextNode->TextColor.R = (byte)(Config.CooldownColour.X * 255f);
+                            cooldownTextNode->TextColor.G = (byte)(Config.CooldownColour.Y * 255f);
+                            cooldownTextNode->TextColor.B = (byte)(Config.CooldownColour.Z * 255f);
+                            cooldownTextNode->TextColor.A = (byte)(Config.CooldownColour.W * 255f);
+
+                            cooldownTextNode->EdgeColor.R = (byte)(Config.CooldownEdgeColour.X * 255f);
+                            cooldownTextNode->EdgeColor.G = (byte)(Config.CooldownEdgeColour.Y * 255f);
+                            cooldownTextNode->EdgeColor.B = (byte)(Config.CooldownEdgeColour.Z * 255f);
+                            cooldownTextNode->EdgeColor.A = (byte)(Config.CooldownEdgeColour.W * 255f);
+                        }
+                    }
                 }
             }
             

@@ -771,6 +771,14 @@
     "message": "Large Cooldown Counter",
     "description": "[LargeCooldownCounter] Tweak Name"
   },
+  "UiAdjustments@LargeCooldownCounter / Out Of Range Colour": {
+    "message": "Out Of Range Colour",
+    "description": "[LargeCooldownCounter] Large Cooldown Counter - Out Of Range Colour"
+  },
+  "UiAdjustments@LargeCooldownCounter / Out Of Range Edge Colour": {
+    "message": "Out Of Range Edge Colour",
+    "description": "[LargeCooldownCounter] Large Cooldown Counter - Out Of Range Edge Colour"
+  },
   "UiAdjustments@LargeCooldownCounter / Simple Mode": {
     "message": "Simple Mode",
     "description": "[LargeCooldownCounter] Large Cooldown Counter - Simple Mode"
