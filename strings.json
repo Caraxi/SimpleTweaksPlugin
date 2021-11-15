@@ -967,6 +967,14 @@
     "message": "Remove Community Finder",
     "description": "[RemoveCommunityFinder] Tweak Name"
   },
+  "UiAdjustments@RemoveQuestMarkerLimit / Description": {
+    "message": "Allow the map and minimap to display markers for more than 5 active quests.",
+    "description": "[RemoveQuestMarkerLimit] Tweak Description"
+  },
+  "UiAdjustments@RemoveQuestMarkerLimit / Name": {
+    "message": "Remove Quest Marker Limit",
+    "description": "[RemoveQuestMarkerLimit] Tweak Name"
+  },
   "UiAdjustments@SellMaxTripleTriadCards / Description": {
     "message": "Set the default number of cards to sell at the Triple Triad Trader to the number of cards you have.",
     "description": "[SellMaxTripleTriadCards] Tweak Description"
