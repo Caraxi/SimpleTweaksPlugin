@@ -27,7 +27,7 @@ namespace SimpleTweaksPlugin.Debugging {
                 ImGui.TableNextColumn();
 
                 foreach (var log in Logs) {
-                    if (ImGui.SmallButton("Reset")) log.Value.Clear();
+                    if (ImGui.SmallButton($"Reset##{log.Key}")) log.Value.Clear();
                     ImGui.TableNextColumn();
                     ImGui.Text($"{log.Key}");
                     ImGui.TableNextColumn();
