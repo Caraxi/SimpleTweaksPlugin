@@ -20,20 +20,33 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private delegate byte ActionBarBaseUpdate(AddonActionBarBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData);
 
         private HookWrapper<ActionBarBaseUpdate> actionBarBaseUpdateHook;
+        private HookWrapper<ActionBarBaseUpdate> doubleCrossBarUpdateHook;
 
         public override string Name => "Large Cooldown Counter";
         public override string Description => "Increases the size of cooldown counters on hotbars.";
 
         public override void Enable() {
             actionBarBaseUpdateHook ??= Common.Hook<ActionBarBaseUpdate>("E8 ?? ?? ?? ?? 83 BB ?? ?? ?? ?? ?? 75 09", ActionBarBaseUpdateDetour);
+            doubleCrossBarUpdateHook ??= Common.Hook<ActionBarBaseUpdate>("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 48 8B 7A 30", DoubleCrossBarBaseUpdateDetour);
             Config = LoadConfig<Configs>() ?? new Configs();
             actionBarBaseUpdateHook?.Enable();
+            doubleCrossBarUpdateHook?.Enable();
             actionManager = ActionManager.Instance();
             base.Enable();
         }
 
         private byte ActionBarBaseUpdateDetour(AddonActionBarBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
             var ret = actionBarBaseUpdateHook.Original(atkUnitBase, numberArrayData, stringArrayData);
+            try {
+                Update(atkUnitBase);
+            } catch {
+                //
+            }
+            return ret;
+        }
+
+        private byte DoubleCrossBarBaseUpdateDetour(AddonActionBarBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
+            var ret = doubleCrossBarUpdateHook.Original(atkUnitBase, numberArrayData, stringArrayData);
             try {
                 Update(atkUnitBase);
             } catch {
@@ -228,6 +241,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Disable() {
             actionBarBaseUpdateHook?.Disable();
+            doubleCrossBarUpdateHook?.Disable();
             SaveConfig(Config);
             UpdateAll(true);
             base.Disable();
@@ -235,6 +249,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Dispose() {
             actionBarBaseUpdateHook?.Dispose();
+            doubleCrossBarUpdateHook?.Dispose();
             base.Dispose();
         }
     }
