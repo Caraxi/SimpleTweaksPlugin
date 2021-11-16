@@ -194,9 +194,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                         var currentTarget = TargetSystem.Instance()->GetCurrentTarget();
                         if (currentTarget == null) currentTarget = self;
 
+                        var range = ActionManager.GetActionRange(actionId);
                         var rangeError = ActionManager.GetActionInRangeOrLoS(actionId, self, currentTarget);
 
-                        if (rangeError == 566) { // Out of Range
+                        if (range > 0 && rangeError == 566) { // Out of Range
                             cooldownTextNode->TextColor.R = (byte)(Config.InvalidColour.X * 255f);
                             cooldownTextNode->TextColor.G = (byte)(Config.InvalidColour.Y * 255f);
                             cooldownTextNode->TextColor.B = (byte)(Config.InvalidColour.Z * 255f);
