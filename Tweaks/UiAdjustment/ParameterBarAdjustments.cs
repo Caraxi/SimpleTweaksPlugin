@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Game;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
@@ -141,7 +142,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             valueNode->SetPositionFloat(valueConfig.OffsetX, valueConfig.OffsetY);
 
             var cjId = Service.ClientState?.LocalPlayer?.ClassJob.Id;
-            var autoHide = autoHideMp && cjId != null && autoHideMpClassJobs.Contains(cjId.Value);
+            var autoHide = autoHideMp && Service.Condition[ConditionFlag.RolePlaying] == false && cjId != null && autoHideMpClassJobs.Contains(cjId.Value);
 
             valueNode->Color.A = autoHide || valueConfig.Hide ? Byte00 : ByteFF;
             titleNode->Color.A = autoHide || hideTitle ? Byte00 : ByteFF;
