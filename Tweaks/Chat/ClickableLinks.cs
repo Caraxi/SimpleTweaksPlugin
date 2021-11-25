@@ -18,7 +18,9 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
         }
 
         private void UrlLinkHandle(uint id, SeString message) {
-            Common.OpenBrowser(message.TextValue);
+            var url = message.TextValue
+                .Replace($"{(char) 0x00A0}", "");
+            Common.OpenBrowser(url);
         }
 
         public override void Disable() {
