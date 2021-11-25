@@ -143,6 +143,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     slotStruct = hotbarModule->HotBar[dcBar->BarTarget]->Slot[i + (dcBar->UseLeftSide != 0 ? 0 : 8)];
                 }
 
+                if (name == "_ActionCross") {
+                    var cBar = (AddonActionCross*)ab;
+                    if (cBar->ExpandedHoldControls > 0) {
+                        reset = true;
+                    }
+                }
+
                 if ((slot.PopUpHelpTextPtr != null || reset) && slot.Icon != null) {
                     UpdateIcon(slot.Icon, slotStruct, reset);
                 }
