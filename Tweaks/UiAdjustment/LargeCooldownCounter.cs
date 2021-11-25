@@ -199,7 +199,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 cooldownTextNode->AlignmentFontType = (byte)((0x10 * (byte) Config.Font) | (byte) AlignmentType.Center);
                 cooldownTextNode->FontSize = GetFontSize();
 
-                if (!Config.SimpleMode && slotStruct->CommandType == HotbarSlotType.Action) {
+                if (!Config.SimpleMode && slotStruct->CommandType is HotbarSlotType.Action or HotbarSlotType.GeneralAction) {
 
                     var self = GameObjectManager.GetGameObjectByIndex(0);
                     if (self != null) {
