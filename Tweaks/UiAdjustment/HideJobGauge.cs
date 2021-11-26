@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Objects.Enums;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using SimpleTweaksPlugin;
 using SimpleTweaksPlugin.TweakSystem;
 
 #if DEBUG
@@ -26,6 +28,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool ShouldShowCombatBuffer() => ShowInCombat;
             [TweakConfigOption("Out of Combat Time (Seconds)", 3, EditorSize = 100, IntMin = 0, IntMax = 300, ConditionalDisplay = true)]
             public int CombatBuffer;
+
+            [TweakConfigOption("Show While Weapon Is Drawn", 4)]
+            public bool ShowWhileWeaponDrawn;
         }
 
         public Configs Config { get; private set; }
@@ -66,6 +71,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                         outOfCombatTimer.Restart();
                         if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
                     } else if (Config.ShowInCombat && outOfCombatTimer.ElapsedMilliseconds < Config.CombatBuffer * 1000) {
+                        if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
+                    } else if (Config.ShowWhileWeaponDrawn && Service.ClientState.LocalPlayer != null && Service.ClientState.LocalPlayer.StatusFlags.HasFlag(StatusFlags.WeaponOut)) {
                         if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
                     } else {
                         addon->UldManager.NodeListCount = 0;
