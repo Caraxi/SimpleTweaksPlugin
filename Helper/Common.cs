@@ -24,6 +24,7 @@ namespace SimpleTweaksPlugin.Helper {
 
         // Common Delegates
         public delegate void* AddonOnUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** nums, StringArrayData** strings);
+        public delegate void NoReturnAddonOnUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData);
 
         private delegate IntPtr GameAlloc(ulong size, IntPtr unk, IntPtr allocator, IntPtr alignment);
 
@@ -195,6 +196,26 @@ namespace SimpleTweaksPlugin.Helper {
             HookList.Add(wh);
             return wh;
         }
+
+        public static HookWrapper<AddonOnUpdate> HookAfterAddonUpdate(IntPtr address, NoReturnAddonOnUpdate after) {
+            Hook<AddonOnUpdate> hook = null;
+            hook = new Hook<AddonOnUpdate>(address, (atkUnitBase, nums, strings) => {
+                var retVal = hook.Original(atkUnitBase, nums, strings);
+                try {
+                    after(atkUnitBase, nums, strings);
+                } catch (Exception ex) {
+                    SimpleLog.Error(ex);
+                    hook.Disable();
+                }
+                return retVal;
+            });
+            var wh = new HookWrapper<AddonOnUpdate>(hook);
+            return wh;
+        }
+
+        public static HookWrapper<AddonOnUpdate> HookAfterAddonUpdate(void* address, NoReturnAddonOnUpdate after) => HookAfterAddonUpdate(new IntPtr(address), after);
+        public static HookWrapper<AddonOnUpdate> HookAfterAddonUpdate(string signature, NoReturnAddonOnUpdate after, int addressOffset = 0) => HookAfterAddonUpdate(Scanner.ScanText(signature) + addressOffset, after);
+        public static HookWrapper<AddonOnUpdate> HookAfterAddonUpdate(AtkUnitBase* atkUnitBase, NoReturnAddonOnUpdate after) => HookAfterAddonUpdate(atkUnitBase->AtkEventListener.vfunc[46], after);
 
         public static List<IHookWrapper> HookList = new();
 

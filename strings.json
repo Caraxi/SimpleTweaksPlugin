@@ -759,6 +759,14 @@
     "message": "Cleaner World Visit Menu",
     "description": "[ImprovedWorldVisit] Tweak Name"
   },
+  "UiAdjustments@InventoryGil / Description": {
+    "message": "Show your current gil in the inventory windows, as it does with retainers.",
+    "description": "[InventoryGil] Tweak Description"
+  },
+  "UiAdjustments@InventoryGil / Name": {
+    "message": "Inventory Gil",
+    "description": "[InventoryGil] Tweak Name"
+  },
   "UiAdjustments@LargeCooldownCounter / Description": {
     "message": "Increases the size of cooldown counters on hotbars.",
     "description": "[LargeCooldownCounter] Tweak Description"
