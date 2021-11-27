@@ -19,7 +19,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private string prefix = "Checking member status...";
 
         private int lastValue;
-        
+
         private readonly Stopwatch sw = new();
 
         private void UpdateFramework(Framework framework) {
@@ -29,29 +29,29 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     var timerTextNode = (AtkTextNode*) confirmWindow->UldManager.NodeList[10];
                     if (timerTextNode == null) return;
                     var text = Plugin.Common.ReadSeString(timerTextNode->NodeText.StringPtr).TextValue;
-                    var ts = TimeSpan.Parse($"0:{text}");
+                    if (!TimeSpan.TryParse($"0:{text}", out var ts)) return;
                     if (!sw.IsRunning || (int)ts.TotalSeconds != lastValue) {
                         lastValue = (int)ts.TotalSeconds;
                         sw.Restart();
                     }
-                    
+
                     return;
                 }
 
                 if (!sw.IsRunning) return;
-                
+
                 var v = lastValue - (int)(sw.Elapsed.TotalSeconds + 1);
                 if (v < 0) {
                     sw.Stop();
                     return;
                 }
-                
+
                 var readyWindow = Common.GetUnitBase("ContentsFinderReady");
                 if (readyWindow == null || readyWindow->UldManager.NodeList == null) return;
 
                 var checkingTextNode = (AtkTextNode*) readyWindow->UldManager.NodeList[7];
                 if (checkingTextNode == null) return;
-                
+
                 Plugin.Common.WriteSeString(checkingTextNode->NodeText, $"{prefix} ({v})");
             } catch {
                 //
