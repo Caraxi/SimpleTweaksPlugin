@@ -1,20 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Dalamud.Game.Text;
 using Dalamud.Hooking;
-using FFXIVClientInterface.Client.UI.Misc;
-using FFXIVClientStructs;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using SimpleTweaksPlugin.TweakSystem;
-using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
@@ -145,17 +141,15 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 var itemIdWithHQ = item->ItemId;
                 if ((item->Flags & ItemFlags.HQ) > 0) itemIdWithHQ += 1000000;
-                var gearsetModule = SimpleTweaksPlugin.Client.UiModule.RaptureGearsetModule;
+                var gearsetModule = RaptureGearsetModule.Instance();
                 var itemInGearset = false;
                 for (var i = 0; i < 101; i++) {
-                    var gearset = &gearsetModule.Gearset[i];
+                    var gearset = gearsetModule->Gearset[i];
                     if (gearset->ID != i) break;
-                    if ((gearset->Flags & GearsetFlag.Exists) != GearsetFlag.Exists) continue;
-                    
-                    var items = (GearsetItem*) gearset->ItemsData;
+                    if (!gearset->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists)) continue;
+                    var items = (RaptureGearsetModule.GearsetItem*)gearset->ItemsData;
                     for (var j = 0; j < 14; j++) {
                         if (items[j].ItemID == itemIdWithHQ) {
-                            var name = Encoding.UTF8.GetString(gearset->Name, 0x2F);
                             itemInGearset = true;
                             break;
                         }
