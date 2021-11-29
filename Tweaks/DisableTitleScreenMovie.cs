@@ -1,6 +1,5 @@
 ﻿using Dalamud.Game;
-using Dalamud.Game.Internal;
-using FFXIVClientInterface.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks {
@@ -22,7 +21,7 @@ namespace SimpleTweaksPlugin.Tweaks {
             try {
                 if (Service.Condition == null) return;
                 if (Service.Condition.Any()) return;
-                SimpleTweaksPlugin.Client.UiModule.AgentModule.GetAgent<AgentLobby>().Data->IdleTime = 0;
+                AgentLobby.Instance()->IdleTime = 0;
             } catch {
                 // Ignored
             }
