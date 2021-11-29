@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using FFXIVClientInterface.Client.UI.Misc;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 
@@ -11,13 +11,13 @@ namespace SimpleTweaksPlugin.Debugging {
         
         public override void Draw() {
 
-            var raptureGearsetModule = SimpleTweaksPlugin.Client.UiModule.RaptureGearsetModule;
+            var raptureGearsetModule = RaptureGearsetModule.Instance();
             
             ImGui.Text("RaptureGearsetModule:");
             ImGui.SameLine();
             DebugManager.ClickToCopyText($"{(ulong)raptureGearsetModule:X}");
             ImGui.SameLine();
-            ImGui.Text($"{Encoding.ASCII.GetString(raptureGearsetModule.Data->ModuleName, 15)}");
+            ImGui.Text($"{Encoding.ASCII.GetString(raptureGearsetModule->ModuleName, 15)}");
             
             ImGui.Columns(5);
             ImGui.Text($"##");
@@ -34,9 +34,9 @@ namespace SimpleTweaksPlugin.Debugging {
             
             
             for (var i = 0; i < 101; i++) {
-                var gearset = &raptureGearsetModule.Gearset[i];
+                var gearset = raptureGearsetModule->Gearset[i];
                 if (gearset->ID != i) break;
-                if ((gearset->Flags & GearsetFlag.Exists) == 0) continue; 
+                if (!gearset->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists)) continue;
                 
                 ImGui.Text($"{gearset->ID:00}");
                 ImGui.NextColumn();

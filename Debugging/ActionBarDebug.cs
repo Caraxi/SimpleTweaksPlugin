@@ -1,11 +1,15 @@
 ﻿using System.Numerics;
 using System.Text;
 using FFXIVClientInterface.Client.UI.Misc;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using Lumina.Text;
 using SimpleTweaksPlugin.Helper;
 using Action = Lumina.Excel.GeneratedSheets.Action;
+using HotBar = FFXIVClientInterface.Client.UI.Misc.HotBar;
+using HotbarSlotType = FFXIVClientInterface.Client.UI.Misc.HotbarSlotType;
+using RaptureHotbarModule = FFXIVClientInterface.Client.UI.Misc.RaptureHotbarModule;
 
 namespace SimpleTweaksPlugin.Debugging {
     public unsafe class ActionBarDebug : DebugHelper {
@@ -193,9 +197,9 @@ namespace SimpleTweaksPlugin.Debugging {
                     }
 
                     case HotbarSlotType.GearSet: {
-                        var gearsetModule = SimpleTweaksPlugin.Client.UiModule.RaptureGearsetModule;
-                        var gearset = gearsetModule.Gearset[slot->CommandId];
-                        ImGui.Text($"{Encoding.UTF8.GetString(gearset.Name, 0x2F)}");
+                        var gearsetModule = RaptureGearsetModule.Instance();
+                        var gearset = gearsetModule->Gearset[(int)slot->CommandId];
+                        ImGui.Text($"{Encoding.UTF8.GetString(gearset->Name, 0x2F)}");
                         break;
                     }
 
