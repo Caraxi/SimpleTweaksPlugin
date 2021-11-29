@@ -4,10 +4,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game.Command;
-using Dalamud.Hooking;
-using FFXIVClientInterface.Client.UI.Misc;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 
 namespace SimpleTweaksPlugin.Tweaks {
     public unsafe class SetOptionCommand : Tweak {
@@ -15,37 +14,47 @@ namespace SimpleTweaksPlugin.Tweaks {
         public override string Name => "Set Option Command";
         public override string Description => "Adds commands to change various settings.";
 
-        private IntPtr setOptionAddress = IntPtr.Zero;
-
         [UnmanagedFunctionPointer(CallingConvention.ThisCall)] 
-        private delegate IntPtr SetOptionDelegate(ConfigModuleStruct* configModule, ulong kind, ulong value, ulong unknown);
-        
-        [UnmanagedFunctionPointer(CallingConvention.ThisCall)] 
-        private delegate void SetGamepadMode(ConfigModuleStruct* configModule, ulong value);
+        private delegate void SetGamepadMode(ConfigModule* configModule, ulong value);
 
-        private SetOptionDelegate setOption;
         private SetGamepadMode setGamepadMode;
 
-        private Hook<SetOptionDelegate> setOptionHook;
-        
-        private enum OptionType {
+        public enum OptionType {
             Bool,
             ToggleGamepadMode, // bool with extra shit
             NameDisplayModeBattle,
             NameDisplayMode,
         }
 
-        private readonly Dictionary<string, (OptionType type, ulong key, string[] alias)> optionKinds = new() {
-            { "itemtooltips", (OptionType.Bool, 0x132, new [] {"itt"} )},
-            { "actiontooltips", (OptionType.Bool, 0x138, new [] {"att"}) },
-            { "gamepadmode", (OptionType.ToggleGamepadMode, 0x8B, new [] { "gp" })},
-            { "legacymovement", (OptionType.Bool, 0x8C, new [] { "lm"})},
-            { "owndisplayname", (OptionType.NameDisplayModeBattle, 0x172, new [] { "odn" })},
-            { "partydisplayname", (OptionType.NameDisplayModeBattle, 0x17E, new [] { "pdn" })},
-            { "alliancedisplayname", (OptionType.NameDisplayModeBattle, 0x187, new [] {"adn"})},
-            { "otherpcdisplayname", (OptionType.NameDisplayModeBattle, 0x18E, new [] {"opcdn"})},
-            { "frienddisplayname", (OptionType.NameDisplayModeBattle, 0x1CB, new [] {"fdn"})},
+        public class OptionDefinition {
+            public string Name { get; }
+            public short ID { get; }
+            public OptionType OptionType { get; }
+            public string[] Alias { get; }
+
+            public OptionDefinition(string name, short id, OptionType type, params string[] alias) {
+                this.Name = name;
+                this.ID = id;
+                this.OptionType = type;
+                this.Alias = alias;
+            }
+
+        }
+
+        private readonly List<OptionDefinition> optionDefinitions = new() {
+            new OptionDefinition("GamepadMode", 88, OptionType.ToggleGamepadMode, "gp"),
+
+            new OptionDefinition("ItemTooltips", 705, OptionType.Bool, "itt"),
+            new OptionDefinition("ActionTooltips", 710, OptionType.Bool, "att"),
+            new OptionDefinition("LegacyMovement", 300, OptionType.Bool, "lm"),
+
+            new OptionDefinition("OwnDisplayName", 433, OptionType.NameDisplayModeBattle, "odn"),
+            new OptionDefinition("PartyDisplayName", 446, OptionType.NameDisplayModeBattle, "pdn"),
+            new OptionDefinition("AllianceDisplayName", 455, OptionType.NameDisplayModeBattle, "adn"),
+            new OptionDefinition("OtherPlayerDisplayName", 462, OptionType.NameDisplayModeBattle, "opcdn"),
+            new OptionDefinition("FriendDisplayName", 507, OptionType.NameDisplayModeBattle, "fdn"),
         };
+
 
         private readonly Dictionary<OptionType, string> optionTypeValueHints = new Dictionary<OptionType, string> {
             {OptionType.Bool, "on | off | toggle"},
@@ -57,20 +66,9 @@ namespace SimpleTweaksPlugin.Tweaks {
             if (Ready) return;
 
             try {
-                if (setOptionAddress == IntPtr.Zero) {
-                    setOptionAddress = Service.SigScanner.ScanText("89 54 24 10 53 55 57 41 54 41 55 41 56 48 83 EC 48 8B C2 45 8B E0 44 8B D2 45 32 F6 44 8B C2 45 32 ED");
-                    SimpleLog.Verbose($"SetOptionAddress: {setOptionAddress.ToInt64():X}");
-                    setOption = Marshal.GetDelegateForFunctionPointer<SetOptionDelegate>(setOptionAddress);
-                }
-
                 var toggleGamepadModeAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 40 0F B6 DF 49 8B CC");
                 SimpleLog.Verbose($"ToggleGamePadModeAddress: {toggleGamepadModeAddress.ToInt64():X}");
                 setGamepadMode = Marshal.GetDelegateForFunctionPointer<SetGamepadMode>(toggleGamepadModeAddress);
-                
-                if (setOptionAddress == IntPtr.Zero) {
-                    SimpleLog.Error($"Failed to setup {GetType().Name}: Failed to find required functions.");
-                    return;
-                }
 
                 Ready = true;
 
@@ -93,17 +91,17 @@ namespace SimpleTweaksPlugin.Tweaks {
                 ImGui.Text(LocString("alias"));
                 ImGui.Separator();
 
-                foreach (var o in optionKinds) {
-                    if (o.Value.type == OptionType.ToggleGamepadMode) continue;
+                foreach (var o in optionDefinitions) {
+                    if (o.OptionType == OptionType.ToggleGamepadMode) continue;
                     ImGui.NextColumn();
-                    ImGui.Text(o.Key);
+                    ImGui.Text(o.Name);
                     ImGui.NextColumn();
-                    ImGui.Text(optionTypeValueHints.ContainsKey(o.Value.type) ? optionTypeValueHints[o.Value.type] : "");
+                    ImGui.Text(optionTypeValueHints.ContainsKey(o.OptionType) ? optionTypeValueHints[o.OptionType] : "");
                     ImGui.NextColumn();
                     var sb = new StringBuilder();
-                    foreach (var a in o.Value.alias) {
+                    foreach (var a in o.Alias) {
                         sb.Append(a);
-                        sb.Append(" ");
+                        sb.Append(' ');
                     }
                     ImGui.Text(sb.ToString());
                 }
@@ -116,8 +114,6 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         public override void Enable() {
             if (!Ready) return;
-            setOptionHook ??= new Hook<SetOptionDelegate>(setOptionAddress, new SetOptionDelegate(SetOptionDetour));
-            setOptionHook?.Enable();
 
             Service.Commands.AddHandler("/setoption", new CommandInfo(OptionCommand) {HelpMessage = "Set the skill tooltips on or off.", ShowInHelp = true});
             Service.Commands.AddHandler("/setopt", new CommandInfo(OptionCommand) {HelpMessage = "Set the skill tooltips on or off.", ShowInHelp = false});
@@ -126,7 +122,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
 
         private void OptionCommand(string command, string arguments) {
-            var configModule = SimpleTweaksPlugin.Client.UiModule.ConfigModule;
+            var configModule = ConfigModule.Instance();
             if (configModule == null) return;
 
             var argList = arguments.ToLower().Split(' ');
@@ -135,9 +131,9 @@ namespace SimpleTweaksPlugin.Tweaks {
 
                 var sb = new StringBuilder();
 
-                foreach (var o in optionKinds.Keys) {
-                    if (optionKinds[o].type == OptionType.ToggleGamepadMode) continue;
-                    sb.Append(o + " ");
+                foreach (var o in optionDefinitions) {
+                    if (o.OptionType == OptionType.ToggleGamepadMode) continue;
+                    sb.Append($"{o.Name} ");
                 }
                 Service.Chat.Print($"Options:\n{sb}");
 
@@ -146,18 +142,16 @@ namespace SimpleTweaksPlugin.Tweaks {
             
             var optionKind = argList[0];
 
-            (OptionType type, ulong key, string[] alias) optionDefinition;
-            if (optionKinds.ContainsKey(optionKind)) {
-                optionDefinition = optionKinds[optionKind];
-            } else {
-                var fromAlias = optionKinds.Values.Where(ok => ok.alias.Contains(optionKind)).ToArray();
+            var optionDefinition =
+                optionDefinitions.FirstOrDefault(o =>
+                    string.Equals(o.Name, optionKind, StringComparison.InvariantCultureIgnoreCase)) ??
+                optionDefinitions.FirstOrDefault(o =>
+                    o.Alias.Any(a => string.Equals(a, optionKind, StringComparison.InvariantCultureIgnoreCase)));
 
-                if (fromAlias.Length == 0) {
-                    Service.Chat.PrintError("Unknown Option");
-                    Service.Chat.PrintError("/setoption list for a list of options");
-                    return;
-                } 
-                optionDefinition = fromAlias[0];
+            if (optionDefinition == null) {
+                Service.Chat.PrintError("Unknown Option");
+                Service.Chat.PrintError("/setoption list for a list of options");
+                return;
             }
 
             var optionValue = "";
@@ -166,7 +160,7 @@ namespace SimpleTweaksPlugin.Tweaks {
             }
 
             var setValue = 0UL;
-            switch (optionDefinition.type) {
+            switch (optionDefinition.OptionType) {
                 
                 case OptionType.ToggleGamepadMode:
                 case OptionType.Bool: {
@@ -175,24 +169,24 @@ namespace SimpleTweaksPlugin.Tweaks {
                         case "1":
                         case "true":
                         case "on":
-                            setOption(configModule, optionDefinition.key, 1, 2);
+                            configModule->SetOptionById(optionDefinition.ID, 1);
                             setValue = 1;
                             break;
                         case "0":
                         case "false":
                         case "off":
-                            setOption(configModule, optionDefinition.key, 0, 2);
+                            configModule->SetOptionById(optionDefinition.ID, 0);
                             setValue = 0;
                             break;
                         case "":
                         case "t":
                         case "toggle":
-                            var cVal = configModule.GetOptionBoolean(optionDefinition.key);
-                            setOption(configModule, optionDefinition.key, cVal ? 0UL : 1UL, 2);
-                            setValue = cVal ? 1 : 0UL;
+                            var cVal = configModule->GetValueById(optionDefinition.ID);
+                            configModule->SetOptionById(optionDefinition.ID, cVal->Int > 0 ? 0 : 1);
+                            setValue = cVal->Int > 0 ? 1 : 0UL;
                             break;
                         default:
-                            Service.Chat.PrintError($"/setoption {optionKind} ({optionTypeValueHints[optionDefinition.type]})");
+                            Service.Chat.PrintError($"/setoption {optionKind} ({optionTypeValueHints[optionDefinition.OptionType]})");
                             break;
                         }
 
@@ -202,20 +196,23 @@ namespace SimpleTweaksPlugin.Tweaks {
                     switch (optionValue.ToLowerInvariant()) {
                         case "a":
                         case "always":
-                            setOption(configModule, optionDefinition.key, 0, 2);
+                            configModule->SetOptionById(optionDefinition.ID, 0);
                             break;
                         case "b":
                         case "battle":
-                            setOption(configModule, optionDefinition.key, 1, 2);
+                            configModule->SetOptionById(optionDefinition.ID, 1);
                             break;
                         case "t":
                         case "target":
                         case "targeted":
-                            setOption(configModule, optionDefinition.key, 2, 2);
+                            configModule->SetOptionById(optionDefinition.ID, 2);
                             break;
                         case "n":
                         case "never": 
-                            setOption(configModule, optionDefinition.key, 3, 2);
+                            configModule->SetOptionById(optionDefinition.ID, 3);
+                            break;
+                        default:
+                            Service.Chat.PrintError($"/setoption {optionKind} ({optionTypeValueHints[optionDefinition.OptionType]})");
                             break;
                     }
                     break;
@@ -225,7 +222,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                     return;
             }
 
-            switch (optionDefinition.type) {
+            switch (optionDefinition.OptionType) {
                 case OptionType.ToggleGamepadMode: {
                     setGamepadMode(configModule, setValue);
                     break;
@@ -234,20 +231,13 @@ namespace SimpleTweaksPlugin.Tweaks {
             
         }
 
-        private IntPtr SetOptionDetour(ConfigModuleStruct* configModule, ulong kind, ulong value, ulong unknown) {
-            SimpleLog.Verbose($"Set Option: {(ulong)configModule:X} {kind:X}, {value:X}, {unknown:X}");
-            return setOptionHook.Original(configModule, kind, value, unknown);
-        }
-
         public override void Disable() {
-            setOptionHook?.Disable();
             Service.Commands.RemoveHandler("/setoption");
             Service.Commands.RemoveHandler("/setopt");
             Enabled = false;
         }
 
         public override void Dispose() {
-            setOptionHook?.Dispose();
             Enabled = false;
             Ready = false;
         }
