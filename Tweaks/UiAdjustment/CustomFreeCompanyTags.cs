@@ -6,7 +6,6 @@ using System.Text;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using FFXIVClientInterface.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -15,6 +14,7 @@ using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 using static FFXIVClientStructs.FFXIV.Client.UI.RaptureAtkModule;
+using FFXIVClientStructs.FFXIV.Client.UI;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
@@ -31,7 +31,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private Configs config;
 
-        private delegate void* UpdateNameplateDelegate(RaptureAtkModuleStruct* raptureAtkModule, NamePlateInfo* namePlateInfo, NumberArrayData* numArray, StringArrayData* stringArray, GameObject* gameObject, int numArrayIndex, int stringArrayIndex);
+        private delegate void* UpdateNameplateDelegate(RaptureAtkModule* raptureAtkModule, NamePlateInfo* namePlateInfo, NumberArrayData* numArray, StringArrayData* stringArray, GameObject* gameObject, int numArrayIndex, int stringArrayIndex);
         private HookWrapper<UpdateNameplateDelegate> updateNameplateHook;
         
         public override string Name => "Custom Free Company Tags";
@@ -56,7 +56,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             base.Dispose();
         }
 
-        private void* UpdateNameplatesDetour(RaptureAtkModuleStruct* raptureAtkModule, NamePlateInfo* namePlateInfo, NumberArrayData* numArray, StringArrayData* stringArray, GameObject* gameObject, int numArrayIndex, int stringArrayIndex) {
+        private void* UpdateNameplatesDetour(RaptureAtkModule* raptureAtkModule, NamePlateInfo* namePlateInfo, NumberArrayData* numArray, StringArrayData* stringArray, GameObject* gameObject, int numArrayIndex, int stringArrayIndex) {
             if (gameObject->ObjectKind != 1) goto ReturnOriginal;
             var battleChara = (BattleChara*) gameObject;
             try {
