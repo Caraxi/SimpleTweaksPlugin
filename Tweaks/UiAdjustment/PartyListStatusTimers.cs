@@ -96,7 +96,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             updatePartyListStatusEffectsHook ??= Common.Hook<UpdatePartyListStatusEffects>("E8 ?? ?? ?? ?? 0F BF 8F ?? ?? ?? ?? 4D 8B 07", UpdatePartyListStatusEffectsDetour);
             updatePartyListStatusEffectsHook?.Enable();
 
-            updateSlotHook ??= Common.Hook<UpdateSlotStatusEffects>("E8 ?? ?? ?? ?? 4D 8B CE 44 89 7C 24", UpdateSlotDetour);
+            updateSlotHook ??= Common.Hook<UpdateSlotStatusEffects>("E8 ?? ?? ?? ?? 45 8B 46 74", UpdateSlotDetour);
             updateSlotHook?.Enable();
             Service.Framework.Update += FrameworkUpdate;
             base.Enable();

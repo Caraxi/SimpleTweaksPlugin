@@ -190,7 +190,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override unsafe void Enable() {
             TweakConfig = LoadConfig<Config>() ?? PluginConfig.UiAdjustments.CustomTimeFormats ?? new Config(); 
             if (setTextAddress == IntPtr.Zero) {
-                setTextAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 49 8B FC") + 9;
+                setTextAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 41 BC ?? ?? ?? ?? 48 8D BD") + 9;
                 SimpleLog.Verbose($"SetTextAddress: {setTextAddress.ToInt64():X}");
             }
 
