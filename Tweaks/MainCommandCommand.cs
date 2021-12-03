@@ -19,13 +19,13 @@ namespace SimpleTweaksPlugin.Tweaks {
         private void HandleCommand(string command, string arguments) {
 
             if (uint.TryParse(arguments, out var id)) {
-                Framework.Instance()->UIModule->ExecuteMainCommand(id);
+                Framework.Instance()->GetUiModule()->ExecuteMainCommand(id);
                 return;
             }
 
             foreach (var mainCommand in Service.Data.Excel.GetSheet<MainCommand>()) {
                 if (arguments == mainCommand.Name.ToString()) {
-                    Framework.Instance()->UIModule->ExecuteMainCommand(mainCommand.RowId);
+                    Framework.Instance()->GetUiModule()->ExecuteMainCommand(mainCommand.RowId);
                     return;
                 }
             }

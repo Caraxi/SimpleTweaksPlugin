@@ -176,7 +176,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                         var payloads = new List<Payload>();
                         var hasChange = false;
 
-                        foreach (var bonus in itemFood.UnkStruct1) {
+                        foreach (var bonus in itemFood.UnkData1) {
                             if (bonus.BaseParam == 0) continue;
                             var param = bpSheet.GetRow(bonus.BaseParam);
                             if (param == null) continue;
