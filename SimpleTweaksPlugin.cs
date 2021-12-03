@@ -102,6 +102,17 @@ namespace SimpleTweaksPlugin {
             
             this.PluginConfig = (SimpleTweaksPluginConfig)pluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
             this.PluginConfig.Init(this, pluginInterface);
+
+            if (this.PluginConfig.FirstRunEW) {
+                // Disable all tweaks
+                this.PluginConfig.FirstRunEW = false;
+                if (this.PluginConfig.EnabledTweaks.Count > 0) {
+                    Service.PluginInterface.UiBuilder.AddNotification("All tweaks have been disabled due to the beginning of endwalker.", "Simple Tweaks", NotificationType.Warning, 10000);
+                }
+                this.PluginConfig.EnabledTweaks.Clear();
+                this.PluginConfig.Save();
+            }
+
             
             IconManager = new IconManager(pluginInterface);
             this.XivCommon = new XivCommonBase(Hooks.ContextMenu);
