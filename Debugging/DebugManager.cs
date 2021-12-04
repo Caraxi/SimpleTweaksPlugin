@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using FFXIVClientStructs.FFXIV.Client.System.String;
+using Lumina.Excel;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
@@ -338,6 +339,18 @@ namespace SimpleTweaksPlugin.Debugging {
                         
                     } else if (!type.IsPrimitive) {
                         switch (value) {
+                            case ILazyRow ilr:
+                                var p = ilr.GetType().GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
+                                if (p != null) {
+                                    var getter = p.GetGetMethod();
+                                    if (getter != null) {
+                                        var rowValue = getter.Invoke(ilr, new object?[] { });
+                                        PrintOutObject(rowValue, addr, new List<string>(path));
+                                        break;
+                                    }
+                                }
+                                PrintOutObject(value, addr, new List<string>(path));
+                                break;
                             case Lumina.Text.SeString seString:
                                 ImGui.Text($"{seString.RawString}");
                                 break;
@@ -446,6 +459,7 @@ namespace SimpleTweaksPlugin.Debugging {
                         }
 
                         ImGui.SameLine();
+
                         ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.4f, 1), $"{f.Name}: ");
                         ImGui.SameLine();
                         
@@ -453,7 +467,14 @@ namespace SimpleTweaksPlugin.Debugging {
                     }
 
                     foreach (var p in obj.GetType().GetProperties()) {
-                        ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{p.PropertyType.Name}");
+                        if (p.PropertyType.IsGenericType) {
+                            var gTypeName = string.Join(',', p.PropertyType.GetGenericArguments().Select(gt => gt.Name));
+                            var baseName = p.PropertyType.Name.Split('`')[0];
+                            ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{baseName}<{gTypeName}>");
+                        } else {
+                            ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{p.PropertyType.Name}");
+                        }
+
                         ImGui.SameLine();
                         ImGui.TextColored(new Vector4(0.2f, 0.6f, 0.4f, 1), $"{p.Name}: ");
                         ImGui.SameLine();
