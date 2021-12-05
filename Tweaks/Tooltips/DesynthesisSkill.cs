@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel;
@@ -42,10 +43,8 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
                 var item = itemSheet.GetRow((uint)id);
                 if (item != null && item.Desynth > 0) {
-                    var classJobOffset = 2 * (int)(item.ClassJobRepair.Row - 8);
-                    var desynthLevel = *(ushort*)(Common.PlayerStaticAddress + (0x6A6 + classJobOffset)) / 100f;
+                    var desynthLevel = UIState.Instance()->PlayerState.GetDesynthesisLevel(item.ClassJobRepair.Row);
                     var desynthDelta = item.LevelItem.Row - desynthLevel;
-
                     var useDescription = desynthesisInDescription.Contains(item.ItemSearchCategory.Row);
 
                     var seStr = GetTooltipString(stringArrayData, useDescription ? ItemDescription : ExtractableProjectableDesynthesizable);

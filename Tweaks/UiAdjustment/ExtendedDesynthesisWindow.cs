@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Dalamud.Game.Text;
 using Dalamud.Hooking;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -117,8 +118,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 var itemData = Service.Data.Excel.GetSheet<Item>().GetRow(item->ItemId);
 
-                var classJobOffset = 2 * (int)(itemData.ClassJobRepair.Row - 8);
-                var desynthLevel = *(ushort*)(Common.PlayerStaticAddress + (0x6A6 + classJobOffset)) / 100f;
+                var desynthLevel = UIState.Instance()->PlayerState.GetDesynthesisLevel(itemData.ClassJobRepair.Row);
 
                 ByteColor c;
 
@@ -204,19 +204,19 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 UiHelper.SetSize(listNodeList[0], NewWidth - 32, null);
                 UiHelper.SetPosition(listNodeList[1], NewWidth - 40, null);
 
-                
+
                 UiHelper.ExpandNodeList(atkUnitBase, 2);
                 var newHeaderItem = (AtkTextNode*)UiHelper.CloneNode(nodeList[6]);
                 newHeaderItem->NodeText.StringPtr = (byte*)UiHelper.Alloc((ulong)newHeaderItem->NodeText.BufSize);
                 newHeaderItem->SetText("Skill");
-                
+
                 newHeaderItem->AtkResNode.X = NewWidth - (AddedWidth + 60);
                 newHeaderItem->AtkResNode.Width = AddedWidth;
                 newHeaderItem->AtkResNode.ParentNode = nodeList[5];
                 newHeaderItem->AtkResNode.NextSiblingNode = nodeList[8];
                 nodeList[8]->PrevSiblingNode = (AtkResNode*)newHeaderItem;
                 atkUnitBase->UldManager.NodeList[atkUnitBase->UldManager.NodeListCount++] = (AtkResNode*)newHeaderItem;
-                
+
                 var gsHeaderItem = (AtkTextNode*)UiHelper.CloneNode(nodeList[6]);
                 gsHeaderItem->NodeText.StringPtr = (byte*)UiHelper.Alloc((ulong)gsHeaderItem->NodeText.BufSize);
                 gsHeaderItem->SetText("Gear\nSet");

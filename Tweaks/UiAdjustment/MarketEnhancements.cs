@@ -84,16 +84,20 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var component = (AtkComponentList*) listNode->Component;
 
                 var agent = SimpleTweaksPlugin.Client.UiModule.AgentModule.GetAgent<AgentMarket>();
-                
+
+                SimpleLog.Log("");
                 if (npcPriceId != agent.Data->MarketResultItemId) {
                     var item = Service.Data.Excel.GetSheet<Item>().GetRow(agent.Data->MarketResultItemId);
                     npcPriceId = agent.Data->MarketResultItemId;
                     npcBuyPrice = 0;
                     npcSellPrice = item.PriceLow;
 
+                    SimpleLog.Log($"Value to Sell: {npcSellPrice}");
+
                     var gilShopItem = Service.Data.Excel.GetSheet<GilShopItem>().Where(a => a.Item.Row == agent.Data->MarketResultItemId).ToList();
                     if (gilShopItem.Count > 0) {
                         npcBuyPrice = item.PriceMid;
+                        SimpleLog.Log($"Cost to Buy: {npcBuyPrice}");
                     }
                 }
                 
