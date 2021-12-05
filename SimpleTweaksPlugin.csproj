@@ -36,7 +36,6 @@
       
     </ItemGroup>
     <ItemGroup Label="Broken Tweaks">
-        <Compile Remove="Tweaks\MainCommandCommand.cs" />
         <Compile Remove="Tweaks\SetOptionCommand.cs" />
         <Compile Remove="Tweaks\Tooltips\MateriaStats.cs" />
         <Compile Remove="Tweaks\UiAdjustment\CustomFreeCompanyTags.cs" />
