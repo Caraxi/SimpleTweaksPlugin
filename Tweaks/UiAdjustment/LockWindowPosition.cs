@@ -11,7 +11,6 @@ using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
-using XivCommon.Functions.ContextMenu;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class LockWindowPosition : UiAdjustments.SubTweak {
@@ -38,7 +37,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             moveAddonHook ??= Common.Hook<MoveAddon>("40 53 48 83 EC 20 80 A2 ?? ?? ?? ?? ??", MoveAddonDetour);
             moveAddonHook?.Enable();
 
-            Plugin.XivCommon.Functions.ContextMenu.OpenContextMenu += ContextMenuOnOpenContextMenu;
+            // Plugin.XivCommon.Functions.ContextMenu.OpenContextMenu += ContextMenuOnOpenContextMenu;
             defaultText = Service.Data.Excel.GetSheet<Addon>()?.GetRow(8660)?.Text?.RawString ?? "Return to Default Position";
 
             LanguageChanged();
@@ -70,7 +69,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private SeString unlockText = SeString.Empty;
         private string defaultText = string.Empty;
 
-        private void ContextMenuOnOpenContextMenu(ContextMenuOpenArgs args) {
+
+        /*private void ContextMenuOnOpenContextMenu(ContextMenuOpenArgs args) {
             if (args.ParentAddonName == null) return;
             var index = args.Items.FindIndex(i => i is NativeContextMenuItem ni && ni.Name.TextValue == defaultText);
             if (index >= 0) {
@@ -87,12 +87,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 Config.LockedWindows.Remove(args.ParentAddonName);
             else
                 Config.LockedWindows.Add(args.ParentAddonName);
-        }
+        }*/
 
         public override void Disable() {
             moveAddonHook?.Disable();
             SaveConfig(Config);
-            Plugin.XivCommon.Functions.ContextMenu.OpenContextMenu -= ContextMenuOnOpenContextMenu;
+            // Plugin.XivCommon.Functions.ContextMenu.OpenContextMenu -= ContextMenuOnOpenContextMenu;
             base.Disable();
         }
 
