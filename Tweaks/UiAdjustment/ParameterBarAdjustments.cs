@@ -126,7 +126,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private const float ColorMultiplier = 120f;
 
         private readonly uint[] autoHideMpClassJobs = {
-            1, 2, 3, 4, 5, 20, 21, 22, 23, 29, 30, 31, 34, 37, 38
+            1, 2, 3, 4, 5, 20, 21, 22, 23, 29, 30, 31, 34, 37, 38, 39
         };
 
         private void UpdateParameter(AtkComponentNode* node, HideAndOffsetConfig barConfig, HideAndOffsetConfig valueConfig, Vector4 barColor, bool hideTitle, bool autoHideMp = false) {
