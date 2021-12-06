@@ -118,19 +118,25 @@ namespace SimpleTweaksPlugin.Debugging {
 
         public static void DrawDebugWindow(ref bool open) {
             if (_plugin == null) return;
-
             if (!_setupDebugHelpers) {
                 _setupDebugHelpers = true;
-                foreach (var tp in SimpleTweaksPlugin.Plugin.TweakProviders) {
-                    if (tp.IsDisposed) continue;
-
-                    foreach (var t in tp.Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(DebugHelper)) && !t.IsAbstract)) {
-                        var debugger = (DebugHelper)Activator.CreateInstance(t);
-                        debugger.TweakProvider = tp;
-                        debugger.Plugin = _plugin;
-                        RegisterDebugPage(debugger.FullName, debugger.Draw);
-                        DebugHelpers.Add(debugger);
+                try {
+                    foreach (var tp in SimpleTweaksPlugin.Plugin.TweakProviders) {
+                        if (tp.IsDisposed) continue;
+                        foreach (var t in tp.Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(DebugHelper)) && !t.IsAbstract)) {
+                            var debugger = (DebugHelper)Activator.CreateInstance(t);
+                            debugger.TweakProvider = tp;
+                            debugger.Plugin = _plugin;
+                            RegisterDebugPage(debugger.FullName, debugger.Draw);
+                            DebugHelpers.Add(debugger);
+                        }
                     }
+                } catch (Exception ex) {
+                    SimpleLog.Error(ex);
+                    _setupDebugHelpers = false;
+                    Enabled = false;
+                    DebugHelpers.Clear();
+                    return;
                 }
             }
 
