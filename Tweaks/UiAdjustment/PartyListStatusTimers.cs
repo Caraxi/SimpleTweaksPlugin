@@ -229,10 +229,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                         timerNode->EdgeColor.R = (byte) (statusCache.IsFromLocalPlayer ? 0x0A : 0x33);
                         timerNode->EdgeColor.G = (byte) (statusCache.IsFromLocalPlayer ? 0x5F : 0x33);
                         timerNode->EdgeColor.B = (byte) (statusCache.IsFromLocalPlayer ? 0x24 : 0x33);
-                        if (statusCache.Countdown > 60) {
-                            timerNode->SetText($"{(int)statusCache.Countdown/60}m");
-                        } else {
-                            timerNode->SetText($"{(int)statusCache.Countdown}");
+                        switch (statusCache.Countdown) {
+                            case > 3600:
+                                timerNode->SetText($"{(int)statusCache.Countdown/3600}h");
+                                break;
+                            case > 60:
+                                timerNode->SetText($"{(int)statusCache.Countdown/60}m");
+                                break;
+                            default:
+                                timerNode->SetText($"{(int)statusCache.Countdown}");
+                                break;
                         }
                     }
                 }
