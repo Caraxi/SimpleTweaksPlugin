@@ -4,40 +4,23 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Hooking;
-using FFXIVClientStructs;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
-using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using SimpleTweaksPlugin.TweakSystem;
-
-namespace SimpleTweaksPlugin {
-    public partial class UiAdjustmentsConfig {
-        public bool ShouldSerializeExamineItemLevel() => ExamineItemLevel != null;
-        public ExamineItemLevel.Config ExamineItemLevel = null;
-    }
-}
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
-    public class ExamineItemLevel : UiAdjustments.SubTweak {
+    public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
 
         public class Config : TweakConfig {
             public bool ShowItemLevelIcon = true;
         }
         
         public Config TweakConfig { get; private set; }
-        
-        private delegate IntPtr ExamineUpdated(IntPtr a1, int a2, byte a3);
-        private Hook<ExamineUpdated> examinedUpdatedHook;
-        private IntPtr examineUpdatedAddress;
-
 
         private readonly uint[] canHaveOffhand = { 2, 6, 8, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32 };
         private readonly uint[] ignoreCategory = { 105 };
@@ -45,43 +28,37 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Name => "Item Level in Examine";
         public override string Description => "Calculates the item level of other players when examining them.\nRed value means the player is wearing an item that scales to their level and it is showing the max level.";
 
-        private IntPtr examineIsValidPtr = IntPtr.Zero;
-
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             hasChanged |= ImGui.Checkbox(LocString("ItemLevelIcon", "Show Item Level Icon"), ref TweakConfig.ShowItemLevelIcon);
         };
 
-        public override void Setup() {
-            examineIsValidPtr = Service.SigScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 C7 43 ?? ?? ?? ?? ??");
-
-            examineUpdatedAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 41 89 04 9F");
-
-            SimpleLog.Debug($"ExamineIsValidPtr: {examineIsValidPtr.ToInt64():X}");
-            Ready = true;
-        }
+        private delegate byte CharacterInspectOnRefresh(AtkUnitBase* atkUnitBase, int a2, AtkValue* a3);
+        private HookWrapper<CharacterInspectOnRefresh> onExamineRefresh;
 
         public override void Enable() {
             if (!Ready) return;
-            TweakConfig = LoadConfig<Config>() ?? PluginConfig.UiAdjustments.ExamineItemLevel ?? new Config();
-            examinedUpdatedHook ??= new Hook<ExamineUpdated>(examineUpdatedAddress, new ExamineUpdated(ExamineUpdatedDetour));
-            examinedUpdatedHook?.Enable();
+            TweakConfig = LoadConfig<Config>() ?? new Config();
 
+            onExamineRefresh ??= Common.Hook<CharacterInspectOnRefresh>("48 89 5C 24 ?? 57 48 83 EC 20 49 8B D8 48 8B F9 4D 85 C0 0F 84 ?? ?? ?? ?? 85 D2", ExamineRefresh);
+            onExamineRefresh?.Enable();
             Enabled = true;
         }
 
-        private IntPtr ExamineUpdatedDetour(IntPtr a1, int a2, byte a3) {
-            var r = examinedUpdatedHook.Original(a1, a2, a3);
-            ShowItemLevel();
-            return r;
+        private byte ExamineRefresh(AtkUnitBase* atkUnitBase, int a2, AtkValue* loadingStage) {
+            var retVal = onExamineRefresh.Original(atkUnitBase, a2, loadingStage);
+            if (loadingStage != null && a2 > 0) {
+                if (loadingStage->UInt == 4) {
+                    ShowItemLevel();
+                }
+            }
+            return retVal;
         }
 
         private readonly IntPtr allocText = Marshal.AllocHGlobal(512);
 
-        private unsafe void ShowItemLevel(bool reset = false) {
+        private void ShowItemLevel(bool reset = false) {
             SimpleLog.Log("Add ItemLevel to CharacterInspect");
             try {
-                if (examineIsValidPtr == IntPtr.Zero) return;
-                if (*(byte*) (examineIsValidPtr + 0x2A8) == 0) return;
                 var container = Common.GetContainer(InventoryType.Examine);
                 if (container == null) return;
                 var examineWindow = (AddonCharacterInspect*) Common.GetUnitBase("CharacterInspect");
@@ -105,7 +82,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     var slot = Common.GetContainerItem(container, i);
                     if (slot == null) continue;
                     var id = slot->ItemId;
-                    var item = Service.Data.Excel.GetSheet<Sheets.ExtendedItem>().GetRow(id);
+                    var item = Service.Data.Excel.GetSheet<Sheets.ExtendedItem>()?.GetRow(id);
+                    if (item == null) continue;
                     if (ignoreCategory.Contains(item.ItemUICategory.Row)) {
                         if (i == 0) c -= 1;
                         c -= 1;
@@ -134,7 +112,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 textNode->FontSize = 16;
                 textNode->CharSpacing = 0;
                 textNode->LineSpacing = 24;
-                textNode->TextColor = new ByteColor() {R = (byte) (inaccurate ? 0xFF : 0x45), G = (byte) (inaccurate ? (byte) 0x83 : (byte) 0xB2), B = (byte) (inaccurate ? 0x75 : 0xAE), A = 0xFF};
+                textNode->TextColor = new ByteColor() {R = (byte) (inaccurate ? 0xFF : 0x45), G = (byte) (inaccurate ? 0x83 : 0xB2), B = (byte) (inaccurate ? 0x75 : 0xAE), A = 0xFF};
 
                 textNode->AtkResNode.Height = 24;
                 textNode->AtkResNode.Width = 80;
@@ -185,8 +163,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Disable() {
             SaveConfig(TweakConfig);
-            PluginConfig.UiAdjustments.ExamineItemLevel = null;
-            examinedUpdatedHook?.Disable();
+            onExamineRefresh?.Disable();
             ShowItemLevel(true);
             Enabled = false;
         }
@@ -195,7 +172,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (Enabled) Disable();
             Ready = false;
             Enabled = false;
-            examinedUpdatedHook?.Dispose();
+            onExamineRefresh?.Dispose();
             Marshal.FreeHGlobal(allocText);
         }
     }

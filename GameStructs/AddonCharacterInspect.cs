@@ -8,6 +8,6 @@ namespace SimpleTweaksPlugin.GameStructs {
     [Addon("CharacterInspect")]
     public unsafe struct AddonCharacterInspect {
         [FieldOffset(0x000)] public AtkUnitBase AtkUnitBase;
-        [FieldOffset(0x448)] public AtkComponentBase* PreviewComponent;
+        [FieldOffset(0x430)] public AtkComponentBase* PreviewComponent;
     }
 }
