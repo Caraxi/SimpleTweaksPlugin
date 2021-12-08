@@ -84,20 +84,21 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var component = (AtkComponentList*) listNode->Component;
 
                 var agent = SimpleTweaksPlugin.Client.UiModule.AgentModule.GetAgent<AgentMarket>();
+                if (agent == null || agent.Data == null) return;
 
-                SimpleLog.Log("");
                 if (npcPriceId != agent.Data->MarketResultItemId) {
-                    var item = Service.Data.Excel.GetSheet<Item>().GetRow(agent.Data->MarketResultItemId);
+                    var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(agent.Data->MarketResultItemId);
+                    if (item == null) return;
                     npcPriceId = agent.Data->MarketResultItemId;
                     npcBuyPrice = 0;
                     npcSellPrice = item.PriceLow;
 
-                    SimpleLog.Log($"Value to Sell: {npcSellPrice}");
+                    SimpleLog.Debug($"Value to Sell: {npcSellPrice}");
 
-                    var gilShopItem = Service.Data.Excel.GetSheet<GilShopItem>().Where(a => a.Item.Row == agent.Data->MarketResultItemId).ToList();
-                    if (gilShopItem.Count > 0) {
+                    var gilShopItem = Service.Data.Excel.GetSheet<GilShopItem>()?.Where(a => a.Item.Row == agent.Data->MarketResultItemId).ToList();
+                    if (gilShopItem is { Count: > 0 }) {
                         npcBuyPrice = item.PriceMid;
-                        SimpleLog.Log($"Cost to Buy: {npcBuyPrice}");
+                        SimpleLog.Debug($"Cost to Buy: {npcBuyPrice}");
                     }
                 }
                 
