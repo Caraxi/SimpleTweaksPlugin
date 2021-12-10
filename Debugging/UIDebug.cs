@@ -596,6 +596,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     case NodeType.NineGrid:
                     case NodeType.Image:
                         var iNode = (AtkImageNode*)node;
+                        ImGui.Text($"wrap: {iNode->WrapMode}, flags: {iNode->Flags}");
                         if (iNode->PartsList != null) {
                             if (iNode->PartId > iNode->PartsList->PartCount) {
                                 ImGui.Text($"part id({iNode->PartId}) > part count({iNode->PartsList->PartCount})?");
