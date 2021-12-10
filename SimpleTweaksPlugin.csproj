@@ -37,7 +37,6 @@
     <ItemGroup Label="Broken Tweaks">
         <Compile Remove="Tweaks\SetOptionCommand.cs" />
         <Compile Remove="Tweaks\Tooltips\MateriaStats.cs" />
-        <Compile Remove="Tweaks\UiAdjustment\CustomFreeCompanyTags.cs" />
         <Compile Remove="Tweaks\UiAdjustment\ExtraEstateTeleportation.cs" />
     </ItemGroup>
     <ItemGroup>

@@ -599,6 +599,10 @@
     "message": "Add",
     "description": "[CustomFreeCompanyTags] Custom Free Company Tags - Add"
   },
+  "UiAdjustments@CustomFreeCompanyTags / ColourHelpLink": {
+    "message": "Click here for a list of supported colours and glows.",
+    "description": "[CustomFreeCompanyTags] Custom Free Company Tags - Click here for a list of supported colours and glows."
+  },
   "UiAdjustments@CustomFreeCompanyTags / Description": {
     "message": "Allows hiding or customizing Free Company and Wanderer tags.",
     "description": "[CustomFreeCompanyTags] Tweak Description"

@@ -259,10 +259,21 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     ImGui.TextColored(new Vector4(1, 0, 0, 1), LocString("FCAlreadyAddedError", "FC is already on list."));
                 }
 
+                ImGui.TableNextColumn();
+                ImGui.TableNextColumn();
+                ImGui.TableNextColumn();
+                ImGui.TableNextColumn();
+                ImGui.TextColored(new Vector4(0, colourLinkHovered ? 1f : 0.5f, 0.5f, 1), LocString("ColourHelpLink", "Click here for a list of supported colours and glows."));
+                if (ImGui.IsItemClicked()) Common.OpenBrowser("https://i.imgur.com/cZceCI3.png");
+                if (colourLinkHovered = ImGui.IsItemHovered()) {
+                    ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
+                }
 
                 ImGui.EndTable();
             }
         };
+
+        private bool colourLinkHovered = false;
 
         private enum ChangeType {
             None,
