@@ -188,6 +188,7 @@ namespace SimpleTweaksPlugin.Debugging {
                         try {
                             debugPages[_plugin.PluginConfig.Debugging.SelectedPage]();
                         } catch (Exception ex) {
+                            SimpleLog.Error(ex);
                             ImGui.TextColored(new Vector4(1, 0, 0, 1), ex.ToString());
                         }
 
