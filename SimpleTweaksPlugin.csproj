@@ -30,9 +30,6 @@
       <EmbeddedResource Remove="Publish\**" />
       <None Remove="lib\**" />
       <None Remove="Publish\**" />
-      <Compile Remove="FFXIVClientInterface\**" />
-      <EmbeddedResource Remove="FFXIVClientInterface\**" />
-      <None Remove="FFXIVClientInterface\**" />
     </ItemGroup>
     <ItemGroup Label="Broken Tweaks">
         <Compile Remove="Tweaks\SetOptionCommand.cs" />
@@ -51,9 +48,6 @@
         </ItemGroup>
         <Exec Command="$(PkgILRepack)\tools\ILRepack.exe /lib:$(AppData)\XIVLauncher\addon\Hooks\dev /out:$(TargetDir)..\$(Configuration).ILMerge\$(TargetFileName) @(InputAssemblies, ' ')" />
     </Target>
-    <ItemGroup>
-      <ProjectReference Include="FFXIVClientInterface\FFXIVClientInterface.csproj" />
-    </ItemGroup>
 	<ItemGroup>
 		<Reference Include="Dalamud">
             <Private>false</Private>

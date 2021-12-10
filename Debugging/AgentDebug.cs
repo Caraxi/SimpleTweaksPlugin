@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿/*
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
@@ -132,3 +133,4 @@ namespace SimpleTweaksPlugin.Debugging {
         public override string Name => "Agent Debug";
     }
 }
+*/

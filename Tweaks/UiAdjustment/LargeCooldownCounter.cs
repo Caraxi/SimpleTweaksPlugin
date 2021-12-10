@@ -10,6 +10,7 @@ using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
+using Action = Lumina.Excel.GeneratedSheets.Action;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 using HotBarSlot = FFXIVClientStructs.FFXIV.Client.UI.Misc.HotBarSlot;
 using HotbarSlotType = FFXIVClientStructs.FFXIV.Client.UI.Misc.HotbarSlotType;
@@ -179,14 +180,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (reset == false && (cooldownTextNode->AtkResNode.Flags & 0x10) != 0x10) return;
             if (cooldownTextNode == null) return;
             if (!Config.SimpleMode && slotStruct != null && slotStruct->CommandType == HotbarSlotType.Action) {
-                var adjustedActionId = SimpleTweaksPlugin.Client.ActionManager.GetAdjustedActionId(slotStruct->CommandId);
-                var recastGroup = (int) SimpleTweaksPlugin.Client.ActionManager.GetRecastGroup((byte)slotStruct->CommandType, adjustedActionId) + 1;
-                if (recastGroup == 0 || recastGroup == 58) {
-                    reset = true;
-                } else {
-                    var recastTimer = SimpleTweaksPlugin.Client.ActionManager.GetGroupRecastTime(recastGroup);
-                    if (recastTimer->IsActive == 0) reset = true;
-                }
+                var adjustedActionId = actionManager->GetAdjustedActionId(slotStruct->CommandId);
+                var action = Service.Data.Excel.GetSheet<Action>()?.GetRow(adjustedActionId);
+                if (action == null || action.CooldownGroup == 58) reset = true;
+                else if (!actionManager->IsRecastTimerActive(ActionType.Spell, adjustedActionId)) reset = true;
             } else {
                 if (cooldownTextNode->EdgeColor.R != 0x33) reset = true;
             }

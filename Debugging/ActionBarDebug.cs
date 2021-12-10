@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿/*
+using System.Numerics;
 using System.Text;
 using FFXIVClientInterface.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
@@ -311,3 +312,4 @@ namespace SimpleTweaksPlugin.Debugging {
         }
     }
 }
+*/

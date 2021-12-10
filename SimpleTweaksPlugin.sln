@@ -10,8 +10,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleTweaksPlugin", "Simpl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFXIVClientStructs", "lib\FFXIVClientStructs\FFXIVClientStructs\FFXIVClientStructs.csproj", "{3DBAEE68-9D94-4807-BCB1-E42EDD52B489}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFXIVClientInterface", "FFXIVClientInterface\FFXIVClientInterface.csproj", "{D6FD765C-566C-4110-B422-3D87B43A7BFA}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFXIVClientStructs.Generators", "lib\FFXIVClientStructs\FFXIVClientStructs.Generators\FFXIVClientStructs.Generators.csproj", "{B3AAEACB-E6D2-43C6-9E29-C35021F0AE98}"
 EndProject
 Global
@@ -20,10 +18,6 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D6FD765C-566C-4110-B422-3D87B43A7BFA}.Debug|x64.ActiveCfg = Debug|x64
-		{D6FD765C-566C-4110-B422-3D87B43A7BFA}.Debug|x64.Build.0 = Debug|x64
-		{D6FD765C-566C-4110-B422-3D87B43A7BFA}.Release|x64.ActiveCfg = Release|x64
-		{D6FD765C-566C-4110-B422-3D87B43A7BFA}.Release|x64.Build.0 = Release|x64
 		{3DBAEE68-9D94-4807-BCB1-E42EDD52B489}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{3DBAEE68-9D94-4807-BCB1-E42EDD52B489}.Debug|x64.Build.0 = Debug|Any CPU
 		{3DBAEE68-9D94-4807-BCB1-E42EDD52B489}.Release|x64.ActiveCfg = Release|Any CPU

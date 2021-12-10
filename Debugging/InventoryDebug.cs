@@ -55,32 +55,6 @@ namespace SimpleTweaksPlugin.Debugging {
                     ImGui.EndTabItem();
                 }
 
-                if (ImGui.BeginTabItem("Sorting")) {
-
-                    var module = SimpleTweaksPlugin.Client.UiModule.ItemOrderModule;
-                    
-                    ImGui.Text("Item Order Module:");
-                    ImGui.SameLine();
-                    DebugManager.ClickToCopyText($"{(ulong) module:X}");
-                    
-                    ImGui.SameLine();
-                    DebugManager.PrintOutObject(module, (ulong) module, new List<string>());
-                    
-                    ImGui.EndTabItem();
-                }
-
-                if (ImGui.BeginTabItem("Finder")) {
-
-                    var module = SimpleTweaksPlugin.Client.UiModule.ItemFinderModule;
-
-                    ImGui.Text("ItemFinderModule:");
-                    ImGui.SameLine();
-                    DebugManager.ClickToCopyText($"{(ulong) module:X}");
-                    ImGui.SameLine();
-                    DebugManager.PrintOutObject(module, (ulong) module, new List<string>());
-                }
-                
-                
                 ImGui.EndTabBar();
             }
 

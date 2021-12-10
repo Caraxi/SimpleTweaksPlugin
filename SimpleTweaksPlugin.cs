@@ -9,7 +9,6 @@ using System.Numerics;
 using System.Reflection;
 using Dalamud;
 using Dalamud.Interface.Internal.Notifications;
-using FFXIVClientInterface;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Debugging;
@@ -36,8 +35,6 @@ namespace SimpleTweaksPlugin {
         public string AssemblyLocation { get; private set; } = Assembly.GetExecutingAssembly().Location;
 
         internal Common Common;
-
-        public static ClientInterface Client;
 
         public static SimpleTweaksPlugin Plugin { get; private set; }
 
@@ -74,7 +71,6 @@ namespace SimpleTweaksPlugin {
                 t.Dispose();
             }
             TweakProviders.Clear();
-            Client.Dispose();
             #if DEBUG
             DebugManager.Dispose();
             #endif
@@ -98,8 +94,6 @@ namespace SimpleTweaksPlugin {
 #endif
             this.PluginInterface = pluginInterface;
 
-            Client = new ClientInterface(Service.SigScanner, Service.Data);
-            
             this.PluginConfig = (SimpleTweaksPluginConfig)pluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
             this.PluginConfig.Init(this, pluginInterface);
 
