@@ -110,7 +110,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     if (ImGui.Checkbox($"Enable Logging", ref enabled)) {
                         fireCallbackHook?.Disable();
                         if (enabled) {
-                            fireCallbackHook ??= Common.Hook<FireCallbackDelegate>("48 8B C4 44 88 48 20 53", CallbackDetour);
+                            fireCallbackHook ??= Common.Hook<FireCallbackDelegate>("E8 ?? ?? ?? ?? 8B 4C 24 20 0F B6 D8", CallbackDetour);
                             fireCallbackHook?.Enable();
                         }
                     }
