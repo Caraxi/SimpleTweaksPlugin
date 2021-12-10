@@ -3,7 +3,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game.Text;
-using FFXIVClientInterface.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Helper;
@@ -55,7 +55,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private void* SetupDetour(void* a1, AtkUnitBase* a2, void* a3) {
             if (a3 == updateResultPointer) {
-                SimpleLog.Verbose($"Setup UpdateResult: {(ulong) a1:X} {(ulong) a2:X} {(ulong) a3:X}");
                 var ptr = Marshal.GetFunctionPointerForDelegate(replacementUpdateResultDelegate);
                 a3 = (void*) ptr;
             }
@@ -83,23 +82,17 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var listNode = (AtkComponentNode*) itemSearchResult->UldManager.NodeList[4];
                 var component = (AtkComponentList*) listNode->Component;
 
-                var agent = SimpleTweaksPlugin.Client.UiModule.AgentModule.GetAgent<AgentMarket>();
-                if (agent == null || agent.Data == null) return;
+                var agent = AgentItemSearch.Instance();
+                if (agent == null) return;
 
-                if (npcPriceId != agent.Data->MarketResultItemId) {
-                    var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(agent.Data->MarketResultItemId);
+                if (npcPriceId != agent->ResultItemID) {
+                    var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(agent->ResultItemID);
                     if (item == null) return;
-                    npcPriceId = agent.Data->MarketResultItemId;
+                    npcPriceId = agent->ResultItemID;
                     npcBuyPrice = 0;
                     npcSellPrice = item.PriceLow;
-
-                    SimpleLog.Debug($"Value to Sell: {npcSellPrice}");
-
-                    var gilShopItem = Service.Data.Excel.GetSheet<GilShopItem>()?.Where(a => a.Item.Row == agent.Data->MarketResultItemId).ToList();
-                    if (gilShopItem is { Count: > 0 }) {
-                        npcBuyPrice = item.PriceMid;
-                        SimpleLog.Debug($"Cost to Buy: {npcBuyPrice}");
-                    }
+                    var gilShopItem = Service.Data.Excel.GetSheet<GilShopItem>()?.Where(a => a.Item.Row == agent->ResultItemID).ToList();
+                    if (gilShopItem is { Count: > 0 }) npcBuyPrice = item.PriceMid;
                 }
                 
                 for (var i = 0; i < 12 && i < component->ListLength; i++) {
