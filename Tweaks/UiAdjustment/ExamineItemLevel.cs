@@ -77,8 +77,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 var inaccurate = false;
                 var sum = 0U;
-                var c = 13;
+                var c = 12;
                 for (var i = 0; i < 13; i++) {
+                    if (i == 5) continue;
                     var slot = Common.GetContainerItem(container, i);
                     if (slot == null) continue;
                     var id = slot->ItemId;
