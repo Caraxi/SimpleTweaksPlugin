@@ -21,8 +21,6 @@ namespace SimpleTweaksPlugin {
 
         public int Version { get; set; } = 3;
 
-        public bool FirstRunEW = true;
-
         public SimpleTweaksPluginConfig() { }
 
         public List<string> EnabledTweaks = new List<string>();
