@@ -711,6 +711,14 @@
     "message": "Party Member List (Social window)",
     "description": "[ExtraEstateTeleportation] Extra Estate Teleportation - Party Member List (Social window)"
   },
+  "UiAdjustments@GearPositions / Description": {
+    "message": "Repositions equipment positions in character menu and inspect to give a less gross layout.",
+    "description": "[GearPositions] Tweak Description"
+  },
+  "UiAdjustments@GearPositions / Name": {
+    "message": "Adjust Equipment Positions",
+    "description": "[GearPositions] Tweak Name"
+  },
   "UiAdjustments@HideAchievementsNotifications / Description": {
     "message": "Completely hides the login/zone-in notification for achievements nearing completion.",
     "description": "[HideAchievementsNotifications] Tweak Description"
