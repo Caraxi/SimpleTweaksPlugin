@@ -789,7 +789,7 @@ namespace SimpleTweaksPlugin.Debugging {
         
         private void PrintResNode(AtkResNode* node)
         {
-            ImGui.Text($"NodeID: {node->NodeID}");
+            ImGui.Text($"NodeID: {node->NodeID}   Type: {node->Type}");
             ImGui.SameLine();
             if (ImGui.SmallButton($"T:Visible##{(ulong)node:X}")) {
                 node->Flags ^= 0x10;
