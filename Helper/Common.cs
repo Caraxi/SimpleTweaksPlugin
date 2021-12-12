@@ -24,6 +24,7 @@ namespace SimpleTweaksPlugin.Helper {
 
         // Common Delegates
         public delegate void* AddonOnUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** nums, StringArrayData** strings);
+        public delegate void* AddonOnSetup(AtkUnitBase* atkUnitBase, void* a2, void* a3);
         public delegate void NoReturnAddonOnUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData);
 
         private delegate IntPtr GameAlloc(ulong size, IntPtr unk, IntPtr allocator, IntPtr alignment);
@@ -269,6 +270,17 @@ namespace SimpleTweaksPlugin.Helper {
                 }
                 Marshal.FreeHGlobal(new IntPtr(atkValues));
             }
+        }
+
+
+        public static AtkResNode* GetNodeByID(AtkUldManager uldManager, uint nodeId, NodeType? type = null) => GetNodeByID<AtkResNode>(uldManager, nodeId, type);
+        public static T* GetNodeByID<T>(AtkUldManager uldManager, uint nodeId, NodeType? type = null) where T : unmanaged {
+            for (var i = 0; i < uldManager.NodeListCount; i++) {
+                var n = uldManager.NodeList[i];
+                if (n->NodeID != nodeId || type != null && n->Type != type.Value) continue;
+                return (T*)n;
+            }
+            return null;
         }
 
     }
