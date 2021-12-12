@@ -1,4 +1,12 @@
 {
+  "AutoOpenCommendWindow / Description": {
+    "message": "Open the commendation window upon completion of a duty.",
+    "description": "[AutoOpenCommendWindow] Tweak Description"
+  },
+  "AutoOpenCommendWindow / Name": {
+    "message": "Open commendation window automatically",
+    "description": "[AutoOpenCommendWindow] Tweak Name"
+  },
   "AutoOpenLootWindow / Description": {
     "message": "Open the loot rolling window when new items are added to be rolled on.",
     "description": "[AutoOpenLootWindow] Tweak Description"
