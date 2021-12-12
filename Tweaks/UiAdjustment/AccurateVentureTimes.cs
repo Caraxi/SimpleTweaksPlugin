@@ -48,7 +48,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                         var renderer = Common.GetNodeByID<AtkComponentNode>(listNode->Component->UldManager, i == 0 ? 4U : 41000U + i, (NodeType) 1011);
                         if (renderer == null || !renderer->AtkResNode.IsVisible) return;
                         var ventureText = (AtkTextNode*) renderer->Component->UldManager.SearchNodeById(12);
-                        var cTime = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->ServerTime;
+                        var cTime = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.GetServerTime();
                         var rTime = retainer->VentureComplete - cTime;
 
                         if (rTime <= 0) {
