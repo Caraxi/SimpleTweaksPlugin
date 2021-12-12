@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Dalamud.Game.ClientState.Objects.SubKinds;
+using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
@@ -8,6 +8,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
+using ObjectKind = FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class SmartNameplates : UiAdjustments.SubTweak {
@@ -48,7 +49,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             ImGui.Checkbox(LocString("Ignore Targeted Players") + "##SmartNameplatesIgnoreTargets", ref config.IgnoreTargets);
         };
 
-        // Crashes the game if ANY Dalamud Actor is created from within it, which is why everything is using offsets
         // returns 2 bits (b01 == display name, b10 == display hp)
         private unsafe byte ShouldDisplayNameplateDetour(IntPtr raptureAtkModule, GameObject* actor, GameObject* localPlayer, float distance) {
             if (actor->ObjectKind != (byte) ObjectKind.Pc) goto ReturnOriginal;
@@ -57,12 +57,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var targets = TargetSystem.Instance();
 
             if (actor == localPlayer // Ignore localplayer
-                || (pc->Character.StatusFlags & 2) == 0 // Alternate in combat flag
+                || (pc->Character.StatusFlags & (byte) StatusFlags.InCombat) == 0 // Alternate in combat flag
                 || GetTargetType(actor) == 3
 
-                || (config.IgnoreParty && (pc->Character.StatusFlags & 16) > 0) // Ignore party members
-                || (config.IgnoreAlliance && (pc->Character.StatusFlags & 32) > 0) // Ignore alliance members
-                || (config.IgnoreFriends && (pc->Character.StatusFlags & 64) > 0) // Ignore friends
+                || (config.IgnoreParty && (pc->Character.StatusFlags & (byte) StatusFlags.PartyMember) != 0) // Ignore party members
+                || (config.IgnoreAlliance && (pc->Character.StatusFlags & (byte) StatusFlags.AllianceMember) != 0) // Ignore alliance members
+                || (config.IgnoreFriends && (pc->Character.StatusFlags & (byte) StatusFlags.Friend) != 0) // Ignore friends
                 || (config.IgnoreDead && pc->Character.Health == 0) // Ignore dead players
 
                 // Ignore targets
@@ -75,7 +75,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             ReturnOriginal:
             return shouldDisplayNameplateHook.Original(raptureAtkModule, actor, localPlayer, distance);
-
         }
 
         public override void Enable() {
