@@ -1,5 +1,7 @@
 ﻿using FFXIVClientStructs.FFXIV.Component.GUI;
+using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using SimpleTweaksPlugin.Helper;
+using System;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class GearPositions : UiAdjustments.SubTweak {
@@ -40,6 +42,80 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var backgroundImage = (AtkImageNode*) equipmentComponent->UldManager.SearchNodeById(15);
             if (backgroundImage != null) {
                 backgroundImage->AtkResNode.ToggleVisibility(false);
+                for (var i = 0U; i < 2; i++) {
+                    // Create
+                    var bgImageNode = Common.GetNodeByID<AtkImageNode>(equipmentComponent->UldManager, CustomNodes.GearPositionsBg + i, NodeType.Image);
+                    if (bgImageNode == null) {
+                        SimpleLog.Log($"Create Custom BG Image Node#{i}");
+
+                        bgImageNode = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
+                        bgImageNode->AtkResNode.Type = NodeType.Image;
+                        bgImageNode->AtkResNode.NodeID = CustomNodes.GearPositionsBg + i;
+                        bgImageNode->AtkResNode.Flags = (short)(NodeFlags.AnchorTop | NodeFlags.AnchorLeft);
+                        bgImageNode->AtkResNode.DrawFlags = 0;
+                        bgImageNode->WrapMode = 1;
+                        bgImageNode->Flags = 0;
+
+                        var partsList = (AtkUldPartsList*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldPartsList), 8);
+                        if (partsList == null) {
+                            SimpleLog.Error("Failed to alloc memory for parts list.");
+                            bgImageNode->AtkResNode.Destroy(true);
+                            break;
+                        }
+
+                        partsList->Id = 0;
+                        partsList->PartCount = 1;
+
+                        var part = (AtkUldPart*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldPart), 8);
+                        if (part == null) {
+                            SimpleLog.Error("Failed to alloc memory for part.");
+                            IMemorySpace.Free(partsList, (ulong)sizeof(AtkUldPartsList));
+                            bgImageNode->AtkResNode.Destroy(true);
+                            break;
+                        }
+
+                        part->U = 21;
+                        part->V = 13;
+                        part->Width = 11;
+                        part->Height = 41;
+
+                        partsList->Parts = part;
+
+                        var asset = (AtkUldAsset*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldAsset), 8);
+                        if (asset == null) {
+                            SimpleLog.Error("Failed to alloc memory for asset.");
+                            IMemorySpace.Free(part, (ulong)sizeof(AtkUldPart));
+                            IMemorySpace.Free(partsList, (ulong)sizeof(AtkUldPartsList));
+                            bgImageNode->AtkResNode.Destroy(true);
+                            break;
+                        }
+
+                        asset->Id = 0;
+                        asset->AtkTexture.Ctor();
+                        part->UldAsset = asset;
+                        bgImageNode->PartsList = partsList;
+
+                        bgImageNode->LoadTexture("ui/uld/BagStatus.tex");
+
+                        bgImageNode->AtkResNode.ToggleVisibility(true);
+
+                        bgImageNode->AtkResNode.SetWidth(11);
+                        bgImageNode->AtkResNode.SetHeight(41);
+                        bgImageNode->AtkResNode.SetPositionShort((short)(i == 0 ? 3 : 21), 10);
+
+
+                        var prev = backgroundImage->AtkResNode.PrevSiblingNode;
+                        bgImageNode->AtkResNode.ParentNode = backgroundImage->AtkResNode.ParentNode;
+
+                        backgroundImage->AtkResNode.PrevSiblingNode = (AtkResNode*)bgImageNode;
+                        prev->NextSiblingNode = (AtkResNode*)bgImageNode;
+
+                        bgImageNode->AtkResNode.PrevSiblingNode = prev;
+                        bgImageNode->AtkResNode.NextSiblingNode = (AtkResNode*)backgroundImage;
+
+                        equipmentComponent->UldManager.UpdateDrawNodeList();
+                    }
+                }
             }
         }
 
@@ -57,6 +133,22 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var backgroundImage = (AtkImageNode*) equipmentComponent->UldManager.SearchNodeById(15);
             if (backgroundImage != null) {
                 backgroundImage->AtkResNode.ToggleVisibility(true);
+
+                for (var i = 0U; i < 2; i++) {
+                    var bgImageNode = Common.GetNodeByID<AtkImageNode>(equipmentComponent->UldManager, CustomNodes.GearPositionsBg + i, NodeType.Image);
+                    if (bgImageNode != null) {
+                        if (bgImageNode->AtkResNode.PrevSiblingNode != null)
+                            bgImageNode->AtkResNode.PrevSiblingNode->NextSiblingNode = bgImageNode->AtkResNode.NextSiblingNode;
+                        if (bgImageNode->AtkResNode.NextSiblingNode != null)
+                            bgImageNode->AtkResNode.NextSiblingNode->PrevSiblingNode = bgImageNode->AtkResNode.PrevSiblingNode;
+                        equipmentComponent->UldManager.UpdateDrawNodeList();
+
+                        IMemorySpace.Free(bgImageNode->PartsList->Parts->UldAsset, (ulong)sizeof(AtkUldPart));
+                        IMemorySpace.Free(bgImageNode->PartsList->Parts, (ulong)sizeof(AtkUldPart));
+                        IMemorySpace.Free(bgImageNode->PartsList, (ulong)sizeof(AtkUldPartsList));
+                        bgImageNode->AtkResNode.Destroy(true);
+                    }
+                }
             }
         }
 
