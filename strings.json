@@ -479,6 +479,18 @@
     "message": "UI Tweaks",
     "description": "[UiAdjustments] Tweak Name"
   },
+  "UiAdjustments@AccurateVentureTimes / Description": {
+    "message": "Show live countdowns to venture completion on the retainer list.",
+    "description": "[AccurateVentureTimes] Tweak Description"
+  },
+  "UiAdjustments@AccurateVentureTimes / Name": {
+    "message": "Accurate Venture Times",
+    "description": "[AccurateVentureTimes] Tweak Name"
+  },
+  "UiAdjustments@AccurateVentureTimes / Simple Display": {
+    "message": "Simple Display",
+    "description": "[AccurateVentureTimes] [Config] Simple Display"
+  },
   "UiAdjustments@BattleTalkAdjustments / Description": {
     "message": "Allows moving of the dialogue box that appears in the middle of battles.",
     "description": "[BattleTalkAdjustments] Tweak Description"
