@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
@@ -745,6 +746,8 @@ namespace SimpleTweaksPlugin.Debugging {
                     case ComponentType.TextInput: DebugManager.PrintOutObject(*(AtkComponentTextInput*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
                     case ComponentType.Icon: DebugManager.PrintOutObject(*(AtkComponentIcon*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
                     case ComponentType.NumericInput: DebugManager.PrintOutObject(*(AtkComponentNumericInput*)compNode->Component, (ulong) compNode->Component, new List<string>()); break;
+                    case ComponentType.List: DebugManager.PrintOutObject(*(AtkComponentList*)compNode->Component, (ulong) compNode->Component); break;
+                    case ComponentType.TreeList: DebugManager.PrintOutObject(*(AtkComponentTreeList*)compNode->Component, (ulong) compNode->Component); break;
                     default: DebugManager.PrintOutObject(*compNode->Component, (ulong) compNode->Component, new List<string>()); break;
                 }
 
@@ -762,6 +765,13 @@ namespace SimpleTweaksPlugin.Debugging {
                         ImGui.Text($"Text3: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText3.StringPtr))}");
                         ImGui.Text($"Text4: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText4.StringPtr))}");
                         ImGui.Text($"Text5: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText5.StringPtr))}");
+                        break;
+                    case ComponentType.List:
+                    case ComponentType.TreeList:
+                        var l = (AtkComponentList*)compNode->Component;
+                        if (ImGui.SmallButton("Inc.Selected")) {
+                            l->SelectedItemIndex++;
+                        }
                         break;
                 }
 
