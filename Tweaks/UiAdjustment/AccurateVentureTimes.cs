@@ -40,9 +40,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 if (listNode == null || (ushort)listNode->AtkResNode.Type < 1000) return;
                 var retainerManager = RetainerManager.Instance();
                 for (uint i = 0; i < 10; i++) {
-                    var ri = retainerManager->DisplayOrder[i];
-                    if (ri >= 10) continue;
-                    var retainer = retainerManager->Retainer[ri];
+                    var retainer = retainerManager->GetRetainerBySortedIndex(i);
 
                     if (retainer->VentureComplete != 0) {
                         var renderer = Common.GetNodeByID<AtkComponentNode>(listNode->Component->UldManager, i == 0 ? 4U : 41000U + i, (NodeType) 1011);
