@@ -35,7 +35,9 @@ namespace SimpleTweaksPlugin.Tweaks {
                         hasOpenedMvp = false;
                     }
                 } else {
-                    if (hasOpenedMvp) return;
+                    if (hasOpenedMvp || Service.Condition[ConditionFlag.WatchingCutscene]
+                                     || Service.Condition[ConditionFlag.WatchingCutscene78]
+                                     || Service.Condition[ConditionFlag.OccupiedInCutSceneEvent] ) return;
                     hasOpenedMvp = true;
                     TryOpenWindow();
                 }
