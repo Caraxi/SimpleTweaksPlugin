@@ -1,7 +1,5 @@
 ﻿using System;
 using Dalamud;
-using Dalamud.Game;
-using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -19,48 +17,18 @@ namespace SimpleTweaksPlugin.Tweaks {
             base.Enable();
         }
 
-        private void HandleChat(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
+        private static void HandleChat(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
             try {
                 if ((ushort)type != 2105) return;
-                if (message.TextValue == Service.ClientState.ClientLanguage switch
-                {
+                if (message.TextValue == Service.ClientState.ClientLanguage switch {
                     ClientLanguage.German => "Bitte um das Beutegut würfeln.",
                     ClientLanguage.French => "Veuillez lancer les dés pour le butin.",
                     ClientLanguage.Japanese => "ロットを行ってください。",
                     _ => "Cast your lot."
-                })
-                {
-                    if (Service.Condition[ConditionFlag.WatchingCutscene]
-                        || Service.Condition[ConditionFlag.WatchingCutscene78]
-                        || Service.Condition[ConditionFlag.OccupiedInCutSceneEvent])
-                    {
-                        Service.Framework.Update -= TryOpenAfterCutsceneFrameworkUpdate;
-                        Service.Framework.Update += TryOpenAfterCutsceneFrameworkUpdate;
-                    }
-                    else
-                    {
-                        TryOpenWindow();
-                    }
-                }
+                }) TryOpenWindow();
             } catch (Exception ex) {
                 SimpleLog.Error(ex);
             }
-        }
-
-        private byte throttle;
-        private void TryOpenAfterCutsceneFrameworkUpdate(Framework framework)
-        {
-            throttle++;
-            if (throttle <= 10) return;
-            throttle = 0;
-            if (Service.Condition[ConditionFlag.WatchingCutscene]
-                || Service.Condition[ConditionFlag.WatchingCutscene78]
-                || Service.Condition[ConditionFlag.OccupiedInCutSceneEvent])
-            {
-                return;
-            }
-            Service.Framework.Update -= TryOpenAfterCutsceneFrameworkUpdate;
-            TryOpenWindow();
         }
 
         private static void TryOpenWindow() {
@@ -83,7 +51,6 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         public override void Disable() {
             Service.Chat.CheckMessageHandled -= HandleChat;
-            Service.Framework.Update -= TryOpenAfterCutsceneFrameworkUpdate;
             base.Disable();
         }
     }
