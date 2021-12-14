@@ -8,7 +8,7 @@ using SimpleTweaksPlugin.Helper;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace SimpleTweaksPlugin.Debugging {
-    public unsafe class AddonCallbacks : DebugHelper {
+    public unsafe class AddonDebug : DebugHelper {
         public override string Name => "Addon Logging";
 
         private delegate void* FireCallbackDelegate(AtkUnitBase* atkUnitBase, int valueCount, AtkValue* atkValues, ulong a4);
