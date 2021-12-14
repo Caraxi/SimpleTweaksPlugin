@@ -181,9 +181,15 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (cooldownTextNode == null) return;
             if (!Config.SimpleMode && slotStruct != null && slotStruct->CommandType == HotbarSlotType.Action) {
                 var adjustedActionId = actionManager->GetAdjustedActionId(slotStruct->CommandId);
-                var action = Service.Data.Excel.GetSheet<Action>()?.GetRow(adjustedActionId);
-                if (action == null || action.CooldownGroup == 58) reset = true;
-                else if (!actionManager->IsRecastTimerActive(ActionType.Spell, adjustedActionId)) reset = true;
+                var recastGroup = actionManager->GetRecastGroup((int) slotStruct->CommandType, adjustedActionId);
+                if (recastGroup is 0 or 57) {
+                    reset = true;
+                } else {
+                    var recastDetail = actionManager->GetRecastGroupDetail(recastGroup);
+                    var action = Service.Data.Excel.GetSheet<Action>().GetRow(adjustedActionId);
+                    SimpleLog.Log($"{adjustedActionId} ({action.Name.RawString}/{action.CooldownGroup}) => {recastGroup} / {recastDetail->IsActive}");
+                    if (recastDetail->IsActive == 0) reset = true;
+                }
             } else {
                 if (cooldownTextNode->EdgeColor.R != 0x33) reset = true;
             }
