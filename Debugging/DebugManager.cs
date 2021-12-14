@@ -366,7 +366,19 @@ namespace SimpleTweaksPlugin.Debugging {
                                 break;
                         }
                     } else {
-                        ImGui.Text($"{value}");
+                        if (value is IntPtr p) {
+                            var pAddr = (ulong)p.ToInt64();
+                            ClickToCopyText($"{p:X}");
+                            if (beginModule > 0 && pAddr >= beginModule && pAddr <= endModule) {
+                                ImGui.SameLine();
+                                ImGui.PushStyleColor(ImGuiCol.Text, 0xffcbc0ff);
+                                ClickToCopyText($"ffxiv_dx11.exe+{(pAddr - beginModule):X}");
+                                ImGui.PopStyleColor();
+                            }
+                        } else {
+                            ImGui.Text($"{value}");
+                        }
+
                     }
                 }
             } catch (Exception ex) {

@@ -1,10 +1,17 @@
-﻿/*
+﻿
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using Dalamud.Hooking;
-using FFXIVClientInterface.Client.UI.Agent;
+using Dalamud.Interface.Style;
+using FFXIVClientStructs.Attributes;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
 
@@ -76,18 +83,64 @@ namespace SimpleTweaksPlugin.Debugging {
                     ImGui.EndTabItem();
                 }
 
-                if (ImGui.BeginTabItem("Agent Inspect")) {
-                    var agent = SimpleTweaksPlugin.Client.UiModule.AgentModule.GetAgent<AgentContentsTimer>();
-                    if (agent != null) {
-                        DebugManager.PrintOutObject(agent, 1234, new List<string>(), true);
-                    } else {
-                        ImGui.Text("Agent is null");
-                    }
+                if (ImGui.BeginTabItem("Agents")) {
 
+                    if (ImGui.BeginTabBar("agentsTabs")) {
+
+                        var agentClasses = typeof(AgentInterface).Assembly.GetTypes().Where(t => {
+                            var attrs = t.GetCustomAttributes(typeof(AgentAttribute)).ToArray();
+                            return attrs.Length > 0;
+                        });
+
+                        var i = 0;
+                        foreach (var c in agentClasses) {
+                            var name = c.Name;
+                            if (c.Name.StartsWith("Agent")) name = c.Name.Substring(5);
+                            if (ImGui.BeginTabItem($"{name}##{c.FullName}#{i++}")) {
+
+                                var attr = (AgentAttribute) c.GetCustomAttributes(typeof(AgentAttribute)).First();
+                                ImGui.Text($"{c.FullName}");
+                                ImGui.Text("Instance:");
+                                ImGui.SameLine();
+                                var agentInstance = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(attr.ID);
+                                DebugManager.ClickToCopyText($"{(ulong)agentInstance:X}");
+
+                                if (agentInstance != null) {
+                                    ImGui.SameLine();
+                                    ImGui.Text("      VTable:");
+                                    ImGui.SameLine();
+                                    DebugManager.ClickToCopyText($"{(ulong)agentInstance->VTable:X}");
+
+                                    var beginModule = (ulong) Process.GetCurrentProcess().MainModule.BaseAddress.ToInt64();
+                                    var endModule = (beginModule + (ulong)Process.GetCurrentProcess().MainModule.ModuleMemorySize);
+                                    if (beginModule > 0 && (ulong)agentInstance->VTable >= beginModule && (ulong)agentInstance->VTable <= endModule) {
+                                        ImGui.SameLine();
+                                        ImGui.PushStyleColor(ImGuiCol.Text, 0xffcbc0ff);
+                                        DebugManager.ClickToCopyText($"ffxiv_dx11.exe+{((ulong)agentInstance->VTable - beginModule):X}");
+                                        ImGui.PopStyleColor();
+                                    }
+
+                                    ImGui.Separator();
+
+                                    ImGui.Text("Is Active:");
+                                    ImGui.SameLine();
+                                    var isActive = agentInstance->IsAgentActive();
+                                    ImGui.TextColored(isActive ? Colour.Green : Colour.Red, $"{isActive}");
+
+                                    ImGui.Separator();
+
+                                    var agentObj = Marshal.PtrToStructure(new IntPtr(agentInstance), c);
+                                    if (agentObj != null) {
+                                        DebugManager.PrintOutObject(agentObj, (ulong) agentInstance);
+                                    }
+                                }
+                                ImGui.EndTabItem();
+                            }
+                        }
+                        ImGui.EndTabBar();
+                    }
                     ImGui.EndTabItem();
                 }
-                
-                
                 ImGui.EndTabBar();
             }
         }
@@ -133,4 +186,3 @@ namespace SimpleTweaksPlugin.Debugging {
         public override string Name => "Agent Debug";
     }
 }
-*/

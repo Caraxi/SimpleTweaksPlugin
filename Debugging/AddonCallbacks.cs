@@ -46,7 +46,7 @@ namespace SimpleTweaksPlugin.Debugging {
             public List<SetupCall> Calls = new();
 
             public SetupHook(AtkUnitBase* unitBase) {
-                Hook = Common.Hook<OnSetupDelegate>(unitBase->AtkEventListener.vfunc[43], SetupDetour);
+                Hook = Common.Hook<OnSetupDelegate>(unitBase->AtkEventListener.vfunc[45], SetupDetour);
             }
 
             public void* SetupDetour(AtkUnitBase* atkUnitBase, int valueCount, AtkValue* atkValues) {

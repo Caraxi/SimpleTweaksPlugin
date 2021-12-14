@@ -7,6 +7,7 @@
             ComboTimer =           SimpleTweaksNodeBase + 4,
             PartyListStatusTimer = SimpleTweaksNodeBase + 5,
             InventoryGil         = SimpleTweaksNodeBase + 6,
+            GearPositionsBg      = SimpleTweaksNodeBase + 7, // and 8
             SimpleTweaksNodeBase = 0x53540000;
     }
 }
