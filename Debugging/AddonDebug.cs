@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -17,6 +18,9 @@ namespace SimpleTweaksPlugin.Debugging {
 
         public delegate void* OnSetupDelegate(AtkUnitBase* atkUnitBase, int valueCount, AtkValue* atkValues);
         private static Dictionary<string, SetupHook> setupHooks = new();
+
+        private delegate void* ListHandlerSetupDelegate(void* a1, AtkUnitBase* a2, void* a3);
+        private HookWrapper<ListHandlerSetupDelegate> listHandlerSetupHook;
 
         public static bool IsSetupHooked(AtkUnitBase* atkUnitBase) {
             var name = Encoding.UTF8.GetString(atkUnitBase->Name, 0x20).TrimEnd();
@@ -213,9 +217,77 @@ namespace SimpleTweaksPlugin.Debugging {
                     ImGui.EndTabItem();
                 }
 
+                if (ImGui.BeginTabItem("List Handlers")) {
+
+                    listHandlerSetupHook ??= Common.Hook("E8 ?? ?? ?? ?? 41 B1 1E", new ListHandlerSetupDelegate(ListHandlerSetupDetour));
+
+                    var e = listHandlerSetupHook.IsEnabled;
+                    if (ImGui.Checkbox("Log List Handler Setups", ref e)) {
+                        if (e)
+                            listHandlerSetupHook?.Enable();
+                        else
+                            listHandlerSetupHook?.Disable();
+                    }
+                    ImGui.SameLine();
+                    if (ImGui.Button("Clear##clearListHandlers")) {
+                        listHandlerSetupCalls.Clear();
+                    }
+
+                    ImGui.Separator();
+
+                    if (ImGui.BeginTable("ListHandlerSetups", 3)) {
+                        ImGui.TableSetupColumn("this");
+                        ImGui.TableSetupColumn("Addon");
+                        ImGui.TableSetupColumn("Callback");
+
+                        ImGui.TableHeadersRow();
+
+                        foreach (var l in listHandlerSetupCalls) {
+                            ImGui.TableNextColumn();
+                            DebugManager.ClickToCopy(l.This);
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"{l.AtkUnitBaseName}");
+                            ImGui.TableNextColumn();
+                            DebugManager.ClickToCopy(l.UpdateItemCallback);
+
+                            var addr = (ulong) l.UpdateItemCallback;
+                            if (addr > 0) {
+                                var baseAddr = (ulong) Process.GetCurrentProcess().MainModule.BaseAddress;
+                                var offset = addr - baseAddr;
+                                ImGui.SameLine();
+                                DebugManager.ClickToCopyText($"ffxiv_dx11.exe+{offset:X}");
+                            }
+                        }
+                        ImGui.EndTable();
+                    }
+                    ImGui.EndTabItem();
+                }
 
                 ImGui.EndTabBar();
             }
+        }
+
+        public class ListHandlerSetupCall {
+            public string AtkUnitBaseName;
+            public void* UpdateItemCallback;
+            public void* This;
+        }
+
+        private List<ListHandlerSetupCall> listHandlerSetupCalls = new();
+
+
+        private void* ListHandlerSetupDetour(void* a1, AtkUnitBase* atkUnitBase, void* updateItemCallback) {
+            var retVal = listHandlerSetupHook.Original(a1, atkUnitBase, updateItemCallback);
+            try {
+                listHandlerSetupCalls.Insert(0, new ListHandlerSetupCall() {
+                    This = a1,
+                    UpdateItemCallback = updateItemCallback,
+                    AtkUnitBaseName = Encoding.UTF8.GetString(atkUnitBase->Name, 0x20).Trim()
+                });
+            } catch {
+                //
+            }
+            return retVal;
         }
 
         public static void HookOnSetup(AtkUnitBase* atkUnitBase) {

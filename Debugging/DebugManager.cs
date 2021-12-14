@@ -263,6 +263,13 @@ namespace SimpleTweaksPlugin.Debugging {
             if (ImGui.IsItemClicked()) ImGui.SetClipboardText($"{textCopy}");
         }
 
+        public static unsafe void ClickToCopy(void* address) {
+            ClickToCopyText($"{(ulong)address:X}");
+        }
+        public static unsafe void ClickToCopy<T>(T* address) where T : unmanaged {
+            ClickToCopy((void*) address);
+        }
+
         public static unsafe void SeStringToText(SeString seStr) {
             var pushColorCount = 0;
 
