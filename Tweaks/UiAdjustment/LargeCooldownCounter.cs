@@ -186,9 +186,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     reset = true;
                 } else {
                     var recastDetail = actionManager->GetRecastGroupDetail(recastGroup);
-                    var action = Service.Data.Excel.GetSheet<Action>().GetRow(adjustedActionId);
-                    SimpleLog.Log($"{adjustedActionId} ({action.Name.RawString}/{action.CooldownGroup}) => {recastGroup} / {recastDetail->IsActive}");
-                    if (recastDetail->IsActive == 0) reset = true;
+                    if (recastDetail == null || recastDetail->IsActive == 0) reset = true;
                 }
             } else {
                 if (cooldownTextNode->EdgeColor.R != 0x33) reset = true;
