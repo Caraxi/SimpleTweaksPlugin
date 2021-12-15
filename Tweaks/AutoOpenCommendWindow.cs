@@ -1,5 +1,6 @@
 ﻿using System;
 using Dalamud.Game;
+using Dalamud.Game.ClientState.Conditions;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
@@ -19,6 +20,14 @@ namespace SimpleTweaksPlugin.Tweaks {
         private byte throttle;
         private void FrameworkOnUpdate(Framework framework) {
             throttle++;
+
+            if (Service.Condition[ConditionFlag.WatchingCutscene] ||
+                Service.Condition[ConditionFlag.WatchingCutscene78] ||
+                Service.Condition[ConditionFlag.OccupiedInCutSceneEvent]) {
+                hasOpenedMvp = false;
+                throttle = 0;
+            }
+
             if (throttle > 10) {
                 throttle = 0;
                 if (Common.GetUnitBase("_NotificationIcMvp") == null) {

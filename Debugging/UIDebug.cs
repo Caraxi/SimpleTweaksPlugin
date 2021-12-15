@@ -343,9 +343,9 @@ namespace SimpleTweaksPlugin.Debugging {
 
             ImGui.SameLine();
 
-            if (!AddonCallbacks.IsSetupHooked(atkUnitBase)) {
+            if (!AddonDebug.IsSetupHooked(atkUnitBase)) {
                 if (ImGui.SmallButton("Hook Setup")) {
-                    AddonCallbacks.HookOnSetup(atkUnitBase);
+                    AddonDebug.HookOnSetup(atkUnitBase);
                 }
             }
 

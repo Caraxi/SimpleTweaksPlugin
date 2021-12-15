@@ -1,16 +1,14 @@
-﻿/*
+﻿
 using System.Numerics;
 using System.Text;
-using FFXIVClientInterface.Client.UI.Misc;
+using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using Lumina.Text;
 using SimpleTweaksPlugin.Helper;
 using Action = Lumina.Excel.GeneratedSheets.Action;
-using HotBar = FFXIVClientInterface.Client.UI.Misc.HotBar;
-using HotbarSlotType = FFXIVClientInterface.Client.UI.Misc.HotbarSlotType;
-using RaptureHotbarModule = FFXIVClientInterface.Client.UI.Misc.RaptureHotbarModule;
 
 namespace SimpleTweaksPlugin.Debugging {
     public unsafe class ActionBarDebug : DebugHelper {
@@ -21,15 +19,14 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.Text($"{Name} Debug");
             ImGui.Separator();
 
-            var raptureHotbarModule = SimpleTweaksPlugin.Client.UiModule.RaptureHotbarModule;
+            var raptureHotbarModule = Framework.Instance()->GetUiModule()->GetRaptureHotbarModule();
             ImGui.Text("RaptureHotbarModule:");
             ImGui.SameLine();
             DebugManager.ClickToCopyText($"{(ulong)raptureHotbarModule:X}");
             ImGui.SameLine();
-            ImGui.Text($"{Encoding.ASCII.GetString(raptureHotbarModule.Data->ModuleName, 15)}");
             ImGui.Text("ActionManager:");
             ImGui.SameLine();
-            DebugManager.ClickToCopyText($"{(ulong)SimpleTweaksPlugin.Client.ActionManager.Data:X}");
+            DebugManager.ClickToCopyText($"{(ulong)ActionManager.Instance():X}");
             
             ImGui.Separator();
             
@@ -52,12 +49,24 @@ namespace SimpleTweaksPlugin.Debugging {
             }
         }
 
-        private void DrawHotbarType(RaptureHotbarModule hotbarModule, HotBarType type, params string[] names) {
+        public class HotBarType {
+
+            public static HotBarType Normal => new HotBarType() { Count = 10, FirstIndex = 0 };
+            public static HotBarType Cross => new HotBarType() { Count = 8, FirstIndex = 10 };
+            public static HotBarType Pet => new HotBarType() { Count = 2, FirstIndex = 18 };
+
+
+            public int Count;
+            public int FirstIndex;
+        }
+
+
+        private void DrawHotbarType(RaptureHotbarModule* hotbarModule, HotBarType type, params string[] names) {
             if (ImGui.BeginTabBar("##hotbarTabs")) {
-                for (var i = 0; i < hotbarModule.GetBarCount(type); i++) {
+                for (var i = 0; i < type.Count; i++) {
                     var tabName = names.Length > i ? names[i] : $"{i+1:00}";
                     if (ImGui.BeginTabItem($"{tabName}##hotbar{i}")) {
-                        var hotbar = hotbarModule.GetBar(i, type);
+                        var hotbar = hotbarModule->HotBar[type.FirstIndex + i];
                         if (hotbar != null) {
                             DrawHotbar(hotbarModule, hotbar);
                         }
@@ -69,7 +78,7 @@ namespace SimpleTweaksPlugin.Debugging {
             }
         }
 
-        private void DrawHotbar(RaptureHotbarModule hotbarModule, HotBar* hotbar) {
+        private void DrawHotbar(RaptureHotbarModule* hotbarModule, HotBar* hotbar) {
 
             ImGui.Columns(8);
             ImGuiExt.SetColumnWidths(35);
@@ -92,7 +101,7 @@ namespace SimpleTweaksPlugin.Debugging {
             
             
             for (var i = 0; i < 16; i++) {
-                var slot = hotbarModule.GetBarSlot(hotbar, i);
+                var slot = hotbar->Slot[i];
                 if (slot == null) break;
                 if (slot->CommandType == HotbarSlotType.Empty) {
                     ImGui.PushStyleColor(ImGuiCol.Text, slot->CommandType == HotbarSlotType.Empty ? 0x99999999 : 0xFFFFFFFF);
@@ -105,7 +114,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     continue;
                 }
                 
-                var adjustedId = slot->CommandType == HotbarSlotType.Action ? SimpleTweaksPlugin.Client.ActionManager.GetAdjustedActionId((int)slot->CommandId) : slot->CommandId;
+                var adjustedId = slot->CommandType == HotbarSlotType.Action ? ActionManager.Instance()->GetAdjustedActionId(slot->CommandId) : slot->CommandId;
 
                 DebugManager.ClickToCopyText($"{i+1:00}", $"{(ulong)slot:X}");
                 
@@ -273,7 +282,7 @@ namespace SimpleTweaksPlugin.Debugging {
                             break;
                         }
                         
-                        var cdg = SimpleTweaksPlugin.Client.ActionManager.GetRecastGroup(2, slot->CommandId);
+                        var cdg = ActionManager.Instance()->GetRecastGroup(2, slot->CommandId);
                         if (cdg < 81) cooldownGroup = (int) (cdg + 1);
                         
                         break;
@@ -285,7 +294,7 @@ namespace SimpleTweaksPlugin.Debugging {
                             break;
                         }
 
-                        cooldownGroup = action.Action.Value.CooldownGroup;
+                        cooldownGroup = ActionManager.Instance()->GetRecastGroup(5, slot->CommandId);
                         break;
                     }
                 }
@@ -294,7 +303,7 @@ namespace SimpleTweaksPlugin.Debugging {
                     
                     ImGui.Text($"Cooldown Group: {cooldownGroup}");
 
-                    var cooldown = SimpleTweaksPlugin.Client.ActionManager.GetGroupRecastTime(cooldownGroup);
+                    var cooldown = ActionManager.Instance()->GetRecastGroupDetail(cooldownGroup);
                     DebugManager.ClickToCopyText($"{(ulong)cooldown:X}");
                     if (cooldown != null) {
                         ImGui.Text($"{cooldown->IsActive} / {cooldown->Elapsed} / {cooldown->Total}");
@@ -312,4 +321,4 @@ namespace SimpleTweaksPlugin.Debugging {
         }
     }
 }
-*/
+

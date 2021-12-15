@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game.Text;
@@ -18,12 +19,18 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             
             [TweakConfigOption("Include tax in single price.")]
             public bool IncludeTaxInSinglePrice;
-            
-            [TweakConfigOption("Highlight items that can be sold to NPC for more. (Green)")]
+
+            [TweakConfigOption("##ResellProfit", 1)]
             public bool HighlightNpcSellProfit;
-            
-            [TweakConfigOption("Highlight items that can be purchased from an NPC for cheaper. (Red)")]
+
+            [TweakConfigOption("Highlight items that can be sold to NPC for more.", "SimpleColor", 2, SameLine = true)]
+            public Vector4 NpcSellProfitColour = new Vector4(0, 1, 0, 1);
+
+            [TweakConfigOption("##LazyTax", 3)]
             public bool HighlightLazyTax;
+
+            [TweakConfigOption("Highlight items that can be purchased from an NPC for cheaper.", "SimpleColor", 4, SameLine = true)]
+            public Vector4 LazyTaxColour = new Vector4(1, 0, 0, 1);
         }
         
         public MarketEnhancementsConfig Config { get; private set; }
@@ -134,20 +141,24 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                         Plugin.Common.WriteSeString(singlePriceNode->NodeText, $" {realCostPerItem:N2}".Trim('0').Trim('.').Trim(',') + (char) SeIconChar.Gil);
                     }
 
+                    var sellValue = Math.Ceiling(npcSellPrice * (hqImageNode->AtkResNode.IsVisible ? 1.1 : 1.0));
                     if (Config.HighlightLazyTax && npcBuyPrice > 0 && realCostPerItem > npcBuyPrice && !hqImageNode->AtkResNode.IsVisible) {
-                        singlePriceNode->EdgeColor.R = 255;
+                        singlePriceNode->EdgeColor.R = (byte)(Config.LazyTaxColour.X * 255f);
+                        singlePriceNode->EdgeColor.G = (byte)(Config.LazyTaxColour.Y * 255f);
+                        singlePriceNode->EdgeColor.B = (byte)(Config.LazyTaxColour.Z * 255f);
+                        singlePriceNode->EdgeColor.A = (byte)(Config.LazyTaxColour.W * 255f);
+                        singlePriceNode->TextFlags |= (byte) TextFlags.Edge;
+                    } else if (Config.HighlightNpcSellProfit && npcSellPrice > 0 && realCostPerItem < sellValue) {
+                        singlePriceNode->EdgeColor.R = (byte)(Config.NpcSellProfitColour.X * 255f);
+                        singlePriceNode->EdgeColor.G = (byte)(Config.NpcSellProfitColour.Y * 255f);
+                        singlePriceNode->EdgeColor.B = (byte)(Config.NpcSellProfitColour.Z * 255f);
+                        singlePriceNode->EdgeColor.A = (byte)(Config.NpcSellProfitColour.W * 255f);
                         singlePriceNode->TextFlags |= (byte) TextFlags.Edge;
                     } else {
                         singlePriceNode->EdgeColor.R = 0;
-                    }
-
-
-                    var sellValue = Math.Ceiling(npcSellPrice * (hqImageNode->AtkResNode.IsVisible ? 1.1 : 1.0));
-                    if (Config.HighlightNpcSellProfit && npcSellPrice > 0 && realCostPerItem < sellValue) {
-                        singlePriceNode->EdgeColor.G = 255;
-                        singlePriceNode->TextFlags |= (byte) TextFlags.Edge;
-                    } else {
                         singlePriceNode->EdgeColor.G = 0;
+                        singlePriceNode->EdgeColor.B = 0;
+                        singlePriceNode->EdgeColor.A = 0;
                     }
                 }
 

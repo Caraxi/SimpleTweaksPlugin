@@ -16,6 +16,16 @@ namespace SimpleTweaksPlugin.TweakSystem {
                     return false;
             }
         }
+
+        public static bool SimpleColorEditor(string name, ref object configOption) {
+            switch (configOption) {
+                case Vector4 v4 when ImGui.ColorEdit4(name, ref v4, ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaPreview | ImGuiColorEditFlags.AlphaBar):
+                    configOption = v4;
+                    return true;
+                default:
+                    return false;
+            }
+        }
         
     }
 }
