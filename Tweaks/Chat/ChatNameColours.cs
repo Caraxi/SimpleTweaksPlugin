@@ -134,7 +134,12 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
                     ImGui.SameLine();
                     int v = fc.ColourKey;
                     ImGui.SetNextItemWidth(50 * ImGui.GetIO().FontGlobalScale);
-                    ImGui.InputInt($"##value{fc.PlayerName}@{fc.WorldName}", ref v, 0, 0);
+                    if (ImGui.InputInt($"##value{fc.PlayerName}@{fc.WorldName}", ref v, 0, 0)) {
+                        var uiColor = uiColorSheet.GetRow((uint)v);
+                        if (uiColor != null) {
+                            fc.ColourKey = (ushort)v;
+                        }
+                    }
                     ImGui.SameLine();
                     if (ImGui.Button($"+##{fc.PlayerName}@{fc.WorldName}", buttonSize)) {
                         var c = fc.ColourKey + 1U;
