@@ -5,15 +5,8 @@ using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using SimpleTweaksPlugin.Tweaks;
+using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
-
-namespace SimpleTweaksPlugin {
-    public partial class SimpleTweaksPluginConfig {
-        public bool ShouldSerializeHideMouseAfterInactivity() => this.HideMouseAfterInactivity != null;
-        public HideMouseAfterInactivity.Config HideMouseAfterInactivity = null;
-    }
-}
 
 namespace SimpleTweaksPlugin.Tweaks {
     public unsafe class HideMouseAfterInactivity : Tweak {
@@ -26,115 +19,67 @@ namespace SimpleTweaksPlugin.Tweaks {
             public bool NoHideInCutscenes;
             public bool NoHideInCombat = true;
             public bool NoHideInInstance = true;
+            public bool NoHideWhileHovering = true;
         }
 
         public Config TweakConfig { get; private set; }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool change) => {
-            change |= ImGui.InputFloat("Hide after (seconds)", ref this.TweakConfig.InactiveSeconds, 0.1f);
-            change |= ImGui.Checkbox("Don't hide in cutscenes", ref this.TweakConfig.NoHideInCutscenes);
-            change |= ImGui.Checkbox("Don't hide in combat", ref this.TweakConfig.NoHideInCombat);
-            change |= ImGui.Checkbox("Don't hide in instances", ref this.TweakConfig.NoHideInInstance);
+            change |= ImGui.InputFloat("Hide after (seconds)", ref TweakConfig.InactiveSeconds, 0.1f);
+            change |= ImGui.Checkbox("Don't hide in cutscenes", ref TweakConfig.NoHideInCutscenes);
+            change |= ImGui.Checkbox("Don't hide in combat", ref TweakConfig.NoHideInCombat);
+            change |= ImGui.Checkbox("Don't hide in instances", ref TweakConfig.NoHideInInstance);
+            change |= ImGui.Checkbox("Don't hide while on interactable", ref TweakConfig.NoHideWhileHovering);
         };
 
         private static class Signatures {
-            internal const string SetCursorVisible = "E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 40 84 F6";
-            internal const string StageOffset = "49 8D 9D ?? ?? ?? ?? 80 7B 0E 00 48 89 5D C0 C6 43 12 00 0F 84";
             internal const string MouseButtonHoldState = "8B 05 ?? ?? ?? ?? 48 89 5C 24 ?? 41 8B DF 38 1D";
         }
 
-        private int? _stageOffset;
-        private delegate*<IntPtr, byte, IntPtr> _setCursorVisible;
-        private IntPtr _mouseButtonHoldState = IntPtr.Zero;
-
-        private Vector2 _lastPosition = Vector2.Zero;
-        private readonly Stopwatch _lastMoved = new();
+        private IntPtr mouseButtonHoldState = IntPtr.Zero;
+        private Vector2 lastPosition = Vector2.Zero;
+        private readonly Stopwatch lastMoved = new();
 
         public override void Enable() {
-            this.TweakConfig = this.LoadConfig<Config>() ?? this.PluginConfig.HideMouseAfterInactivity ?? new Config();
+            this.TweakConfig = LoadConfig<Config>() ?? new Config();
 
-            if (this._stageOffset == null && Service.SigScanner.TryScanText(Signatures.StageOffset, out var offsetPtr)) {
-                this._stageOffset = *(int*) (offsetPtr + 3);
+            if (mouseButtonHoldState == IntPtr.Zero) {
+                Service.SigScanner.TryGetStaticAddressFromSig(Signatures.MouseButtonHoldState, out mouseButtonHoldState);
             }
 
-            if (this._setCursorVisible == null && Service.SigScanner.TryScanText(Signatures.SetCursorVisible, out var setVisible)) {
-                this._setCursorVisible = (delegate*<IntPtr, byte, IntPtr>) setVisible;
-            }
-
-            if (this._mouseButtonHoldState == IntPtr.Zero) {
-                Service.SigScanner.TryGetStaticAddressFromSig(Signatures.MouseButtonHoldState, out this._mouseButtonHoldState);
-            }
-
-            Service.PluginInterface.UiBuilder.Draw += this.GetInfo;
-            Service.Framework.Update += this.HideMouse;
+            Service.PluginInterface.UiBuilder.Draw += GetInfo;
+            Service.Framework.Update += HideMouse;
 
             base.Enable();
         }
 
         public override void Disable() {
-            Service.Framework.Update -= this.HideMouse;
-            Service.PluginInterface.UiBuilder.Draw -= this.GetInfo;
+            Service.Framework.Update -= HideMouse;
+            Service.PluginInterface.UiBuilder.Draw -= GetInfo;
+            SaveConfig(TweakConfig);
 
             base.Disable();
         }
 
         private void GetInfo() {
-            var mouseDown = this._mouseButtonHoldState != IntPtr.Zero && *(byte*) this._mouseButtonHoldState > 0;
-            if (ImGui.GetMousePos() != this._lastPosition || mouseDown) {
-                this._lastMoved.Restart();
+            var mouseDown = mouseButtonHoldState != IntPtr.Zero && *(byte*) mouseButtonHoldState > 0;
+            if (ImGui.GetMousePos() != lastPosition || mouseDown) {
+                this.lastMoved.Restart();
             }
 
-            this._lastPosition = ImGui.GetMousePos();
+            this.lastPosition = ImGui.GetMousePos();
         }
 
         private void HideMouse(Framework framework) {
-            if (this._stageOffset == null) {
-                return;
+            if (TweakConfig.NoHideInCutscenes && Service.Condition.Cutscene()) return;
+            if (TweakConfig.NoHideInCombat && Service.Condition[ConditionFlag.InCombat]) return;
+            if (TweakConfig.NoHideInInstance && Service.Condition.Duty()) return;
+            var stage = AtkStage.GetSingleton();
+            if (TweakConfig.NoHideWhileHovering && stage->AtkCursor.Type != AtkCursor.CursorType.Arrow && !Service.Condition.Cutscene()) return;
+
+            if (lastMoved.Elapsed > TimeSpan.FromSeconds(TweakConfig.InactiveSeconds)) {
+                stage->AtkCursor.Hide();
             }
-
-            if (this.TweakConfig.NoHideInCutscenes) {
-                var inCutscene = Service.Condition[ConditionFlag.WatchingCutscene]
-                                 || Service.Condition[ConditionFlag.WatchingCutscene78];
-
-                if (inCutscene) {
-                    return;
-                }
-            }
-
-            if (this.TweakConfig.NoHideInCombat && Service.Condition[ConditionFlag.InCombat]) {
-                return;
-            }
-
-            if (this.TweakConfig.NoHideInInstance) {
-                var inInstance = Service.Condition[ConditionFlag.BoundByDuty]
-                                 || Service.Condition[ConditionFlag.BoundByDuty56]
-                                 || Service.Condition[ConditionFlag.BoundByDuty95];
-
-                if (inInstance) {
-                    return;
-                }
-            }
-
-            var atkStage = (IntPtr) AtkStage.GetSingleton();
-            var offset = atkStage + this._stageOffset.Value;
-            var isVisible = *(byte*) offset == 0;
-            if (isVisible && this._lastMoved.Elapsed > TimeSpan.FromSeconds(this.TweakConfig.InactiveSeconds)) {
-                this.SetCursorVisibility(false);
-            }
-        }
-
-        private void SetCursorVisibility(bool visible) {
-            if (this._stageOffset == null || this._setCursorVisible == null) {
-                return;
-            }
-
-            var atkStage = (IntPtr) AtkStage.GetSingleton();
-            if (atkStage == IntPtr.Zero) {
-                return;
-            }
-
-            var offset = atkStage + this._stageOffset.Value;
-            this._setCursorVisible(offset, (byte) (visible ? 1 : 0));
         }
     }
 }
