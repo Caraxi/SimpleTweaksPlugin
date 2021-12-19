@@ -7,13 +7,10 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
-using Action = Lumina.Excel.GeneratedSheets.Action;
-using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
-using HotBarSlot = FFXIVClientStructs.FFXIV.Client.UI.Misc.HotBarSlot;
-using HotbarSlotType = FFXIVClientStructs.FFXIV.Client.UI.Misc.HotbarSlotType;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
@@ -74,7 +71,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public class Configs : TweakConfig {
             public Font Font = Font.Default;
             public int FontSizeAdjust;
-            public bool SimpleMode;
             public Vector4 CooldownColour = new(1, 1, 1, 1);
             public Vector4 CooldownEdgeColour = new(0.2F, 0.2F, 0.2F, 1);
             public Vector4 InvalidColour = new(0.85f, 0.25f, 0.25f, 1);
@@ -103,21 +99,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
             ImGui.SetNextItemWidth(160 * ImGui.GetIO().FontGlobalScale);
             hasChanged |= ImGui.SliderInt(LocString("Font Size Adjust") + "##st_uiAdjustment_largEcooldownCounter_fontSize", ref Config.FontSizeAdjust, -15, 30);
-            hasChanged |= ImGui.Checkbox(LocString("Simple Mode") + "##st_uiAdjustment_largeCooldownCounter_simpleMode", ref Config.SimpleMode);
-            if (ImGui.IsItemHovered()) {
-                ImGui.BeginTooltip();
-                ImGui.Text(LocString("Simple Mode"));
-                ImGui.Separator();
-                ImGui.Text(LocString("SimpleModeDescription", "Reverts to old cooldown checking.\nFixes issues with XIVCombo.\nHas some issues when out of range.\nCannot change colour of text with Simple Mode enabled."));
-                ImGui.EndTooltip();
-            }
+            hasChanged |= ImGui.ColorEdit4(LocString("Text Colour") + "##largeCooldownCounter", ref Config.CooldownColour);
+            hasChanged |= ImGui.ColorEdit4(LocString("Edge Colour") + "##largeCooldownCounter", ref Config.CooldownEdgeColour);
+            hasChanged |= ImGui.ColorEdit4(LocString("Out Of Range Colour") + "##largeCooldownCounter", ref Config.InvalidColour);
+            hasChanged |= ImGui.ColorEdit4(LocString("Out Of Range Edge Colour") + "##largeCooldownCounter", ref Config.InvalidEdgeColour);
 
-            if (!Config.SimpleMode) {
-                hasChanged |= ImGui.ColorEdit4(LocString("Text Colour") + "##largeCooldownCounter", ref Config.CooldownColour);
-                hasChanged |= ImGui.ColorEdit4(LocString("Edge Colour") + "##largeCooldownCounter", ref Config.CooldownEdgeColour);
-                hasChanged |= ImGui.ColorEdit4(LocString("Out Of Range Colour") + "##largeCooldownCounter", ref Config.InvalidColour);
-                hasChanged |= ImGui.ColorEdit4(LocString("Out Of Range Edge Colour") + "##largeCooldownCounter", ref Config.InvalidEdgeColour);
-            }
 
         };
 
@@ -181,47 +167,42 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (cooldownTextNode == null) return;
 
             if (reset == false) {
-                if (Config.SimpleMode) {
-                    if (cooldownTextNode->EdgeColor.R != 0x33) reset = true;
+                if (slotStruct == null) {
+                    reset = true;
                 } else {
-                    if (slotStruct == null) {
-                        reset = true;
-                    } else {
-                        int recastGroup;
-                        switch (slotStruct->CommandType) {
-                            case HotbarSlotType.Action:
-                                var adjustedActionId = slotStruct->CommandType == HotbarSlotType.Action ? actionManager->GetAdjustedActionId(slotStruct->CommandId) : slotStruct->CommandId;
-                                recastGroup = actionManager->GetRecastGroup(1, adjustedActionId);
-                                if (recastGroup is 0 or 57) {
-                                    reset = true;
-                                } else {
-                                    var recastDetail = actionManager->GetRecastGroupDetail(recastGroup);
-                                    if (recastDetail == null || recastDetail->IsActive == 0) reset = true;
-                                }
-                                break;
-                            case HotbarSlotType.Item:
-                                recastGroup = actionManager->GetRecastGroup(2, slotStruct->CommandId);
-                                if (recastGroup is 0) {
-                                    reset = true;
-                                } else {
-                                    var recastDetail = actionManager->GetRecastGroupDetail(recastGroup);
-                                    if (recastDetail == null || recastDetail->IsActive == 0) reset = true;
-                                }
-                                break;
-                            case HotbarSlotType.GeneralAction:
-                                recastGroup = actionManager->GetRecastGroup(5, slotStruct->CommandId);
-                                if (recastGroup is 0) {
-                                    reset = true;
-                                } else {
-                                    var recastDetail = actionManager->GetRecastGroupDetail(recastGroup);
-                                    if (recastDetail == null || recastDetail->IsActive == 0) reset = true;
-                                }
-                                break;
-                            default:
+                    int recastGroup;
+                    switch (slotStruct->CommandType) {
+                        case HotbarSlotType.Action:
+                            var adjustedActionId = slotStruct->CommandType == HotbarSlotType.Action ? actionManager->GetAdjustedActionId(slotStruct->CommandId) : slotStruct->CommandId;
+                            recastGroup = actionManager->GetRecastGroup(1, adjustedActionId);
+                            if (recastGroup is 0 or 57) {
                                 reset = true;
-                                break;
-                        }
-
+                            } else {
+                                var recastDetail = actionManager->GetRecastGroupDetail(recastGroup);
+                                if (recastDetail == null || recastDetail->IsActive == 0) reset = true;
+                            }
+                            break;
+                        case HotbarSlotType.Item:
+                            recastGroup = actionManager->GetRecastGroup(2, slotStruct->CommandId);
+                            if (recastGroup is 0) {
+                                reset = true;
+                            } else {
+                                var recastDetail = actionManager->GetRecastGroupDetail(recastGroup);
+                                if (recastDetail == null || recastDetail->IsActive == 0) reset = true;
+                            }
+                            break;
+                        case HotbarSlotType.GeneralAction:
+                            recastGroup = actionManager->GetRecastGroup(5, slotStruct->CommandId);
+                            if (recastGroup is 0) {
+                                reset = true;
+                            } else {
+                                var recastDetail = actionManager->GetRecastGroupDetail(recastGroup);
+                                if (recastDetail == null || recastDetail->IsActive == 0) reset = true;
+                            }
+                            break;
+                        default:
+                            reset = true;
+                            break;
                     }
                 }
             }
@@ -241,39 +222,36 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 cooldownTextNode->AlignmentFontType = (byte)((0x10 * (byte) Config.Font) | (byte) AlignmentType.Center);
                 cooldownTextNode->FontSize = GetFontSize();
 
-                if (!Config.SimpleMode && slotStruct->CommandType is HotbarSlotType.Action or HotbarSlotType.GeneralAction or HotbarSlotType.Item) {
+                var self = GameObjectManager.GetGameObjectByIndex(0);
+                if (self != null) {
+                    var actionId = actionManager->GetAdjustedActionId(slotStruct->CommandId);
+                    var currentTarget = TargetSystem.Instance()->GetCurrentTarget();
+                    if (currentTarget == null) currentTarget = self;
 
-                    var self = GameObjectManager.GetGameObjectByIndex(0);
-                    if (self != null) {
-                        var actionId = actionManager->GetAdjustedActionId(slotStruct->CommandId);
-                        var currentTarget = TargetSystem.Instance()->GetCurrentTarget();
-                        if (currentTarget == null) currentTarget = self;
+                    var range = ActionManager.GetActionRange(actionId);
+                    var rangeError = ActionManager.GetActionInRangeOrLoS(actionId, self, currentTarget);
 
-                        var range = ActionManager.GetActionRange(actionId);
-                        var rangeError = ActionManager.GetActionInRangeOrLoS(actionId, self, currentTarget);
+                    if ((slotStruct->CommandType is not (HotbarSlotType.Item or HotbarSlotType.GeneralAction)) && range > 0 && rangeError == 566) { // Out of Range
+                        cooldownTextNode->TextColor.R = (byte)(Config.InvalidColour.X * 255f);
+                        cooldownTextNode->TextColor.G = (byte)(Config.InvalidColour.Y * 255f);
+                        cooldownTextNode->TextColor.B = (byte)(Config.InvalidColour.Z * 255f);
+                        cooldownTextNode->TextColor.A = (byte)(Config.InvalidColour.W * 255f);
 
-                        if ((slotStruct->CommandType is not (HotbarSlotType.Item or HotbarSlotType.GeneralAction)) && range > 0 && rangeError == 566) { // Out of Range
-                            cooldownTextNode->TextColor.R = (byte)(Config.InvalidColour.X * 255f);
-                            cooldownTextNode->TextColor.G = (byte)(Config.InvalidColour.Y * 255f);
-                            cooldownTextNode->TextColor.B = (byte)(Config.InvalidColour.Z * 255f);
-                            cooldownTextNode->TextColor.A = (byte)(Config.InvalidColour.W * 255f);
+                        cooldownTextNode->EdgeColor.R = (byte)(Config.InvalidEdgeColour.X * 255f);
+                        cooldownTextNode->EdgeColor.G = (byte)(Config.InvalidEdgeColour.Y * 255f);
+                        cooldownTextNode->EdgeColor.B = (byte)(Config.InvalidEdgeColour.Z * 255f);
+                        cooldownTextNode->EdgeColor.A = (byte)(Config.InvalidEdgeColour.W * 255f);
 
-                            cooldownTextNode->EdgeColor.R = (byte)(Config.InvalidEdgeColour.X * 255f);
-                            cooldownTextNode->EdgeColor.G = (byte)(Config.InvalidEdgeColour.Y * 255f);
-                            cooldownTextNode->EdgeColor.B = (byte)(Config.InvalidEdgeColour.Z * 255f);
-                            cooldownTextNode->EdgeColor.A = (byte)(Config.InvalidEdgeColour.W * 255f);
+                    } else {
+                        cooldownTextNode->TextColor.R = (byte)(Config.CooldownColour.X * 255f);
+                        cooldownTextNode->TextColor.G = (byte)(Config.CooldownColour.Y * 255f);
+                        cooldownTextNode->TextColor.B = (byte)(Config.CooldownColour.Z * 255f);
+                        cooldownTextNode->TextColor.A = (byte)(Config.CooldownColour.W * 255f);
 
-                        } else {
-                            cooldownTextNode->TextColor.R = (byte)(Config.CooldownColour.X * 255f);
-                            cooldownTextNode->TextColor.G = (byte)(Config.CooldownColour.Y * 255f);
-                            cooldownTextNode->TextColor.B = (byte)(Config.CooldownColour.Z * 255f);
-                            cooldownTextNode->TextColor.A = (byte)(Config.CooldownColour.W * 255f);
-
-                            cooldownTextNode->EdgeColor.R = (byte)(Config.CooldownEdgeColour.X * 255f);
-                            cooldownTextNode->EdgeColor.G = (byte)(Config.CooldownEdgeColour.Y * 255f);
-                            cooldownTextNode->EdgeColor.B = (byte)(Config.CooldownEdgeColour.Z * 255f);
-                            cooldownTextNode->EdgeColor.A = (byte)(Config.CooldownEdgeColour.W * 255f);
-                        }
+                        cooldownTextNode->EdgeColor.R = (byte)(Config.CooldownEdgeColour.X * 255f);
+                        cooldownTextNode->EdgeColor.G = (byte)(Config.CooldownEdgeColour.Y * 255f);
+                        cooldownTextNode->EdgeColor.B = (byte)(Config.CooldownEdgeColour.Z * 255f);
+                        cooldownTextNode->EdgeColor.A = (byte)(Config.CooldownEdgeColour.W * 255f);
                     }
                 }
             }
