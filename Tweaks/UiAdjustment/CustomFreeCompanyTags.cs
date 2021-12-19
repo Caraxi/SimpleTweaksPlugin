@@ -90,6 +90,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                         var resetForeground = false;
                         var resetGlow = false;
+                        var resetItalic = false;
                         
 
                         foreach (var t in customization.Replacement) {
@@ -118,12 +119,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                                             payloads.Add(new TextPayload(companyTag));
                                             break;
                                         }
-    #if DEBUG
-                                        case "<flags>": {
-                                            payloads.Add(new TextPayload($"{namePlateInfo->Flags:X}"));
+                                        case "<i>": {
+                                            payloads.Add(new EmphasisItalicPayload(true));
+                                            resetItalic = true;
                                             break;
                                         }
-#endif
+                                        case "</i>": {
+                                            payloads.Add(new EmphasisItalicPayload(false));
+                                            resetItalic = false;
+                                            break;
+                                        }
                                         case { } s when s.StartsWith("<color:"): {
                                             var k = s.Substring(7, s.Length - 8);
                                             if (ushort.TryParse(k, out var colorKey)) {
@@ -154,6 +159,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                                             }
                                             break;
                                         }
+                                        case { } s when s.StartsWith("<icon:"): {
+                                            var k = s.Substring(6, s.Length - 7);
+                                            if (uint.TryParse(k, out var iconKey)) {
+                                                payloads.Add(new IconPayload((BitmapFontIcon) iconKey));
+                                                resetGlow = iconKey != 0;
+                                            } else {
+                                                payloads.Add(new TextPayload(cText));
+                                            }
+                                            break;
+                                        }
                                         default: {
                                             payloads.Add(new TextPayload(cText));
                                             break;
@@ -177,6 +192,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                         if (resetForeground) payloads.Add(new UIForegroundPayload(0));
                         if (resetGlow) payloads.Add(new UIGlowPayload(0));
+                        if (resetItalic) payloads.Add(new EmphasisItalicPayload(false));
                         
                         payloads.Add(new TextPayload("»"));
                         namePlateInfo->FcName.SetSeString(new SeString(payloads));
@@ -263,8 +279,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 ImGui.TableNextColumn();
                 ImGui.TableNextColumn();
                 ImGui.TableNextColumn();
-                ImGui.TextColored(new Vector4(0, colourLinkHovered ? 1f : 0.5f, 0.5f, 1), LocString("ColourHelpLink", "Click here for a list of supported colours and glows."));
-                if (ImGui.IsItemClicked()) Common.OpenBrowser("https://i.imgur.com/cZceCI3.png");
+                ImGui.TextColored(new Vector4(0, colourLinkHovered ? 1f : 0.5f, 0.5f, 1), LocString("ColourHelpLink", "Click here for a list of supported icons, colours, and glows."));
+                if (ImGui.IsItemClicked()) Common.OpenBrowser("https://raw.githubusercontent.com/Caraxi/SimpleTweaksPlugin/main/images/placeholderHelp.png");
                 if (colourLinkHovered = ImGui.IsItemHovered()) {
                     ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
                 }
@@ -336,6 +352,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                             ImGui.TableHeadersRow();
 
                             ImGui.TableNextColumn();
+                            ImGui.Text("<i> & </i>");
+                            ImGui.TableNextColumn();
+                            ImGui.Text("Begin and end Italics.");
+                            ImGui.TableNextColumn();
                             ImGui.Text("<fctag>");
                             ImGui.TableNextColumn();
                             ImGui.Text("The character's existing FC tag.");
@@ -353,6 +373,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                             ImGui.Text("<colour:#>\n<glow:#>");
                             ImGui.TableNextColumn();
                             ImGui.Text($"Change the colour of the tag.\nReplace # with a colour number.");
+                            ImGui.TableNextColumn();
+                            ImGui.Text("<icon:#>");
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"A supported icon.\nReplace # with the icon number.");
                             ImGui.EndTable();
                         }
 

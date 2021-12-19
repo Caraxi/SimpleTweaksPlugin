@@ -254,7 +254,6 @@ namespace SimpleTweaksPlugin.Debugging {
         }
 
         private List<AddonResult> GetAtkUnitBaseAtPosition(Vector2 position) {
-            SimpleLog.Log($">> GetAtkUnitBaseAtPosition");
             var list = new List<AddonResult>();
             var stage = AtkStage.GetSingleton();
             var unitManagers = &stage->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
@@ -276,7 +275,6 @@ namespace SimpleTweaksPlugin.Debugging {
                     list.Add(addonResult);
                 }
             }
-            SimpleLog.Log($"<< GetAtkUnitBaseAtPosition");
             return list;
         }
 

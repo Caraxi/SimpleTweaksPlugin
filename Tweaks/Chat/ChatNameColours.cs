@@ -108,58 +108,8 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
                     ImGui.TableNextColumn();
                     ImGui.Text($"{fc.WorldName}");
                     ImGui.TableNextColumn();
+                    ImGuiExt.UiColorPicker($"##picker_{fc.PlayerName}@{fc.WorldName}", ref fc.ColourKey);
 
-                    if (ImGui.Button($"-##{fc.PlayerName}@{fc.WorldName}", buttonSize)) {
-                        var c = fc.ColourKey - 1U;
-                        var foreground = 0U;
-                        while (foreground == 0) {
-                            if (c == 0) {
-                                c = uiColorSheet.Max(i => i.RowId);
-                            }
-
-                            var uiColor = uiColorSheet.GetRow(c);
-                            if (uiColor == null) {
-                                c--;
-                            } else {
-                                if (uiColor.UIForeground != 0) {
-                                    foreground = uiColor.UIForeground;
-                                } else {
-                                    c--;
-                                }
-                            }
-                        }
-
-                        fc.ColourKey = (ushort) c;
-                    }
-                    ImGui.SameLine();
-                    int v = fc.ColourKey;
-                    ImGui.SetNextItemWidth(50 * ImGui.GetIO().FontGlobalScale);
-                    ImGui.InputInt($"##value{fc.PlayerName}@{fc.WorldName}", ref v, 0, 0);
-                    ImGui.SameLine();
-                    if (ImGui.Button($"+##{fc.PlayerName}@{fc.WorldName}", buttonSize)) {
-                        var c = fc.ColourKey + 1U;
-                        var foreground = 0U;
-                        while (foreground == 0) {
-
-                            var uiColor = uiColorSheet.GetRow(c);
-                            if (uiColor == null) {
-                                if (c > uiColorSheet.Max(i => i.RowId)) {
-                                    c = 0;
-                                } else {
-                                    c++;
-                                }
-                            } else {
-                                if (uiColor.UIForeground != 0) {
-                                    foreground = uiColor.UIForeground;
-                                } else {
-                                    c++;
-                                }
-                            }
-                        }
-
-                        fc.ColourKey = (ushort) c;
-
-                    }
                 }
 
                 if (del != null) {

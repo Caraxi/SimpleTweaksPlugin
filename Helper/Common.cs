@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -272,6 +273,13 @@ namespace SimpleTweaksPlugin.Helper {
             }
         }
 
+        public static Vector4 UiColorToVector4(uint col) {
+            var fa = col & 255;
+            var fb = (col >> 8) & 255;
+            var fg = (col >> 16) & 255;
+            var fr = (col >> 24) & 255;
+            return new Vector4(fr / 255f, fg / 255f, fb / 255f, fa / 255f);
+        }
 
         public static AtkResNode* GetNodeByID(AtkUldManager uldManager, uint nodeId, NodeType? type = null) => GetNodeByID<AtkResNode>(uldManager, nodeId, type);
         public static T* GetNodeByID<T>(AtkUldManager uldManager, uint nodeId, NodeType? type = null) where T : unmanaged {
