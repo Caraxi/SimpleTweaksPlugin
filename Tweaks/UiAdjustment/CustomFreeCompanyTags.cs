@@ -90,6 +90,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                         var resetForeground = false;
                         var resetGlow = false;
+                        var resetItalic = false;
                         
 
                         foreach (var t in customization.Replacement) {
@@ -118,12 +119,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                                             payloads.Add(new TextPayload(companyTag));
                                             break;
                                         }
-    #if DEBUG
-                                        case "<flags>": {
-                                            payloads.Add(new TextPayload($"{namePlateInfo->Flags:X}"));
+                                        case "<i>": {
+                                            payloads.Add(new EmphasisItalicPayload(true));
+                                            resetItalic = true;
                                             break;
                                         }
-#endif
+                                        case "</i>": {
+                                            payloads.Add(new EmphasisItalicPayload(false));
+                                            resetItalic = false;
+                                            break;
+                                        }
                                         case { } s when s.StartsWith("<color:"): {
                                             var k = s.Substring(7, s.Length - 8);
                                             if (ushort.TryParse(k, out var colorKey)) {
@@ -177,6 +182,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                         if (resetForeground) payloads.Add(new UIForegroundPayload(0));
                         if (resetGlow) payloads.Add(new UIGlowPayload(0));
+                        if (resetItalic) payloads.Add(new EmphasisItalicPayload(false));
                         
                         payloads.Add(new TextPayload("»"));
                         namePlateInfo->FcName.SetSeString(new SeString(payloads));
@@ -335,6 +341,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                             
                             ImGui.TableHeadersRow();
 
+                            ImGui.TableNextColumn();
+                            ImGui.Text("<i> & </i>");
+                            ImGui.TableNextColumn();
+                            ImGui.Text("Begin and end Italics.");
                             ImGui.TableNextColumn();
                             ImGui.Text("<fctag>");
                             ImGui.TableNextColumn();
