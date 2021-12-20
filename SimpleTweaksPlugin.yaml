@@ -15,4 +15,5 @@ changelog: |-
   - [Custom Free Company Tags] Allow for any icon.
   - [Adjust Equipment Positions] Fixed position of glamour error icons.
   - [Fix Target] Fix bug causing tweak to attempt targeting untargetable objects.
+  - New Experimental Tweak: Character Window Job Switcher - Click jobs in the Character window to switch.
 
