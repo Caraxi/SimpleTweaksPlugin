@@ -6,3 +6,12 @@ description: |-
 punchline: This was supposed to be simple...
 repo_url: https://github.com/Caraxi/SimpleTweaksPlugin
 dalamud_api_level: 5
+changelog: |-
+  1.6.5.6
+  - [Hide Mouse After Inactivity] Fixed showing gamepad cursor when hiding mouse.
+  - [Chat Name Colour] Added colour picker instead of number input.
+  - [Large Cooldown Counter] Removed Simple Mode
+  - [Custom Free Company Tags] Italic Support
+  - [Custom Free Company Tags] Allow for any icon.
+  - [Adjust Equipment Positions] Fixed position of glamour error icons.
+
