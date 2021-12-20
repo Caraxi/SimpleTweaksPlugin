@@ -196,6 +196,15 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             MoveNode(atkUnitBase, 39, 0, 249); // Legs
             MoveNode(atkUnitBase, 40, 0, 296); // Feet
 
+            // Glamour Error Icons
+            MoveNode(atkUnitBase, 32, 18, 25); // Job Stone
+            MoveNode(atkUnitBase, 20, 18, 86); // Main Hand
+            MoveNode(atkUnitBase, 22, 18, 133); // Head
+            MoveNode(atkUnitBase, 23, 18, 180); // Body
+            MoveNode(atkUnitBase, 25, 18, 227); // Hands
+            MoveNode(atkUnitBase, 24, 18, 274); // Legs
+            MoveNode(atkUnitBase, 26, 18, 321); // Feet
+
             return retVal;
         }
 
