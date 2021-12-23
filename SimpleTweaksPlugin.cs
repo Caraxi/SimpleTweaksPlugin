@@ -102,9 +102,8 @@ namespace SimpleTweaksPlugin {
             SetupLocalization();
             
             UiHelper.Setup(Service.SigScanner);
-            #if DEBUG
+
             DebugManager.SetPlugin(this);
-            #endif
 
             Common = new Common();
 
@@ -295,11 +294,10 @@ namespace SimpleTweaksPlugin {
                 Service.PluginInterface.UiBuilder.AddNotification($"{e.Tweak.Name} has been disabled due to an error.", "Simple Tweaks", NotificationType.Error, 5000);
             }
 
-#if DEBUG
             if (DebugManager.Enabled) {
                 DebugManager.DrawDebugWindow(ref DebugManager.Enabled);
             }
-#endif
+
             var windowWasOpen = drawConfigWindow;
             drawConfigWindow = drawConfigWindow && PluginConfig.DrawConfigUI();
 
