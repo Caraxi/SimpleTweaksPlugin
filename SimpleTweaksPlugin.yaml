@@ -2,7 +2,7 @@ name: Simple Tweaks Plugin
 author: Caraxi
 description: |-
   A collection of Quality of Life tweaks. Aiming to improve the experience without changing anything drastically.
-  All changes are toggleable, with everything disabled by default. Visit the Repo for a full list of tweaks. (Globe icon below)\
+  All changes are toggleable, with everything disabled by default. Visit the Repo for a full list of tweaks. (Globe icon below)
 punchline: This was supposed to be simple...
 repo_url: https://github.com/Caraxi/SimpleTweaksPlugin
 dalamud_api_level: 5
@@ -15,7 +15,7 @@ changelog: |-
   - [Custom Free Company Tags] Allow for any icon.
   - [Adjust Equipment Positions] Fixed position of glamour error icons.
   - [Fix Target] Fix bug causing tweak to attempt targeting untargetable objects.
-  - [Auto Oen Loot Window] Fixed loot window opening during cutscenes.
+  - [Auto Open Loot Window] Fixed loot window opening during cutscenes.
   - New Experimental Tweak: Character Window Job Switcher - Click jobs in the Character window to switch.
   - New Tweak: Show Process ID Command
   - New Tweak: Duplicate Keybind Hints Between Hotbars
