@@ -142,12 +142,17 @@ namespace SimpleTweaksPlugin.Debugging {
 
             if (sidebarSize < 150) {
                 sidebarSize = 150;
-                foreach (var k in debugPages.Keys) {
-                    var s = ImGui.CalcTextSize(k).X + ImGui.GetStyle().FramePadding.X * 5 + ImGui.GetStyle().ScrollbarSize;
-                    if (s > sidebarSize) {
-                        sidebarSize = s;
+                try {
+                    foreach (var k in debugPages.Keys) {
+                        var s = ImGui.CalcTextSize(k).X + ImGui.GetStyle().FramePadding.X * 5 + ImGui.GetStyle().ScrollbarSize;
+                        if (s > sidebarSize) {
+                            sidebarSize = s;
+                        }
                     }
+                } catch (Exception ex) {
+                    SimpleLog.Error(ex);
                 }
+
             }
 
             ImGui.SetNextWindowSize(new Vector2(500, 350) * ImGui.GetIO().FontGlobalScale, ImGuiCond.FirstUseEver);
