@@ -159,6 +159,51 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             return (byte) s;
         }
         
+        private int GetRecastGroup(HotbarSlotType type, uint id, HotBarSlot* slot) {
+            var recastGroup = 0;
+
+            switch (type) {
+                case HotbarSlotType.Action:
+                    var adjustedActionId = type == HotbarSlotType.Action ? actionManager->GetAdjustedActionId(id) : id;
+                    recastGroup = actionManager->GetRecastGroup(1, adjustedActionId);
+                    if (recastGroup == 57) recastGroup = 0;
+                    break;
+                case HotbarSlotType.Item:
+                    recastGroup = actionManager->GetRecastGroup(2, id);
+
+                    break;
+                case HotbarSlotType.GeneralAction:
+                    recastGroup = actionManager->GetRecastGroup(5, id);
+                    break;
+                case HotbarSlotType.Macro:
+                    if (slot->IconTypeA != HotbarSlotType.Macro) {
+                        recastGroup = GetRecastGroup(slot->IconTypeA, slot->IconA, slot);
+                    }
+                    break;
+            }
+
+            return recastGroup;
+        }
+
+        private (float range, uint error) GetRangeError(HotbarSlotType type, uint id, HotBarSlot* slot, GameObject* source, GameObject* target) {
+            var range = 0f;
+            var rangeError = 0U;
+
+            switch (type) {
+                case HotbarSlotType.Action:
+                    var actionId = actionManager->GetAdjustedActionId(id);
+                    range = ActionManager.GetActionRange(actionId);
+                    rangeError = ActionManager.GetActionInRangeOrLoS(actionId, source, target);
+                    break;
+                case HotbarSlotType.Macro:
+                    if (slot->IconTypeA != HotbarSlotType.Macro) {
+                        return GetRangeError(slot->IconTypeA, slot->IconA, slot, source, target);
+                    }
+                    break;
+            }
+            return (range, rangeError);
+        }
+
         private void UpdateIcon(AtkComponentNode* iconComponent, HotBarSlot* slotStruct, bool reset = false) {
             if (iconComponent == null) return;
             var cooldownTextNode = (AtkTextNode*)iconComponent->Component->UldManager.NodeList[13];
@@ -170,39 +215,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 if (slotStruct == null) {
                     reset = true;
                 } else {
-                    int recastGroup;
-                    switch (slotStruct->CommandType) {
-                        case HotbarSlotType.Action:
-                            var adjustedActionId = slotStruct->CommandType == HotbarSlotType.Action ? actionManager->GetAdjustedActionId(slotStruct->CommandId) : slotStruct->CommandId;
-                            recastGroup = actionManager->GetRecastGroup(1, adjustedActionId);
-                            if (recastGroup is 0 or 57) {
-                                reset = true;
-                            } else {
-                                var recastDetail = actionManager->GetRecastGroupDetail(recastGroup);
-                                if (recastDetail == null || recastDetail->IsActive == 0) reset = true;
-                            }
-                            break;
-                        case HotbarSlotType.Item:
-                            recastGroup = actionManager->GetRecastGroup(2, slotStruct->CommandId);
-                            if (recastGroup is 0) {
-                                reset = true;
-                            } else {
-                                var recastDetail = actionManager->GetRecastGroupDetail(recastGroup);
-                                if (recastDetail == null || recastDetail->IsActive == 0) reset = true;
-                            }
-                            break;
-                        case HotbarSlotType.GeneralAction:
-                            recastGroup = actionManager->GetRecastGroup(5, slotStruct->CommandId);
-                            if (recastGroup is 0) {
-                                reset = true;
-                            } else {
-                                var recastDetail = actionManager->GetRecastGroupDetail(recastGroup);
-                                if (recastDetail == null || recastDetail->IsActive == 0) reset = true;
-                            }
-                            break;
-                        default:
-                            reset = true;
-                            break;
+                    int recastGroup = GetRecastGroup(slotStruct->CommandType, slotStruct->CommandId, slotStruct);
+                    if (recastGroup is 0) {
+                        reset = true;
+                    } else {
+                        var recastDetail = actionManager->GetRecastGroupDetail(recastGroup);
+                        if (recastDetail == null || recastDetail->IsActive == 0) reset = true;
                     }
                 }
             }
@@ -224,14 +242,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 var self = GameObjectManager.GetGameObjectByIndex(0);
                 if (self != null) {
-                    var actionId = actionManager->GetAdjustedActionId(slotStruct->CommandId);
                     var currentTarget = TargetSystem.Instance()->GetCurrentTarget();
                     if (currentTarget == null) currentTarget = self;
-
-                    var range = ActionManager.GetActionRange(actionId);
-                    var rangeError = ActionManager.GetActionInRangeOrLoS(actionId, self, currentTarget);
-
-                    if ((slotStruct->CommandType is not (HotbarSlotType.Item or HotbarSlotType.GeneralAction)) && range > 0 && rangeError == 566) { // Out of Range
+                    var (range, rangeError) = GetRangeError(slotStruct->CommandType, slotStruct->CommandId, slotStruct, self, currentTarget);
+                    if (range > 0 && rangeError == 566) { // Out of Range
                         cooldownTextNode->TextColor.R = (byte)(Config.InvalidColour.X * 255f);
                         cooldownTextNode->TextColor.G = (byte)(Config.InvalidColour.Y * 255f);
                         cooldownTextNode->TextColor.B = (byte)(Config.InvalidColour.Z * 255f);
