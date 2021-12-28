@@ -95,6 +95,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 usingScreenText = Config.UseScreenText;
             }
 
+            if (usingScreenText && Service.Condition.Cutscene()) reset = true;
+
             var paramWidget = Common.GetUnitBase(addon);
             if (paramWidget == null) return;
             
