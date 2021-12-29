@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Helper;
@@ -101,8 +102,13 @@ namespace SimpleTweaksPlugin.Tweaks {
                     SimpleLog.Log($"Change Class: ClassJob#{cjId}");
                     var classJob = Service.Data.Excel.GetSheet<ClassJob>()?.GetRow(cjId);
                     if (classJob != null) {
-                        SimpleLog.Log($"Send Command: /gearset change {classJob.Abbreviation.RawString}");
-                        Plugin.XivCommon.Functions.Chat.SendMessage($"/gearset change {classJob.Abbreviation.RawString}");
+                        var gearsetId = GetGearsetForClassJob(classJob);
+                        if (gearsetId != null) {
+                            SimpleLog.Log($"Send Command: /gearset change {gearsetId.Value + 1}");
+                            Plugin.XivCommon.Functions.Chat.SendMessage($"/gearset change {gearsetId.Value + 1}");
+                        } else {
+                            Service.Chat.PrintError($"No saved gearset for {classJob.Name.RawString}");
+                        }
                         return 1;
                     }
                 }
@@ -111,6 +117,21 @@ namespace SimpleTweaksPlugin.Tweaks {
             }
 
             return eventHook.Original(atkUnitBase, eventType, eventParam, atkEvent, a5);
+        }
+
+        private byte? GetGearsetForClassJob(ClassJob cj) {
+            byte? backup = null;
+            var gearsetModule = RaptureGearsetModule.Instance();
+            for (var i = 0; i < 100; i++) {
+                var gearset = gearsetModule->Gearset[i];
+                if (gearset == null) continue;
+                if (!gearset->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists)) continue;
+                if (gearset->ID != i) continue;
+                if (gearset->ClassJob == cj.RowId) return gearset->ID;
+                if (backup == null && cj.ClassJobParent.Row != 0 && gearset->ClassJob == cj.ClassJobParent.Row) backup = gearset->ID;
+            }
+
+            return backup;
         }
 
         public override void Disable() {
