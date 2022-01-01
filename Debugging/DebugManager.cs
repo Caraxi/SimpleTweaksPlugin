@@ -24,7 +24,7 @@ namespace SimpleTweaksPlugin {
         public bool ShouldSerializeDebugging() {
             return DebugManager.Enabled;
         }
-        
+
     }
 }
 
@@ -41,7 +41,7 @@ namespace SimpleTweaksPlugin.Debugging {
         public abstract string Name { get; }
 
         public virtual void Dispose() {
-            
+
         }
 
         public string FullName {
@@ -55,14 +55,14 @@ namespace SimpleTweaksPlugin.Debugging {
 
         internal TweakProvider TweakProvider = null!;
     }
-    
+
     public static class DebugManager {
 
         private static Dictionary<string, Action> debugPages = new();
 
         private static float sidebarSize = 0;
-        
-        public static bool Enabled = true;
+
+        public static bool Enabled = false;
 
         public static void RegisterDebugPage(string key, Action action) {
             if (debugPages.ContainsKey(key)) {
@@ -159,7 +159,7 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.SetNextWindowSizeConstraints(new Vector2(350, 350) * ImGui.GetIO().FontGlobalScale, new Vector2(2000, 2000) * ImGui.GetIO().FontGlobalScale);
             ImGui.PushStyleColor(ImGuiCol.WindowBg, 0xFF000000);
             if (ImGui.Begin($"SimpleTweaksPlugin - Debug", ref open)) {
-                
+
                 if (ImGui.BeginChild("###debugPages", new Vector2(sidebarSize, -1) * ImGui.GetIO().FontGlobalScale, true)) {
 
 
@@ -177,7 +177,7 @@ namespace SimpleTweaksPlugin.Debugging {
                             _plugin.PluginConfig.Debugging.SelectedPage = k;
                             _plugin.PluginConfig.Save();
                         }
-                        
+
                     }
 
 
@@ -246,7 +246,7 @@ namespace SimpleTweaksPlugin.Debugging {
             }
             return true;
         }
-        
+
         public static unsafe void HighlightResNode(AtkResNode* node) {
             var position = GetNodePosition(node);
             var scale = GetNodeScale(node);
@@ -255,7 +255,7 @@ namespace SimpleTweaksPlugin.Debugging {
             var nodeVisible = GetNodeVisible(node);
             ImGui.GetForegroundDrawList().AddRectFilled(position, position+size, (uint) (nodeVisible ? 0x5500FF00 : 0x550000FF));
             ImGui.GetForegroundDrawList().AddRect(position, position + size, nodeVisible ? 0xFF00FF00 : 0xFF0000FF);
-            
+
         }
 
         public static void ClickToCopyText(string text, string textCopy = null) {
@@ -307,7 +307,7 @@ namespace SimpleTweaksPlugin.Debugging {
 
         private static ulong beginModule = 0;
         private static ulong endModule = 0;
-        
+
         private static unsafe void PrintOutValue(ulong addr, List<string> path, Type type, object value, MemberInfo member) {
             try {
                 var valueParser = member.GetCustomAttribute(typeof(ValueParser));
@@ -354,8 +354,8 @@ namespace SimpleTweaksPlugin.Debugging {
                             }
                             ImGui.TreePop();
                         }
-                        
-                        
+
+
                     } else if (!type.IsPrimitive) {
                         switch (value) {
                             case ILazyRow ilr:
@@ -396,7 +396,7 @@ namespace SimpleTweaksPlugin.Debugging {
             } catch (Exception ex) {
                 ImGui.Text($"{{{ex}}}");
             }
-            
+
         }
 
         public static unsafe void PrintOutObject<T>(T* ptr, bool autoExpand = false, string headerText = null) where T : unmanaged {
@@ -445,9 +445,9 @@ namespace SimpleTweaksPlugin.Debugging {
                     ImGui.Text($"\"{text}\"");
                     ImGui.SameLine();
                 }
-                
+
             }
-            
+
             var pushedColor = 0;
             var openedNode = false;
             try {
@@ -459,7 +459,7 @@ namespace SimpleTweaksPlugin.Debugging {
                         endModule = 1;
                     }
                 }
-                
+
                 ImGui.PushStyleColor(ImGuiCol.Text, 0xFF00FFFF);
                 pushedColor++;
                 if (autoExpand) {
@@ -493,7 +493,7 @@ namespace SimpleTweaksPlugin.Debugging {
 
                         ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.4f, 1), $"{f.Name}: ");
                         ImGui.SameLine();
-                        
+
                         PrintOutValue(addr, new List<string>(path) { f.Name }, f.FieldType, f.GetValue(obj), f);
                     }
 
@@ -509,7 +509,7 @@ namespace SimpleTweaksPlugin.Debugging {
                         ImGui.SameLine();
                         ImGui.TextColored(new Vector4(0.2f, 0.6f, 0.4f, 1), $"{p.Name}: ");
                         ImGui.SameLine();
-                        
+
                         PrintOutValue(addr, new List<string>(path) { p.Name }, p.PropertyType, p.GetValue(obj), p);
                     }
 
@@ -522,7 +522,7 @@ namespace SimpleTweaksPlugin.Debugging {
             } catch (Exception ex) {
                 ImGui.Text($"{{{ ex }}}");
             }
-            
+
             if (openedNode) ImGui.TreePop();
             if (pushedColor > 0) ImGui.PopStyleColor(pushedColor);
 
