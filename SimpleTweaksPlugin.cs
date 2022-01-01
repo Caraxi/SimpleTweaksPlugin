@@ -28,7 +28,7 @@ namespace SimpleTweaksPlugin {
 
         public IconManager IconManager { get; private set; }
         public XivCommonBase XivCommon { get; private set; }
-        
+
 
         private bool drawConfigWindow = false;
 
@@ -63,7 +63,7 @@ namespace SimpleTweaksPlugin {
 
         public void Dispose() {
             SimpleLog.Debug("Dispose");
-            
+
             PluginInterface.UiBuilder.Draw -= this.BuildUI;
             RemoveCommands();
 
@@ -100,7 +100,7 @@ namespace SimpleTweaksPlugin {
             IconManager = new IconManager(pluginInterface);
             this.XivCommon = new XivCommonBase(Hooks.ContextMenu);
             SetupLocalization();
-            
+
             UiHelper.Setup(Service.SigScanner);
 
             DebugManager.SetPlugin(this);
@@ -159,12 +159,11 @@ namespace SimpleTweaksPlugin {
 
         public void OnConfigCommandHandler(object command, object args) {
             if (args is string argString) {
-#if DEBUG
                 if (argString == "Debug") {
                     DebugManager.Enabled = !DebugManager.Enabled;
                     return;
                 }
-#endif
+
                 if (!string.IsNullOrEmpty(argString.Trim())) {
                     var splitArgString = argString.Split(' ');
                     switch (splitArgString[0].ToLowerInvariant()) {
@@ -250,7 +249,7 @@ namespace SimpleTweaksPlugin {
                             Service.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
                             return;
                         }
-                        
+
                     }
                 }
             }
@@ -263,7 +262,7 @@ namespace SimpleTweaksPlugin {
 
         public BaseTweak? GetTweakById(string s, IEnumerable<BaseTweak>? tweakList = null) {
             tweakList ??= Tweaks;
-            
+
             foreach (var t in tweakList) {
                 if (string.Equals(t.Key, s, StringComparison.InvariantCultureIgnoreCase)) return t;
                 if (t is SubTweakManager stm) {
@@ -304,7 +303,7 @@ namespace SimpleTweaksPlugin {
             if (windowWasOpen && !drawConfigWindow) {
                 SaveAllConfig();
             }
-            
+
             if (ShowErrorWindow) {
                 if (ErrorList.Count > 0) {
                     var errorsStillOpen = true;
@@ -398,8 +397,8 @@ namespace SimpleTweaksPlugin {
             SimpleLog.Error($"{exception}");
 #endif
             var err = new CaughtError {
-                Tweak = tweak, 
-                Exception = exception, 
+                Tweak = tweak,
+                Exception = exception,
                 IsNew = !allowContinue,
                 Message = message
             };
@@ -441,7 +440,7 @@ namespace SimpleTweaksPlugin {
             } else {
                 ErrorList.Insert(0, err);
             }
-            
+
             if (ErrorList.Count > 50) {
                 ErrorList.RemoveRange(50, ErrorList.Count - 50);
             }
