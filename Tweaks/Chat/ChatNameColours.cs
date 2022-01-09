@@ -42,7 +42,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
             var forced = Config.ForcedColours.FirstOrDefault(f => f.PlayerName == playerName && f.WorldName == worldName);
             if (forced != null) return forced.ColourKey;
             if (!forceRandom && !Config.RandomColours) return null;
-            var key = (uint) $"${playerName}@{worldName}".GetHashCode();
+            var key = (uint) $"{playerName}@{worldName}".GetStableHashCode();
             var defaultColourKey = nameColours[key % nameColours.Length];
             return defaultColourKey;
         }
