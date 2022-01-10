@@ -47,7 +47,6 @@ namespace SimpleTweaksPlugin.Tweaks {
                 Service.SigScanner.TryGetStaticAddressFromSig(Signatures.MouseButtonHoldState, out mouseButtonHoldState);
             }
 
-            Service.PluginInterface.UiBuilder.Draw += GetInfo;
             Service.Framework.Update += HideMouse;
 
             base.Enable();
@@ -55,7 +54,6 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         public override void Disable() {
             Service.Framework.Update -= HideMouse;
-            Service.PluginInterface.UiBuilder.Draw -= GetInfo;
             SaveConfig(TweakConfig);
 
             base.Disable();
@@ -71,6 +69,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
 
         private void HideMouse(Framework framework) {
+            GetInfo();
             if (TweakConfig.NoHideInCutscenes && Service.Condition.Cutscene()) return;
             if (TweakConfig.NoHideInCombat && Service.Condition[ConditionFlag.InCombat]) return;
             if (TweakConfig.NoHideInInstance && Service.Condition.Duty()) return;
