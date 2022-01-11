@@ -62,7 +62,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
 
             var friends = this.Plugin.XivCommon.Functions.FriendList.List
-                .Where(friend => (friend.ContentId & 0xFFFFFFFF) == args.ContentIdLower && friend.CurrentWorld == Service.ClientState.LocalPlayer?.CurrentWorld.Id)
+                .Where(friend => (friend.ContentId & 0xFFFFFFFF) == args.ContentIdLower && friend.HomeWorld == Service.ClientState.LocalPlayer?.CurrentWorld.Id)
                 .ToArray();
 
             FriendListEntry? friend = null;
