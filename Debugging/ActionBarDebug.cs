@@ -1,4 +1,5 @@
 ﻿
+using System.Linq;
 using System.Numerics;
 using System.Text;
 using FFXIVClientStructs.FFXIV.Client.Game;
@@ -29,25 +30,136 @@ namespace SimpleTweaksPlugin.Debugging {
             DebugManager.ClickToCopyText($"{(ulong)ActionManager.Instance():X}");
             
             ImGui.Separator();
-            
-            if (ImGui.BeginTabBar($"###{GetType().Name}_debug_tabs")) {
-                if (ImGui.BeginTabItem("Normal")) {
-                    DrawHotbarType(raptureHotbarModule, HotBarType.Normal);
+
+
+            if (ImGui.BeginTabBar("##hotbarDebugDisplay")) {
+
+                if (ImGui.BeginTabItem("Current Bars")) {
+                    if (ImGui.BeginTabBar($"###{GetType().Name}_debug_tabs")) {
+                        if (ImGui.BeginTabItem("Normal")) {
+                            DrawHotbarType(raptureHotbarModule, HotBarType.Normal);
+                            ImGui.EndTabItem();
+                        }
+
+                        if (ImGui.BeginTabItem("Cross")) {
+                            DrawHotbarType(raptureHotbarModule, HotBarType.Cross);
+                            ImGui.EndTabItem();
+                        }
+
+                        if (ImGui.BeginTabItem("Pet")) {
+                            DrawHotbarType(raptureHotbarModule, HotBarType.Pet, "Normal Pet", "Cross Pet");
+                        }
+
+                        ImGui.EndTabBar();
+                    }
                     ImGui.EndTabItem();
                 }
 
-                if (ImGui.BeginTabItem("Cross")) {
-                    DrawHotbarType(raptureHotbarModule, HotBarType.Cross);
+                if (ImGui.BeginTabItem("Saved Bars")) {
+
+                    if (ImGui.BeginChild("savedBarsIndexSelect", new Vector2(150, -1) * ImGui.GetIO().FontGlobalScale, true)) {
+                        for (byte i = 0; i < 61; i++) {
+                            var cj = Service.Data.Excel.GetSheet<ClassJob>()?.GetRow(i)?.Abbreviation?.RawString;
+
+                            if (i > 41) {
+                                cj = Service.Data.Excel.GetSheet<ClassJob>()?.Where(j => j.IsLimitedJob == false && j.JobIndex > 0).Skip(i - 42).FirstOrDefault()?.Abbreviation?.RawString;
+                            }
+
+                            if (ImGui.Selectable((i > 40 ? "[PVP] " : "") + (i is 0 or 41 ? "Shared" : cj ?? $"{i}"), selectedSavedIndex == i)) {
+                                selectedSavedIndex = i;
+                            }
+                        }
+                    }
+                    ImGui.EndChild();
+                    ImGui.SameLine();
+                    ImGui.BeginGroup();
+                    var savedBarClassJob = raptureHotbarModule->SavedClassJob[selectedSavedIndex];
+                    if (savedBarClassJob != null && ImGui.BeginTabBar("savedClassJobBarSelectType")) {
+
+
+                        void ShowBar(int b) {
+
+                            var savedBar = savedBarClassJob->Bar[b];
+                            if (savedBar == null) {
+                                ImGui.Text("Bar is Null");
+                                return;
+                            }
+
+                            if (ImGui.BeginTable("savedClassJobBarSlots", 3)) {
+
+                                ImGui.TableSetupColumn("Slot", ImGuiTableColumnFlags.WidthFixed, 50);
+                                ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, 80);
+                                ImGui.TableSetupColumn("ID", ImGuiTableColumnFlags.WidthFixed, 100);
+
+                                ImGui.TableHeadersRow();
+
+                                for (var i = 0; i < 16; i++) {
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text($"{i:00}");
+                                    ImGui.TableNextColumn();
+                                    var slot = savedBar->Slot[i];
+                                    if (slot == null) {
+                                        ImGui.TableNextRow();
+                                        continue;
+                                    }
+                                    ImGui.Text($"{slot->Type}");
+                                    ImGui.TableNextColumn();
+                                    ImGui.Text($"{slot->ID}");
+                                }
+
+                                ImGui.EndTable();
+                            }
+
+
+
+                        }
+
+                        if (ImGui.BeginTabItem("Normal")) {
+                            if (ImGui.BeginTabBar("savecClassJobBarSelectCross")) {
+                                for (var i = 0; i < 10; i++) {
+                                    if (ImGui.BeginTabItem($"{i + 1:00}")) {
+                                        ShowBar(i);
+                                        ImGui.EndTabItem();
+                                    }
+                                }
+                                ImGui.EndTabBar();
+                            }
+
+                            ImGui.EndTabItem();
+                        }
+
+                        if (ImGui.BeginTabItem("Cross")) {
+                            if (ImGui.BeginTabBar("savecClassJobBarSelectCross")) {
+                                for (var i = 10; i < 18; i++) {
+                                    if (ImGui.BeginTabItem($"{i-9:00}")) {
+                                        ShowBar(i);
+                                        ImGui.EndTabItem();
+                                    }
+                                }
+                                ImGui.EndTabBar();
+                            }
+
+                            ImGui.EndTabItem();
+                        }
+
+                        ImGui.EndTabBar();
+                    }
+
+
+                    ImGui.EndGroup();
+
                     ImGui.EndTabItem();
                 }
 
-                if (ImGui.BeginTabItem("Pet")) {
-                    DrawHotbarType(raptureHotbarModule, HotBarType.Pet, "Normal Pet", "Cross Pet");
-                }
-                
                 ImGui.EndTabBar();
             }
+
+
+
         }
+
+        private int selectedSavedIndex = 0;
+
 
         public class HotBarType {
 
@@ -72,7 +184,7 @@ namespace SimpleTweaksPlugin.Debugging {
                         }
                         ImGui.EndTabItem();
                     }
-                
+
                 }
                 ImGui.EndTabBar();
             }
