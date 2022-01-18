@@ -53,7 +53,7 @@ namespace SimpleTweaksPlugin.Debugging {
             }
         }
 
-        internal TweakProvider TweakProvider = null!;
+        public TweakProvider TweakProvider = null!;
     }
 
     public static class DebugManager {

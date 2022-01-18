@@ -23,7 +23,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
                 SimpleLog.Debug($"Initalizing Tweak: {t.Name}");
                 try {
                     var tweak = (Tweak) Activator.CreateInstance(t)!;
-                    tweak.InterfaceSetup(SimpleTweaksPlugin.Plugin, Service.PluginInterface, SimpleTweaksPlugin.Plugin.PluginConfig);
+                    tweak.InterfaceSetup(SimpleTweaksPlugin.Plugin, Service.PluginInterface, SimpleTweaksPlugin.Plugin.PluginConfig, this);
                     if (tweak.CanLoad) {
                         tweak.Setup();
                         if (tweak.Ready && (SimpleTweaksPlugin.Plugin.PluginConfig.EnabledTweaks.Contains(t.Name) || tweak is SubTweakManager {AlwaysEnabled: true})) {

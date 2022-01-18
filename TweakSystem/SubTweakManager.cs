@@ -35,7 +35,7 @@ namespace SimpleTweaksPlugin.TweakSystem {
             foreach (var t in GetType().Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(T)))) {
                 try {
                     var tweak = (T) Activator.CreateInstance(t);
-                    tweak.InterfaceSetup(this.Plugin, this.PluginInterface, this.PluginConfig);
+                    tweak.InterfaceSetup(this.Plugin, this.PluginInterface, this.PluginConfig, this.TweakProvider);
                     tweak.Setup();
                     tweakList.Add(tweak);
                 } catch (Exception ex) {

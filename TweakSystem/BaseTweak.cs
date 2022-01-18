@@ -29,16 +29,19 @@ namespace SimpleTweaksPlugin.TweakSystem {
         public virtual bool Experimental => false;
         public virtual IEnumerable<string> Tags { get; } = new string[0];
 
+        public TweakProvider TweakProvider { get; private set; } = null;
+
         public virtual bool CanLoad => true;
 
         public virtual bool UseAutoConfig => false;
 
         protected CultureInfo Culture => Plugin.Culture;
 
-        public void InterfaceSetup(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface, SimpleTweaksPluginConfig config) {
+        public void InterfaceSetup(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface, SimpleTweaksPluginConfig config, TweakProvider tweakProvider) {
             this.PluginInterface = pluginInterface;
             this.PluginConfig = config;
             this.Plugin = plugin;
+            this.TweakProvider = tweakProvider;
         }
 
         public string LocString(string key, string fallback, string description = null) {
