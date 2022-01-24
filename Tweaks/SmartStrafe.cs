@@ -9,7 +9,7 @@ namespace SimpleTweaksPlugin.Tweaks
 {
     internal class SmartStrafe : Tweak {
         public override string Name => "Smart Strafe";
-        public override string Description => "Inteligently switches keyboard controls between strafing and turning.";
+        public override string Description => "Inteligently switches keyboard controls between strafing and turning.\n(Legacy type movmement only)";
         protected override string Author => "Iryoku";
 
         public enum Mode {
