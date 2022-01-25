@@ -28,7 +28,7 @@ namespace SimpleTweaksPlugin.Debugging {
             }
 
             ImGui.Text($"UIModule address - {(long)uiModule:X}");
-            var atkArrayDataHolder = &uiModule->RaptureAtkModule.AtkModule.AtkArrayDataHolder;
+            var atkArrayDataHolder = &uiModule->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder;
             ImGui.Text($"AtkArrayDataHolder address - {(long)atkArrayDataHolder:X}");
             ImGui.Text(
                 $"ExtendArrayData - array size: {atkArrayDataHolder->ExtendArrayCount} - array ptr: {(long)atkArrayDataHolder->ExtendArrays:X}");

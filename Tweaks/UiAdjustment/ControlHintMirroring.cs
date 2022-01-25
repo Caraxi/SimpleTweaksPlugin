@@ -153,7 +153,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 
             if (strArrayData == null)
             {
-                strArrayData = Framework.Instance()->GetUiModule()->RaptureAtkModule.AtkModule.AtkArrayDataHolder.StringArrays[StrDataIndex];
+                strArrayData = Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder.StringArrays[StrDataIndex];
             }
 
             var numSlots = ab->HotbarSlotCount;

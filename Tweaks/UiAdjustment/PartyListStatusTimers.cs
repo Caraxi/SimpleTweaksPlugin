@@ -136,7 +136,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             for (var i = 1; i < partyList->MemberCount && i < 8; i++) {
                 if (objIds[i] != null && updateValues[i] != null) {
                     var uiModule = Common.UIModule;
-                    var atkArrayDataHolder = uiModule->RaptureAtkModule.AtkModule.AtkArrayDataHolder;
+                    var atkArrayDataHolder = uiModule->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder;
                     var agentHud = uiModule->GetAgentModule()->GetAgentByInternalID(4);
                     updateSlotHook.Original(agentHud, atkArrayDataHolder.NumberArrays[4], atkArrayDataHolder.StringArrays[3], objIds[i].Value, updateValues[i].Value, i);
                 }
