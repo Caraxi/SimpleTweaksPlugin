@@ -9,8 +9,6 @@ namespace SimpleTweaksPlugin.Tweaks {
         public override string Name => "Sync Gatherer Bars";
         public override string Description => "Keeps miner and botanist hotbars in sync.";
 
-        public override bool Experimental => true;
-
         private readonly Dictionary<uint, uint>[] actionSwaps = {new() {
             { 227, 210 }, { 210, 227 }, { 228, 211 }, { 211, 228 },
             { 235, 218 }, { 291, 290 }, { 290, 291 }, { 237, 220 },

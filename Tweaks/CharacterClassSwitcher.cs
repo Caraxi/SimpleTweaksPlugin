@@ -15,8 +15,6 @@ namespace SimpleTweaksPlugin.Tweaks {
         public override string Name => "Character Window Job Switcher";
         public override string Description => "Allow clicking on classes to switch to gearsets. [Note: does not work on crafters]";
 
-        public override bool Experimental => true;
-
         private delegate byte EventHandle(AtkUnitBase* atkUnitBase, AtkEventType eventType, uint eventParam, AtkEvent* atkEvent, void* a5);
         private delegate void* SetupHandle(AtkUnitBase* atkUnitBase, int a2);
         private HookWrapper<EventHandle> eventHook;
