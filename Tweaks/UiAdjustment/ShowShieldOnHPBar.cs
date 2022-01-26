@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Numerics;
 using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 {
@@ -12,16 +14,26 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 
         protected override string Author => "Chivalrik";
 
+        public class Configs : TweakConfig {
+            [TweakConfigOption("Shield Colour", "Color")]
+            public Vector3 ShieldColour = Common.UiColorToVector3(0xFFFF00);
+        }
+
+        public Configs Config { get; private set; }
+        public override bool UseAutoConfig => true;
+
         private AtkNineGridNode* shieldGrid;
         private AtkNineGridNode* shieldGridOver;
         public override void Enable()
         {
+            Config = LoadConfig<Configs>() ?? new Configs();
             Service.Framework.Update += FrameworkOnUpdateSetup;
             base.Enable();
         }
         
         public override void Disable()
         {
+            SaveConfig(Config);
             Service.Framework.Update -= FrameworkOnUpdateSetup;
             Service.Framework.Update -= FrameworkOnUpdate;
             if (shieldGrid != null)
@@ -114,6 +126,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                 shieldGrid->AtkResNode.Width = shieldPercentage > 0 ? (ushort)(shieldPercentage * 148 + 12 + 0.5f) : (ushort)0;
                 shieldGrid->AtkResNode.Flags_2 |= 1;
                 shieldGridOver->AtkResNode.Width = shieldOverPercentage > 0 ? (ushort)(shieldOverPercentage * 148 + 12 + 0.5f) : (ushort)0;
+
+                shieldGrid->AtkResNode.MultiplyRed = (byte) (255 * Config.ShieldColour.X);
+                shieldGrid->AtkResNode.MultiplyGreen = (byte) (255 * Config.ShieldColour.Y);
+                shieldGrid->AtkResNode.MultiplyBlue = (byte) (255 * Config.ShieldColour.Z);
+
+                shieldGridOver->AtkResNode.MultiplyRed = (byte) (255 * Config.ShieldColour.X);
+                shieldGridOver->AtkResNode.MultiplyGreen = (byte) (255 * Config.ShieldColour.Y);
+                shieldGridOver->AtkResNode.MultiplyBlue = (byte) (255 * Config.ShieldColour.Z);
             }
             catch (Exception ex)
             {
