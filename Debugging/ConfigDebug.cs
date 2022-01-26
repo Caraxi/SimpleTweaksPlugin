@@ -1,15 +1,25 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Collections.Generic;
+using System.Numerics;
 using System.Reflection;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ImGuiNET;
+using SimpleTweaksPlugin.Helper;
 
 namespace SimpleTweaksPlugin.Debugging {
     public unsafe class ConfigDebug : DebugHelper {
         public override string Name => "ConfigDebug";
 
-        public override void Draw() {
+        private delegate byte SetOption(ConfigModule* configModule, uint index, int value, int a4, byte a5, byte a6);
+        private HookWrapper<SetOption> setOptionHook;
 
+        public override void Dispose() {
+            setOptionHook?.Dispose();
+            base.Dispose();
+        }
+
+        public override void Draw() {
             var config = Framework.Instance()->GetUiModule()->GetConfigModule();
 
             ImGui.Text("ConfigModule:");
@@ -19,69 +29,81 @@ namespace SimpleTweaksPlugin.Debugging {
             DebugManager.PrintOutObject(config);
 
 
+            ImGui.Separator();
 
-            var oFields = config->GetOption(0)->GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
-            var vFields = config->GetValue(0)->GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
+            if (ImGui.BeginTabBar("ConfigDebugTabs")) {
 
+                if (ImGui.BeginTabItem("View")) {
 
-            if (ImGui.BeginTable("optionsTable", 3 + oFields.Length + vFields.Length, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.Resizable | ImGuiTableFlags.ScrollY | ImGuiTableFlags.ScrollX, new Vector2(-1, -1))) {
-
-                ImGui.TableSetupColumn("Index", ImGuiTableColumnFlags.WidthFixed, 40);
-                ImGui.TableSetupColumn("Index", ImGuiTableColumnFlags.WidthFixed, 40);
-                ImGui.TableSetupColumn("Address", ImGuiTableColumnFlags.WidthFixed, 90);
-
-                foreach (var f in oFields) ImGui.TableSetupColumn($"{f.Name}");
-                foreach (var f in vFields) ImGui.TableSetupColumn($"{f.Name}");
-
-                ImGui.TableSetupScrollFreeze(1, 1);
-
-                ImGui.TableHeadersRow();
-
-                for (uint i = 0; i < ConfigModule.ConfigOptionCount; i++) {
-                    var option = config->GetOption(i);
-                    var value = config->GetValue(i);
-                    ImGui.TableNextColumn();
-                    ImGui.Text($"{i}");
-                    ImGui.TableNextColumn();
-                    ImGui.Text($"{i:X}");
-                    ImGui.TableNextColumn();
-                    DebugManager.ClickToCopyText($"{(ulong)option:X}");
-                    DebugManager.ClickToCopyText($"{(ulong)value:X}");
-
-                    foreach (var f in oFields) {
-                        ImGui.TableNextColumn();
-                        var v = f.GetValue(*option);
-                        if (f.FieldType.IsPointer && v is Pointer p) {
-                            var ptr = Pointer.Unbox(p);
-                            ImGui.Text($"{(ulong)ptr:X}");
-                        } else {
-                            ImGui.Text($"{v}");
-                        }
+                    for (var i = 0; i < ConfigModule.ConfigOptionCount; i++) {
+                        
                     }
-                    foreach (var f in vFields) {
-                        ImGui.TableNextColumn();
-                        var v = f.GetValue(*value);
-                        if (f.FieldType.IsPointer && v is Pointer p) {
-                            var ptr = Pointer.Unbox(p);
-                            ImGui.Text($"{(ulong)ptr:X}");
-                        } else {
-                            ImGui.Text($"{v}");
-                        }
-                    }
-                    ImGui.TableNextRow();
+
+
+
+
+                    ImGui.EndTabItem();
                 }
-                ImGui.EndTable();
+
+                if (ImGui.BeginTabItem("Changes")) {
+                    var e = setOptionHook is { IsEnabled: true };
+
+                    if (ImGui.Checkbox("Enable Config Change Logging", ref e)) {
+                        if (e) {
+                            setOptionHook ??= Common.Hook<SetOption>("E8 ?? ?? ?? ?? C6 47 4D 00", SetOptionDetour);
+                            setOptionHook?.Enable();
+                        } else {
+                            setOptionHook?.Disable();
+                        }
+                    }
+                    ImGui.Separator();
+
+                    foreach (var change in changes) {
+                        ImGui.Text($"[#{change.Index}] {change.Option} ({(short)change.Option}) => {change.Value}  [{change.a4}, {change.a5}, {change.a6}]");
+                    }
+
+
+
+
+                    ImGui.EndTabItem();
+                }
+
+
+
+                ImGui.EndTabBar();
+            }
+        }
+
+        private List<LoggedConfigChange> changes = new List<LoggedConfigChange>();
+
+        private class LoggedConfigChange {
+            public uint Index;
+            public ConfigOption Option;
+            public int Value;
+            public int a4;
+            public byte a5;
+            public byte a6;
+        }
+
+        private byte SetOptionDetour(ConfigModule* configmodule, uint index, int value, int a4, byte a5, byte a6) {
+            try {
+                var opt = configmodule->GetOption(index);
+                changes.Insert(0, new LoggedConfigChange() {
+                    Index = index,
+                    Option = opt->OptionID,
+                    Value = value,
+                    a4 = a4,
+                    a5 = a5,
+                    a6 = a6
+                });
+
+                if (changes.Count > 200) changes.RemoveRange(200, changes.Count - 200);
+            } catch (Exception ex) {
+                SimpleLog.Error(ex);
             }
 
 
-
-
-
-
-
-
-
-
+            return setOptionHook.Original(configmodule, index, value, a4, a5, a6);
 
         }
     }

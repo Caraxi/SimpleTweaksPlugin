@@ -42,17 +42,17 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
 
         private readonly List<OptionDefinition> optionDefinitions = new() {
-            new OptionDefinition("GamepadMode", 88, OptionType.ToggleGamepadMode, "gp"),
+            new OptionDefinition("GamepadMode", 89, OptionType.ToggleGamepadMode, "gp"),
 
-            new OptionDefinition("ItemTooltips", 705, OptionType.Bool, "itt"),
-            new OptionDefinition("ActionTooltips", 710, OptionType.Bool, "att"),
-            new OptionDefinition("LegacyMovement", 300, OptionType.Bool, "lm"),
+            new OptionDefinition("ItemTooltips", 716, OptionType.Bool, "itt"),
+            new OptionDefinition("ActionTooltips", 721, OptionType.Bool, "att"),
+            new OptionDefinition("LegacyMovement", 304, OptionType.Bool, "lm"),
 
-            new OptionDefinition("OwnDisplayName", 433, OptionType.NameDisplayModeBattle, "odn"),
-            new OptionDefinition("PartyDisplayName", 446, OptionType.NameDisplayModeBattle, "pdn"),
-            new OptionDefinition("AllianceDisplayName", 455, OptionType.NameDisplayModeBattle, "adn"),
-            new OptionDefinition("OtherPlayerDisplayName", 462, OptionType.NameDisplayModeBattle, "opcdn"),
-            new OptionDefinition("FriendDisplayName", 507, OptionType.NameDisplayModeBattle, "fdn"),
+            new OptionDefinition("OwnDisplayName", 443, OptionType.NameDisplayModeBattle, "odn"),
+            new OptionDefinition("PartyDisplayName", 456, OptionType.NameDisplayModeBattle, "pdn"),
+            new OptionDefinition("AllianceDisplayName", 465, OptionType.NameDisplayModeBattle, "adn"),
+            new OptionDefinition("OtherPlayerDisplayName", 472, OptionType.NameDisplayModeBattle, "opcdn"),
+            new OptionDefinition("FriendDisplayName", 517, OptionType.NameDisplayModeBattle, "fdn"),
         };
 
 
