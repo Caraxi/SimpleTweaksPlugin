@@ -31,7 +31,8 @@ namespace SimpleTweaksPlugin.Tweaks {
         }
 
         private void OpenFolder(uint arg1, SeString arg2) {
-            Process.Start("explorer.exe", arg2.TextValue);
+            var dir = arg2.TextValue.Replace($"{(char)0x00A0}", "").Replace("\n", "").Replace("\r", "");
+            Process.Start("explorer.exe", dir);
         }
 
         private void CommandHandler(string command, string arguments) {
