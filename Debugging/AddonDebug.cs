@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Memory;
+using FFXIVClientStructs.FFXIV.Client.System.String;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
@@ -21,6 +26,9 @@ namespace SimpleTweaksPlugin.Debugging {
 
         private delegate void* ListHandlerSetupDelegate(void* a1, AtkUnitBase* a2, void* a3);
         private HookWrapper<ListHandlerSetupDelegate> listHandlerSetupHook;
+
+        private delegate byte* FormatAddonTextDelegate(RaptureTextModule* raptureTextModule, uint addonTextId, int a3, void* a4, void** a5, void** a6);
+        private HookWrapper<FormatAddonTextDelegate> formatAddonTextHook;
 
         public static bool IsSetupHooked(AtkUnitBase* atkUnitBase) {
             var name = Encoding.UTF8.GetString(atkUnitBase->Name, 0x20).TrimEnd();
@@ -119,6 +127,15 @@ namespace SimpleTweaksPlugin.Debugging {
                         }
                     }
 
+
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(100);
+                    ImGui.InputText("##searchCallbacks", ref callbacksSearch, 50);
+
+                    ImGui.SameLine();
+                    if (ImGui.Button("Clear")) {
+                        Callbacks.Clear();
+                    }
                     ImGui.Separator();
 
                     if (ImGui.BeginTable("callbacksTable", 4, ImGuiTableFlags.RowBg)) {
@@ -129,7 +146,7 @@ namespace SimpleTweaksPlugin.Debugging {
 
                         ImGui.TableHeadersRow();
 
-                        foreach (var cb in Callbacks) {
+                        foreach (var cb in Callbacks.Where(cb => callbacksSearch.Length < 0 || cb.AtkUnitBaseName.Contains(callbacksSearch))) {
                             ImGui.TableNextColumn();
                             ImGui.Text($"{cb.AtkUnitBaseName}");
                             ImGui.TableNextColumn();
@@ -263,8 +280,53 @@ namespace SimpleTweaksPlugin.Debugging {
                     ImGui.EndTabItem();
                 }
 
+                if (ImGui.BeginTabItem("Addon Text")) {
+
+                    var addonTextLoggingEnabled = formatAddonTextHook?.IsEnabled ?? false;
+
+                    if (ImGui.Checkbox("Enable Logging##addonTextLoggingToggle", ref addonTextLoggingEnabled)) {
+                        if (addonTextLoggingEnabled) {
+                            formatAddonTextHook ??= Common.Hook<FormatAddonTextDelegate>("E8 ?? ?? ?? ?? 48 8D 4F 40 48 8B D0", FormatAddonTextDetour);
+                            formatAddonTextHook?.Enable();
+                        } else {
+                            formatAddonTextHook?.Disable();
+                        }
+                    }
+
+                    ImGui.Separator();
+
+                }
+
                 ImGui.EndTabBar();
             }
+        }
+
+        private class CaughtAddonTextFormatting {
+            private uint AddonTextId;
+            private SeString FormattedString;
+        }
+
+        private byte* FormatAddonTextDetour(RaptureTextModule* rapturetextmodule, uint addontextid, int a3, void* a4, void** a5, void** a6) {
+            var retVal = formatAddonTextHook.Original(rapturetextmodule, addontextid, a3, a4, a5, a6);
+
+            try {
+                if (retVal != null) {
+                    var str = MemoryHelper.ReadSeStringNullTerminated(new IntPtr(retVal));
+                    SimpleLog.Log($"Format Addon Text: {addontextid} -> {str.TextValue}");
+                } else {
+                    SimpleLog.Log($"Format Addon Text: {addontextid} -> Returning NULL");
+                }
+
+
+
+            } catch (Exception ex) {
+                SimpleLog.Error(ex);
+            }
+
+
+
+
+            return retVal;
         }
 
         public class ListHandlerSetupCall {
@@ -295,6 +357,8 @@ namespace SimpleTweaksPlugin.Debugging {
             setupHooks.Add(name, new SetupHook(atkUnitBase));
         }
 
+        private string callbacksSearch = string.Empty;
+
         private void* CallbackDetour(AtkUnitBase* atkunitbase, int valuecount, AtkValue* atkvalues, ulong a4) {
             var atkValueList = new List<object>();
             var atkValueTypeList = new List<ValueType>();
@@ -313,6 +377,10 @@ namespace SimpleTweaksPlugin.Debugging {
                         }
                         case ValueType.UInt: {
                             atkValueList.Add(a->UInt);
+                            break;
+                        }
+                        case ValueType.Bool: {
+                            atkValueList.Add(a->Byte != 0);
                             break;
                         }
                         default: {
@@ -335,6 +403,11 @@ namespace SimpleTweaksPlugin.Debugging {
                     AtkValues = atkValueList,
                     AtkValueTypes = atkValueTypeList,
                 });
+
+                if (Callbacks.Count > 1000) {
+                    Callbacks.RemoveRange(1000, Callbacks.Count - 1000);
+                }
+
             } catch {
                 //
             }
@@ -345,6 +418,9 @@ namespace SimpleTweaksPlugin.Debugging {
         public override void Dispose() {
             fireCallbackHook?.Disable();
             fireCallbackHook?.Dispose();
+
+            formatAddonTextHook?.Disable();
+            formatAddonTextHook?.Dispose();
 
             foreach (var h in setupHooks.Values) {
                 if (h.Hook.IsDisposed) continue;
