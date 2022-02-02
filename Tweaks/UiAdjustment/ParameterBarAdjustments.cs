@@ -7,6 +7,7 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
+using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -46,7 +47,24 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private static readonly Configs DefaultConfig = new();
 
+        private List<uint> doLIds = new();
+        private List<uint> doHIds = new();
+
         public override void Enable() {
+            var nbJobs = Service.Data.Excel.GetSheet<ClassJob>()?.ColumnCount ?? 0;
+            var classJobCategoriesSheet = Service.Data.Excel.GetSheet<ClassJobCategory>();
+            var doLParser = classJobCategoriesSheet?.GetRowParser(32);
+            var doHParser = classJobCategoriesSheet?.GetRowParser(33);
+
+            for (var job = 0; job < nbJobs; job++) {
+                if (doLParser?.ReadColumn<bool>(job + 1) ?? false) {
+                    this.doLIds.Add((uint) job);
+                }
+                if (doHParser?.ReadColumn<bool>(job + 1) ?? false) {
+                    this.doHIds.Add((uint) job);
+                }
+            }
+
             Config = LoadConfig<Configs>() ?? new Configs();
             Service.Framework.Update += OnFrameworkUpdate;
             base.Enable();
@@ -129,7 +147,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             1, 2, 3, 4, 5, 20, 21, 22, 23, 29, 30, 31, 34, 37, 38, 39
         };
 
-        private void UpdateParameter(AtkComponentNode* node, HideAndOffsetConfig barConfig, HideAndOffsetConfig valueConfig, Vector4 barColor, bool hideTitle, bool autoHideMp = false) {
+        private void UpdateParameter(AtkComponentNode* node, HideAndOffsetConfig barConfig, HideAndOffsetConfig valueConfig, Vector4 barColor, bool hideTitle, bool hideMp = false) {
             var valueNode = node->Component->UldManager.SearchNodeById(3);
             var titleNode = node->Component->UldManager.SearchNodeById(2);
             var textureNode = node->Component->UldManager.SearchNodeById(8);
@@ -141,16 +159,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             node->AtkResNode.SetPositionFloat(barConfig.OffsetX, barConfig.OffsetY);
             valueNode->SetPositionFloat(valueConfig.OffsetX, valueConfig.OffsetY);
 
-            var cjId = Service.ClientState?.LocalPlayer?.ClassJob.Id;
-            var autoHide = autoHideMp && Service.Condition[ConditionFlag.RolePlaying] == false && cjId != null && autoHideMpClassJobs.Contains(cjId.Value);
-
-            valueNode->Color.A = autoHide || valueConfig.Hide ? Byte00 : ByteFF;
-            titleNode->Color.A = autoHide || hideTitle ? Byte00 : ByteFF;
-            gridNode->Color.A = autoHide || barConfig.Hide ? Byte00 : ByteFF;
-            grindNode2->Color.A = autoHide || barConfig.Hide ? Byte00 : ByteFF;
-            gridNode3->Color.A = autoHide || barConfig.Hide ? Byte00 : ByteFF;
-            textureNode->Color.A = autoHide || barConfig.Hide ? Byte00 : ByteFF;
-            textureNode2->Color.A = autoHide || barConfig.Hide ? Byte00 : ByteFF;
+            valueNode->Color.A = hideMp || valueConfig.Hide ? Byte00 : ByteFF;
+            titleNode->Color.A = hideMp || hideTitle ? Byte00 : ByteFF;
+            gridNode->Color.A = hideMp || barConfig.Hide ? Byte00 : ByteFF;
+            grindNode2->Color.A = hideMp || barConfig.Hide ? Byte00 : ByteFF;
+            gridNode3->Color.A = hideMp || barConfig.Hide ? Byte00 : ByteFF;
+            textureNode->Color.A = hideMp || barConfig.Hide ? Byte00 : ByteFF;
+            textureNode2->Color.A = hideMp || barConfig.Hide ? Byte00 : ByteFF;
 
             gridNode3->AddRed = (ushort)(barColor.X * ColorMultiplier);
             gridNode3->AddGreen = (ushort)(barColor.Y * ColorMultiplier);
@@ -169,14 +184,19 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
 
             // MP
-            var mpColor = Service.ClientState?.LocalPlayer?.ClassJob.GameData.ClassJobCategory.Row switch {
-                32 => reset ? DefaultConfig.GpColor : Config.GpColor,
-                33 => reset ? DefaultConfig.CpColor : Config.CpColor,
-                _ => reset ? DefaultConfig.MpColor : Config.MpColor
-            };
+            Vector4 mpColor;
+            var classJobId = Service.ClientState?.LocalPlayer?.ClassJob.Id;
+            if (classJobId != null && this.doLIds.Contains(classJobId.Value)) {
+                mpColor = reset ? DefaultConfig.GpColor : Config.GpColor;
+            } else if (classJobId != null && this.doHIds.Contains(classJobId.Value)) {
+                mpColor = reset ? DefaultConfig.CpColor : Config.CpColor;
+            } else {
+                mpColor = reset ? DefaultConfig.MpColor : Config.MpColor;
+            }
 
+            var hideMp = !reset && Config.AutoHideMp && Service.Condition[ConditionFlag.RolePlaying] == false && classJobId != null && autoHideMpClassJobs.Contains(classJobId.Value);
             var mpNode = (AtkComponentNode*) parameterWidgetUnitBase->UldManager.SearchNodeById(4);
-            if (mpNode != null) UpdateParameter(mpNode, reset ? DefaultConfig.MpBar : Config.MpBar, reset ? DefaultConfig.MpValue : Config.MpValue, mpColor, reset ? DefaultConfig.HideHpTitle : Config.HideMpTitle, !reset && Config.AutoHideMp);
+            if (mpNode != null) UpdateParameter(mpNode, reset ? DefaultConfig.MpBar : Config.MpBar, reset ? DefaultConfig.MpValue : Config.MpValue, mpColor, reset ? DefaultConfig.HideHpTitle : Config.HideMpTitle, hideMp);
 
             // HP
             var hpNode = (AtkComponentNode*) parameterWidgetUnitBase->UldManager.SearchNodeById(3);
