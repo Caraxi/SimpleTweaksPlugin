@@ -20,6 +20,10 @@ namespace SimpleTweaksPlugin.Tweaks {
             var addon = Common.GetUnitBase("_TitleMenu");
             if (addon == null) return;
             var dc = Service.Data.Excel.GetSheet<WorldDCGroupType>()?.GetRow(AgentLobby.Instance()->DataCenter);
+            if (dc == null || dc.RowId == 0) {
+                var world = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->SystemConfig.GetLastWorldID();
+                dc = Service.Data.Excel.GetSheet<World>()?.GetRow(world)?.DataCenter?.Value;
+            }
             if (dc == null) return;
             var button = (AtkComponentNode*) addon->GetNodeById(5);
             if (button == null || (ushort) button->AtkResNode.Type < 1000) return;
