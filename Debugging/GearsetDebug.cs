@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
@@ -19,7 +20,7 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.SameLine();
             ImGui.Text($"{Encoding.ASCII.GetString(raptureGearsetModule->ModuleName, 15)}");
             
-            ImGui.Columns(5);
+            ImGui.Columns(6);
             ImGui.Text($"##");
             ImGuiExt.SetColumnWidths(35f, 120);
             ImGui.NextColumn();
@@ -28,6 +29,9 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.Text("Name");
             ImGui.NextColumn();
             ImGui.Text("Items");
+            ImGui.NextColumn();
+            ImGui.Text("Flags");
+            ImGuiExt.NextRow();
             ImGuiExt.NextRow();
             ImGui.Separator();
             ImGui.Separator();
@@ -58,9 +62,15 @@ namespace SimpleTweaksPlugin.Debugging {
                 ImGui.Text("Wrists"); ImGui.SameLine(); ImGui.Text($"[{gearset->Wrists.ItemID}]");
                 ImGui.Text("RingRight"); ImGui.SameLine(); ImGui.Text($"[{gearset->RingRight.ItemID}]");
                 ImGui.Text("SoulStone"); ImGui.SameLine(); ImGui.Text($"[{gearset->SoulStone.ItemID}]");
-                
-                
-                
+                ImGui.NextColumn();
+
+                foreach (RaptureGearsetModule.GearsetFlag r in Enum.GetValues(typeof(RaptureGearsetModule.GearsetFlag))) {
+                    if (gearset->Flags.HasFlag(r)) {
+                        ImGui.Text(r.ToString());
+                    }
+                }
+
+                ImGuiExt.NextRow();
                 ImGuiExt.NextRow();
                 ImGui.Separator();
             }

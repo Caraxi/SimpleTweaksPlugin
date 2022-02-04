@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Numerics;
-using System.Reflection;
+using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Helper;
+using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace SimpleTweaksPlugin.Debugging {
     public unsafe class ConfigDebug : DebugHelper {
@@ -34,13 +35,62 @@ namespace SimpleTweaksPlugin.Debugging {
             if (ImGui.BeginTabBar("ConfigDebugTabs")) {
 
                 if (ImGui.BeginTabItem("View")) {
+                    if (ImGui.BeginTable("configViewTable", 4)) {
+                        ImGui.TableSetupColumn("ID", ImGuiTableColumnFlags.WidthFixed, 50);
+                        ImGui.TableSetupColumn("Option Name", ImGuiTableColumnFlags.WidthFixed);
+                        ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, 120);
+                        ImGui.TableSetupColumn("Value", ImGuiTableColumnFlags.WidthFixed, 120);
+                        ImGui.TableHeadersRow();
 
-                    for (var i = 0; i < ConfigModule.ConfigOptionCount; i++) {
-                        
+                        for (short i = 0; i < 2000; i++) {
+
+                            var c = config->GetOptionById(i);
+                            if (c == null) continue;
+                            var v = config->GetValue(c->OptionID);
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"#{i}");
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"{c->OptionID}");
+                            ImGui.TableNextColumn();
+                            ImGui.Text($"{v->Type}");
+                            ImGui.TableNextColumn();
+
+                            void PrintValue(AtkValue* atkValue) {
+                                switch (atkValue->Type) {
+                                    case ValueType.Int:
+                                        ImGui.Text($"{atkValue->Int}");
+                                        break;
+                                    case ValueType.Bool:
+                                        ImGui.Text($"{atkValue->Byte == 1}");
+                                        break;
+                                    case ValueType.UInt:
+                                        ImGui.Text($"{atkValue->UInt}");
+                                        break;
+                                    case ValueType.Float:
+                                        ImGui.Text($"{atkValue->Float}");
+                                        break;
+                                    case ValueType.AllocatedString:
+                                    case ValueType.String:
+                                        var str = MemoryHelper.ReadStringNullTerminated(new IntPtr(atkValue->String));
+                                        ImGui.Text($"{str}");
+                                        break;
+                                    case ValueType.AllocatedVector:
+                                    case ValueType.Vector:
+                                        var vec = atkValue->Vector;
+                                        foreach (var vecValue in vec->Span) {
+                                            PrintValue(&vecValue);
+                                        }
+                                        break;
+                                    default:
+                                        ImGui.Text($"Unknown Value Type: {atkValue->Type}");
+                                        break;
+                                }
+                            }
+                            PrintValue(v);
+                        }
+
+                        ImGui.EndTable();
                     }
-
-
-
 
                     ImGui.EndTabItem();
                 }
@@ -61,9 +111,6 @@ namespace SimpleTweaksPlugin.Debugging {
                     foreach (var change in changes) {
                         ImGui.Text($"[#{change.Index}] {change.Option} ({(short)change.Option}) => {change.Value}  [{change.a4}, {change.a5}, {change.a6}]");
                     }
-
-
-
 
                     ImGui.EndTabItem();
                 }
