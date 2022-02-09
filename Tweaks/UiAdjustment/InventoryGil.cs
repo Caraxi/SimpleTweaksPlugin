@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Numerics;
 using Dalamud.Game.Text;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class InventoryGil : UiAdjustments.SubTweak {
@@ -14,7 +16,22 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private HookWrapper<Common.AddonOnUpdate> largeInventoryUpdateHook;
         private HookWrapper<Common.AddonOnUpdate> expansionInventoryUpdateHook;
 
+        public class Configs : TweakConfig {
+            [TweakConfigOption("Colour", "Color")]
+            public Vector4 Colour = Common.UiColorToVector4(0xEEE1C5FF);
+
+            [TweakConfigOption("Glow", "Color")]
+            public Vector4 Glow = Common.UiColorToVector4(0x000000FF);
+        }
+
+        public Configs Config { get; private set; }
+
+        public override bool UseAutoConfig => true;
+
+        protected override void ConfigChanged() => Update();
+
         public override void Enable() {
+            Config = LoadConfig<Configs>() ?? new Configs();
             inventoryUpdateHook ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 57 48 83 EC 20 48 89 74 24 ?? 48 8B F9", AfterInventoryUpdate);
             largeInventoryUpdateHook ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 49 8B 58 30", AfterInventoryUpdate);
             expansionInventoryUpdateHook ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 83 B9 ?? ?? ?? ?? ?? 48 8B D9", AfterInventoryUpdate);
@@ -66,14 +83,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 textNode->FontSize = 12;
                 textNode->AlignmentFontType = 0x05;
-                textNode->TextColor.A = 0xFF;
-                textNode->TextColor.R = 0xEE;
-                textNode->TextColor.G = 0xE1;
-                textNode->TextColor.B = 0xC5;
-                textNode->EdgeColor.A = 0xFF;
-                textNode->EdgeColor.R = 0x00;
-                textNode->EdgeColor.G = 0x00;
-                textNode->EdgeColor.B = 0x00;
 
                 var lastNode = atkUnitBase->RootNode->ChildNode;
                 if (lastNode == null) return;
@@ -85,12 +94,21 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 lastNode->PrevSiblingNode = (AtkResNode*) textNode;
                 textNode->AtkResNode.NextSiblingNode = lastNode;
                 textNode->AtkResNode.ParentNode = lastNode->ParentNode;
+                textNode->TextFlags |= (byte)TextFlags.Edge;
 
                 atkUnitBase->UldManager.UpdateDrawNodeList();
             }
 
             var gil = InventoryManager.Instance()->GetItemCountInContainer(1, InventoryType.Currency);
 
+            textNode->TextColor.A = (byte) (Config.Colour.W * 255f);
+            textNode->TextColor.R = (byte) (Config.Colour.X * 255f);
+            textNode->TextColor.G = (byte) (Config.Colour.Y * 255f);
+            textNode->TextColor.B = (byte) (Config.Colour.Z * 255f);
+            textNode->EdgeColor.A = (byte) (Config.Glow.W * 255f);
+            textNode->EdgeColor.R = (byte) (Config.Glow.X * 255f);
+            textNode->EdgeColor.G = (byte) (Config.Glow.Y * 255f);
+            textNode->EdgeColor.B = (byte) (Config.Glow.Z * 255f);
 
             textNode->SetText(gil.ToString("N0", Culture) + $"{(char) SeIconChar.Gil}");
         }
@@ -126,6 +144,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public override void Disable() {
+            SaveConfig(Config);
             inventoryUpdateHook?.Disable();
             largeInventoryUpdateHook?.Disable();
             expansionInventoryUpdateHook?.Disable();
