@@ -6,21 +6,14 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Hooking;
 using ImGuiNET;
-using SimpleTweaksPlugin.Tweaks;
 using SimpleTweaksPlugin.TweakSystem;
-
-namespace SimpleTweaksPlugin {
-    public partial class SimpleTweaksPluginConfig {
-        public bool ShouldSerializeCommandAlias() => CommandAlias != null;
-        public CommandAlias.Config CommandAlias = null;
-    }
-}
 
 namespace SimpleTweaksPlugin.Tweaks {
     public class CommandAlias : Tweak {
         #region Config
         public class Config : TweakConfig {
-            public List<AliasEntry> AliasList = new List<AliasEntry>();
+            public override int Version { get; set; } = 2;
+            public List<AliasEntry> AliasList = new();
         }
         
         public Config TweakConfig { get; private set; }
@@ -31,10 +24,11 @@ namespace SimpleTweaksPlugin.Tweaks {
             public bool Enabled = true;
             public string Input = string.Empty;
             public string Output = string.Empty;
-            [NonSerialized] public bool Delete = false;
-            [NonSerialized] public int UniqueId = 0;
+            [NonSerialized] public bool Delete;
+            [NonSerialized] public int UniqueId;
             public bool IsValid() {
                 if (NoOverwrite.Contains(Input)) return false;
+                if (Input.Contains(' ')) return false;
                 return !(string.IsNullOrWhiteSpace(Input) || string.IsNullOrWhiteSpace(Output));
             }
 
@@ -69,7 +63,6 @@ namespace SimpleTweaksPlugin.Tweaks {
                     aliasEntry.UniqueId = TweakConfig.AliasList.Max(a => a.UniqueId) + 1;
                 }
 
-                var focused = false;
                 ImGui.Separator();
                 if (aliasEntry.IsValid()) {
                     change = ImGui.Checkbox($"###aliasToggle{aliasEntry.UniqueId}", ref aliasEntry.Enabled) || change;
@@ -82,7 +75,6 @@ namespace SimpleTweaksPlugin.Tweaks {
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(-5);
                 change |= ImGui.InputText($"###aliasInput{aliasEntry.UniqueId}", ref aliasEntry.Input, 500) || change;
-                focused = ImGui.IsItemFocused();
                 ImGui.PopStyleVar();
                 ImGui.NextColumn();
                 ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
@@ -90,7 +82,6 @@ namespace SimpleTweaksPlugin.Tweaks {
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(-5);
                 change |= ImGui.InputText($"###aliasOutput{aliasEntry.UniqueId}", ref aliasEntry.Output, 500) || change;
-                focused = focused || ImGui.IsItemFocused();
                 ImGui.PopStyleVar();
                 ImGui.NextColumn();
                 
@@ -103,6 +94,8 @@ namespace SimpleTweaksPlugin.Tweaks {
                     ImGui.TextColored(new Vector4(1, 0, 0, 1), LocString("EmptyOutputError", "Output must not be empty."));
                 } else if (aliasEntry.Input.StartsWith("/")) {
                     ImGui.TextColored(new Vector4(1, 1, 0, 1), LocString("SlashIncludedError", "Don't include the '/'"));
+                } else if (aliasEntry.Input.Contains(' ')) {
+                    ImGui.TextColored(new Vector4(1, 1, 0, 1), LocString("SpaceInInput", "Input Command cannot contain a space."));
                 }
 
                 ImGui.NextColumn();
@@ -157,8 +150,18 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         public override unsafe void Enable() {
             if (!Ready) return;
-            TweakConfig = LoadConfig<Config>() ?? PluginConfig.CommandAlias ?? new Config();
-            processChatInputHook ??= new Hook<ProcessChatInputDelegate>(processChatInputAddress, new ProcessChatInputDelegate(ProcessChatInputDetour));
+            TweakConfig = LoadConfig<Config>() ?? new Config();
+
+            if (TweakConfig.Version == 1) {
+                // To avoid breaking old aliases that relied on the space, automatically add it when we would have removed it.
+                foreach(var alias in TweakConfig.AliasList) {
+                    if (alias.Output.Contains(' ')) alias.Output = $"{alias.Output} ";
+                }
+                TweakConfig.Version = 2;
+                SaveConfig(TweakConfig);
+            }
+
+            processChatInputHook ??= new Hook<ProcessChatInputDelegate>(processChatInputAddress, ProcessChatInputDetour);
             processChatInputHook?.Enable();
             Enabled = true;
         }
@@ -187,7 +190,9 @@ namespace SimpleTweaksPlugin.Tweaks {
                         });
                         if (alias != null) {
                             // https://git.sr.ht/~jkcclemens/CCMM/tree/master/Custom%20Commands%20and%20Macro%20Macros/GameFunctions.cs#L44
-                            var newStr = $"/{alias.Output}{inputString.Substring(alias.Input.Length + 1)}";
+                            var commandExtra = inputString[(alias.Input.Length + 1)..];
+                            if (commandExtra.StartsWith(' ')) commandExtra = commandExtra[1..];
+                            var newStr = $"/{alias.Output}{commandExtra}";
                             if (newStr.Length <= 500) {
                                 SimpleLog.Verbose($"Aliasing Command: {inputString} -> {newStr}");
                                 var bytes = Encoding.UTF8.GetBytes(newStr);
@@ -219,7 +224,6 @@ namespace SimpleTweaksPlugin.Tweaks {
         
         public override void Disable() {
             SaveConfig(TweakConfig);
-            PluginConfig.CommandAlias = null;
             processChatInputHook?.Disable();
             Enabled = false;
         }
