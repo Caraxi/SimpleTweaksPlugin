@@ -57,7 +57,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private readonly IntPtr allocText = Marshal.AllocHGlobal(512);
 
         private void ShowItemLevel(bool reset = false) {
-            SimpleLog.Log("Add ItemLevel to CharacterInspect");
             try {
                 var container = Common.GetContainer(InventoryType.Examine);
                 if (container == null) return;
