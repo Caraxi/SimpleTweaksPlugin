@@ -181,9 +181,9 @@ namespace SimpleTweaksPlugin.Tweaks {
                         case "":
                         case "t":
                         case "toggle":
-                            var cVal = configModule->GetValueById(optionDefinition.ID);
-                            configModule->SetOptionById(optionDefinition.ID, cVal->Int > 0 ? 0 : 1);
-                            setValue = cVal->Int > 0 ? 1 : 0UL;
+                            var cVal = configModule->GetIntValue(optionDefinition.ID);
+                            configModule->SetOptionById(optionDefinition.ID, cVal > 0 ? 0 : 1);
+                            setValue = cVal > 0 ? 1 : 0UL;
                             break;
                         default:
                             Service.Chat.PrintError($"/setoption {optionKind} ({optionTypeValueHints[optionDefinition.OptionType]})");
