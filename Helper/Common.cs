@@ -51,6 +51,10 @@ namespace SimpleTweaksPlugin.Helper {
 
         public static SigScanner Scanner => Service.SigScanner;
 
+        public static event Action FrameworkUpdate;
+
+        public static void InvokeFrameworkUpdate() => FrameworkUpdate?.Invoke();
+
         public Common() {
             var gameAllocPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 49 83 CF FF 4C 8B F0");
             var getGameAllocatorPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 8B 75 08");

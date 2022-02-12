@@ -8,6 +8,7 @@ using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using Dalamud;
+using Dalamud.Game;
 using Dalamud.Interface.Internal.Notifications;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
@@ -63,7 +64,7 @@ namespace SimpleTweaksPlugin {
 
         public void Dispose() {
             SimpleLog.Debug("Dispose");
-
+            Service.Framework.Update -= FrameworkOnUpdate;
             PluginInterface.UiBuilder.Draw -= this.BuildUI;
             RemoveCommands();
 
@@ -127,7 +128,11 @@ namespace SimpleTweaksPlugin {
 #endif
             DebugManager.Reload();
 
+
+            Service.Framework.Update += FrameworkOnUpdate;
         }
+
+        private void FrameworkOnUpdate(Framework framework) => Common.InvokeFrameworkUpdate();
 
         public void SetupLocalization() {
             this.PluginConfig.Language ??= Service.ClientState.ClientLanguage switch {
