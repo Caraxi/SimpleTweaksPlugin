@@ -20,6 +20,8 @@ namespace SimpleTweaksPlugin.Debugging {
             base.Dispose();
         }
 
+        private string searchString = string.Empty;
+
         public override void Draw() {
             var config = Framework.Instance()->GetUiModule()->GetConfigModule();
 
@@ -35,17 +37,26 @@ namespace SimpleTweaksPlugin.Debugging {
             if (ImGui.BeginTabBar("ConfigDebugTabs")) {
 
                 if (ImGui.BeginTabItem("View")) {
-                    if (ImGui.BeginTable("configViewTable", 4)) {
+
+                    ImGui.InputText("Search Option", ref searchString, 50);
+
+                    if (ImGui.BeginTable("configViewTable", 5)) {
                         ImGui.TableSetupColumn("ID", ImGuiTableColumnFlags.WidthFixed, 50);
                         ImGui.TableSetupColumn("Option Name", ImGuiTableColumnFlags.WidthFixed);
                         ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, 120);
                         ImGui.TableSetupColumn("Value", ImGuiTableColumnFlags.WidthFixed, 120);
+                        ImGui.TableSetupColumn("Value2", ImGuiTableColumnFlags.WidthFixed, 120);
                         ImGui.TableHeadersRow();
 
                         for (short i = 0; i < 2000; i++) {
 
                             var c = config->GetOptionById(i);
                             if (c == null) continue;
+
+                            if (!string.IsNullOrWhiteSpace(searchString)) {
+                                if (!$"{c->OptionID}".Contains(searchString, StringComparison.OrdinalIgnoreCase)) continue;
+                            }
+
                             var v = config->GetValue(c->OptionID);
                             ImGui.TableNextColumn();
                             ImGui.Text($"#{i}");
@@ -87,6 +98,11 @@ namespace SimpleTweaksPlugin.Debugging {
                                 }
                             }
                             PrintValue(v);
+
+                            ImGui.TableNextColumn();
+                            var intVal = config->GetIntValue(c->OptionID);
+                            ImGui.Text($"{intVal}");
+
                         }
 
                         ImGui.EndTable();
