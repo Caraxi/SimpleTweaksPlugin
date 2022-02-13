@@ -5,7 +5,7 @@ on:
 jobs:
   build:
     if: "! contains(toJSON(github.event.commits.*.message), '[skip-ci]')"
-    runs-on: [windows-latest]
+    runs-on: [windows-2020]
 
     steps:
       - uses: actions/checkout@v2
