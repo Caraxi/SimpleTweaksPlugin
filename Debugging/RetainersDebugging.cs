@@ -3,29 +3,29 @@ using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using ImGuiNET;
 
-namespace SimpleTweaksPlugin.Debugging {
-    public unsafe class RetainersDebugging : DebugHelper {
-        public override string Name => "Retainer Debugging";
+namespace SimpleTweaksPlugin.Debugging; 
 
-        public override void Draw() {
-            var retainerManager = RetainerManager.Instance();
+public unsafe class RetainersDebugging : DebugHelper {
+    public override string Name => "Retainer Debugging";
 
-            ImGui.Text("Retainer Manager: ");
-            ImGui.SameLine();
-            DebugManager.ClickToCopyText($"{(ulong)retainerManager:X}");
+    public override void Draw() {
+        var retainerManager = RetainerManager.Instance();
 
-            if (retainerManager == null) return;
+        ImGui.Text("Retainer Manager: ");
+        ImGui.SameLine();
+        DebugManager.ClickToCopyText($"{(ulong)retainerManager:X}");
 
-            ImGui.Separator();
+        if (retainerManager == null) return;
 
-            for (var i = 0; i < 10; i++) {
-                ImGui.Text($"{retainerManager->DisplayOrder[i]}");
-            }
+        ImGui.Separator();
 
-            ImGui.Separator();
-            DebugManager.PrintOutObject(retainerManager);
-
-
+        for (var i = 0; i < 10; i++) {
+            ImGui.Text($"{retainerManager->DisplayOrder[i]}");
         }
+
+        ImGui.Separator();
+        DebugManager.PrintOutObject(retainerManager);
+
+
     }
 }

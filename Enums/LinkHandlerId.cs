@@ -1,6 +1,6 @@
-﻿namespace SimpleTweaksPlugin.Enums {
-    public enum LinkHandlerId : uint {
-        OpenFolderLink,
-        OpenUrlLink,
-    }
+﻿namespace SimpleTweaksPlugin.Enums; 
+
+public enum LinkHandlerId : uint {
+    OpenFolderLink,
+    OpenUrlLink,
 }

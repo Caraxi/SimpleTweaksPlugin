@@ -10,64 +10,64 @@ using ImGuiNET;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.TweakSystem;
 
-namespace SimpleTweaksPlugin.Tweaks {
-    public class ChrDirCommand : Tweak {
-        public override string Name => "Character Directory Command";
-        public override string Description => "Adds a command to open the directory when client side character data is stored.";
+namespace SimpleTweaksPlugin.Tweaks; 
 
-        public override void Setup() {
-            Ready = true;
-        }
+public class ChrDirCommand : Tweak {
+    public override string Name => "Character Directory Command";
+    public override string Description => "Adds a command to open the directory when client side character data is stored.";
 
-        private DalamudLinkPayload linkPayload;
+    public override void Setup() {
+        Ready = true;
+    }
 
-        public override void Enable() {
-            if (Enabled) return;
-            Service.Commands.AddHandler("/chrdir", new CommandInfo(CommandHandler) {ShowInHelp = true, HelpMessage = "Print your character save directory to chat. '/chrdir open' to open the directory in explorer."});
+    private DalamudLinkPayload linkPayload;
 
-            linkPayload = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.OpenFolderLink, OpenFolder);
+    public override void Enable() {
+        if (Enabled) return;
+        Service.Commands.AddHandler("/chrdir", new CommandInfo(CommandHandler) {ShowInHelp = true, HelpMessage = "Print your character save directory to chat. '/chrdir open' to open the directory in explorer."});
+
+        linkPayload = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.OpenFolderLink, OpenFolder);
             
-            Enabled = true;
+        Enabled = true;
+    }
+
+    private void OpenFolder(uint arg1, SeString arg2) {
+        var dir = arg2.TextValue.Replace($"{(char)0x00A0}", "").Replace("\n", "").Replace("\r", "");
+        Process.Start("explorer.exe", dir);
+    }
+
+    private void CommandHandler(string command, string arguments) {
+        var saveDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "FINAL FANTASY XIV - A Realm Reborn", $"FFXIV_CHR{Service.ClientState.LocalContentId:X16}");
+        if (arguments == "open") {
+            Process.Start("explorer.exe", saveDir);
+            return;
         }
 
-        private void OpenFolder(uint arg1, SeString arg2) {
-            var dir = arg2.TextValue.Replace($"{(char)0x00A0}", "").Replace("\n", "").Replace("\r", "");
-            Process.Start("explorer.exe", dir);
-        }
+        Service.Chat.PrintChat(new XivChatEntry() {
+            Message= new SeString(new List<Payload>() {
+                new TextPayload("Character Directory:\n"),
+                new UIForegroundPayload(22),
+                linkPayload,
+                new TextPayload(saveDir),
+                RawPayload.LinkTerminator,
+                new UIForegroundPayload(0)
+            })
+        });
+    }
 
-        private void CommandHandler(string command, string arguments) {
-            var saveDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "FINAL FANTASY XIV - A Realm Reborn", $"FFXIV_CHR{Service.ClientState.LocalContentId:X16}");
-            if (arguments == "open") {
-                Process.Start("explorer.exe", saveDir);
-                return;
-            }
+    protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
+        ImGui.TextDisabled("/chrdir");
+        ImGui.TextDisabled("/chrdir open");
+    };
 
-            Service.Chat.PrintChat(new XivChatEntry() {
-                Message= new SeString(new List<Payload>() {
-                    new TextPayload("Character Directory:\n"),
-                    new UIForegroundPayload(22),
-                    linkPayload,
-                    new TextPayload(saveDir),
-                    RawPayload.LinkTerminator,
-                    new UIForegroundPayload(0)
-                })
-            });
-        }
+    public override void Disable() {
+        PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.OpenFolderLink);
+        Service.Commands.RemoveHandler("/chrdir");
+        Enabled = false;
+    }
 
-        protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
-            ImGui.TextDisabled("/chrdir");
-            ImGui.TextDisabled("/chrdir open");
-        };
-
-        public override void Disable() {
-            PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.OpenFolderLink);
-            Service.Commands.RemoveHandler("/chrdir");
-            Enabled = false;
-        }
-
-        public override void Dispose() {
-            Enabled = false;
-            Ready = false;
-        }
+    public override void Dispose() {
+        Enabled = false;
+        Ready = false;
     }
 }

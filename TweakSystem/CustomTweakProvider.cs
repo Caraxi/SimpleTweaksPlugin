@@ -1,43 +1,43 @@
 ﻿using System.IO;
 
-namespace SimpleTweaksPlugin.TweakSystem {
-    public class CustomTweakProvider : TweakProvider {
+namespace SimpleTweaksPlugin.TweakSystem; 
 
-        private readonly TweakLoadContext loadContext;
+public class CustomTweakProvider : TweakProvider {
 
-        public string AssemblyPath { get; }
+    private readonly TweakLoadContext loadContext;
 
-        private FileInfo LoadedFileInfo;
+    public string AssemblyPath { get; }
 
-        public CustomTweakProvider(string path) {
-            LoadedFileInfo = new FileInfo(path);
-            loadContext = new TweakLoadContext();
-            AssemblyPath = path;
-            Assembly = loadContext.LoadFromFile(path);
-            Service.PluginInterface.UiBuilder.Draw += OnDraw;
-        }
+    private FileInfo LoadedFileInfo;
 
-        private void OnDraw() {
-            if (IsDisposed) {
-                Service.PluginInterface.UiBuilder.Draw -= OnDraw;
-                return;
-            }
+    public CustomTweakProvider(string path) {
+        LoadedFileInfo = new FileInfo(path);
+        loadContext = new TweakLoadContext();
+        AssemblyPath = path;
+        Assembly = loadContext.LoadFromFile(path);
+        Service.PluginInterface.UiBuilder.Draw += OnDraw;
+    }
 
-            if (Service.PluginInterface.UiBuilder.FrameCount % 100 == 0) {
-                var f = new FileInfo(AssemblyPath);
-                if (LoadedFileInfo.LastWriteTime != f.LastWriteTime) {
-                    SimpleLog.Log($"Detected Change in {AssemblyPath}");
-                    Dispose();
-                    Loc.ClearCache();
-                    SimpleTweaksPlugin.Plugin.LoadCustomProvider(AssemblyPath);
-                }
-            }
-        }
-
-        public override void Dispose() {
-            SimpleLog.Log($"Unloading Tweak Provider: {AssemblyPath}");
+    private void OnDraw() {
+        if (IsDisposed) {
             Service.PluginInterface.UiBuilder.Draw -= OnDraw;
-            base.Dispose();
+            return;
         }
+
+        if (Service.PluginInterface.UiBuilder.FrameCount % 100 == 0) {
+            var f = new FileInfo(AssemblyPath);
+            if (LoadedFileInfo.LastWriteTime != f.LastWriteTime) {
+                SimpleLog.Log($"Detected Change in {AssemblyPath}");
+                Dispose();
+                Loc.ClearCache();
+                SimpleTweaksPlugin.Plugin.LoadCustomProvider(AssemblyPath);
+            }
+        }
+    }
+
+    public override void Dispose() {
+        SimpleLog.Log($"Unloading Tweak Provider: {AssemblyPath}");
+        Service.PluginInterface.UiBuilder.Draw -= OnDraw;
+        base.Dispose();
     }
 }

@@ -1,5 +1,5 @@
-﻿namespace SimpleTweaksPlugin.TweakSystem {
-    public abstract class Tweak : BaseTweak {
+﻿namespace SimpleTweaksPlugin.TweakSystem; 
+
+public abstract class Tweak : BaseTweak {
         
-    }
 }

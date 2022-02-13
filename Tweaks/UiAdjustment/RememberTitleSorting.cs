@@ -2,58 +2,58 @@
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 
-namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
-    public unsafe class RememberTitleSorting : UiAdjustments.SubTweak {
-        public override string Name => "Remember Title Sorting";
-        public override string Description => "Remember the selected sorting option in the title selection menu.";
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
 
-        private delegate void* ChangeSortOption(SomeAgent* agent, int sortOption);
+public unsafe class RememberTitleSorting : UiAdjustments.SubTweak {
+    public override string Name => "Remember Title Sorting";
+    public override string Description => "Remember the selected sorting option in the title selection menu.";
 
-        private HookWrapper<ChangeSortOption> changeSortOptionHook;
+    private delegate void* ChangeSortOption(SomeAgent* agent, int sortOption);
 
-        public class Configs : TweakConfig {
-            public int SelectedOption = 0;
-        }
+    private HookWrapper<ChangeSortOption> changeSortOptionHook;
 
-        public Configs Config { get; private set; }
+    public class Configs : TweakConfig {
+        public int SelectedOption = 0;
+    }
 
-        public override void Enable() {
-            Config = LoadConfig<Configs>() ?? new Configs();
+    public Configs Config { get; private set; }
 
-            changeSortOptionHook ??= Common.Hook<ChangeSortOption>("E8 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 83 7B 44 01", ChangeSortOptionDetour);
-            changeSortOptionHook?.Enable();
+    public override void Enable() {
+        Config = LoadConfig<Configs>() ?? new Configs();
 
-            base.Enable();
-        }
+        changeSortOptionHook ??= Common.Hook<ChangeSortOption>("E8 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 83 7B 44 01", ChangeSortOptionDetour);
+        changeSortOptionHook?.Enable();
 
-        [StructLayout(LayoutKind.Explicit, Size = 0x48)]
-        public struct SomeAgent {
-            [FieldOffset(0x44)] public int SomeInt;
-        }
+        base.Enable();
+    }
 
-        private void* ChangeSortOptionDetour(SomeAgent* agent, int sortOption) {
-            try {
-                if (agent->SomeInt != 0) {
-                    sortOption = Config.SelectedOption;
-                } else {
-                    Config.SelectedOption = sortOption;
-                    PluginConfig.Save();
-                }
-            } catch {
-                //
+    [StructLayout(LayoutKind.Explicit, Size = 0x48)]
+    public struct SomeAgent {
+        [FieldOffset(0x44)] public int SomeInt;
+    }
+
+    private void* ChangeSortOptionDetour(SomeAgent* agent, int sortOption) {
+        try {
+            if (agent->SomeInt != 0) {
+                sortOption = Config.SelectedOption;
+            } else {
+                Config.SelectedOption = sortOption;
+                PluginConfig.Save();
             }
-            return changeSortOptionHook.Original(agent, sortOption);
+        } catch {
+            //
         }
+        return changeSortOptionHook.Original(agent, sortOption);
+    }
 
-        public override void Disable() {
-            changeSortOptionHook?.Disable();
-            SaveConfig(Config);
-            base.Disable();
-        }
+    public override void Disable() {
+        changeSortOptionHook?.Disable();
+        SaveConfig(Config);
+        base.Disable();
+    }
 
-        public override void Dispose() {
-            changeSortOptionHook?.Dispose();
-            base.Dispose();
-        }
+    public override void Dispose() {
+        changeSortOptionHook?.Dispose();
+        base.Dispose();
     }
 }
