@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Numerics;
 using Dalamud.Game;
 using Dalamud.Interface;
-using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -213,17 +210,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             }
             ImGui.Dummy(new Vector2(2) * ImGui.GetIO().FontGlobalScale);
 
-            // hasChanged |= VisibilityAndOffsetEditor(LocString("Hide HP Bar"), ref Config.HpBar, DefaultConfig.HpBar);
-            // hasChanged |= ImGui.Checkbox(LocString("Hide 'HP' Text"), ref Config.HideHpTitle);
-            // hasChanged |= VisibilityAndOffsetEditor(LocString("Hide HP Value"), ref Config.HpValue, DefaultConfig.HpValue);
-            // ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
-            //
-            // hasChanged |= VisibilityAndOffsetEditor(LocString("Hide MP Bar"), ref Config.MpBar, DefaultConfig.MpBar);
-            // hasChanged |= ImGui.Checkbox(LocString("Hide 'MP' Text"), ref Config.HideMpTitle);
-            // hasChanged |= VisibilityAndOffsetEditor(LocString("Hide MP Value"), ref Config.MpValue, DefaultConfig.MpValue);
-            //
-            // hasChanged |= ImGui.Checkbox(LocString("AutoHideMp", "Hide MP Bar on jobs that don't use MP"), ref Config.AutoHideMp);
-            //
             // hasChanged |= ImGui.ColorEdit4(LocString("HP Bar Color"), ref Config.HpColor);
             // hasChanged |= ImGui.ColorEdit4(LocString("MP Bar Color"), ref Config.MpColor);
             // hasChanged |= ImGui.ColorEdit4(LocString("GP Bar Color"), ref Config.GpColor);
@@ -334,35 +320,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                 //     break;
             }
         }
-
-        private AtkResNode* GetSubNode(AtkComponentNode* parent, uint nodeId) 
-            => parent->Component->UldManager.SearchNodeById(nodeId);
-        
-        // TODO: Attempt to use GetNodeById<T>.  Possible I am not reading nodes correctly here and doing more work than needed
-        // I don't understand why Midori and Caraxi haven't run into this issue
-        
-        private AtkResNode* GetSubNode(AtkResNode* parent, uint nodeId) {
-            var node = parent->ChildNode;
-            if (node->NodeID == nodeId)
-                return node;
-            
-            while ((node = node->PrevSiblingNode) != null)
-                if (node->NodeID == nodeId)
-                    return node;
-
-            node = parent->ChildNode;
-            while ((node = node->NextSiblingNode) != null)
-                if (node->NodeID == nodeId)
-                    return node;
-            
-            var component = (AtkComponentNode*) parent;
-            if (component != null && component->Component != null)
-                return GetSubNode(component, nodeId);
-
-            return null;
-        }
         
         private void UpdateNode(AtkResNode* node, HideAndOffsetConfig config, bool preview) {
+            if (node == null) {
+                SimpleLog.Error("Node not found to update.");
+                return;
+            }
+            
             if (config.Hide)
                 node->Color.A = 0;
             else if (preview) {
@@ -389,12 +353,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                 return;
 
             try {
-                var gaugeNode = baseAddon->UldManager.SearchNodeById(14);
-                var subGaugeNode = GetSubNode(gaugeNode, 16);
-                
-                UpdateNode(GetSubNode(subGaugeNode, 18), config.PLDOathBar, preview);
-                UpdateNode(GetSubNode(subGaugeNode, 17), config.PLDOathBarText, preview);
-                UpdateNode(GetSubNode(gaugeNode, 15), config.PLDIronWillIndicator, preview);
+                UpdateNode(baseAddon->GetNodeById(18), config.PLDOathBar, preview);
+                UpdateNode(baseAddon->GetNodeById(17), config.PLDOathBarText, preview);
+                UpdateNode(baseAddon->GetNodeById(15), config.PLDIronWillIndicator, preview);
                 
                 // TODO: User selectable colors for each? Better UX for editor (put inline)
             } catch (Exception ex) {
@@ -412,24 +373,17 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                 return;
 
             try {
-                var chakraGaugeNode = chakraAddon->UldManager.SearchNodeById(17);
-                UpdateNode(GetSubNode(chakraGaugeNode, 18), config.MNKChakra1, preview);
-                UpdateNode(GetSubNode(chakraGaugeNode, 19), config.MNKChakra2, preview);
-                UpdateNode(GetSubNode(chakraGaugeNode, 20), config.MNKChakra3, preview);
-                UpdateNode(GetSubNode(chakraGaugeNode, 21), config.MNKChakra4, preview);
-                UpdateNode(GetSubNode(chakraGaugeNode, 22), config.MNKChakra5, preview);
-
-                var masterGaugeNode = masterAddon->UldManager.SearchNodeById(24);
-                UpdateNode(GetSubNode(masterGaugeNode, 38), config.MNKText, preview);
-
-                var beastNode = GetSubNode(masterGaugeNode, 33);
-                UpdateNode(GetSubNode(beastNode, 34), config.MNKBeastChakra1, preview);
-                UpdateNode(GetSubNode(beastNode, 35), config.MNKBeastChakra2, preview);
-                UpdateNode(GetSubNode(beastNode, 36), config.MNKBeastChakra3, preview);
-
-                var nadiNode = GetSubNode(masterGaugeNode, 25);
-                UpdateNode(GetSubNode(nadiNode, 26), config.MNKLunarNadi, preview);
-                UpdateNode(GetSubNode(nadiNode, 29), config.MNKSolarNadi, preview);
+                UpdateNode(chakraAddon->GetNodeById(18), config.MNKChakra1, preview);
+                UpdateNode(chakraAddon->GetNodeById(19), config.MNKChakra2, preview);
+                UpdateNode(chakraAddon->GetNodeById(20), config.MNKChakra3, preview);
+                UpdateNode(chakraAddon->GetNodeById(21), config.MNKChakra4, preview);
+                UpdateNode(chakraAddon->GetNodeById(22), config.MNKChakra5, preview);
+                UpdateNode(masterAddon->GetNodeById(38), config.MNKText, preview);
+                UpdateNode(masterAddon->GetNodeById(34), config.MNKBeastChakra1, preview);
+                UpdateNode(masterAddon->GetNodeById(35), config.MNKBeastChakra2, preview);
+                UpdateNode(masterAddon->GetNodeById(36), config.MNKBeastChakra3, preview);
+                UpdateNode(masterAddon->GetNodeById(26), config.MNKLunarNadi, preview);
+                UpdateNode(masterAddon->GetNodeById(29), config.MNKSolarNadi, preview);
 
                 // TODO: User selectable colors for each? Better UX for editor (put inline)
             } catch (Exception ex) {
@@ -445,12 +399,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                 return;
 
             try {
-                var baseNode = baseAddon->UldManager.SearchNodeById(13);
-                UpdateNode(GetSubNode(baseNode, 14), config.WARDefiance, preview);
-
-                var subNode = GetSubNode(baseNode, 15);
-                UpdateNode(GetSubNode(subNode, 16), config.WARBarText, preview);
-                UpdateNode(GetSubNode(subNode, 17), config.WARBeastBar, preview);
+                UpdateNode(baseAddon->GetNodeById(14), config.WARDefiance, preview);
+                UpdateNode(baseAddon->GetNodeById(16), config.WARBarText, preview);
+                UpdateNode(baseAddon->GetNodeById(17), config.WARBeastBar, preview);
 
                 // TODO: User selectable colors for each? Better UX for editor (put inline)
             } catch (Exception ex) {
@@ -466,21 +417,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                 return;
 
             try {
-                var baseNode = baseAddon->UldManager.SearchNodeById(33);
-                var barBaseNode = GetSubNode(baseNode, 41);
-                UpdateNode(GetSubNode(barBaseNode, 42), config.DRGDragonGaugeText, preview); //112,6
-                UpdateNode(GetSubNode(barBaseNode, 43), config.DRGDragonGauge, preview); //0,0
-                
-                SimpleLog.Debug("2");
-                var resourceNode = GetSubNode(baseNode, 34);
-                var gazeNode = GetSubNode(resourceNode, 35);
-                UpdateNode(GetSubNode(gazeNode, 36), config.DRGGaze1, preview); //0,0
-                UpdateNode(GetSubNode(gazeNode, 37), config.DRGGaze2, preview); //18,0
-                
-                SimpleLog.Debug("3");
-                var firstmindNode = GetSubNode(resourceNode, 38);
-                UpdateNode(GetSubNode(firstmindNode, 39), config.DRGMind1, preview); //0,0
-                UpdateNode(GetSubNode(firstmindNode, 40), config.DRGMind2, preview); //18,0
+                UpdateNode(baseAddon->GetNodeById(42), config.DRGDragonGaugeText, preview);
+                UpdateNode(baseAddon->GetNodeById(43), config.DRGDragonGauge, preview);
+                UpdateNode(baseAddon->GetNodeById(36), config.DRGGaze1, preview);
+                UpdateNode(baseAddon->GetNodeById(37), config.DRGGaze2, preview);
+                UpdateNode(baseAddon->GetNodeById(39), config.DRGMind1, preview);
+                UpdateNode(baseAddon->GetNodeById(40), config.DRGMind2, preview);
 
                 // TODO: User selectable colors for each? Better UX for editor (put inline)
             } catch (Exception ex) {
@@ -494,50 +436,26 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             var baseAddon = Common.GetUnitBase(hudAddon);
             if (baseAddon == null)
                 return;
-            
-            /*
-             * 
-            // 75 > 98 > 99 / Song Bar
-            // 75 > 76 / Song Name
-            // 75 > 88 > 89 > 90-93 / Repertoire (Paeon)
-            // 75 > 88 > 89 > 94-5-6 / Repertoire (Minuet)
-            // 75 > 97 / Song Countdown
-            // 75 > 85 > 86 / Soul Voice Gauge Text
-            // 75 > 85 > 87 / Soul Voice Gauge
-            // 75 > 77 > 79/82 1 / Mage's Coda
-            // 75 > 77 > 80/84 2 / Army's Coda
-            // 75 > 77 > 81/83 3 / Wanderer's Coda
-             */
 
             try {
-                var baseNode = baseAddon->UldManager.SearchNodeById(75);
-                var songBarNode = GetSubNode(baseNode, 98);
-                UpdateNode(GetSubNode(songBarNode, 99), config.BRDSongBar, preview);
-                UpdateNode(GetSubNode(baseNode, 76), config.BRDSongName, preview);
-
-                var repertoireBaseNode = GetSubNode(baseNode, 88);
-                repertoireBaseNode = GetSubNode(repertoireBaseNode, 89);
-                UpdateNode(GetSubNode(repertoireBaseNode, 90), config.BRDRepertoire1, preview);
-                UpdateNode(GetSubNode(repertoireBaseNode, 91), config.BRDRepertoire2, preview);
-                UpdateNode(GetSubNode(repertoireBaseNode, 92), config.BRDRepertoire3, preview);
-                UpdateNode(GetSubNode(repertoireBaseNode, 93), config.BRDRepertoire4, preview);
-                UpdateNode(GetSubNode(repertoireBaseNode, 94), config.BRDRepertoire1, preview);
-                UpdateNode(GetSubNode(repertoireBaseNode, 95), config.BRDRepertoire2, preview);
-                UpdateNode(GetSubNode(repertoireBaseNode, 96), config.BRDRepertoire3, preview);
-                
-                UpdateNode(GetSubNode(baseNode, 97), config.BRDSongCountdown, preview);
-
-                var soulVoiceBaseNode = GetSubNode(baseNode, 85);
-                UpdateNode(GetSubNode(soulVoiceBaseNode, 86), config.BRDSoulVoiceText, preview);
-                UpdateNode(GetSubNode(soulVoiceBaseNode, 87), config.BRDSoulVoiceBar, preview);
-
-                var codaBaseNode = GetSubNode(baseNode, 77);
-                UpdateNode(GetSubNode(codaBaseNode, 79), config.BRDMageCoda, preview);
-                UpdateNode(GetSubNode(codaBaseNode, 82), config.BRDMageCoda, preview);
-                UpdateNode(GetSubNode(codaBaseNode, 80), config.BRDArmyCoda, preview);
-                UpdateNode(GetSubNode(codaBaseNode, 84), config.BRDArmyCoda, preview);
-                UpdateNode(GetSubNode(codaBaseNode, 71), config.BRDWandererCoda, preview);
-                UpdateNode(GetSubNode(codaBaseNode, 83), config.BRDWandererCoda, preview);
+                UpdateNode(baseAddon->GetNodeById(99), config.BRDSongBar, preview);
+                UpdateNode(baseAddon->GetNodeById(76), config.BRDSongName, preview);
+                UpdateNode(baseAddon->GetNodeById(90), config.BRDRepertoire1, preview);
+                UpdateNode(baseAddon->GetNodeById(91), config.BRDRepertoire2, preview);
+                UpdateNode(baseAddon->GetNodeById(92), config.BRDRepertoire3, preview);
+                UpdateNode(baseAddon->GetNodeById(93), config.BRDRepertoire4, preview);
+                UpdateNode(baseAddon->GetNodeById(94), config.BRDRepertoire1, preview);
+                UpdateNode(baseAddon->GetNodeById(95), config.BRDRepertoire2, preview);
+                UpdateNode(baseAddon->GetNodeById(96), config.BRDRepertoire3, preview);
+                UpdateNode(baseAddon->GetNodeById(97), config.BRDSongCountdown, preview);
+                UpdateNode(baseAddon->GetNodeById(86), config.BRDSoulVoiceText, preview);
+                UpdateNode(baseAddon->GetNodeById(87), config.BRDSoulVoiceBar, preview);
+                UpdateNode(baseAddon->GetNodeById(79), config.BRDMageCoda, preview);
+                UpdateNode(baseAddon->GetNodeById(82), config.BRDMageCoda, preview);
+                UpdateNode(baseAddon->GetNodeById(80), config.BRDArmyCoda, preview);
+                UpdateNode(baseAddon->GetNodeById(84), config.BRDArmyCoda, preview);
+                UpdateNode(baseAddon->GetNodeById(71), config.BRDWandererCoda, preview);
+                UpdateNode(baseAddon->GetNodeById(83), config.BRDWandererCoda, preview);
 
                 // TODO: User selectable colors for each? Better UX for editor (put inline)
             } catch (Exception ex) {
@@ -553,22 +471,15 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                 return;
 
             try {
-                var gaugeNode = baseAddon->UldManager.SearchNodeById(33);
-                var heatNode = GetSubNode(gaugeNode, 34);
-                var batteryNode = GetSubNode(gaugeNode, 39);
-
-                // if (heatBarNode == null)
-                //     return;
-                //
-                UpdateNode(GetSubNode(heatNode, 38), config.MCHHeatBar, preview);
-                UpdateNode(GetSubNode(heatNode, 37), config.MCHHeatText, preview);
-                UpdateNode(GetSubNode(heatNode, 36), config.MCHOverheatIcon, preview);
-                UpdateNode(GetSubNode(heatNode, 35), config.MCHOverheatText, preview);
+                UpdateNode(baseAddon->GetNodeById(38), config.MCHHeatBar, preview);
+                UpdateNode(baseAddon->GetNodeById(37), config.MCHHeatText, preview);
+                UpdateNode(baseAddon->GetNodeById(36), config.MCHOverheatIcon, preview);
+                UpdateNode(baseAddon->GetNodeById(35), config.MCHOverheatText, preview);
                 
-                UpdateNode(GetSubNode(batteryNode, 43), config.MCHBatteryBar, preview);
-                UpdateNode(GetSubNode(batteryNode, 42), config.MCHBatteryText, preview);
-                UpdateNode(GetSubNode(batteryNode, 41), config.MCHQueenIcon, preview);
-                UpdateNode(GetSubNode(batteryNode, 40), config.MCHQueenText, preview);
+                UpdateNode(baseAddon->GetNodeById(43), config.MCHBatteryBar, preview);
+                UpdateNode(baseAddon->GetNodeById(42), config.MCHBatteryText, preview);
+                UpdateNode(baseAddon->GetNodeById(41), config.MCHQueenIcon, preview);
+                UpdateNode(baseAddon->GetNodeById(40), config.MCHQueenText, preview);
                 
                 // TODO: User selectable colors for each? Better UX for editor (put inline)
             } catch (Exception ex) {
@@ -585,22 +496,17 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             SimpleLog.Log(config.RDMBlackManaBar.Hide.ToString());
 
             try {
-                var gaugeNode = baseAddon->UldManager.SearchNodeById(24);
-                var barsNode = GetSubNode(gaugeNode, 37);
-
-                UpdateNode(GetSubNode(barsNode, 38), config.RDMWhiteManaBar, preview);
-                UpdateNode(GetSubNode(barsNode, 39), config.RDMBlackManaBar, preview);
-                UpdateNode(GetSubNode(gaugeNode, 35), config.RDMStatusIndicator, preview);
-                UpdateNode(GetSubNode(gaugeNode, 27), config.RDMManaStacks, preview);
-                UpdateNode(GetSubNode(gaugeNode, 26), config.RDMBlackManaText, preview);
-                UpdateNode(GetSubNode(gaugeNode, 25), config.RDMWhiteManaText, preview);
+                UpdateNode(baseAddon->GetNodeById(38), config.RDMWhiteManaBar, preview);
+                UpdateNode(baseAddon->GetNodeById(39), config.RDMBlackManaBar, preview);
+                UpdateNode(baseAddon->GetNodeById(35), config.RDMStatusIndicator, preview);
+                UpdateNode(baseAddon->GetNodeById(27), config.RDMManaStacks, preview);
+                UpdateNode(baseAddon->GetNodeById(26), config.RDMBlackManaText, preview);
+                UpdateNode(baseAddon->GetNodeById(25), config.RDMWhiteManaText, preview);
                 
                 // TODO: User selectable colors for each? Better UX for editor (put inline)
             } catch (Exception ex) {
                 SimpleLog.Error(ex.Message);
             }
         }
-
-        //private void UpdateElement(AtkComponentNode* node, HideAndOffsetConfig config, )
     }
 }
