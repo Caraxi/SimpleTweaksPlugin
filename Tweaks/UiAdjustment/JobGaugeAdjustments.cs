@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Dalamud.Game;
 using Dalamud.Interface;
@@ -26,7 +27,363 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         private uint? lastJob;
         private int? updateCount;
 
-        //public Dictionary<uint>
+        private static Dictionary<JobInfo, Dictionary<string, JobPieceMap[]>> JobMap = CreateJobMap();
+
+        #region Helper Classes
+
+        private class JobPieceMap {
+            internal JobPieceMap(string configName, Func<Configs, HideAndOffsetConfig> getConfig, params uint[] nodeIds) {
+                ConfigName = configName;
+                GetConfig = getConfig;
+                NodeIds = nodeIds;
+            }
+
+            internal string ConfigName { get; }
+            internal uint[] NodeIds { get; }
+            internal Func<Configs, HideAndOffsetConfig> GetConfig { get; }
+        }
+
+        private class JobInfo {
+            internal JobInfo(uint jobId, string jobName) {
+                JobId = jobId;
+                JobName = jobName;
+            }
+            internal string JobName { get; }
+            internal uint JobId { get; }
+        }
+        
+        #endregion
+
+        #region Per-Job Mappings
+        
+        private static Dictionary<JobInfo, Dictionary<string, JobPieceMap[]>> CreateJobMap()
+            => new() {
+                {
+                    new JobInfo(19, "Paladin"),
+                    new Dictionary<string, JobPieceMap[]> {
+                        {
+                            "JobHudPLD0",
+                            new[] {
+                                new JobPieceMap("Hide Oath Bar", c => c.PLDOathBar, 18),
+                                new JobPieceMap("Hide Oath Bar Text", c => c.PLDOathBarText, 17),
+                                new JobPieceMap("Hide Iron Will Indicator", c => c.PLDIronWillIndicator, 15)
+                            }
+                        }
+                    }
+                },
+                {
+                    new JobInfo(20, "Monk"),
+                    new Dictionary<string, JobPieceMap[]> {
+                        {
+                            "JobHudMNK1",
+                            new[] {
+                                new JobPieceMap("Hide Chakra 1", c => c.MNKChakra1, 18),
+                                new JobPieceMap("Hide Chakra 2", c => c.MNKChakra2, 19),
+                                new JobPieceMap("Hide Chakra 3", c => c.MNKChakra3, 20),
+                                new JobPieceMap("Hide Chakra 4", c => c.MNKChakra4, 21),
+                                new JobPieceMap("Hide Chakra 5", c => c.MNKChakra5, 22)
+                            }
+                        },
+                        {
+                            "JobHudMNK0",
+                            new[] {
+                                new JobPieceMap("Hide Text", c => c.MNKText, 38),
+                                new JobPieceMap("Hide Beast Chakra 1", c => c.MNKBeastChakra1, 34),
+                                new JobPieceMap("Hide Beast Chakra 2", c => c.MNKBeastChakra2, 35),
+                                new JobPieceMap("Hide Beast Chakra 3", c => c.MNKBeastChakra3, 36),
+                                new JobPieceMap("Hide Lunar Nadi", c => c.MNKLunarNadi, 26),
+                                new JobPieceMap("Hide Solar Nadi", c => c.MNKSolarNadi, 29),
+                            }
+                        }
+                    }
+                },
+                {
+                    new JobInfo(21, "Warrior"),
+                    new Dictionary<string, JobPieceMap[]> {
+                        {
+                            "JobHudWAR0",
+                            new[] {
+                                new JobPieceMap("Hide Defiance Icon", c => c.WARDefiance, 14),
+                                new JobPieceMap("Hide Beast Gauge", c => c.WARBeastBar, 17),
+                                new JobPieceMap("Hide Beast Gauge Text", c => c.WARBarText, 16),
+                            }
+                        }
+                    }
+                },
+                {
+                    new JobInfo(22, "Dragoon"),
+                    new Dictionary<string, JobPieceMap[]> {
+                        {
+                            "JobHudDRG0",
+                            new[] {
+                                new JobPieceMap("Hide LotD Bar", c => c.DRGDragonGauge, 43),
+                                new JobPieceMap("Hide LotD Bar Text", c => c.DRGDragonGaugeText, 42),
+                                new JobPieceMap("Hide Gaze 1", c => c.DRGGaze1, 36),
+                                new JobPieceMap("Hide Gaze 2", c => c.DRGGaze2, 37),
+                                new JobPieceMap("Hide Firstmind 1", c => c.DRGMind1, 39),
+                                new JobPieceMap("Hide Firstmind 2", c => c.DRGMind2, 40),
+                            }
+                        }
+                    }
+                },
+                {
+                    new JobInfo(23, "Bard"),
+                    new Dictionary<string, JobPieceMap[]> {
+                        {
+                            "JobHudBRD0",
+                            new[] {
+                                new JobPieceMap("Hide Song Bar", c => c.BRDSongBar, 99),
+                                new JobPieceMap("Hide Song Countdown", c => c.BRDSongCountdown, 97),
+                                new JobPieceMap("Hide Song Name", c => c.BRDSongName, 76),
+                                new JobPieceMap("Hide Repertoire 1", c => c.BRDRepertoire1, 90, 94),
+                                new JobPieceMap("Hide Repertoire 2", c => c.BRDRepertoire2, 91, 95),
+                                new JobPieceMap("Hide Repertoire 3", c => c.BRDRepertoire3, 92, 96),
+                                new JobPieceMap("Hide Repertoire 4", c => c.BRDRepertoire4, 93),
+                                new JobPieceMap("Hide Soul Voice Bar", c => c.BRDSoulVoiceBar, 87),
+                                new JobPieceMap("Hide Soul Voice Text", c => c.BRDSoulVoiceText, 86),
+                                new JobPieceMap("Hide Mage's Coda", c => c.BRDMageCoda, 79, 82),
+                                new JobPieceMap("Hide Army's Coda", c => c.BRDArmyCoda, 80, 84),
+                                new JobPieceMap("Hide Wanderer's Coda", c => c.BRDWandererCoda, 71, 83)
+                            }
+                        }
+                    }
+                },
+                {
+                    new JobInfo(24, "White Mage"),
+                    new Dictionary<string, JobPieceMap[]> {
+                        {
+                            "JobHudWHM0",
+                            new[] {
+                                new JobPieceMap("Hide Lily Bar", c => c.WHMLilyGauge, 38),
+                                new JobPieceMap("Hide Lily 1", c => c.WHMLily1, 30),
+                                new JobPieceMap("Hide Lily 2", c => c.WHMLily2, 31),
+                                new JobPieceMap("Hide Lily 3", c => c.WHMLily3, 32),
+                                new JobPieceMap("Hide Blood Lily 1", c => c.WHMBloodLily1, 34),
+                                new JobPieceMap("Hide Blood Lily 2", c => c.WHMBloodLily2, 35),
+                                new JobPieceMap("Hide Blood Lily 3", c => c.WHMBloodLily3, 36),
+                            }
+                        }
+                    }
+                },
+                {
+                    new JobInfo(25, "Black Mage"),
+                    new Dictionary<string, JobPieceMap[]> {
+                        {
+                            "JobHudBLM0",
+                            new[] {
+                                new JobPieceMap("Hide CountdownText", c => c.BLMCountdownText, 36),
+                                new JobPieceMap("Hide Ice/Fire 1", c => c.BLMIceFire1, 42),
+                                new JobPieceMap("Hide Ice/Fire 2", c => c.BLMIceFire2, 43),
+                                new JobPieceMap("Hide Ice/Fire 3", c => c.BLMIceFire3, 44),
+                                new JobPieceMap("Hide Heart 1", c => c.BLMUmbralHeart1, 38),
+                                new JobPieceMap("Hide Heart 2", c => c.BLMUmbralHeart2, 39),
+                                new JobPieceMap("Hide Heart 3", c => c.BLMUmbralHeart3, 40),
+                                new JobPieceMap("Hide Polygot Gauge", c => c.BLMPolygotGauge, 48),
+                                new JobPieceMap("Hide Polygot 1", c => c.BLMPolygot1, 46),
+                                new JobPieceMap("Hide Polygot 2", c => c.BLMPolygot2, 47),
+                                new JobPieceMap("Hide Endochan", c => c.BLMEndochan, 33),
+                                new JobPieceMap("Hide Paradox Gauge", c => c.BLMParadoxGauge, 34)
+                            }
+                        }
+                    }
+                },
+                {
+                    new JobInfo(27, "Summoner"),
+                    new Dictionary<string, JobPieceMap[]> {
+                        {
+                            "JobHudSMN1",
+                            new[] {
+                                new JobPieceMap("Hide Trance Gauge", c => c.SMNTranceGauge, 56),
+                                new JobPieceMap("Hide Trance Countdown", c => c.SMNTranceCountdown, 55),
+                                new JobPieceMap("Hide Ruby Arcanum", c => c.SMNRubyArcanum, 51),
+                                new JobPieceMap("Hide Topaz Arcanum", c => c.SMNTopazArcanum, 52),
+                                new JobPieceMap("Hide Emerald Arcanum", c => c.SMNEmeraldArcanum, 53),
+                                new JobPieceMap("Hide Pet Countdown", c => c.SMNPetCountdown, 50),
+                                new JobPieceMap("Hide Pet Icon", c => c.SMNPetIcon, 49),
+                                new JobPieceMap("Hide Bahamut/Phoenix", c => c.SMNBahamutPheonix, 47),
+                            }
+                        },
+                        {
+                            "JobHudSMN0",
+                            new[] {
+                                new JobPieceMap("Hide Aetherflow 1", c => c.SMNAetherflow1, 12),
+                                new JobPieceMap("Hide Aetherflow 2", c => c.SMNAetherflow2, 13),
+                            }
+                        }
+                    }
+                },
+                {
+                    // TODO: Text shift when 0-9, 10-99, 100
+                    // 112 > 95 > 78
+                    new JobInfo(28, "Scholar"),
+                    new Dictionary<string, JobPieceMap[]> {
+                        {
+                            "JobHudSCH0",
+                            new[] {
+                                new JobPieceMap("Hide Faire Gauge", c => c.SCHFaireGauge, 32),
+                                new JobPieceMap("Hide Faire Gauge Text", c => c.SCHFaireGaugeText, 31),
+                                new JobPieceMap("Hide Seraph Icon", c => c.SCHSeraphIcon, 29),
+                                new JobPieceMap("Hide Seraph Countdown", c => c.SCHSeraphCountdown, 30),
+                            }
+                        },
+                        {
+                            "JobHudACN0",
+                            new[] {
+                                new JobPieceMap("Hide Aetherflow 1", c => c.SCHAetherflow1, 8),
+                                new JobPieceMap("Hide Aetherflow 2", c => c.SCHAetherflow2, 9),
+                                new JobPieceMap("Hide Aetherflow 3", c => c.SCHAetherflow3, 10),
+                            }
+                        }
+                    }
+                },
+                {
+                    new JobInfo(30, "Ninja"),
+                    new Dictionary<string, JobPieceMap[]> {
+                        {
+                            "JobHudNIN1",
+                            new[] {
+                                new JobPieceMap("Hide Huton Bar", c => c.NINHutonBar, 20),
+                                new JobPieceMap("Hide Huton Bar Text", c => c.NINHutonBarCountdown, 19),
+                                new JobPieceMap("Hide Huton Clock Icon", c => c.NINHutonClockIcon, 18)
+                            }
+                        },
+                        {
+                            "JobHudNIN0",
+                            new[] {
+                                new JobPieceMap("Hide Ninki Gauge", c => c.NINNinkiGauge, 19),
+                                new JobPieceMap("Hide Ninki Gauge Text", c => c.NINNinkiGaugeText, 18)
+                            }
+                        }
+                    }
+                },
+                {
+                    new JobInfo(31, "Mechanist"),
+                    new Dictionary<string, JobPieceMap[]> {
+                        {
+                            "JobHudMCH0",
+                            new[] {
+                                new JobPieceMap("HideHeatBar", c => c.MCHHeatBar, 38),
+                                new JobPieceMap("HideHeatText", c => c.MCHHeatText, 37),
+                                new JobPieceMap("Hide Overheat Icon", c => c.MCHOverheatIcon, 36),
+                                new JobPieceMap("Hide Overheat Text", c => c.MCHOverheatText, 35),
+                                new JobPieceMap("Hide Battery Bar", c => c.MCHBatteryBar, 43),
+                                new JobPieceMap("Hide Battery Text", c => c.MCHBatteryText, 42),
+                                new JobPieceMap("Hide Queen Icon", c => c.MCHQueenIcon, 41),
+                                new JobPieceMap("Hide Queen Icon Text", c => c.MCHQueenText, 40),
+                            }
+                        }
+                    }
+                },
+                {
+                    new JobInfo(32, "Dark Knight"),
+                    new Dictionary<string, JobPieceMap[]> {
+                        {
+                            "JobHudDRK0",
+                            new[] {
+                                new JobPieceMap("Hide Grit Icon", c => c.DRKGritIcon, 15),
+                                new JobPieceMap("Hide Blood Gauge", c => c.DRKBloodGauge, 18),
+                                new JobPieceMap("Hide Blood Gauge Text", c => c.DRKBloodGaugeText, 17)
+                            }
+                        },
+                        {
+                            "JobHudDRK1",
+                            new[] {
+                                new JobPieceMap("Hide Darkside Gauge", c => c.DRKDarksideGauge, 27),
+                                new JobPieceMap("Hide Darkside Gauge Text", c => c.DRKDarksideGaugeText, 26),
+                                new JobPieceMap("Hide Dark Arts", c => c.DRKDarkArts, 24),
+                                new JobPieceMap("Hide Living Shadow", c => c.DRKLivingShadow, 22),
+                                new JobPieceMap("Hide Living Shadow Text", c => c.DRKLivingShadowCountdown, 23),
+                            }
+                        }
+                    }
+                },
+                // {
+                //     new JobInfo(33, "Astrologian"),
+                //     new Dictionary<string, JobPieceMap[]> {
+                //         {
+                //             "JobHud",
+                //             new[] {
+                //                 new JobPieceMap("", c => c, ),
+                //             }
+                //         }
+                //     }
+                // },
+                // {
+                //     new JobInfo(34, "Samurai"),
+                //     new Dictionary<string, JobPieceMap[]> {
+                //         {
+                //             "JobHud",
+                //             new[] {
+                //                 new JobPieceMap("", c => c, ),
+                //             }
+                //         }
+                //     }
+                // },
+                {
+                    new JobInfo(35, "Red Mage"),
+                    new Dictionary<string, JobPieceMap[]> {
+                        {
+                            "JobHudRDM0",
+                            new[] {
+                                new JobPieceMap("Hide White Mana Bar", c => c.RDMWhiteManaBar, 38),
+                                new JobPieceMap("Hide White Mana Text", c => c.RDMWhiteManaText, 25),
+                                new JobPieceMap("Hide Black Mana Bar", c => c.RDMBlackManaBar, 39),
+                                new JobPieceMap("Hide Black Mana Text", c => c.RDMBlackManaText, 26),
+                                new JobPieceMap("Hide Status Indicator", c => c.RDMStatusIndicator, 35),
+                                new JobPieceMap("Hide Mana Stacks", c => c.RDMManaStacks, 27), // TODO: Individual Stacks
+                            }
+                        }
+                    }
+                },
+                // {
+                //     new JobInfo(37, "Gunbreaker"),
+                //     new Dictionary<string, JobPieceMap[]> {
+                //         {
+                //             "JobHud",
+                //             new[] {
+                //                 new JobPieceMap("", c => c, ),
+                //             }
+                //         }
+                //     }
+                // },
+                // {
+                //     new JobInfo(38, "Dancer"),
+                //     new Dictionary<string, JobPieceMap[]> {
+                //         {
+                //             "JobHud",
+                //             new[] {
+                //                 new JobPieceMap("", c => c, ),
+                //             }
+                //         }
+                //     }
+                // },
+                // {
+                //     new JobInfo(39, "Reaper"),
+                //     new Dictionary<string, JobPieceMap[]> {
+                //         {
+                //             "JobHud",
+                //             new[] {
+                //                 new JobPieceMap("", c => c, ),
+                //             }
+                //         }
+                //     }
+                // },
+                // {
+                //     new JobInfo(40, "Sage"),
+                //     new Dictionary<string, JobPieceMap[]> {
+                //         {
+                //             "JobHud",
+                //             new[] {
+                //                 new JobPieceMap("", c => c, ),
+                //             }
+                //         }
+                //     }
+                // }
+            };
+        
+        #endregion
+
+        #region Configuration
 
         public class Configs : TweakConfig {
             public HideAndOffsetConfig PLDOathBar = new() { OffsetX  = 28, OffsetY = 4 };
@@ -46,21 +403,21 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             public HideAndOffsetConfig MCHQueenIcon = new() { OffsetX  = 0, OffsetY = -27 };
             public HideAndOffsetConfig MCHQueenText = new() { OffsetX  = 54, OffsetY = -29 };
             public HideAndOffsetConfig MCHBatteryBar = new() { OffsetX  = 0, OffsetY = 0 };
-            public HideAndOffsetConfig MCHBatteryText = new() { OffsetX  = 111, OffsetY = 6 };
+            public HideAndOffsetConfig MCHBatteryText = new() { OffsetX  = 112, OffsetY = 6 };
             public HideAndOffsetConfig MCHHeatBar = new() { OffsetX  = 0, OffsetY = 26 };
-            public HideAndOffsetConfig MCHHeatText = new() { OffsetX  = 111, OffsetY = 32 };
+            public HideAndOffsetConfig MCHHeatText = new() { OffsetX  = 112, OffsetY = 32 };
 
-            public HideAndOffsetConfig MNKChakra1 = new() { OffsetX = 0, OffsetY = 0 }; // 1 > 17 > 18
-            public HideAndOffsetConfig MNKChakra2 = new() { OffsetX = 18, OffsetY = 0 }; // 1 > 17 > 19
-            public HideAndOffsetConfig MNKChakra3 = new() { OffsetX = 36, OffsetY = 0 }; // 1 > 17 > 20
-            public HideAndOffsetConfig MNKChakra4 = new() { OffsetX = 54, OffsetY = 0 }; // 1 > 17 > 21
-            public HideAndOffsetConfig MNKChakra5 = new() { OffsetX = 72, OffsetY = 0 }; // 1 > 17 > 22
-            public HideAndOffsetConfig MNKText = new() { OffsetX = -10, OffsetY = 4 }; // 0 > 24 > 38
-            public HideAndOffsetConfig MNKBeastChakra1 = new() { OffsetX = 8, OffsetY = 8 }; // 0 > 24 > 33 > 34
-            public HideAndOffsetConfig MNKBeastChakra2 = new() { OffsetX = 38, OffsetY = 8 }; // 0 > 24 > 33 > 35
-            public HideAndOffsetConfig MNKBeastChakra3 = new() { OffsetX = 68, OffsetY = 8 }; // 0 > 24 > 33 > 36
-            public HideAndOffsetConfig MNKLunarNadi = new() { OffsetX = 0, OffsetY = 0 }; // 0 > 24 > 25 > 26
-            public HideAndOffsetConfig MNKSolarNadi = new() { OffsetX = 20, OffsetY = 0 }; // 0 > 24 > 25 > 29
+            public HideAndOffsetConfig MNKChakra1 = new() { OffsetX = 0, OffsetY = 0 };
+            public HideAndOffsetConfig MNKChakra2 = new() { OffsetX = 18, OffsetY = 0 };
+            public HideAndOffsetConfig MNKChakra3 = new() { OffsetX = 36, OffsetY = 0 };
+            public HideAndOffsetConfig MNKChakra4 = new() { OffsetX = 54, OffsetY = 0 };
+            public HideAndOffsetConfig MNKChakra5 = new() { OffsetX = 72, OffsetY = 0 };
+            public HideAndOffsetConfig MNKText = new() { OffsetX = -10, OffsetY = 4 };
+            public HideAndOffsetConfig MNKBeastChakra1 = new() { OffsetX = 8, OffsetY = 8 };
+            public HideAndOffsetConfig MNKBeastChakra2 = new() { OffsetX = 38, OffsetY = 8 };
+            public HideAndOffsetConfig MNKBeastChakra3 = new() { OffsetX = 68, OffsetY = 8 };
+            public HideAndOffsetConfig MNKLunarNadi = new() { OffsetX = 0, OffsetY = 0 };
+            public HideAndOffsetConfig MNKSolarNadi = new() { OffsetX = 20, OffsetY = 0 };
             
             public HideAndOffsetConfig WARDefiance = new() { OffsetX = 0, OffsetY = -2 };
             public HideAndOffsetConfig WARBeastBar = new() { OffsetX = 28, OffsetY = 4 };
@@ -85,7 +442,71 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             public HideAndOffsetConfig BRDMageCoda = new() { OffsetX = 0, OffsetY = 0 };
             public HideAndOffsetConfig BRDArmyCoda = new() { OffsetX = 0, OffsetY = 22 };
             public HideAndOffsetConfig BRDWandererCoda = new() { OffsetX = 0, OffsetY = 44 };
+
+            public HideAndOffsetConfig WHMLilyGauge = new() { OffsetX = 0, OffsetY = 0 };
+            public HideAndOffsetConfig WHMLily1 = new() { OffsetX = 0, OffsetY = 0 };
+            public HideAndOffsetConfig WHMLily2 = new() { OffsetX = 18, OffsetY = 0 };
+            public HideAndOffsetConfig WHMLily3 = new() { OffsetX = 36, OffsetY = 0 };
+            public HideAndOffsetConfig WHMBloodLily1 = new() { OffsetX = 0, OffsetY = 0 };
+            public HideAndOffsetConfig WHMBloodLily2 = new() { OffsetX = 18, OffsetY = 0 };
+            public HideAndOffsetConfig WHMBloodLily3 = new() { OffsetX = 36, OffsetY = 0 };
+            
+            public HideAndOffsetConfig BLMCountdownText = new() { OffsetX = -17, OffsetY = 2 };
+            public HideAndOffsetConfig BLMIceFire1 = new() { OffsetX = 0, OffsetY = 0 };
+            public HideAndOffsetConfig BLMIceFire2 = new() { OffsetX = 19, OffsetY = 0 };
+            public HideAndOffsetConfig BLMIceFire3 = new() { OffsetX = 38, OffsetY = 0 };
+            public HideAndOffsetConfig BLMUmbralHeart1 = new() { OffsetX = 0, OffsetY = 0 };
+            public HideAndOffsetConfig BLMUmbralHeart2 = new() { OffsetX = 19, OffsetY = 0 };
+            public HideAndOffsetConfig BLMUmbralHeart3 = new() { OffsetX = 38, OffsetY = 0 };
+            public HideAndOffsetConfig BLMPolygotGauge = new() { OffsetX = 30, OffsetY = 6 };
+            public HideAndOffsetConfig BLMPolygot1 = new() { OffsetX = 182, OffsetY = -1 };
+            public HideAndOffsetConfig BLMPolygot2 = new() { OffsetX = 202, OffsetY = -1 };
+            public HideAndOffsetConfig BLMEndochan = new() { OffsetX = -10, OffsetY = 0 };
+            public HideAndOffsetConfig BLMParadoxGauge = new() { OffsetX = 108, OffsetY = -16 };
+            
+            public HideAndOffsetConfig SMNAetherflow1 = new() { OffsetX = 0, OffsetY = 0 };
+            public HideAndOffsetConfig SMNAetherflow2 = new() { OffsetX = 18, OffsetY = 0 };
+            public HideAndOffsetConfig SMNTranceGauge = new() { OffsetX = 0, OffsetY = 0 };
+            public HideAndOffsetConfig SMNTranceCountdown = new() { OffsetX = 112, OffsetY = 6 };
+            public HideAndOffsetConfig SMNRubyArcanum = new() { OffsetX = 0, OffsetY = 4 };
+            public HideAndOffsetConfig SMNTopazArcanum = new() { OffsetX = 18, OffsetY = 4 };
+            public HideAndOffsetConfig SMNEmeraldArcanum = new() { OffsetX = 36, OffsetY = 4 };
+            public HideAndOffsetConfig SMNPetCountdown = new() { OffsetX = 85, OffsetY = 0 };
+            public HideAndOffsetConfig SMNPetIcon = new() { OffsetX = 63, OffsetY = 4 };
+            public HideAndOffsetConfig SMNBahamutPheonix = new() { OffsetX = 0, OffsetY = -3 };
+            
+            public HideAndOffsetConfig SCHFaireGauge = new() { OffsetX = 0, OffsetY = 30 };
+            public HideAndOffsetConfig SCHFaireGaugeText = new() { OffsetX = 95, OffsetY = 36 };
+            public HideAndOffsetConfig SCHSeraphIcon = new() { OffsetX = 0, OffsetY = 4 };
+            public HideAndOffsetConfig SCHSeraphCountdown = new() { OffsetX = 24, OffsetY = 0 };
+            public HideAndOffsetConfig SCHAetherflow1 = new() { OffsetX = 0, OffsetY = 0 };
+            public HideAndOffsetConfig SCHAetherflow2 = new() { OffsetX = 18, OffsetY = 0 };
+            public HideAndOffsetConfig SCHAetherflow3 = new() { OffsetX = 36, OffsetY = 0 };
+            
+            public HideAndOffsetConfig NINHutonBar = new() { OffsetX = 0, OffsetY = 0 };
+            public HideAndOffsetConfig NINHutonBarCountdown = new() { OffsetX = 112, OffsetY = 6 };
+            public HideAndOffsetConfig NINHutonClockIcon = new() { OffsetX = -16, OffsetY = -1 };
+            public HideAndOffsetConfig NINNinkiGauge = new() { OffsetX = 0, OffsetY = 0 };
+            public HideAndOffsetConfig NINNinkiGaugeText = new() { OffsetX = 112, OffsetY = 6 };
+            
+            public HideAndOffsetConfig DRKGritIcon = new() { OffsetX = 0, OffsetY = -4 };
+            public HideAndOffsetConfig DRKBloodGauge = new() { OffsetX = 0, OffsetY = 0 };
+            public HideAndOffsetConfig DRKBloodGaugeText = new() { OffsetX = 112, OffsetY = 6 };
+            public HideAndOffsetConfig DRKDarksideGauge = new() { OffsetX = 0, OffsetY = 0 };
+            public HideAndOffsetConfig DRKDarksideGaugeText = new() { OffsetX = 112, OffsetY = 6 };
+            public HideAndOffsetConfig DRKDarkArts = new() { OffsetX = 2, OffsetY = 38 };
+            public HideAndOffsetConfig DRKLivingShadow = new() { OffsetX = 0, OffsetY = 6 };
+            public HideAndOffsetConfig DRKLivingShadowCountdown = new() { OffsetX = 35, OffsetY = 0 };
+            
+            // public HideAndOffsetConfig AST = new() { OffsetX = 0, OffsetY = 0 };
+            // public HideAndOffsetConfig AST = new() { OffsetX = 0, OffsetY = 0 };
+            // public HideAndOffsetConfig AST = new() { OffsetX = 0, OffsetY = 0 };
+            // public HideAndOffsetConfig AST = new() { OffsetX = 0, OffsetY = 0 };
+            // public HideAndOffsetConfig AST = new() { OffsetX = 0, OffsetY = 0 };
+            // public HideAndOffsetConfig AST = new() { OffsetX = 0, OffsetY = 0 };
         }
+
+        #endregion
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
@@ -102,7 +523,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         }
 
         // TODO: Genericize this for all usage. Why are we all making our own UI Elements?
-        private bool VisibilityAndOffsetEditor(string label, ref HideAndOffsetConfig config, HideAndOffsetConfig defConfig) {
+        private bool VisibilityAndOffsetEditor(string label, HideAndOffsetConfig config, HideAndOffsetConfig defConfig) {
             var hasChanged = false;
             var positionOffset = 185 * ImGui.GetIO().FontGlobalScale;
             var resetOffset = 250 * ImGui.GetIO().FontGlobalScale;
@@ -132,83 +553,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         }
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-            if (ImGui.CollapsingHeader(LocString("Paladin"))) {
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Oath Bar"), ref Config.PLDOathBar, DefaultConfig.PLDOathBar);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Oath Bar Text"), ref Config.PLDOathBarText, DefaultConfig.PLDOathBarText);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Iron Will"), ref Config.PLDIronWillIndicator, DefaultConfig.PLDIronWillIndicator);
+            foreach (var jobInfo in JobMap.Keys) {
+                hasChanged |= DrawConfigJobSection(jobInfo);
             }
-            ImGui.Dummy(new Vector2(2) * ImGui.GetIO().FontGlobalScale);
-            
-            if (ImGui.CollapsingHeader(LocString("Monk"))) {
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Chakra 1"), ref Config.MNKChakra1, DefaultConfig.MNKChakra1);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Chakra 2"), ref Config.MNKChakra2, DefaultConfig.MNKChakra2);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Chakra 3"), ref Config.MNKChakra3, DefaultConfig.MNKChakra3);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Chakra 4"), ref Config.MNKChakra4, DefaultConfig.MNKChakra4);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Chakra 5"), ref Config.MNKChakra5, DefaultConfig.MNKChakra5);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Text"), ref Config.MNKText, DefaultConfig.MNKText);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Beast Chakra 1"), ref Config.MNKBeastChakra1, DefaultConfig.MNKBeastChakra1);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Beast Chakra 2"), ref Config.MNKBeastChakra2, DefaultConfig.MNKBeastChakra2);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Beast Chakra 3"), ref Config.MNKBeastChakra3, DefaultConfig.MNKBeastChakra3);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Lunar Nadi"), ref Config.MNKLunarNadi, DefaultConfig.MNKLunarNadi);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Solar Nadi"), ref Config.MNKSolarNadi, DefaultConfig.MNKSolarNadi);
-            }
-            ImGui.Dummy(new Vector2(2) * ImGui.GetIO().FontGlobalScale);
-            
-            if (ImGui.CollapsingHeader(LocString("Warrior"))) {
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Beast Gauge"), ref Config.WARBeastBar, DefaultConfig.WARBeastBar);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Beast Gauge Text"), ref Config.WARBarText, DefaultConfig.WARBarText);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Defiance"), ref Config.WARDefiance, DefaultConfig.WARDefiance);
-            }
-            ImGui.Dummy(new Vector2(2) * ImGui.GetIO().FontGlobalScale);
-            
-            if (ImGui.CollapsingHeader(LocString("Dragoon"))) {
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide LotD Bar"), ref Config.DRGDragonGauge, DefaultConfig.DRGDragonGauge);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide LotD Bar Text"), ref Config.DRGDragonGaugeText, DefaultConfig.DRGDragonGaugeText);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Gaze 1"), ref Config.DRGGaze1, DefaultConfig.DRGGaze1);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Gaze 2"), ref Config.DRGGaze2, DefaultConfig.DRGGaze2);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Firstmind 1"), ref Config.DRGMind1, DefaultConfig.DRGMind1);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Firstmind 2"), ref Config.DRGMind2, DefaultConfig.DRGMind2);
-            }
-            ImGui.Dummy(new Vector2(2) * ImGui.GetIO().FontGlobalScale);
-            
-            if (ImGui.CollapsingHeader(LocString("Bard"))) {
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Song Bar"), ref Config.BRDSongBar, DefaultConfig.BRDSongBar);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Song Countdown"), ref Config.BRDSongCountdown, DefaultConfig.BRDSongCountdown);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Song Name"), ref Config.BRDSongName, DefaultConfig.BRDSongName);
-                // TODO: Repertoire stacks changing in battle on configuration weirdness (preview? remove entirely?)
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Repertoire 1"), ref Config.BRDRepertoire1, DefaultConfig.BRDRepertoire1);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Repertoire 2"), ref Config.BRDRepertoire2, DefaultConfig.BRDRepertoire2);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Repertoire 3"), ref Config.BRDRepertoire3, DefaultConfig.BRDRepertoire3);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Repertoire 4"), ref Config.BRDRepertoire4, DefaultConfig.BRDRepertoire4);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Soul Voice Text"), ref Config.BRDSoulVoiceText, DefaultConfig.BRDSoulVoiceText);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Soul Voice Bar"), ref Config.BRDSoulVoiceBar, DefaultConfig.BRDSoulVoiceBar);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Mage's Coda"), ref Config.BRDMageCoda, DefaultConfig.BRDMageCoda);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Army's Coda"), ref Config.BRDArmyCoda, DefaultConfig.BRDArmyCoda);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Wanderer's Coda"), ref Config.BRDWandererCoda, DefaultConfig.BRDWandererCoda);
-            }
-            ImGui.Dummy(new Vector2(2) * ImGui.GetIO().FontGlobalScale);
-            
-            if (ImGui.CollapsingHeader(LocString("Red Mage"))) {
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide White Mana"), ref Config.RDMWhiteManaBar, DefaultConfig.RDMWhiteManaBar);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide White Mana Text"), ref Config.RDMWhiteManaText, DefaultConfig.RDMWhiteManaText);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Black Mana"), ref Config.RDMBlackManaBar, DefaultConfig.RDMBlackManaBar);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Black Mana Text"), ref Config.RDMBlackManaText, DefaultConfig.RDMBlackManaText);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Status Indicator"), ref Config.RDMStatusIndicator, DefaultConfig.RDMStatusIndicator);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Mana Stacks"), ref Config.RDMManaStacks, DefaultConfig.RDMManaStacks);
-            }
-            ImGui.Dummy(new Vector2(2) * ImGui.GetIO().FontGlobalScale);
-            
-            if (ImGui.CollapsingHeader(LocString("Mechanist"))) {
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Heat"), ref Config.MCHHeatBar, DefaultConfig.MCHHeatBar);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Heat Text"), ref Config.MCHHeatText, DefaultConfig.MCHHeatText);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Overheat"), ref Config.MCHOverheatIcon, DefaultConfig.MCHOverheatIcon);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Overheat Text"), ref Config.MCHOverheatText, DefaultConfig.MCHOverheatText);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Battery"), ref Config.MCHBatteryBar, DefaultConfig.MCHBatteryBar);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Battery Text"), ref Config.MCHBatteryText, DefaultConfig.MCHBatteryText);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Queen"), ref Config.MCHQueenIcon, DefaultConfig.MCHQueenIcon);
-                hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Queen Text"), ref Config.MCHQueenText, DefaultConfig.MCHQueenText);
-            }
-            ImGui.Dummy(new Vector2(2) * ImGui.GetIO().FontGlobalScale);
 
             // hasChanged |= ImGui.ColorEdit4(LocString("HP Bar Color"), ref Config.HpColor);
             // hasChanged |= ImGui.ColorEdit4(LocString("MP Bar Color"), ref Config.MpColor);
@@ -220,10 +567,20 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             UpdateCurrentJobBar(false, true);
             SaveConfig(Config);
         };
+        private bool DrawConfigJobSection(JobInfo jobInfo) {
+            var hasChanged = false;
+            if (ImGui.CollapsingHeader(LocString(jobInfo.JobName))) {
+                foreach (var piece in JobMap[jobInfo].Values.SelectMany(v => v)) {
+                    hasChanged |= VisibilityAndOffsetEditor(LocString(piece.ConfigName), piece.GetConfig(Config), piece.GetConfig(DefaultConfig));
+                }
+            }
+            ImGui.Dummy(new Vector2(2) * ImGui.GetIO().FontGlobalScale);
+
+            return hasChanged;
+        }
 
         private void OnFrameworkUpdate(Framework framework) {
             try {
-                // TODO: Check if memory leak on 
                 var job = Service.ClientState.LocalPlayer?.ClassJob.Id;
                 if (job == null)
                     return;
@@ -253,72 +610,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                 return;
             
             SimpleLog.Debug($"Refresh called for job {job.Value.ToString()}");
-            UpdateCurrentJobBar(reset ? DefaultConfig : Config, job.Value, preview);
-        }
-        
-        private void UpdateCurrentJobBar(Configs config, uint job, bool preview) {
-            // TODO: Preset dictionary
-            SimpleLog.Debug("Redrawing");
-            switch (job) {
-                case 19:
-                    UpdatePLD(config, preview);
-                    break;
-                case 20:
-                    UpdateMNK(config, preview);
-                    break;
-                case 21:
-                    UpdateWAR(config, preview);
-                    break;
-                case 22:
-                    UpdateDRG(config, preview);
-                    break;
-                case 23:
-                    UpdateBRD(config, preview);
-                    break;
-                // case 24:
-                //     UpdateWHM(config, preview);
-                //     break;
-                // case 25:
-                //     UpdateBLM(config, preview);
-                //     break;
-                // case 27:
-                //     UpdateSMN(config, preview);
-                //     break;
-                // case 28:
-                //     UpdateSCH(config, preview);
-                //     break;
-                // case 30:
-                //     UpdateNIN(config, preview);
-                //     break;
-                case 31:
-                    UpdateMCH(config, preview);
-                    break;
-                // case 32:
-                //     UpdateDRK(config, preview);
-                //     break;
-                // case 33:
-                //     UpdateAST(config, preview);
-                //     break;
-                // case 34:
-                //     UpdateSAM(config, preview);
-                //     break;
-                case 35:
-                    SimpleLog.Debug("Update RDM");
-                    UpdateRDM(config, preview);
-                    break;
-                // case 37:
-                //     UpdateGNB(config, preview);
-                //     break;
-                // case 38:
-                //     UpdateDNC(config, preview);
-                //     break;
-                // case 39:
-                //     UpdateRPR(config, preview);
-                //     break;
-                // case 40:
-                //     UpdateSGE(config, preview);
-                //     break;
-            }
+            UpdateCurrentJob(reset ? DefaultConfig : Config, preview, job.Value);
         }
         
         private void UpdateNode(AtkResNode* node, HideAndOffsetConfig config, bool preview) {
@@ -344,168 +636,27 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 
             node->SetPositionFloat(config.OffsetX, config.OffsetY);
         }
-        
-        private void UpdatePLD(Configs config, bool preview) {
-            var hudAddon = "JobHudPLD0";
 
-            var baseAddon = Common.GetUnitBase(hudAddon);
-            if (baseAddon == null)
+        private void UpdateCurrentJob(Configs config, bool preview, uint job) {
+            var info = JobMap.Keys.FirstOrDefault(map => map.JobId == job);
+            if (info == null) {
+                SimpleLog.Debug($"Job with Id {job} not found in map. Cannot update.");
                 return;
-
-            try {
-                UpdateNode(baseAddon->GetNodeById(18), config.PLDOathBar, preview);
-                UpdateNode(baseAddon->GetNodeById(17), config.PLDOathBarText, preview);
-                UpdateNode(baseAddon->GetNodeById(15), config.PLDIronWillIndicator, preview);
-                
-                // TODO: User selectable colors for each? Better UX for editor (put inline)
-            } catch (Exception ex) {
-                SimpleLog.Error(ex.Message);
             }
-        }
-        
-        private void UpdateMNK(Configs config, bool preview) {
-            var hudAddon = "JobHudMNK0";
-            var hudAddon2 = "JobHudMNK1";
-
-            var masterAddon = Common.GetUnitBase(hudAddon);
-            var chakraAddon = Common.GetUnitBase(hudAddon2);
-            if (chakraAddon == null || masterAddon == null)
-                return;
-
-            try {
-                UpdateNode(chakraAddon->GetNodeById(18), config.MNKChakra1, preview);
-                UpdateNode(chakraAddon->GetNodeById(19), config.MNKChakra2, preview);
-                UpdateNode(chakraAddon->GetNodeById(20), config.MNKChakra3, preview);
-                UpdateNode(chakraAddon->GetNodeById(21), config.MNKChakra4, preview);
-                UpdateNode(chakraAddon->GetNodeById(22), config.MNKChakra5, preview);
-                UpdateNode(masterAddon->GetNodeById(38), config.MNKText, preview);
-                UpdateNode(masterAddon->GetNodeById(34), config.MNKBeastChakra1, preview);
-                UpdateNode(masterAddon->GetNodeById(35), config.MNKBeastChakra2, preview);
-                UpdateNode(masterAddon->GetNodeById(36), config.MNKBeastChakra3, preview);
-                UpdateNode(masterAddon->GetNodeById(26), config.MNKLunarNadi, preview);
-                UpdateNode(masterAddon->GetNodeById(29), config.MNKSolarNadi, preview);
-
-                // TODO: User selectable colors for each? Better UX for editor (put inline)
-            } catch (Exception ex) {
-                SimpleLog.Error(ex.Message);
-            }
-        }
-        
-        private void UpdateWAR(Configs config, bool preview) {
-            var hudAddon = "JobHudWAR0";
-
-            var baseAddon = Common.GetUnitBase(hudAddon);
-            if (baseAddon == null)
-                return;
-
-            try {
-                UpdateNode(baseAddon->GetNodeById(14), config.WARDefiance, preview);
-                UpdateNode(baseAddon->GetNodeById(16), config.WARBarText, preview);
-                UpdateNode(baseAddon->GetNodeById(17), config.WARBeastBar, preview);
-
-                // TODO: User selectable colors for each? Better UX for editor (put inline)
-            } catch (Exception ex) {
-                SimpleLog.Error(ex.Message);
-            }
-        }
-        
-        private void UpdateDRG(Configs config, bool preview) {
-            var hudAddon = "JobHudDRG0";
-
-            var baseAddon = Common.GetUnitBase(hudAddon);
-            if (baseAddon == null)
-                return;
-
-            try {
-                UpdateNode(baseAddon->GetNodeById(42), config.DRGDragonGaugeText, preview);
-                UpdateNode(baseAddon->GetNodeById(43), config.DRGDragonGauge, preview);
-                UpdateNode(baseAddon->GetNodeById(36), config.DRGGaze1, preview);
-                UpdateNode(baseAddon->GetNodeById(37), config.DRGGaze2, preview);
-                UpdateNode(baseAddon->GetNodeById(39), config.DRGMind1, preview);
-                UpdateNode(baseAddon->GetNodeById(40), config.DRGMind2, preview);
-
-                // TODO: User selectable colors for each? Better UX for editor (put inline)
-            } catch (Exception ex) {
-                SimpleLog.Error(ex.Message);
-            }
-        }
-        
-        private void UpdateBRD(Configs config, bool preview) {
-            var hudAddon = "JobHudBRD0";
-
-            var baseAddon = Common.GetUnitBase(hudAddon);
-            if (baseAddon == null)
-                return;
-
-            try {
-                UpdateNode(baseAddon->GetNodeById(99), config.BRDSongBar, preview);
-                UpdateNode(baseAddon->GetNodeById(76), config.BRDSongName, preview);
-                UpdateNode(baseAddon->GetNodeById(90), config.BRDRepertoire1, preview);
-                UpdateNode(baseAddon->GetNodeById(91), config.BRDRepertoire2, preview);
-                UpdateNode(baseAddon->GetNodeById(92), config.BRDRepertoire3, preview);
-                UpdateNode(baseAddon->GetNodeById(93), config.BRDRepertoire4, preview);
-                UpdateNode(baseAddon->GetNodeById(94), config.BRDRepertoire1, preview);
-                UpdateNode(baseAddon->GetNodeById(95), config.BRDRepertoire2, preview);
-                UpdateNode(baseAddon->GetNodeById(96), config.BRDRepertoire3, preview);
-                UpdateNode(baseAddon->GetNodeById(97), config.BRDSongCountdown, preview);
-                UpdateNode(baseAddon->GetNodeById(86), config.BRDSoulVoiceText, preview);
-                UpdateNode(baseAddon->GetNodeById(87), config.BRDSoulVoiceBar, preview);
-                UpdateNode(baseAddon->GetNodeById(79), config.BRDMageCoda, preview);
-                UpdateNode(baseAddon->GetNodeById(82), config.BRDMageCoda, preview);
-                UpdateNode(baseAddon->GetNodeById(80), config.BRDArmyCoda, preview);
-                UpdateNode(baseAddon->GetNodeById(84), config.BRDArmyCoda, preview);
-                UpdateNode(baseAddon->GetNodeById(71), config.BRDWandererCoda, preview);
-                UpdateNode(baseAddon->GetNodeById(83), config.BRDWandererCoda, preview);
-
-                // TODO: User selectable colors for each? Better UX for editor (put inline)
-            } catch (Exception ex) {
-                SimpleLog.Error(ex.Message);
-            }
-        }
-        
-        private void UpdateMCH(Configs config, bool preview) {
-            var hudAddon = "JobHudMCH0";
-
-            var baseAddon = Common.GetUnitBase(hudAddon);
-            if (baseAddon == null)
-                return;
-
-            try {
-                UpdateNode(baseAddon->GetNodeById(38), config.MCHHeatBar, preview);
-                UpdateNode(baseAddon->GetNodeById(37), config.MCHHeatText, preview);
-                UpdateNode(baseAddon->GetNodeById(36), config.MCHOverheatIcon, preview);
-                UpdateNode(baseAddon->GetNodeById(35), config.MCHOverheatText, preview);
-                
-                UpdateNode(baseAddon->GetNodeById(43), config.MCHBatteryBar, preview);
-                UpdateNode(baseAddon->GetNodeById(42), config.MCHBatteryText, preview);
-                UpdateNode(baseAddon->GetNodeById(41), config.MCHQueenIcon, preview);
-                UpdateNode(baseAddon->GetNodeById(40), config.MCHQueenText, preview);
-                
-                // TODO: User selectable colors for each? Better UX for editor (put inline)
-            } catch (Exception ex) {
-                SimpleLog.Error(ex.Message);
-            }
-        }
-        private void UpdateRDM(Configs config, bool preview) {
-            var hudAddon = $"JobHudRDM0";
-
-            var baseAddon = Common.GetUnitBase(hudAddon);
-            if (baseAddon == null)
-                return;
             
-            SimpleLog.Log(config.RDMBlackManaBar.Hide.ToString());
+            var maps = JobMap[info];
+            foreach (var addonMap in maps) {
+                var hudAddon = Common.GetUnitBase(addonMap.Key);
+                if (hudAddon == null) {
+                    SimpleLog.Debug($"Could not get base addon {addonMap.Key} for job {job} in render.");
+                    return;
+                }
 
-            try {
-                UpdateNode(baseAddon->GetNodeById(38), config.RDMWhiteManaBar, preview);
-                UpdateNode(baseAddon->GetNodeById(39), config.RDMBlackManaBar, preview);
-                UpdateNode(baseAddon->GetNodeById(35), config.RDMStatusIndicator, preview);
-                UpdateNode(baseAddon->GetNodeById(27), config.RDMManaStacks, preview);
-                UpdateNode(baseAddon->GetNodeById(26), config.RDMBlackManaText, preview);
-                UpdateNode(baseAddon->GetNodeById(25), config.RDMWhiteManaText, preview);
-                
-                // TODO: User selectable colors for each? Better UX for editor (put inline)
-            } catch (Exception ex) {
-                SimpleLog.Error(ex.Message);
+                foreach (var piece in addonMap.Value) {
+                    foreach (var nodeId in piece.NodeIds) {
+                        UpdateNode(hudAddon->GetNodeById(nodeId), piece.GetConfig(config), preview);
+                    }
+                }
             }
         }
     }
