@@ -26,6 +26,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public class Configs : TweakConfig {
             public bool BlockClickOnGearset;
             public bool YellowForSkillGain = true;
+            public bool Delta;
         }
 
         public Configs Config { get; private set; }
@@ -33,6 +34,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
             ImGui.Checkbox(LocString("BlockClickOnGearset", "Block clicking on gearset items."), ref Config.BlockClickOnGearset);
             ImGui.Checkbox(LocString("YellowForSkillGain", "Highlight potential skill gains (Yellow)"), ref Config.YellowForSkillGain);
+            ImGui.Checkbox(LocString("DesynthesisDelta", "Show desynthesis delta"), ref Config.Delta);
         };
 
         public override string Name => "Extended Desynthesis Window";
@@ -137,7 +139,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 }
                 
                 skillTextNode->TextColor = c;
-                skillTextNode->SetText($"{desynthLevel:F0}/{itemData.LevelItem.Row}");
+
+                if (Config.Delta) {
+                    var desynthDelta = itemData.LevelItem.Row - desynthLevel;
+                    skillTextNode->SetText($"{itemData.LevelItem.Row} ({desynthDelta:+#;-#})");
+                } else {
+                    skillTextNode->SetText($"{desynthLevel:F0}/{itemData.LevelItem.Row}");
+                }
 
                 var itemIdWithHQ = item->ItemId;
                 if ((item->Flags & ItemFlags.HQ) > 0) itemIdWithHQ += 1000000;
