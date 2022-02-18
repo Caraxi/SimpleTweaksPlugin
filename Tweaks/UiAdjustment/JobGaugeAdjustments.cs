@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Game;
+using Dalamud.Hooking;
 using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
@@ -15,10 +16,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         public override string Name => "Job Gauge Adjustments";
         public override string Description => "Allows moving and hiding parts of simple job gauges";
         protected override string Author => "Tinuviel";
-        public override IEnumerable<string> Tags => new[] { "job", "gauge" };
+        public override IEnumerable<string> Tags => new[] { "job", "gauge", "ui" };
         
         private Configs Config { get; set; }
-        private readonly Dictionary<(GaugeComponentConfig, uint), GaugeComponentDefault> defaultValues = new();
+        
+        private readonly Dictionary<uint, GaugeComponentTracking> trackedValues = new();
         private uint? lastJob;
         private int? updateCount;
 
@@ -44,14 +46,21 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             internal string JobName { get; }
             internal uint JobId { get; }
         }
+
+        // private class JobMapping {
+        //     public string Name { get; set; }
+        // }
         
         #endregion
 
         #region Per-Job Mappings
+
+        //private readonly Dictionary<uint, JobMapping> jobMap2 = new() { };
         
-        private readonly Dictionary<JobInfo, Dictionary<string, JobPieceMap[]>> JobMap =
+        private readonly Dictionary<JobInfo, Dictionary<string, JobPieceMap[]>> jobMap =
             new() {
                 {
+                    // TODO: Get rid of JobInfo. Key to ID, replace Dict<str, piece[]> with class with name + piece[]
                     new JobInfo(19, "Paladin"),
                     new Dictionary<string, JobPieceMap[]> {
                         {
@@ -80,7 +89,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                         {
                             "JobHudMNK0",
                             new[] {
-                                new JobPieceMap("Master", "Master Timeout", 38),
+                                new JobPieceMap("Master", "Master Timeout", 39),
                                 new JobPieceMap("MChakra", "Master Chakras", 33),
                                 new JobPieceMap("Nadi", "Nadi", 25),
                             }
@@ -280,7 +289,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                                 new JobPieceMap("DarksideGaugeValue", "Darkside Gauge Value", 26),
                                 new JobPieceMap("DarkArts","Dark Arts", 24),
                                 new JobPieceMap("LivingShadow","Living Shadow", 22),
-                                new JobPieceMap("LivingShadowValue","Living Shadow Value", 23),
+                                new JobPieceMap("LivingShadowValue","Living Shadow Value", 23)
                             }
                         }
                     }
@@ -355,7 +364,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                         }
                     }
                 },
-                // TODO: Dancer is a pain in the ass and will require updates on element visibility change
                 {
                     new JobInfo(38, "Dancer"),
                     new Dictionary<string, JobPieceMap[]> {
@@ -379,7 +387,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                                 new JobPieceMap("Shroud4","Lemure Shroud 4", 18),
                                 new JobPieceMap("Shroud5","Lemure Shroud 5", 17),
                                 new JobPieceMap("Enshroud","Enshroud Icon", 15),
-                                new JobPieceMap("EnshroudIcon","Enshroud Countdown", 16),
+                                new JobPieceMap("EnshroudIcon","Enshroud Countdown", 16)
                             }
                         },
                         {
@@ -388,7 +396,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                                 new JobPieceMap("ShroudGauge","Shroud Gauge", 45),
                                 new JobPieceMap("ShroudValue","Shroud Gauge Value", 44),
                                 new JobPieceMap("DeathGauge","Death Gauge", 42),
-                                new JobPieceMap("DeathValue","Death Gauge Value", 41),
+                                new JobPieceMap("DeathValue","Death Gauge Value", 41)
                             }
                         }
                     }
@@ -428,10 +436,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             public int OffsetY;
         }
 
-        public class GaugeComponentDefault {
-            public int X;
-            public int Y;
-            public byte A;
+        public class GaugeComponentTracking {
+            public int DefaultX;
+            public int DefaultY;
+            public bool ShouldBeHidden;
+
+            public int LastX;
+            public int LastY;
+
+            public int AdditionalX;
+            public int AdditionalY;
         }
         
         public class JobConfig {
@@ -444,6 +458,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         }
 
         #endregion
+        
+        private delegate byte AddonOnUpdate(AtkUnitBase* atkUnitBase);
+        private Hook<AddonOnUpdate>? onUpdateHook = null;
 
         public override void Enable() {
             try {
@@ -451,26 +468,32 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             } catch (Exception ex) {
                 Config = new Configs(); // TODO: Remove after first setup
             }
+            
+            DetachJob();
 
             Service.Framework.Update += OnFrameworkUpdate;
             base.Enable();
         }
 
+        private List<IntPtr> trackedNodes;
+
         public override void Disable() {
             UpdateCurrentJobBar(true);
+            DetachJob();
+            
             Service.Framework.Update -= OnFrameworkUpdate;
             lastJob = null;
             
             base.Disable();
         }
 
-        private bool PieceEditor(string label, GaugeComponentConfig config) {
+        private bool DrawEditorForPiece(string label, GaugeComponentConfig config) {
             var hasChanged = false;
             
             ImGui.Text(label);
             ImGui.SameLine();
             
-            ImGui.SetCursorPosX(300 * ImGuiHelpers.GlobalScale);
+            ImGui.SetCursorPosX(320 * ImGuiHelpers.GlobalScale);
             ImGui.PushFont(UiBuilder.IconFont);
             if (ImGui.Button($"{(char) FontAwesomeIcon.CircleNotch}##resetOffsetX_{label}")) {
                 config.OffsetX = 0;
@@ -480,7 +503,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             }
             ImGui.PopFont();
             
-            hasChanged |= ImGui.Checkbox(LocString("Hide"), ref config.Hide);
+            hasChanged |= ImGui.Checkbox(LocString("Hide") + $"###hide_{label}", ref config.Hide);
             if (config.Hide) 
                 return hasChanged;
             
@@ -507,7 +530,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 
             ImGui.BeginChild("JobStack::JobGaugeAdjustments::JobTree");
 
-            foreach (var jobInfo in JobMap.Keys) {
+            foreach (var jobInfo in jobMap.Keys) {
                 if (ImGui.Selectable(jobInfo.JobName, configSelectedJob == jobInfo.JobId))
                     configSelectedJob = jobInfo.JobId;
             }
@@ -515,9 +538,20 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             ImGui.EndChild();
             ImGui.NextColumn();
 
-            var selectedJob = JobMap.Keys.FirstOrDefault(m => m.JobId == configSelectedJob);
+            var selectedJob = jobMap.Keys.FirstOrDefault(m => m.JobId == configSelectedJob);
             if (selectedJob != null) {
-                hasChanged |= DrawConfigJobSection(selectedJob);
+                var jobConfig = GetJobConfig(selectedJob.JobId);
+                var wasEnabled = jobConfig.Enabled;
+                hasChanged |= DrawConfigJobSection(selectedJob, jobConfig);
+
+                if (IsCurrentJob(selectedJob.JobId)) {
+                    var forceReset = hasChanged && !jobConfig.Enabled && wasEnabled;
+
+                    if (hasChanged)
+                        UpdateJobGauges(selectedJob.JobId, forceReset);
+                    if (forceReset)
+                        DetachJob();
+                }
             }
 
             ImGui.Columns(1);
@@ -525,28 +559,34 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 
             if (!hasChanged) return;
             
-            UpdateCurrentJobBar(false);
             SaveConfig(Config);
         };
         
-        private bool DrawConfigJobSection(JobInfo jobInfo) {
+        private void DetachJob() {
+            SimpleLog.Debug("Resetting Tracked Info");
+            trackedNodes = new List<IntPtr>();
+            trackedValues.Clear();
+            onUpdateHook?.Disable();
+            onUpdateHook = null;
+        }
+        
+        private bool IsCurrentJob(uint? selectedJobId)
+            => lastJob.HasValue && lastJob == selectedJobId;
+
+        private bool DrawConfigJobSection(JobInfo jobInfo, JobConfig jobConfig) {
             var hasChanged = false;
-            if (!Config.Jobs.TryGetValue(jobInfo.JobId, out var jobConfig)) {
-                jobConfig = new JobConfig();
-                Config.Jobs[jobInfo.JobId] = jobConfig;
-            }
             
             // Draw name + Enable flag, expand as needed
             hasChanged |= ImGui.Checkbox(LocString("Enable"), ref jobConfig.Enabled);
             if (jobConfig.Enabled) {
-                var pieces = JobMap[jobInfo].Values.SelectMany(v => v).ToArray();
+                var pieces = jobMap[jobInfo].Values.SelectMany(v => v).ToArray();
                 for (var i = 0; i < pieces.Length; i++) {
                     if (!jobConfig.Components.TryGetValue(pieces[i].Key, out var componentConfig)) {
                         componentConfig = new GaugeComponentConfig();
                         jobConfig.Components[pieces[i].Key] = componentConfig;
                     }
                     
-                    hasChanged |= PieceEditor(LocString(pieces[i].ConfigName), componentConfig);
+                    hasChanged |= DrawEditorForPiece(LocString(pieces[i].ConfigName), componentConfig);
                     if (i < pieces.Length - 1)
                         ImGui.Separator();
                 }
@@ -555,9 +595,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             return hasChanged;
         }
         
-        private void OnFrameworkUpdate(Framework framework) {
-            // TODO: Detect offset shift made by game and update defaults accordingly so the shifts are accounted for
+        private JobConfig GetJobConfig(uint jobId) {
+            if (Config.Jobs.TryGetValue(jobId, out var jobConfig)) 
+                return jobConfig;
             
+            jobConfig = new JobConfig();
+            Config.Jobs[jobId] = jobConfig;
+            return jobConfig;
+        }
+
+        private void OnFrameworkUpdate(Framework framework) {
             try {
                 // TODO: Fix AST being a complete pain in the ass
                 var job = Service.ClientState.LocalPlayer?.ClassJob.Id;
@@ -567,22 +614,40 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                 if (updateCount.HasValue)
                     updateCount++;
 
-                // After a job changes, the gauges do not update instantly. We must wait a bit. A few framework ticks should be good
-                if (lastJob == job || updateCount is < 5)
+                // After a job changes, the gauges do not update instantly. We must wait a bit.
+                // 1 tick is enough for them to show up, but need a few more for correct element visibility
+                if (lastJob == job || updateCount is < 5) {
+                    //UpdateTrackedNodes();
                     return;
+                }
 
-                
                 if (updateCount.HasValue) {
-                    SimpleLog.Debug("Frame wait complete, updating");
+                    InitializeJob(job.Value);
+                    // TODO: Simplify code here and make a InitializeJob() function
                     UpdateCurrentJobBar(false, job);
-                    lastJob = job;
                     updateCount = null;
                 } else {
                     SimpleLog.Debug("Job change detected, waiting frames");
+                    DetachJob();
                     updateCount = 0;
                 }
             } catch (Exception ex) {
                 SimpleLog.Error(ex);
+            }
+        }
+        private void InitializeJob(uint job) {
+            SimpleLog.Debug("Initializing Job");
+            trackedNodes = new List<IntPtr>();
+            lastJob = job;
+            
+            UpdateCurrentJobBar(false, job);
+        }
+        private void UpdateTrackedNodes() {
+            if (trackedNodes == null)
+                return;
+
+            foreach (var node in trackedNodes) {
+                UpdateTrackedNode((AtkResNode*) node);
             }
         }
 
@@ -592,72 +657,172 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                 return;
             
             SimpleLog.Debug($"Refresh called for job {job.Value.ToString()}");
-            UpdateCurrentJob(job.Value, reset);
+            UpdateJobGauges(job.Value, reset);
+        }
+        
+        private GaugeComponentTracking GetTrackedNode(AtkResNode* node) {
+            if (node == null)
+                return null;
+
+            trackedValues.TryGetValue(node->NodeID, out var tracking);
+            if (tracking != null) 
+                return tracking;
+            
+            var isHidden = (node->Flags & 0x10) != 0x10;
+            SimpleLog.Debug($"node {node->NodeID} {(isHidden ? "SHOULD" : "SHOULD NOT ")} be hidden");
+            
+            tracking = new GaugeComponentTracking {
+                DefaultX = (int) node->X,
+                DefaultY = (int) node->Y,
+                ShouldBeHidden = isHidden
+            };
+            trackedValues[node->NodeID] = tracking;
+            
+
+            return tracking;
         }
 
+        private void UpdateTrackedNode(AtkResNode* node) {
+            if (node == null)
+                return;
+            
+            var tracking = GetTrackedNode(node);
+
+            var xDiff = (int) node->X - tracking.LastX;
+            var yDiff = (int) node->Y - tracking.LastY;
+
+            if (xDiff != 0) {
+                tracking.AdditionalX += xDiff;
+                SimpleLog.Debug($"X Shifted for Node ID {node->NodeID} by {xDiff}. New offset {tracking.AdditionalX}");
+                
+                tracking.LastX = (int) node->X;
+                SimpleLog.Debug($"New LastX for Node ID {node->NodeID}: {tracking.LastX}");
+            }
+            if (yDiff != 0) {
+                tracking.AdditionalY += yDiff;
+                SimpleLog.Debug($"Y Shifted for Node ID {node->NodeID} by {yDiff}. New offset {tracking.AdditionalY}");
+                
+                tracking.LastY = (int) node->Y;
+                SimpleLog.Debug($"New LastY for Node ID {node->NodeID}: {tracking.LastY}");
+            }
+
+            var info = jobMap.Keys.FirstOrDefault(map => map.JobId == lastJob);
+            if (info == null)
+                return;
+            
+            var map = jobMap[info];
+            // TODO: This is complete bullshit to find. Rework this once all bugs fixed
+            var pieceName = map.First(m => m.Value.Any(v => v.NodeIds.Contains(node->NodeID))).Value.First(p => p.NodeIds.Contains(node->NodeID)).Key;
+            // TODO: Class FindPieceByNodeId()
+            var jobConfig = GetJobConfig(lastJob!.Value);
+            
+            ShowOrHideNode(node, jobConfig.Components[pieceName], tracking);
+        }
+        
         private void UpdateNode(AtkResNode* node, GaugeComponentConfig config, bool reset) {
             if (node == null) {
                 SimpleLog.Error("Node not found to update.");
                 return;
             }
 
-            // TODO: TryGetValue
-            if (!defaultValues.ContainsKey((config, node->NodeID))) {
-                defaultValues[(config, node->NodeID)] = new GaugeComponentDefault {
-                    X = (int) node->X,
-                    Y = (int) node->Y,
-                    A = node->Color.A
-                };
-            }
-            var defaults = defaultValues[(config, node->NodeID)];
-
+            var isHidden = (node->Flags & 0x10) != 0x10;
+            var tracking = GetTrackedNode(node);
             if (reset) {
-                node->SetPositionFloat(defaults.X, defaults.Y);
+                if (isHidden && !tracking.ShouldBeHidden)
+                    node->Flags ^= 0x10;
+                
+                node->SetPositionFloat(tracking.DefaultX + tracking.AdditionalX, tracking.DefaultY + tracking.AdditionalY);
                 return;
             }
 
-            if (config.Hide)
-                node->Color.A = 0;
-            else
-                node->Color.A = defaults.A;
+            ShowOrHideNode(node, config, tracking);
             
-            node->SetPositionFloat(defaults.X + config.OffsetX, defaults.Y + config.OffsetY);
-        }
+            var intendedX = tracking.DefaultX + tracking.AdditionalX + config.OffsetX;
+            var intendedY = tracking.DefaultY + tracking.AdditionalY + config.OffsetY;
 
-        private void UpdateCurrentJob(uint job, bool forceReset) {
-            if (!Config.Jobs.TryGetValue(job, out var jobConfig)) {
-                jobConfig = new JobConfig();
-                Config.Jobs[job] = jobConfig;
+            node->SetPositionFloat(intendedX, intendedY);
+            tracking.LastX = intendedX;
+            tracking.LastY = intendedY;
+        }
+        
+        private void ShowOrHideNode(AtkResNode* node, GaugeComponentConfig config, GaugeComponentTracking tracking) {
+            var isHidden = (node->Flags & 0x10) != 0x10;
+
+            if (config.Hide && !isHidden) {
+                SimpleLog.Log($"HIDING NODE {node->NodeID}");
+                node->Flags ^= 0x10;
             }
 
-            var reset = forceReset | !jobConfig.Enabled;
-            var components = jobConfig.Components;
+            if (config.Hide)
+                return;
+
+            if (isHidden && !tracking.ShouldBeHidden)
+                node->Flags ^= 0x10;
+
+            //tracking.ShouldBeHidden = isHidden;
+        }
+
+        private void UpdateJobGauges(uint job, bool forceReset) {
+            var jobConfig = GetJobConfig(job);
+            if (!jobConfig.Enabled && !forceReset) {
+                SimpleLog.Debug("Job is not enabled, not updating gauges.");
+                return;
+            }
+            SimpleLog.Debug("Updating gauges.");
             
-            var info = JobMap.Keys.FirstOrDefault(map => map.JobId == job);
+            // TODO: Default all of this shit instead of mixing all the initialization with the draw loop
+
+            var reset = forceReset | !jobConfig.Enabled;
+            
+            var info = jobMap.Keys.FirstOrDefault(map => map.JobId == job);
             if (info == null) {
                 SimpleLog.Debug($"Job with Id {job} not found in map. Cannot update.");
                 return;
             }
             
-            var maps = JobMap[info];
+            var maps = jobMap[info];
             foreach (var addonMap in maps) {
                 var hudAddon = Common.GetUnitBase(addonMap.Key);
+                if (onUpdateHook == null) {
+                    onUpdateHook = new Hook<AddonOnUpdate>(new IntPtr(hudAddon->AtkEventListener.vfunc[39]), OnUpdate);
+                    onUpdateHook.Enable();
+                }
+
                 if (hudAddon == null) {
                     SimpleLog.Debug($"Could not get base addon {addonMap.Key} for job {job} in render.");
                     return;
                 }
 
                 foreach (var piece in addonMap.Value) {
+                    var componentConfig = GetComponentConfig(jobConfig, piece.Key);
+                    
                     foreach (var nodeId in piece.NodeIds) {
-                        if (!jobConfig.Components.TryGetValue(piece.Key, out var componentConfig)) {
-                            componentConfig = new GaugeComponentConfig();
-                            jobConfig.Components[piece.Key] = componentConfig;
-                        }
                         
-                        UpdateNode(hudAddon->GetNodeById(nodeId), components[piece.Key], reset);
+                        var node = hudAddon->GetNodeById(nodeId);
+                        if (!trackedNodes.Contains((IntPtr) node))
+                            trackedNodes.Add((IntPtr) node);
+                        
+                        UpdateNode(node, componentConfig, reset);
                     }
                 }
             }
+        }
+        private byte OnUpdate(AtkUnitBase* atkunitbase) {
+            var result = onUpdateHook!.Original(atkunitbase);
+            if (lastJob.HasValue && !updateCount.HasValue) {
+                UpdateTrackedNodes();
+            }
+            return result;
+        }
+
+        private GaugeComponentConfig GetComponentConfig(JobConfig jobConfig, string pieceKey) {
+            if (jobConfig.Components.TryGetValue(pieceKey, out var componentConfig)) 
+                return componentConfig;
+            
+            componentConfig = new GaugeComponentConfig();
+            jobConfig.Components[pieceKey] = componentConfig;
+
+            return componentConfig;
         }
     }
 }
