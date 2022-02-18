@@ -437,6 +437,22 @@ public unsafe class UIDebug : DebugHelper {
             }
         }
 
+        if (atkUnitBase->CollisionNodeListCount > 0) {
+            ImGui.Dummy(new Vector2(25 * ImGui.GetIO().FontGlobalScale));
+            ImGui.Separator();
+            ImGui.PushStyleColor(ImGuiCol.Text, 0xFFFFAAAA);
+            if (ImGui.TreeNode($"Collision List##{(ulong)atkUnitBase:X}")) {
+                ImGui.PopStyleColor();
+
+                for (var j = 0; j < atkUnitBase->CollisionNodeListCount; j++) {
+                    PrintNode((AtkResNode*) atkUnitBase->CollisionNodeList[j], false, $"[{j}] ");
+                }
+                ImGui.TreePop();
+            } else {
+                ImGui.PopStyleColor();
+            }
+        }
+
         if (elementSelectorFind.Length > 0 && elementSelectorCountdown <= 0) {
             elementSelectorFind = new ulong[0];
         }
