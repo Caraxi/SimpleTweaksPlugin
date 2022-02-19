@@ -289,6 +289,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             return componentConfig;
         }
         
+        private JobGaugeUiMap GetJobMap(uint? jobId) {
+            if (!jobId.HasValue)
+                return null;
+            
+            jobMap.TryGetValue(jobId.Value, out var uiMap);
+            return uiMap;
+        }
+        
         #region Configuration UI
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
@@ -344,14 +352,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             
             SaveConfig(config);
         };
-        
-        private JobGaugeUiMap GetJobMap(uint? jobId) {
-            if (!jobId.HasValue)
-                return null;
-            
-            jobMap.TryGetValue(jobId.Value, out var uiMap);
-            return uiMap;
-        }
 
         private bool DrawConfigJobSection(JobGaugeUiMap job, JobConfig jobConfig) {
             var hasChanged = false;
@@ -378,7 +378,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             return hasChanged;
         }
 
-        private bool DrawEditorForPiece(string label, GaugeComponentConfig config) {
+        private bool DrawEditorForPiece(string label, GaugeComponentConfig gaugeConfig) {
             var hasChanged = false;
             
             ImGui.Text(label);
@@ -387,28 +387,28 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             ImGui.SetCursorPosX(320 * ImGuiHelpers.GlobalScale);
             ImGui.PushFont(UiBuilder.IconFont);
             if (ImGui.Button($"{(char) FontAwesomeIcon.CircleNotch}##resetOffsetX_{label}")) {
-                config.OffsetX = 0;
-                config.OffsetY = 0;
-                config.Hide = false;
+                gaugeConfig.OffsetX = 0;
+                gaugeConfig.OffsetY = 0;
+                gaugeConfig.Hide = false;
                 hasChanged = true;
             }
             ImGui.PopFont();
             
-            hasChanged |= ImGui.Checkbox(LocString("Hide") + $"###hide_{label}", ref config.Hide);
-            if (config.Hide) 
+            hasChanged |= ImGui.Checkbox(LocString("Hide") + $"###hide_{label}", ref gaugeConfig.Hide);
+            if (gaugeConfig.Hide) 
                 return hasChanged;
             
             ImGui.Text(LocString("X Offset: "));
             ImGui.SameLine();
             
             ImGui.SetNextItemWidth(150 * ImGuiHelpers.GlobalScale);
-            hasChanged |= ImGui.InputInt($"##offsetX_{label}", ref config.OffsetX);
+            hasChanged |= ImGui.InputInt($"##offsetX_{label}", ref gaugeConfig.OffsetX);
             
             ImGui.Text(LocString("Y Offset: "));
             ImGui.SameLine();
             
             ImGui.SetNextItemWidth(150 * ImGuiHelpers.GlobalScale);
-            hasChanged |= ImGui.InputInt($"##offsetY_{label}", ref config.OffsetY);
+            hasChanged |= ImGui.InputInt($"##offsetY_{label}", ref gaugeConfig.OffsetY);
             return hasChanged;
         }
         
@@ -533,7 +533,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                         {
                             "JobHudBRD0",
                             new[] {
-                                // TODO: Has issues
                                 new AddonComponentPart("SongGauge", "Song Gauge", 99),
                                 new AddonComponentPart("SongGaugeValue", "Song Gauge Value", 97),
                                 new AddonComponentPart("SongName", "Song Name", 76),
@@ -753,7 +752,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                                 new AddonComponentPart("BlackManaBar", "Black Mana Bar", 39),
                                 new AddonComponentPart("BlackManaValue", "Black Mana Value", 26),
                                 new AddonComponentPart("StatusIndicator", "Status Indicator", 35),
-                                new AddonComponentPart("ManaStacks", "Mana Stacks", 27), // TODO: Individual Stacks
+                                new AddonComponentPart("ManaStack1", "Mana Stack 1", 28),
+                                new AddonComponentPart("ManaStack2", "Mana Stack 2", 29),
+                                new AddonComponentPart("ManaStack3", "Mana Stack 3", 30)
                             }
                         }
                     }
