@@ -76,7 +76,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 
                 if (jobChangeFrameCount.HasValue) {
                     SimpleLog.Debug("Waiting for job change complete. Beginning Initialization.");
-                    InitializeJob(job.Value);
+                    lastJobSet = job;
                     UpdateCurrentJobBar(false, job);
                     jobChangeFrameCount = null;
                 } else {
@@ -87,15 +87,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             } catch (Exception ex) {
                 SimpleLog.Error(ex);
             }
-        }
-        
-        private void InitializeJob(uint job) {
-            SimpleLog.Debug("Initializing Job");
-            trackedNodes.Clear();
-            trackedNodeValues.Clear();
-            lastJobSet = job;
-            
-            UpdateCurrentJobBar(false, job);
         }
         
         private void UpdateTrackedNodes(string addonName) {
