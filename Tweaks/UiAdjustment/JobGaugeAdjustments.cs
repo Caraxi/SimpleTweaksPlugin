@@ -132,13 +132,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             if (tracking != null) 
                 return tracking;
             
-            var isHidden = (node->Flags & 0x10) != 0x10;
-            SimpleLog.Debug($"node {node->NodeID} {(isHidden ? "should" : "should NOT")} be hidden");
-            
             tracking = new GaugeComponentTracking {
                 DefaultX = (int) node->X,
-                DefaultY = (int) node->Y,
-                ShouldBeHidden = isHidden
+                DefaultY = (int) node->Y
             };
             
             addonTrackings[node->NodeID] = tracking;
@@ -175,7 +171,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 
             var jobConfig = GetJobConfig(lastJobSet!.Value);
             var addonPart = map.Addons[addonName].FirstOrDefault(p => p.NodeIds.Contains(node->NodeID));
-            ShowOrHideNode(node, jobConfig.Components[addonPart!.Key], tracking);
+            if (jobConfig.Components[addonPart!.Key].Hide && node->Color.A != 0)
+                node->Color.A = 0;
         }
         
         private void UpdateNode(string addonName, AtkResNode* node, GaugeComponentConfig componentConfig, bool reset) {
@@ -184,17 +181,19 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                 return;
             }
 
-            var isHidden = (node->Flags & 0x10) != 0x10;
             var tracking = GetTrackedNode(addonName, node);
             if (reset) {
-                if (isHidden && !tracking.ShouldBeHidden)
-                    node->Flags ^= 0x10;
+                if (node->Color.A == 0)
+                    node->Color.A = 255;
                 
                 node->SetPositionFloat(tracking.DefaultX + tracking.AdditionalX, tracking.DefaultY + tracking.AdditionalY);
                 return;
             }
 
-            ShowOrHideNode(node, componentConfig, tracking);
+            if (componentConfig.Hide && node->Color.A != 0)
+                node->Color.A = 0;
+            else if (!componentConfig.Hide && node->Color.A == 0)
+                node->Color.A = 255;
             
             var intendedX = tracking.DefaultX + tracking.AdditionalX + componentConfig.OffsetX;
             var intendedY = tracking.DefaultY + tracking.AdditionalY + componentConfig.OffsetY;
@@ -202,24 +201,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             node->SetPositionFloat(intendedX, intendedY);
             tracking.LastX = intendedX;
             tracking.LastY = intendedY;
-        }
-        
-        private void ShowOrHideNode(AtkResNode* node, GaugeComponentConfig componentConfig, GaugeComponentTracking tracking) {
-            var isHidden = (node->Flags & 0x10) != 0x10;
-
-            if (componentConfig.Hide && !isHidden) {
-                SimpleLog.Log($"Hiding node {node->NodeID}");
-                node->Flags ^= 0x10;
-            }
-
-            if (componentConfig.Hide)
-                return;
-
-            if (!isHidden || tracking.ShouldBeHidden) 
-                return;
-            
-            SimpleLog.Log($"Showing node {node->NodeID}");
-            node->Flags ^= 0x10;
         }
 
         private void UpdateJobGauges(uint job, bool forceReset) {
@@ -438,7 +419,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         private class GaugeComponentTracking {
             public int DefaultX;
             public int DefaultY;
-            public bool ShouldBeHidden;
 
             public int LastX;
             public int LastY;
