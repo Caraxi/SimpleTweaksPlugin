@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Game.Text;
 using FFXIVClientStructs.FFXIV.Client.Game;
@@ -58,89 +59,100 @@ public unsafe class InventoryGil : UiAdjustments.SubTweak {
     }
 
     private void Update(AtkUnitBase* atkUnitBase) {
-        var textNode = atkUnitBase->GetTextNodeById(CustomNodes.InventoryGil);
+        if (Config == null) return;
+        try { 
+            var textNode = atkUnitBase->GetTextNodeById(CustomNodes.InventoryGil);
 
-        if (textNode == null) {
-            // Because GetTextNodeById is stupid and doesn't work for added nodes
-            for (var n = 0; n < atkUnitBase->UldManager.NodeListCount; n++) {
-                var node = atkUnitBase->UldManager.NodeList[n];
-                if (node == null) continue;
-                if (node->NodeID == CustomNodes.InventoryGil && node->Type == NodeType.Text) {
-                    textNode = node->GetAsAtkTextNode();
-                    break;
+            if (textNode == null) {
+                // Because GetTextNodeById is stupid and doesn't work for added nodes
+                for (var n = 0; n < atkUnitBase->UldManager.NodeListCount; n++) {
+                    var node = atkUnitBase->UldManager.NodeList[n];
+                    if (node == null) continue;
+                    if (node->NodeID == CustomNodes.InventoryGil && node->Type == NodeType.Text) {
+                        textNode = node->GetAsAtkTextNode();
+                        break;
+                    }
                 }
             }
-        }
 
-        if (textNode == null) {
-            textNode = IMemorySpace.GetUISpace()->Create<AtkTextNode>();
+            if (textNode == null) {
+                textNode = IMemorySpace.GetUISpace()->Create<AtkTextNode>();
 
-            textNode->AtkResNode.NodeID = CustomNodes.InventoryGil;
-            textNode->AtkResNode.Type = NodeType.Text;
-            textNode->AtkResNode.SetWidth(200);
-            textNode->AtkResNode.SetHeight(21);
-            textNode->AtkResNode.SetScale(1, 1);
-            textNode->AtkResNode.SetPositionFloat(atkUnitBase->RootNode->Width - 218, atkUnitBase->RootNode->Height - 40);
+                textNode->AtkResNode.NodeID = CustomNodes.InventoryGil;
+                textNode->AtkResNode.Type = NodeType.Text;
+                textNode->AtkResNode.SetWidth(200);
+                textNode->AtkResNode.SetHeight(21);
+                textNode->AtkResNode.SetScale(1, 1);
+                textNode->AtkResNode.SetPositionFloat(atkUnitBase->RootNode->Width - 218, atkUnitBase->RootNode->Height - 40);
 
-            textNode->FontSize = 12;
-            textNode->AlignmentFontType = 0x05;
+                textNode->FontSize = 12;
+                textNode->AlignmentFontType = 0x05;
 
-            var lastNode = atkUnitBase->RootNode->ChildNode;
-            if (lastNode == null) return;
-            while (true) {
-                if (lastNode->PrevSiblingNode == null) break;
-                lastNode = lastNode->PrevSiblingNode;
+                var lastNode = atkUnitBase->RootNode->ChildNode;
+                if (lastNode == null) return;
+                while (true) {
+                    if (lastNode->PrevSiblingNode == null) break;
+                    lastNode = lastNode->PrevSiblingNode;
+                }
+
+                lastNode->PrevSiblingNode = (AtkResNode*) textNode;
+                textNode->AtkResNode.NextSiblingNode = lastNode;
+                textNode->AtkResNode.ParentNode = lastNode->ParentNode;
+                textNode->TextFlags |= (byte)TextFlags.Edge;
+
+                atkUnitBase->UldManager.UpdateDrawNodeList();
             }
 
-            lastNode->PrevSiblingNode = (AtkResNode*) textNode;
-            textNode->AtkResNode.NextSiblingNode = lastNode;
-            textNode->AtkResNode.ParentNode = lastNode->ParentNode;
-            textNode->TextFlags |= (byte)TextFlags.Edge;
+            if (textNode == null) return;
+            
+            var gil = InventoryManager.Instance()->GetItemCountInContainer(1, InventoryType.Currency);
+            
+            textNode->TextColor.A = (byte) (Config.Colour.W * 255f);
+            textNode->TextColor.R = (byte) (Config.Colour.X * 255f);
+            textNode->TextColor.G = (byte) (Config.Colour.Y * 255f);
+            textNode->TextColor.B = (byte) (Config.Colour.Z * 255f);
+            textNode->EdgeColor.A = (byte) (Config.Glow.W * 255f);
+            textNode->EdgeColor.R = (byte) (Config.Glow.X * 255f);
+            textNode->EdgeColor.G = (byte) (Config.Glow.Y * 255f);
+            textNode->EdgeColor.B = (byte) (Config.Glow.Z * 255f);
 
-            atkUnitBase->UldManager.UpdateDrawNodeList();
+            textNode->SetText(gil.ToString("N0", Culture) + $"{(char) SeIconChar.Gil}");
+        } catch (Exception ex) {
+            SimpleLog.Error(ex);
         }
-
-        var gil = InventoryManager.Instance()->GetItemCountInContainer(1, InventoryType.Currency);
-
-        textNode->TextColor.A = (byte) (Config.Colour.W * 255f);
-        textNode->TextColor.R = (byte) (Config.Colour.X * 255f);
-        textNode->TextColor.G = (byte) (Config.Colour.Y * 255f);
-        textNode->TextColor.B = (byte) (Config.Colour.Z * 255f);
-        textNode->EdgeColor.A = (byte) (Config.Glow.W * 255f);
-        textNode->EdgeColor.R = (byte) (Config.Glow.X * 255f);
-        textNode->EdgeColor.G = (byte) (Config.Glow.Y * 255f);
-        textNode->EdgeColor.B = (byte) (Config.Glow.Z * 255f);
-
-        textNode->SetText(gil.ToString("N0", Culture) + $"{(char) SeIconChar.Gil}");
     }
 
     private void Cleanup() {
-        var destroyList = new List<ulong>();
+        try {
+            var destroyList = new List<ulong>();
 
-        foreach (var inventoryName in new[] { "Inventory", "InventoryLarge", "InventoryExpansion" }) {
-            var atkUnitBase = Common.GetUnitBase(inventoryName);
-            if (atkUnitBase == null) continue;
+            foreach (var inventoryName in new[] { "Inventory", "InventoryLarge", "InventoryExpansion" }) {
+                var atkUnitBase = Common.GetUnitBase(inventoryName);
+                if (atkUnitBase == null) continue;
 
-            var doUpdate = false;
-            for (var n = 0; n < atkUnitBase->UldManager.NodeListCount; n++) {
-                var node = atkUnitBase->UldManager.NodeList[n];
-                if (node == null) continue;
-                if (node->NodeID == CustomNodes.InventoryGil) {
-                    if (node->ParentNode != null && node->ParentNode->ChildNode == node) node->ParentNode->ChildNode = node->PrevSiblingNode;
-                    if (node->PrevSiblingNode != null) node->PrevSiblingNode->NextSiblingNode = node->NextSiblingNode;
-                    if (node->NextSiblingNode != null) node->NextSiblingNode->PrevSiblingNode = node->PrevSiblingNode;
-                    doUpdate = true;
-                    destroyList.Add((ulong)node);
+                var doUpdate = false;
+                for (var n = 0; n < atkUnitBase->UldManager.NodeListCount; n++) {
+                    var node = atkUnitBase->UldManager.NodeList[n];
+                    if (node == null) continue;
+                    if (node->NodeID == CustomNodes.InventoryGil) {
+                        if (node->ParentNode != null && node->ParentNode->ChildNode == node) node->ParentNode->ChildNode = node->PrevSiblingNode;
+                        if (node->PrevSiblingNode != null) node->PrevSiblingNode->NextSiblingNode = node->NextSiblingNode;
+                        if (node->NextSiblingNode != null) node->NextSiblingNode->PrevSiblingNode = node->PrevSiblingNode;
+                        doUpdate = true;
+                        destroyList.Add((ulong)node);
+                    }
                 }
+
+                if (doUpdate) atkUnitBase->UldManager.UpdateDrawNodeList();
             }
 
-            if (doUpdate) atkUnitBase->UldManager.UpdateDrawNodeList();
-        }
-
-        foreach (var a in destroyList) {
-            var node = (AtkResNode*)a;
-            if (node == null) continue;
-            node->Destroy(true);
+            foreach (var a in destroyList) {
+                var node = (AtkResNode*)a;
+                if (node == null) continue;
+                node->Destroy(true);
+            }
+        } catch (Exception ex) {
+            SimpleLog.Error(ex);
         }
     }
 

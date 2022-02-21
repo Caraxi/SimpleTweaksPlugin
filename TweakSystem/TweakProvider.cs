@@ -48,10 +48,20 @@ public class TweakProvider : IDisposable {
         foreach (var t in Tweaks) {
             if (t.Enabled || t is SubTweakManager { AlwaysEnabled : true}) {
                 SimpleLog.Log($"Disable: {t.Name}");
-                t.Disable();
+                try {
+                    t.Disable();
+                } catch (Exception ex) {
+                    SimpleLog.Error($"Error in Disable for '{t.Name}'");
+                    SimpleLog.Error(ex);
+                }
             }
             SimpleLog.Log($"Dispose: {t.Name}");
-            t.Dispose();
+            try {
+                t.Dispose();
+            } catch (Exception ex) {
+                SimpleLog.Error($"Error in Dispose for '{t.Name}'");
+                SimpleLog.Error(ex);
+            }
         }
         Tweaks.Clear();
     }
