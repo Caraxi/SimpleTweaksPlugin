@@ -16,9 +16,6 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 public unsafe class ChatNameColours : ChatTweaks.SubTweak {
     public override string Name => "Chat Name Colours";
     public override string Description => "Gives players a random colour in chat, or set the name manually.";
-    public delegate byte Test(void* a1, void* a2);
-
-    private HookWrapper<Test> testHook;
 
     public class ForcedColour {
         public ushort ColourKey;
@@ -160,18 +157,11 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
 
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-
-        testHook ??= Common.Hook<Test>("E8 ?? ?? ?? ?? B2 01 88 85", TestDetour);
-        testHook?.Enable();
-
+        
         Service.Chat.ChatMessage += HandleChatMessage;
         base.Enable();
     }
-
-    private byte TestDetour(void* a1, void* a2) {
-        return 0;
-    }
-
+    
     private readonly XivChatType[] chatTypes = {
         NoviceNetwork, TellIncoming, TellOutgoing,
         Say, Yell, Shout, Echo,
@@ -187,16 +177,10 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
 
     private bool Parse(ref SeString seString) {
         var hasName = false;
-
         var newPayloads = new List<Payload>();
-
         var waitingEnd = false;
-
-
-        SimpleLog.Log($"Message: {seString.TextValue}");
+        
         foreach (var payload in seString.Payloads) {
-            SimpleLog.Log($"\t\t {payload}");
-
             if (payload is PlayerPayload p) {
                 newPayloads.Add(p);
                 var colourKey = GetColourKey(p.PlayerName, p.World.Name);
@@ -236,7 +220,6 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
     public override void Disable() {
         SaveConfig(Config);
         Service.Chat.ChatMessage -= HandleChatMessage;
-        testHook?.Disable();
         base.Disable();
     }
 }
