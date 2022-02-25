@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Dalamud.Game.Command;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
@@ -92,6 +93,20 @@ public unsafe class StopCraftingButton : Tweak {
         cancelCraftingHook ??= Common.Hook<CancelCrafting>("E8 ?? ?? ?? ?? 48 8B 4B 10 33 FF C6 83", CancelCraftingDetour);
         cancelCraftingHook?.Enable();
 
+        Service.Commands.AddHandler("/stopcrafting", new CommandInfo(((command, arguments) => {
+            var localPlayer = (Character*) Service.ClientState.LocalPlayer.Address;
+            if (localPlayer->EventState == 5 && !standingUp && Common.GetUnitBase("RecipeNote") != null) {
+                eventFunction(EventFramework.Instance(), 6, 0, 0);
+                craftingState->Unknown = 0;
+                removeFrameworkUpdateEventStopwatch.Restart();
+                standingUp = true;
+                Service.Framework.Update += ForceUpdateFramework;
+            }
+        })) {
+            HelpMessage = "Stops crafting without closing the crafting log.",
+            ShowInHelp = true
+        });
+        
         base.Enable();
     }
 
@@ -232,6 +247,7 @@ public unsafe class StopCraftingButton : Tweak {
     
     
     public override void Disable() {
+        Service.Commands.RemoveHandler("/stopcrafting");
         craftingLogUpdateHook?.Disable();
         clickSysnthesisButtonHook?.Disable();
         CloseCraftingLog();
