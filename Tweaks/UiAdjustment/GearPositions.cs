@@ -12,14 +12,17 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
     private delegate void* AddonOnSetup(AtkUnitBase* atkUnitBase, int a2, void* a3);
 
     private HookWrapper<AddonOnSetup> characterOnSetup;
+    private HookWrapper<AddonOnSetup> pvpCharacterOnSetup;
     private HookWrapper<AddonOnSetup> inspectOnSetup;
     private HookWrapper<Common.AddonOnUpdate> bagWidgetUpdate;
 
     public override void Enable() {
         characterOnSetup ??= Common.Hook<AddonOnSetup>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 54 41 55 41 56 41 57 48 83 EC 60 4D 8B F0", CharacterOnSetup);
+        pvpCharacterOnSetup ??= Common.Hook<AddonOnSetup>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 83 EC 30 49 8B E8 48 8B D9", PvpCharacterOnSetup);
         inspectOnSetup ??= Common.Hook<AddonOnSetup>("48 89 5C 24 ?? 48 89 6C 24 ?? 56 57 41 56 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? 48 8B F9 48 8B D1", InspectOnSetup);
         bagWidgetUpdate ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 55 56 57 41 54 41 55 41 56 41 57 48 83 EC 20 4C 8B 62 38", BagWidgetUpdate);
         characterOnSetup?.Enable();
+        pvpCharacterOnSetup?.Enable();
         inspectOnSetup?.Enable();
         bagWidgetUpdate?.Enable();
 
@@ -208,6 +211,38 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
 
         return retVal;
     }
+    
+    private void* PvpCharacterOnSetup(AtkUnitBase* atkUnitBase, int a2, void* a3) {
+        var retVal = pvpCharacterOnSetup.Original(atkUnitBase, a2, a3);
+
+        // Slots
+        MoveNode(atkUnitBase, 126, 0, -1); // Job Stone
+        MoveNode(atkUnitBase, 114, -8, 60); // Main Weapon
+        MoveNode(atkUnitBase, 116, -8, 107); // Head
+        MoveNode(atkUnitBase, 117, -8, 154); // Body
+        MoveNode(atkUnitBase, 119, -8, 201); // Hands
+        MoveNode(atkUnitBase, 118, -8, 248); // Legs
+        MoveNode(atkUnitBase, 120, -8, 295); // Feet
+        
+        // Images
+        MoveNode(atkUnitBase, 112, 0, 0); // Job Stone
+        MoveNode(atkUnitBase, 102, 0, 108); // Head
+        MoveNode(atkUnitBase, 103, 0, 155); // Body
+        MoveNode(atkUnitBase, 104, 0, 202); // Hands
+        MoveNode(atkUnitBase, 105, 0, 249); // Legs
+        MoveNode(atkUnitBase, 106, 0, 296); // Feet
+        
+        // Glamour Error Icons
+        MoveNode(atkUnitBase, 98, 18, 25); // Job Stone
+        MoveNode(atkUnitBase, 86, 18, 86); // Main Hand
+        MoveNode(atkUnitBase, 88, 18, 133); // Head
+        MoveNode(atkUnitBase, 89, 18, 180); // Body
+        MoveNode(atkUnitBase, 91, 18, 227); // Hands
+        MoveNode(atkUnitBase, 90, 18, 274); // Legs
+        MoveNode(atkUnitBase, 92, 18, 321); // Feet
+        
+        return retVal;
+    }
 
     private void MoveNode(AtkComponentBase* componentBase, uint nodeId, float x, float y) {
         if (componentBase == null) return;
@@ -227,6 +262,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
         var bagWidget = Common.GetUnitBase("_BagWidget");
         if (bagWidget != null) ResetBagWidget(bagWidget);
         characterOnSetup?.Disable();
+        pvpCharacterOnSetup?.Disable();
         inspectOnSetup?.Disable();
         bagWidgetUpdate?.Disable();
         base.Disable();
@@ -234,6 +270,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
 
     public override void Dispose() {
         characterOnSetup?.Dispose();
+        pvpCharacterOnSetup?.Dispose();
         inspectOnSetup?.Dispose();
         bagWidgetUpdate?.Dispose();
         base.Dispose();
