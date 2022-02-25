@@ -130,7 +130,7 @@ public unsafe class StopCraftingButton : Tweak {
             var readyState = GetCraftReadyState(ref requiredClass);
             switch (readyState) {
                 case CraftReadyState.AlreadyCrafting: {
-                    if (Service.ClientState.LocalPlayer != null) {
+                    if (Service.ClientState.LocalPlayer != null && !standingUp) {
                         var localPlayer = (Character*) Service.ClientState.LocalPlayer.Address;
                         if (localPlayer->EventState == 5) {
                             eventFunction(EventFramework.Instance(), 6, 0, 0);
@@ -164,7 +164,7 @@ public unsafe class StopCraftingButton : Tweak {
     }
 
     private void ForceUpdateFramework(Dalamud.Game.Framework framework) {
-        if (removeFrameworkUpdateEventStopwatch.ElapsedMilliseconds > 2000) framework.Update -= ForceUpdateFramework;
+        if (removeFrameworkUpdateEventStopwatch.ElapsedMilliseconds > 5000) framework.Update -= ForceUpdateFramework;
         ForceUpdate();
         if (standingUp == false || Service.ClientState.LocalPlayer == null) return;
         var localPlayer = (Character*) Service.ClientState.LocalPlayer.Address;
