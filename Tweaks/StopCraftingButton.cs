@@ -234,8 +234,8 @@ public unsafe class StopCraftingButton : Tweak {
     public override void Disable() {
         craftingLogUpdateHook?.Disable();
         clickSysnthesisButtonHook?.Disable();
-        cancelCraftingHook?.Disable();
         CloseCraftingLog();
+        cancelCraftingHook?.Disable();
         base.Disable();
     }
 
