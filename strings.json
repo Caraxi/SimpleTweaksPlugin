@@ -287,6 +287,14 @@
     "message": "Hide Tweak",
     "description": "Hide Tweak - Hide Tweak"
   },
+  "InterruptCastOnDeath / Description": {
+    "message": "Fixes incorrect behaviour where the cast does not end on target death.",
+    "decription": "[InterruptCastOnDeath] Tweak Description"
+  },
+  "InterruptCastOnDeath / Name": {
+    "message": "Interrupt Cast On Death",
+    "description": "[InterruptCastOnDeath] Tweak Name"
+  },
   "LegacyCameraLock / Description": {
     "message": "Prevents camera rotation when using Legacy movement type.",
     "description": "[LegacyCameraLock] Tweak Description"
