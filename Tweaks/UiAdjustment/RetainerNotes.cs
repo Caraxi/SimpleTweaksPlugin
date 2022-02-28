@@ -19,7 +19,10 @@ namespace SimpleTweaksPlugin {
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class RetainerNotes : UiAdjustments.SubTweak {
-        public const int MaxRetainers = 12;
+
+        public override string Name => "Retainer notes";
+        public override string Description => "Adds a note to the individual retainers in the retainer window.";
+        protected override string Author => "Nesswen";
 
         #region Config
         public class Configs : TweakConfig {
@@ -30,23 +33,21 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             int noteWidth = Config.Width;
             ImGui.SetNextItemWidth(90 * ImGui.GetIO().FontGlobalScale);
-            hasChanged |= ImGui.InputInt(LocString("ColumnWidth", "Width of the note column"), ref noteWidth);
+            hasChanged |= ImGui.InputInt(LocString("ColumnWidth", "Width of the note column") + "##RetainerNoteWidth", ref noteWidth);
             Config.Width = (ushort)Math.Max(20, Math.Min(300, noteWidth));
 
             for (int i = 1; i <= MaxRetainers; i++) {
                 Config.RetainerNote[i - 1] ??= String.Empty;
 
                 ImGui.SetNextItemWidth(90 * ImGui.GetIO().FontGlobalScale);
-                hasChanged |= ImGui.InputTextWithHint(LocString("RetainerNote", "Note for retainer n. {0}").Format(i) + $"###RetainerNoteN{i}", LocString("Empty", "Empty"), ref Config.RetainerNote[i - 1], 60);
+                hasChanged |= ImGui.InputTextWithHint(LocString("RetainerNote", "Note for retainer n. {0}").Format(i) + $"##RetainerNoteN{i}", LocString("Empty", "Empty"), ref Config.RetainerNote[i - 1], 60);
             }
         };
         #endregion
 
         public Configs Config { get; private set; }
 
-        public override string Name => "Retainer notes";
-        public override string Description => "Adds a note to the individual retainers in the retainer window.";
-        protected override string Author => "Nesswen";
+        private const int MaxRetainers = 12;
 
         private const ushort OldWidth = 910;
         private ushort AddedWidth => Config?.Width ?? 110;
