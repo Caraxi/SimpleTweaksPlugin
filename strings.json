@@ -1023,6 +1023,26 @@
     "message": "Remove Quest Marker Limit",
     "description": "[RemoveQuestMarkerLimit] Tweak Name"
   },
+  "UiAdjustments@RetainerNotes / ColumnWidth": {
+    "message": "Width of the note column",
+    "description": "[RetainerNotes] Width of the note column"
+  },
+  "UiAdjustments@RetainerNotes / Description": {
+    "message": "Adds a customizable note column to the retainer list.",
+    "description": "[RetainerNotes] Tweak Description"
+  },
+  "UiAdjustments@RetainerNotes / Empty": {
+    "message": "Empty",
+    "description": "[RetainerNotes] Hint that retainer does not have a note."
+  },
+  "UiAdjustments@RetainerNotes / Name": {
+    "message": "Retainer notes",
+    "description": "[RetainerNotes] Tweak Name"
+  },
+  "UiAdjustments@RetainerNotes / RetainerNote1": {
+    "message": "Note for the retainer #{0}",
+    "description": "[RetainerNotes] Note for the n-th retainer"
+  },
   "UiAdjustments@SellMaxTripleTriadCards / Description": {
     "message": "Set the default number of cards to sell at the Triple Triad Trader to the number of cards you have.",
     "description": "[SellMaxTripleTriadCards] Tweak Description"
