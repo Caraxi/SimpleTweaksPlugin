@@ -198,7 +198,7 @@ public unsafe class GcdTimer : UiAdjustments.SubTweak {
             textNode->LineSpacing = (byte) (this.Config.FontSize);
             textNode->CharSpacing = 1;
             var gcdTimer = (gcdActive == 1 ? gcdTime : 0.0f).ToString($"{(Config.LeadingZero ? "00" : "0")}{(Config.DecimalPlaces>0 ? "." + new string('0', Config.DecimalPlaces) : "")}");
-            textNode->SetText(Config.NoComboText ? $"{gcdTimer}" : $"Combo\n{gcdTimer}");
+            textNode->SetText(Config.NoComboText ? $"{gcdTimer}" : $"GCD\n{gcdTimer}");
         } else { 
             UiHelper.Hide(textNode);
         }
