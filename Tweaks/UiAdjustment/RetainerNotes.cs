@@ -34,7 +34,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             int noteWidth = Config.Width;
             ImGui.SetNextItemWidth(90 * ImGui.GetIO().FontGlobalScale);
             hasChanged |= ImGui.InputInt(LocString("ColumnWidth", "Width of the note column") + "##RetainerNoteWidth", ref noteWidth);
-            Config.Width = (ushort)Math.Max(20, Math.Min(300, noteWidth));
+            Config.Width = (ushort)Math.Max(MinAddedWidth, Math.Min(MaxAddedWidth, noteWidth));
 
             for (int i = 1; i <= MaxRetainers; i++) {
                 Config.RetainerNote[i - 1] ??= String.Empty;
@@ -47,9 +47,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public Configs Config { get; private set; }
 
-        private const int MaxRetainers = 12;
+        private const int MaxRetainers = 10;
 
         private const ushort OldWidth = 910;
+        private const ushort MinAddedWidth = 20;
+        private const ushort MaxAddedWidth = 300;
         private ushort AddedWidth => Config?.Width ?? 110;
         private ushort NewWidth => (ushort)(OldWidth + AddedWidth);
 
@@ -145,14 +147,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             // Create header for "Note"
 
-            UiHelper.ExpandNodeList(atkUnitBase, 1);
             var lastHeader = Common.GetNodeByID<AtkTextNode>(atkUnitBase->UldManager, RetainerWindowNodeIds.RetainerListHeaderName.Id);
             var inventoryHeader = Common.GetNodeByID<AtkTextNode>(atkUnitBase->UldManager, RetainerWindowNodeIds.RetainerListHeaderInventory.Id);
 
             var newPosition = inventoryHeader->AtkResNode.X + inventoryHeader->AtkResNode.Width + 20;
 
             var newHeaderItem = UiHelper.CloneNode(inventoryHeader);
-            newHeaderItem->AtkResNode.NodeID = RetainerWindowNodeIds.FirstFreeNodeId;
+            newHeaderItem->AtkResNode.NodeID = (FindMaxNodeId(atkUnitBase->UldManager) ?? 0) + 1;
             newHeaderItem->AtkResNode.X = newPosition;
             newHeaderItem->AtkResNode.Width = AddedWidth;
             newHeaderItem->AtkResNode.ParentNode = inventoryHeader->AtkResNode.ParentNode;
@@ -160,18 +161,17 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             lastHeader->AtkResNode.PrevSiblingNode = (AtkResNode*)newHeaderItem;
 
             newHeaderItem->NodeText.StringPtr = (byte*)UiHelper.Alloc((ulong)newHeaderItem->NodeText.BufSize);
-            newHeaderItem->SetText("Note");
+            newHeaderItem->SetText(LocString("NoteColumnHeader", "Note"));
 
-            atkUnitBase->UldManager.NodeList[atkUnitBase->UldManager.NodeListCount++] = (AtkResNode*)newHeaderItem;
+            atkUnitBase->UldManager.UpdateDrawNodeList();
         }
 
         private void ResizeAndAddColumnToRetainerRow(AtkComponentNode* retainerRow, uint idx) {
-            UiHelper.SetSize(retainerRow, NewWidth - 32, null);
-
             void SetWidth(RetainerListRowNodeIds node, int width) => UiHelper.SetSize(Common.GetNodeByID(retainerRow->Component->UldManager, node.Id), width, null);
             void SetX(RetainerListRowNodeIds node, int x) => UiHelper.SetPosition(Common.GetNodeByID(retainerRow->Component->UldManager, node.Id), x, null);
 
             // Resize row
+            UiHelper.SetSize(retainerRow, NewWidth - 32, null);
 
             SetWidth(RetainerListRowNodeIds.Res, NewWidth - 32);
             SetWidth(RetainerListRowNodeIds.Collider, NewWidth - 32);
@@ -188,11 +188,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             var newItemPosition = inventoryStatusRowItem->AtkResNode.X + inventoryStatusRowItem->AtkResNode.Width + 26;
 
-            // all nodes in the row are children of RetainerListRowNodeIds.Container, but I can't extend that list, so I am using the retainer row as a parent node
-            UiHelper.ExpandNodeList(retainerRow, 1);
-
             var newRowItem = UiHelper.CloneNode(inventoryStatusRowItem);
-            newRowItem->AtkResNode.NodeID = RetainerListRowNodeIds.FirstFreeNodeId;
+            newRowItem->AtkResNode.NodeID = (FindMaxNodeId(retainerRow->Component->UldManager) ?? 0) + 1;
             newRowItem->AtkResNode.X = newItemPosition;
             newRowItem->AtkResNode.Width = AddedWidth;
             newRowItem->AtkResNode.ParentNode = (AtkResNode*)retainerRow;
@@ -203,7 +200,18 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             newRowItem->NodeText.StringPtr = (byte*)UiHelper.Alloc((ulong)newRowItem->NodeText.BufSize);
             newRowItem->SetText(Config.RetainerNote[idx - 1] ?? String.Empty);
 
-            retainerRow->Component->UldManager.NodeList[retainerRow->Component->UldManager.NodeListCount++] = (AtkResNode*)newRowItem;
+            retainerRow->Component->UldManager.UpdateDrawNodeList();
+        }
+
+        private uint? FindMaxNodeId(AtkUldManager atkUldManager) {
+            uint? max = null;
+            for (uint i = 0; i < atkUldManager.NodeListCount; i++) {
+                var id = atkUldManager.NodeList[i]->NodeID;
+                if (max == null || id > max) {
+                    max = id;
+                }
+            }
+            return max;
         }
 
         private void CloseRetainerList() {
@@ -251,8 +259,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public static readonly RetainerWindowNodeIds VentureCoinRes = new(22, 2);
             public static readonly RetainerWindowNodeIds VentureCoinIcon = new(23, 4);
             public static readonly RetainerWindowNodeIds VentureCoinAmount = new(24, 3);
-
-            public const int FirstFreeNodeId = 26;
 
             public uint ChildIndex { get; }
             public uint Id { get; }
@@ -314,8 +320,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public static readonly RetainerListRowNodeIds ClassJobName = new(11, 5);
             public static readonly RetainerListRowNodeIds ClassJobIcon = new(12, 4);
             public static readonly RetainerListRowNodeIds Name = new(13, 3);
-
-            public const int FirstFreeNodeId = 16;
 
             public uint ChildIndex { get; }
             public uint Id { get; }

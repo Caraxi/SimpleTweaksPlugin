@@ -1039,6 +1039,10 @@
     "message": "Retainer notes",
     "description": "[RetainerNotes] Tweak Name"
   },
+  "UiAdjustments@RetainerNotes / NoteColumnHeader": {
+    "message": "Note",
+    "description": "[RetainerNotes] Note column header"
+  },
   "UiAdjustments@RetainerNotes / RetainerNote": {
     "message": "Note for the retainer #{0}",
     "description": "[RetainerNotes] Note for the n-th retainer"
