@@ -158,7 +158,7 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.SetNextWindowSize(new Vector2(500, 350) * ImGui.GetIO().FontGlobalScale, ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowSizeConstraints(new Vector2(350, 350) * ImGui.GetIO().FontGlobalScale, new Vector2(2000, 2000) * ImGui.GetIO().FontGlobalScale);
             ImGui.PushStyleColor(ImGuiCol.WindowBg, 0xFF000000);
-            if (ImGui.Begin($"SimpleTweaksPlugin - Debug", ref open)) {
+            if (ImGui.Begin($"SimpleTweaksPlugin - Debug [{Assembly.GetExecutingAssembly().GetName().Version}]###stDebugMenu", ref open)) {
 
                 if (ImGui.BeginChild("###debugPages", new Vector2(sidebarSize, -1) * ImGui.GetIO().FontGlobalScale, true)) {
 
