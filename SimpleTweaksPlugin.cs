@@ -113,6 +113,21 @@ namespace SimpleTweaksPlugin {
 
             SetupCommands();
 
+            try {
+                // Update Tweak Blacklist
+                using var webClient = new System.Net.WebClient();
+                var blacklistedTweaksString = webClient.DownloadString("https://raw.githubusercontent.com/Caraxi/SimpleTweaksPlugin/main/tweakBlacklist.txt");
+                SimpleLog.Log("Tweak Blacklist:\n" + blacklistedTweaksString);
+                var blacklistedTweaks = new List<string>();
+                foreach (var l in blacklistedTweaksString.Split("\n")) {
+                    if (string.IsNullOrWhiteSpace(l)) continue;
+                    blacklistedTweaks.Add(l.Trim());
+                }
+                PluginConfig.BlacklistedTweaks = blacklistedTweaks;
+            } catch {
+                //
+            }
+            
             var simpleTweakProvider = new TweakProvider(Assembly.GetExecutingAssembly());
             simpleTweakProvider.LoadTweaks();
             TweakProviders.Add(simpleTweakProvider);

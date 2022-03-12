@@ -27,6 +27,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     public List<string> EnabledTweaks = new List<string>();
     public List<string> HiddenTweaks = new List<string>();
     public List<string> CustomProviders = new List<string>();
+    public List<string> BlacklistedTweaks = new List<string>();
 
     public bool HideKofi;
     public bool ShowExperimentalTweaks;

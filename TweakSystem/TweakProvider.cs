@@ -26,6 +26,10 @@ public class TweakProvider : IDisposable {
                 var tweak = (Tweak) Activator.CreateInstance(t)!;
                 tweak.InterfaceSetup(SimpleTweaksPlugin.Plugin, Service.PluginInterface, SimpleTweaksPlugin.Plugin.PluginConfig, this);
                 if (tweak.CanLoad) {
+                    if (SimpleTweaksPlugin.Plugin.PluginConfig.BlacklistedTweaks.Contains(tweak.Key)) {
+                        SimpleLog.Log("Skipping blacklisted tweak: " + tweak.Key);
+                        continue;
+                    }
                     tweak.Setup();
                     if (tweak.Ready && (SimpleTweaksPlugin.Plugin.PluginConfig.EnabledTweaks.Contains(t.Name) || tweak is SubTweakManager {AlwaysEnabled: true})) {
                         SimpleLog.Debug($"Enable: {t.Name}");
