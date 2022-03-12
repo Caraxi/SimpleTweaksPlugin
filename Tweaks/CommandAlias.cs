@@ -193,7 +193,7 @@ public class CommandAlias : Tweak {
                         // https://git.sr.ht/~jkcclemens/CCMM/tree/master/Custom%20Commands%20and%20Macro%20Macros/GameFunctions.cs#L44
                         var commandExtra = inputString[(alias.Input.Length + 1)..];
                         if (commandExtra.StartsWith(' ')) commandExtra = commandExtra[1..];
-                        var newStr = $"/{alias.Output}{commandExtra}";
+                        var newStr = alias.Output.Contains(' ') ? $"/{alias.Output}{commandExtra}" : $"/{alias.Output} {commandExtra}";
                         if (newStr.Length <= 500) {
                             SimpleLog.Verbose($"Aliasing Command: {inputString} -> {newStr}");
                             var bytes = Encoding.UTF8.GetBytes(newStr);
