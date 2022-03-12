@@ -1,1 +1,1 @@
-StopCraftingButton:Disabled due to persistent issues
+StopCraftingButton
