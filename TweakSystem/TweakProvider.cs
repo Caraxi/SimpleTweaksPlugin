@@ -46,6 +46,7 @@ public class TweakProvider : IDisposable {
                 PluginLog.Error(ex, $"Failed loading tweak '{t.Name}'.");
             }
         }
+        SimpleTweaksPlugin.Plugin.PluginConfig.RefreshSearch();
     }
 
     public void UnloadTweaks() {
@@ -68,6 +69,7 @@ public class TweakProvider : IDisposable {
             }
         }
         Tweaks.Clear();
+        SimpleTweaksPlugin.Plugin.PluginConfig.RefreshSearch();
     }
 
 

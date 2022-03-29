@@ -476,4 +476,6 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
             
         return drawConfig;
     }
+
+    public void RefreshSearch() => lastSearchInput = string.Empty;
 }
