@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Enums;
-using SimpleTweaksPlugin.Helper;
+using static FFXIVClientStructs.FFXIV.Client.Game.InventoryItem;
 
 namespace SimpleTweaksPlugin.GameStructs; 
 
@@ -40,10 +39,4 @@ public unsafe struct InventoryItem {
     }
         
     public Item Item => Service.Data.Excel.GetSheet<Item>()?.GetRow(this.ItemId);
-}
-
-[Flags]
-public enum ItemFlags : byte {
-    None,
-    HQ,
 }

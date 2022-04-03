@@ -12,6 +12,7 @@ using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using SimpleTweaksPlugin.TweakSystem;
+using InventoryItem = FFXIVClientStructs.FFXIV.Client.Game.InventoryItem;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
@@ -148,7 +149,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 }
 
                 var itemIdWithHQ = item->ItemId;
-                if ((item->Flags & ItemFlags.HQ) > 0) itemIdWithHQ += 1000000;
+                if ((item->Flags & InventoryItem.ItemFlags.HQ) > 0) itemIdWithHQ += 1000000;
                 var gearsetModule = RaptureGearsetModule.Instance();
                 var itemInGearset = false;
                 for (var i = 0; i < 101; i++) {
