@@ -12,7 +12,7 @@ public unsafe class CharaViewIncreasedZoom : Tweak {
     private HookWrapper<CharaViewZoom> charaViewZoomHook;
 
     public override void Enable() {
-        charaViewZoomHook ??= Common.Hook<CharaViewZoom>("48 8B 41 20 48 85 C0 74 44", ZoomDetour);
+        charaViewZoomHook ??= Common.Hook<CharaViewZoom>("48 8B 41 20 48 85 C0 74 4C", ZoomDetour);
         charaViewZoomHook?.Enable();
         base.Enable();
     }
