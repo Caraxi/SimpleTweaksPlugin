@@ -9,12 +9,13 @@ using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface;
-using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using ImGuiScene;
+using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Helper;
 using Action = System.Action;
+using Addon = FFXIVClientStructs.Attributes.Addon;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 
 #pragma warning disable 659
@@ -177,9 +178,11 @@ public unsafe class UIDebug : DebugHelper {
             return;
         }
             
-        ImGui.SetNextWindowPos(Vector2.Zero);
+        ImGuiHelpers.SetNextWindowPosRelativeMainViewport(Vector2.Zero);
         ImGui.SetNextWindowSize(ImGui.GetIO().DisplaySize);
         ImGui.SetNextWindowBgAlpha(0.3f);
+        ImGuiHelpers.ForceNextWindowMainViewport();
+        
         ImGui.Begin("ElementSelectorWindow", ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoScrollbar);
         var drawList = ImGui.GetWindowDrawList();
             
@@ -191,7 +194,7 @@ public unsafe class UIDebug : DebugHelper {
             y += size.Y;
         }
             
-        var mousePos = ImGui.GetMousePos();
+        var mousePos = ImGui.GetMousePos() - ImGuiHelpers.MainViewport.Pos;
         var windows = GetAtkUnitBaseAtPosition(mousePos);
 
         ImGui.SetCursorPosX(100);
@@ -237,7 +240,7 @@ public unsafe class UIDebug : DebugHelper {
                 }
                     
                     
-                drawList.AddRectFilled(n.State.Position, n.State.SecondPosition, (uint) (nSelected ? 0x4400FFFF: 0x0000FF00));
+                drawList.AddRectFilled(n.State.Position + ImGuiHelpers.MainViewport.Pos, n.State.SecondPosition + ImGuiHelpers.MainViewport.Pos, (uint) (nSelected ? 0x4400FFFF: 0x0000FF00));
             }
             ImGui.Indent(-15);
         }
