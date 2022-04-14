@@ -67,7 +67,7 @@ public unsafe class AccurateVentureTimes : UiAdjustments.SubTweak {
         try {
             var addon = Common.GetUnitBase("RetainerList");
             if (addon == null) return false;
-            var listNode = (AtkComponentNode*)addon->GetNodeById(24);
+            var listNode = (AtkComponentNode*)addon->GetNodeById(27);
             if (listNode == null || (ushort)listNode->AtkResNode.Type < 1000) return false;
             var retainerManager = RetainerManager.Instance();
             for (uint i = 0; i < 10; i++) {
