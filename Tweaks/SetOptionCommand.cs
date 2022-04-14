@@ -29,11 +29,11 @@ public unsafe class SetOptionCommand : Tweak {
 
     public class OptionDefinition {
         public string Name { get; }
-        public short ID { get; }
+        public ConfigOption ID { get; }
         public OptionType OptionType { get; }
         public string[] Alias { get; }
 
-        public OptionDefinition(string name, short id, OptionType type, params string[] alias) {
+        public OptionDefinition(string name, ConfigOption id, OptionType type, params string[] alias) {
             this.Name = name;
             this.ID = id;
             this.OptionType = type;
@@ -43,17 +43,17 @@ public unsafe class SetOptionCommand : Tweak {
     }
 
     private readonly List<OptionDefinition> optionDefinitions = new() {
-        new OptionDefinition("GamepadMode", 89, OptionType.ToggleGamepadMode, "gp"),
+        new OptionDefinition("GamepadMode", ConfigOption.GamepadMode, OptionType.ToggleGamepadMode, "gp"),
 
-        new OptionDefinition("ItemTooltips", 716, OptionType.Bool, "itt"),
-        new OptionDefinition("ActionTooltips", 721, OptionType.Bool, "att"),
-        new OptionDefinition("LegacyMovement", 304, OptionType.Bool, "lm"),
+        new OptionDefinition("ItemTooltips", ConfigOption.DisplayItemHelp, OptionType.Bool, "itt"),
+        new OptionDefinition("ActionTooltips", ConfigOption.DisplayActionHelp, OptionType.Bool, "att"),
+        new OptionDefinition("LegacyMovement", ConfigOption.LegacyMovement, OptionType.Bool, "lm"),
 
-        new OptionDefinition("OwnDisplayName", 443, OptionType.NameDisplayModeBattle, "odn"),
-        new OptionDefinition("PartyDisplayName", 456, OptionType.NameDisplayModeBattle, "pdn"),
-        new OptionDefinition("AllianceDisplayName", 465, OptionType.NameDisplayModeBattle, "adn"),
-        new OptionDefinition("OtherPlayerDisplayName", 472, OptionType.NameDisplayModeBattle, "opcdn"),
-        new OptionDefinition("FriendDisplayName", 517, OptionType.NameDisplayModeBattle, "fdn"),
+        new OptionDefinition("OwnDisplayName", ConfigOption.OwnDisplayNameSettings, OptionType.NameDisplayModeBattle, "odn"),
+        new OptionDefinition("PartyDisplayName", ConfigOption.PartyDisplayNameSettings, OptionType.NameDisplayModeBattle, "pdn"),
+        new OptionDefinition("AllianceDisplayName", ConfigOption.AllianceDisplayNameSettings, OptionType.NameDisplayModeBattle, "adn"),
+        new OptionDefinition("OtherPlayerDisplayName", ConfigOption.OtherPCsDisplayNameSettings, OptionType.NameDisplayModeBattle, "opcdn"),
+        new OptionDefinition("FriendDisplayName", ConfigOption.FriendsDisplayNameSettings, OptionType.NameDisplayModeBattle, "fdn"),
     };
 
 
@@ -170,20 +170,20 @@ public unsafe class SetOptionCommand : Tweak {
                     case "1":
                     case "true":
                     case "on":
-                        configModule->SetOptionById(optionDefinition.ID, 1);
+                        configModule->SetOption(optionDefinition.ID, 1);
                         setValue = 1;
                         break;
                     case "0":
                     case "false":
                     case "off":
-                        configModule->SetOptionById(optionDefinition.ID, 0);
+                        configModule->SetOption(optionDefinition.ID, 0);
                         setValue = 0;
                         break;
                     case "":
                     case "t":
                     case "toggle":
                         var cVal = configModule->GetIntValue(optionDefinition.ID);
-                        configModule->SetOptionById(optionDefinition.ID, cVal > 0 ? 0 : 1);
+                        configModule->SetOption(optionDefinition.ID, cVal > 0 ? 0 : 1);
                         setValue = cVal > 0 ? 1 : 0UL;
                         break;
                     default:
@@ -197,20 +197,20 @@ public unsafe class SetOptionCommand : Tweak {
                 switch (optionValue.ToLowerInvariant()) {
                     case "a":
                     case "always":
-                        configModule->SetOptionById(optionDefinition.ID, 0);
+                        configModule->SetOption(optionDefinition.ID, 0);
                         break;
                     case "b":
                     case "battle":
-                        configModule->SetOptionById(optionDefinition.ID, 1);
+                        configModule->SetOption(optionDefinition.ID, 1);
                         break;
                     case "t":
                     case "target":
                     case "targeted":
-                        configModule->SetOptionById(optionDefinition.ID, 2);
+                        configModule->SetOption(optionDefinition.ID, 2);
                         break;
                     case "n":
                     case "never": 
-                        configModule->SetOptionById(optionDefinition.ID, 3);
+                        configModule->SetOption(optionDefinition.ID, 3);
                         break;
                     default:
                         Service.Chat.PrintError($"/setoption {optionKind} ({optionTypeValueHints[optionDefinition.OptionType]})");
