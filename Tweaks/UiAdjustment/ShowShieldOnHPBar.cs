@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using Dalamud.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
@@ -114,7 +115,7 @@ public unsafe class ShowShieldOnHPBar: UiAdjustments.SubTweak
             var player = Service.ClientState.LocalPlayer;
             if (player == null) return;
             // Shield Percentage as a byte is at address 0x1997
-            var shieldRawPercentage = (*(byte*) (player.Address + 0x19D9))/ 100f;
+            var shieldRawPercentage = ((Character*) player.Address)->ShieldValue / 100f;
             var playerHpPercentage = (float)player.CurrentHp / player.MaxHp;
             var playerHpDownPercentage = 1f - playerHpPercentage;
             var shieldOverPercentage = shieldRawPercentage - playerHpDownPercentage;
