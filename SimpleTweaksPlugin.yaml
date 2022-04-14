@@ -5,4 +5,4 @@ description: |-
   All changes are toggleable, with everything disabled by default. Visit the Repo for a full list of tweaks. (Globe icon below)
 punchline: This was supposed to be simple...
 repo_url: https://github.com/Caraxi/SimpleTweaksPlugin
-dalamud_api_level: 5
+dalamud_api_level: 6
