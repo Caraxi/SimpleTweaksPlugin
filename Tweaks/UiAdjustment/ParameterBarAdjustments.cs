@@ -51,6 +51,8 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
     private List<uint> doLIds = new();
     private List<uint> doHIds = new();
 
+    private bool inPVP = false;
+
     public override void Enable() {
         var nbJobs = Service.Data.Excel.GetSheet<ClassJob>()?.ColumnCount ?? 0;
         var classJobCategoriesSheet = Service.Data.Excel.GetSheet<ClassJobCategory>();
@@ -68,11 +70,14 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
 
         Config = LoadConfig<Configs>() ?? new Configs();
         Service.Framework.Update += OnFrameworkUpdate;
+        Service.ClientState.TerritoryChanged += OnTerritoryChanged;
+        OnTerritoryChanged(null, Service.ClientState.TerritoryType);
         base.Enable();
     }
 
     public override void Disable() {
         Service.Framework.Update -= OnFrameworkUpdate;
+        Service.ClientState.TerritoryChanged -= OnTerritoryChanged;
         UpdateParameterBar(true);
         SaveConfig(Config);
         base.Disable();
@@ -85,6 +90,12 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
         catch (Exception ex) {
             SimpleLog.Error(ex);
         }
+    }
+    
+    private void OnTerritoryChanged(object? sender, ushort territoryType) {
+        var territory = Service.Data.Excel.GetSheet<TerritoryType>()?.GetRow(territoryType);
+        if (territory == null) return;
+        inPVP = territory.IsPvpZone;
     }
 
     private bool VisibilityAndOffsetEditor(string label, ref HideAndOffsetConfig config, HideAndOffsetConfig defConfig) {
@@ -195,7 +206,7 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
             mpColor = reset ? DefaultConfig.MpColor : Config.MpColor;
         }
 
-        var hideMp = !reset && Config.AutoHideMp && Service.Condition[ConditionFlag.RolePlaying] == false && classJobId != null && autoHideMpClassJobs.Contains(classJobId.Value);
+        var hideMp = !reset && Config.AutoHideMp && !inPVP && Service.Condition[ConditionFlag.RolePlaying] == false && classJobId != null && autoHideMpClassJobs.Contains(classJobId.Value);
         var mpNode = (AtkComponentNode*) parameterWidgetUnitBase->UldManager.SearchNodeById(4);
         if (mpNode != null) UpdateParameter(mpNode, reset ? DefaultConfig.MpBar : Config.MpBar, reset ? DefaultConfig.MpValue : Config.MpValue, mpColor, reset ? DefaultConfig.HideHpTitle : Config.HideMpTitle, hideMp);
 
