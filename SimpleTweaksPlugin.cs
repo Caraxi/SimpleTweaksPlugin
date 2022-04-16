@@ -99,7 +99,7 @@ namespace SimpleTweaksPlugin {
             this.PluginConfig.Init(this, pluginInterface);
 
             IconManager = new IconManager(pluginInterface);
-            this.XivCommon = new XivCommonBase(Hooks.ContextMenu);
+            this.XivCommon = new XivCommonBase();
             SetupLocalization();
 
             UiHelper.Setup(Service.SigScanner);
