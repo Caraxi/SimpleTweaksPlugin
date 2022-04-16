@@ -110,7 +110,9 @@ public unsafe class ExcelSheetDebugging : DebugHelper {
                     ImGui.TableNextColumn();
                     DebugManager.ClickToCopyText($"{byNameValues[key]:X}");
                     ImGui.TableNextColumn();
+                    ImGui.PushID($"##sheetByName_{key}");
                     DebugManager.PrintOutObject(e);
+                    ImGui.PopID();
                 } else {
                     ImGui.TableNextRow();
                 }
