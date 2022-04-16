@@ -7,6 +7,7 @@ using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
+using Dalamud.Game.Gui.ContextMenus;
 using Dalamud.Game.Gui.Toast;
 using Dalamud.Game.Libc;
 using Dalamud.IoC;
@@ -30,4 +31,5 @@ public class Service {
     [PluginService] public static SigScanner SigScanner { get; private set; }
     [PluginService] public static TargetManager Targets { get; private set; }
     [PluginService] public static ToastGui Toasts { get; private set; }
+    [PluginService] public static ContextMenu ContextMenu { get; private set; }
 }
