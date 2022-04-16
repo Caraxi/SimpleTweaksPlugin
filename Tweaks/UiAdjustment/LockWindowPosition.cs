@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud.Game.Gui.ContextMenus;
 using Dalamud.Game.Text;
@@ -74,12 +75,10 @@ public unsafe class LockWindowPosition : UiAdjustments.SubTweak {
     
     private void ContextMenuOnOpenContextMenu(ContextMenuOpenedArgs args) {
         if (args.ParentAddonName == null) return;
+        
         var items = args.GetItems();
-        foreach (var i in items) {
-            if (i.Name.TextValue == defaultText) {
-                args.AddSimpleItem(Config.LockedWindows.Contains(args.ParentAddonName) ? unlockText : lockText, ToggleWindowPositionLock);
-                return;
-            }
+        if (items.Any(i => i.Name.TextValue == defaultText)) {
+            args.AddSimpleItem(Config.LockedWindows.Contains(args.ParentAddonName) ? unlockText : lockText, ToggleWindowPositionLock);
         }
     }
 
