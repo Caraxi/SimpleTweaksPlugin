@@ -12,6 +12,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Data;
 using Lumina.Excel;
+using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
@@ -35,6 +36,9 @@ public unsafe class CopyHotkey : TooltipTweaks.SubTweak {
         public VirtualKey[] GamerEscapeLinkHotkey = {VirtualKey.CONTROL, VirtualKey.E};
         public bool GamerEscapeLinkHotkeyEnabled;
             
+        public VirtualKey[] UniversalisHotkey = {VirtualKey.CONTROL, VirtualKey.U};
+        public bool UniversalisHotkeyEnabled;
+        
         public VirtualKey[] ErionesLinkHotkey = {VirtualKey.SHIFT, VirtualKey.E};
         public bool ErionesLinkHotkeyEnabled;
 
@@ -59,10 +63,14 @@ public unsafe class CopyHotkey : TooltipTweaks.SubTweak {
             seStr.Payloads.Add(new TextPayload(string.Join("\n", split)));
         }
 
+        
+        var item = Service.Data.Excel.GetSheet<Item>()?.GetRow((uint)(Service.GameGui.HoveredItem % 500000));
+
         if (Config.CopyHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.CopyHotkey.Select(k => k.GetKeyName()))}  Copy item name"));
         if (Config.TeamcraftLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.TeamcraftLinkHotkey.Select(k => k.GetKeyName()))}  View on Teamcraft"));
         if (Config.GardlandToolsLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.GardlandToolsLinkHotkey.Select(k => k.GetKeyName()))}  View on Garland Tools"));
         if (Config.GamerEscapeLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.GamerEscapeLinkHotkey.Select(k => k.GetKeyName()))}  View on Gamer Escape"));
+        if (Config.UniversalisHotkeyEnabled && (Service.GameGui.HoveredItem > 0 && Service.GameGui.HoveredItem < 2000000) && Service.Data.Excel.GetSheet<Item>()?.GetRow((uint)(Service.GameGui.HoveredItem % 500000))?.ItemSearchCategory.Row > 0) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.UniversalisHotkey.Select(k => k.GetKeyName()))}  View on Universalis"));
         if (Config.ErionesLinkHotkeyEnabled) seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", Config.ErionesLinkHotkey.Select(k => k.GetKeyName()))}  View on Eriones (JP)"));
 
 
@@ -157,6 +165,8 @@ public unsafe class CopyHotkey : TooltipTweaks.SubTweak {
         ImGui.Separator();
         DrawHotkeyConfig(LocString("View on Gamer Escape"), ref c.GamerEscapeLinkHotkey, ref c.GamerEscapeLinkHotkeyEnabled, ref hasChanged);
         ImGui.Separator();
+        DrawHotkeyConfig(LocString("View on Universalis"), ref c.UniversalisHotkey, ref c.UniversalisHotkeyEnabled, ref hasChanged);
+        ImGui.Separator();
         DrawHotkeyConfig(LocString("View on Eriones (JP)"), ref c.ErionesLinkHotkey, ref c.ErionesLinkHotkeyEnabled, ref hasChanged);
         ImGui.Columns();
         ImGui.Dummy(new Vector2(5 * ImGui.GetIO().FontGlobalScale));
@@ -244,6 +254,10 @@ public unsafe class CopyHotkey : TooltipTweaks.SubTweak {
     private void OpenGarlandTools(ExtendedItem extendedItem) {
         Common.OpenBrowser($"https://www.garlandtools.org/db/#item/{extendedItem.RowId}");
     }
+    
+    private void OpenUniversalis(ExtendedItem extendedItem) {
+        Common.OpenBrowser($"https://universalis.app/market/{extendedItem.RowId}");
+    }
         
     private void OpenGamerEscape(ExtendedItem extendedItem) {
         var enItem = Service.Data.Excel.GetSheet<ExtendedItem>(Language.English)?.GetRow(extendedItem.RowId);
@@ -277,6 +291,12 @@ public unsafe class CopyHotkey : TooltipTweaks.SubTweak {
             Action<ExtendedItem> action = null;
             VirtualKey[] keys = null;
 
+            var id = Service.GameGui.HoveredItem;
+            if (id >= 2000000) return;
+            id %= 500000;
+            var item = itemSheet.GetRow((uint) id);
+            if (item == null) return;
+            
             if (Config.CopyHotkeyEnabled && isHotkeyPress(Config.CopyHotkey)) {
                 action = CopyItemName;
                 keys = Config.CopyHotkey;
@@ -296,17 +316,18 @@ public unsafe class CopyHotkey : TooltipTweaks.SubTweak {
                 action = OpenGamerEscape;
                 keys = Config.GamerEscapeLinkHotkey;
             }
+            
+            if (action == null && item.ItemSearchCategory.Row != 0 && Config.UniversalisHotkeyEnabled && isHotkeyPress(Config.UniversalisHotkey)) {
+                action = OpenUniversalis;
+                keys = Config.UniversalisHotkey;
+            }
+
             if (action == null && Config.ErionesLinkHotkeyEnabled && isHotkeyPress(Config.ErionesLinkHotkey)) {
                 action = OpenEriones;
                 keys = Config.ErionesLinkHotkey;
             }
 
             if (action != null) {
-                var id = Service.GameGui.HoveredItem;
-                if (id >= 2000000) return;
-                id %= 500000;
-                var item = itemSheet.GetRow((uint) id);
-                if (item == null) return;
                 action(item);
                 foreach (var k in keys) {
                     Service.KeyState[(int) k] = false;
