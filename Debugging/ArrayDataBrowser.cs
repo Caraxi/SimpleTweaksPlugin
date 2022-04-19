@@ -21,6 +21,50 @@ public unsafe class ArrayDataBrowser : DebugHelper {
     private ArrayType selectedType = ArrayType.Numbers;
     private int selectedArray = -1;
 
+
+    public static bool ContainsValue(NumberArrayData* array, int value) {
+        for (var i = 0; i < array->AtkArrayData.Size; i++) {
+            if (array->IntArray[i] == value) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public static bool ContainsValue(NumberArrayData* array, float value) {
+        var floatArray = (float*) array->IntArray;
+        for (var i = 0; i < array->AtkArrayData.Size; i++) {
+            if (Math.Abs(floatArray[i] - value) < 0.1f) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static bool ContainsValue(NumberArrayData* array, string value) {
+        if (int.TryParse(value, out var intValue) && ContainsValue(array, intValue)) return true;
+        if (float.TryParse(value, out var floatValue) && ContainsValue(array, floatValue)) return true;
+        return false;
+    }
+
+    public static bool ContainsValue(StringArrayData* array, string value) {
+        for (var i = 0; i < array->AtkArrayData.Size; i++) {
+            var strPtr = array->StringArray[i];
+            if (strPtr != null) {
+                try {
+                    var str = MemoryHelper.ReadSeStringNullTerminated(new IntPtr(strPtr));
+                    if (str.TextValue.ToLower().Contains(value.ToLower())) return true;
+                } catch (Exception ex) {
+                    //
+                }
+            }
+        }
+
+        return false;
+    }
+    
+    private string searchValue = string.Empty;
+    
+    
     public static void DrawArrayDataTable(NumberArrayData* array) {
         if (ImGui.BeginTable("numbersTable", 6, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg)) {
             ImGui.TableSetupColumn("#", ImGuiTableColumnFlags.WidthFixed, 50);
@@ -97,7 +141,10 @@ public unsafe class ArrayDataBrowser : DebugHelper {
             $"ExtendArrayData - array size: {atkArrayDataHolder->ExtendArrayCount} - array ptr: {(long)atkArrayDataHolder->ExtendArrays:X}");
         ImGui.Separator();
 
+        ImGui.SetNextItemWidth(-1);
+        
         ImGui.BeginChild("arraySelect", new Vector2(230 * ImGui.GetIO().FontGlobalScale, -1), true);
+        ImGui.InputTextWithHint("###valueSearchInput", "Search", ref searchValue, 128);
 
         if (ImGui.BeginTabBar("tabs")) {
 
@@ -108,7 +155,7 @@ public unsafe class ArrayDataBrowser : DebugHelper {
                 for (var i = 0; i < atkArrayDataHolder->NumberArrayCount; i++) {
                     var array = atkArrayDataHolder->NumberArrays[i];
                     if (array == null) continue;
-
+                    if (searchValue.Length > 0 && !ContainsValue(array, searchValue)) continue;
                     if (ImGui.Selectable($"Number Array #{i.ToString().PadLeft(atkArrayDataHolder->NumberArrayCount.ToString().Length, '0')} [{array->AtkArrayData.Size}]", selectedArray == i && selectedType == ArrayType.Numbers)) {
                         selectedType = ArrayType.Numbers;
                         selectedArray = i;
@@ -124,7 +171,7 @@ public unsafe class ArrayDataBrowser : DebugHelper {
                 for (var i = 0; i < atkArrayDataHolder->StringArrayCount; i++) {
                     var array = atkArrayDataHolder->StringArrays[i];
                     if (array == null) continue;
-
+                    if (searchValue.Length > 0 && !ContainsValue(array, searchValue)) continue;
                     if (ImGui.Selectable($"String Array #{i.ToString().PadLeft(atkArrayDataHolder->StringArrayCount.ToString().Length, '0')} [{array->AtkArrayData.Size}]", selectedArray == i && selectedType == ArrayType.Strings)) {
                         selectedType = ArrayType.Strings;
                         selectedArray = i;
