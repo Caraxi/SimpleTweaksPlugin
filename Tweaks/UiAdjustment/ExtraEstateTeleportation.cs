@@ -2,10 +2,10 @@
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Dalamud.Game.Gui.ContextMenus;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.TweakSystem;
-using XivCommon.Functions.ContextMenu;
 using XivCommon.Functions.FriendList;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
@@ -41,17 +41,18 @@ internal class ExtraEstateTeleportation : UiAdjustments.SubTweak {
         }
 
         this.Config = this.LoadConfig<Configs>() ?? new Configs();
-        this.Plugin.XivCommon.Functions.ContextMenu.OpenContextMenu += this.OnContextMenu;
+        Service.ContextMenu.ContextMenuOpened += this.OnContextMenu;
         base.Enable();
     }
 
     public override void Disable() {
-        this.Plugin.XivCommon.Functions.ContextMenu.OpenContextMenu -= this.OnContextMenu;
+        Service.ContextMenu.ContextMenuOpened -= this.OnContextMenu;
         this.SaveConfig(this.Config);
         base.Disable();
     }
 
-    private void OnContextMenu(ContextMenuOpenArgs args) {
+    private void OnContextMenu(ContextMenuOpenedArgs args) {
+        SimpleLog.Log("Open Context Menu");
         if (this.ShowEstateTeleportation == null || args.ParentAddonName is not ("PartyMemberList" or "_PartyList")) {
             return;
         }
@@ -63,34 +64,28 @@ internal class ExtraEstateTeleportation : UiAdjustments.SubTweak {
         }
 
         var friends = this.Plugin.XivCommon.Functions.FriendList.List
-            .Where(friend => (friend.ContentId & 0xFFFFFFFF) == args.ContentIdLower && friend.HomeWorld == Service.ClientState.LocalPlayer?.CurrentWorld.Id)
+            .Where(friend => friend.ContentId == args.GameObjectContext?.ContentId && friend.HomeWorld == Service.ClientState.LocalPlayer?.CurrentWorld.Id)
             .ToArray();
 
         FriendListEntry? friend = null;
         if (friends.Length == 1) {
+            SimpleLog.Log("Single Friend Match");
             friend = friends[0];
         } else {
-            var matched = friends.Where(friend => friend.Name == args.Text).ToArray();
+            SimpleLog.Log("Multiple Friends Match");
+            var matched = friends.Where(friend => friend.Name.TextValue == args.Title).ToArray();
             if (matched.Length > 0) {
                 friend = matched[0];
             }
         }
 
         if (friend == null) {
+            SimpleLog.Log("Failed to find Friend");
             return;
         }
-
-        var index = args.Items
-            .FindLastIndex(item => item is NativeContextMenuItem { InternalAction: 0x01 or 0x4E or 0x11 });
-
-        if (index == -1) {
-            index = args.Items.Count - 1;
-        }
-
-        index += 1;
-
+        
         var estateTeleportationString = Service.Data.Excel.GetSheet<Addon>()?.GetRow(6865)?.Text.RawString;
-        args.Items.Insert(index, new NormalContextMenuItem(estateTeleportationString ?? "Estate Teleportation", _ => {
+        args.AddCustomItem(estateTeleportationString ?? "Estate Teleportation", _ => {
             if (this.ShowEstateTeleportation == null) {
                 return;
             }
@@ -99,6 +94,6 @@ internal class ExtraEstateTeleportation : UiAdjustments.SubTweak {
             if (friendListAgent != IntPtr.Zero) {
                 this.ShowEstateTeleportation(friendListAgent, friend.Value.ContentId);
             }
-        }));
+        });
     }
 }
