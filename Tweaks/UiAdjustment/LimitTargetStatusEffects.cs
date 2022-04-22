@@ -1,10 +1,10 @@
 ﻿using Dalamud.Game;
 using ImGuiNET;
-using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using System;
 using Dalamud.Game.ClientState.Conditions;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {

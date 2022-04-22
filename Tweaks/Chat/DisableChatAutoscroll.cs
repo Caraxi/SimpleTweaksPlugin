@@ -3,9 +3,9 @@ using System.Runtime.InteropServices;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using ImGuiNET;
-using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.Chat;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin {
     public partial class ChatTweaksConfig {

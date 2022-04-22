@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {

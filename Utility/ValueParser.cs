@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using ImGuiNET;
 
-namespace SimpleTweaksPlugin.Helper; 
+namespace SimpleTweaksPlugin.Utility; 
 
 public abstract class ValueParser : Attribute {
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using ImGuiNET;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.GameStructs;
-using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Debugging; 
 

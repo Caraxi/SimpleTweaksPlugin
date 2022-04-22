@@ -1,7 +1,7 @@
 ﻿using System;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
 

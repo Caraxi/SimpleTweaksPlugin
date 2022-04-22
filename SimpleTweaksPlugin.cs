@@ -10,9 +10,9 @@ using System.Reflection;
 using Dalamud;
 using Dalamud.Game;
 using Dalamud.Interface.Internal.Notifications;
-using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Debugging;
+using SimpleTweaksPlugin.Utility;
 using XivCommon;
 #if DEBUG
 using System.Runtime.CompilerServices;

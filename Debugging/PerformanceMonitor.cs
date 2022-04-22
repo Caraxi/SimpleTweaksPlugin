@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using ImGuiNET;
-using SimpleTweaksPlugin.Helper;
 
 namespace SimpleTweaksPlugin.Debugging; 
 

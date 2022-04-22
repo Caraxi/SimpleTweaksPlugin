@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using SimpleTweaksPlugin.GameStructs;
-using SimpleTweaksPlugin.Helper;
 using HotbarSlotType = FFXIVClientStructs.FFXIV.Client.UI.Misc.HotbarSlotType;
 using System.Linq;
 using Dalamud.Logging;
 using System.Text;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
 

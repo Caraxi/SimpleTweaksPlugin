@@ -4,7 +4,6 @@ using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel;
-using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltipField;

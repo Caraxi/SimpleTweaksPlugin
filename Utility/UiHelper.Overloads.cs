@@ -1,6 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Component.GUI;
 
-namespace SimpleTweaksPlugin.Helper; 
+namespace SimpleTweaksPlugin.Utility; 
 
 public static unsafe partial class UiHelper {
     public static void Hide<T>(T* node) where T : unmanaged => Hide((AtkResNode*)node);

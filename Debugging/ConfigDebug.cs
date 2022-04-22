@@ -5,7 +5,7 @@ using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.Utility;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace SimpleTweaksPlugin.Debugging; 

@@ -6,9 +6,9 @@ using System.Text;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Utility;
 using ImGuiNET;
-using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {

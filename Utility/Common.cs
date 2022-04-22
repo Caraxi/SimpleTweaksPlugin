@@ -9,9 +9,7 @@ using System.Text;
 using Dalamud.Game;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Hooking;
-using Dalamud.Plugin;
 using FFXIVClientStructs.Attributes;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -20,7 +18,7 @@ using SimpleTweaksPlugin.GameStructs;
 using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
-namespace SimpleTweaksPlugin.Helper; 
+namespace SimpleTweaksPlugin.Utility; 
 
 public unsafe class Common {
 

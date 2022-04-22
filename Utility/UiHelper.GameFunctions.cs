@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
-namespace SimpleTweaksPlugin.Helper; 
+namespace SimpleTweaksPlugin.Utility; 
 
 public unsafe partial class UiHelper {
     private delegate IntPtr GameAlloc(ulong size, IntPtr unk, IntPtr allocator, IntPtr alignment);

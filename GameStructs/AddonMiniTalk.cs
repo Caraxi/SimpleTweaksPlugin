@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.GameStructs; 
 

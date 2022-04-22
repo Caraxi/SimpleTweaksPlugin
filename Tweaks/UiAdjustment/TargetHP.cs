@@ -6,9 +6,9 @@ using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects.Types;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 using GameObject = Dalamud.Game.ClientState.Objects.Types.GameObject;
 

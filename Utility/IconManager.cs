@@ -10,7 +10,7 @@ using ImGuiScene;
 using Lumina.Data.Files;
 using Action = Lumina.Excel.GeneratedSheets.Action;
 
-namespace SimpleTweaksPlugin.Helper; 
+namespace SimpleTweaksPlugin.Utility; 
 
 public class IconManager : IDisposable {
 

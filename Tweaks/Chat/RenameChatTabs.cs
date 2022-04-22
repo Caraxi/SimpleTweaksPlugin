@@ -7,7 +7,6 @@ using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
-using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.Chat;
 using SimpleTweaksPlugin.TweakSystem;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;

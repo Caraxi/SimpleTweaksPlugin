@@ -8,10 +8,9 @@ using Dalamud.Game.Gui.ContextMenus;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using FFXIVClientStructs.FFXIV.Client.System.String;
-using Lumina.Text.Payloads;
 using TextPayload = Dalamud.Game.Text.SeStringHandling.Payloads.TextPayload;
 
-namespace SimpleTweaksPlugin.Helper; 
+namespace SimpleTweaksPlugin.Utility; 
 
 public static class Extensions {
     public static string GetDescription(this Enum @enum) {

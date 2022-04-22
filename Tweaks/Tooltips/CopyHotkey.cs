@@ -13,9 +13,9 @@ using ImGuiNET;
 using Lumina.Data;
 using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltipField;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips; 

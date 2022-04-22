@@ -4,8 +4,8 @@ using Dalamud.Game;
 using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
 

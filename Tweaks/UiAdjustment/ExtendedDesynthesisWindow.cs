@@ -9,9 +9,9 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.GameStructs;
-using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 using InventoryItem = FFXIVClientStructs.FFXIV.Client.Game.InventoryItem;
 
 namespace SimpleTweaksPlugin {

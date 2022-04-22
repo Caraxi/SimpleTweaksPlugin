@@ -8,7 +8,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using Lumina.Text;
-using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.Utility;
 using Action = Lumina.Excel.GeneratedSheets.Action;
 
 namespace SimpleTweaksPlugin.Debugging; 

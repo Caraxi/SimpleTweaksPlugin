@@ -3,7 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 
-namespace SimpleTweaksPlugin.Helper; 
+namespace SimpleTweaksPlugin.Utility; 
 
 public class Util {
     public static byte[] Decompress(byte[] input)

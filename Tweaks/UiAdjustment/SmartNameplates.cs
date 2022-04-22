@@ -6,8 +6,8 @@ using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using ImGuiNET;
-using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 using ObjectKind = FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 

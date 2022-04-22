@@ -8,8 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using SimpleTweaksPlugin.Debugging;
-using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin; 
 

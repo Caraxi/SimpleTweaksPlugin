@@ -1,5 +1,5 @@
-﻿using SimpleTweaksPlugin.Helper;
-using SimpleTweaksPlugin.TweakSystem;
+﻿using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 

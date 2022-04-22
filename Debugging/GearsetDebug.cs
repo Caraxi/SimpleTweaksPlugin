@@ -2,7 +2,7 @@
 using System.Text;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ImGuiNET;
-using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Debugging; 
 

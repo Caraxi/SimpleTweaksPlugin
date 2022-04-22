@@ -1,7 +1,7 @@
 ﻿using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
-using SimpleTweaksPlugin.Helper;
 using System;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
 

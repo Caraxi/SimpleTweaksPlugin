@@ -7,8 +7,8 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using ImGuiNET;
 using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 using static Dalamud.Game.Text.XivChatType;
 
 namespace SimpleTweaksPlugin.Tweaks.Chat; 

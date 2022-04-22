@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Text;
-using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 
-namespace SimpleTweaksPlugin.Helper; 
+namespace SimpleTweaksPlugin.Utility; 
 
 public static unsafe partial class UiHelper {
     public static void Hide(AtkResNode* node) {

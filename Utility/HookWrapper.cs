@@ -1,7 +1,7 @@
 ﻿using System;
 using Dalamud.Hooking;
 
-namespace SimpleTweaksPlugin.Helper; 
+namespace SimpleTweaksPlugin.Utility; 
 
 public interface IHookWrapper : IDisposable {
     public void Enable();

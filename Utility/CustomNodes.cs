@@ -1,4 +1,4 @@
-﻿namespace SimpleTweaksPlugin.Helper; 
+﻿namespace SimpleTweaksPlugin.Utility; 
 
 public static class CustomNodes {
     public const int

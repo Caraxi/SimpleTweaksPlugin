@@ -14,8 +14,8 @@ using System.Text;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using Lumina.Excel;
 using SimpleTweaksPlugin.Debugging;
-using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {

@@ -13,7 +13,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using ImGuiScene;
 using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.Utility;
 using Action = System.Action;
 using Addon = FFXIVClientStructs.Attributes.Addon;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;

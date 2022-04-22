@@ -6,8 +6,8 @@ using System.Runtime.InteropServices;
 using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 using Action = Lumina.Excel.GeneratedSheets.Action;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 

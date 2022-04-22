@@ -6,8 +6,8 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.GameStructs;
-using SimpleTweaksPlugin.Helper;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 

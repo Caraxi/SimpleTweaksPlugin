@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace SimpleTweaksPlugin.Helper; 
+namespace SimpleTweaksPlugin.Utility; 
 
 public static class Colour {
     public static readonly Vector4 Red = new(1, 0, 0, 1);

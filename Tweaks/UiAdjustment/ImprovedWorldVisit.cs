@@ -6,7 +6,7 @@ using FFXIVClientStructs;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
-using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.Utility;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 

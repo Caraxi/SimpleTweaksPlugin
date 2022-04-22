@@ -1,5 +1,5 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.UI;
-using SimpleTweaksPlugin.Helper;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
 
