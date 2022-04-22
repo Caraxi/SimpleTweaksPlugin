@@ -51,6 +51,8 @@ public unsafe class Common {
     public static SigScanner Scanner => Service.SigScanner;
 
     public static event Action FrameworkUpdate;
+    
+    public static GameArguments GameArguments => GameArguments.Instance;
 
     public static void InvokeFrameworkUpdate() => FrameworkUpdate?.Invoke();
 
