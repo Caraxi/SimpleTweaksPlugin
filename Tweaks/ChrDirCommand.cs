@@ -9,6 +9,7 @@ using Dalamud.Game.Command;
 using ImGuiNET;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
@@ -37,7 +38,7 @@ public class ChrDirCommand : Tweak {
     }
 
     private void CommandHandler(string command, string arguments) {
-        var saveDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "FINAL FANTASY XIV - A Realm Reborn", $"FFXIV_CHR{Service.ClientState.LocalContentId:X16}");
+        var saveDir = Path.Combine(Common.GameArguments.UserPath, $"FFXIV_CHR{Service.ClientState.LocalContentId:X16}");
         if (arguments == "open") {
             Process.Start("explorer.exe", saveDir);
             return;
