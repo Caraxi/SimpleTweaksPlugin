@@ -14,6 +14,10 @@ public class TryOnCorrectItem : Tweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Hold Shift to try on unglamoured item.")]
         public bool ShiftForUnglamoured = true;
+
+        public bool ShouldShowInvertShift() => ShiftForUnglamoured;
+        [TweakConfigOption("Invert", 1 , ConditionalDisplay = true, SameLine = true)]
+        public bool InvertShift = false;
     }
 
     public Configs Config { get; private set; }
@@ -28,7 +32,7 @@ public class TryOnCorrectItem : Tweak {
     }
 
     private byte TryOnDetour(uint unknownCanEquip, uint itemBaseId, ulong stainColor, uint itemGlamourId, byte unknownByte) {
-        if (Config.ShiftForUnglamoured && Service.KeyState[VirtualKey.SHIFT]) return tryOnHook.Original(unknownCanEquip, itemBaseId, stainColor, 0, unknownByte);
+        if (Config.ShiftForUnglamoured && Service.KeyState[VirtualKey.SHIFT] != Config.InvertShift) return tryOnHook.Original(unknownCanEquip, itemBaseId, stainColor, 0, unknownByte);
         return tryOnHook.Original(unknownCanEquip, itemGlamourId != 0 ? itemGlamourId : itemBaseId, stainColor, 0, unknownByte);
     }
 
