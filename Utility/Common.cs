@@ -55,6 +55,7 @@ public unsafe class Common {
     public static GameArguments GameArguments => GameArguments.Instance;
 
     public static void InvokeFrameworkUpdate() => FrameworkUpdate?.Invoke();
+    public static void* ThrowawayOut { get; private set; } = (void*) Marshal.AllocHGlobal(1024);
 
     public Common() {
         var gameAllocPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 49 83 CF FF 4C 8B F0");
@@ -230,9 +231,9 @@ public unsafe class Common {
         Process.Start(new ProcessStartInfo {FileName = url, UseShellExecute = true});
     }
 
-    public static void GenerateCallback(AtkUnitBase* unitBase, params object[] values) {
+    public static AtkValue* CreateAtkValueArray(params object[] values) {
         var atkValues = (AtkValue*) Marshal.AllocHGlobal(values.Length * sizeof(AtkValue));
-        if (atkValues == null) return;
+        if (atkValues == null) return null;
         try {
             for (var i = 0; i < values.Length; i++) {
                 var v = values[i];
@@ -266,7 +267,17 @@ public unsafe class Common {
                         throw new ArgumentException($"Unable to convert type {v.GetType()} to AtkValue");
                 }
             }
+        } catch {
+            return null;
+        }
 
+        return atkValues;
+    }
+    
+    public static void GenerateCallback(AtkUnitBase* unitBase, params object[] values) {
+        var atkValues = CreateAtkValueArray(values);
+        if (atkValues == null) return;
+        try {
             unitBase->FireCallback(values.Length, atkValues);
         } finally {
             for (var i = 0; i < values.Length; i++) {
@@ -301,6 +312,13 @@ public unsafe class Common {
             return (T*)n;
         }
         return null;
+    }
+
+    public static void Shutdown() {
+        if (ThrowawayOut != null) {
+            Marshal.FreeHGlobal(new IntPtr(ThrowawayOut));
+            ThrowawayOut = null;
+        }
     }
 
 }

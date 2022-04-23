@@ -80,6 +80,7 @@ namespace SimpleTweaksPlugin {
                 hook.Dispose();
             }
             Common.HookList.Clear();
+            Common.Shutdown();
             this.XivCommon.Dispose();
         }
 

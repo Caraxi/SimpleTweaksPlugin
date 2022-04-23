@@ -4,9 +4,13 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game.Command;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
+using FFXIVClientStructs.FFXIV.Component.GUI;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
@@ -16,9 +20,9 @@ public unsafe class SetOptionCommand : Tweak {
     public override string Description => "Adds commands to change various settings.";
 
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)] 
-    private delegate void SetGamepadMode(ConfigModule* configModule, ulong value);
+    private delegate void DispatchEvent(AgentInterface* agentConfigCharacter, void* outVal, AtkValue* atkValue, uint atkValueCount);
 
-    private SetGamepadMode setGamepadMode;
+    private DispatchEvent dispatchEvent;
 
     public enum OptionType {
         Bool,
@@ -67,9 +71,9 @@ public unsafe class SetOptionCommand : Tweak {
         if (Ready) return;
 
         try {
-            var toggleGamepadModeAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 40 0F B6 DF 49 8B CC");
-            SimpleLog.Verbose($"ToggleGamePadModeAddress: {toggleGamepadModeAddress.ToInt64():X}");
-            setGamepadMode = Marshal.GetDelegateForFunctionPointer<SetGamepadMode>(toggleGamepadModeAddress);
+            var dispatchEventPtr = Service.SigScanner.ScanText("48 89 5C 24 ?? 55 56 57 41 56 41 57 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? 4C 8B BC 24");
+            SimpleLog.Verbose($"DispatchEventPtr: {dispatchEventPtr.ToInt64():X}");
+            dispatchEvent = Marshal.GetDelegateForFunctionPointer<DispatchEvent>(dispatchEventPtr);
 
             Ready = true;
 
@@ -93,7 +97,6 @@ public unsafe class SetOptionCommand : Tweak {
             ImGui.Separator();
 
             foreach (var o in optionDefinitions) {
-                if (o.OptionType == OptionType.ToggleGamepadMode) continue;
                 ImGui.NextColumn();
                 ImGui.Text(o.Name);
                 ImGui.NextColumn();
@@ -106,7 +109,6 @@ public unsafe class SetOptionCommand : Tweak {
                 }
                 ImGui.Text(sb.ToString());
             }
-
 
             ImGui.Columns();
             ImGui.TreePop();
@@ -133,7 +135,6 @@ public unsafe class SetOptionCommand : Tweak {
             var sb = new StringBuilder();
 
             foreach (var o in optionDefinitions) {
-                if (o.OptionType == OptionType.ToggleGamepadMode) continue;
                 sb.Append($"{o.Name} ");
             }
             Service.Chat.Print($"Options:\n{sb}");
@@ -162,29 +163,58 @@ public unsafe class SetOptionCommand : Tweak {
 
         var setValue = 0UL;
         switch (optionDefinition.OptionType) {
-                
-            case OptionType.ToggleGamepadMode:
             case OptionType.Bool: {
-
                 switch (optionValue) {
                     case "1":
                     case "true":
                     case "on":
                         configModule->SetOption(optionDefinition.ID, 1);
-                        setValue = 1;
                         break;
                     case "0":
                     case "false":
                     case "off":
                         configModule->SetOption(optionDefinition.ID, 0);
-                        setValue = 0;
                         break;
                     case "":
                     case "t":
                     case "toggle":
                         var cVal = configModule->GetIntValue(optionDefinition.ID);
                         configModule->SetOption(optionDefinition.ID, cVal > 0 ? 0 : 1);
-                        setValue = cVal > 0 ? 1 : 0UL;
+                        break;
+                    default:
+                        Service.Chat.PrintError($"/setoption {optionKind} ({optionTypeValueHints[optionDefinition.OptionType]})");
+                        break;
+                }
+
+                break;
+            }
+            case OptionType.ToggleGamepadMode: {
+
+                void SetGamepadMode(bool enabled) {
+                    var values = Common.CreateAtkValueArray(19, 0, enabled ? 1 : 0, 0);
+                    var agent = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(AgentId.ConfigCharacter);
+                    if (values != null && agent != null) {
+                        dispatchEvent(agent, Common.ThrowawayOut, values, 4);
+                    }
+                    
+                    if (values != null) Marshal.FreeHGlobal(new IntPtr(values));
+                }
+                
+                switch (optionValue) {
+                    case "1":
+                    case "true":
+                    case "on":
+                        SetGamepadMode(true);
+                        break;
+                    case "0":
+                    case "false":
+                    case "off":
+                        SetGamepadMode(false);
+                        break;
+                    case "":
+                    case "t":
+                    case "toggle":
+                        SetGamepadMode(configModule->GetIntValue(optionDefinition.ID) == 0);
                         break;
                     default:
                         Service.Chat.PrintError($"/setoption {optionKind} ({optionTypeValueHints[optionDefinition.OptionType]})");
@@ -222,14 +252,6 @@ public unsafe class SetOptionCommand : Tweak {
                 Service.Chat.PrintError("Unsupported Option");
                 return;
         }
-
-        switch (optionDefinition.OptionType) {
-            case OptionType.ToggleGamepadMode: {
-                setGamepadMode(configModule, setValue);
-                break;
-            }
-        }
-            
     }
 
     public override void Disable() {
