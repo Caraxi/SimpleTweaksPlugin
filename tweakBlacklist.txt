@@ -1,1 +1,2 @@
 StopCraftingButton
+UiAdjustments@LockWindowPosition
