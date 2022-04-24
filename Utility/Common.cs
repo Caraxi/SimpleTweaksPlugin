@@ -20,7 +20,7 @@ using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace SimpleTweaksPlugin.Utility; 
 
-public unsafe class Common {
+public static unsafe class Common {
 
     // Common Delegates
     public delegate void* AddonOnUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** nums, StringArrayData** strings);
@@ -57,7 +57,7 @@ public unsafe class Common {
     public static void InvokeFrameworkUpdate() => FrameworkUpdate?.Invoke();
     public static void* ThrowawayOut { get; private set; } = (void*) Marshal.AllocHGlobal(1024);
 
-    public Common() {
+    public static void Setup() {
         var gameAllocPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 49 83 CF FF 4C 8B F0");
         var getGameAllocatorPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 8B 75 08");
 
@@ -116,7 +116,7 @@ public unsafe class Common {
         return _gameAlloc(size, IntPtr.Zero, _getGameAllocator(), IntPtr.Zero);
     }
         
-    public void WriteSeString(byte** startPtr, IntPtr alloc, SeString seString) {
+    public static void WriteSeString(byte** startPtr, IntPtr alloc, SeString seString) {
         if (startPtr == null) return;
         var start = *(startPtr);
         if (start == null) return;
@@ -125,14 +125,14 @@ public unsafe class Common {
         *startPtr = (byte*)alloc;
     }
 
-    public SeString ReadSeString(byte** startPtr) {
+    public static SeString ReadSeString(byte** startPtr) {
         if (startPtr == null) return null;
         var start = *(startPtr);
         if (start == null) return null;
         return ReadSeString(start);
     }
 
-    public SeString ReadSeString(byte* ptr) {
+    public static SeString ReadSeString(byte* ptr) {
         var offset = 0;
         while (true) {
             var b = *(ptr + offset);
@@ -146,7 +146,7 @@ public unsafe class Common {
         return SeString.Parse(bytes);
     }
 
-    public void WriteSeString(byte* dst, SeString s) {
+    public static void WriteSeString(byte* dst, SeString s) {
         var bytes = s.Encode();
         for (var i = 0; i < bytes.Length; i++) {
             *(dst + i) = bytes[i];
@@ -154,14 +154,14 @@ public unsafe class Common {
         *(dst + bytes.Length) = 0;
     }
 
-    public SeString ReadSeString(Utf8String xivString) {
+    public static SeString ReadSeString(Utf8String xivString) {
         var len = (int) (xivString.BufUsed > int.MaxValue ? int.MaxValue : xivString.BufUsed);
         var bytes = new byte[len];
         Marshal.Copy(new IntPtr(xivString.StringPtr), bytes, 0, len);
         return SeString.Parse(bytes);
     }
 
-    public void WriteSeString(Utf8String xivString, SeString s) {
+    public static void WriteSeString(Utf8String xivString, SeString s) {
         var bytes = s.Encode();
         int i;
         xivString.BufUsed = 0;
@@ -185,7 +185,7 @@ public unsafe class Common {
     }
 
 
-    public T GetGameOption<T>(GameOptionKind opt) {
+    public static T GetGameOption<T>(GameOptionKind opt) {
         var optionBase = (byte**)(Service.Framework.Address.BaseAddress + 0x2B28);
         return Marshal.PtrToStructure<T>(new IntPtr(*optionBase + 0xAAE0 + (16 * (uint)opt)));
     }

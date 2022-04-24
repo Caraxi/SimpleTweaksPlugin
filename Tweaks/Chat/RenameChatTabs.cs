@@ -5,10 +5,10 @@ using Dalamud;
 using Dalamud.Game.Text;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
 using SimpleTweaksPlugin.Tweaks.Chat;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 
 namespace SimpleTweaksPlugin {
@@ -154,7 +154,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
             if (textNode == null) return;
 
             var name = $"{(char) SeIconChar.BoxedNumber2} {((reset || !TweakConfig.DoRenameTab1 || string.IsNullOrEmpty(TweakConfig.ChatTab1Name)) ? DefaultName1 : TweakConfig.ChatTab1Name)}";
-            var str = Plugin.Common.ReadSeString(textNode->NodeText.StringPtr);
+            var str = Common.ReadSeString(textNode->NodeText.StringPtr);
             if (str.TextValue == name) return;
             SimpleLog.Log($"Rename Panel: '{str.TextValue}' -> '{name}'");
             
@@ -183,7 +183,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
             if (tab->Component->UldManager.NodeListCount < 4) return;
             var textNode = (AtkTextNode*)tab->Component->UldManager.NodeList[3];
             if (textNode == null) return;
-            var str = Plugin.Common.ReadSeString(textNode->NodeText.StringPtr);
+            var str = Common.ReadSeString(textNode->NodeText.StringPtr);
             if (str.TextValue == name && textNode->AtkResNode.Width < 1000) return;
             SimpleLog.Log($"Rename Tab: '{str.TextValue}' -> '{name}' [{textNode->AtkResNode.Width}]");
             textNode->AtkResNode.Width = 0;

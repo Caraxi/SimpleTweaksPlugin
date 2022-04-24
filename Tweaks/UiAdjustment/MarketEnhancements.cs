@@ -120,14 +120,14 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
                     
                 if (singlePriceNode->NodeText.StringPtr[0] == 0x20 || totalTextNode->NodeText.StringPtr[0] == 0x20) continue;
                     
-                var priceString = Plugin.Common.ReadSeString(singlePriceNode->NodeText).TextValue
+                var priceString = Common.ReadSeString(singlePriceNode->NodeText).TextValue
                     .Replace($"{(char) SeIconChar.Gil}", "")
                     .Replace($",", "")
                     .Replace(" ", "")
                     .Replace($".", "");
 
                 if (!ulong.TryParse(priceString, out var priceValue)) continue;
-                if (!ushort.TryParse(Plugin.Common.ReadSeString(qtyTextNode->NodeText).TextValue.Replace(",", "").Replace(".", ""), out var qtyValue)) continue;
+                if (!ushort.TryParse(Common.ReadSeString(qtyTextNode->NodeText).TextValue.Replace(",", "").Replace(".", ""), out var qtyValue)) continue;
                 if (priceValue <= 0 || qtyValue <= 0) continue;
 
                 var total = priceValue * qtyValue;
@@ -135,11 +135,11 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
                 var totalWithTax = total * 105 / 100;
                 var realCostPerItem = totalWithTax / (float)qtyValue; 
                 if (Config.IncludeTaxInTotalPrice && isMarketOpen) {
-                    Plugin.Common.WriteSeString(totalTextNode->NodeText, $" {totalWithTax:N0}{(char) SeIconChar.Gil}");
+                    Common.WriteSeString(totalTextNode->NodeText, $" {totalWithTax:N0}{(char) SeIconChar.Gil}");
                 }
 
                 if (Config.IncludeTaxInSinglePrice && isMarketOpen) {
-                    Plugin.Common.WriteSeString(singlePriceNode->NodeText, $" {realCostPerItem:N2}".Trim('0').Trim('.').Trim(',') + (char) SeIconChar.Gil);
+                    Common.WriteSeString(singlePriceNode->NodeText, $" {realCostPerItem:N2}".Trim('0').Trim('.').Trim(',') + (char) SeIconChar.Gil);
                 }
 
                 var sellValue = Math.Ceiling(npcSellPrice * (hqImageNode->AtkResNode.IsVisible ? 1.1 : 1.0));

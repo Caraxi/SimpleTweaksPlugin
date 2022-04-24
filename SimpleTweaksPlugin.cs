@@ -34,9 +34,7 @@ namespace SimpleTweaksPlugin {
         private bool drawConfigWindow = false;
 
         public string AssemblyLocation { get; private set; } = Assembly.GetExecutingAssembly().Location;
-
-        internal Common Common;
-
+        
         public static SimpleTweaksPlugin Plugin { get; private set; }
 
         private CultureInfo setCulture = null;
@@ -107,7 +105,7 @@ namespace SimpleTweaksPlugin {
 
             DebugManager.SetPlugin(this);
 
-            Common = new Common();
+            Common.Setup();
 
             PluginInterface.UiBuilder.Draw += this.BuildUI;
             pluginInterface.UiBuilder.OpenConfigUi += OnOpenConfig;

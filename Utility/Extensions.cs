@@ -31,11 +31,11 @@ public static class Extensions {
     }
 
     public static SeString GetSeString(this Utf8String utf8String) {
-        return SimpleTweaksPlugin.Plugin.Common.ReadSeString(utf8String);
+        return Common.ReadSeString(utf8String);
     }
 
     public static void SetSeString(this Utf8String utf8String, SeString seString) {
-        SimpleTweaksPlugin.Plugin.Common.WriteSeString(utf8String, seString);
+        Common.WriteSeString(utf8String, seString);
     }
 
     public static int GetStableHashCode(this string str)

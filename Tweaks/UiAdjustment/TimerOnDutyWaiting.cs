@@ -29,7 +29,7 @@ public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
             if (confirmWindow != null && confirmWindow->UldManager.NodeList != null) {
                 var timerTextNode = (AtkTextNode*) confirmWindow->UldManager.NodeList[10];
                 if (timerTextNode == null) return;
-                var text = Plugin.Common.ReadSeString(timerTextNode->NodeText.StringPtr).TextValue;
+                var text = Common.ReadSeString(timerTextNode->NodeText.StringPtr).TextValue;
                 if (!TimeSpan.TryParse($"0:{text}", out var ts)) return;
                 if (!sw.IsRunning || (int)ts.TotalSeconds != lastValue) {
                     lastValue = (int)ts.TotalSeconds;
@@ -53,7 +53,7 @@ public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
             var checkingTextNode = (AtkTextNode*) readyWindow->UldManager.NodeList[7];
             if (checkingTextNode == null) return;
 
-            Plugin.Common.WriteSeString(checkingTextNode->NodeText, $"{prefix} ({v})");
+            Common.WriteSeString(checkingTextNode->NodeText, $"{prefix} ({v})");
         } catch {
             //
         }

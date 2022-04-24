@@ -2,6 +2,7 @@
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltipField;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips; 
@@ -57,7 +58,7 @@ public class ShowItemID : TooltipTweaks.SubTweak {
         if (addon->AtkUnitBase.UldManager.NodeList == null || addon->AtkUnitBase.UldManager.NodeListCount < 29) return;
         var categoryText = (AtkTextNode*) addon->AtkUnitBase.UldManager.NodeList[28];
         if (categoryText == null) return;
-        var seStr = Plugin.Common.ReadSeString(categoryText->NodeText.StringPtr);
+        var seStr = Common.ReadSeString(categoryText->NodeText.StringPtr);
         if (seStr.Payloads.Count <= 1) {
             if (seStr.Payloads.Count >= 1) {
                 seStr.Payloads.Add(new TextPayload("   "));

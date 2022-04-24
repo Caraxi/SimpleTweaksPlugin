@@ -14,6 +14,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 using static SimpleTweaksPlugin.Tweaks.UiAdjustments.Step;
 
 namespace SimpleTweaksPlugin {
@@ -258,7 +259,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
 
             if (timeSeString.Payloads.Count > 0) {
-                Plugin.Common.WriteSeString(xivString, timeSeString);
+                Common.WriteSeString(xivString, timeSeString);
             }
         }
 

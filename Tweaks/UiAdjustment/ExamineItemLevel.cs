@@ -103,7 +103,7 @@ public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
 
             var seStr = new SeString(new List<Payload>() {new TextPayload($"{avgItemLevel:0000}"),});
 
-            Plugin.Common.WriteSeString((byte*) allocText, seStr);
+            Common.WriteSeString((byte*) allocText, seStr);
 
             textNode->NodeText.StringPtr = (byte*) allocText;
 
