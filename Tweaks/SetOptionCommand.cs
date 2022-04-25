@@ -29,6 +29,7 @@ public unsafe class SetOptionCommand : Tweak {
         ToggleGamepadMode, // bool with extra shit
         NameDisplayModeBattle,
         NameDisplayMode,
+        IntList,
     }
 
     public class OptionDefinition {
@@ -36,6 +37,8 @@ public unsafe class SetOptionCommand : Tweak {
         public ConfigOption ID { get; }
         public OptionType OptionType { get; }
         public string[] Alias { get; }
+        public Dictionary<string, int> Values { get; init; } = new();
+        public Dictionary<string, int> ValueAlias { get; init; } = new();
 
         public OptionDefinition(string name, ConfigOption id, OptionType type, params string[] alias) {
             this.Name = name;
@@ -58,6 +61,11 @@ public unsafe class SetOptionCommand : Tweak {
         new OptionDefinition("AllianceDisplayName", ConfigOption.AllianceDisplayNameSettings, OptionType.NameDisplayModeBattle, "adn"),
         new OptionDefinition("OtherPlayerDisplayName", ConfigOption.OtherPCsDisplayNameSettings, OptionType.NameDisplayModeBattle, "opcdn"),
         new OptionDefinition("FriendDisplayName", ConfigOption.FriendsDisplayNameSettings, OptionType.NameDisplayModeBattle, "fdn"),
+        
+        new OptionDefinition("DisplayNameSize", ConfigOption.DisplayNameSize, OptionType.IntList, "dns") {
+            Values = new() { ["maximum"] = 0, ["large"] = 1, ["standard"] = 2 },
+            ValueAlias = new() { ["m"] = 0, ["max"] = 0, ["l"] = 1, ["s"] = 2, }
+        },
     };
 
 
@@ -100,7 +108,11 @@ public unsafe class SetOptionCommand : Tweak {
                 ImGui.NextColumn();
                 ImGui.Text(o.Name);
                 ImGui.NextColumn();
-                ImGui.Text(optionTypeValueHints.ContainsKey(o.OptionType) ? optionTypeValueHints[o.OptionType] : "");
+                if (o.OptionType == OptionType.IntList) {
+                    ImGui.Text(string.Join(" | ", o.Values.Keys));
+                } else {
+                    ImGui.Text(optionTypeValueHints.ContainsKey(o.OptionType) ? optionTypeValueHints[o.OptionType] : "");
+                }
                 ImGui.NextColumn();
                 var sb = new StringBuilder();
                 foreach (var a in o.Alias) {
@@ -245,6 +257,17 @@ public unsafe class SetOptionCommand : Tweak {
                     default:
                         Service.Chat.PrintError($"/setoption {optionKind} ({optionTypeValueHints[optionDefinition.OptionType]})");
                         break;
+                }
+                break;
+            }
+            case OptionType.IntList: {
+                var inputValue = optionValue.ToLowerInvariant();
+                if (optionDefinition.Values.ContainsKey(inputValue)) {
+                    configModule->SetOption(optionDefinition.ID, optionDefinition.Values[inputValue]);
+                } else if (optionDefinition.ValueAlias.ContainsKey(inputValue)) {
+                    configModule->SetOption(optionDefinition.ID, optionDefinition.ValueAlias[inputValue]);
+                } else {
+                    Service.Chat.PrintError($"/setoption {optionKind} ({string.Join(" | ", optionDefinition.Values.Keys)})");
                 }
                 break;
             }
