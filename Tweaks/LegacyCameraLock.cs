@@ -93,7 +93,7 @@ public class LegacyCameraLock : Tweak {
         if (changeAddress == IntPtr.Zero) return;
             
         var writeOriginalSuccess = SafeMemory.WriteBytes(changeAddress, originalBytes);
-        if (writeOriginalSuccess) {
+        if (!writeOriginalSuccess) {
             SimpleLog.Error("Failed to write original instruction");
         } else {
             changesEnabled = false;
