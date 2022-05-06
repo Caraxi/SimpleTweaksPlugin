@@ -15,6 +15,10 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
     private HookWrapper<AddonOnSetup> pvpCharacterOnSetup;
     private HookWrapper<AddonOnSetup> inspectOnSetup;
     private HookWrapper<Common.AddonOnUpdate> bagWidgetUpdate;
+    
+    private delegate byte AddonControllerInput(AtkUnitBase* atkUnitBase, Dir a2, byte a3);
+    private HookWrapper<AddonControllerInput> addonControllerInputHook;
+
 
     public override void Enable() {
         characterOnSetup ??= Common.Hook<AddonOnSetup>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 54 41 55 41 56 41 57 48 83 EC 60 4D 8B F0", CharacterOnSetup);
@@ -25,11 +29,101 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
         pvpCharacterOnSetup?.Enable();
         inspectOnSetup?.Enable();
         bagWidgetUpdate?.Enable();
+        
+        addonControllerInputHook ??= Common.Hook<AddonControllerInput>("E8 ?? ?? ?? ?? EB B0 CC", ControllerInputDetour);
+        addonControllerInputHook?.Enable();
 
         var bagWidget = Common.GetUnitBase("_BagWidget");
         if (bagWidget != null) BagWidgetUpdate(bagWidget, null, null);
 
         base.Enable();
+    }
+
+    private enum Dir : uint {
+        Left = 8,
+        Right = 9,
+        Up = 10,
+        Down = 11,
+    }
+
+    private enum Node : int {
+        None = -1,
+        
+        RecommendedGear = 4,
+        GlamourPlate = 5,
+        GearSetList = 6,
+        
+        MainHand = 8,
+        OffHand = 9,
+        Head = 10,
+        Body = 11,
+        Hands = 13,
+        Legs = 12,
+        Feet = 14,
+        Ears = 15,
+        Neck = 16,
+        Wrist = 17,
+        FingerRight = 18,
+        FingerLeft = 19,
+        SoulCrystal = 20,
+        
+        DrawSheathe = 25,
+        ToggleCharacterDisplayMode = 26,
+        ResetDisplay = 27,
+        
+    }
+
+    private int GetCollisionNodeIndex(AtkUnitBase* atkUnitBase) {
+        for (var i = 0; i < atkUnitBase->CollisionNodeListCount; i++) {
+            if (atkUnitBase->CollisionNodeList[i] == atkUnitBase->CursorTarget) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    
+    
+    private byte ControllerInputDetour(AtkUnitBase* atkUnitBase, Dir d, byte a3) {
+        try {
+            if (atkUnitBase != Common.GetUnitBase("Character")) return addonControllerInputHook.Original(atkUnitBase, d, a3);
+
+            var currentSelectedNodeIndex = (Node)GetCollisionNodeIndex(atkUnitBase);
+
+            byte F(Node node) {
+                if ((int)node < 0 || (int)node >= atkUnitBase->CollisionNodeListCount) return 1;
+                atkUnitBase->SetFocusNode(atkUnitBase->CollisionNodeList[(int)node]);
+                atkUnitBase->CursorTarget = atkUnitBase->CollisionNodeList[(int)node];
+                return 1;
+            }
+
+            return currentSelectedNodeIndex switch {
+                Node.SoulCrystal when d == Dir.Right => F(Node.OffHand),
+                Node.SoulCrystal when d == Dir.Down => F(Node.MainHand),
+                Node.SoulCrystal when d == Dir.Up => F(Node.GearSetList),
+                Node.SoulCrystal when d == Dir.Left => F(Node.MainHand),
+                Node.MainHand when d == Dir.Up => F(Node.SoulCrystal),
+                Node.Head when d == Dir.Right => F(Node.Ears),
+                Node.Body when d == Dir.Right => F(Node.Neck),
+                Node.Hands when d == Dir.Right => F(Node.Wrist),
+                Node.Legs when d == Dir.Right => F(Node.FingerRight),
+                Node.Feet when d == Dir.Right => F(Node.FingerLeft),
+                Node.OffHand when d == Dir.Left => F(Node.MainHand),
+                Node.Ears when d == Dir.Left => F(Node.Head),
+                Node.Neck when d == Dir.Left => F(Node.Body),
+                Node.Wrist when d == Dir.Left => F(Node.Hands),
+                Node.FingerRight when d == Dir.Left => F(Node.Legs),
+                Node.FingerLeft when d == Dir.Left => F(Node.Feet),
+                Node.FingerLeft when d == Dir.Down => F(Node.ResetDisplay),
+                Node.ResetDisplay when d == Dir.Right => F(Node.FingerLeft),
+                Node.ResetDisplay or Node.ToggleCharacterDisplayMode or Node.DrawSheathe when d == Dir.Up => F(Node.FingerLeft),
+                Node.GearSetList or Node.GlamourPlate or Node.RecommendedGear when d == Dir.Down => F(Node.SoulCrystal),
+                _ => addonControllerInputHook.Original(atkUnitBase, d, a3)
+            };
+        } catch {
+            return addonControllerInputHook.Original(atkUnitBase, d, a3);
+        }
+        
     }
 
     private void BagWidgetUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
@@ -265,6 +359,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
         pvpCharacterOnSetup?.Disable();
         inspectOnSetup?.Disable();
         bagWidgetUpdate?.Disable();
+        addonControllerInputHook?.Disable();
         base.Disable();
     }
 
@@ -273,6 +368,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
         pvpCharacterOnSetup?.Dispose();
         inspectOnSetup?.Dispose();
         bagWidgetUpdate?.Dispose();
+        addonControllerInputHook?.Dispose();
         base.Dispose();
     }
 }
