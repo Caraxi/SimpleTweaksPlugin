@@ -50,19 +50,19 @@ public unsafe class GearsetDebug : DebugHelper {
             ImGui.Text(Encoding.UTF8.GetString(gearset->Name, 0x2F));
             ImGui.NextColumn();
 
-            ImGui.Text("MainHand"); ImGui.SameLine(); ImGui.Text($"[{gearset->ItemsStruct.MainHand.ItemID}]");
-            ImGui.Text("OffHand"); ImGui.SameLine(); ImGui.Text($"[{gearset->ItemsStruct.OffHand.ItemID}]");
-            ImGui.Text("Head"); ImGui.SameLine(); ImGui.Text($"[{gearset->ItemsStruct.Head.ItemID}]");
-            ImGui.Text("Body"); ImGui.SameLine(); ImGui.Text($"[{gearset->ItemsStruct.Body.ItemID}]");
-            ImGui.Text("Hands"); ImGui.SameLine(); ImGui.Text($"[{gearset->ItemsStruct.Hands.ItemID}]");
-            ImGui.Text("Belt"); ImGui.SameLine(); ImGui.Text($"[{gearset->ItemsStruct.Belt.ItemID}]");
-            ImGui.Text("Legs"); ImGui.SameLine(); ImGui.Text($"[{gearset->ItemsStruct.Legs.ItemID}]");
-            ImGui.Text("Feet"); ImGui.SameLine(); ImGui.Text($"[{gearset->ItemsStruct.Feet.ItemID}]");
-            ImGui.Text("Ears"); ImGui.SameLine(); ImGui.Text($"[{gearset->ItemsStruct.Ears.ItemID}]");
-            ImGui.Text("Neck"); ImGui.SameLine(); ImGui.Text($"[{gearset->ItemsStruct.Neck.ItemID}]");
-            ImGui.Text("Wrists"); ImGui.SameLine(); ImGui.Text($"[{gearset->ItemsStruct.Wrists.ItemID}]");
-            ImGui.Text("RingRight"); ImGui.SameLine(); ImGui.Text($"[{gearset->ItemsStruct.RingRight.ItemID}]");
-            ImGui.Text("SoulStone"); ImGui.SameLine(); ImGui.Text($"[{gearset->ItemsStruct.SoulStone.ItemID}]");
+            ImGui.Text("MainHand"); ImGui.SameLine(); ImGui.Text($"[{gearset->MainHand.ItemID}]");
+            ImGui.Text("OffHand"); ImGui.SameLine(); ImGui.Text($"[{gearset->OffHand.ItemID}]");
+            ImGui.Text("Head"); ImGui.SameLine(); ImGui.Text($"[{gearset->Head.ItemID}]");
+            ImGui.Text("Body"); ImGui.SameLine(); ImGui.Text($"[{gearset->Body.ItemID}]");
+            ImGui.Text("Hands"); ImGui.SameLine(); ImGui.Text($"[{gearset->Hands.ItemID}]");
+            ImGui.Text("Belt"); ImGui.SameLine(); ImGui.Text($"[{gearset->Belt.ItemID}]");
+            ImGui.Text("Legs"); ImGui.SameLine(); ImGui.Text($"[{gearset->Legs.ItemID}]");
+            ImGui.Text("Feet"); ImGui.SameLine(); ImGui.Text($"[{gearset->Feet.ItemID}]");
+            ImGui.Text("Ears"); ImGui.SameLine(); ImGui.Text($"[{gearset->Ears.ItemID}]");
+            ImGui.Text("Neck"); ImGui.SameLine(); ImGui.Text($"[{gearset->Neck.ItemID}]");
+            ImGui.Text("Wrists"); ImGui.SameLine(); ImGui.Text($"[{gearset->Wrists.ItemID}]");
+            ImGui.Text("RingRight"); ImGui.SameLine(); ImGui.Text($"[{gearset->RingRight.ItemID}]");
+            ImGui.Text("SoulStone"); ImGui.SameLine(); ImGui.Text($"[{gearset->SoulStone.ItemID}]");
             ImGui.NextColumn();
 
             foreach (RaptureGearsetModule.GearsetFlag r in Enum.GetValues(typeof(RaptureGearsetModule.GearsetFlag))) {
