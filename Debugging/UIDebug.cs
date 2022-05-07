@@ -497,7 +497,24 @@ public unsafe class UIDebug : DebugHelper {
                 PrintNode(nextNode, false, "next ");
         }
     }
-        
+
+    private Dictionary<uint, string> customNodeIds;
+
+    private string NodeID(uint id, bool includeHashOnNoMatch = true) {
+        if (customNodeIds == null) {
+            customNodeIds = new Dictionary<uint, string>();
+            foreach (var f in typeof(CustomNodes).GetFields(BindingFlags.Static | BindingFlags.Public)) {
+                if (f.FieldType == typeof(int)) {
+                    var v = (int?) f.GetValue(null);
+                    if (v == null || customNodeIds.ContainsKey((uint)v.Value)) continue;
+                    customNodeIds.Add((uint) v.Value, f.Name);
+                }
+            }
+        }
+        var customNodeName = customNodeIds.ContainsKey(id) ? customNodeIds[id] : string.Empty;
+        return string.IsNullOrEmpty(customNodeName) ? (includeHashOnNoMatch ? $"#{id}" : $"{id}") : $"{customNodeName}#{id}";
+    }
+    
     private void PrintSimpleNode(AtkResNode* node, string treePrefix, bool textOnly = false)
     {
         bool popped = false;
@@ -510,7 +527,7 @@ public unsafe class UIDebug : DebugHelper {
             ImGui.SetNextItemOpen(elementSelectorFind.Contains((ulong) node), ImGuiCond.Always);
         }
         if (textOnly) ImGui.SetNextItemOpen(false, ImGuiCond.Always);
-        if (ImGui.TreeNode($"{treePrefix} [#{node->NodeID}] {node->Type} Node (ptr = {(long)node:X})###{(long)node}"))
+        if (ImGui.TreeNode($"{treePrefix} [{NodeID(node->NodeID)}] {node->Type} Node (ptr = {(long)node:X})###{(long)node}"))
         {
             if (ImGui.IsItemHovered()) DrawOutline(node);
             if (isVisible && !textOnly)
@@ -734,7 +751,7 @@ public unsafe class UIDebug : DebugHelper {
             ImGui.SetNextItemOpen(elementSelectorFind.Contains((ulong) node), ImGuiCond.Always);
         }
         if (textOnly) ImGui.SetNextItemOpen(false, ImGuiCond.Always);
-        if (ImGui.TreeNode($"{treePrefix} [#{node->NodeID}] {objectInfo->ComponentType} Component Node (ptr = {(long)node:X}, component ptr = {(long)compNode->Component:X}) child count = {childCount}  ###{(long)node}"))
+        if (ImGui.TreeNode($"{treePrefix} [{NodeID(node->NodeID)}] {objectInfo->ComponentType} Component Node (ptr = {(long)node:X}, component ptr = {(long)compNode->Component:X}) child count = {childCount}  ###{(long)node}"))
         {
             if (ImGui.IsItemHovered()) DrawOutline(node);
             if (isVisible && !textOnly)
@@ -816,7 +833,7 @@ public unsafe class UIDebug : DebugHelper {
         
     private void PrintResNode(AtkResNode* node)
     {
-        ImGui.Text($"NodeID: {node->NodeID}   Type: {node->Type}");
+        ImGui.Text($"NodeID: {NodeID(node->NodeID, false)}   Type: {node->Type}");
         ImGui.SameLine();
         if (ImGui.SmallButton($"T:Visible##{(ulong)node:X}")) {
             node->Flags ^= 0x10;
