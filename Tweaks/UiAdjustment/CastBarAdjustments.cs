@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Game;
+using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Enums;
@@ -27,6 +28,9 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
         public int SlideCastAdjust = 500;
         public Vector4 SlideCastColor = new Vector4(0.8F, 0.3F, 0.3F, 1);
         public Vector4 SlideCastReadyColor = new Vector4(0.3F, 0.8F, 0.3F, 1);
+        public bool ClassicSlideCast;
+        public int ClassicSlideCastWidth = 3;
+        public int ClassicSlideCastOverHeight = 0;
 
         public Alignment AlignName = Alignment.Left;
         public Alignment AlignCounter = Alignment.Right;
@@ -77,6 +81,18 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
         if (Config.SlideCast) {
             ImGui.Indent();
             ImGui.Indent();
+            hasChanged |= ImGui.Checkbox(LocString("Classic Mode"), ref Config.ClassicSlideCast);
+            if (Config.ClassicSlideCast) {
+                ImGui.Indent();
+                ImGui.Indent();
+                ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
+                hasChanged |= ImGui.SliderInt(LocString("Width"), ref Config.ClassicSlideCastWidth, 1, 10);
+                ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
+                hasChanged |= ImGui.SliderInt(LocString("Extra Height"), ref Config.ClassicSlideCastOverHeight, 0, 20);
+                
+                ImGui.Unindent();
+                ImGui.Unindent();
+            }
             hasChanged |= ImGui.SliderInt(LocString("SlideCast Offset Time"), ref Config.SlideCastAdjust, 0, 1000);
             hasChanged |= ImGui.ColorEdit4(LocString("SlideCast Marker Colour"), ref Config.SlideCastColor);
             hasChanged |= ImGui.ColorEdit4(LocString("SlideCast Ready Colour"), ref Config.SlideCastReadyColor);
@@ -120,18 +136,21 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
 
         var barNode = castBar->AtkUnitBase.UldManager.NodeList[3];
             
-        var icon = (AtkComponentNode*) castBar->AtkUnitBase.UldManager.NodeList[7];
-        var countdownText = (AtkTextNode*) castBar->AtkUnitBase.UldManager.NodeList[8];
-        var castingText = (AtkTextNode*) castBar->AtkUnitBase.UldManager.NodeList[9];
-        var skillNameText = (AtkTextNode*) castBar->AtkUnitBase.UldManager.NodeList[11];
-        var progressBar = (AtkNineGridNode*) castBar->AtkUnitBase.UldManager.NodeList[5];
-        var interruptedText = (AtkTextNode*) castBar->AtkUnitBase.UldManager.NodeList[12];
-        var slideMarker = (AtkNineGridNode*) null;
+        var icon = (AtkComponentNode*) castBar->AtkUnitBase.GetNodeById(8);
+        var countdownText = castBar->AtkUnitBase.GetTextNodeById(7);
+        var castingText = castBar->AtkUnitBase.GetTextNodeById(6);
+        var skillNameText = castBar->AtkUnitBase.GetTextNodeById(4);
+        var progressBar = (AtkNineGridNode*)castBar->AtkUnitBase.GetNodeById(11);
+        var interruptedText = castBar->AtkUnitBase.GetTextNodeById(2);
+        var slideMarker = (AtkNineGridNode*)null;
+        var classicSlideMarker = (AtkImageNode*)null;
 
-        for (var i = 13; i < castBar->AtkUnitBase.UldManager.NodeListCount; i++) {
+        for (var i = 0; i < castBar->AtkUnitBase.UldManager.NodeListCount; i++) {
             if (castBar->AtkUnitBase.UldManager.NodeList[i]->NodeID == CustomNodes.SlideCastMarker) {
                 slideMarker = (AtkNineGridNode*) castBar->AtkUnitBase.UldManager.NodeList[i];
-                break;
+            }
+            if (castBar->AtkUnitBase.UldManager.NodeList[i]->NodeID == CustomNodes.ClassicSlideCast) {
+                classicSlideMarker = (AtkImageNode*) castBar->AtkUnitBase.UldManager.NodeList[i];
             }
         }
             
@@ -150,6 +169,20 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
 
             if (slideMarker != null) {
                 UiHelper.Hide(slideMarker);
+            }
+
+            if (classicSlideMarker != null) {
+                UiHelper.Hide(classicSlideMarker);
+                if (classicSlideMarker->AtkResNode.PrevSiblingNode != null)
+                    classicSlideMarker->AtkResNode.PrevSiblingNode->NextSiblingNode = classicSlideMarker->AtkResNode.NextSiblingNode;
+                if (classicSlideMarker->AtkResNode.NextSiblingNode != null)
+                    classicSlideMarker->AtkResNode.NextSiblingNode->PrevSiblingNode = classicSlideMarker->AtkResNode.PrevSiblingNode;
+                castBar->AtkUnitBase.UldManager.UpdateDrawNodeList();
+
+                IMemorySpace.Free(classicSlideMarker->PartsList->Parts->UldAsset, (ulong)sizeof(AtkUldPart));
+                IMemorySpace.Free(classicSlideMarker->PartsList->Parts, (ulong)sizeof(AtkUldPart));
+                IMemorySpace.Free(classicSlideMarker->PartsList, (ulong)sizeof(AtkUldPartsList));
+                classicSlideMarker->AtkResNode.Destroy(true);
             }
 
             countdownText->AlignmentFontType = 0x25;
@@ -183,19 +216,21 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
             interruptedText->AtkResNode.SetScale(0, 0);
         }
 
-        if (Config.SlideCast) {
+        if (Config.SlideCast && Config.ClassicSlideCast == false) {
+            if (classicSlideMarker != null) UiHelper.Hide(classicSlideMarker);
             if (slideMarker == null) {
                 // Create Node
-                UiHelper.ExpandNodeList((AtkUnitBase*)castBar, 1);
+
                 slideMarker = UiHelper.CloneNode(progressBar);
                 slideMarker->AtkResNode.NodeID = CustomNodes.SlideCastMarker;
-                castBar->AtkUnitBase.UldManager.NodeList[6]->PrevSiblingNode = (AtkResNode*) slideMarker;
-                slideMarker->AtkResNode.NextSiblingNode = castBar->AtkUnitBase.UldManager.NodeList[6];
-                slideMarker->AtkResNode.ParentNode = castBar->AtkUnitBase.UldManager.NodeList[3];
-                castBar->AtkUnitBase.UldManager.NodeList[castBar->AtkUnitBase.UldManager.NodeListCount++] = (AtkResNode*)slideMarker;
+                castBar->AtkUnitBase.GetNodeById(10)->PrevSiblingNode = (AtkResNode*) slideMarker;
+                slideMarker->AtkResNode.NextSiblingNode = castBar->AtkUnitBase.GetNodeById(10);
+                slideMarker->AtkResNode.ParentNode = castBar->AtkUnitBase.GetNodeById(9);
+                castBar->AtkUnitBase.UldManager.UpdateDrawNodeList();
             }
 
             if (slideMarker != null) {
+                
                 var slidePer = ((float)(castBar->CastTime * 10) - Config.SlideCastAdjust) / (castBar->CastTime * 10);
                 var pos = 160 * slidePer;
                 UiHelper.Show(slideMarker);
@@ -212,6 +247,106 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
                 slideMarker->PartID = 0;
                 slideMarker->AtkResNode.Flags_2 |= 1;
             }
+            
+        } else if (Config.SlideCast && Config.ClassicSlideCast) {
+            if (slideMarker != null) UiHelper.Hide(slideMarker);
+            if (classicSlideMarker == null) {
+                if (progressBar == null) return;
+                
+                // Create Node
+                    classicSlideMarker = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
+                    classicSlideMarker->AtkResNode.Type = NodeType.Image;
+                    classicSlideMarker->AtkResNode.NodeID = CustomNodes.ClassicSlideCast;
+                    classicSlideMarker->AtkResNode.Flags = (short)(NodeFlags.AnchorTop | NodeFlags.AnchorLeft);
+                    classicSlideMarker->AtkResNode.DrawFlags = 0;
+                    classicSlideMarker->WrapMode = 1;
+                    classicSlideMarker->Flags = 0;
+
+                    var partsList = (AtkUldPartsList*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldPartsList), 8);
+                    if (partsList == null) {
+                        SimpleLog.Error("Failed to alloc memory for parts list.");
+                        classicSlideMarker->AtkResNode.Destroy(true);
+                        return;
+                    }
+
+                    partsList->Id = 0;
+                    partsList->PartCount = 1;
+
+                    var part = (AtkUldPart*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldPart), 8);
+                    if (part == null) {
+                        SimpleLog.Error("Failed to alloc memory for part.");
+                        IMemorySpace.Free(partsList, (ulong)sizeof(AtkUldPartsList));
+                        classicSlideMarker->AtkResNode.Destroy(true);
+                        return;
+                    }
+
+                    part->U = 30;
+                    part->V = 30;
+                    part->Width = 1;
+                    part->Height = 12;
+
+                    partsList->Parts = part;
+
+                    var asset = (AtkUldAsset*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldAsset), 8);
+                    if (asset == null) {
+                        SimpleLog.Error("Failed to alloc memory for asset.");
+                        IMemorySpace.Free(part, (ulong)sizeof(AtkUldPart));
+                        IMemorySpace.Free(partsList, (ulong)sizeof(AtkUldPartsList));
+                        classicSlideMarker->AtkResNode.Destroy(true);
+                        return;
+                    }
+
+                    asset->Id = 0;
+                    asset->AtkTexture.Ctor();
+                    part->UldAsset = asset;
+                    classicSlideMarker->PartsList = partsList;
+
+                    classicSlideMarker->LoadTexture("ui/uld/emjfacemask.tex");
+
+                    classicSlideMarker->AtkResNode.ToggleVisibility(true);
+
+                    classicSlideMarker->AtkResNode.SetWidth(1);
+                    classicSlideMarker->AtkResNode.SetHeight(12);
+                    classicSlideMarker->AtkResNode.SetPositionShort(100, 4);
+
+                    
+                    classicSlideMarker->AtkResNode.ParentNode = progressBar->AtkResNode.ParentNode;
+
+                    var prev = progressBar->AtkResNode.PrevSiblingNode;
+                    
+                    progressBar->AtkResNode.PrevSiblingNode = (AtkResNode*)classicSlideMarker;
+                    prev->NextSiblingNode = (AtkResNode*)classicSlideMarker;
+
+                    classicSlideMarker->AtkResNode.PrevSiblingNode = prev;
+                    classicSlideMarker->AtkResNode.NextSiblingNode = (AtkResNode*)progressBar;
+
+                    castBar->AtkUnitBase.UldManager.UpdateDrawNodeList();
+            }
+
+            if (classicSlideMarker != null) {
+                
+                UiHelper.Show(slideMarker);
+                
+                var slidePer = ((float)(castBar->CastTime * 10) - Config.SlideCastAdjust) / (castBar->CastTime * 10);
+                var pos = 160 * slidePer;
+
+                
+                classicSlideMarker->AtkResNode.SetWidth((ushort) Config.ClassicSlideCastWidth);
+                classicSlideMarker->AtkResNode.SetHeight((ushort) (12 + Config.ClassicSlideCastOverHeight * 2));
+                classicSlideMarker->AtkResNode.SetPositionFloat(pos, 4 - Config.ClassicSlideCastOverHeight);
+                
+                
+                var c = (slidePer * 100) >= castBar->CastPercent ? Config.SlideCastColor : Config.SlideCastReadyColor;
+                classicSlideMarker->AtkResNode.Color.R = (byte) (255 * c.X);
+                classicSlideMarker->AtkResNode.Color.G = (byte) (255 * c.Y);
+                classicSlideMarker->AtkResNode.Color.B = (byte) (255 * c.Z);
+
+                classicSlideMarker->AtkResNode.Color.A = (byte) (255 * c.W);
+                classicSlideMarker->AtkResNode.Flags_2 |= 1;
+                
+            }
+            
+            
         }
     }
 }
