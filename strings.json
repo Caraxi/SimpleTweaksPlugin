@@ -1,4 +1,12 @@
 {
+  "AutoLockHotbar / Description": {
+    "message": "Automatically locks action bars when certain conditions are met.",
+    "description": "[AutoLockHotbar] Tweak Description"
+  },
+  "AutoLockHotbar / Name": {
+    "message": "Auto Lock Action Bars",
+    "description": "[AutoLockHotbar] Tweak Name"
+  },
   "AutoOpenCommendWindow / Description": {
     "message": "Open the commendation window upon completion of a duty.",
     "description": "[AutoOpenCommendWindow] Tweak Description"
@@ -14,6 +22,14 @@
   "AutoOpenLootWindow / Name": {
     "message": "Open loot window when items are added.",
     "description": "[AutoOpenLootWindow] Tweak Name"
+  },
+  "CharacterClassSwitcher / Description": {
+    "message": "Allow clicking on classes to switch to gearsets. [Note: does not work on crafters]",
+    "description": "[CharacterClassSwitcher] Tweak Description"
+  },
+  "CharacterClassSwitcher / Name": {
+    "message": "Character Window Job Switcher",
+    "description": "[CharacterClassSwitcher] Tweak Name"
   },
   "CharaViewIncreasedZoom / Description": {
     "message": "Allows zooming in near infinitely on character preview views, such as Try On and Examine.",
@@ -103,6 +119,14 @@
     "message": "Tab {0}",
     "description": "[RenameChatTabs] Rename Chat Tabs - Tab {0}"
   },
+  "ChatTweaks@ReplyChannelSwitch / Description": {
+    "message": "Allow typing /r to set active chat channel to Tell.",
+    "description": "[ReplyChannelSwitch] Tweak Description"
+  },
+  "ChatTweaks@ReplyChannelSwitch / Name": {
+    "message": "Reply Channel Switch",
+    "description": "[ReplyChannelSwitch] Tweak Name"
+  },
   "ChrDirCommand / Description": {
     "message": "Adds a command to open the directory when client side character data is stored.",
     "description": "[ChrDirCommand] Tweak Description"
@@ -154,6 +178,14 @@
   "CommandAlias / ProtectedCommandError": {
     "message": "'/{0}' is a protected command.",
     "description": "[CommandAlias] Command Alias - '/{0}' is a protected command."
+  },
+  "DataCentreOnTitleScreen / Description": {
+    "message": "Shows the current Data Centre on the Title Screen",
+    "description": "[DataCentreOnTitleScreen] Tweak Description"
+  },
+  "DataCentreOnTitleScreen / Name": {
+    "message": "Data Centre on Title Screen",
+    "description": "[DataCentreOnTitleScreen] Tweak Name"
   },
   "DisableClickTargeting / AddButton": {
     "message": "Add",
@@ -223,6 +255,14 @@
     "message": "Disable Right Click Targeting",
     "description": "[DisableClickTargeting] Disable Click Targeting - Disable Right Click Targeting"
   },
+  "DisableMountVolumeChange / Description": {
+    "message": "Prevents mount music from going quiet when not moving.",
+    "description": "[DisableMountVolumeChange] Tweak Description"
+  },
+  "DisableMountVolumeChange / Name": {
+    "message": "Disable Mount Music Volume Change",
+    "description": "[DisableMountVolumeChange] Tweak Name"
+  },
   "DisableTitleScreenMovie / Description": {
     "message": "Prevents the title screen from playing the introduction movie after 60 seconds.",
     "description": "[DisableTitleScreenMovie] Tweak Description"
@@ -287,6 +327,14 @@
     "message": "Hide Tweak",
     "description": "Hide Tweak - Hide Tweak"
   },
+  "HideMouseAfterInactivity / Description": {
+    "message": "Hides the mouse cursor after a period of inactivity like video players do.",
+    "description": "[HideMouseAfterInactivity] Tweak Description"
+  },
+  "HideMouseAfterInactivity / Name": {
+    "message": "Hide Mouse Cursor After Inactivity",
+    "description": "[HideMouseAfterInactivity] Tweak Name"
+  },
   "LegacyCameraLock / Description": {
     "message": "Prevents camera rotation when using Legacy movement type.",
     "description": "[LegacyCameraLock] Tweak Description"
@@ -319,6 +367,22 @@
     "message": "More Gear Sets",
     "description": "[MoreGearSets] Tweak Name"
   },
+  "PidCommand / Description": {
+    "message": "Adds the command '/pid' to show current process id.",
+    "description": "[PidCommand] Tweak Description"
+  },
+  "PidCommand / Name": {
+    "message": "Show process id Command",
+    "description": "[PidCommand] Tweak Name"
+  },
+  "RememberQuickGathering / Description": {
+    "message": "Remembers quick gathering status even after gathering at unspoiled nodes.",
+    "description": "[RememberQuickGathering] Tweak Description"
+  },
+  "RememberQuickGathering / Name": {
+    "message": "Remember Quick Gathering",
+    "description": "[RememberQuickGathering] Tweak Name"
+  },
   "SetOptionCommand / alias": {
     "message": "alias",
     "description": "[SetOptionCommand] Set Option Command - alias"
@@ -342,6 +406,30 @@
   "SetOptionCommand / values": {
     "message": "values",
     "description": "[SetOptionCommand] Set Option Command - values"
+  },
+  "SmartStrafe / Description": {
+    "message": "Inteligently switches keyboard controls between strafing and turning.\n(Legacy type movmement only)",
+    "description": "[SmartStrafe] Tweak Description"
+  },
+  "SmartStrafe / Name": {
+    "message": "Smart Strafe",
+    "description": "[SmartStrafe] Tweak Name"
+  },
+  "SyncCrafterBars / Description": {
+    "message": "Keeps DoH job bars in sync",
+    "description": "[SyncCrafterBars] Tweak Description"
+  },
+  "SyncCrafterBars / Name": {
+    "message": "Sync Crafter Bars",
+    "description": "[SyncCrafterBars] Tweak Name"
+  },
+  "SyncGathererBars / Description": {
+    "message": "Keeps miner and botanist hotbars in sync.",
+    "description": "[SyncGathererBars] Tweak Description"
+  },
+  "SyncGathererBars / Name": {
+    "message": "Sync Gatherer Bars",
+    "description": "[SyncGathererBars] Tweak Name"
   },
   "TooltipTweaks / Name": {
     "message": "Tooltip Tweaks",
@@ -483,6 +571,14 @@
     "message": "Use Hexadecimal ID",
     "description": "[ShowItemID] [Config] Use Hexadecimal ID"
   },
+  "TryOnCorrectItem / Description": {
+    "message": "Show the correct item when trying on a glamoured item.",
+    "description": "[TryOnCorrectItem] Tweak Description"
+  },
+  "TryOnCorrectItem / Name": {
+    "message": "Try On Correct Item",
+    "description": "[TryOnCorrectItem] Tweak Name"
+  },
   "UiAdjustments / Name": {
     "message": "UI Tweaks",
     "description": "[UiAdjustments] Tweak Name"
@@ -614,6 +710,14 @@
   "UiAdjustments@ComboTimer / Y Position Offset": {
     "message": "Y Position Offset",
     "description": "[ComboTimer] [Config] Y Position Offset"
+  },
+  "UiAdjustments@ControlHintMirroring / Description": {
+    "message": "Will display the keybind hint for any hotbar slot onto unbound slots with the same action.",
+    "description": "[ControlHintMirroring] Tweak Description"
+  },
+  "UiAdjustments@ControlHintMirroring / Name": {
+    "message": "Duplicate Keybind Hints Between Hotbars",
+    "description": "[ControlHintMirroring] Tweak Name"
   },
   "UiAdjustments@CustomFreeCompanyTags / AddButton": {
     "message": "Add",
