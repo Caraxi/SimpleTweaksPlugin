@@ -325,7 +325,7 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
 
             if (classicSlideMarker != null) {
                 
-                UiHelper.Show(slideMarker);
+                UiHelper.Show(classicSlideMarker);
                 
                 var slidePer = ((float)(castBar->CastTime * 10) - Config.SlideCastAdjust) / (castBar->CastTime * 10);
                 var pos = 160 * slidePer;
