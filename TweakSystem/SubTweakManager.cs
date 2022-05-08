@@ -35,6 +35,11 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
         foreach (var t in GetType().Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(T)))) {
             try {
                 var tweak = (T) Activator.CreateInstance(t);
+                if (tweak == null) continue;
+                if (PluginConfig.BlacklistedTweaks.Contains(tweak.Key)) {
+                    SimpleLog.Log("Skipping blacklisted tweak: " + tweak.Key);
+                    continue;
+                }
                 tweak.InterfaceSetup(this.Plugin, this.PluginInterface, this.PluginConfig, this.TweakProvider);
                 tweak.Setup();
                 tweakList.Add(tweak);
