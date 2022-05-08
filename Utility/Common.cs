@@ -52,8 +52,6 @@ public static unsafe class Common {
 
     public static event Action FrameworkUpdate;
     
-    public static GameArguments GameArguments => GameArguments.Instance;
-
     public static void InvokeFrameworkUpdate() => FrameworkUpdate?.Invoke();
     public static void* ThrowawayOut { get; private set; } = (void*) Marshal.AllocHGlobal(1024);
 
