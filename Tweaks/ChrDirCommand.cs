@@ -6,6 +6,7 @@ using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Game.Command;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using ImGuiNET;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.TweakSystem;
@@ -37,8 +38,8 @@ public class ChrDirCommand : Tweak {
         Process.Start("explorer.exe", dir);
     }
 
-    private void CommandHandler(string command, string arguments) {
-        var saveDir = Path.Combine(Common.GameArguments.UserPath, $"FFXIV_CHR{Service.ClientState.LocalContentId:X16}");
+    private unsafe void CommandHandler(string command, string arguments) {
+        var saveDir = Path.Combine(Framework.Instance()->UserPath, $"FFXIV_CHR{Service.ClientState.LocalContentId:X16}");
         if (arguments == "open") {
             Process.Start("explorer.exe", saveDir);
             return;
