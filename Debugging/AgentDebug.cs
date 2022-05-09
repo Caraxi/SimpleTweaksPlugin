@@ -7,6 +7,7 @@ using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Dalamud.Hooking;
+using Dalamud.Interface;
 using Dalamud.Interface.Style;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
@@ -26,11 +27,154 @@ public unsafe class AgentDebug : DebugHelper {
     private Hook<GetAgentByInternalIDDelegate> getAgentByInternalId2Hook;
 
     private List<(AgentId id, ulong address, ulong hitCount)> agentGetLog = new();
-        
+
+    private AgentId selectAgent;
+
+    private List<(AgentId id, bool hasClass)> sortedAgentList;
+    private float agentListWidth = 100f;
+    private bool agentListActiveOnly = false;
+    private bool agentListKnownOnly = true;
+    private Type selectedAgentType;
+    
     public override void Draw() {
 
-        if (ImGui.BeginTabBar("agenDebugTabs")) {
+        
+        
+        if (sortedAgentList == null) {
+            var maxAgentId = 0U;
+            var l = new List<AgentId>();
+            
+            var agentClasses = typeof(AgentInterface).Assembly.GetTypes().Select((t) => (t, t.GetCustomAttributes(typeof(AgentAttribute)).Cast<AgentAttribute>().ToArray())).Where(t => t.Item2.Length > 0).ToArray();
+            
+            foreach (var a in Enum.GetValues(typeof(AgentId)).Cast<AgentId>()) {
+                l.Add(a);
+                if ((uint)a > maxAgentId) {
+                    maxAgentId = (uint)a;
+                }
+            }
 
+            sortedAgentList = l.Select((a) => {
+                return (a, agentClasses.Any(t => t.Item2.Any(aa => aa.ID == a)));
+            }).OrderBy(a => $"{a}").ToList();
+
+            for (var i = 0U; i < maxAgentId; i++) {
+                var a = (AgentId)i;
+                if (sortedAgentList.Any(aa => a == aa.id)) continue;
+                sortedAgentList.Add((a, false));
+            }
+            
+        }
+
+        
+        
+        if (ImGui.BeginTabBar("agenDebugTabs")) {
+            if (ImGui.BeginTabItem("Agents")) {
+                    
+                if (ImGui.BeginChild("AgentList", new Vector2(agentListWidth, -1), true)) {
+
+                    ImGui.Checkbox("Active Only", ref agentListActiveOnly);
+                    ImGui.SameLine();
+                    ImGui.Checkbox("Known Only", ref agentListKnownOnly);
+                    ImGui.Separator();
+                    if (ImGui.BeginChild("AgentListScroll", new Vector2(-1, -1), false)) {
+                        foreach (var agent in sortedAgentList) {
+                            var agentInterface = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(agent.id);
+                            if (agentInterface == null) continue;
+                            if (agentListKnownOnly && !agent.hasClass) continue;
+                            var active = agentInterface->IsAgentActive();
+                            if (agentListActiveOnly && !active) continue;
+                            
+                            ImGui.PushStyleColor(ImGuiCol.Text, agent.hasClass ? 0xFFFF5500: 0x000000);
+                            ImGui.PushFont(UiBuilder.IconFont);
+                            ImGui.Text($"{(char)FontAwesomeIcon.Atom}");
+                            ImGui.PopFont();
+                            ImGui.PopStyleColor();
+                            ImGui.SameLine();
+                            
+                            ImGui.PushStyleColor(ImGuiCol.Text, active ? 0xFF00FF00 : 0xFF333388);
+                            if (ImGui.Selectable($"{agent.id}", selectAgent == agent.id)) {
+                                selectAgent = agent.id;
+                                selectedAgentType = null;
+                            }
+
+                            var size = ImGui.CalcTextSize($"{agent}").X + ImGui.GetStyle().FramePadding.X * 2 + ImGui.GetStyle().ScrollbarSize * 2;
+                            if (size > agentListWidth) {
+                                agentListWidth = size;
+                            }
+
+                            ImGui.PopStyleColor();
+                        }
+                    }
+                    ImGui.EndChild();
+                    
+                    
+
+                }
+                ImGui.EndChild();
+                ImGui.SameLine();
+                if (ImGui.BeginChild("AgentView", new Vector2(-1, -1), true)) {
+
+                    var agentInterface = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(selectAgent);
+
+                    
+                    if (selectedAgentType == null) {
+                        try {
+                            var agentClasses = typeof(AgentInterface).Assembly.GetTypes().Select((t) => (t, t.GetCustomAttributes(typeof(AgentAttribute)).Cast<AgentAttribute>().ToArray())).Where(t => t.Item2.Length > 0).ToArray();
+                            selectedAgentType = agentClasses.FirstOrDefault(t => t.Item2.Any(aa => aa.ID == selectAgent)).t;
+                            selectedAgentType ??= typeof(AgentInterface);
+                        } catch {
+                            selectedAgentType = typeof(AgentInterface);
+                        }
+                    }
+
+                    
+                    
+                    ImGui.Text($"{selectedAgentType.FullName}");
+                    ImGui.Text("Instance:");
+                    ImGui.SameLine();
+                    DebugManager.ClickToCopyText($"{(ulong)agentInterface:X}");
+
+                    if (agentInterface != null) {
+                        ImGui.SameLine();
+                        ImGui.Text("      VTable:");
+                        ImGui.SameLine();
+                        DebugManager.ClickToCopyText($"{(ulong)agentInterface->VTable:X}");
+
+                        var beginModule = (ulong) Process.GetCurrentProcess().MainModule.BaseAddress.ToInt64();
+                        var endModule = (beginModule + (ulong)Process.GetCurrentProcess().MainModule.ModuleMemorySize);
+                        if (beginModule > 0 && (ulong)agentInterface->VTable >= beginModule && (ulong)agentInterface->VTable <= endModule) {
+                            ImGui.SameLine();
+                            ImGui.PushStyleColor(ImGuiCol.Text, 0xffcbc0ff);
+                            DebugManager.ClickToCopyText($"ffxiv_dx11.exe+{((ulong)agentInterface->VTable - beginModule):X}");
+                            ImGui.PopStyleColor();
+                        }
+
+                        ImGui.Separator();
+
+                        ImGui.Text("Is Active:");
+                        ImGui.SameLine();
+                        var isActive = agentInterface->IsAgentActive();
+                        ImGui.TextColored(isActive ? Colour.Green : Colour.Red, $"{isActive}");
+
+                        ImGui.Separator();
+
+                        var agentObj = Marshal.PtrToStructure(new IntPtr(agentInterface), selectedAgentType);
+                        if (agentObj != null) {
+                            DebugManager.PrintOutObject(agentObj, (ulong) agentInterface);
+                        }
+                    }
+                                
+                    
+                    
+                }
+                ImGui.EndChild();
+                
+                
+
+                
+                ImGui.EndTabItem();
+            }
+            
             if (ImGui.BeginTabItem("GetAgentByInternalID Calls")) {
 
                 if (ImGui.Checkbox("Enable Logging", ref enableLogging)) {
@@ -43,7 +187,7 @@ public unsafe class AgentDebug : DebugHelper {
 
                 ImGui.BeginChild($"scrolling", new Vector2(-1, -1));
 
-                    
+            
                 ImGui.Columns(4);
                 ImGui.Text($"ID");
                 ImGui.NextColumn();
@@ -51,12 +195,12 @@ public unsafe class AgentDebug : DebugHelper {
                 ImGui.NextColumn();
                 ImGui.Text("VTable");
                 ImGui.NextColumn();
-                    
+            
                 ImGui.NextColumn();
                 ImGui.Separator();
                 ImGui.Separator();
                 foreach (var l in agentGetLog) {
-                        
+                
                     ImGui.Text($"[{(uint)l.id}] {l.id}");
                     ImGui.NextColumn();
                     DebugManager.ClickToCopyText($"{l.address:X}");
@@ -70,7 +214,7 @@ public unsafe class AgentDebug : DebugHelper {
                         ImGui.SameLine();
                         DebugManager.ClickToCopyText($"ffxiv_dx11.exe+{offset:X}");
                     }
-                        
+                
                     ImGui.NextColumn();
                     ImGui.Text($"{l.hitCount}");
                     ImGui.NextColumn();
@@ -79,69 +223,11 @@ public unsafe class AgentDebug : DebugHelper {
 
 
                 ImGui.EndChild();
-                    
-                    
+            
+            
                 ImGui.EndTabItem();
             }
-
-            if (ImGui.BeginTabItem("Agents")) {
-
-                if (ImGui.BeginTabBar("agentsTabs")) {
-
-                    var agentClasses = typeof(AgentInterface).Assembly.GetTypes().Where(t => {
-                        var attrs = t.GetCustomAttributes(typeof(AgentAttribute)).ToArray();
-                        return attrs.Length > 0;
-                    });
-
-                    var i = 0;
-                    foreach (var c in agentClasses) {
-                        var name = c.Name;
-                        if (c.Name.StartsWith("Agent")) name = c.Name.Substring(5);
-                        if (ImGui.BeginTabItem($"{name}##{c.FullName}#{i++}")) {
-
-                            var attr = (AgentAttribute) c.GetCustomAttributes(typeof(AgentAttribute)).First();
-                            ImGui.Text($"{c.FullName}");
-                            ImGui.Text("Instance:");
-                            ImGui.SameLine();
-                            var agentInstance = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(attr.ID);
-                            DebugManager.ClickToCopyText($"{(ulong)agentInstance:X}");
-
-                            if (agentInstance != null) {
-                                ImGui.SameLine();
-                                ImGui.Text("      VTable:");
-                                ImGui.SameLine();
-                                DebugManager.ClickToCopyText($"{(ulong)agentInstance->VTable:X}");
-
-                                var beginModule = (ulong) Process.GetCurrentProcess().MainModule.BaseAddress.ToInt64();
-                                var endModule = (beginModule + (ulong)Process.GetCurrentProcess().MainModule.ModuleMemorySize);
-                                if (beginModule > 0 && (ulong)agentInstance->VTable >= beginModule && (ulong)agentInstance->VTable <= endModule) {
-                                    ImGui.SameLine();
-                                    ImGui.PushStyleColor(ImGuiCol.Text, 0xffcbc0ff);
-                                    DebugManager.ClickToCopyText($"ffxiv_dx11.exe+{((ulong)agentInstance->VTable - beginModule):X}");
-                                    ImGui.PopStyleColor();
-                                }
-
-                                ImGui.Separator();
-
-                                ImGui.Text("Is Active:");
-                                ImGui.SameLine();
-                                var isActive = agentInstance->IsAgentActive();
-                                ImGui.TextColored(isActive ? Colour.Green : Colour.Red, $"{isActive}");
-
-                                ImGui.Separator();
-
-                                var agentObj = Marshal.PtrToStructure(new IntPtr(agentInstance), c);
-                                if (agentObj != null) {
-                                    DebugManager.PrintOutObject(agentObj, (ulong) agentInstance);
-                                }
-                            }
-                            ImGui.EndTabItem();
-                        }
-                    }
-                    ImGui.EndTabBar();
-                }
-                ImGui.EndTabItem();
-            }
+            
             ImGui.EndTabBar();
         }
     }
