@@ -335,4 +335,19 @@ public static unsafe class Common {
 
         return null;
     }
+
+    public static string ValueString(this AtkValue v) {
+        return v.Type switch {
+            ValueType.Int => $"{v.Int}",
+            ValueType.String => Marshal.PtrToStringUTF8(new IntPtr(v.String)),
+            ValueType.UInt => $"{v.UInt}",
+            ValueType.Bool => $"{v.Byte != 0}",
+            ValueType.Float => $"{v.Float}",
+            ValueType.Vector => "[Vector]",
+            ValueType.AllocatedString => "[Allocated String]",
+            ValueType.AllocatedVector => "[Allocated Vector]",
+            _ => $"Unknown Type: {v.Type}"
+        };
+    }
+    
 }
