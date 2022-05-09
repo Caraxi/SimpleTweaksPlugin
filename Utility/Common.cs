@@ -319,4 +319,20 @@ public static unsafe class Common {
         }
     }
 
+    public const int UnitListCount = 18;
+    public static AtkUnitBase* GetAddonByID(uint id) {
+        var unitManagers = &AtkStage.GetSingleton()->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
+        for (var i = 0; i < UnitListCount; i++) {
+            var unitManager = &unitManagers[i];
+            var unitBaseArray = &(unitManager->AtkUnitEntries);
+            for (var j = 0; j < unitManager->Count; j++) {
+                var unitBase = unitBaseArray[j];
+                if (unitBase->ID == id) {
+                    return unitBase;
+                }
+            }
+        }
+
+        return null;
+    }
 }

@@ -33,22 +33,6 @@ public unsafe class AgentDebug : DebugHelper {
     private bool agentListActiveOnly = false;
     private bool agentListKnownOnly = true;
     private Type selectedAgentType;
-
-    private AtkUnitBase* GetUnitBaseById(uint id) {
-        var unitManagers = &AtkStage.GetSingleton()->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
-        for (var i = 0; i < UIDebug.UnitListCount; i++) {
-            var unitManager = &unitManagers[i];
-            var unitBaseArray = &(unitManager->AtkUnitEntries);
-            for (var j = 0; j < unitManager->Count; j++) {
-                var unitBase = unitBaseArray[j];
-                if (unitBase->ID == id) {
-                    return unitBase;
-                }
-            }
-        }
-
-        return null;
-    }
     
     public override void Draw() {
         if (sortedAgentList == null) {
@@ -182,7 +166,7 @@ public unsafe class AgentDebug : DebugHelper {
                         
                         var addonId = agentInterface->GetAddonID();
                         AtkUnitBase* addon;
-                        if (addonId == 0 || (addon = GetUnitBaseById(addonId)) == null ) {
+                        if (addonId == 0 || (addon = Common.GetAddonByID(addonId)) == null ) {
                             ImGui.SameLine();
                             ImGui.Text("None");
                         } else {
