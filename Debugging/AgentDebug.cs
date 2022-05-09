@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -8,7 +7,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Dalamud.Hooking;
 using Dalamud.Interface;
-using Dalamud.Interface.Style;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -35,11 +33,24 @@ public unsafe class AgentDebug : DebugHelper {
     private bool agentListActiveOnly = false;
     private bool agentListKnownOnly = true;
     private Type selectedAgentType;
+
+    private AtkUnitBase* GetUnitBaseById(uint id) {
+        var unitManagers = &AtkStage.GetSingleton()->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
+        for (var i = 0; i < UIDebug.UnitListCount; i++) {
+            var unitManager = &unitManagers[i];
+            var unitBaseArray = &(unitManager->AtkUnitEntries);
+            for (var j = 0; j < unitManager->Count; j++) {
+                var unitBase = unitBaseArray[j];
+                if (unitBase->ID == id) {
+                    return unitBase;
+                }
+            }
+        }
+
+        return null;
+    }
     
     public override void Draw() {
-
-        
-        
         if (sortedAgentList == null) {
             var maxAgentId = 0U;
             var l = new List<AgentId>();
@@ -156,22 +167,30 @@ public unsafe class AgentDebug : DebugHelper {
                         var isActive = agentInterface->IsAgentActive();
                         ImGui.TextColored(isActive ? Colour.Green : Colour.Red, $"{isActive}");
 
+
                         ImGui.Separator();
 
                         var agentObj = Marshal.PtrToStructure(new IntPtr(agentInterface), selectedAgentType);
                         if (agentObj != null) {
                             DebugManager.PrintOutObject(agentObj, (ulong) agentInterface);
                         }
+                        
+                        ImGui.Separator();
+                        ImGui.Separator();
+                        
+                        ImGui.Text($"Addon: ");
+                        
+                        var addonId = agentInterface->GetAddonID();
+                        AtkUnitBase* addon;
+                        if (addonId == 0 || (addon = GetUnitBaseById(addonId)) == null ) {
+                            ImGui.SameLine();
+                            ImGui.Text("None");
+                        } else {
+                            UIDebug.DrawUnitBase(addon);
+                        }
                     }
-                                
-                    
-                    
                 }
                 ImGui.EndChild();
-                
-                
-
-                
                 ImGui.EndTabItem();
             }
             
