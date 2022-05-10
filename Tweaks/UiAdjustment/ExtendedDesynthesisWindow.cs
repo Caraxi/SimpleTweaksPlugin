@@ -55,7 +55,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private static readonly ByteColor Green = new() { A = 0xFF, R = 0x00, G = 0xCC, B = 0x00 };
         private static readonly ByteColor Yellow = new() { A = 0xFF, R = 0xCC, G = 0xCC, B = 0x00 };
 
-        private uint maxDesynthLevel = 520;
+        private uint maxDesynthLevel = 590;
 
         public override void Setup() {
             foreach (var i in Service.Data.Excel.GetSheet<Item>()) {
