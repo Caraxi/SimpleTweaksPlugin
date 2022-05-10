@@ -25,11 +25,10 @@ public static unsafe class Common {
 
     // Common Delegates
     public delegate void* AddonOnUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** nums, StringArrayData** strings);
-    public delegate void* AddonOnSetup(AtkUnitBase* atkUnitBase, void* a2, void* a3);
     public delegate void NoReturnAddonOnUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData);
 
-    private delegate void* GenericAddonSetup(AtkUnitBase* addon);
-    private static HookWrapper<GenericAddonSetup> addonSetupHook;
+    private delegate void* AddonSetupDelegate(AtkUnitBase* addon);
+    private static HookWrapper<AddonSetupDelegate> addonSetupHook;
 
     private delegate IntPtr GameAlloc(ulong size, IntPtr unk, IntPtr allocator, IntPtr alignment);
 
@@ -79,7 +78,7 @@ public static unsafe class Common {
         _getInventoryContainer = Marshal.GetDelegateForFunctionPointer<GetInventoryContainer>(getInventoryContainerPtr);
         _getContainerSlot = Marshal.GetDelegateForFunctionPointer<GetContainerSlot>(getContainerSlotPtr);
         
-        addonSetupHook = Hook<GenericAddonSetup>("E8 ?? ?? ?? ?? 8B 83 ?? ?? ?? ?? C1 E8 14", AddonSetupDetour);
+        addonSetupHook = Hook<AddonSetupDelegate>("E8 ?? ?? ?? ?? 8B 83 ?? ?? ?? ?? C1 E8 14", AddonSetupDetour);
         addonSetupHook?.Enable();
     }
 
@@ -379,5 +378,6 @@ public static unsafe class Common {
 
 public unsafe class SetupAddonArgs {
     public AtkUnitBase* Addon { get; init; }
-    public string AddonName => MemoryHelper.ReadString(new IntPtr(Addon->Name), 0x20).Split('\0')[0];
+    private string addonName;
+    public string AddonName => addonName ??= MemoryHelper.ReadString(new IntPtr(Addon->Name), 0x20).Split('\0')[0];
 }
