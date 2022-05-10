@@ -9,6 +9,7 @@ using System.Text;
 using Dalamud.Game;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Hooking;
+using Dalamud.Memory;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -26,6 +27,9 @@ public static unsafe class Common {
     public delegate void* AddonOnUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** nums, StringArrayData** strings);
     public delegate void* AddonOnSetup(AtkUnitBase* atkUnitBase, void* a2, void* a3);
     public delegate void NoReturnAddonOnUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData);
+
+    private delegate void* GenericAddonSetup(AtkUnitBase* addon);
+    private static HookWrapper<GenericAddonSetup> addonSetupHook;
 
     private delegate IntPtr GameAlloc(ulong size, IntPtr unk, IntPtr allocator, IntPtr alignment);
 
@@ -55,6 +59,8 @@ public static unsafe class Common {
     public static void InvokeFrameworkUpdate() => FrameworkUpdate?.Invoke();
     public static void* ThrowawayOut { get; private set; } = (void*) Marshal.AllocHGlobal(1024);
 
+    public static event Action<SetupAddonArgs> AddonSetup; 
+    
     public static void Setup() {
         var gameAllocPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 49 83 CF FF 4C 8B F0");
         var getGameAllocatorPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 8B 75 08");
@@ -72,6 +78,22 @@ public static unsafe class Common {
 
         _getInventoryContainer = Marshal.GetDelegateForFunctionPointer<GetInventoryContainer>(getInventoryContainerPtr);
         _getContainerSlot = Marshal.GetDelegateForFunctionPointer<GetContainerSlot>(getContainerSlotPtr);
+        
+        addonSetupHook = Hook<GenericAddonSetup>("E8 ?? ?? ?? ?? 8B 83 ?? ?? ?? ?? C1 E8 14", AddonSetupDetour);
+        addonSetupHook?.Enable();
+    }
+
+    private static void* AddonSetupDetour(AtkUnitBase* addon) {
+        var retVal = addonSetupHook.Original(addon);
+        try {
+            AddonSetup?.Invoke(new SetupAddonArgs() {
+                Addon = addon
+            });
+        } catch (Exception ex) {
+            SimpleLog.Error(ex);
+        }
+
+        return retVal;
     }
 
     public static UIModule* UIModule => Framework.Instance()->GetUiModule();
@@ -317,6 +339,9 @@ public static unsafe class Common {
             Marshal.FreeHGlobal(new IntPtr(ThrowawayOut));
             ThrowawayOut = null;
         }
+        
+        addonSetupHook?.Disable();
+        addonSetupHook?.Dispose();
     }
 
     public const int UnitListCount = 18;
@@ -350,4 +375,9 @@ public static unsafe class Common {
         };
     }
     
+}
+
+public unsafe class SetupAddonArgs {
+    public AtkUnitBase* Addon { get; init; }
+    public string AddonName => MemoryHelper.ReadString(new IntPtr(Addon->Name), 0x20).Split('\0')[0];
 }
