@@ -50,6 +50,7 @@ public class LegacyCameraLock : Tweak {
             return;
         }
         EnableChanges();
+        Common.FrameworkUpdate -= OnFrameworkUpdate;
         Common.FrameworkUpdate += OnFrameworkUpdate;
         base.Enable();
     }
