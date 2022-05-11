@@ -24,15 +24,28 @@ public class LegacyCameraLock : Tweak {
 
     public override bool UseAutoConfig => true;
 
+    protected override void ConfigChanged() {
+        base.ConfigChanged();
+        if (Enabled) {
+            Common.FrameworkUpdate -= OnFrameworkUpdate;
+            if (Config.DisableWhileAutoRunning) {
+                Common.FrameworkUpdate += OnFrameworkUpdate;
+            } else {
+                EnableChanges();
+            }
+        }
+        
+    }
+
     private void OnFrameworkUpdate() {
-        if (Config.DisableWhileAutoRunning)
-        {
-            if (changesEnabled == InputManager.IsAutoRunning())
-            {
-                if (changesEnabled)
-                    DisableChanges();
-                else
-                    EnableChanges();
+
+        var isAutoRunning = InputManager.IsAutoRunning();
+
+        if (changesEnabled == InputManager.IsAutoRunning()) {
+            if (changesEnabled) {
+                DisableChanges();
+            } else {
+                EnableChanges();
             }
         }
     }
@@ -50,7 +63,7 @@ public class LegacyCameraLock : Tweak {
             return;
         }
         EnableChanges();
-        Common.FrameworkUpdate += OnFrameworkUpdate;
+        ConfigChanged();
         base.Enable();
         ConfigChanged();
     }
