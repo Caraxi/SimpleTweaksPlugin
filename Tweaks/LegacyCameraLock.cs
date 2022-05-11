@@ -63,8 +63,8 @@ public class LegacyCameraLock : Tweak {
             return;
         }
         EnableChanges();
-        ConfigChanged();
         base.Enable();
+        ConfigChanged();
     }
 
     private void EnableChanges() {
