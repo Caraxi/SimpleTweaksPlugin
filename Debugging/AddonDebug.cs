@@ -82,6 +82,10 @@ public unsafe class AddonDebug : DebugHelper {
                             atkValueList.Add(a->UInt);
                             break;
                         }
+                        case ValueType.Bool: {
+                            atkValueList.Add(a->Byte != 0);
+                            break;
+                        }
                         default: {
                             atkValueList.Add($"Unknown Type: {a->Type}");
                             break;
