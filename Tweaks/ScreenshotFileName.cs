@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -43,7 +44,7 @@ public class ScreenshotFileName : Tweak {
                 ImGui.EndTooltip();
             }
 
-            //  Check for invalid placeholders so that the average user has a harder time shooting themselves in the foot.
+            //  Check for invalid placeholders and characters so that the average user has a harder time shooting themselves in the foot.
             var placeholderIndices = new List<int>();
             for(int i = 0; i < Config.DateFormatString.Length; ++i)
             {
@@ -61,8 +62,20 @@ public class ScreenshotFileName : Tweak {
                     break;
                 }
             }
+            List<char> invalidChars = new();
+            foreach(char c in Path.GetInvalidFileNameChars()) {
+                if(Config.DateFormatString.Replace("%", "").Contains(c)) invalidChars.Add(c);
+            }
+            if(invalidChars.Any())
+            {
+                ImGui.PushStyleColor(ImGuiCol.Text, 0xFF0000FF);
+                string foundChars = "";
+                foreach(char c in invalidChars) foundChars += c;
+                ImGui.Text($"Invalid characters used: {foundChars}");
+                ImGui.PopStyleColor();
+            }
 
-            if(!Config.DateFormatString.Equals(previousDateFormatString) && !foundInvalidPlaceholders) {
+            if(!Config.DateFormatString.Equals(previousDateFormatString) && !foundInvalidPlaceholders && !invalidChars.Any()) {
                 UpdateDateFormatString(Config.DateFormatString);
                 previousDateFormatString = Config.DateFormatString;
             }
@@ -79,13 +92,18 @@ public class ScreenshotFileName : Tweak {
         }
 
         if(screenshotDateFormatHook == null) {
-            IntPtr pLoadScreenshotDateFormat = Service.SigScanner.ScanText( "4c 8d 05 a7 14 35 01 48 8d 8d b0 02 00 00" );
+            IntPtr pLoadScreenshotDateFormat = Service.SigScanner.ScanText("48 8B 4B ?? 48 8B C7 4C 8B 81") - 5;
             string[] hookAsm = {
                 "use64",
                 $"mov r8, 0x{dateFormatStringPtr:X}"
             };
 
-            screenshotDateFormatHook = new( pLoadScreenshotDateFormat, hookAsm, "HookName_LoadScreenshotDateFormatString", AsmHookBehaviour.DoNotExecuteOriginal );
+            if(pLoadScreenshotDateFormat != IntPtr.Zero) {
+                screenshotDateFormatHook = new( pLoadScreenshotDateFormat, hookAsm, "HookName_LoadScreenshotDateFormatString", AsmHookBehaviour.ExecuteFirst );
+            }
+            else {
+                SimpleLog.Error( "Error in ScreenshotFileName.Enable: Unable to locate signature(s)." );
+            }
         }
 
         UpdateDateFormatString(Config.DateFormatString);
@@ -119,16 +137,14 @@ public class ScreenshotFileName : Tweak {
     }
 
     //  Do it like this so it's easy to localize if desired.
-    private struct PlaceholderFormat
-    {
+    private struct PlaceholderFormat {
         public delegate string GetDescriptionDelegate();
         public char Placeholder;
         public GetDescriptionDelegate GetDescription;
     }
 
     //  Only using a subset of available formats to keep things easier to validate.
-    private static readonly PlaceholderFormat[] validPlaceholderFormats =
-    {
+    private static readonly PlaceholderFormat[] validPlaceholderFormats = {
         new(){Placeholder = 'Y', GetDescription = ()=>{ return "Four-digit year"; }},
         new(){Placeholder = 'y', GetDescription = ()=>{ return "Two-digit year"; }},
         new(){Placeholder = 'B', GetDescription = ()=>{ return "Month name (i.e, October)"; }},
