@@ -32,6 +32,8 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
         base.Enable();
     }
 
+    private int lastImage;
+    
     private void AfterItemDetailUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
         if (atkUnitBase == null) return;
         var imageNode = (AtkImageNode*) Common.GetNodeByID(atkUnitBase->UldManager, CustomNodes.PaintingPreview, NodeType.Image);
@@ -99,8 +101,6 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
             part->UldAsset = asset;
             imageNode->PartsList = partsList;
 
-            imageNode->LoadIconTexture(picture.Image, 1);
-
             imageNode->AtkResNode.ToggleVisibility(true);
             
             var prev = insertNode->PrevSiblingNode;
@@ -118,7 +118,15 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
         
         if (imageNode == null) return;
         imageNode->AtkResNode.ToggleVisibility(true);
-        imageNode->LoadIconTexture(picture.Image, 0);
+        
+
+        if (picture.Image != lastImage) {
+            var texPath = $"ui/icon/{picture.Image / 1000 * 1000:000000}/{picture.Image:000000}.tex";
+            SimpleLog.Log($"Load Texture: {texPath}");
+            imageNode->LoadTexture(texPath);
+            lastImage = picture.Image;
+        }
+        
         imageNode->AtkResNode.SetWidth((ushort)(atkUnitBase->RootNode->Width - 20f));
         imageNode->AtkResNode.SetHeight((ushort)(imageNode->AtkResNode.Width * 0.6f));
         
@@ -131,7 +139,7 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
     
     public override void Disable() {
         itemTooltipOnUpdateHook?.Disable();
-
+        lastImage = 0;
         var unitBase = Common.GetUnitBase("ItemDetail");
         if (unitBase != null) {
             var imageNode = (AtkImageNode*) Common.GetNodeByID(unitBase->UldManager, CustomNodes.PaintingPreview, NodeType.Image);
