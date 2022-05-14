@@ -55,6 +55,7 @@ public unsafe class SetOptionCommand : Tweak {
         new OptionDefinition("ItemTooltips", ConfigOption.DisplayItemHelp, OptionType.Bool, "itt"),
         new OptionDefinition("ActionTooltips", ConfigOption.DisplayActionHelp, OptionType.Bool, "att"),
         new OptionDefinition("LegacyMovement", ConfigOption.LegacyMovement, OptionType.Bool, "lm"),
+        new OptionDefinition("HideUnassignedHotbarSlots", ConfigOption.HideUnassignedHotbarSlots, OptionType.Bool, "huhs"),
 
         new OptionDefinition("OwnDisplayName", ConfigOption.OwnDisplayNameSettings, OptionType.NameDisplayModeBattle, "odn"),
         new OptionDefinition("PartyDisplayName", ConfigOption.PartyDisplayNameSettings, OptionType.NameDisplayModeBattle, "pdn"),
