@@ -10,5 +10,6 @@ public static class CustomNodes {
         InventoryGil         = SimpleTweaksNodeBase + 6,
         GearPositionsBg      = SimpleTweaksNodeBase + 7, // and 8
         ClassicSlideCast =     SimpleTweaksNodeBase + 9,
+        PaintingPreview =      SimpleTweaksNodeBase + 10,
         SimpleTweaksNodeBase = 0x53540000;
 }

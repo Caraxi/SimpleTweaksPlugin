@@ -8,7 +8,7 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips; 
 
-public unsafe class PaintingTooltip : TooltipTweaks.SubTweak {
+public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
     
     [Sheet("Picture")]
     public class FixedPicture : ExcelRow {
@@ -31,10 +31,10 @@ public unsafe class PaintingTooltip : TooltipTweaks.SubTweak {
         itemTooltipOnUpdateHook?.Enable();        
         base.Enable();
     }
-    const uint nodeId = 999984934U;
+
     private void AfterItemDetailUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
         if (atkUnitBase == null) return;
-        var imageNode = (AtkImageNode*) Common.GetNodeByID(atkUnitBase->UldManager, nodeId, NodeType.Image);
+        var imageNode = (AtkImageNode*) Common.GetNodeByID(atkUnitBase->UldManager, CustomNodes.PaintingPreview, NodeType.Image);
         if (imageNode != null) imageNode->AtkResNode.ToggleVisibility(false);
         
         var itemId = (uint)Service.GameGui.HoveredItem;
@@ -54,7 +54,7 @@ public unsafe class PaintingTooltip : TooltipTweaks.SubTweak {
 
             imageNode = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
             imageNode->AtkResNode.Type = NodeType.Image;
-            imageNode->AtkResNode.NodeID = nodeId;
+            imageNode->AtkResNode.NodeID = CustomNodes.PaintingPreview;
             imageNode->AtkResNode.Flags = (short)(NodeFlags.AnchorTop | NodeFlags.AnchorLeft);
             imageNode->AtkResNode.DrawFlags = 0;
             imageNode->WrapMode = 1;
@@ -134,7 +134,7 @@ public unsafe class PaintingTooltip : TooltipTweaks.SubTweak {
 
         var unitBase = Common.GetUnitBase("ItemDetail");
         if (unitBase != null) {
-            var imageNode = (AtkImageNode*) Common.GetNodeByID(unitBase->UldManager, nodeId, NodeType.Image);
+            var imageNode = (AtkImageNode*) Common.GetNodeByID(unitBase->UldManager, CustomNodes.PaintingPreview, NodeType.Image);
             if (imageNode != null) {
                 if (imageNode->AtkResNode.PrevSiblingNode != null)
                     imageNode->AtkResNode.PrevSiblingNode->NextSiblingNode = imageNode->AtkResNode.NextSiblingNode;
