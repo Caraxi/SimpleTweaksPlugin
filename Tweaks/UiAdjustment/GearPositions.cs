@@ -49,7 +49,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
         Down = 11,
     }
 
-    private enum Node : int {
+    private enum CharacterNode : int {
         None = -1,
         
         RecommendedGear = 4,
@@ -73,7 +73,32 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
         DrawSheathe = 25,
         ToggleCharacterDisplayMode = 26,
         ResetDisplay = 27,
-        
+    }
+
+    private enum CharacterInspectNode : int {
+        None = -1,
+
+        SearchInfo = 0,
+        MainHand = 1,
+
+        GCRank = 3,
+        DisplayCompanyProfile = 4,
+
+        OffHand = 7,
+        Head = 8,
+        Body = 9,
+        Hands = 10,
+        Legs = 11,
+        Feet = 12,
+        Ears = 13,
+        Neck = 14,
+        Wrist = 15,
+        FingerRight = 16,
+        FingerLeft = 17,
+        SoulCrystal = 18,
+
+        ResetDisplay = 20
+
     }
 
     private int GetCollisionNodeIndex(AtkUnitBase* atkUnitBase) {
@@ -85,48 +110,101 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
         return -1;
     }
     
-    
-    
     private byte ControllerInputDetour(AtkUnitBase* atkUnitBase, Dir d, byte a3) {
         try {
-            if (atkUnitBase != Common.GetUnitBase("Character")) return addonControllerInputHook.Original(atkUnitBase, d, a3);
+            if (atkUnitBase == Common.GetUnitBase("Character")) {
 
-            var currentSelectedNodeIndex = (Node)GetCollisionNodeIndex(atkUnitBase);
+                var currentSelectedNodeIndex = (CharacterNode)GetCollisionNodeIndex(atkUnitBase);
 
-            byte F(Node node) {
-                if ((int)node < 0 || (int)node >= atkUnitBase->CollisionNodeListCount) return 1;
-                atkUnitBase->SetFocusNode(atkUnitBase->CollisionNodeList[(int)node]);
-                atkUnitBase->CursorTarget = atkUnitBase->CollisionNodeList[(int)node];
-                return 1;
+                byte F(CharacterNode node) {
+                    if ((int)node < 0 || (int)node >= atkUnitBase->CollisionNodeListCount) return 1;
+                    atkUnitBase->SetFocusNode(atkUnitBase->CollisionNodeList[(int)node]);
+                    atkUnitBase->CursorTarget = atkUnitBase->CollisionNodeList[(int)node];
+                    return 1;
+                }
+
+                return currentSelectedNodeIndex switch {
+                    CharacterNode.SoulCrystal when d == Dir.Right => F(CharacterNode.OffHand),
+                    CharacterNode.SoulCrystal when d == Dir.Down => F(CharacterNode.MainHand),
+                    CharacterNode.SoulCrystal when d == Dir.Up => F(CharacterNode.GearSetList),
+                    CharacterNode.SoulCrystal when d == Dir.Left => F(CharacterNode.MainHand),
+                    CharacterNode.MainHand when d == Dir.Up => F(CharacterNode.SoulCrystal),
+                    CharacterNode.Head when d == Dir.Right => F(CharacterNode.Ears),
+                    CharacterNode.Body when d == Dir.Right => F(CharacterNode.Neck),
+                    CharacterNode.Hands when d == Dir.Right => F(CharacterNode.Wrist),
+                    CharacterNode.Legs when d == Dir.Right => F(CharacterNode.FingerRight),
+                    CharacterNode.Feet when d == Dir.Right => F(CharacterNode.FingerLeft),
+                    CharacterNode.OffHand when d == Dir.Left => F(CharacterNode.MainHand),
+                    CharacterNode.Ears when d == Dir.Left => F(CharacterNode.Head),
+                    CharacterNode.Neck when d == Dir.Left => F(CharacterNode.Body),
+                    CharacterNode.Wrist when d == Dir.Left => F(CharacterNode.Hands),
+                    CharacterNode.FingerRight when d == Dir.Left => F(CharacterNode.Legs),
+                    CharacterNode.FingerLeft when d == Dir.Left => F(CharacterNode.Feet),
+                    CharacterNode.FingerLeft when d == Dir.Down => F(CharacterNode.ResetDisplay),
+                    CharacterNode.ResetDisplay when d == Dir.Right => F(CharacterNode.FingerLeft),
+                    CharacterNode.ResetDisplay or CharacterNode.ToggleCharacterDisplayMode or CharacterNode.DrawSheathe when d == Dir.Up => F(CharacterNode.FingerLeft),
+                    CharacterNode.GearSetList or CharacterNode.GlamourPlate or CharacterNode.RecommendedGear when d == Dir.Down => F(CharacterNode.SoulCrystal),
+                    _ => addonControllerInputHook.Original(atkUnitBase, d, a3)
+                };
+
+            } else if (atkUnitBase == Common.GetUnitBase("CharacterInspect")) {
+                var currentSelectedNodeIndex = (CharacterInspectNode)GetCollisionNodeIndex(atkUnitBase);
+
+                byte F(CharacterInspectNode node) {
+                    if ((int)node < 0 || (int)node >= atkUnitBase->CollisionNodeListCount) return 1;
+                    atkUnitBase->SetFocusNode(atkUnitBase->CollisionNodeList[(int)node]);
+                    atkUnitBase->CursorTarget = atkUnitBase->CollisionNodeList[(int)node];
+                    return 1;
+                }
+                return currentSelectedNodeIndex switch {
+                    CharacterInspectNode.SearchInfo when d == Dir.Down => F(CharacterInspectNode.SoulCrystal),
+                    CharacterInspectNode.SoulCrystal when d == Dir.Up => F(CharacterInspectNode.SearchInfo),
+                    CharacterInspectNode.SoulCrystal when d == Dir.Down => F(CharacterInspectNode.GCRank),
+                    CharacterInspectNode.SoulCrystal when d == Dir.Left => F(CharacterInspectNode.DisplayCompanyProfile),
+                    CharacterInspectNode.SoulCrystal when d == Dir.Right => F(CharacterInspectNode.DisplayCompanyProfile),
+                    CharacterInspectNode.DisplayCompanyProfile when d == Dir.Left => F(CharacterInspectNode.SoulCrystal),
+                    CharacterInspectNode.DisplayCompanyProfile when d == Dir.Right => F(CharacterInspectNode.SoulCrystal),
+                    CharacterInspectNode.GCRank when d == Dir.Up => F(CharacterInspectNode.SoulCrystal),
+                    CharacterInspectNode.GCRank when d == Dir.Down => F(CharacterInspectNode.MainHand),
+                    CharacterInspectNode.MainHand when d == Dir.Down => F(CharacterInspectNode.Head),
+                    CharacterInspectNode.MainHand when d == Dir.Up => F(CharacterInspectNode.GCRank),
+                    CharacterInspectNode.MainHand when d == Dir.Left => F(CharacterInspectNode.OffHand),
+                    CharacterInspectNode.MainHand when d == Dir.Right => F(CharacterInspectNode.OffHand),
+                    CharacterInspectNode.Head when d == Dir.Up => F(CharacterInspectNode.MainHand),
+                    CharacterInspectNode.Head when d == Dir.Right => F(CharacterInspectNode.Ears),
+                    CharacterInspectNode.Head when d == Dir.Left => F(CharacterInspectNode.Ears),
+                    CharacterInspectNode.Body when d == Dir.Right => F(CharacterInspectNode.Neck),
+                    CharacterInspectNode.Body when d == Dir.Left => F(CharacterInspectNode.Neck),
+                    CharacterInspectNode.Hands when d == Dir.Right => F(CharacterInspectNode.Wrist),
+                    CharacterInspectNode.Hands when d == Dir.Left => F(CharacterInspectNode.Wrist),
+                    CharacterInspectNode.Legs when d == Dir.Right => F(CharacterInspectNode.FingerRight),
+                    CharacterInspectNode.Legs when d == Dir.Left => F(CharacterInspectNode.FingerRight),
+                    CharacterInspectNode.Feet when d == Dir.Right => F(CharacterInspectNode.FingerLeft),
+                    CharacterInspectNode.Feet when d == Dir.Left => F(CharacterInspectNode.FingerLeft),
+                    CharacterInspectNode.OffHand when d == Dir.Left => F(CharacterInspectNode.MainHand),
+                    CharacterInspectNode.OffHand when d == Dir.Right => F(CharacterInspectNode.MainHand),
+                    CharacterInspectNode.Ears when d == Dir.Left => F(CharacterInspectNode.Head),
+                    CharacterInspectNode.Ears when d == Dir.Right => F(CharacterInspectNode.Head),
+                    CharacterInspectNode.Neck when d == Dir.Left => F(CharacterInspectNode.Body),
+                    CharacterInspectNode.Neck when d == Dir.Right => F(CharacterInspectNode.Body),
+                    CharacterInspectNode.Wrist when d == Dir.Left => F(CharacterInspectNode.Hands),
+                    CharacterInspectNode.Wrist when d == Dir.Right => F(CharacterInspectNode.Hands),
+                    CharacterInspectNode.FingerRight when d == Dir.Left => F(CharacterInspectNode.Legs),
+                    CharacterInspectNode.FingerRight when d == Dir.Right => F(CharacterInspectNode.Legs),
+                    CharacterInspectNode.FingerLeft when d == Dir.Left => F(CharacterInspectNode.Feet),
+                    CharacterInspectNode.FingerLeft when d == Dir.Right => F(CharacterInspectNode.Feet),
+                    CharacterInspectNode.FingerLeft when d == Dir.Down => F(CharacterInspectNode.ResetDisplay),
+                    CharacterInspectNode.ResetDisplay when d == Dir.Right => F(CharacterInspectNode.FingerLeft),
+                    CharacterInspectNode.ResetDisplay when d == Dir.Up => F(CharacterInspectNode.FingerLeft),
+                    _ => addonControllerInputHook.Original(atkUnitBase, d, a3)
+                };
+
+            } else {
+                return addonControllerInputHook.Original(atkUnitBase, d, a3);
             }
-
-            return currentSelectedNodeIndex switch {
-                Node.SoulCrystal when d == Dir.Right => F(Node.OffHand),
-                Node.SoulCrystal when d == Dir.Down => F(Node.MainHand),
-                Node.SoulCrystal when d == Dir.Up => F(Node.GearSetList),
-                Node.SoulCrystal when d == Dir.Left => F(Node.MainHand),
-                Node.MainHand when d == Dir.Up => F(Node.SoulCrystal),
-                Node.Head when d == Dir.Right => F(Node.Ears),
-                Node.Body when d == Dir.Right => F(Node.Neck),
-                Node.Hands when d == Dir.Right => F(Node.Wrist),
-                Node.Legs when d == Dir.Right => F(Node.FingerRight),
-                Node.Feet when d == Dir.Right => F(Node.FingerLeft),
-                Node.OffHand when d == Dir.Left => F(Node.MainHand),
-                Node.Ears when d == Dir.Left => F(Node.Head),
-                Node.Neck when d == Dir.Left => F(Node.Body),
-                Node.Wrist when d == Dir.Left => F(Node.Hands),
-                Node.FingerRight when d == Dir.Left => F(Node.Legs),
-                Node.FingerLeft when d == Dir.Left => F(Node.Feet),
-                Node.FingerLeft when d == Dir.Down => F(Node.ResetDisplay),
-                Node.ResetDisplay when d == Dir.Right => F(Node.FingerLeft),
-                Node.ResetDisplay or Node.ToggleCharacterDisplayMode or Node.DrawSheathe when d == Dir.Up => F(Node.FingerLeft),
-                Node.GearSetList or Node.GlamourPlate or Node.RecommendedGear when d == Dir.Down => F(Node.SoulCrystal),
-                _ => addonControllerInputHook.Original(atkUnitBase, d, a3)
-            };
         } catch {
             return addonControllerInputHook.Original(atkUnitBase, d, a3);
         }
-        
     }
 
     private void BagWidgetUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
