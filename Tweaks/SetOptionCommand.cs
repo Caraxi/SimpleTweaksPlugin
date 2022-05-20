@@ -50,20 +50,20 @@ public unsafe class SetOptionCommand : Tweak {
     }
 
     private readonly List<OptionDefinition> optionDefinitions = new() {
-        new OptionDefinition("GamepadMode", ConfigOption.GamepadMode, OptionType.ToggleGamepadMode, "gp"),
+        new OptionDefinition("GamepadMode", ConfigOption.PadMode, OptionType.ToggleGamepadMode, "gp"),
 
-        new OptionDefinition("ItemTooltips", ConfigOption.DisplayItemHelp, OptionType.Bool, "itt"),
-        new OptionDefinition("ActionTooltips", ConfigOption.DisplayActionHelp, OptionType.Bool, "att"),
-        new OptionDefinition("LegacyMovement", ConfigOption.LegacyMovement, OptionType.Bool, "lm"),
-        new OptionDefinition("HideUnassignedHotbarSlots", ConfigOption.HideUnassignedHotbarSlots, OptionType.Bool, "huhs"),
+        new OptionDefinition("ItemTooltips", ConfigOption.ItemDetailDisp, OptionType.Bool, "itt"),
+        new OptionDefinition("ActionTooltips", ConfigOption.ActionDetailDisp, OptionType.Bool, "att"),
+        new OptionDefinition("LegacyMovement", ConfigOption.MoveMode, OptionType.Bool, "lm"),
+        new OptionDefinition("HideUnassignedHotbarSlots", ConfigOption.HotbarEmptyVisible, OptionType.Bool, "huhs"),
 
-        new OptionDefinition("OwnDisplayName", ConfigOption.OwnDisplayNameSettings, OptionType.NameDisplayModeBattle, "odn"),
-        new OptionDefinition("PartyDisplayName", ConfigOption.PartyDisplayNameSettings, OptionType.NameDisplayModeBattle, "pdn"),
-        new OptionDefinition("AllianceDisplayName", ConfigOption.AllianceDisplayNameSettings, OptionType.NameDisplayModeBattle, "adn"),
-        new OptionDefinition("OtherPlayerDisplayName", ConfigOption.OtherPCsDisplayNameSettings, OptionType.NameDisplayModeBattle, "opcdn"),
-        new OptionDefinition("FriendDisplayName", ConfigOption.FriendsDisplayNameSettings, OptionType.NameDisplayModeBattle, "fdn"),
+        new OptionDefinition("OwnDisplayName", ConfigOption.NamePlateDispTypeSelf, OptionType.NameDisplayModeBattle, "odn"),
+        new OptionDefinition("PartyDisplayName", ConfigOption.NamePlateDispTypeParty, OptionType.NameDisplayModeBattle, "pdn"),
+        new OptionDefinition("AllianceDisplayName", ConfigOption.NamePlateDispTypeAlliance, OptionType.NameDisplayModeBattle, "adn"),
+        new OptionDefinition("OtherPlayerDisplayName", ConfigOption.NamePlateDispTypeOther, OptionType.NameDisplayModeBattle, "opcdn"),
+        new OptionDefinition("FriendDisplayName", ConfigOption.NamePlateDispTypeFriend, OptionType.NameDisplayModeBattle, "fdn"),
         
-        new OptionDefinition("DisplayNameSize", ConfigOption.DisplayNameSize, OptionType.IntList, "dns") {
+        new OptionDefinition("DisplayNameSize", ConfigOption.NamePlateDispSize, OptionType.IntList, "dns") {
             Values = new() { ["maximum"] = 0, ["large"] = 1, ["standard"] = 2 },
             ValueAlias = new() { ["m"] = 0, ["max"] = 0, ["l"] = 1, ["s"] = 2, }
         },

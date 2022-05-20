@@ -41,12 +41,13 @@ public unsafe class ConfigDebug : DebugHelper {
 
                 ImGui.InputText("Search Option", ref searchString, 50);
 
-                if (ImGui.BeginTable("configViewTable", 5)) {
+                if (ImGui.BeginTable("configViewTable", 6, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg)) {
                     ImGui.TableSetupColumn("ID", ImGuiTableColumnFlags.WidthFixed, 50);
                     ImGui.TableSetupColumn("Option Name", ImGuiTableColumnFlags.WidthFixed);
                     ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, 120);
                     ImGui.TableSetupColumn("Value", ImGuiTableColumnFlags.WidthFixed, 120);
                     ImGui.TableSetupColumn("Value2", ImGuiTableColumnFlags.WidthFixed, 120);
+                    ImGui.TableSetupColumn("Other", ImGuiTableColumnFlags.WidthStretch);
                     ImGui.TableHeadersRow();
 
                     for (short i = 0; i < 2000; i++) {
@@ -62,7 +63,7 @@ public unsafe class ConfigDebug : DebugHelper {
                         ImGui.TableNextColumn();
                         ImGui.Text($"#{i}");
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{c->OptionID}");
+                        ImGui.Text($"{c->GetName()}");
                         ImGui.TableNextColumn();
                         ImGui.Text($"{v->Type}");
                         ImGui.TableNextColumn();
@@ -103,6 +104,10 @@ public unsafe class ConfigDebug : DebugHelper {
                         ImGui.TableNextColumn();
                         var intVal = config->GetIntValue(c->OptionID);
                         ImGui.Text($"{intVal}");
+                        ImGui.TableNextColumn();
+                        
+                        DebugManager.PrintOutObject(c);
+                        
 
                     }
 
