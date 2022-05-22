@@ -74,6 +74,7 @@ public unsafe class AddonDebug : DebugHelper {
                             atkValueList.Add(a->Int);
                             break;
                         }
+                        case ValueType.String8:
                         case ValueType.String: {
                             atkValueList.Add(Marshal.PtrToStringUTF8(new IntPtr(a->String)));
                             break;
