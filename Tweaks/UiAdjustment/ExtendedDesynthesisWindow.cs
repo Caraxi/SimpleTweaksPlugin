@@ -1,33 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using Dalamud.Game.Text;
-using Dalamud.Hooking;
+using Dalamud.Memory;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
+using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
+using FFXIVClientStructs.FFXIV.Component.Exd;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.GameStructs;
-using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
-using InventoryItem = FFXIVClientStructs.FFXIV.Client.Game.InventoryItem;
-
-namespace SimpleTweaksPlugin {
-    public partial class UiAdjustmentsConfig {
-        public bool ShouldSerializeExtendedDesynthesisWindow() => ExtendedDesynthesisWindow != null;
-        public ExtendedDesynthesisWindow.Configs ExtendedDesynthesisWindow = null;
-    }
-}
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
 
         public class Configs : TweakConfig {
+            
             public bool BlockClickOnGearset;
             public bool YellowForSkillGain = true;
             public bool Delta;
+            
+            
+            public bool ShowAll;
+            public bool ShowAllExcludeNoSkill;
+            public bool ShowAllExcludeGearset;
         }
 
         public Configs Config { get; private set; }
@@ -36,6 +39,21 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             ImGui.Checkbox(LocString("BlockClickOnGearset", "Block clicking on gearset items."), ref Config.BlockClickOnGearset);
             ImGui.Checkbox(LocString("YellowForSkillGain", "Highlight potential skill gains (Yellow)"), ref Config.YellowForSkillGain);
             ImGui.Checkbox(LocString("DesynthesisDelta", "Show desynthesis delta"), ref Config.Delta);
+            
+            ImGui.Checkbox(LocString("ShowAll", "Add option to show all items"), ref Config.ShowAll);
+            if (Config.ShowAll) {
+                ImGui.Indent();
+                ImGui.TextDisabled(LocString("LimitNote", "Note: Only 140 items can be displayed at once, anything more will be cut off."));
+                ImGui.Text(LocString("ExcludeHeader", "Exlude from the 'All Items' category:"));
+                ImGui.Indent();
+                var u = ImGui.Checkbox(LocString("ExcludeNoSkill","Items that give no desynthesis levels."), ref Config.ShowAllExcludeNoSkill);
+                u |= ImGui.Checkbox(LocString("ExcludeGearSet", "Items in gear sets."), ref Config.ShowAllExcludeGearset);
+                ImGui.Unindent();
+                ImGui.Unindent();
+                if (u) {
+                    SetupAllItemList(AgentSalvage.Instance());
+                }
+            }
         };
 
         public override string Name => "Extended Desynthesis Window";
@@ -48,30 +66,204 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private delegate IntPtr UpdateItemDelegate(IntPtr a1, ulong index, IntPtr a3, ulong a4);
         private delegate byte UpdateListDelegate(IntPtr a1, IntPtr a2, IntPtr a3);
 
-        private Hook<UpdateItemDelegate> updateItemHook;
-        private Hook<UpdateListDelegate> updateListHook;
+        private HookWrapper<UpdateItemDelegate> updateItemHook;
+        private HookWrapper<UpdateListDelegate> updateListHook;
         
-        private static readonly ByteColor Red = new() { A = 0xFF, R = 0xCC, G = 0x00, B = 0x00 };
+        private delegate void* SetupDropDownList(AtkComponentList* a1, ushort a2, byte** a3, byte a4);
+        private HookWrapper<SetupDropDownList> setupDropDownList;
+
+        private delegate byte PopulateItemList(AgentSalvage* agentSalvage);
+
+        private HookWrapper<PopulateItemList> populateHook;
+
+        private static readonly ByteColor Red = new() { A = 0xFF, R = 0xEE, G = 0x44, B = 0x44 };
         private static readonly ByteColor Green = new() { A = 0xFF, R = 0x00, G = 0xCC, B = 0x00 };
         private static readonly ByteColor Yellow = new() { A = 0xFF, R = 0xCC, G = 0xCC, B = 0x00 };
 
         private uint maxDesynthLevel = 590;
 
+        private IntPtr allItemsString;
+        private IntPtr alternateList;
+        
+
         public override void Setup() {
             foreach (var i in Service.Data.Excel.GetSheet<Item>()) {
                 if (i.Desynth > 0 && i.LevelItem.Row > maxDesynthLevel) maxDesynthLevel = i.LevelItem.Row;
             }
-            SimpleLog.Debug("");
+            allItemsString = Marshal.AllocHGlobal(128);
+            MemoryHelper.WriteString(allItemsString, "All Items (Excluding Equipped)", Encoding.UTF8);
+            alternateList = Marshal.AllocHGlobal(128);
+
             base.Setup();
         }
 
         public override void Enable() {
-            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.ExtendedDesynthesisWindow ?? new Configs();
-            updateItemHook ??= new Hook<UpdateItemDelegate>(Service.SigScanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 30 49 8B 38"), new UpdateItemDelegate(UpdateItemDetour));
+            Config = LoadConfig<Configs>() ?? new Configs();
+            updateItemHook ??= Common.Hook<UpdateItemDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 30 49 8B 38", UpdateItemDetour);
             updateItemHook?.Enable();
-            updateListHook ??= new Hook<UpdateListDelegate>(Service.SigScanner.ScanText("40 53 56 57 48 83 EC 20 48 8B D9 49 8B F0"), new UpdateListDelegate(UpdateListDetour));
+            updateListHook ??= Common.Hook<UpdateListDelegate>("40 53 56 57 48 83 EC 20 48 8B D9 49 8B F0", UpdateListDetour);
             updateListHook?.Enable();
+            
+            setupDropDownList ??= Common.Hook<SetupDropDownList>("E8 ?? ?? ?? ?? 8D 4F 55", SetupDropDownListDetour);
+            setupDropDownList?.Enable();
+            
+            populateHook ??= Common.Hook<PopulateItemList>("E8 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 83 63 2C FE", PopulateDetour);
+            populateHook?.Enable();
+            
+            Common.AddonSetup += CommonOnAddonPreSetup;
+
             base.Enable();
+        }
+
+        private void CommonOnAddonPreSetup(SetupAddonArgs obj) {
+            // if (obj.AddonName == "SalvageItemSelector") Common.GenerateCallback(obj.Addon, 11, 8);
+        }
+
+        private class ItemEntry {
+            public InventoryItem* Slot;
+            public Item? Item;
+        }
+
+        private bool SetupAllItemList(AgentSalvage* agentSalvage) {
+            agentSalvage->ItemListRefresh();
+            if (agentSalvage->SelectedCategory != (AgentSalvage.SalvageItemCategory)8) return true;
+            var inventoryManager = InventoryManager.Instance();
+            var itemSheet = Service.Data.Excel.GetSheet<Item>();
+            if (itemSheet == null) return true;
+
+            var items = new List<ItemEntry>();
+
+            var searchInventories = new List<InventoryType>() {
+                InventoryType.Inventory1,
+                InventoryType.Inventory2,
+                InventoryType.Inventory3,
+                InventoryType.Inventory4,
+                InventoryType.ArmoryMainHand,
+                InventoryType.ArmoryOffHand,
+                InventoryType.ArmoryHead,
+                InventoryType.ArmoryBody,
+                InventoryType.ArmoryHands,
+                InventoryType.ArmoryLegs,
+                InventoryType.ArmoryEar,
+                InventoryType.ArmoryFeets,
+                InventoryType.ArmoryNeck,
+                InventoryType.ArmoryWrist,
+                InventoryType.ArmoryRings
+            };
+
+            // Get all items
+            foreach (var inventoryType in searchInventories) {
+                var inventory = inventoryManager->GetInventoryContainer(inventoryType);
+
+                for (var i = 0; i < inventory->Size; i++) {
+                    var slot = inventory->GetInventorySlot(i);
+                    if (slot->ItemID == 0) continue;
+                    if (slot->Quantity == 0) continue;
+                    var item = itemSheet.GetRow(slot->ItemID);
+                    if (item == null) continue;
+                    if (item.Desynth == 0) continue;
+
+                    if (Config.ShowAllExcludeNoSkill) {
+                        var desynthLevel = UIState.Instance()->PlayerState.GetDesynthesisLevel(item.ClassJobRepair.Row);
+                        if (desynthLevel >= item.LevelItem.Row + 50 || desynthLevel >= maxDesynthLevel) continue;
+                    }
+
+                    if (Config.ShowAllExcludeGearset && GetGearSetWithItem(slot) != null) continue;
+
+                    items.Add(new ItemEntry() { Slot = slot, Item = item });
+                }
+            }
+
+            // Apply Sorting
+            var sortedItems = items.OrderBy(a => a.Item?.ClassJobRepair?.Row);
+            sortedItems = sortedItems.ThenByDescending(a => a.Item?.LevelItem?.Row);
+            sortedItems = sortedItems.ThenBy(a => a.Item?.Name?.RawString);
+            items = sortedItems.ToList();
+
+            var hasMissingItem = false;
+            
+            foreach (var item in items) {
+                if (item.Item == null) continue;
+                if (agentSalvage->ItemCount >= 140) break;
+                var exdRow = ExdModule.GetItemRowById(item.Slot->ItemID);;
+                if (exdRow == null) {
+                    hasMissingItem = true;
+                    continue;
+                }
+                agentSalvage->ItemListAdd(true, item.Slot->Container, item.Slot->Slot, item.Slot->ItemID, exdRow, item.Slot->Quantity);
+            }
+
+            return !hasMissingItem;
+        }
+
+        private byte failLimit = 50;
+        private void RebuildListUntilSuccess() {
+            var agentSalvage = AgentSalvage.Instance();
+            if (agentSalvage->SelectedCategory == (AgentSalvage.SalvageItemCategory)8) {
+                failLimit--;
+                SimpleLog.Log($"Retrying Item List #{50 - failLimit}");
+                if (!(SetupAllItemList(agentSalvage) || failLimit == 0)) return;
+            }
+            Common.FrameworkUpdate -= RebuildListUntilSuccess;
+        }
+        
+        private byte PopulateDetour(AgentSalvage* agentSalvage) {
+            Common.FrameworkUpdate -= RebuildListUntilSuccess;
+            try {
+                if (agentSalvage->SelectedCategory == (AgentSalvage.SalvageItemCategory)8) {
+                    var fullSuccess = SetupAllItemList(agentSalvage);
+                    if (!fullSuccess) {
+                        failLimit = 50;
+                        Common.FrameworkUpdate += RebuildListUntilSuccess;
+                    }
+                    return 1;
+                }
+            } catch (Exception ex) {
+                SimpleLog.Error(ex);
+                return 1;
+            }
+            
+            return populateHook.Original(agentSalvage);
+        }
+        
+        private static RaptureGearsetModule.GearsetEntry* GetGearSetWithItem(InventoryItem* slot) {
+            var gearSetModule = RaptureGearsetModule.Instance();
+            var itemIdWithHQ = slot->ItemID;
+            if ((slot->Flags & InventoryItem.ItemFlags.HQ) > 0) itemIdWithHQ += 1000000;
+            for (var gs = 0; gs < 101; gs++) {
+                var gearSet = gearSetModule->Gearset[gs];
+                if (gearSet->ID != gs) break;
+                if (!gearSet->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists)) continue;
+                var gearSetItems = (RaptureGearsetModule.GearsetItem*)gearSet->ItemsData;
+                for (var j = 0; j < 14; j++) {
+                    if (gearSetItems[j].ItemID == itemIdWithHQ) {
+                        return gearSet;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private void* SetupDropDownListDetour(AtkComponentList* atkComponentList, ushort itemCount, byte** itemLabels, byte unknownBool) {
+            if (!Config.ShowAll) goto Original;
+            if (alternateList == IntPtr.Zero) goto Original;
+            if (allItemsString == IntPtr.Zero) goto Original;
+            var addonSalvageItemSelector = Common.GetUnitBase("SalvageItemSelector");
+            if (addonSalvageItemSelector == null) goto Original;
+            var ddlComponent = (AtkComponentDropDownList*) addonSalvageItemSelector->GetNodeById(4)->GetComponent();
+            if (ddlComponent == null) goto Original;
+            var lComponent = (AtkComponentList*) ddlComponent->AtkComponentBase.UldManager.SearchNodeById(3)->GetComponent();
+            if (lComponent != atkComponentList) goto Original;
+            var list = (byte**)alternateList;
+            if (list == null) goto Original;
+            for (var i = 0; i < itemCount; i++) {
+                list[i] = itemLabels[i];
+            }
+            list[itemCount++] = (byte*) allItemsString;
+            itemLabels = (byte**) alternateList;
+            Original:
+            return setupDropDownList.Original(atkComponentList, itemCount, itemLabels, unknownBool);
         }
         
         private byte UpdateListDetour(IntPtr a1, IntPtr a2, IntPtr a3) {
@@ -81,10 +273,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public override void Disable() {
+            Common.FrameworkUpdate -= RebuildListUntilSuccess;
             SaveConfig(Config);
-            PluginConfig.UiAdjustments.ExtendedDesynthesisWindow = null;
             updateItemHook?.Disable();
             updateListHook?.Disable();
+            setupDropDownList?.Disable();
+            populateHook?.Disable();
             Reset();
             base.Disable();
         }
@@ -92,6 +286,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override void Dispose() {
             updateItemHook?.Dispose();
             updateListHook?.Dispose();
+            setupDropDownList?.Dispose();
+            populateHook?.Dispose();
+            if (allItemsString != IntPtr.Zero) Marshal.FreeHGlobal(allItemsString);
+            if (alternateList != IntPtr.Zero) Marshal.FreeHGlobal(alternateList);
             base.Dispose();
         }
 
@@ -113,14 +311,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     skillTextNode->SetText("Error");
                     return;
                 }
-
-                var salvageItemAddress = (ulong)addon + 0x268 + (ulong) sizeof(SalvageItem) * index;
-                var salvageItem = (SalvageItem*)salvageItemAddress;
-
-                var item = Common.GetInventoryItem(salvageItem->Inventory, salvageItem->Slot);
-
-                var itemData = Service.Data.Excel.GetSheet<Item>().GetRow(item->ItemId);
-
+                
+                var salvageItem = addon->Items[(int)index];
+                var item = InventoryManager.Instance()->GetInventoryContainer(salvageItem.Inventory)->GetInventorySlot(salvageItem.Slot);
+                var itemData = Service.Data.Excel.GetSheet<Item>().GetRow(item->ItemID);
                 var desynthLevel = UIState.Instance()->PlayerState.GetDesynthesisLevel(itemData.ClassJobRepair.Row);
 
                 ByteColor c;
@@ -148,7 +342,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     skillTextNode->SetText($"{desynthLevel:F0}/{itemData.LevelItem.Row}");
                 }
 
-                var itemIdWithHQ = item->ItemId;
+                var itemIdWithHQ = item->ItemID;
                 if ((item->Flags & InventoryItem.ItemFlags.HQ) > 0) itemIdWithHQ += 1000000;
                 var gearsetModule = RaptureGearsetModule.Instance();
                 var itemInGearset = false;
@@ -166,12 +360,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                     if (itemInGearset) break;
                 }
-                UiHelper.Show(desynthRow.CollisionNode);
+                desynthRow.CollisionNode->AtkResNode.ToggleVisibility(true);
                 if (itemInGearset) {
                     
                     
                     if (Config.BlockClickOnGearset) {
-                        UiHelper.Hide(desynthRow.CollisionNode);
+                        desynthRow.CollisionNode->AtkResNode.ToggleVisibility(false);
                     }
                     desynthRow.GearsetWarningNode->SetText($"{(char) SeIconChar.BoxedStar}");
                 } else {
@@ -194,6 +388,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             var atkUnitBase = (AtkUnitBase*)Service.GameGui.GetAddonByName("SalvageItemSelector", 1);
 
+            var dropDownList = (AtkComponentDropDownList*) atkUnitBase->GetNodeById(4)->GetComponent();
+            var list = (AtkComponentList*) dropDownList->AtkComponentBase.UldManager.SearchNodeById(3)->GetComponent();
+            
             if (atkUnitBase == null) return;
             if ((atkUnitBase->Flags & 0x20) != 0x20) return;
 
@@ -241,12 +438,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 for (var i = 2; i < 18; i++) {
                     var listItem = (AtkComponentNode*)listNodeList[i];
                     var listItemNodes = listItem->Component->UldManager.NodeList;
-                    UiHelper.SetSize(listItem, NewWidth - 40, null);
-                    UiHelper.SetSize(listItemNodes[0], NewWidth - 59, null);
-                    UiHelper.SetSize(listItemNodes[1], NewWidth - 59, null);
-                    UiHelper.SetSize(listItemNodes[2], NewWidth - 40, null);
-
                     
+                    listItem->AtkResNode.SetWidth(NewWidth - 40);
+                    listItemNodes[0]->SetWidth(NewWidth - 59);
+                    listItemNodes[1]->SetWidth(NewWidth - 59);
+                    listItemNodes[2]->SetWidth(NewWidth - 40);
+
                     UiHelper.ExpandNodeList(listItem, 2);
                      
                     var newRowItem = (AtkTextNode*)UiHelper.CloneNode(listItemNodes[3]);
@@ -285,6 +482,5 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (atkUnitBase == null) return;
             UiHelper.Close(atkUnitBase, true);
         }
-        
     }
 }
