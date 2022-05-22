@@ -367,6 +367,14 @@
     "message": "More Gear Sets",
     "description": "[MoreGearSets] Tweak Name"
   },
+  "NoSellList / Description": {
+    "message": "Allows you to define a list of items that can not be sold to a vendor.",
+    "description": "[NoSellList] Tweak Description"
+  },
+  "NoSellList / Name": {
+    "message": "No Sell List",
+    "description": "[NoSellList] Tweak Name"
+  },
   "PidCommand / Description": {
     "message": "Adds the command '/pid' to show current process id.",
     "description": "[PidCommand] Tweak Description"
@@ -375,6 +383,14 @@
     "message": "Show process id Command",
     "description": "[PidCommand] Tweak Name"
   },
+  "QuickSellItems / Description": {
+    "message": "Hold a modifier key to sell items from your inventory in one click.",
+    "description": "[QuickSellItems] Tweak Description"
+  },
+  "QuickSellItems / Name": {
+    "message": "Quick Sell Items at Vendors",
+    "description": "[QuickSellItems] Tweak Name"
+  },
   "RememberQuickGathering / Description": {
     "message": "Remembers quick gathering status even after gathering at unspoiled nodes.",
     "description": "[RememberQuickGathering] Tweak Description"
@@ -382,6 +398,14 @@
   "RememberQuickGathering / Name": {
     "message": "Remember Quick Gathering",
     "description": "[RememberQuickGathering] Tweak Name"
+  },
+  "ScreenshotFileName / Description": {
+    "message": "Change the file name format for screenshots.",
+    "description": "[ScreenshotFileName] Tweak Description"
+  },
+  "ScreenshotFileName / Name": {
+    "message": "Screenshot File Name",
+    "description": "[ScreenshotFileName] Tweak Name"
   },
   "SetOptionCommand / alias": {
     "message": "alias",
@@ -531,6 +555,14 @@
     "message": "Simplified Combined Display",
     "description": "[MateriaStats] Materia Stats - Simplified Combined Display"
   },
+  "TooltipTweaks@PaintingPreview / Description": {
+    "message": "Add an image preview for paintings to item tooltips.",
+    "description": "[PaintingPreview] Tweak Description"
+  },
+  "TooltipTweaks@PaintingPreview / Name": {
+    "message": "Show Painting Preview",
+    "description": "[PaintingPreview] Tweak Name"
+  },
   "TooltipTweaks@PrecisionDurability / Description": {
     "message": "Show partial percentages for durability.",
     "description": "[PrecisionDurability] Tweak Description"
@@ -594,6 +626,14 @@
   "UiAdjustments@AccurateVentureTimes / Simple Display": {
     "message": "Simple Display",
     "description": "[AccurateVentureTimes] [Config] Simple Display"
+  },
+  "UiAdjustments@AlwaysYes / Description": {
+    "message": "Default cursor to yes when using confirm (num 0).",
+    "description": "[AlwaysYes] Tweak Description"
+  },
+  "UiAdjustments@AlwaysYes / Name": {
+    "message": "Always Yes",
+    "description": "[AlwaysYes] Tweak Name"
   },
   "UiAdjustments@BattleTalkAdjustments / Description": {
     "message": "Allows moving of the dialogue box that appears in the middle of battles.",
@@ -815,9 +855,33 @@
     "message": "Shows your current desynthesis level and the item's optimal level on the desynthesis item selection window.\nAlso indicates if an item is part of a gear set, optionally preventing selection of gearset items.",
     "description": "[ExtendedDesynthesisWindow] Tweak Description"
   },
+  "UiAdjustments@ExtendedDesynthesisWindow / DesynthesisDelta": {
+    "message": "Show desynthesis delta",
+    "description": "[ExtendedDesynthesisWindow] Extended Desynthesis Window - Show desynthesis delta"
+  },
+  "UiAdjustments@ExtendedDesynthesisWindow / ExcludeGearSet": {
+    "message": "Items in gear sets.",
+    "description": "[ExtendedDesynthesisWindow] Extended Desynthesis Window - Items in gear sets."
+  },
+  "UiAdjustments@ExtendedDesynthesisWindow / ExcludeHeader": {
+    "message": "Exlude from the 'All Items' category:",
+    "description": "[ExtendedDesynthesisWindow] Extended Desynthesis Window - Exlude from the 'All Items' category:"
+  },
+  "UiAdjustments@ExtendedDesynthesisWindow / ExcludeNoSkill": {
+    "message": "Items that give no desynthesis levels.",
+    "description": "[ExtendedDesynthesisWindow] Extended Desynthesis Window - Items that give no desynthesis levels."
+  },
+  "UiAdjustments@ExtendedDesynthesisWindow / LimitNote": {
+    "message": "Note: Only 140 items can be displayed at once, anything more will be cut off.",
+    "description": "[ExtendedDesynthesisWindow] Extended Desynthesis Window - Note: Only 140 items can be displayed at once, anything more will be cut off."
+  },
   "UiAdjustments@ExtendedDesynthesisWindow / Name": {
     "message": "Extended Desynthesis Window",
     "description": "[ExtendedDesynthesisWindow] Tweak Name"
+  },
+  "UiAdjustments@ExtendedDesynthesisWindow / ShowAll": {
+    "message": "Add option to show all items",
+    "description": "[ExtendedDesynthesisWindow] Extended Desynthesis Window - Add option to show all items"
   },
   "UiAdjustments@ExtendedDesynthesisWindow / YellowForSkillGain": {
     "message": "Highlight potential skill gains (Yellow)",
@@ -1094,6 +1158,14 @@
   "UiAdjustments@PartyListStatusTimers / Name": {
     "message": "Party List Status Timers",
     "description": "[PartyListStatusTimers] Tweak Name"
+  },
+  "UiAdjustments@RecolorOwnStatusTimers / Description": {
+    "message": "Allows the recoloring of the personal status timers color.",
+    "description": "[RecolorOwnStatusTimers] Tweak Description"
+  },
+  "UiAdjustments@RecolorOwnStatusTimers / Name": {
+    "message": "Recolor Own Status Timers",
+    "description": "[RecolorOwnStatusTimers] Tweak Name"
   },
   "UiAdjustments@ReducedDeepDungeonInfo / Description": {
     "message": "Removes the redundant infos from the deep dungeon character info.",
