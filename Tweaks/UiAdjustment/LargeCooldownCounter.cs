@@ -170,13 +170,13 @@ public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
     }
         
     private int GetRecastGroup(HotbarSlotType type, uint id, HotBarSlot* slot) {
-        var recastGroup = 0;
+        var recastGroup = -1;
 
         switch (type) {
             case HotbarSlotType.Action:
                 var adjustedActionId = type == HotbarSlotType.Action ? actionManager->GetAdjustedActionId(id) : id;
                 recastGroup = actionManager->GetRecastGroup(1, adjustedActionId);
-                if (recastGroup == 57) recastGroup = 0;
+                if (recastGroup == 57) recastGroup = -1;
                 break;
             case HotbarSlotType.Item:
                 recastGroup = actionManager->GetRecastGroup(2, id);
@@ -226,7 +226,7 @@ public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
                 reset = true;
             } else {
                 int recastGroup = GetRecastGroup(slotStruct->CommandType, slotStruct->CommandId, slotStruct);
-                if (recastGroup is 0) {
+                if (recastGroup < 0) {
                     reset = true;
                 } else {
                     var recastDetail = actionManager->GetRecastGroupDetail(recastGroup);
