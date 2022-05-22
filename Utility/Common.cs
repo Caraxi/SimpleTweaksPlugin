@@ -59,6 +59,7 @@ public static unsafe class Common {
     public static void* ThrowawayOut { get; private set; } = (void*) Marshal.AllocHGlobal(1024);
 
     public static event Action<SetupAddonArgs> AddonSetup; 
+    public static event Action<SetupAddonArgs> AddonPreSetup; 
     
     public static void Setup() {
         var gameAllocPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 49 83 CF FF 4C 8B F0");
@@ -83,6 +84,13 @@ public static unsafe class Common {
     }
 
     private static void* AddonSetupDetour(AtkUnitBase* addon) {
+        try {
+            AddonPreSetup?.Invoke(new SetupAddonArgs() {
+                Addon = addon
+            });
+        } catch (Exception ex) {
+            SimpleLog.Error(ex);
+        }
         var retVal = addonSetupHook.Original(addon);
         try {
             AddonSetup?.Invoke(new SetupAddonArgs() {
