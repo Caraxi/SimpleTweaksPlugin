@@ -381,7 +381,11 @@ public static unsafe class Common {
             _ => $"Unknown Type: {v.Type}"
         };
     }
-    
+
+    public static void CloseAddon(string name, bool unk = true) {
+        var addon = GetUnitBase(name);
+        if (addon != null) addon->Hide(unk);
+    }
 }
 
 public unsafe class SetupAddonArgs {

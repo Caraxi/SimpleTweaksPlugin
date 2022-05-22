@@ -17,6 +17,7 @@ using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
+using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
@@ -31,6 +32,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool ShowAll;
             public bool ShowAllExcludeNoSkill;
             public bool ShowAllExcludeGearset;
+            public bool ShowAllDefault;
         }
 
         public Configs Config { get; private set; }
@@ -39,10 +41,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             ImGui.Checkbox(LocString("BlockClickOnGearset", "Block clicking on gearset items."), ref Config.BlockClickOnGearset);
             ImGui.Checkbox(LocString("YellowForSkillGain", "Highlight potential skill gains (Yellow)"), ref Config.YellowForSkillGain);
             ImGui.Checkbox(LocString("DesynthesisDelta", "Show desynthesis delta"), ref Config.Delta);
-            
-            ImGui.Checkbox(LocString("ShowAll", "Add option to show all items"), ref Config.ShowAll);
+
+            if (ImGui.Checkbox(LocString("ShowAll", "Add option to show all items"), ref Config.ShowAll)) Common.CloseAddon("SalvageItemSelector");
+
             if (Config.ShowAll) {
                 ImGui.Indent();
+                if (ImGui.Checkbox(LocString("ShowAllDefault", "Make 'All Items' the default option."), ref Config.ShowAllDefault)) Common.CloseAddon("SalvageItemSelector");
                 ImGui.TextDisabled(LocString("LimitNote", "Note: Only 140 items can be displayed at once, anything more will be cut off."));
                 ImGui.Text(LocString("ExcludeHeader", "Exlude from the 'All Items' category:"));
                 ImGui.Indent();
@@ -71,10 +75,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         
         private delegate void* SetupDropDownList(AtkComponentList* a1, ushort a2, byte** a3, byte a4);
         private HookWrapper<SetupDropDownList> setupDropDownList;
-
+        
         private delegate byte PopulateItemList(AgentSalvage* agentSalvage);
 
         private HookWrapper<PopulateItemList> populateHook;
+
+        private delegate void* Callback(AtkUnitBase* atkUnitBase, int count, AtkValue* values, void* a4);
+        private HookWrapper<Callback> callbackHook;
 
         private static readonly ByteColor Red = new() { A = 0xFF, R = 0xEE, G = 0x44, B = 0x44 };
         private static readonly ByteColor Green = new() { A = 0xFF, R = 0x00, G = 0xCC, B = 0x00 };
@@ -99,6 +106,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
+            Common.CloseAddon("SalvageItemSelector");
             updateItemHook ??= Common.Hook<UpdateItemDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 30 49 8B 38", UpdateItemDetour);
             updateItemHook?.Enable();
             updateListHook ??= Common.Hook<UpdateListDelegate>("40 53 56 57 48 83 EC 20 48 8B D9 49 8B F0", UpdateListDetour);
@@ -109,14 +117,34 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             
             populateHook ??= Common.Hook<PopulateItemList>("E8 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 83 63 2C FE", PopulateDetour);
             populateHook?.Enable();
+            callbackHook ??= Common.Hook<Callback>("E8 ?? ?? ?? ?? 8B 4C 24 20 0F B6 D8", CallbackDetour);
+            callbackHook?.Enable();
             
             Common.AddonSetup += CommonOnAddonPreSetup;
 
             base.Enable();
         }
 
+        private void* CallbackDetour(AtkUnitBase* atkUnitBase, int count, AtkValue* values, void* a4) {
+            if (!(Config.ShowAll && Config.ShowAllDefault)) goto Original;
+            if (atkUnitBase != Common.GetUnitBase("SalvageItemSelector")) goto Original;
+            if (count != 2) goto Original;
+            if (values->Type != ValueType.Int || values->Int != 11) goto Original;
+            var value2 = values + 1;
+            if (value2->Type != ValueType.Int) goto Original;
+
+            if (value2->Int == 0) {
+                value2->Int = 8;
+            } else {
+                value2->Int -= 1; 
+            }
+            
+            Original:
+            return callbackHook.Original(atkUnitBase, count, values, a4);
+        }
+
         private void CommonOnAddonPreSetup(SetupAddonArgs obj) {
-            // if (obj.AddonName == "SalvageItemSelector") Common.GenerateCallback(obj.Addon, 11, 8);
+            if (obj.AddonName == "SalvageItemSelector") Common.GenerateCallback(obj.Addon, 11, 0);
         }
 
         private class ItemEntry {
@@ -258,9 +286,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var list = (byte**)alternateList;
             if (list == null) goto Original;
             for (var i = 0; i < itemCount; i++) {
-                list[i] = itemLabels[i];
+                list[i + (Config.ShowAllDefault ? 1 : 0)] = itemLabels[i];
             }
-            list[itemCount++] = (byte*) allItemsString;
+            list[Config.ShowAllDefault ? 0 : itemCount] = (byte*) allItemsString;
+            itemCount++;
             itemLabels = (byte**) alternateList;
             Original:
             return setupDropDownList.Original(atkComponentList, itemCount, itemLabels, unknownBool);
@@ -279,6 +308,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             updateListHook?.Disable();
             setupDropDownList?.Disable();
             populateHook?.Disable();
+            callbackHook?.Disable();
             Reset();
             base.Disable();
         }
@@ -288,6 +318,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             updateListHook?.Dispose();
             setupDropDownList?.Dispose();
             populateHook?.Dispose();
+            callbackHook?.Dispose();
             if (allItemsString != IntPtr.Zero) Marshal.FreeHGlobal(allItemsString);
             if (alternateList != IntPtr.Zero) Marshal.FreeHGlobal(alternateList);
             base.Dispose();
@@ -478,9 +509,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         public void Reset() {
-            var atkUnitBase = (AtkUnitBase*)Service.GameGui.GetAddonByName("SalvageItemSelector", 1);
-            if (atkUnitBase == null) return;
-            UiHelper.Close(atkUnitBase, true);
+            Common.CloseAddon("SalvageItemSelector");
         }
     }
 }
