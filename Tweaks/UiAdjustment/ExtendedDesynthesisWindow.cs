@@ -153,6 +153,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private bool SetupAllItemList(AgentSalvage* agentSalvage) {
+            if (!agentSalvage->AgentInterface.IsAgentActive()) return false;
             agentSalvage->ItemListRefresh();
             if (agentSalvage->SelectedCategory != (AgentSalvage.SalvageItemCategory)8) return true;
             var inventoryManager = InventoryManager.Instance();
