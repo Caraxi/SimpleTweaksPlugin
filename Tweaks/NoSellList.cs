@@ -102,34 +102,29 @@ public unsafe class NoSellList : Tweak {
         }
     };
 
-    private delegate void SellItem(ShopEventHandler* a1, void* a2, uint a3);
+    private delegate void SellItem(void* a1, int a2, InventoryType a3);
 
     private HookWrapper<SellItem> sellItemHook;
 
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        sellItemHook = Common.Hook<SellItem>("40 57 48 83 EC 50 F6 41 24 01", SellItemDetour);
+        sellItemHook = Common.Hook<SellItem>("48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 80 B9 ?? ?? ?? ?? ?? 41 8B F0", SellItemDetour);
         sellItemHook?.Enable();
+        
         base.Enable();
     }
     
-    [StructLayout(LayoutKind.Explicit, Size = 0x3340)]
-    public struct ShopEventHandler {
-        [FieldOffset(0x3324)] public InventoryType InventoryType;
-        [FieldOffset(0x331C)] public int InventorySlot;
-    }
-
-    private void SellItemDetour(ShopEventHandler* a1, void* a2, uint a3) {
+    private void SellItemDetour(void* a1, int slotIndex, InventoryType inventory) {
         try {
-            var container = InventoryManager.Instance()->GetInventoryContainer(a1->InventoryType);
+            var container = InventoryManager.Instance()->GetInventoryContainer(inventory);
             if (container != null) {
-                var slot = container->GetInventorySlot(a1->InventorySlot);
+                var slot = container->GetInventorySlot(slotIndex);
                 if (slot != null) {
                     if (Config.NoSellList.Any(i => i == slot->ItemID)) {
-                        a1->InventorySlot = -1;
                         var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(slot->ItemID);
                         if (!string.IsNullOrEmpty(item?.Name?.RawString)) {
                             Service.Toasts.ShowError($"{item.Name.RawString} is locked by {Name} in {Plugin.Name}.");
+                            return;
                         }
                     }
                 }
@@ -138,7 +133,7 @@ public unsafe class NoSellList : Tweak {
             //
         }
         
-        sellItemHook.Original(a1, a2, a3);
+        sellItemHook.Original(a1, slotIndex, inventory);
     }
 
     public override void Disable() {
