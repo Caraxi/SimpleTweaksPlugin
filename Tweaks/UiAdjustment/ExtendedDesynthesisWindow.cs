@@ -28,11 +28,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool YellowForSkillGain = true;
             public bool Delta;
             
-            
             public bool ShowAll;
             public bool ShowAllExcludeNoSkill;
             public bool ShowAllExcludeGearset;
             public bool ShowAllDefault;
+            public bool ShowAllExcludeArmoury;
         }
 
         public Configs Config { get; private set; }
@@ -52,6 +52,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 ImGui.Indent();
                 var u = ImGui.Checkbox(LocString("ExcludeNoSkill","Items that give no desynthesis levels."), ref Config.ShowAllExcludeNoSkill);
                 u |= ImGui.Checkbox(LocString("ExcludeGearSet", "Items in gear sets."), ref Config.ShowAllExcludeGearset);
+                u |= ImGui.Checkbox(LocString("ExcludeArmoury", "Items in armoury chest."), ref Config.ShowAllExcludeArmoury);
                 ImGui.Unindent();
                 ImGui.Unindent();
                 if (u) {
@@ -167,18 +168,23 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 InventoryType.Inventory2,
                 InventoryType.Inventory3,
                 InventoryType.Inventory4,
-                InventoryType.ArmoryMainHand,
-                InventoryType.ArmoryOffHand,
-                InventoryType.ArmoryHead,
-                InventoryType.ArmoryBody,
-                InventoryType.ArmoryHands,
-                InventoryType.ArmoryLegs,
-                InventoryType.ArmoryEar,
-                InventoryType.ArmoryFeets,
-                InventoryType.ArmoryNeck,
-                InventoryType.ArmoryWrist,
-                InventoryType.ArmoryRings
             };
+
+            if (!Config.ShowAllExcludeArmoury) {
+                searchInventories.AddRange(new[]{
+                    InventoryType.ArmoryMainHand,
+                    InventoryType.ArmoryOffHand,
+                    InventoryType.ArmoryHead,
+                    InventoryType.ArmoryBody,
+                    InventoryType.ArmoryHands,
+                    InventoryType.ArmoryLegs,
+                    InventoryType.ArmoryEar,
+                    InventoryType.ArmoryFeets,
+                    InventoryType.ArmoryNeck,
+                    InventoryType.ArmoryWrist,
+                    InventoryType.ArmoryRings
+                });
+            }
 
             // Get all items
             foreach (var inventoryType in searchInventories) {
