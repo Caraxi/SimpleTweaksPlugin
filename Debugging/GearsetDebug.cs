@@ -32,6 +32,8 @@ public unsafe class GearsetDebug : DebugHelper {
         ImGui.Text("Items");
         ImGui.NextColumn();
         ImGui.Text("Flags");
+        ImGui.NextColumn();
+        ImGui.Text("Object");
         ImGuiExt.NextRow();
         ImGuiExt.NextRow();
         ImGui.Separator();
@@ -71,6 +73,9 @@ public unsafe class GearsetDebug : DebugHelper {
                 }
             }
 
+            ImGui.NextColumn();
+            DebugManager.PrintOutObject(gearset);
+            
             ImGuiExt.NextRow();
             ImGuiExt.NextRow();
             ImGui.Separator();
