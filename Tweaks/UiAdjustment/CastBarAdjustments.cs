@@ -40,11 +40,11 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
     }
 
     public Configs Config { get; private set; }
-
-
-        
+    
     private float configAlignmentX;
-        
+    private delegate void CastBarOnUpdateDelegate(AddonCastBar* castBar, void* a2);
+    private HookWrapper<CastBarOnUpdateDelegate> castBarOnUpdateHook;
+
     protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
         hasChanged |= ImGui.Checkbox(LocString("Hide Casting", "Hide 'Casting' Text"), ref Config.RemoveCastingText);
         hasChanged |= ImGui.Checkbox(LocString("Hide Icon"), ref Config.RemoveIcon);
@@ -104,34 +104,41 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
 
 
         if (hasChanged) {
-            UpdateCastBar(true);
+            UpdateCastBar(null, true);
         }
     };
 
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        Service.Framework.Update += FrameworkOnUpdate;
+        castBarOnUpdateHook ??= Common.Hook<CastBarOnUpdateDelegate>("48 83 EC 38 48 8B 92", CastBarOnUpdateDetour);
+        castBarOnUpdateHook.Enable();
         base.Enable();
     }
 
     public override void Disable() {
-        Service.Framework.Update -= FrameworkOnUpdate;
-        UpdateCastBar(true);
+        castBarOnUpdateHook.Disable();
+        UpdateCastBar(null, true);
         SaveConfig(Config);
         base.Disable();
     }
 
-    private void FrameworkOnUpdate(Framework framework) {
+    private void CastBarOnUpdateDetour(AddonCastBar* castBar, void* a2) {
+        castBarOnUpdateHook.Original(castBar, a2);
+        
         try {
-            UpdateCastBar();
+            UpdateCastBar(castBar);
         } catch (Exception ex) {
             SimpleLog.Error(ex);
         }
-    }
         
-    public void UpdateCastBar(bool reset = false) {
-        var castBar = Common.GetUnitBase<AddonCastBar>();
-        if (castBar == null) return;
+    }
+
+    private void UpdateCastBar(AddonCastBar* castBar, bool reset = false) {
+        if (castBar == null) {
+            castBar = Common.GetUnitBase<AddonCastBar>();
+            if (castBar == null) return;
+        }
+        
         if (castBar->AtkUnitBase.UldManager.NodeList == null || castBar->AtkUnitBase.UldManager.NodeListCount < 12) return;
 
         var barNode = castBar->AtkUnitBase.UldManager.NodeList[3];
@@ -345,8 +352,6 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
                 classicSlideMarker->AtkResNode.Flags_2 |= 1;
                 
             }
-            
-            
         }
     }
 }
