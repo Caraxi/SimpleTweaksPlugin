@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game.Text;
+using Dalamud.Interface;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -33,6 +35,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool ShowAllExcludeGearset;
             public bool ShowAllDefault;
             public bool ShowAllExcludeArmoury;
+            public int[] ShowAllSorting;
         }
 
         public Configs Config { get; private set; }
@@ -54,11 +57,145 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 u |= ImGui.Checkbox(LocString("ExcludeGearSet", "Items in gear sets."), ref Config.ShowAllExcludeGearset);
                 u |= ImGui.Checkbox(LocString("ExcludeArmoury", "Items in armoury chest."), ref Config.ShowAllExcludeArmoury);
                 ImGui.Unindent();
+                
+                ImGui.Dummy(new Vector2(5));
+                
+                ImGui.Text("Sorting:");
+                ImGui.Indent();
+                if (Config.ShowAllSorting == null) DefaultSorting();
+                var displayedOptions = new List<ItemListSortMethod>();
+                if (ImGui.BeginTable("itemListSortingTable", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg)) {
+
+                    var descSize = ImGui.CalcTextSize("Desc").X;
+                    
+                    ImGui.TableSetupColumn("##controlButtons", ImGuiTableColumnFlags.WidthFixed, 65 * ImGui.GetIO().FontGlobalScale);
+                    ImGui.TableSetupColumn("Desc", ImGuiTableColumnFlags.WidthFixed, descSize);
+                    ImGui.TableSetupColumn("Sorting Method", ImGuiTableColumnFlags.WidthStretch);
+                    ImGui.TableHeadersRow();
+
+                    var removeIndex = -1;
+                    
+                    for (var i = 0; i < Config.ShowAllSorting.Length; i++) {
+                        
+                        var key = Config.ShowAllSorting[i];
+                        var desc = false;
+                        if (key < 0) {
+                            key = -key;
+                            desc = true;
+                        }
+                        if (key == 0 || key > SortMethods.Count) continue;
+                        var sortMethod = SortMethods[key - 1];
+                        displayedOptions.Add(sortMethod);
+                        ImGui.PushID($"itemListSortRow_{key}");
+                        ImGui.TableNextColumn();
+
+                        var btnSize = new Vector2(ImGui.GetTextLineHeightWithSpacing());
+                        ImGui.PushFont(UiBuilder.IconFont);
+                        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(ImGui.GetIO().FontGlobalScale));
+                        var tooltip = string.Empty;
+                        if (ImGui.Button($"{(char) FontAwesomeIcon.Minus}", btnSize)) {
+                            removeIndex = i;
+                            u = true;
+                        }
+                        if (ImGui.IsItemHovered()) tooltip = "Remove From Sorting";
+                        
+                        ImGui.SameLine();
+                        if (i != 0) {
+                            if (ImGui.Button($"{(char) FontAwesomeIcon.ArrowUp}", btnSize)) {
+                                (Config.ShowAllSorting[i - 1], Config.ShowAllSorting[i]) = (Config.ShowAllSorting[i], Config.ShowAllSorting[i - 1]);
+                                u = true;
+                            }
+                            if (ImGui.IsItemHovered()) tooltip = "Move Up";
+                        } else {
+                            ImGui.Dummy(btnSize);
+                        }
+                        
+                        ImGui.SameLine();
+                        if (i != Config.ShowAllSorting.Length - 1) {
+                            if (ImGui.Button($"{(char) FontAwesomeIcon.ArrowDown}", btnSize)) {
+                                (Config.ShowAllSorting[i + 1], Config.ShowAllSorting[i]) = (Config.ShowAllSorting[i], Config.ShowAllSorting[i + 1]);
+                                u = true;
+                            }
+                            if (ImGui.IsItemHovered()) tooltip = "Move Down";
+                        } else {
+                            ImGui.Dummy(btnSize);
+                        }
+                        
+                        ImGui.PopStyleVar();
+                        ImGui.PopFont();
+                        if (!string.IsNullOrEmpty(tooltip)) {
+                            ImGui.SetTooltip(tooltip);
+                        }
+                        
+                        ImGui.TableNextColumn();
+                        
+                        if (ImGui.Checkbox($"##toggleItemListSortDescending_{key}", ref desc)) {
+                            Config.ShowAllSorting[i] = desc ? -key : key;
+                            u = true;
+                        }
+
+                        ImGui.TableNextColumn();
+                        ImGui.Text(sortMethod.Name);
+                        if (desc) {
+                            ImGui.SameLine();
+                            ImGui.TextDisabled("Descending");
+                        }
+                        ImGui.PopID();
+                    }
+
+                    if (removeIndex >= 0) {
+                        var tempArr = Config.ShowAllSorting.ToList();
+                        tempArr.RemoveAt(removeIndex);
+                        Config.ShowAllSorting = tempArr.ToArray();
+                        u = true;
+                    }
+                    
+                    ImGui.TableNextRow();
+                    ImGui.TableNextRow();
+                    ImGui.TableNextRow();
+                    for (var i = 0; i < SortMethods.Count; i++) {
+                        var method = SortMethods[i];
+                        if (displayedOptions.Contains(method)) continue;
+                        ImGui.PushID($"disabledSortMethood_{method.Name}");
+                        ImGui.TableNextColumn();
+                        var btnSize = new Vector2(ImGui.GetTextLineHeightWithSpacing());
+                        ImGui.PushFont(UiBuilder.IconFont);
+                        if (ImGui.Button($"{(char) FontAwesomeIcon.Plus}", btnSize)) {
+                            var tempArr = Config.ShowAllSorting.ToList();
+                            tempArr.Add(method.DefaultDescending ? -(i+1) : i+1);
+                            Config.ShowAllSorting = tempArr.ToArray();
+                            u = true;
+                        }
+                        ImGui.PopFont();
+                        if (ImGui.IsItemHovered()) ImGui.SetTooltip("Add to sorting.");
+                        ImGui.TableNextColumn();
+                        ImGui.TableNextColumn();
+                        ImGui.TextDisabled($"{method.Name}");
+                        ImGui.PopID();
+                    }
+                    
+                    ImGui.EndTable();
+                }
+                
+                ImGui.Unindent();
                 ImGui.Unindent();
                 if (u) {
                     SetupAllItemList(AgentSalvage.Instance());
                 }
             }
+        };
+
+        private class ItemListSortMethod {
+            public string Name { get; init; }
+            public bool DefaultDescending { get; init; }
+            public Func<ItemEntry, object> ApplySorting { get; init; }
+
+        }
+        
+        private List<ItemListSortMethod> SortMethods = new() {
+            new() { Name = "Desynthesis Class", ApplySorting = (i) => i.Item?.ClassJobRepair?.Row ?? 0},
+            new() { Name = "Item Level", ApplySorting = (i) => i.Item?.LevelItem?.Row ?? 0, DefaultDescending = true},
+            new() { Name = "Item Name", ApplySorting = (i) => i.Item?.Name?.RawString ?? string.Empty},
         };
 
         public override string Name => "Extended Desynthesis Window";
@@ -105,8 +242,19 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             base.Setup();
         }
 
+        public void DefaultSorting() {
+            Config.ShowAllSorting = new int[SortMethods.Count];
+            for (var i = 0; i < SortMethods.Count; i++) {
+                var key = i + 1;
+                Config.ShowAllSorting[i] = SortMethods[i].DefaultDescending ? -key : key;
+            }
+        }
+
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
+
+            if (Config.ShowAllSorting == null) DefaultSorting();
+
             Common.CloseAddon("SalvageItemSelector");
             updateItemHook ??= Common.Hook<UpdateItemDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 30 49 8B 38", UpdateItemDetour);
             updateItemHook?.Enable();
@@ -210,9 +358,22 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
 
             // Apply Sorting
-            var sortedItems = items.OrderBy(a => a.Item?.ClassJobRepair?.Row);
-            sortedItems = sortedItems.ThenByDescending(a => a.Item?.LevelItem?.Row);
-            sortedItems = sortedItems.ThenBy(a => a.Item?.Name?.RawString);
+            var sortedItems = items.OrderBy(a => 0);
+            if (Config.ShowAllSorting == null) DefaultSorting();
+            if (Config.ShowAllSorting != null) {
+                for (var i = 0; i < Config.ShowAllSorting.Length; i++) {
+                    var key = Config.ShowAllSorting[i];
+                    var desc = false;
+                    if (key < 0) {
+                        key = -key;
+                        desc = true;
+                    }
+                    if (key == 0 || key > SortMethods.Count) continue;
+                    var sortMethod = SortMethods[key - 1];
+                    sortedItems = desc ? sortedItems.ThenByDescending(sortMethod.ApplySorting) : sortedItems.ThenBy(sortMethod.ApplySorting);
+                }
+            }
+
             items = sortedItems.ToList();
 
             var hasMissingItem = false;
