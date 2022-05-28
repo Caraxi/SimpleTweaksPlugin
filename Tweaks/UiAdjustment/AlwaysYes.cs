@@ -15,15 +15,24 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         public bool DutyConfirmation = true;
         public bool CardsShop = true;
         public bool RetainerVentures = true;
+        public bool MateriaMelds = true;
+        public bool MateriaExtractions = true;
+        public bool MateriaRetrievals = true;
+        public bool GlamourDispels = true;
     }
 
     public Configs Config { get; private set; }
 
     protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-        hasChanged |= ImGui.Checkbox("Enable for most yes/(hold)/no dialogs", ref Config.YesNo);
-        hasChanged |= ImGui.Checkbox("Enable for duty confirmations", ref Config.DutyConfirmation);
-        hasChanged |= ImGui.Checkbox("Enable for TT cards selling", ref Config.CardsShop);
-        hasChanged |= ImGui.Checkbox("Enable for retainer ventures", ref Config.RetainerVentures);
+        ImGui.Text("Enable for:");
+        hasChanged |= ImGui.Checkbox("Most yes/(hold)/no dialogs", ref Config.YesNo);
+        hasChanged |= ImGui.Checkbox("Duty confirmations", ref Config.DutyConfirmation);
+        hasChanged |= ImGui.Checkbox("TT cards sales", ref Config.CardsShop);
+        hasChanged |= ImGui.Checkbox("Retainer ventures", ref Config.RetainerVentures);
+        hasChanged |= ImGui.Checkbox("Materia melds", ref Config.MateriaMelds);
+        hasChanged |= ImGui.Checkbox("Materia extractions", ref Config.MateriaExtractions);
+        hasChanged |= ImGui.Checkbox("Materia retrievals", ref Config.MateriaRetrievals);
+        hasChanged |= ImGui.Checkbox("Glamour dispels", ref Config.GlamourDispels);
 
         if (hasChanged) {
             SaveConfig(Config);
@@ -52,6 +61,18 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 return;
             case "RetainerTaskResult": 
                 if (Config.RetainerVentures) SetFocusYes(args.Addon, 20); 
+                return;
+            case "MateriaAttachDialog":
+                if (Config.MateriaMelds) SetFocusYes(args.Addon, 35);
+                return;
+            case "MaterializeDialog":
+                if (Config.MateriaExtractions) SetFocusYes(args.Addon, 13);
+                return;
+            case "MateriaRetrieveDialog":
+                if (Config.MateriaRetrievals) SetFocusYes(args.Addon, 17);
+                return;
+            case "MiragePrismRemove":
+                if (Config.GlamourDispels) SetFocusYes(args.Addon, 15);
                 return;
         }
     }
