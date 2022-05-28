@@ -135,8 +135,10 @@ namespace SimpleTweaksPlugin {
 
 
 #if DEBUG
-            DebugManager.Enabled = true;
-            drawConfigWindow = true;
+            if (!PluginConfig.DisableAutoOpen) {
+                DebugManager.Enabled = true;
+                drawConfigWindow = true;
+            }
 #endif
             DebugManager.Reload();
 

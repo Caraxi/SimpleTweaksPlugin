@@ -31,6 +31,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
 
     public bool HideKofi;
     public bool ShowExperimentalTweaks;
+    public bool DisableAutoOpen;
 
     public bool ShowTweakDescriptions = true;
     public bool ShowTweakIDs;
@@ -246,6 +247,10 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                     ImGui.Separator();
                     if (ImGui.Checkbox(Loc.Localize("General Options / Show Tweak IDs", "Show tweak IDs."), ref ShowTweakIDs)) Save();
                     ImGui.Separator();
+                    #if DEBUG
+                    if (ImGui.Checkbox("Disable Auto Open", ref DisableAutoOpen)) Save();
+                    ImGui.Separator();
+                    #endif
 
                     if (Loc.DownloadError != null) {
                         ImGui.TextColored(new Vector4(1, 0, 0, 1), Loc.DownloadError.ToString());
