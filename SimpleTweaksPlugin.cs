@@ -70,9 +70,7 @@ namespace SimpleTweaksPlugin {
                 t.Dispose();
             }
             TweakProviders.Clear();
-            #if DEBUG
             DebugManager.Dispose();
-            #endif
             foreach (var hook in Common.HookList.Where(hook => !hook.IsDisposed)) {
                 if (hook.IsEnabled) hook.Disable();
                 hook.Dispose();
