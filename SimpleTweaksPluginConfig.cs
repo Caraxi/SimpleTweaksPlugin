@@ -433,8 +433,30 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                                 plugin.LoadCustomProvider(CustomProviders[i]);
                                 Loc.ClearCache();
                             }
+
                             ImGui.SameLine();
-                            ImGui.Text(CustomProviders[i]);
+                            var enabled = !CustomProviders[i].StartsWith("!");
+                            if (ImGui.Checkbox($"###customProvider_{i}", ref enabled)) {
+
+                                foreach (var tp in SimpleTweaksPlugin.Plugin.TweakProviders) {
+                                    if (tp.IsDisposed) continue;
+                                    if (tp is not CustomTweakProvider ctp) continue;
+                                    if (ctp.AssemblyPath == CustomProviders[i]) {
+                                        ctp.Dispose();
+                                    }
+                                }
+                                
+                                if (enabled) {
+                                    if (CustomProviders[i].StartsWith("!")) CustomProviders[i] = CustomProviders[i].TrimStart('!');
+                                    plugin.LoadCustomProvider(CustomProviders[i]);
+                                } else {
+                                    if (!CustomProviders[i].StartsWith("!")) CustomProviders[i] = "!" + CustomProviders[i];
+                                }
+                                
+                                Save();
+                            }
+                            ImGui.SameLine();
+                            ImGui.Text(CustomProviders[i].TrimStart('!'));
                         }
 
                         if (deleteCustomProvider != null) {

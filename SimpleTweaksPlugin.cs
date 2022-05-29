@@ -466,6 +466,7 @@ namespace SimpleTweaksPlugin {
         }
 
         public void LoadCustomProvider(string path) {
+            if (path.StartsWith("!")) return;
             if (!File.Exists(path)) return;
             TweakProviders.RemoveAll(t => t.IsDisposed);
             var tweakProvider = new CustomTweakProvider(path);
