@@ -40,7 +40,6 @@ public unsafe class CharaCardCommand : Tweak {
         }
         
         if (resolve != null && resolve->ObjectKind == 1 && resolve->SubKind == 4) {
-            var name = MemoryHelper.ReadStringNullTerminated(new IntPtr(resolve->GetName()));
             AgentCharaCard.Instance()->OpenCharaCard(resolve);
         } else {
             Service.Chat.PrintError($"{arguments} is not a player.");
