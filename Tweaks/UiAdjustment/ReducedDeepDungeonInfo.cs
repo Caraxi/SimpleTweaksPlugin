@@ -185,6 +185,11 @@ public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
             payloads.Insert(payloads.Count, new UIGlowPayload(0));
             payloads.Insert(0, new UIForegroundPayload(500));
             payloads.Insert(payloads.Count, new UIForegroundPayload(0));
+        } else if (isSynced) {
+            payloads.Insert(0, new UIGlowPayload(574));
+            payloads.Insert(payloads.Count, new UIGlowPayload(0));
+            payloads.Insert(0, new UIForegroundPayload(573));
+            payloads.Insert(payloads.Count, new UIForegroundPayload(0));
         }
             
         return payloads;
