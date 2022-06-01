@@ -5,23 +5,6 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 namespace SimpleTweaksPlugin.Utility; 
 
 public static unsafe partial class UiHelper {
-    public static void Hide(AtkResNode* node) {
-        node->Flags &= ~0x10;
-        node->Flags_2 |= 0x1;
-    }
-    public static void Show(AtkResNode* node) {
-        node->Flags |= 0x10;
-        node->Flags_2 |= 0x1;
-    }
-
-    public static void SetVisible(AtkResNode* node, bool visible) {
-        if (visible) {
-            Show(node);
-        } else {
-            Hide(node);
-        }
-    }
-
     public static void SetSize(AtkResNode* node, int? width, int? height) {
         if (width != null && width >= ushort.MinValue && width <= ushort.MaxValue) node->Width = (ushort) width.Value;
         if (height != null && height >= ushort.MinValue && height <= ushort.MaxValue) node->Height = (ushort) height.Value;

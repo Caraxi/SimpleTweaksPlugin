@@ -177,7 +177,7 @@ public unsafe class ComboTimer : UiAdjustments.SubTweak {
         }
 
         if (reset) {
-            UiHelper.Hide(textNode);
+            textNode->AtkResNode.ToggleVisibility(false);
             return;
         }
 
@@ -188,7 +188,7 @@ public unsafe class ComboTimer : UiAdjustments.SubTweak {
         var comboAvailable = Service.ClientState?.LocalPlayer != null && combo->Timer > 0 && combo->Action != 0 && comboActions.ContainsKey(combo->Action) && comboActions[combo->Action] <= Service.ClientState.LocalPlayer.Level;
             
         if (Config.AlwaysVisible || comboAvailable) {
-            UiHelper.Show(textNode);
+            textNode->AtkResNode.ToggleVisibility(true);
             UiHelper.SetPosition(textNode, -45 + Config.OffsetX, 15 + Config.OffsetY);
             textNode->AlignmentFontType = 0x14;
             textNode->TextFlags |= (byte) TextFlags.MultiLine;
@@ -209,7 +209,7 @@ public unsafe class ComboTimer : UiAdjustments.SubTweak {
             var comboTimer = (comboAvailable ? combo->Timer : 0.0f).ToString($"{(Config.LeadingZero ? "00" : "0")}{(Config.DecimalPlaces>0 ? "." + new string('0', Config.DecimalPlaces) : "")}");
             textNode->SetText(Config.NoComboText ? $"{comboTimer}" : $"Combo\n{comboTimer}");
         } else { 
-            UiHelper.Hide(textNode);
+            textNode->AtkResNode.ToggleVisibility(false);
         }
     }
 }

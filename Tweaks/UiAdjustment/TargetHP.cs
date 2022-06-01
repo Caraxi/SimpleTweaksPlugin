@@ -197,7 +197,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
 
             if (reset) {
-                UiHelper.Hide(textNode);
+                textNode->AtkResNode.ToggleVisibility(false);
                 return;
             }
 
@@ -205,7 +205,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             
             UiHelper.SetPosition(textNode, positionOffset.X, positionOffset.Y);
             UiHelper.SetSize(textNode, gauge->AtkResNode.Width - 5, gauge->AtkResNode.Height);
-            UiHelper.Show(textNode);
+            textNode->AtkResNode.ToggleVisibility(true);
             if (!customColor.HasValue) {
                 textNode->TextColor = cloneTextNode->TextColor;
             } else {

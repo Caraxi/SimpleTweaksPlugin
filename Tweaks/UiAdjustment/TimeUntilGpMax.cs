@@ -215,7 +215,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
             }
             textNode->SetText($"{minutesUntilFull:00}:{(int)secondsUntilFull:00}");
         } else {
-            UiHelper.Hide(textNode);
+            textNode->AtkResNode.ToggleVisibility(false);
         }
     }
 }

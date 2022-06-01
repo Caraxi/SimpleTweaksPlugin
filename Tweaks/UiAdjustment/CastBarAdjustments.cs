@@ -155,10 +155,10 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
         }
             
         if (reset) {
-            UiHelper.Show(icon);
-            UiHelper.Show(countdownText);
-            UiHelper.Show(castingText);
-            UiHelper.Show(skillNameText);
+            icon->AtkResNode.ToggleVisibility(true);
+            countdownText->AtkResNode.ToggleVisibility(true);
+            castingText->AtkResNode.ToggleVisibility(true);
+            skillNameText->AtkResNode.ToggleVisibility(true);
 
             UiHelper.SetSize(skillNameText, 170, null);
             UiHelper.SetPosition(skillNameText, barNode->X + 4, null);
@@ -168,11 +168,11 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
             interruptedText->AtkResNode.SetScale(1, 1);
 
             if (slideMarker != null) {
-                UiHelper.Hide(slideMarker);
+                slideMarker->AtkResNode.ToggleVisibility(false);
             }
 
             if (classicSlideMarker != null) {
-                UiHelper.Hide(classicSlideMarker);
+                classicSlideMarker->AtkResNode.ToggleVisibility(false);
                 if (classicSlideMarker->AtkResNode.PrevSiblingNode != null)
                     classicSlideMarker->AtkResNode.PrevSiblingNode->NextSiblingNode = classicSlideMarker->AtkResNode.NextSiblingNode;
                 if (classicSlideMarker->AtkResNode.NextSiblingNode != null)
@@ -191,10 +191,10 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
             return;
         }
 
-        if (Config.RemoveIcon) UiHelper.Hide(icon);
-        if (Config.RemoveName) UiHelper.Hide(skillNameText);
-        if (Config.RemoveCounter) UiHelper.Hide(countdownText);
-        if (Config.RemoveCastingText) UiHelper.Hide(castingText);
+        if (Config.RemoveIcon) icon->AtkResNode.ToggleVisibility(false);
+        if (Config.RemoveName) skillNameText->AtkResNode.ToggleVisibility(false);
+        if (Config.RemoveCounter) countdownText->AtkResNode.ToggleVisibility(false);
+        if (Config.RemoveCastingText) castingText->AtkResNode.ToggleVisibility(false);
 
         if (Config.RemoveCastingText && !Config.RemoveCounter) {
             countdownText->AlignmentFontType = (byte) (0x20 | (byte) Config.AlignCounter);
@@ -217,7 +217,7 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
         }
 
         if (Config.SlideCast && Config.ClassicSlideCast == false) {
-            if (classicSlideMarker != null) UiHelper.Hide(classicSlideMarker);
+            if (classicSlideMarker != null) classicSlideMarker->AtkResNode.ToggleVisibility(false);
             if (slideMarker == null) {
                 // Create Node
 
@@ -233,7 +233,7 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
                 
                 var slidePer = ((float)(castBar->CastTime * 10) - Config.SlideCastAdjust) / (castBar->CastTime * 10);
                 var pos = 160 * slidePer;
-                UiHelper.Show(slideMarker);
+                slideMarker->AtkResNode.ToggleVisibility(true);
                 UiHelper.SetSize(slideMarker, 168 - (int)pos, 20);
                 UiHelper.SetPosition(slideMarker, pos - 8, 0);
                 var c = (slidePer * 100) >= castBar->CastPercent ? Config.SlideCastColor : Config.SlideCastReadyColor;
@@ -249,7 +249,7 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
             }
             
         } else if (Config.SlideCast && Config.ClassicSlideCast) {
-            if (slideMarker != null) UiHelper.Hide(slideMarker);
+            if (slideMarker != null) slideMarker->AtkResNode.ToggleVisibility(false);
             if (classicSlideMarker == null) {
                 if (progressBar == null) return;
                 
@@ -325,7 +325,7 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
 
             if (classicSlideMarker != null) {
                 
-                UiHelper.Show(classicSlideMarker);
+                classicSlideMarker->AtkResNode.ToggleVisibility(true);
                 
                 var slidePer = ((float)(castBar->CastTime * 10) - Config.SlideCastAdjust) / (castBar->CastTime * 10);
                 var pos = 160 * slidePer;

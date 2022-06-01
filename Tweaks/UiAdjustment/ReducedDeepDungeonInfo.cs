@@ -65,14 +65,14 @@ public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
         var isHoh = magiciteInfoNode->IsVisible;
 
         if (reset) {
-            UiHelper.Show(gearInfoNode);
+            gearInfoNode->ToggleVisibility(true);
             deepDungeonUnitBase->UldManager.NodeList[76]->Color.A = 255;
-            UiHelper.Show(deepDungeonUnitBase->UldManager.NodeList[76]); // Job infos
-            UiHelper.Show(deepDungeonUnitBase->UldManager.NodeList[78]);
-            UiHelper.Show(deepDungeonUnitBase->UldManager.NodeList[79]);
-            UiHelper.Show(deepDungeonUnitBase->UldManager.NodeList[80]);
-            UiHelper.Show(deepDungeonUnitBase->UldManager.NodeList[81]);
-            UiHelper.Show(deepDungeonUnitBase->UldManager.NodeList[82]);
+            deepDungeonUnitBase->UldManager.NodeList[76]->ToggleVisibility(true); // Job infos
+            deepDungeonUnitBase->UldManager.NodeList[78]->ToggleVisibility(true);
+            deepDungeonUnitBase->UldManager.NodeList[79]->ToggleVisibility(true);
+            deepDungeonUnitBase->UldManager.NodeList[80]->ToggleVisibility(true);
+            deepDungeonUnitBase->UldManager.NodeList[81]->ToggleVisibility(true);
+            deepDungeonUnitBase->UldManager.NodeList[82]->ToggleVisibility(true);
 
             UiHelper.SetPosition(itemsEffectsInfoNode, null, isHoh ? 486 : 410);
             if (isHoh)
@@ -90,14 +90,14 @@ public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
             return;
         }
 
-        UiHelper.Hide(gearInfoNode);
+        gearInfoNode->ToggleVisibility(false);
         deepDungeonUnitBase->UldManager.NodeList[76]->Color.A = 0;
-        UiHelper.Hide(deepDungeonUnitBase->UldManager.NodeList[76]); // Job infos
-        UiHelper.Hide(deepDungeonUnitBase->UldManager.NodeList[78]);
-        UiHelper.Hide(deepDungeonUnitBase->UldManager.NodeList[79]);
-        UiHelper.Hide(deepDungeonUnitBase->UldManager.NodeList[80]);
-        UiHelper.Hide(deepDungeonUnitBase->UldManager.NodeList[81]);
-        UiHelper.Hide(deepDungeonUnitBase->UldManager.NodeList[82]);
+        deepDungeonUnitBase->UldManager.NodeList[76]->ToggleVisibility(false); // Job infos
+        deepDungeonUnitBase->UldManager.NodeList[78]->ToggleVisibility(false);
+        deepDungeonUnitBase->UldManager.NodeList[79]->ToggleVisibility(false);
+        deepDungeonUnitBase->UldManager.NodeList[80]->ToggleVisibility(false);
+        deepDungeonUnitBase->UldManager.NodeList[81]->ToggleVisibility(false);
+        deepDungeonUnitBase->UldManager.NodeList[82]->ToggleVisibility(false);
 
         UiHelper.SetPosition(itemsEffectsInfoNode, null, isHoh ? 270 : 194);
         if (isHoh)
