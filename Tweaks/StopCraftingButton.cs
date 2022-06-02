@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using Dalamud.Game.Command;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
-using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
@@ -21,14 +20,14 @@ public unsafe class StopCraftingButton : Tweak {
     
     private Stopwatch removeFrameworkUpdateEventStopwatch = new();
 
-    private bool standingUp = false;
+    private bool standingUp;
     
     public override string Name => "Improved Crafting Log";
     
+    public override uint Version => 2;
+
     public override string Description => "Modifies the Synthesize button in the Crafting Log to swith job or stand up from the crafting position, allowing you to stop crafting without closing the crafting log.";
     
-    private delegate byte EventFunction(EventFramework* eventFramework, uint a2, uint a3, uint a4);
-
     private delegate void* ClickSynthesisButton(void* a1, void* a2);
     
     private delegate*<CraftingState*, void*, void*> passthroughFunction;
@@ -41,10 +40,6 @@ public unsafe class StopCraftingButton : Tweak {
     private struct CraftingState {
         [FieldOffset(0x144)] public ushort Unknown;
     }
-    
-    private EventFunction eventFunction;
-    private CraftingState* craftingState;
-    
     
     [StructLayout(LayoutKind.Explicit, Size = 0xBFC)]
     public struct CraftingLogNumberArray {
@@ -79,9 +74,6 @@ public unsafe class StopCraftingButton : Tweak {
     private HookWrapper<Common.AddonOnUpdate> craftingLogUpdateHook;
     
     public override void Enable() {
-        eventFunction ??= Marshal.GetDelegateForFunctionPointer<EventFunction>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 33 C0 48 8B CB 66 89 83"));
-        craftingState = (CraftingState*) Service.SigScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 4B 10 33 FF");
-
         craftingLogUpdateHook ??= Common.HookAfterAddonUpdate("40 55 57 41 54 41 55 41 57 48 8D AC 24", CraftingLogUpdated);
         craftingLogUpdateHook?.Enable();
 
@@ -94,14 +86,22 @@ public unsafe class StopCraftingButton : Tweak {
         cancelCraftingHook?.Enable();
 
         Service.Commands.AddHandler("/stopcrafting", new CommandInfo(((command, arguments) => {
-            var localPlayer = (Character*) Service.ClientState.LocalPlayer.Address;
-            if (localPlayer->EventState == 5 && !standingUp && Common.GetUnitBase("RecipeNote") != null) {
-                eventFunction(EventFramework.Instance(), 6, 0, 0);
-                craftingState->Unknown = 0;
-                removeFrameworkUpdateEventStopwatch.Restart();
-                standingUp = true;
-                Service.Framework.Update += ForceUpdateFramework;
+            if (Service.ClientState.LocalPlayer != null && !standingUp) {
+                var localPlayer = (Character*) Service.ClientState.LocalPlayer.Address;
+                var addon = Common.GetUnitBase("RecipeNote");
+                if (addon != null) {
+                    GetCraftReadyState(out var selectedRecipeId);
+                    if (selectedRecipeId > 0 && localPlayer->EventState == 5) {
+                        addon->Hide(true);
+                        AgentRecipeNote.Instance()->OpenRecipeByRecipeIdInternal((uint)(0x10000 + selectedRecipeId));
+                        standingUp = true;
+                        Service.Framework.Update += ForceUpdateFramework;
+                        return;
+                    }
+                }
             }
+            
+            Service.Chat.PrintError("You can't use that command right now.");
         })) {
             HelpMessage = "Stops crafting without closing the crafting log.",
             ShowInHelp = true
@@ -142,19 +142,21 @@ public unsafe class StopCraftingButton : Tweak {
 
             uint requiredClass = 0;
             
-            var readyState = GetCraftReadyState(ref requiredClass);
+            var readyState = GetCraftReadyState(ref requiredClass, out var selectedRecipeId);
             switch (readyState) {
                 case CraftReadyState.AlreadyCrafting: {
                     if (Service.ClientState.LocalPlayer != null && !standingUp) {
-                        var localPlayer = (Character*) Service.ClientState.LocalPlayer.Address;
-                        if (localPlayer->EventState == 5) {
-                            eventFunction(EventFramework.Instance(), 6, 0, 0);
-                            craftingState->Unknown = 0;
+                        var addon = Common.GetUnitBase("RecipeNote");
+                        if (addon != null) {
+                            addon->Hide(true);
+                            AgentRecipeNote.Instance()->OpenRecipeByRecipeIdInternal((uint) (0x10000 + selectedRecipeId));
                             removeFrameworkUpdateEventStopwatch.Restart();
                             standingUp = true;
                             Service.Framework.Update += ForceUpdateFramework;
                             return null;
                         }
+                    } else {
+                        return null;
                     }
 
                     break;
@@ -195,12 +197,13 @@ public unsafe class StopCraftingButton : Tweak {
         AlreadyCrafting,
     }
 
-    private CraftReadyState GetCraftReadyState() {
+    private CraftReadyState GetCraftReadyState(out ushort selectedRecipeId) {
         uint requiredClass = 0;
-        return GetCraftReadyState(ref requiredClass);
+        return GetCraftReadyState(ref requiredClass, out selectedRecipeId);
     }
     
-    private CraftReadyState GetCraftReadyState(ref uint requiredClass) {
+    private CraftReadyState GetCraftReadyState(ref uint requiredClass, out ushort selectedRecipeId) {
+        selectedRecipeId = 0;
         if (Service.ClientState.LocalPlayer == null) return CraftReadyState.NotReady;
         var agentRecipeNote = AgentRecipeNote.Instance();
         var atkArrayDataHolder = Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder;
@@ -209,6 +212,7 @@ public unsafe class StopCraftingButton : Tweak {
         var selectedRecipeData = craftingLogNumberArray->Recipes[agentRecipeNote->SelectedRecipeIndex];
         if (selectedRecipeData == null) return CraftReadyState.NotReady;
         var selectedRecipe = Service.Data.Excel.GetSheet<Recipe>()?.GetRow(selectedRecipeData->RecipeID);
+        selectedRecipeId = selectedRecipeData->RecipeID;
         if (selectedRecipe == null) return CraftReadyState.NotReady;
         var recipeJobId = selectedRecipe.CraftType.Row + 8;
         requiredClass = recipeJobId;
@@ -221,7 +225,7 @@ public unsafe class StopCraftingButton : Tweak {
     
 
     private void CraftingLogUpdated(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
-        var ready = GetCraftReadyState();
+        var ready = GetCraftReadyState(out _);
         if (ready == CraftReadyState.NotReady) return;
         var craftButton = (AtkComponentNode*) atkUnitBase->GetNodeById(103);
         if (craftButton->AtkResNode.Type != (NodeType)1005) return;
@@ -242,7 +246,7 @@ public unsafe class StopCraftingButton : Tweak {
 
     private void CloseCraftingLog() {
         var rl = Common.GetUnitBase("RecipeNote");
-        if (rl != null) UiHelper.Close(rl, true);
+        rl->Hide(true);
     }
     
     
