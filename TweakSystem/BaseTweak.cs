@@ -23,6 +23,8 @@ public abstract class BaseTweak {
 
     public abstract string Name { get; }
 
+    public virtual uint Version => 1;
+
     public string LocalizedName => LocString("Name", Name, "Tweak Name");
 
     public virtual string Description => null;

@@ -26,7 +26,9 @@ public class TweakProvider : IDisposable {
                 var tweak = (Tweak) Activator.CreateInstance(t)!;
                 tweak.InterfaceSetup(SimpleTweaksPlugin.Plugin, Service.PluginInterface, SimpleTweaksPlugin.Plugin.PluginConfig, this);
                 if (tweak.CanLoad) {
-                    if (SimpleTweaksPlugin.Plugin.PluginConfig.BlacklistedTweaks.Contains(tweak.Key)) {
+                    var blacklistKey = tweak.Key;
+                    if (tweak.Version > 1) blacklistKey += $"::{tweak.Version}";
+                    if (SimpleTweaksPlugin.Plugin.PluginConfig.BlacklistedTweaks.Contains(blacklistKey)) {
                         SimpleLog.Log("Skipping blacklisted tweak: " + tweak.Key);
                         continue;
                     }

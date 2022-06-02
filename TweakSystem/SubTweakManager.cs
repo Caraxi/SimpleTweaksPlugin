@@ -36,7 +36,9 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
             try {
                 var tweak = (T) Activator.CreateInstance(t);
                 if (tweak == null) continue;
-                if (PluginConfig.BlacklistedTweaks.Contains(tweak.Key)) {
+                var blacklistKey = tweak.Key;
+                if (tweak.Version > 1) blacklistKey += $"::{tweak.Version}";
+                if (PluginConfig.BlacklistedTweaks.Contains(blacklistKey)) {
                     SimpleLog.Log("Skipping blacklisted tweak: " + tweak.Key);
                     continue;
                 }
