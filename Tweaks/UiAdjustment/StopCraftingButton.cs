@@ -16,7 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 // E8 ?? ?? ?? ?? 48 8B 4B 10 33 FF C6 83
 
-public unsafe class StopCraftingButton : Tweak {
+public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
     
     private Stopwatch removeFrameworkUpdateEventStopwatch = new();
 
@@ -246,6 +246,7 @@ public unsafe class StopCraftingButton : Tweak {
 
     private void CloseCraftingLog() {
         var rl = Common.GetUnitBase("RecipeNote");
+        if (rl == null) return;
         rl->Hide(true);
     }
     
