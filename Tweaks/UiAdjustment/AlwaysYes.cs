@@ -1,4 +1,7 @@
-﻿using FFXIVClientStructs.FFXIV.Component.GUI;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Dalamud.Interface;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -9,7 +12,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
     public override string Name => "Always Yes";
     public override string Description => "Default cursor to yes when using confirm (num 0).";
     protected override string Author => "Aireil";
-    
+
     public class Configs : TweakConfig {
         public bool YesNo = true;
         public bool DutyConfirmation = true;
@@ -19,13 +22,55 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         public bool MateriaExtractions = true;
         public bool MateriaRetrievals = true;
         public bool GlamourDispels = true;
+        public List<string> ExceptionsYesNo = new();
     }
 
     public Configs Config { get; private set; }
 
+    private string newException = string.Empty;
+
     protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
         ImGui.Text("Enable for:");
         hasChanged |= ImGui.Checkbox("Most yes/(hold)/no dialogs", ref Config.YesNo);
+
+        ImGui.Indent();
+        if (ImGui.CollapsingHeader("Exceptions##AlwaysYes")) {
+            ImGui.Text("Do not change default if dialog text contains:");
+            for (var  i = 0; i < Config.ExceptionsYesNo.Count; i++) {
+                ImGui.PushID($"AlwaysYesBlacklist_{i.ToString()}");
+                var exception = Config.ExceptionsYesNo[i];
+                if (ImGui.InputText("##AlwaysYesTextBlacklist", ref exception, 500)) {
+                    Config.ExceptionsYesNo[i] = exception;
+                    hasChanged = true;
+                }
+
+                ImGui.SameLine();
+                ImGui.PushFont(UiBuilder.IconFont);
+                if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString())) {
+                    Config.ExceptionsYesNo.RemoveAt(i--);
+                    hasChanged = true;
+                }
+
+                ImGui.PopFont();
+                ImGui.PopID();
+                if (i < 0) break;
+            }
+
+            ImGui.InputText("##AlwaysYesNewTextException", ref newException, 500);
+            ImGui.SameLine();
+            ImGui.PushFont(UiBuilder.IconFont);
+            if (ImGui.Button(FontAwesomeIcon.Plus.ToIconString())) {
+                if (newException != string.Empty) {
+                    Config.ExceptionsYesNo.Add(newException);
+                    newException = string.Empty;
+                    hasChanged = true;
+                }
+            }
+
+            ImGui.PopFont();
+        }
+
+        ImGui.Unindent();
         hasChanged |= ImGui.Checkbox("Duty confirmations", ref Config.DutyConfirmation);
         hasChanged |= ImGui.Checkbox("TT cards sales", ref Config.CardsShop);
         hasChanged |= ImGui.Checkbox("Retainer ventures", ref Config.RetainerVentures);
@@ -47,20 +92,20 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
 
     private void OnAddonSetup(SetupAddonArgs args) {
         switch (args.AddonName) {
-            case "SelectYesno": 
-                if (Config.YesNo) SetFocusYes(args.Addon, 8, 9); 
+            case "SelectYesno":
+                if (Config.YesNo && !IsYesnoAnException(args.Addon)) SetFocusYes(args.Addon, 8, 9);
                 return;
-            case "ContentsFinderConfirm": 
+            case "ContentsFinderConfirm":
                 if (Config.DutyConfirmation) SetFocusYes(args.Addon, 63);
                 return;
-            case "ShopCardDialog": 
-                if (Config.CardsShop) SetFocusYes(args.Addon, 16); 
+            case "ShopCardDialog":
+                if (Config.CardsShop) SetFocusYes(args.Addon, 16);
                 return;
-            case "RetainerTaskAsk": 
-                if (Config.RetainerVentures) SetFocusYes(args.Addon, 40); 
+            case "RetainerTaskAsk":
+                if (Config.RetainerVentures) SetFocusYes(args.Addon, 40);
                 return;
-            case "RetainerTaskResult": 
-                if (Config.RetainerVentures) SetFocusYes(args.Addon, 20); 
+            case "RetainerTaskResult":
+                if (Config.RetainerVentures) SetFocusYes(args.Addon, 20);
                 return;
             case "MateriaAttachDialog":
                 if (Config.MateriaMelds) SetFocusYes(args.Addon, 35);
@@ -76,8 +121,10 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 return;
         }
     }
-    
+
     private static void SetFocusYes(AtkUnitBase* unitBase, uint yesButtonId, uint? yesHoldButtonId = null) {
+        if (unitBase == null) return;
+
         var yesButton = unitBase->UldManager.SearchNodeById(yesButtonId);
         if (yesButton == null) return;
 
@@ -92,6 +139,17 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
 
         unitBase->SetFocusNode(yesCollision);
         unitBase->CursorTarget = yesCollision;
+    }
+
+    private bool IsYesnoAnException(AtkUnitBase* unitBase) {
+        if (Config.ExceptionsYesNo.Count == 0 || unitBase == null) return false;
+
+        var textNode = (AtkTextNode *)unitBase->UldManager.SearchNodeById(2);
+        if (textNode == null) return false;
+
+        var text = Common.ReadSeString(textNode->NodeText).TextValue;
+
+        return text != string.Empty && Config.ExceptionsYesNo.Any(val => text.Contains(val));
     }
 
     public override void Disable() {
