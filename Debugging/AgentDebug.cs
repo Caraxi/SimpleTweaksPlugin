@@ -62,7 +62,9 @@ public unsafe class AgentDebug : DebugHelper {
 
             try {
                 var call = new EventCall() {
-                    EventType = eventType
+                    EventType = eventType,
+                    UnknownPointer = a2,
+                    UnknownPointerData = *(ulong*)a2, 
                 };
 
                 var v = values;
@@ -87,6 +89,8 @@ public unsafe class AgentDebug : DebugHelper {
             public ulong EventType;
             public List<object> AtkValues = new();
             public List<ValueType> AtkValueTypes = new();
+            public void* UnknownPointer;
+            public ulong UnknownPointerData;
         } 
         
         public List<EventCall> EventCalls = new();
@@ -234,6 +238,10 @@ public unsafe class AgentDebug : DebugHelper {
                                 foreach (var call in agentHook.EventCalls) {
                                     
                                     ImGui.Text($"Event#{call.EventType} - {call.AtkValueTypes.Count} Values");
+                                    ImGui.SameLine();
+                                    DebugManager.ClickToCopy(call.UnknownPointer);
+                                    ImGui.SameLine();
+                                    DebugManager.ClickToCopyText($"[{call.UnknownPointerData:X}]", $"{call.UnknownPointerData:X}");
                                     ImGui.Indent();
 
                                     for (var i = 0; i < call.AtkValueTypes.Count && i < call.AtkValues.Count; i++) {
