@@ -105,6 +105,12 @@ public static unsafe class Common {
 
     public static UIModule* UIModule => Framework.Instance()->GetUiModule();
 
+
+    public static bool GetUnitBase(string name, out AtkUnitBase* unitBase, int index = 1) {
+        unitBase = GetUnitBase(name, index);
+        return unitBase != null;
+    }
+    
     public static AtkUnitBase* GetUnitBase(string name, int index = 1) {
         return (AtkUnitBase*) Service.GameGui.GetAddonByName(name, index);
     }
