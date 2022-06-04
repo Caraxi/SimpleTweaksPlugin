@@ -13,6 +13,7 @@ using Dalamud.Memory;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.GameStructs;
@@ -322,6 +323,33 @@ public static unsafe class Common {
         }
     }
 
+    [StructLayout(LayoutKind.Explicit, Size = 64)]
+    public struct EventObject {
+        [FieldOffset(0)] public ulong Unknown0;
+        [FieldOffset(8)] public ulong Unknown8;
+    }
+
+    public static EventObject* SendEvent(AgentInterface* agentInterface, ulong eventKind, params object[] eventParams) {
+        var eventObject = stackalloc EventObject[1];
+        return SendEvent(agentInterface, eventObject, eventKind, eventParams);
+    }
+    
+    public static EventObject* SendEvent(AgentInterface* agentInterface, EventObject* eventObject, ulong eventKind, params object[] eventParams) {
+        var atkValues = CreateAtkValueArray(eventParams);
+        if (atkValues == null) return eventObject;
+        try {
+            agentInterface->ReceiveEvent(eventObject, atkValues, (uint)eventParams.Length, eventKind);
+            return eventObject;
+        } finally {
+            for (var i = 0; i < eventParams.Length; i++) {
+                if (atkValues[i].Type == ValueType.String) {
+                    Marshal.FreeHGlobal(new IntPtr(atkValues[i].String));
+                }
+            }
+            Marshal.FreeHGlobal(new IntPtr(atkValues));
+        }
+    }
+
     public static Vector4 UiColorToVector4(uint col) {
         var fa = col & 255;
         var fb = (col >> 8) & 255;
@@ -391,6 +419,16 @@ public static unsafe class Common {
     public static void CloseAddon(string name, bool unk = true) {
         var addon = GetUnitBase(name);
         if (addon != null) addon->Hide(unk);
+    }
+
+    public static AgentInterface* GetAgent(AgentId agentId) {
+        return Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(agentId);
+    }
+
+    public static T* GetAgent<T>() where T : unmanaged {
+        var attr = typeof(T).GetCustomAttribute<AgentAttribute>();
+        if (attr == null) return null;
+        return (T*)GetAgent(attr.ID);
     }
 }
 
