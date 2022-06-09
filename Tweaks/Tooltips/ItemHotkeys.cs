@@ -253,8 +253,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
             SetupFromOld(typeof(ViewOnGamerEscape), old.GamerEscapeLinkHotkeyEnabled, old.GamerEscapeLinkHotkey);
             SetupFromOld(typeof(ViewOnGarlandTools), old.GardlandToolsLinkHotkeyEnabled, old.GardlandToolsLinkHotkey);
             SetupFromOld(typeof(ViewOnGarlandTools), old.GardlandToolsLinkHotkeyEnabled, old.GardlandToolsLinkHotkey);
-            
-            SetupFromOld(typeof(CopyNameHotkey), old.CopyHotkeyEnabled, old.CopyHotkey);
+            (SetupFromOld(typeof(ViewOnTeamcraft), old.TeamcraftLinkHotkeyEnabled, old.TeamcraftLinkHotkey).Config as ViewOnTeamcraft.HotkeyConfig)!.ForceBrowser = old.TeamcraftLinkHotkeyForceBrowser;
             
             Config.HasLoadedOld = true;
             SaveConfig(Config);
