@@ -54,7 +54,7 @@ public class ShowItemID : TooltipTweaks.SubTweak {
         SetTooltipString(stringArrayData, ItemUiCategory, seStr);
     }
 
-    public override unsafe void OnActionTooltip(AddonActionDetail* addon, TooltipTweaks.HoveredAction action) {
+    public override unsafe void OnActionTooltip(AddonActionDetail* addon, TooltipTweaks.HoveredActionDetail action) {
         if (addon->AtkUnitBase.UldManager.NodeList == null || addon->AtkUnitBase.UldManager.NodeListCount < 29) return;
         var categoryText = (AtkTextNode*) addon->AtkUnitBase.UldManager.NodeList[28];
         if (categoryText == null) return;
