@@ -116,6 +116,10 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                                         payloads.Add(new TextPayload(world.Name));
                                         break;
                                     }
+                                    case "<level>": {
+                                        payloads.Add(new TextPayload(battleChara->Character.Level.ToString()));
+                                        break;
+                                    }
                                     case "<fctag>": {
                                         payloads.Add(new TextPayload(companyTag));
                                         break;
@@ -360,6 +364,11 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                         ImGui.Text("<fctag>");
                         ImGui.TableNextColumn();
                         ImGui.Text("The character's existing FC tag.");
+                        
+                        ImGui.TableNextColumn();
+                        ImGui.Text("<level>");
+                        ImGui.TableNextColumn();
+                        ImGui.Text("The character's current job level.");
                             
                         ImGui.TableNextColumn();
                         ImGui.Text("<homeworld>");
