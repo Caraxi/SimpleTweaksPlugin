@@ -1,36 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Game.Command;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using ImGuiNET;
 using SimpleTweaksPlugin.Enums;
-using SimpleTweaksPlugin.TweakSystem;
-using SimpleTweaksPlugin.Utility;
-
+using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
 namespace SimpleTweaksPlugin.Tweaks; 
 
-public class ChrDirCommand : Tweak {
+public class ChrDirCommand : CommandTweak {
     public override string Name => "Character Directory Command";
     public override string Description => "Adds a command to open the directory when client side character data is stored.";
-
-    public override void Setup() {
-        Ready = true;
-    }
+    protected override string Command => "chrdir";
+    protected override string HelpMessage => "Print your character save directory to chat. '/chrdir open' to open the directory in explorer.";
 
     private DalamudLinkPayload linkPayload;
 
     public override void Enable() {
         if (Enabled) return;
-        Service.Commands.AddHandler("/chrdir", new CommandInfo(CommandHandler) {ShowInHelp = true, HelpMessage = "Print your character save directory to chat. '/chrdir open' to open the directory in explorer."});
-
         linkPayload = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.OpenFolderLink, OpenFolder);
-            
-        Enabled = true;
+        base.Enable();
     }
 
     private void OpenFolder(uint arg1, SeString arg2) {
@@ -38,7 +29,7 @@ public class ChrDirCommand : Tweak {
         Process.Start("explorer.exe", dir);
     }
 
-    private unsafe void CommandHandler(string command, string arguments) {
+    protected override unsafe void OnCommand(string arguments) {
         var saveDir = Path.Combine(Framework.Instance()->UserPath, $"FFXIV_CHR{Service.ClientState.LocalContentId:X16}");
         if (arguments == "open") {
             Process.Start("explorer.exe", saveDir);
@@ -58,18 +49,12 @@ public class ChrDirCommand : Tweak {
     }
 
     protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
-        ImGui.TextDisabled("/chrdir");
-        ImGui.TextDisabled("/chrdir open");
+        ImGui.TextDisabled($"/{Command}");
+        ImGui.TextDisabled($"/{Command} open");
     };
 
     public override void Disable() {
         PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.OpenFolderLink);
-        Service.Commands.RemoveHandler("/chrdir");
-        Enabled = false;
-    }
-
-    public override void Dispose() {
-        Enabled = false;
-        Ready = false;
+        base.Disable();
     }
 }

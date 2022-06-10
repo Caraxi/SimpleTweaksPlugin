@@ -1,29 +1,20 @@
 ﻿using System;
-using Dalamud.Game.Command;
-using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ImGuiNET;
-using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
-public unsafe class CharaCardCommand : Tweak {
+public unsafe class CharaCardCommand : CommandTweak {
     public override string Name => "Open Adventurer Plate Command";
     public override string Description => "Adds a command to open adventurer plates.";
+    protected override string Command => "playerplate";
+    protected override string HelpMessage => "Opens the character card for the selected character.";
+    protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => ImGui.Text($"/{Command}");
     
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => ImGui.Text("/playerplate");
-    
-    public override void Enable() {
-        Service.Commands.AddHandler("/playerplate", new CommandInfo(CharaCardCommandHandler) {
-            HelpMessage = "Opens the character card for the selected character.",
-            ShowInHelp = true,
-        });
-        base.Enable();
-    }
-    
-    private void CharaCardCommandHandler(string command, string arguments) {
+    protected override void OnCommand(string arguments) {
         if (string.IsNullOrWhiteSpace(arguments)) {
             Service.Chat.PrintError($"/playerplate <t>");
             return;
@@ -44,11 +35,6 @@ public unsafe class CharaCardCommand : Tweak {
         } else {
             Service.Chat.PrintError($"{arguments} is not a player.");
         }
-    }
-
-    public override void Disable() {
-        Service.Commands.RemoveHandler("/playerplate");
-        base.Disable();
     }
 }
 
