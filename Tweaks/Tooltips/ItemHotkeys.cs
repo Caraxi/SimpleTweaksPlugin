@@ -46,6 +46,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
     }
     
     public override string Name => "Item Hotkeys";
+    public override string Description => "Adds hotkeys for various actions when the item detail window is visible.";
 
     public class Configs : TweakConfig {
         public bool HideHotkeysOnTooltip;
