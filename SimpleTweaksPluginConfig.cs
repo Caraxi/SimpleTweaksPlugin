@@ -444,6 +444,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                                     if (ctp.AssemblyPath == CustomProviders[i]) {
                                         ctp.Dispose();
                                     }
+                                    DebugManager.Reload();
                                 }
                                 
                                 if (enabled) {
