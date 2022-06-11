@@ -82,6 +82,9 @@ public static unsafe class Common {
         
         addonSetupHook = Hook<AddonSetupDelegate>("E8 ?? ?? ?? ?? 8B 83 ?? ?? ?? ?? C1 E8 14", AddonSetupDetour);
         addonSetupHook?.Enable();
+
+        updateCursorHook = Hook<AtkModuleUpdateCursor>("48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 20 4C 8B F1 E8 ?? ?? ?? ?? 49 8B CE", UpdateCursorDetour);
+        updateCursorHook?.Enable();
     }
 
     private static void* AddonSetupDetour(AtkUnitBase* addon) {
@@ -383,6 +386,9 @@ public static unsafe class Common {
         
         addonSetupHook?.Disable();
         addonSetupHook?.Dispose();
+        
+        updateCursorHook?.Disable();
+        updateCursorHook?.Dispose();
     }
 
     public const int UnitListCount = 18;
@@ -430,6 +436,41 @@ public static unsafe class Common {
         if (attr == null) return null;
         return (T*)GetAgent(attr.ID);
     }
+
+
+    private delegate void* AtkModuleUpdateCursor(RaptureAtkModule* module);
+    private static HookWrapper<AtkModuleUpdateCursor> updateCursorHook;
+
+    private static AtkCursor.CursorType _lockedCursorType = AtkCursor.CursorType.Arrow;
+    
+    private static void* UpdateCursorDetour(RaptureAtkModule* module) {
+        if (_lockedCursorType != AtkCursor.CursorType.Arrow) {
+            var cursor = AtkStage.GetSingleton()->AtkCursor;
+            if (cursor.Type != _lockedCursorType) {
+                AtkStage.GetSingleton()->AtkCursor.SetCursorType(_lockedCursorType, 1);
+            }
+            return null;
+        }
+
+        return updateCursorHook.Original(module);
+    }
+
+    public static void ForceMouseCursor(AtkCursor.CursorType cursorType) {
+        if (cursorType == AtkCursor.CursorType.Arrow) {
+            UnforceMouseCursor();
+            return;
+        }
+        _lockedCursorType = cursorType;
+        AtkStage.GetSingleton()->AtkCursor.SetCursorType(cursorType);
+        updateCursorHook?.Enable();
+    }
+
+    public static void UnforceMouseCursor() {
+        _lockedCursorType = AtkCursor.CursorType.Arrow;
+        updateCursorHook?.Disable();
+    }
+    
+    
 }
 
 public unsafe class SetupAddonArgs {

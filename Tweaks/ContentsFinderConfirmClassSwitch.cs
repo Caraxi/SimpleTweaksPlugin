@@ -17,8 +17,11 @@ public unsafe class ContentsFinderConfirmClassSwitch : Tweak {
         
         if (Common.GetUnitBase("ContentsFinderConfirm", out var unitBase)) {
             var node = unitBase->GetNodeById(40);
+            node->Flags |= (short)(NodeFlags.RespondToMouse | NodeFlags.EmitsEvents | NodeFlags.HasCollision);
             if (node != null) {
                 simpleEvent.Add(unitBase, node, AtkEventType.MouseClick);
+                simpleEvent.Add(unitBase, node, AtkEventType.MouseOver);
+                simpleEvent.Add(unitBase, node, AtkEventType.MouseOut);
             }
         }
 
@@ -27,6 +30,13 @@ public unsafe class ContentsFinderConfirmClassSwitch : Tweak {
     }
 
     private void OnIconClicked(AtkEventType eventType, AtkUnitBase* atkUnitBase, AtkResNode* node) {
+        switch (eventType) {
+            case AtkEventType.MouseOver: Common.ForceMouseCursor(AtkCursor.CursorType.Clickable); return;
+            case AtkEventType.MouseOut: Common.UnforceMouseCursor(); return;
+            case AtkEventType.MouseClick: break;
+            default: return;
+        }
+
         if (node == null) return;
         var imageNode = node->GetAsAtkImageNode();
         if (imageNode == null) return;
@@ -52,6 +62,8 @@ public unsafe class ContentsFinderConfirmClassSwitch : Tweak {
         classIconNode->Flags |= (short)(NodeFlags.RespondToMouse | NodeFlags.EmitsEvents | NodeFlags.HasCollision);
         obj.Addon->UpdateCollisionNodeList(false);
         simpleEvent.Add(obj.Addon, classIconNode, AtkEventType.MouseClick);
+        simpleEvent.Add(obj.Addon, classIconNode, AtkEventType.MouseOver);
+        simpleEvent.Add(obj.Addon, classIconNode, AtkEventType.MouseOut);
     }
 
     public override void Disable() {
@@ -61,6 +73,8 @@ public unsafe class ContentsFinderConfirmClassSwitch : Tweak {
             var node = unitBase->GetNodeById(40);
             if (node != null) {
                 simpleEvent.Remove(unitBase, node, AtkEventType.MouseClick);
+                simpleEvent.Remove(unitBase, node, AtkEventType.MouseOver);
+                simpleEvent.Remove(unitBase, node, AtkEventType.MouseOut);
             }
         }
         
