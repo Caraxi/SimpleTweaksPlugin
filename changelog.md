@@ -8,6 +8,8 @@
 
 > **`Improved Blue Mage Action Tooltips`** - Adds Damage Type, Aspect and Rank to blue mage action tooltips.
 
+> **`Duty Ready Class Switching`** - Click 'Previous' class icon in Duty Ready to switch class.
+
 ***Added Features***
 > **`Item Hotkeys`** - Added a new hotkey to open crafting recipes.
 
