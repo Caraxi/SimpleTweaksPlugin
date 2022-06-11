@@ -46,7 +46,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         lastUpdate.Restart();
-        updateParamHook ??= new Hook<UpdateParamDelegate>(Common.Scanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 83 3D ?? ?? ?? ?? ?? 41 0F B6 E8 48 8B DA 8B F1 0F 84 ?? ?? ?? ?? 48 89 7C 24"), new UpdateParamDelegate(UpdateParamDetour));
+        updateParamHook ??= new Hook<UpdateParamDelegate>(Service.SigScanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 83 3D ?? ?? ?? ?? ?? 41 0F B6 E8 48 8B DA 8B F1 0F 84 ?? ?? ?? ?? 48 89 7C 24"), new UpdateParamDelegate(UpdateParamDetour));
         updateParamHook.Enable();
         Service.Framework.Update += FrameworkUpdate;
         base.Enable();

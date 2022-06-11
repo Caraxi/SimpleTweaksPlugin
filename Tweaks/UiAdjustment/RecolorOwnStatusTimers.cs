@@ -1,6 +1,5 @@
 ﻿using System.Numerics;
 using Dalamud.Interface;
-using Dalamud.Interface.Components;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;

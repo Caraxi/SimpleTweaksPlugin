@@ -5,7 +5,6 @@ using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Enums;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using SimpleTweaksPlugin;
 using SimpleTweaksPlugin.TweakSystem;
 
 #if DEBUG

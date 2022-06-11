@@ -6,18 +6,15 @@ using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using Dalamud.Game;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Hooking;
 using Dalamud.Memory;
 using FFXIVClientStructs.Attributes;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using SimpleTweaksPlugin.Enums;
-using SimpleTweaksPlugin.GameStructs;
-using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace SimpleTweaksPlugin.Utility; 
@@ -38,22 +35,12 @@ public static unsafe class Common {
     private static GameAlloc _gameAlloc;
     private static GetGameAllocator _getGameAllocator;
 
-    private delegate InventoryContainer* GetInventoryContainer(IntPtr inventoryManager, InventoryType inventoryType);
-    private delegate InventoryItem* GetContainerSlot(InventoryContainer* inventoryContainer, int slotId);
-
-    private static GetInventoryContainer _getInventoryContainer;
-    private static GetContainerSlot _getContainerSlot;
-
-    public static IntPtr InventoryManagerAddress;
-
     public static IntPtr PlayerStaticAddress { get; private set; }
 
     private static IntPtr LastCommandAddress;
         
     public static Utf8String* LastCommand { get; private set; }
-
-    public static SigScanner Scanner => Service.SigScanner;
-
+    
     public static event Action FrameworkUpdate;
     
     public static void InvokeFrameworkUpdate() => FrameworkUpdate?.Invoke();
@@ -63,22 +50,15 @@ public static unsafe class Common {
     public static event Action<SetupAddonArgs> AddonPreSetup; 
     
     public static void Setup() {
-        var gameAllocPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 49 83 CF FF 4C 8B F0");
-        var getGameAllocatorPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 8B 75 08");
-
-        InventoryManagerAddress = Scanner.GetStaticAddressFromSig("BA ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B F8 48 85 C0");
-        var getInventoryContainerPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 8B 55 BB");
-        var getContainerSlotPtr = Scanner.ScanText("E8 ?? ?? ?? ?? 8B 5B 0C");
-
-        PlayerStaticAddress = Scanner.GetStaticAddressFromSig("8B D7 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B7 E8");
-        LastCommandAddress = Scanner.GetStaticAddressFromSig("4C 8D 05 ?? ?? ?? ?? 41 B1 01 49 8B D4 E8 ?? ?? ?? ?? 83 EB 06");
+        var gameAllocPtr = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 49 83 CF FF 4C 8B F0");
+        var getGameAllocatorPtr = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 8B 75 08");
+        
+        PlayerStaticAddress = Service.SigScanner.GetStaticAddressFromSig("8B D7 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B7 E8");
+        LastCommandAddress = Service.SigScanner.GetStaticAddressFromSig("4C 8D 05 ?? ?? ?? ?? 41 B1 01 49 8B D4 E8 ?? ?? ?? ?? 83 EB 06");
         LastCommand = (Utf8String*) (LastCommandAddress);
 
         _gameAlloc = Marshal.GetDelegateForFunctionPointer<GameAlloc>(gameAllocPtr);
         _getGameAllocator = Marshal.GetDelegateForFunctionPointer<GetGameAllocator>(getGameAllocatorPtr);
-
-        _getInventoryContainer = Marshal.GetDelegateForFunctionPointer<GetInventoryContainer>(getInventoryContainerPtr);
-        _getContainerSlot = Marshal.GetDelegateForFunctionPointer<GetContainerSlot>(getContainerSlotPtr);
         
         addonSetupHook = Hook<AddonSetupDelegate>("E8 ?? ?? ?? ?? 8B 83 ?? ?? ?? ?? C1 E8 14", AddonSetupDetour);
         addonSetupHook?.Enable();
@@ -131,23 +111,7 @@ public static unsafe class Common {
             
         return (T*) Service.GameGui.GetAddonByName(name, index);
     }
-
-    public static InventoryContainer* GetContainer(InventoryType inventoryType) {
-        if (InventoryManagerAddress == IntPtr.Zero) return null;
-        return _getInventoryContainer(InventoryManagerAddress, inventoryType);
-    }
-
-    public static InventoryItem* GetContainerItem(InventoryContainer* container, int slot) {
-        if (container == null) return null;
-        return _getContainerSlot(container, slot);
-    }
-
-    public static InventoryItem* GetInventoryItem(InventoryType inventoryType, int slotId) {
-        if (InventoryManagerAddress == IntPtr.Zero) return null;
-        var container = _getInventoryContainer(InventoryManagerAddress, inventoryType);
-        return container == null ? null : _getContainerSlot(container, slotId);
-    }
-
+    
     public static IntPtr Alloc(ulong size) {
         if (_gameAlloc == null || _getGameAllocator == null) return IntPtr.Zero;
         return _gameAlloc(size, IntPtr.Zero, _getGameAllocator(), IntPtr.Zero);
@@ -228,7 +192,7 @@ public static unsafe class Common {
     }
 
     public static HookWrapper<T> Hook<T>(string signature, T detour, int addressOffset = 0) where T : Delegate {
-        var addr = Scanner.ScanText(signature);
+        var addr = Service.SigScanner.ScanText(signature);
         var h = new Hook<T>(addr + addressOffset, detour);
         var wh = new HookWrapper<T>(h);
         HookList.Add(wh);
@@ -259,7 +223,7 @@ public static unsafe class Common {
     }
 
     public static HookWrapper<AddonOnUpdate> HookAfterAddonUpdate(void* address, NoReturnAddonOnUpdate after) => HookAfterAddonUpdate(new IntPtr(address), after);
-    public static HookWrapper<AddonOnUpdate> HookAfterAddonUpdate(string signature, NoReturnAddonOnUpdate after, int addressOffset = 0) => HookAfterAddonUpdate(Scanner.ScanText(signature) + addressOffset, after);
+    public static HookWrapper<AddonOnUpdate> HookAfterAddonUpdate(string signature, NoReturnAddonOnUpdate after, int addressOffset = 0) => HookAfterAddonUpdate(Service.SigScanner.ScanText(signature) + addressOffset, after);
     public static HookWrapper<AddonOnUpdate> HookAfterAddonUpdate(AtkUnitBase* atkUnitBase, NoReturnAddonOnUpdate after) => HookAfterAddonUpdate(atkUnitBase->AtkEventListener.vfunc[46], after);
 
     public static List<IHookWrapper> HookList = new();

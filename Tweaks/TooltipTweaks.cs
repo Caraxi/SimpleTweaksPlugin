@@ -4,8 +4,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Memory;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -19,7 +19,7 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
 
     public abstract class SubTweak : BaseTweak {
         public override string Key => $"{nameof(TooltipTweaks)}@{base.Key}";
-        public virtual unsafe void OnActionTooltip(AddonActionDetail* addonActionDetail, HoveredActionDetail action) { }
+        public virtual unsafe void OnActionTooltip(AtkUnitBase* addonActionDetail, HoveredActionDetail action) { }
         public virtual unsafe void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) { }
         public virtual unsafe void OnGenerateActionTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) { }
 
@@ -64,7 +64,7 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
     }
 
     public override string Name => "Tooltip Tweaks";
-    private unsafe delegate IntPtr ActionTooltipDelegate(AddonActionDetail* a1, void* a2, ulong a3);
+    private unsafe delegate IntPtr ActionTooltipDelegate(AtkUnitBase* a1, void* a2, ulong a3);
     private HookWrapper<ActionTooltipDelegate> actionTooltipHook;
 
     private unsafe delegate byte ItemHoveredDelegate(IntPtr a1, IntPtr* a2, int* containerId, ushort* slotId, IntPtr a5, uint slotIdInt, IntPtr a7);
@@ -114,7 +114,7 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         actionHoveredHook?.Original(a1, a2, a3, a4, a5);
     }
 
-    private unsafe IntPtr ActionTooltipDetour(AddonActionDetail* addon, void* a2, ulong a3) {
+    private unsafe IntPtr ActionTooltipDetour(AtkUnitBase* addon, void* a2, ulong a3) {
         var retVal = actionTooltipHook.Original(addon, a2, a3);
         try {
             foreach (var t in SubTweaks.Where(t => t.Enabled)) {

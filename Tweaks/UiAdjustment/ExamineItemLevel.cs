@@ -4,11 +4,11 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using SimpleTweaksPlugin.Enums;
-using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -58,7 +58,7 @@ public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
 
     private void ShowItemLevel(bool reset = false) {
         try {
-            var container = Common.GetContainer(InventoryType.Examine);
+            var container = InventoryManager.Instance()->GetInventoryContainer(InventoryType.Examine);
             if (container == null) return;
             var examineWindow = (AddonCharacterInspect*) Common.GetUnitBase("CharacterInspect");
             if (examineWindow == null) return;
@@ -79,9 +79,9 @@ public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
             var c = 12;
             for (var i = 0; i < 13; i++) {
                 if (i == 5) continue;
-                var slot = Common.GetContainerItem(container, i);
+                var slot = container->GetInventorySlot(i);
                 if (slot == null) continue;
-                var id = slot->ItemId;
+                var id = slot->ItemID;
                 var item = Service.Data.Excel.GetSheet<Sheets.ExtendedItem>()?.GetRow(id);
                 if (item == null) continue;
                 if (ignoreCategory.Contains(item.ItemUICategory.Row)) {

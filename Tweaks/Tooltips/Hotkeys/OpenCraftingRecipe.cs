@@ -1,8 +1,6 @@
 ﻿using System.Linq;
 using Dalamud.Game.ClientState.Keys;
-using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Sheets;
 

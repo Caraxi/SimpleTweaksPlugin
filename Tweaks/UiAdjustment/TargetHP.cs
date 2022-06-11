@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Globalization;
 using System.Numerics;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects.Types;

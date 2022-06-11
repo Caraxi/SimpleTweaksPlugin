@@ -55,7 +55,7 @@ public class LegacyCameraLock : Tweak {
         Config = LoadConfig<Configs>() ?? new Configs();
         try {
             if (changeAddress == IntPtr.Zero) {
-                changeAddress = Common.Scanner.ScanText("0F 86 ?? ?? ?? ?? 48 8B 4D 77");
+                changeAddress = Service.SigScanner.ScanText("0F 86 ?? ?? ?? ?? 48 8B 4D 77");
                 SimpleLog.Verbose($"Found Signature: {changeAddress.ToInt64():X}");
             }
         } catch {

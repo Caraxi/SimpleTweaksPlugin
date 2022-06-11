@@ -4,11 +4,8 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using SimpleTweaksPlugin.GameStructs;
-using HotbarSlotType = FFXIVClientStructs.FFXIV.Client.UI.Misc.HotbarSlotType;
-using System.Linq;
-using Dalamud.Logging;
-using System.Text;
+using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
@@ -71,7 +68,7 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
     {
         var changesFound = false;
 
-        var hotbarID = addonActionBarBase->HotbarID;
+        var hotbarID = addonActionBarBase->RaptureHotbarId;
 
         if (hotbarID < allActionBars.Length)
         {
@@ -104,7 +101,7 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
         foreach (var actionBar in allActionBars)
         {
             AddonActionBarBase* ab = GetActionBarAddon(actionBar);
-            if (ab != null && ab->ActionBarSlotsAction != null)
+            if (ab != null && ab->ActionBarSlots != null)
             {
                 ResetHotbar(ab);
             }
@@ -115,16 +112,16 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
 
     private void ResetHotbar(AddonActionBarBase* ab)
     {
-        if (ab == null || ab->ActionBarSlotsAction == null) return;
+        if (ab == null || ab->ActionBarSlots == null) return;
 
-        var numSlots = ab->HotbarSlotCount;
+        var numSlots = ab->SlotCount;
 
         for (int i = 0; i < numSlots; i++)
         {
-            var slot = ab->ActionBarSlotsAction[i];
+            var slot = ab->ActionBarSlots[i];
             if (slot.ControlHintTextNode != null)
             {
-                var normalControlHint = recordedControlHints?[ab->HotbarID]?[i];
+                var normalControlHint = recordedControlHints?[ab->RaptureHotbarId]?[i];
                 if (normalControlHint != null)
                 {
                     slot.ControlHintTextNode->SetText(normalControlHint);
@@ -139,7 +136,7 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
         foreach (var actionBar in allActionBars)
         {
             AddonActionBarBase* ab = GetActionBarAddon(actionBar);
-            if (ab != null && ab->ActionBarSlotsAction != null)
+            if (ab != null && ab->ActionBarSlots != null)
             {
                 changeFound |= UpdateHotbarRecordedControlHints(ab);
             }
@@ -149,29 +146,29 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
 
     private bool UpdateHotbarRecordedControlHints(AddonActionBarBase* ab, StringArrayData* strArrayData = null)
     {
-        if (ab == null || ab->ActionBarSlotsAction == null) return false;
+        if (ab == null || ab->ActionBarSlots == null) return false;
 
         if (strArrayData == null)
         {
             strArrayData = Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder.StringArrays[StrDataIndex];
         }
 
-        var numSlots = ab->HotbarSlotCount;
+        var numSlots = ab->SlotCount;
 
         var changeFound = false;
 
-        if (recordedControlHints[ab->HotbarID] == null || recordedControlHints[ab->HotbarID].Length != numSlots || recordedControlHints[ab->HotbarID].Length != numSlots)
+        if (recordedControlHints[ab->RaptureHotbarId] == null || recordedControlHints[ab->RaptureHotbarId].Length != numSlots || recordedControlHints[ab->RaptureHotbarId].Length != numSlots)
         {
-            recordedControlHints[ab->HotbarID] = new string[numSlots];
+            recordedControlHints[ab->RaptureHotbarId] = new string[numSlots];
             changeFound = true;
         }
 
         for (int i = 0; i < numSlots; i++)
         {
-            var currentControlHint = Marshal.PtrToStringUTF8(new IntPtr(strArrayData->StringArray[(ab->HotbarID * StrDataHotbarLength + i) * StrDataSlotLength + StrDataHintIndex]));
-            if (recordedControlHints?[ab->HotbarID]?[i] != currentControlHint)
+            var currentControlHint = Marshal.PtrToStringUTF8(new IntPtr(strArrayData->StringArray[(ab->RaptureHotbarId * StrDataHotbarLength + i) * StrDataSlotLength + StrDataHintIndex]));
+            if (recordedControlHints?[ab->RaptureHotbarId]?[i] != currentControlHint)
             {
-                recordedControlHints[ab->HotbarID][i] = currentControlHint;
+                recordedControlHints[ab->RaptureHotbarId][i] = currentControlHint;
                 changeFound = true;
             }
         }
@@ -199,16 +196,16 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
         var hotbarModule = Framework.Instance()->GetUiModule()->GetRaptureHotbarModule();
         var name = Marshal.PtrToStringUTF8(new IntPtr(ab->AtkUnitBase.Name));
         if (name == null) return false;
-        var hotbar = hotbarModule->HotBar[ab->HotbarID];
+        var hotbar = hotbarModule->HotBar[ab->RaptureHotbarId];
         if (hotbar == null) return false;
 
-        var numSlots = ab->HotbarSlotCount;
+        var numSlots = ab->SlotCount;
 
         var changeFound = false;
 
-        if (recordedCommands[ab->HotbarID] == null || recordedCommands[ab->HotbarID].Length != numSlots)
+        if (recordedCommands[ab->RaptureHotbarId] == null || recordedCommands[ab->RaptureHotbarId].Length != numSlots)
         {
-            recordedCommands[ab->HotbarID] = new HotbarSlotCommand[numSlots];
+            recordedCommands[ab->RaptureHotbarId] = new HotbarSlotCommand[numSlots];
             changeFound = true;
         }
 
@@ -222,9 +219,9 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
                 command.Id = slotStruct->CommandType == HotbarSlotType.Action ? actionManager->GetAdjustedActionId(slotStruct->CommandId) : slotStruct->CommandId;
             }
 
-            if (!command.Equals(recordedCommands[ab->HotbarID][i]))
+            if (!command.Equals(recordedCommands[ab->RaptureHotbarId][i]))
             {
-                recordedCommands[ab->HotbarID][i] = command;
+                recordedCommands[ab->RaptureHotbarId][i] = command;
                 changeFound = true;
             }
         }
@@ -250,7 +247,7 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
         foreach (var actionBar in allActionBars)
         {
             AddonActionBarBase* ab = GetActionBarAddon(actionBar);
-            if (ab != null && ab->ActionBarSlotsAction != null)
+            if (ab != null && ab->ActionBarSlots != null)
             {
                 FillHotbarControlHints(ab, commandControlHints);
             }
@@ -259,24 +256,24 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
 
     private void FillHotbarControlHints(AddonActionBarBase* ab, Dictionary<HotbarSlotCommand, string> commandControlHints)
     {
-        if (ab == null || ab->ActionBarSlotsAction == null) return;
+        if (ab == null || ab->ActionBarSlots == null) return;
         var hotbarModule = Framework.Instance()->GetUiModule()->GetRaptureHotbarModule();
         var name = Marshal.PtrToStringUTF8(new IntPtr(ab->AtkUnitBase.Name));
         if (name == null) return;
-        var hotbar = hotbarModule->HotBar[ab->HotbarID];
+        var hotbar = hotbarModule->HotBar[ab->RaptureHotbarId];
         if (hotbar == null) return;
 
-        for (int i = 0; i < ab->HotbarSlotCount; i++)
+        for (int i = 0; i < ab->SlotCount; i++)
         {
-            if (recordedCommands?[ab->HotbarID]?[i] == null) continue;
+            if (recordedCommands?[ab->RaptureHotbarId]?[i] == null) continue;
 
-            var slot = ab->ActionBarSlotsAction[i];
+            var slot = ab->ActionBarSlots[i];
             if (slot.ControlHintTextNode != null)
             {
-                var controlHint = recordedControlHints?[ab->HotbarID]?[i];
+                var controlHint = recordedControlHints?[ab->RaptureHotbarId]?[i];
                 if (controlHint == null || controlHint.Length == 0)
                 {
-                    var command = recordedCommands[ab->HotbarID][i];
+                    var command = recordedCommands[ab->RaptureHotbarId][i];
                     if (commandControlHints.ContainsKey(command))
                     {
                         controlHint = commandControlHints[command];

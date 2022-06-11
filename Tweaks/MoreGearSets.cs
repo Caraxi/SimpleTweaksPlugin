@@ -1,7 +1,6 @@
 ﻿using System;
 using Dalamud;
 using SimpleTweaksPlugin.TweakSystem;
-using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
@@ -16,7 +15,7 @@ public class MoreGearSets : Tweak {
 
     public override void Enable() {
         if (Enabled) return;
-        changeAddress = Common.Scanner.ScanText("E8 ?? ?? ?? ?? 44 0F B6 F0 41 8B ED");
+        changeAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 44 0F B6 F0 41 8B ED");
         if (SafeMemory.ReadBytes(changeAddress, 7, out originalBytes)) {
             if (SafeMemory.WriteBytes(changeAddress, new byte[] {0xB8, numGearSets, 0x00, 0x00, 0x00, 0x90, 0x90})) {
                 base.Enable();

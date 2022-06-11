@@ -1,6 +1,5 @@
 ﻿using Lumina;
 using Lumina.Data;
-using Lumina.Text;
 using Lumina.Excel;
 
 namespace SimpleTweaksPlugin.Sheets; 

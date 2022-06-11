@@ -1,6 +1,5 @@
 ﻿using System;
 using Dalamud.Game;
-using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using SimpleTweaksPlugin.TweakSystem;

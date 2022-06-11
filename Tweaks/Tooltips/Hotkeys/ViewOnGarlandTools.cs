@@ -1,5 +1,4 @@
 ﻿using Dalamud.Game.ClientState.Keys;
-using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.Utility;
 

@@ -1,6 +1,5 @@
 ﻿using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltipField;
@@ -54,9 +53,9 @@ public class ShowItemID : TooltipTweaks.SubTweak {
         SetTooltipString(stringArrayData, ItemUiCategory, seStr);
     }
 
-    public override unsafe void OnActionTooltip(AddonActionDetail* addon, TooltipTweaks.HoveredActionDetail action) {
-        if (addon->AtkUnitBase.UldManager.NodeList == null || addon->AtkUnitBase.UldManager.NodeListCount < 29) return;
-        var categoryText = (AtkTextNode*) addon->AtkUnitBase.UldManager.NodeList[28];
+    public override unsafe void OnActionTooltip(AtkUnitBase* addon, TooltipTweaks.HoveredActionDetail action) {
+        if (addon->UldManager.NodeList == null || addon->UldManager.NodeListCount < 29) return;
+        var categoryText = (AtkTextNode*) addon->UldManager.NodeList[28];
         if (categoryText == null) return;
         var seStr = Common.ReadSeString(categoryText->NodeText.StringPtr);
         if (seStr.Payloads.Count <= 1) {

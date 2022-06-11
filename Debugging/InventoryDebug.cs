@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Debugging; 
 
@@ -11,7 +10,7 @@ public unsafe class InventoryDebug : DebugHelper {
     private InventoryType inventoryType;
 
     public override void Draw() {
-        DebugManager.ClickToCopyText($"{Common.InventoryManagerAddress.ToInt64():X}");
+        DebugManager.ClickToCopyText($"{(ulong)InventoryManager.Instance():X}");
         if (ImGui.BeginTabBar("inventoryDebuggingTabs")) {
             if (ImGui.BeginTabItem("Container/Slot")) {
                 ImGui.PushItemWidth(200);

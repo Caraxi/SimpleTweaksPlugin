@@ -1,10 +1,8 @@
 ﻿using System.Runtime.InteropServices;
 using Dalamud.Game;
-using Dalamud.Game.Internal;
 using ImGuiNET;
 using SimpleTweaksPlugin.Tweaks;
 using SimpleTweaksPlugin.TweakSystem;
-using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {
@@ -38,7 +36,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         };
 
         public override void Setup() {
-            shadowManager = *(ShadowManager**)Common.Scanner.GetStaticAddressFromSig("89 50 28 48 8B 05 ?? ?? ?? ?? 8B 89 ?? ?? ?? ?? 89 48 2C C3 8B 4A 10");
+            shadowManager = *(ShadowManager**)Service.SigScanner.GetStaticAddressFromSig("89 50 28 48 8B 05 ?? ?? ?? ?? 8B 89 ?? ?? ?? ?? 89 48 2C C3 8B 4A 10");
             if (shadowManager != null) base.Setup();
         }
 
