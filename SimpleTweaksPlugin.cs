@@ -78,6 +78,7 @@ namespace SimpleTweaksPlugin {
             Common.HookList.Clear();
             Common.Shutdown();
             this.XivCommon.Dispose();
+            SimpleEvent.Destroy();
         }
 
         public int UpdateFrom = -1;
