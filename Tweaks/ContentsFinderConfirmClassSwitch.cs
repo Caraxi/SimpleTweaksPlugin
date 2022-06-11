@@ -8,7 +8,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 public unsafe class ContentsFinderConfirmClassSwitch : Tweak {
     public override string Name => "Duty Ready Class Switching";
-    public override string Description => "Click 'Previous' class icon in Duty Read witch to switch class.";
+    public override string Description => "Click 'Previous' class icon in Duty Ready window to switch class.";
 
     private SimpleEvent simpleEvent;
 
