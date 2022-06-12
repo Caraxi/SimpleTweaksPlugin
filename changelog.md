@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+
+## [1.7.2.0]
 ***New Tweaks***
 > **`Improved Chat Font Sizes`** - Allows changing the font size for the chat windows beyond the default limits, and allows docked chat tabs to keep their font size separate from the main tab.
 
