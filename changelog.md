@@ -10,12 +10,16 @@
 
 > **`Duty Ready Class Switching`** - Click 'Previous' class icon in Duty Ready to switch class.
 
+> **`Disable Auto Chat Inputs`** - Prevent the game from inserting <flag> or other parameters into chat box.
+
 ***Added Features***
 > **`Item Hotkeys`** - Added a new hotkey to open crafting recipes.
 
 > **`Always Yes`** - Added support for desynthesis prompts *(Aireil)*
 
 > **`Custom Free Company Tags`** - Added placeholder to display a player's current level.
+
+> **`Try on Correct Item`** - Can now be configured for each game window you try on an item from.
 
 
 ## [1.7.1.1]
