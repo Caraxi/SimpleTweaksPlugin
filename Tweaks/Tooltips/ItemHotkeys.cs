@@ -236,26 +236,33 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
 
         Config = LoadConfig<Configs>() ?? new Configs();
 
-        if (!Config.HasLoadedOld) {
-            var old = LoadConfig<OldHotkeyConfig>("TooltipTweaks@CopyHotkey");
+        try {
+            if (!Config.HasLoadedOld) {
+                var old = LoadConfig<OldHotkeyConfig>("TooltipTweaks@CopyHotkey");
+                if (old == null) goto SkipConfigLoad;
 
-            ItemHotkey SetupFromOld(Type t, bool enabled, VirtualKey[] keys) {
-                var k = Hotkeys.First(h => h.GetType() == typeof(CopyNameHotkey));
-                if (k.GetType() != typeof(CopyNameHotkey)) return null;
-                k.LoadConfig();
-                k.Config.Enabled = enabled;
-                k.Config.Key = keys;
-                k.SaveConfig();
-                return k;
+                ItemHotkey SetupFromOld(Type t, bool enabled, VirtualKey[] keys) {
+                    var k = Hotkeys.First(h => h.GetType() == t);
+                    if (k.GetType() != t) return null;
+                    k.LoadConfig();
+                    k.Config.Enabled = enabled;
+                    k.Config.Key = keys;
+                    k.SaveConfig();
+                    return k;
+                }
+
+                SetupFromOld(typeof(CopyNameHotkey), old.CopyHotkeyEnabled, old.CopyHotkey);
+                SetupFromOld(typeof(ViewOnUniversalis), old.UniversalisHotkeyEnabled, old.UniversalisHotkey);
+                SetupFromOld(typeof(ViewOnGamerEscape), old.GamerEscapeLinkHotkeyEnabled, old.GamerEscapeLinkHotkey);
+                SetupFromOld(typeof(ViewOnGarlandTools), old.GardlandToolsLinkHotkeyEnabled, old.GardlandToolsLinkHotkey);
+                SetupFromOld(typeof(ViewOnGarlandTools), old.GardlandToolsLinkHotkeyEnabled, old.GardlandToolsLinkHotkey);
+                (SetupFromOld(typeof(ViewOnTeamcraft), old.TeamcraftLinkHotkeyEnabled, old.TeamcraftLinkHotkey).Config as ViewOnTeamcraft.HotkeyConfig)!.ForceBrowser = old.TeamcraftLinkHotkeyForceBrowser;
+
+                SkipConfigLoad:
+                Config.HasLoadedOld = true;
+                SaveConfig(Config);
             }
-
-            SetupFromOld(typeof(CopyNameHotkey), old.CopyHotkeyEnabled, old.CopyHotkey);
-            SetupFromOld(typeof(ViewOnUniversalis), old.UniversalisHotkeyEnabled, old.UniversalisHotkey);
-            SetupFromOld(typeof(ViewOnGamerEscape), old.GamerEscapeLinkHotkeyEnabled, old.GamerEscapeLinkHotkey);
-            SetupFromOld(typeof(ViewOnGarlandTools), old.GardlandToolsLinkHotkeyEnabled, old.GardlandToolsLinkHotkey);
-            SetupFromOld(typeof(ViewOnGarlandTools), old.GardlandToolsLinkHotkeyEnabled, old.GardlandToolsLinkHotkey);
-            (SetupFromOld(typeof(ViewOnTeamcraft), old.TeamcraftLinkHotkeyEnabled, old.TeamcraftLinkHotkey).Config as ViewOnTeamcraft.HotkeyConfig)!.ForceBrowser = old.TeamcraftLinkHotkeyForceBrowser;
-            
+        } catch {
             Config.HasLoadedOld = true;
             SaveConfig(Config);
         }
