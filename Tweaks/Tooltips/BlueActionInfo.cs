@@ -4,7 +4,7 @@ using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
 
-namespace SimpleTweaksPlugin.Tweaks;
+namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
 public unsafe class BlueActionInfo : TooltipTweaks.SubTweak {
     public override string Name => "Improved Blue Mage Action Tooltips";
@@ -18,6 +18,12 @@ public unsafe class BlueActionInfo : TooltipTweaks.SubTweak {
         if (descriptionString.TextValue.Contains("Rank: ★")) return; // Don't append when it already exists.
         var infoStr = aozActionTransient.Stats.ToDalamudString();
         descriptionString.Append(NewLinePayload.Payload);
+        descriptionString.Append(NewLinePayload.Payload);
+        descriptionString.Append(new UIForegroundPayload(500));
+        descriptionString.Append(new UIGlowPayload(7));
+        descriptionString.Append(new TextPayload($"Blue Magic Spell #{aozActionTransient.Number}"));
+        descriptionString.Append(new UIForegroundPayload(0));
+        descriptionString.Append(new UIGlowPayload(0));
         descriptionString.Append(NewLinePayload.Payload);
         descriptionString.Append(infoStr);
         SetTooltipString(stringArrayData, TooltipTweaks.ActionTooltipField.Description, descriptionString);

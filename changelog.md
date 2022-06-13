@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+***Added Features***
+> **`Improved Blue Mage Action Tooltips`** Added spellbook number to tooltip.
 
 ## [1.7.2.1]
 > Fixed a issue causing `Item Hotkeys` tweak to not work.
