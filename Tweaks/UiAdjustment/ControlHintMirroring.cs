@@ -10,11 +10,27 @@ using System.Linq;
 using Dalamud.Logging;
 using System.Text;
 using SimpleTweaksPlugin.Utility;
+using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+using ImGuiNET;
 
-namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
+namespace SimpleTweaksPlugin
+{
+    public partial class UiAdjustmentsConfig
+    {
+        public bool ShouldSerializeControlHintMirroring() => ControlHintMirroring != null;
+        public ControlHintMirroring.Configs ControlHintMirroring = null;
+    }
+}
 
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
+{
 public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
 {
+    public class Configs : TweakConfig
+    {
+        public bool PulseAllActionBarSlots = true;
+    }
 
     struct HotbarSlotCommand
     {
@@ -22,9 +38,18 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
         public HotbarSlotType Type;
     }
 
+    public Configs Config { get; private set; }
+
+    protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) =>
+    {
+        hasChanged |= ImGui.Checkbox(LocString("PulseAllActionBarSlots", "Pulse all associated action slots when an action is used."), ref this.Config.PulseAllActionBarSlots);
+    };
+
     private delegate byte ActionBarBaseUpdate(AddonActionBarBase* addonActionBarBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData);
+    private delegate bool TryActionDelegate(IntPtr tp, ActionType t, uint id, ulong target, uint param, uint origin, uint unk, void* l);
 
     private HookWrapper<ActionBarBaseUpdate> actionBarBaseUpdateHook;
+    private HookWrapper<TryActionDelegate> tryActionHook;
 
     private ActionManager* actionManager;
 
@@ -52,13 +77,26 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
     private static readonly int actionBarLength = 12;
     private string[][] recordedControlHints = new string[allActionBars.Length][];
     private HotbarSlotCommand[][] recordedCommands = new HotbarSlotCommand[allActionBars.Length][];
+    private Dictionary<uint, List<Tuple<string, int>>> commandLookup = new Dictionary<uint, List<Tuple<string, int>>>();
 
     public override void Enable()
     {
+        Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.ControlHintMirroring ?? new Configs();
+
         UpdateAll();
+
         actionBarBaseUpdateHook ??= Common.Hook<ActionBarBaseUpdate>("E8 ?? ?? ?? ?? 83 BB ?? ?? ?? ?? ?? 75 09", ActionBarBaseUpdateDetour);
         actionBarBaseUpdateHook?.Enable();
+
         actionManager = ActionManager.Instance();
+
+        tryActionHook ??= Common.Hook<TryActionDelegate>((void*)ActionManager.fpUseAction, TryActionCallback);
+            
+        if (Config.PulseAllActionBarSlots)
+        {
+            tryActionHook?.Enable();
+        }
+
         base.Enable();
     }
 
@@ -83,9 +121,65 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
 
         if (changesFound)
         {
+            commandLookup.Clear();
             FillControlHints();
         }
         return ret;
+    }
+
+    private unsafe bool TryActionCallback(IntPtr action_manager, ActionType type, uint id, ulong target, uint param, uint origin, uint unk, void* location)
+    {
+        try
+        {
+            var actionBarSlots = GetActionSlots(id);
+
+            foreach (var actionBarGroup in actionBarSlots.GroupBy(p => p.Item1))
+            {
+                var actionBarName = actionBarGroup.Key;
+                var ab = GetActionBarAddon(actionBarName);
+                var abClientStruct = (FFXIVClientStructs.FFXIV.Client.UI.AddonActionBarBase*)ab;
+
+                foreach (var action in actionBarGroup)
+                {
+                    var slot = action.Item2;
+                    abClientStruct->PulseActionBarSlot(slot);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            SimpleLog.Error(ex);
+        }
+
+        return tryActionHook.Original(action_manager, type, id, target, param, origin, unk, location);
+    }
+
+    private List<Tuple<string, int>> GetActionSlots(uint actionId)
+    {
+        if (!commandLookup.TryGetValue(actionId, out var actionBarSlots))
+        {
+            actionBarSlots = new List<Tuple<string, int>>();
+            commandLookup.Add(actionId, actionBarSlots);
+
+            foreach (var actionBar in allActionBars)
+            {
+                AddonActionBarBase* ab = GetActionBarAddon(actionBar);
+                if (ab != null && ab->ActionBarSlotsAction != null)
+                {
+                    var numSlots = ab->HotbarSlotCount;
+                    for (int i = 0; i < numSlots; i++)
+                    {
+                        var slot = ab->ActionBarSlotsAction[i];
+                        if (slot.ActionId == actionId)
+                        {
+                            actionBarSlots.Add(new Tuple<string, int>(actionBar, i));
+                        }
+                    }
+                }
+            }
+        }
+
+        return actionBarSlots;
     }
 
     private void UpdateAll()
@@ -95,6 +189,7 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
 
         if (changesFound)
         {
+            commandLookup.Clear();
             FillControlHints();
         }
     }
@@ -111,6 +206,7 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
         }
         recordedControlHints = new string[allActionBars.Length][];
         recordedCommands = new HotbarSlotCommand[allActionBars.Length][];
+        commandLookup.Clear();
     }
 
     private void ResetHotbar(AddonActionBarBase* ab)
@@ -288,9 +384,25 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
         }
     }
 
+    protected override void ConfigChanged()
+    {
+        if (Config.PulseAllActionBarSlots)
+        {
+            tryActionHook?.Enable();
+        }
+        else
+        {
+            tryActionHook?.Disable();
+        }
+    }
+
     public override void Disable()
     {
+        SaveConfig(Config);
+        PluginConfig.UiAdjustments.HideAchievementsNotifications = null;
+
         actionBarBaseUpdateHook?.Disable();
+        tryActionHook?.Disable();
         Reset();
         base.Disable();
     }
@@ -298,7 +410,9 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
     public override void Dispose()
     {
         actionBarBaseUpdateHook?.Dispose();
+        tryActionHook?.Dispose();
         Reset();
         base.Dispose();
     }
+}
 }

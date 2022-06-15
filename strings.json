@@ -759,6 +759,10 @@
     "message": "Duplicate Keybind Hints Between Hotbars",
     "description": "[ControlHintMirroring] Tweak Name"
   },
+  "UiAdjustments@ControlHintMirroring / PulseAllActionBarSlots": {
+    "message": "Pulse all associated action slots when an action is used.",
+    "description": "[ControlHintMirroring] Duplicate Keybind Hints Between Hotbars - Indicates whether all actionbar slots with given action should pulse when said action is used."
+  },
   "UiAdjustments@CustomFreeCompanyTags / AddButton": {
     "message": "Add",
     "description": "[CustomFreeCompanyTags] Custom Free Company Tags - Add"
