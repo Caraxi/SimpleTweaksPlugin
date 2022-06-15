@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Enums;
-using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 

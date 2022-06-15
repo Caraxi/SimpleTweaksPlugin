@@ -22,6 +22,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         public bool MateriaExtractions = true;
         public bool MateriaRetrievals = true;
         public bool GlamourDispels = true;
+        public bool Desynthesis = true;
         public List<string> ExceptionsYesNo = new();
     }
 
@@ -78,6 +79,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         hasChanged |= ImGui.Checkbox("Materia extractions", ref Config.MateriaExtractions);
         hasChanged |= ImGui.Checkbox("Materia retrievals", ref Config.MateriaRetrievals);
         hasChanged |= ImGui.Checkbox("Glamour dispels", ref Config.GlamourDispels);
+        hasChanged |= ImGui.Checkbox("Desynthesis", ref Config.Desynthesis);
 
         if (hasChanged) {
             SaveConfig(Config);
@@ -118,6 +120,9 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 return;
             case "MiragePrismRemove":
                 if (Config.GlamourDispels) SetFocusYes(args.Addon, 15);
+                return;
+            case "SalvageDialog":
+                if (Config.Desynthesis) SetFocusYes(args.Addon, 24);
                 return;
         }
     }

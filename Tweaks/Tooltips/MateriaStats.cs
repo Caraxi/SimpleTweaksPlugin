@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel;
@@ -91,7 +92,7 @@ public class MateriaStats : TooltipTweaks.SubTweak {
     public override unsafe void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         if (!(Config.Delta || Config.Total == false)) Config.Total = true; // Config invalid check
         try {
-            var item = itemSheet.GetRow(Item.ItemId);
+            var item = itemSheet.GetRow(Item.ItemID);
             if (item == null) return;
             if (item.MateriaSlotCount == 0) return;
             var itemLevel = itemLevelSheet.GetRow(item.LevelItem.Row);
@@ -110,7 +111,7 @@ public class MateriaStats : TooltipTweaks.SubTweak {
                 }
             }
 
-            if (Item.IsHQ) {
+            if (Item.Flags.HasFlag(InventoryItem.ItemFlags.HQ)) {
                 foreach (var bp in item.BaseParamSpecial) {
                     if (bp.Value == 0 || bp.BaseParam.Row == 0) continue;
                     if (baseParamOriginal.ContainsKey(bp.BaseParam.Row)) baseParamOriginal[bp.BaseParam.Row] += bp.Value;
@@ -118,10 +119,15 @@ public class MateriaStats : TooltipTweaks.SubTweak {
             }
 
             if (baseParamDeltas.Count == 0) return;
-                
-            foreach (var (materiaId, level) in Item.Materia()) {
-                if (level >= 10) continue;
-                var materia = materiaSheet.GetRow(materiaId);
+
+
+            var pItem = Item;
+            var materiaId = pItem.Materia;
+            var level = pItem.MateriaGrade;
+
+            for (var i = 0; i < 5; i++, materiaId++, level++) {
+                if (*level >= 10) continue;
+                var materia = materiaSheet.GetRow(*materiaId);
                 if (materia == null) continue;
                 if (materia.BaseParam.Row == 0) continue;
                 if (materia.BaseParam.Value == null) continue;
@@ -129,13 +135,14 @@ public class MateriaStats : TooltipTweaks.SubTweak {
                     var bp = Service.Data.Excel.GetSheet<ExtendedBaseParam>()?.GetRow(materia.BaseParam.Row);
                     if (bp == null) continue;
                     baseParams.Add(materia.BaseParam.Row, bp);
-                    baseParamDeltas.Add(materia.BaseParam.Row, materia.Value[level]);
+                    baseParamDeltas.Add(materia.BaseParam.Row, materia.Value[*level]);
                     baseParamOriginal.Add(materia.BaseParam.Row, 0);
                     baseParamLimits.Add(materia.BaseParam.Row, (int) Math.Ceiling(itemLevel.BaseParam[materia.BaseParam.Row] * (bp.EquipSlotCategoryPct[item.EquipSlotCategory.Row] / 100f)));
                     continue;
                 }
-                baseParamDeltas[materia.BaseParam.Row] += materia.Value[level];
+                baseParamDeltas[materia.BaseParam.Row] += materia.Value[*level];
             }
+            
             foreach (var bp in baseParamDeltas) {
                 var param = baseParams[bp.Key];
                 if (bp.Value == 0) continue;

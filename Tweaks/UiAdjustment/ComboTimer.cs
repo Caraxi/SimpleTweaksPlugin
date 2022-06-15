@@ -64,7 +64,7 @@ public unsafe class ComboTimer : UiAdjustments.SubTweak {
         
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        if (combo == null) combo = (Combo*) Common.Scanner.GetStaticAddressFromSig("F3 0F 11 05 ?? ?? ?? ?? F3 0F 10 45");
+        if (combo == null) combo = (Combo*) Service.SigScanner.GetStaticAddressFromSig("F3 0F 11 05 ?? ?? ?? ?? F3 0F 10 45");
         Service.Framework.Update += FrameworkUpdate;
         base.Enable();
     }

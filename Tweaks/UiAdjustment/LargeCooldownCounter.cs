@@ -7,8 +7,8 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
-using SimpleTweaksPlugin.GameStructs;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -116,15 +116,15 @@ public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
     }
 
     private void Update(AddonActionBarBase* ab, bool reset = false) {
-        if (ab == null || ab->ActionBarSlotsAction == null) return;
+        if (ab == null || ab->ActionBarSlots == null) return;
         var hotbarModule = Framework.Instance()->GetUiModule()->GetRaptureHotbarModule();
         var name = Marshal.PtrToStringUTF8(new IntPtr(ab->AtkUnitBase.Name));
         if (name == null) return;
 
-        for (var i = 0; i < ab->HotbarSlotCount; i++) {
-            var slot = ab->ActionBarSlotsAction[i];
+        for (var i = 0; i < ab->SlotCount; i++) {
+            var slot = ab->ActionBarSlots[i];
 
-            var slotStruct = hotbarModule->HotBar[ab->HotbarID]->Slot[i];
+            var slotStruct = hotbarModule->HotBar[ab->RaptureHotbarId]->Slot[i];
 
             if (name.StartsWith("_ActionDoubleCross")) {
                 var dcBar = (AddonActionDoubleCrossBase*)ab;
@@ -140,7 +140,7 @@ public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
                     {
                         reset = false;                                                      
                         var exBarTarget = (ex < 17) ? (((ex - 1) >> 1) + 10) :                          // ex value  1-16 = left/right sides of cross bars 1-8 (IDs 10-17)
-                                                      (ab->HotbarID + (ex < 19 ? 1 : -1) - 2) % 8 + 10; //          17-20 = "Cycle" options (uses bar before/after main active bar)
+                                                      (ab->RaptureHotbarId + (ex < 19 ? 1 : -1) - 2) % 8 + 10; //          17-20 = "Cycle" options (uses bar before/after main active bar)
                         var exUseLeftSide = (ex < 17 ? ex : ex + 1) & 1;                                // for some reason, the Cycle options invert the left/right pattern
                         slotStruct = hotbarModule->HotBar[exBarTarget]->Slot[i + (exUseLeftSide != 0 ? -4 : 4)];
                     }

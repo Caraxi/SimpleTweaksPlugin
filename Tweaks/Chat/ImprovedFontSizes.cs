@@ -21,7 +21,6 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
     
     public override string Name => "Improved Font Sizes";
     public override string Description => "Allows you to change the font size for the chat windows beyond the default limits, and allows docked chat tabs to keep their font size separate from the main tab.";
-    public override bool Experimental => true;
 
     public class Configs : TweakConfig {
         public int[] FontSize;

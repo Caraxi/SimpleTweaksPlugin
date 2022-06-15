@@ -38,7 +38,7 @@ public unsafe class AccurateVentureTimes : UiAdjustments.SubTweak {
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         replacementUpdateRetainerDelegate = UpdateRetainerLineDetour;
-        updateRetainerPointer = (void*) Common.Scanner.ScanText("40 53 56 41 56 48 83 EC 30 48 8B B1");
+        updateRetainerPointer = (void*) Service.SigScanner.ScanText("40 53 56 41 56 48 83 EC 30 48 8B B1");
         updateRetainer = Marshal.GetDelegateForFunctionPointer<UpdateRetainerDelegate>(new IntPtr(updateRetainerPointer));
         addonSetupHook ??= Common.Hook("E8 ?? ?? ?? ?? 41 B1 1E", new AddonSetupDelegate(SetupDetour));
         addonSetupHook?.Enable();

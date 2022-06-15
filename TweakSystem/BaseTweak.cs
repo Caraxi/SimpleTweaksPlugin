@@ -83,10 +83,12 @@ public abstract class BaseTweak {
         }
     }
 
-    protected T LoadConfig<T>() where T : TweakConfig {
+    protected T LoadConfig<T>() where T : TweakConfig => LoadConfig<T>(this.Key);
+
+    protected T LoadConfig<T>(string key) where T : TweakConfig {
         try {
             var configDirectory = PluginInterface.GetPluginConfigDirectory();
-            var configFile = Path.Combine(configDirectory, this.Key + ".json");
+            var configFile = Path.Combine(configDirectory, key + ".json");
             if (!File.Exists(configFile)) return default;
             var jsonString = File.ReadAllText(configFile);
             return JsonConvert.DeserializeObject<T>(jsonString);

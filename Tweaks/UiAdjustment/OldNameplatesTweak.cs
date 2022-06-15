@@ -1,7 +1,6 @@
 ﻿using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
 
@@ -15,7 +14,7 @@ public unsafe class OldNameplatesTweak : UiAdjustments.SubTweak {
     private Hook<AddonNameplateOnUpdateDelegate> addonNameplateOnUpdateHook;
 
     public override void Enable() {
-        addonNameplateOnUpdateHook ??= new Hook<AddonNameplateOnUpdateDelegate>(Common.Scanner.ScanText("48 8B C4 41 56 48 81 EC ?? ?? ?? ?? 48 89 58 F0"), new AddonNameplateOnUpdateDelegate(AddonNameplateOnUpdateDetour));
+        addonNameplateOnUpdateHook ??= new Hook<AddonNameplateOnUpdateDelegate>(Service.SigScanner.ScanText("48 8B C4 41 56 48 81 EC ?? ?? ?? ?? 48 89 58 F0"), new AddonNameplateOnUpdateDelegate(AddonNameplateOnUpdateDetour));
         addonNameplateOnUpdateHook?.Enable();
         base.Enable();
     }

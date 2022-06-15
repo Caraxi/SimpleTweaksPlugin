@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Numerics;
 using System.Runtime.InteropServices;
 using Dalamud.Game;
-using FFXIVClientStructs;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using SimpleTweaksPlugin.Utility;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 

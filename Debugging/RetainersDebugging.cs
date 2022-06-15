@@ -1,6 +1,4 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using FFXIVClientStructs.FFXIV.Client.UI;
 using ImGuiNET;
 
 namespace SimpleTweaksPlugin.Debugging; 

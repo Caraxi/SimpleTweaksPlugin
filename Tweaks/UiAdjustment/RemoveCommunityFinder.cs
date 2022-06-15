@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Dalamud.Game;
-using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 

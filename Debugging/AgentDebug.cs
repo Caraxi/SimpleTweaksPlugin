@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Dalamud;
 using Dalamud.Hooking;
 using Dalamud.Interface;
-using Dalamud.Memory;
-using Dalamud.Utility;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -356,8 +352,8 @@ public unsafe class AgentDebug : DebugHelper {
 
     private void SetupLogging() {
         agentGetLog = new List<(AgentId, ulong, ulong)>();
-        getAgentByInternalIdHook ??= new Hook<GetAgentByInternalIDDelegate>(Common.Scanner.ScanText("E8 ?? ?? ?? ?? 83 FF 0D"), new GetAgentByInternalIDDelegate(GetAgentByInternalIDDetour));
-        getAgentByInternalId2Hook ??= new Hook<GetAgentByInternalIDDelegate>(Common.Scanner.ScanText("E8 ?? ?? ?? ?? 48 85 C0 74 12 0F BF 80"), new GetAgentByInternalIDDelegate(GetAgentByInternalIDDetour));
+        getAgentByInternalIdHook ??= new Hook<GetAgentByInternalIDDelegate>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 83 FF 0D"), new GetAgentByInternalIDDelegate(GetAgentByInternalIDDetour));
+        getAgentByInternalId2Hook ??= new Hook<GetAgentByInternalIDDelegate>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 85 C0 74 12 0F BF 80"), new GetAgentByInternalIDDelegate(GetAgentByInternalIDDetour));
             
         getAgentByInternalIdHook?.Enable();
         getAgentByInternalId2Hook?.Enable();

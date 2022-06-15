@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Dalamud.Game.Command;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
-public unsafe class EstateListCommand : Tweak {
+public unsafe class EstateListCommand : CommandTweak {
     public override string Name => "Estate List Command";
-    public override string Description => "Adds a command to open the estate list of one of your friends. (/estatelist)";
+    public override string Description => $"Adds a command to open the estate list of one of your friends. (/{Command})";
+    protected override string Command => "estatelist";
+    protected override string HelpMessage => "Opens the estate list for one of your friends.";
 
     private delegate IntPtr ShowEstateTeleportationDelegate(AgentInterface* friendListAgent, ulong contentId);
     private ShowEstateTeleportationDelegate showEstateTeleportation;
@@ -21,18 +22,13 @@ public unsafe class EstateListCommand : Tweak {
             showEstateTeleportation = Marshal.GetDelegateForFunctionPointer<ShowEstateTeleportationDelegate>(ptr);
         }
         if (showEstateTeleportation == null) return;
-
-        Service.Commands.AddHandler("/estatelist", new CommandInfo(EstateListCommandHandle) {
-            ShowInHelp = true,
-            HelpMessage = "Opens the estate list for one of your friends."
-        });
-
+        
         base.Enable();
     }
 
-    private void EstateListCommandHandle(string command, string arguments) {
+    protected override void OnCommand(string arguments) {
         if (string.IsNullOrWhiteSpace(arguments)) {
-            Service.Chat.PrintError("/estatelist <name>");
+            Service.Chat.PrintError($"/{Command} <name>");
             return;
         }
         var useContentId = ulong.TryParse(arguments, out var contentId);
@@ -50,10 +46,5 @@ public unsafe class EstateListCommand : Tweak {
         
         var friendListAgent = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(AgentId.SocialFriendList);
         if (friendListAgent != null) this.showEstateTeleportation(friendListAgent, friend.ContentId);
-    }
-
-    public override void Disable() {
-        Service.Commands.RemoveHandler("/estatelist");
-        base.Disable();
     }
 }

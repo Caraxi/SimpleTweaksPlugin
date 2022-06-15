@@ -7,7 +7,6 @@ using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
-using SimpleTweaksPlugin.Utility;
 using ObjectKind = FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
@@ -80,9 +79,9 @@ public unsafe class SmartNameplates : UiAdjustments.SubTweak {
 
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        targetManager = targetManager != IntPtr.Zero ? targetManager : Common.Scanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? FF 50 ?? 48 85 DB", 3); // Taken from Dalamud
-        GetTargetType ??= Marshal.GetDelegateForFunctionPointer<GetTargetTypeDelegate>(Common.Scanner.ScanText("E8 ?? ?? ?? ?? 83 F8 06 0F 87 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 8B C0"));
-        shouldDisplayNameplateHook ??= new Hook<ShouldDisplayNameplateDelegate>(Common.Scanner.ScanText("E8 ?? ?? ?? ?? 89 44 24 40 48 C7 85"), ShouldDisplayNameplateDetour);
+        targetManager = targetManager != IntPtr.Zero ? targetManager : Service.SigScanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? FF 50 ?? 48 85 DB", 3); // Taken from Dalamud
+        GetTargetType ??= Marshal.GetDelegateForFunctionPointer<GetTargetTypeDelegate>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 83 F8 06 0F 87 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 8B C0"));
+        shouldDisplayNameplateHook ??= new Hook<ShouldDisplayNameplateDelegate>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 89 44 24 40 48 C7 85"), ShouldDisplayNameplateDetour);
         shouldDisplayNameplateHook?.Enable();
         base.Enable();
     }

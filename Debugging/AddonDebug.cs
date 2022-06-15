@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Memory;
-using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;

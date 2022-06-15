@@ -1,12 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using Dalamud.Game;
-using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.Excel;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Utility;
-using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 
 namespace SimpleTweaksPlugin.Debugging; 
 
