@@ -22,17 +22,16 @@ namespace SimpleTweaksPlugin.Tweaks;
 public unsafe class TweakingHunter : Tweak
 {
     public override string Name => "Hunting Log Target Coords";
-    public override string Description => "Allow clicking on hunting log targets to generate map marker (requires chatcoords plugin)";
+    public override string Description => "Allow clicking on hunting log targets (including GC logs) to generate map marker. NB this is not Hunts!";
 
-    public string category { get; private set; }
-    public string difficulty { get; private set; }
+    private string _category { get; set; }
+    private string _difficulty { get; set; }
 
     private delegate byte EventHandle(AtkUnitBase* atkUnitBase, AtkEventType eventType, uint eventParam, AtkEvent* atkEvent, void* a5);
     private delegate void* SetupHandle(AtkUnitBase* atkUnitBase, void* param_2, void* param_3);
     private HookWrapper<EventHandle> eventHook;
     private HookWrapper<SetupHandle> setupHook;
     private static readonly IEnumerable<TerritoryDetail> _territoryDetails = LoadTerritoryDetails();
-
 
     public override void Enable()
     {
@@ -42,8 +41,10 @@ public unsafe class TweakingHunter : Tweak
 
         eventHook ??= Common.Hook<EventHandle>(eventSigMaybe, EventDetour);
         eventHook.Enable();
+
         setupHook ??= Common.Hook<SetupHandle>(listHandlerSetupSigMaybe, SetupDetour);
         setupHook.Enable();
+
         try
         {
             SetupMonsterNote(Common.GetUnitBase("MonsterNote"));
@@ -61,24 +62,20 @@ public unsafe class TweakingHunter : Tweak
         {
             if (atkUnitBase != null)
             {
-                category = atkUnitBase->GetNodeById(22)->GetAsAtkTextNode()->NodeText.ToString();
-                difficulty = atkUnitBase->GetNodeById(29)->GetAsAtkTextNode()->NodeText.ToString().Split(' ')[1];
-                SimpleLog.Log(difficulty);
+                _category = atkUnitBase->GetNodeById(22)->GetAsAtkTextNode()->NodeText.ToString();
+                _difficulty = atkUnitBase->GetNodeById(29)->GetAsAtkTextNode()->NodeText.ToString().Split(' ')[1];
 
                 SimpleLog.Debug("Setup MonsterNote Events with " + atkUnitBase->X);
                 var mainTreeListNode = (AtkComponentNode*)atkUnitBase->GetNodeById(46);
                 SimpleLog.Debug(mainTreeListNode->ToString());
 
-                const uint theImportantNodeId = 5;
-                SimpleLog.Debug($"about to try looking up {theImportantNodeId}");
-
-                for (var listItemRenderer = (AtkComponentNode*)mainTreeListNode->Component->UldManager.SearchNodeById(theImportantNodeId);
+                for (
+                    var listItemRenderer = (AtkComponentNode*)mainTreeListNode->Component->UldManager.SearchNodeById(5);
                     listItemRenderer->AtkResNode.NodeID != 6;// so many magic numbers; the stuff we want is stored in 5, 51001, 51002, etc and then the next type of thing starts at 6
-                    listItemRenderer = listItemRenderer->AtkResNode.NextSiblingNode->GetAsAtkComponentNode())
+                    listItemRenderer = listItemRenderer->AtkResNode.NextSiblingNode->GetAsAtkComponentNode()
+                    )
                 {
                     if (listItemRenderer is null) throw new Exception("aw no, this should literally never happen");
-                    AtkResNode atkResNode = listItemRenderer->AtkResNode;
-                    SimpleLog.Debug($"{atkResNode.NodeID} at {atkResNode.X}, {atkResNode.Y}: {atkResNode.Height} x {atkResNode.Width}");
 
                     var colNode = (AtkCollisionNode*)listItemRenderer->Component->UldManager.SearchNodeById(8);
                     if (colNode == null)
@@ -127,39 +124,39 @@ public unsafe class TweakingHunter : Tweak
 
     private void ProcessEventAndRecurse(AtkUnitBase* atkUnitBase, AtkEventType eventType, uint eventParam, AtkEvent* atkEvent, void* a5, int depth)
     {
-        string indent = new('\t', depth);
+        string indent = new('\t', depth); //gives us n tab characters to make debugging recursive logs easier (also it's pretty)
         try
         {
             if (eventType == AtkEventType.MouseClick)
             {
-                SimpleLog.Debug(indent + $"click with param {(eventParam & 0x10F2C000) == 0x10F2C000}");
+                SimpleLog.Debug(indent + $"click with param {eventParam}; matches our magic number: {(eventParam & 0x10F2C000) == 0x10F2C000}");
 
                 if ((eventParam & 0x10F2C000) == 0x10F2C000)
                 {
                     AtkCollisionNode* colNode = (AtkCollisionNode*)atkEvent->Target;
                     SimpleLog.Debug(indent + "we're in it now");
                     // do the actual stuff!
-                    AtkResNode* parentNode = colNode->AtkResNode.ParentNode;
-                    AtkTextNode* nameTextNode = parentNode->GetComponent()->UldManager.SearchNodeById(4)->GetAsAtkTextNode();
-
+                   
                     string mobName = colNode->AtkResNode.ParentNode->GetComponent()->UldManager.SearchNodeById(4)->GetAsAtkTextNode()->NodeText.ToString();
 
-                    // so! it turns out there is a single case where the 'same' mob gets used twice for a single class
+                    // so! it turns out there is a single case where the 'same' mob name gets used twice for a single class
                     // it's actually a completely separate mob! the two do not count towards each others' logs
                     // there are loads of cases where there are multiple instances of what seems to be the 'same' mob,
                     // in different places and with different levels but they count equally for whichever log you're on
                     // those are all cross-class though!
                     // this is an ugly, simple solution that (hopefully) works?
-                    if (mobName.Equals("Puk Hatchling") && difficulty.Equals("2"))
+                    if (mobName.Equals("Puk Hatchling") && _difficulty.Equals("2"))
                     {
                         mobName = "Puk Hatchling2";
                     }
 
                     (string zone, float x, float y) location;
-                    var foundIt = nameCoords.TryGetValue((mobName, category), out location);
+                    var foundIt = nameCoords.TryGetValue((mobName, _category), out location);
 
-                    if (foundIt) PutItOnTheMap(location);
-                    else SimpleLog.Log($"tried to look up a missing mob: {mobName}, {category}. This may be in a dungeon, or I may have made an oopsy?");
+                    if (foundIt)
+                        PutItOnTheMap(location);
+                    else
+                        SimpleLog.Log($"tried to look up a missing mob: {mobName}, {_category}. This may be in a dungeon, or I may have made an oopsy?");
 
                     return;
                 }
@@ -181,9 +178,8 @@ public unsafe class TweakingHunter : Tweak
     private void PutItOnTheMap((string zone, float x, float y) location)
     {
         SimpleLog.Debug($"handling coords for {location}");
-        var territoryDetails = _territoryDetails.Where(x => x.Name.Equals(location.zone, StringComparison.OrdinalIgnoreCase));
 
-        var td = territoryDetails.FirstOrDefault();
+        var td = _territoryDetails.Where(x => x.Name.Equals(location.zone, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
 
         var mapLink = new MapLinkPayload(
                 td.TerritoryType,
