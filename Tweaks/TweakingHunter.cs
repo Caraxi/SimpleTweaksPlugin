@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Dalamud.Game.Gui;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
@@ -29,6 +31,8 @@ public unsafe class TweakingHunter : Tweak
     private delegate void* SetupHandle(AtkUnitBase* atkUnitBase, void* param_2, void* param_3);
     private HookWrapper<EventHandle> eventHook;
     private HookWrapper<SetupHandle> setupHook;
+    private static readonly IEnumerable<TerritoryDetail> _territoryDetails = LoadTerritoryDetails();
+
 
     public override void Enable()
     {
@@ -139,7 +143,7 @@ public unsafe class TweakingHunter : Tweak
                     AtkTextNode* nameTextNode = parentNode->GetComponent()->UldManager.SearchNodeById(4)->GetAsAtkTextNode();
 
                     string mobName = colNode->AtkResNode.ParentNode->GetComponent()->UldManager.SearchNodeById(4)->GetAsAtkTextNode()->NodeText.ToString();
-                    
+
                     // so! it turns out there is a single case where the 'same' mob gets used twice for a single class
                     // it's actually a completely separate mob! the two do not count towards each others' logs
                     // there are loads of cases where there are multiple instances of what seems to be the 'same' mob,
@@ -150,12 +154,12 @@ public unsafe class TweakingHunter : Tweak
                     {
                         mobName = "Puk Hatchling2";
                     }
-                    
-                    var theRealMob = nameCoords[(mobName, category)];
 
-                    string message = $"/ctp {theRealMob.x} {theRealMob.y} : {theRealMob.zone}";
-                    SimpleLog.Debug(message);
-                    Plugin.XivCommon.Functions.Chat.SendMessage(message);
+                    (string zone, float x, float y) location;
+                    var foundIt = nameCoords.TryGetValue((mobName, category), out location);
+
+                    if (foundIt) PutItOnTheMap(location);
+                    else SimpleLog.Log($"tried to look up a missing mob: {mobName}, {category}. This may be in a dungeon, or I may have made an oopsy?");
 
                     return;
                 }
@@ -171,6 +175,42 @@ public unsafe class TweakingHunter : Tweak
         {
             SimpleLog.Error(indent + ex);
         }
+    }
+
+    // 'borrowed' shamefully from chat coords plugin
+    private void PutItOnTheMap((string zone, float x, float y) location)
+    {
+        SimpleLog.Debug($"handling coords for {location}");
+        var territoryDetails = _territoryDetails.Where(x => x.Name.Equals(location.zone, StringComparison.OrdinalIgnoreCase));
+
+        var td = territoryDetails.FirstOrDefault();
+
+        var mapLink = new MapLinkPayload(
+                td.TerritoryType,
+                td.MapId,
+                location.x,
+                location.y,
+                0f
+            );
+
+        Service.GameGui.OpenMapWithMapLink(mapLink);
+
+    }
+
+    private static IEnumerable<TerritoryDetail> LoadTerritoryDetails()
+    {
+        return (from territoryType in Service.Data.GetExcelSheet<TerritoryType>()
+                let type = territoryType.Bg.RawString.Split('/')
+                where type.Length >= 3
+                where type[2] == "twn" || type[2] == "fld" || type[2] == "hou"
+                where !string.IsNullOrWhiteSpace(territoryType.Map.Value.PlaceName.Value.Name)
+                select new TerritoryDetail
+                {
+                    TerritoryType = territoryType.RowId,
+                    MapId = territoryType.Map.Value.RowId,
+                    SizeFactor = territoryType.Map.Value.SizeFactor,
+                    Name = territoryType.Map.Value.PlaceName.Value.Name
+                }).ToList();
     }
 
     public override void Disable()
@@ -765,72 +805,80 @@ public unsafe class TweakingHunter : Tweak
         {("Ked", "Thaumaturge"), ("South Shroud", 32f, 24f)},
         {("4th Cohort Hoplomachus", "Thaumaturge"), ("Western Thanalan", 12f, 7f)},
         {("2nd Cohort Signifer", "Thaumaturge"), ("Eastern La Noscea", 27f, 21f)},
-        {("Amalj'aa Hunter", "Immortal Flames "), ("Eastern Thanalan", 19f, 28f)},
-        {("Firemane", "Immortal Flames "), ("Halatali", 11f, 13f)},
-        {("Sylvan Sough", "Immortal Flames "), ("East Shroud", 19f, 21f)},
-        {("Kobold Footman", "Immortal Flames "), ("Upper La Noscea", 11f, 22f)},
-        {("Kobold Pickman", "Immortal Flames "), ("Upper La Noscea", 11f, 22f)},
-        {("Amalj'aa Seer", "Immortal Flames "), ("Southern Thanalan", 20f, 15f)},
-        {("Ixali Lightwing", "Immortal Flames "), ("North Shroud", 22f, 28f)},
-        {("Ixali Boundwing", "Immortal Flames "), ("Coerthas Central Highlands", 32f, 27f)},
-        {("Amalj'aa Halberdier", "Immortal Flames "), ("Southern Thanalan", 25f, 34f)},
-        {("Kobold Missionary", "Immortal Flames "), ("Eastern La Noscea", 28f, 25f)},
-        {("Kobold Sidesman", "Immortal Flames "), ("Upper La Noscea", 26f, 19f)},
-        {("Kobold Quarryman", "Immortal Flames "), ("Outer La Noscea", 22f, 14f)},
-        {("Sylvan Screech", "Immortal Flames "), ("East Shroud", 21f, 21f)},
-        {("Shelfspine Sahagin", "Immortal Flames "), ("Western La Noscea", 19f, 21f)},
-        {("Amalj'aa Archer", "Immortal Flames "), ("Southern Thanalan", 20f, 23f)},
-        {("Ixali Windtalon", "Immortal Flames "), ("North Shroud", 20f, 20f)},
-        {("U'Ghamaro Priest", "Immortal Flames "), ("Outer La Noscea", 23f, 8f)},
-        {("Sapsa Shelfspine", "Immortal Flames "), ("Western La Noscea", 16f, 15f)},
-        {("Zahar'ak Thaumaturge", "Immortal Flames "), ("Southern Thanalan", 32f, 18f)},
-        {("Natalan Windtalon", "Immortal Flames "), ("Coerthas Central Highlands", 31f, 17f)},
-        {("Natalan Boldwing", "Immortal Flames "), ("Coerthas Central Highlands", 31f, 17f)},
-        {("Amalj'aa Hunter", "Maelstrom "), ("Eastern Thanalan", 19f, 28f)},
-        {("Sylvan Groan", "Maelstrom "), ("East Shroud", 19f, 21f)},
-        {("Sylvan Sough", "Maelstrom "), ("East Shroud", 19f, 21f)},
-        {("Kobold Pickman", "Maelstrom "), ("Upper La Noscea", 11f, 22f)},
-        {("Amalj'aa Bruiser", "Maelstrom "), ("Southern Thanalan", 20f, 15f)},
-        {("Ixali Straightbeak", "Maelstrom "), ("North Shroud", 23f, 28f)},
-        {("Ixali Wildtalon", "Maelstrom "), ("Coerthas Central Highlands", 30f, 27f)},
-        {("Amalj'aa Divinator", "Maelstrom "), ("Southern Thanalan", 27f, 34f)},
-        {("Kobold Pitman", "Maelstrom "), ("Eastern La Noscea", 28f, 26f)},
-        {("Kobold Bedesman", "Maelstrom "), ("Outer La Noscea", 22f, 13f)},
-        {("Kobold Priest", "Maelstrom "), ("Outer La Noscea", 22f, 12f)},
-        {("Sylvan Sigh", "Maelstrom "), ("East Shroud", 23f, 21f)},
-        {("Shelfscale Sahagin", "Maelstrom "), ("Western La Noscea", 18f, 21f)},
-        {("Amalj'aa Pugilist", "Maelstrom "), ("Southern Thanalan", 20f, 23f)},
-        {("Ixali Boldwing", "Maelstrom "), ("North Shroud", 21f, 20f)},
-        {("Sylpheed Screech", "Maelstrom "), ("East Shroud", 27f, 19f)},
-        {("U'Ghamaro Bedesman", "Maelstrom "), ("Outer La Noscea", 22f, 6f)},
-        {("Trenchtooth Sahagin", "Maelstrom "), ("Western La Noscea", 20f, 20f)},
-        {("Sapsa Shelfclaw", "Maelstrom "), ("Western La Noscea", 18f, 16f)},
-        {("Zahar'ak Archer", "Maelstrom "), ("Southern Thanalan", 29f, 20f)},
-        {("Natalan Fogcaller", "Maelstrom "), ("Coerthas Central Highlands", 32f, 18f)},
-        {("Natalan Boldwing", "Maelstrom "), ("Coerthas Central Highlands", 31f, 17f)},
-        {("Amalj'aa Javelinier", "Order of the Twin Adder "), ("Eastern Thanalan", 19f, 27f)},
-        {("Sylvan Scream", "Order of the Twin Adder "), ("East Shroud", 19f, 21f)},
-        {("Kobold Pickman", "Order of the Twin Adder "), ("Upper La Noscea", 13f, 22f)},
-        {("Amalj'aa Bruiser", "Order of the Twin Adder "), ("Southern Thanalan", 21f, 14f)},
-        {("Ixali Deftalon", "Order of the Twin Adder "), ("North Shroud", 22f, 28f)},
-        {("Amalj'aa Ranger", "Order of the Twin Adder "), ("Eastern Thanalan", 24f, 20f)},
-        {("Ixali Fearcaller", "Order of the Twin Adder "), ("Coerthas Central Highlands", 31f, 28f)},
-        {("Amalj'aa Sniper", "Order of the Twin Adder "), ("Southern Thanalan", 26f, 34f)},
-        {("Kobold Missionary", "Order of the Twin Adder "), ("Eastern La Noscea", 28f, 26f)},
-        {("Kobold Sidesman", "Order of the Twin Adder "), ("Upper La Noscea", 26f, 19f)},
-        {("Kobold Roundsman", "Order of the Twin Adder "), ("Outer La Noscea", 22f, 14f)},
-        {("Sylvan Snarl", "Order of the Twin Adder "), ("East Shroud", 23f, 20f)},
-        {("Shelfclaw Sahagin", "Order of the Twin Adder "), ("Western La Noscea", 18f, 21f)},
-        {("Amalj'aa Lancer", "Order of the Twin Adder "), ("Southern Thanalan", 22f, 21f)},
-        {("U'Ghamaro Roundsman", "Order of the Twin Adder "), ("Outer La Noscea", 23f, 9f)},
-        {("Ixali Windtalon", "Order of the Twin Adder "), ("North Shroud", 20f, 20f)},
-        {("Sylpheed Snarl", "Order of the Twin Adder "), ("East Shroud", 27f, 18f)},
-        {("U'Ghamaro Quarryman", "Order of the Twin Adder "), ("Outer La Noscea", 23f, 8f)},
-        {("Sapsa Shelftooth", "Order of the Twin Adder "), ("Western La Noscea", 17f, 15f)},
-        {("Zahar'ak Pugilist", "Order of the Twin Adder "), ("Southern Thanalan", 28f, 20f)},
-        {("Natalan Swiftbeak", "Order of the Twin Adder "), ("Coerthas Central Highlands", 31f, 17f)},
-        {("Natalan Boldwing", "Order of the Twin Adder "), ("Coerthas Central Highlands", 31f, 17f)},
+        {("Amalj'aa Hunter", "Immortal Flames"), ("Eastern Thanalan", 19f, 28f)},
+        {("Firemane", "Immortal Flames"), ("Halatali", 11f, 13f)},
+        {("Sylvan Sough", "Immortal Flames"), ("East Shroud", 19f, 21f)},
+        {("Kobold Footman", "Immortal Flames"), ("Upper La Noscea", 11f, 22f)},
+        {("Kobold Pickman", "Immortal Flames"), ("Upper La Noscea", 11f, 22f)},
+        {("Amalj'aa Seer", "Immortal Flames"), ("Southern Thanalan", 20f, 15f)},
+        {("Ixali Lightwing", "Immortal Flames"), ("North Shroud", 22f, 28f)},
+        {("Ixali Boundwing", "Immortal Flames"), ("Coerthas Central Highlands", 32f, 27f)},
+        {("Amalj'aa Halberdier", "Immortal Flames"), ("Southern Thanalan", 25f, 34f)},
+        {("Kobold Missionary", "Immortal Flames"), ("Eastern La Noscea", 28f, 25f)},
+        {("Kobold Sidesman", "Immortal Flames"), ("Upper La Noscea", 26f, 19f)},
+        {("Kobold Quarryman", "Immortal Flames"), ("Outer La Noscea", 22f, 14f)},
+        {("Sylvan Screech", "Immortal Flames"), ("East Shroud", 21f, 21f)},
+        {("Shelfspine Sahagin", "Immortal Flames"), ("Western La Noscea", 19f, 21f)},
+        {("Amalj'aa Archer", "Immortal Flames"), ("Southern Thanalan", 20f, 23f)},
+        {("Ixali Windtalon", "Immortal Flames"), ("North Shroud", 20f, 20f)},
+        {("U'Ghamaro Priest", "Immortal Flames"), ("Outer La Noscea", 23f, 8f)},
+        {("Sapsa Shelfspine", "Immortal Flames"), ("Western La Noscea", 16f, 15f)},
+        {("Zahar'ak Thaumaturge", "Immortal Flames"), ("Southern Thanalan", 32f, 18f)},
+        {("Natalan Windtalon", "Immortal Flames"), ("Coerthas Central Highlands", 31f, 17f)},
+        {("Natalan Boldwing", "Immortal Flames"), ("Coerthas Central Highlands", 31f, 17f)},
+        {("Amalj'aa Hunter", "Maelstrom"), ("Eastern Thanalan", 19f, 28f)},
+        {("Sylvan Groan", "Maelstrom"), ("East Shroud", 19f, 21f)},
+        {("Sylvan Sough", "Maelstrom"), ("East Shroud", 19f, 21f)},
+        {("Kobold Pickman", "Maelstrom"), ("Upper La Noscea", 11f, 22f)},
+        {("Amalj'aa Bruiser", "Maelstrom"), ("Southern Thanalan", 20f, 15f)},
+        {("Ixali Straightbeak", "Maelstrom"), ("North Shroud", 23f, 28f)},
+        {("Ixali Wildtalon", "Maelstrom"), ("Coerthas Central Highlands", 30f, 27f)},
+        {("Amalj'aa Divinator", "Maelstrom"), ("Southern Thanalan", 27f, 34f)},
+        {("Kobold Pitman", "Maelstrom"), ("Eastern La Noscea", 28f, 26f)},
+        {("Kobold Bedesman", "Maelstrom"), ("Outer La Noscea", 22f, 13f)},
+        {("Kobold Priest", "Maelstrom"), ("Outer La Noscea", 22f, 12f)},
+        {("Sylvan Sigh", "Maelstrom"), ("East Shroud", 23f, 21f)},
+        {("Shelfscale Sahagin", "Maelstrom"), ("Western La Noscea", 18f, 21f)},
+        {("Amalj'aa Pugilist", "Maelstrom"), ("Southern Thanalan", 20f, 23f)},
+        {("Ixali Boldwing", "Maelstrom"), ("North Shroud", 21f, 20f)},
+        {("Sylpheed Screech", "Maelstrom"), ("East Shroud", 27f, 19f)},
+        {("U'Ghamaro Bedesman", "Maelstrom"), ("Outer La Noscea", 22f, 6f)},
+        {("Trenchtooth Sahagin", "Maelstrom"), ("Western La Noscea", 20f, 20f)},
+        {("Sapsa Shelfclaw", "Maelstrom"), ("Western La Noscea", 18f, 16f)},
+        {("Zahar'ak Archer", "Maelstrom"), ("Southern Thanalan", 29f, 20f)},
+        {("Natalan Fogcaller", "Maelstrom"), ("Coerthas Central Highlands", 32f, 18f)},
+        {("Natalan Boldwing", "Maelstrom"), ("Coerthas Central Highlands", 31f, 17f)},
+        {("Amalj'aa Javelinier", "Order of the Twin Adder"), ("Eastern Thanalan", 19f, 27f)},
+        {("Sylvan Scream", "Order of the Twin Adder"), ("East Shroud", 19f, 21f)},
+        {("Kobold Pickman", "Order of the Twin Adder"), ("Upper La Noscea", 13f, 22f)},
+        {("Amalj'aa Bruiser", "Order of the Twin Adder"), ("Southern Thanalan", 21f, 14f)},
+        {("Ixali Deftalon", "Order of the Twin Adder"), ("North Shroud", 22f, 28f)},
+        {("Amalj'aa Ranger", "Order of the Twin Adder"), ("Eastern Thanalan", 24f, 20f)},
+        {("Ixali Fearcaller", "Order of the Twin Adder"), ("Coerthas Central Highlands", 31f, 28f)},
+        {("Amalj'aa Sniper", "Order of the Twin Adder"), ("Southern Thanalan", 26f, 34f)},
+        {("Kobold Missionary", "Order of the Twin Adder"), ("Eastern La Noscea", 28f, 26f)},
+        {("Kobold Sidesman", "Order of the Twin Adder"), ("Upper La Noscea", 26f, 19f)},
+        {("Kobold Roundsman", "Order of the Twin Adder"), ("Outer La Noscea", 22f, 14f)},
+        {("Sylvan Snarl", "Order of the Twin Adder"), ("East Shroud", 23f, 20f)},
+        {("Shelfclaw Sahagin", "Order of the Twin Adder"), ("Western La Noscea", 18f, 21f)},
+        {("Amalj'aa Lancer", "Order of the Twin Adder"), ("Southern Thanalan", 22f, 21f)},
+        {("U'Ghamaro Roundsman", "Order of the Twin Adder"), ("Outer La Noscea", 23f, 9f)},
+        {("Ixali Windtalon", "Order of the Twin Adder"), ("North Shroud", 20f, 20f)},
+        {("Sylpheed Snarl", "Order of the Twin Adder"), ("East Shroud", 27f, 18f)},
+        {("U'Ghamaro Quarryman", "Order of the Twin Adder"), ("Outer La Noscea", 23f, 8f)},
+        {("Sapsa Shelftooth", "Order of the Twin Adder"), ("Western La Noscea", 17f, 15f)},
+        {("Zahar'ak Pugilist", "Order of the Twin Adder"), ("Southern Thanalan", 28f, 20f)},
+        {("Natalan Swiftbeak", "Order of the Twin Adder"), ("Coerthas Central Highlands", 31f, 17f)},
+        {("Natalan Boldwing", "Order of the Twin Adder"), ("Coerthas Central Highlands", 31f, 17f)},
 
     };
 
+}
+
+internal class TerritoryDetail
+{
+    public uint TerritoryType { get; set; }
+    public uint MapId { get; set; }
+    public ushort SizeFactor { get; set; }
+    public string Name { get; set; }
 }
