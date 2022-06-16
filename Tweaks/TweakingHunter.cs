@@ -22,6 +22,9 @@ public unsafe class TweakingHunter : Tweak
     public override string Name => "Hunting Log Target Coords";
     public override string Description => "Allow clicking on hunting log targets to generate map marker (requires chatcoords plugin)";
 
+    public string category { get; private set; }
+    public string difficulty { get; private set; }
+
     private delegate byte EventHandle(AtkUnitBase* atkUnitBase, AtkEventType eventType, uint eventParam, AtkEvent* atkEvent, void* a5);
     private delegate void* SetupHandle(AtkUnitBase* atkUnitBase, void* param_2, void* param_3);
     private HookWrapper<EventHandle> eventHook;
@@ -54,6 +57,10 @@ public unsafe class TweakingHunter : Tweak
         {
             if (atkUnitBase != null)
             {
+                category = atkUnitBase->GetNodeById(22)->GetAsAtkTextNode()->NodeText.ToString();
+                difficulty = atkUnitBase->GetNodeById(29)->GetAsAtkTextNode()->NodeText.ToString().Split(' ')[1];
+                SimpleLog.Log(difficulty);
+
                 SimpleLog.Debug("Setup MonsterNote Events with " + atkUnitBase->X);
                 var mainTreeListNode = (AtkComponentNode*)atkUnitBase->GetNodeById(46);
                 SimpleLog.Debug(mainTreeListNode->ToString());
@@ -126,15 +133,27 @@ public unsafe class TweakingHunter : Tweak
                 if ((eventParam & 0x10F2C000) == 0x10F2C000)
                 {
                     AtkCollisionNode* colNode = (AtkCollisionNode*)atkEvent->Target;
-                    SimpleLog.Debug(indent + "oh shit!");
+                    SimpleLog.Debug(indent + "we're in it now");
                     // do the actual stuff!
                     AtkResNode* parentNode = colNode->AtkResNode.ParentNode;
                     AtkTextNode* nameTextNode = parentNode->GetComponent()->UldManager.SearchNodeById(4)->GetAsAtkTextNode();
 
                     string mobName = colNode->AtkResNode.ParentNode->GetComponent()->UldManager.SearchNodeById(4)->GetAsAtkTextNode()->NodeText.ToString();
-                    var theRealMob = MonstrousThing(mobName);
+                    
+                    // so! it turns out there is a single case where the 'same' mob gets used twice for a single class
+                    // it's actually a completely separate mob! the two do not count towards each others' logs
+                    // there are loads of cases where there are multiple instances of what seems to be the 'same' mob,
+                    // in different places and with different levels but they count equally for whichever log you're on
+                    // those are all cross-class though!
+                    // this is an ugly, simple solution that (hopefully) works?
+                    if (mobName.Equals("Puk Hatchling") && difficulty.Equals("2"))
+                    {
+                        mobName = "Puk Hatchling2";
+                    }
+                    
+                    var theRealMob = nameCoords[(mobName, category)];
 
-                    string message = $"/ctp {theRealMob.coords[0]} {theRealMob.coords[1]} : {theRealMob.zone}";
+                    string message = $"/ctp {theRealMob.x} {theRealMob.y} : {theRealMob.zone}";
                     SimpleLog.Debug(message);
                     Plugin.XivCommon.Functions.Chat.SendMessage(message);
 
@@ -158,7 +177,6 @@ public unsafe class TweakingHunter : Tweak
     {
         eventHook?.Disable();
         setupHook?.Disable();
-
         base.Disable();
     }
 
@@ -168,321 +186,651 @@ public unsafe class TweakingHunter : Tweak
         eventHook?.Dispose();
         base.Dispose();
     }
-    public (string name, string zone, float[] coords) MonstrousThing(string inputName)
+
+    private static readonly Dictionary<(string name, string category), (string zone, float x, float y)> nameCoords = new()
     {
-        var name = inputName;
-        Lumina.Excel.ExcelSheet<MonsterNoteTarget> monsterNoteTargets = Service.Data.Excel.GetSheet<MonsterNoteTarget>();
-        Lumina.Excel.ExcelSheet<PlaceName> placeNames = Service.Data.Excel.GetSheet<PlaceName>();
-        
-        var theMob = monsterNoteTargets.Where(mob => mob.BNpcName.Value.Singular.ToString().Equals(inputName, StringComparison.CurrentCultureIgnoreCase)).First();
+        {("Little Ladybug", "Arcanist"), ("Middle La Noscea", 22f, 24f)},
+        {("Wharf Rat", "Arcanist"), ("Middle La Noscea", 21f, 23f)},
+        {("Lost Lamb", "Arcanist"), ("Middle La Noscea", 23f, 24f)},
+        {("Wind Sprite", "Arcanist"), ("Lower La Noscea", 28f, 20f)},
+        {("Puk Hatchling", "Arcanist"), ("Middle La Noscea", 20f, 19f)},
+        {("Nesting Buzzard", "Arcanist"), ("Lower La Noscea", 31f, 16f)},
+        {("Bogy", "Arcanist"), ("Middle La Noscea", 20f, 19f)},
+        {("Cave Bat", "Arcanist"), ("Lower La Noscea", 25f, 15f)},
+        {("Galago", "Arcanist"), ("Lower La Noscea", 29f, 14f)},
+        {("Grounded Pirate", "Arcanist"), ("Middle La Noscea", 20f, 16f)},
+        {("Lightning Sprite", "Arcanist"), ("Lower La Noscea", 20f, 32f)},
+        {("Sewer Mole", "Arcanist"), ("Western La Noscea", 33f, 28f)},
+        {("Mossless Goobbue", "Arcanist"), ("Middle La Noscea", 21f, 23f)},
+        {("Fat Dodo", "Arcanist"), ("Western La Noscea", 32f, 27f)},
+        {("Arbor Buzzard", "Arcanist"), ("Western La Noscea", 30f, 29f)},
+        {("Qiqirn Eggdigger", "Arcanist"), ("Lower La Noscea", 18f, 35f)},
+        {("Dusk Bat", "Arcanist"), ("Western La Noscea", 28f, 22f)},
+        {("Puk Hatchling2", "Arcanist"), ("Western La Noscea", 28f, 22f)},
+        {("Hedgemole", "Arcanist"), ("Western La Noscea", 26f, 23f)},
+        {("Rothlyt Pelican", "Arcanist"), ("Western La Noscea", 24f, 22f)},
+        {("Killer Mantis", "Arcanist"), ("Western La Noscea", 22f, 20f)},
+        {("Bumble Beetle", "Arcanist"), ("Upper La Noscea", 12f, 23f)},
+        {("Overgrown Ivy", "Arcanist"), ("East Shroud", 23f, 29f)},
+        {("Lead Coblyn", "Arcanist"), ("Western Thanalan", 13f, 10f)},
+        {("Kedtrap", "Arcanist"), ("South Shroud", 21f, 21f)},
+        {("Coeurl Pup", "Arcanist"), ("Upper La Noscea", 9f, 20f)},
+        {("Antelope Stag", "Arcanist"), ("South Shroud", 22f, 20f)},
+        {("Balloon", "Arcanist"), ("North Shroud", 17f, 26f)},
+        {("Chasm Buzzard", "Arcanist"), ("Eastern Thanalan", 22f, 20f)},
+        {("Axe Beak", "Arcanist"), ("Eastern Thanalan", 25f, 18f)},
+        {("Clay Golem", "Arcanist"), ("North Shroud", 19f, 28f)},
+        {("Sandstone Golem", "Arcanist"), ("Southern Thanalan", 22f, 11f)},
+        {("Brood Ziz", "Arcanist"), ("Central Shroud", 15f, 20f)},
+        {("Lindwurm", "Arcanist"), ("Central Shroud", 13f, 19f)},
+        {("Qiqirn Gullroaster", "Arcanist"), ("Eastern La Noscea", 26f, 32f)},
+        {("Grass Raptor", "Arcanist"), ("Eastern La Noscea", 16f, 25f)},
+        {("Gigantoad", "Arcanist"), ("Eastern La Noscea", 18f, 26f)},
+        {("Sundrake", "Arcanist"), ("Southern Thanalan", 25f, 38f)},
+        {("Colibri", "Arcanist"), ("Eastern La Noscea", 30f, 24f)},
+        {("Coeurl", "Arcanist"), ("Outer La Noscea", 14f, 14f)},
+        {("Mildewed Goobbue", "Arcanist"), ("Eastern La Noscea", 17f, 32f)},
+        {("Snow Wolf Pup", "Arcanist"), ("Coerthas Central Highlands", 21f, 29f)},
+        {("Feral Croc", "Arcanist"), ("Coerthas Central Highlands", 27f, 24f)},
+        {("Dryad", "Arcanist"), ("North Shroud", 23f, 25f)},
+        {("Taurus", "Arcanist"), ("Coerthas Central Highlands", 32f, 12f)},
+        {("Molted Ziz", "Arcanist"), ("East Shroud", 25f, 24f)},
+        {("Quartz Doblyn", "Arcanist"), ("Eastern Thanalan", 30f, 25f)},
+        {("Lammergeyer", "Arcanist"), ("Western La Noscea", 12f, 36f)},
+        {("3rd Cohort Laquearius", "Arcanist"), ("East Shroud", 29f, 20f)},
+        {("Nix", "Arcanist"), ("Mor Dhona", 19f, 9f)},
+        {("Mudpuppy", "Arcanist"), ("Mor Dhona", 14f, 10f)},
+        {("Wild Hog", "Arcanist"), ("South Shroud", 29f, 24f)},
+        {("Watchwolf", "Arcanist"), ("North Shroud", 20f, 18f)},
+        {("5th Cohort Laquearius", "Arcanist"), ("Mor Dhona", 11f, 11f)},
+        {("Snow Wolf", "Arcanist"), ("Coerthas Central Highlands", 16f, 32f)},
+        {("Natalan Watchwolf", "Arcanist"), ("Coerthas Central Highlands", 31f, 18f)},
+        {("Axolotl", "Arcanist"), ("Western La Noscea", 12f, 15f)},
+        {("Zahar'ak Battle Drake", "Arcanist"), ("Southern Thanalan", 31f, 19f)},
+        {("4th Cohort Vanguard", "Arcanist"), ("Western Thanalan", 12f, 7f)},
+        {("Wild Boar", "Archer "), ("East Shroud", 16f, 23f)},
+        {("Little Ladybug", "Archer"), ("North Shroud", 25f, 27f)},
+        {("Ground Squirrel", "Archer"), ("Central Shroud", 22f, 17f)},
+        {("Forest Funguar", "Archer"), ("Central Shroud", 24f, 18f)},
+        {("Miteling", "Archer"), ("North Shroud", 25f, 27f)},
+        {("Midge Swarm", "Archer"), ("North Shroud", 27f, 21f)},
+        {("Water Sprite", "Archer"), ("Central Shroud", 25f, 21f)},
+        {("Black Eft", "Archer"), ("Central Shroud", 26f, 19f)},
+        {("Anole", "Archer"), ("Central Shroud", 30f, 20f)},
+        {("Trickster Imp", "Archer"), ("Central Shroud", 26f, 25f)},
+        {("Roselet", "Archer"), ("Central Shroud", 22f, 26f)},
+        {("Hornet Swarm", "Archer"), ("Central Shroud", 23f, 25f)},
+        {("Arbor Buzzard", "Archer"), ("Central Shroud", 26f, 29f)},
+        {("Magicked Bones", "Archer"), ("Central Shroud", 19f, 27f)},
+        {("Treant Sapling", "Archer"), ("Central Shroud", 27f, 15f)},
+        {("Goblin Hunter", "Archer"), ("East Shroud", 13f, 27f)},
+        {("Mandragora", "Archer"), ("East Shroud", 14f, 25f)},
+        {("Wild Hoglet", "Archer"), ("East Shroud", 13f, 23f)},
+        {("Lemur", "Archer"), ("East Shroud", 20f, 29f)},
+        {("Faerie Funguar", "Archer"), ("East Shroud", 18f, 28f)},
+        {("Giant Gnat", "Archer"), ("East Shroud", 19f, 27f)},
+        {("Raptor Poacher", "Archer"), ("East Shroud", 19f, 30f)},
+        {("Antelope Doe", "Archer"), ("South Shroud", 15f, 18f)},
+        {("Stoneshell", "Archer"), ("Upper La Noscea", 13f, 24f)},
+        {("Diseased Treant", "Archer"), ("East Shroud", 16f, 23f)},
+        {("Overgrown Offering", "Archer"), ("South Shroud", 18f, 19f)},
+        {("Yarzon Scavenger", "Archer"), ("Western Thanalan", 14f, 8f)},
+        {("Forest Yarzon", "Archer"), ("North Shroud", 21f, 31f)},
+        {("Jumping Djigga", "Archer"), ("Upper La Noscea", 12f, 21f)},
+        {("Redbelly Sharpeye", "Archer"), ("South Shroud", 23f, 19f)},
+        {("Banemite", "Archer"), ("North Shroud", 18f, 26f)},
+        {("Chasm Buzzard", "Archer"), ("Eastern Thanalan", 22f, 19f)},
+        {("Sandskin Peiste", "Archer"), ("Southern Thanalan", 19f, 10f)},
+        {("Ziz", "Archer"), ("North Shroud", 15f, 27f)},
+        {("Toadstool", "Archer"), ("Central Shroud", 15f, 17f)},
+        {("Apkallu", "Archer"), ("Eastern La Noscea", 28f, 35f)},
+        {("Floating Eye", "Archer"), ("Central Shroud", 11f, 22f)},
+        {("Sandworm", "Archer"), ("Southern Thanalan", 23f, 32f)},
+        {("Russet Yarzon", "Archer"), ("Southern Thanalan", 13f, 32f)},
+        {("Giant Pelican", "Archer"), ("Eastern La Noscea", 20f, 32f)},
+        {("Smoke Bomb", "Archer"), ("Southern Thanalan", 19f, 35f)},
+        {("Spriggan", "Archer"), ("Central Shroud", 12f, 16f)},
+        {("Bloodshore Bell", "Archer"), ("Eastern La Noscea", 31f, 26f)},
+        {("Jungle Coeurl", "Archer"), ("Eastern La Noscea", 18f, 28f)},
+        {("Ringtail", "Archer"), ("Outer La Noscea", 15f, 12f)},
+        {("Highland Condor", "Archer"), ("Outer La Noscea", 16f, 16f)},
+        {("Salamander", "Archer"), ("Upper La Noscea", 27f, 24f)},
+        {("Fallen Pikeman", "Archer"), ("Southern Thanalan", 21f, 38f)},
+        {("Ice Sprite", "Archer"), ("Coerthas Central Highlands", 20f, 31f)},
+        {("Feral Croc", "Archer"), ("Coerthas Central Highlands", 26f, 24f)},
+        {("Vodoriga", "Archer"), ("Coerthas Central Highlands", 27f, 14f)},
+        {("Baritine Croc", "Archer"), ("Coerthas Central Highlands", 3f, 21f)},
+        {("Hippocerf", "Archer"), ("Coerthas Central Highlands", 9f, 20f)},
+        {("Dragonfly", "Archer"), ("Coerthas Central Highlands", 9f, 14f)},
+        {("Oldgrowth Treant", "Archer"), ("East Shroud", 25f, 20f)},
+        {("Lammergeyer", "Archer"), ("Western La Noscea", 12f, 36f)},
+        {("Dead Man's Moan", "Archer"), ("Western La Noscea", 14f, 35f)},
+        {("Morbol", "Archer"), ("East Shroud", 23f, 21f)},
+        {("Mudpuppy", "Archer"), ("Coerthas Central Highlands", 16f, 30f)},
+        {("Lesser Kalong", "Archer"), ("South Shroud", 29f, 23f)},
+        {("Giant Reader", "Archer"), ("Coerthas Central Highlands", 13f, 28f)},
+        {("Hippogryph", "Archer"), ("Mor Dhona", 32f, 8f)},
+        {("5th Cohort Secutor", "Archer"), ("Mor Dhona", 11f, 13f)},
+        {("Tempered Gladiator", "Archer"), ("Southern Thanalan", 21f, 19f)},
+        {("Sylphlands Condor", "Archer"), ("East Shroud", 26f, 16f)},
+        {("Milkroot Sapling", "Archer"), ("East Shroud", 23f, 13f)},
+        {("Ahriman", "Archer"), ("Northern Thanalan", 24f, 22f)},
+        {("Shelfeye Reaver", "Archer"), ("Western La Noscea", 13f, 16f)},
+        {("Little Ladybug", "Conjurer"), ("Central Shroud", 23f, 17f)},
+        {("Ground Squirrel", "Conjurer"), ("Central Shroud", 21f, 16f)},
+        {("Forest Funguar", "Conjurer"), ("Central Shroud", 25f, 18f)},
+        {("Miteling", "Conjurer"), ("North Shroud", 24f, 27f)},
+        {("Chigoe", "Conjurer"), ("Central Shroud", 24f, 21f)},
+        {("Water Sprite", "Conjurer"), ("Central Shroud", 24f, 21f)},
+        {("Midge Swarm", "Conjurer"), ("North Shroud", 26f, 21f)},
+        {("Microchu", "Conjurer"), ("North Shroud", 26f, 22f)},
+        {("Syrphid Swarm", "Conjurer"), ("Central Shroud", 27f, 24f)},
+        {("Northern Vulture", "Conjurer"), ("East Shroud", 14f, 27f)},
+        {("Tree Slug", "Conjurer"), ("Central Shroud", 25f, 29f)},
+        {("Arbor Buzzard", "Conjurer"), ("Central Shroud", 26f, 29f)},
+        {("Goblin Hunter", "Conjurer"), ("East Shroud", 13f, 27f)},
+        {("Firefly", "Conjurer"), ("Eastern Thanalan", 24f, 29f)},
+        {("Mandragora", "Conjurer"), ("East Shroud", 14f, 26f)},
+        {("Boring Weevil", "Conjurer"), ("East Shroud", 20f, 28f)},
+        {("Faerie Funguar", "Conjurer"), ("East Shroud", 19f, 28f)},
+        {("Giant Gnat", "Conjurer"), ("East Shroud", 19f, 25f)},
+        {("Wolf Poacher", "Conjurer"), ("East Shroud", 19f, 30f)},
+        {("Qiqirn Beater", "Conjurer"), ("South Shroud", 15f, 17f)},
+        {("Black Bat", "Conjurer"), ("East Shroud", 16f, 21f)},
+        {("Stoneshell", "Conjurer"), ("Upper La Noscea", 13f, 24f)},
+        {("Laughing Toad", "Conjurer"), ("Western Thanalan", 14f, 7f)},
+        {("Diseased Treant", "Conjurer"), ("East Shroud", 16f, 23f)},
+        {("Lead Coblyn", "Conjurer"), ("Western Thanalan", 13f, 10f)},
+        {("Bark Eft", "Conjurer"), ("South Shroud", 17f, 24f)},
+        {("Glowfly", "Conjurer"), ("East Shroud", 15f, 20f)},
+        {("Antelope Stag", "Conjurer"), ("South Shroud", 22f, 19f)},
+        {("Sabotender", "Conjurer"), ("Southern Thanalan", 15f, 14f)},
+        {("Qiqirn Roerunner", "Conjurer"), ("Eastern Thanalan", 24f, 23f)},
+        {("Goblin Thug", "Conjurer"), ("South Shroud", 28f, 20f)},
+        {("Toadstool", "Conjurer"), ("Central Shroud", 14f, 17f)},
+        {("Apkallu", "Conjurer"), ("Eastern La Noscea", 28f, 35f)},
+        {("Lindwurm", "Conjurer"), ("Central Shroud", 12f, 19f)},
+        {("Gigantoad", "Conjurer"), ("Eastern La Noscea", 18f, 26f)},
+        {("Bigmouth Orobon", "Conjurer"), ("South Shroud", 18f, 30f)},
+        {("Mamool Ja Infiltrator", "Conjurer"), ("Upper La Noscea", 28f, 23f)},
+        {("Sandworm", "Conjurer"), ("Southern Thanalan", 28f, 25f)},
+        {("Revenant", "Conjurer"), ("Central Shroud", 12f, 20f)},
+        {("Bloodshore Bell", "Conjurer"), ("Eastern La Noscea", 31f, 26f)},
+        {("Ornery Karakul", "Conjurer"), ("Coerthas Central Highlands", 25f, 19f)},
+        {("Deepvoid Deathmouse", "Conjurer"), ("South Shroud", 25f, 21f)},
+        {("Dryad", "Conjurer"), ("North Shroud", 22f, 23f)},
+        {("Downy Aevis", "Conjurer"), ("Coerthas Central Highlands", 26f, 10f)},
+        {("Will-o'-the-wisp", "Conjurer"), ("South Shroud", 22f, 25f)},
+        {("Dragonfly", "Conjurer"), ("Coerthas Central Highlands", 9f, 14f)},
+        {("Golden Fleece", "Conjurer"), ("Eastern Thanalan", 26f, 25f)},
+        {("Grenade", "Conjurer"), ("Outer La Noscea", 22f, 13f)},
+        {("Hippocerf", "Conjurer"), ("Coerthas Central Highlands", 10f, 18f)},
+        {("Lammergeyer", "Conjurer"), ("Western La Noscea", 12f, 36f)},
+        {("Dead Man's Moan", "Conjurer"), ("Western La Noscea", 17f, 36f)},
+        {("3rd Cohort Hoplomachus", "Conjurer"), ("East Shroud", 29f, 20f)},
+        {("Lesser Kalong", "Conjurer"), ("South Shroud", 28f, 22f)},
+        {("Snow Wolf", "Conjurer"), ("Coerthas Central Highlands", 16f, 32f)},
+        {("5th Cohort Eques", "Conjurer"), ("Mor Dhona", 12f, 17f)},
+        {("Sea Wasp", "Conjurer"), ("Western La Noscea", 14f, 17f)},
+        {("Sylph Bonnet", "Conjurer"), ("East Shroud", 26f, 13f)},
+        {("Ahriman", "Conjurer"), ("Northern Thanalan", 24f, 20f)},
+        {("2nd Cohort Vanguard", "Conjurer"), ("Eastern La Noscea", 29f, 21f)},
+        {("Little Ladybug", "Gladiator"), ("Western Thanalan", 27f, 24f)},
+        {("Star Marmot", "Gladiator"), ("Central Thanalan", 20f, 27f)},
+        {("Cactuar", "Gladiator"), ("Western Thanalan", 27f, 24f)},
+        {("Snapping Shrew", "Gladiator"), ("Central Thanalan", 25f, 31f)},
+        {("Hammer Beak", "Gladiator"), ("Western Thanalan", 26f, 22f)},
+        {("Antling Worker", "Gladiator"), ("Central Thanalan", 17f, 15f)},
+        {("Earth Sprite", "Gladiator"), ("Western Thanalan", 17f, 28f)},
+        {("Spriggan Graverobber", "Gladiator"), ("Central Thanalan", 16f, 23f)},
+        {("Qiqirn Shellsweeper", "Gladiator"), ("Central Thanalan", 17f, 19f)},
+        {("Antling Soldier", "Gladiator"), ("Central Thanalan", 23f, 19f)},
+        {("Dusty Mongrel", "Gladiator"), ("The Clutch", 22f, 21f)},
+        {("Bomb", "Gladiator"), ("Western Thanalan", 27f, 17f)},
+        {("Copper Coblyn", "Gladiator"), ("Horizon's Edge", 27f, 17f)},
+        {("Cochineal Cactuar", "Gladiator"), ("Central Thanalan", 24f, 19f)},
+        {("Quiveron Guard", "Gladiator"), ("Central Thanalan", 24f, 21f)},
+        {("Giant Tortoise", "Gladiator"), ("Western Thanalan", 21f, 26f)},
+        {("Thickshell", "Gladiator"), ("Western Thanalan", 16f, 16f)},
+        {("Scaphite", "Gladiator"), ("Western Thanalan", 17f, 14f)},
+        {("Tuco-tuco", "Gladiator"), ("Eastern Thanalan", 11f, 19f)},
+        {("Myotragus Billy", "Gladiator"), ("Eastern Thanalan", 18f, 24f)},
+        {("Vandalous Imp", "Gladiator"), ("Eastern Thanalan", 14f, 18f)},
+        {("Rotting Noble", "Gladiator"), ("Eastern Thanalan", 14f, 16f)},
+        {("Bloated Bogy", "Gladiator"), ("Drybone", 13f, 11f)},
+        {("Stoneshell", "Gladiator"), ("Upper La Noscea", 14f, 24f)},
+        {("Kedtrap", "Gladiator"), ("Oakwood", 21f, 20f)},
+        {("Lead Coblyn", "Gladiator"), ("Western Thanalan", 13f, 10f)},
+        {("Overgrown Offering", "Gladiator"), ("South Shroud", 18f, 19f)},
+        {("Coeurl Pup", "Gladiator"), ("Upper La Noscea", 9f, 20f)},
+        {("Balloon", "Gladiator"), ("North Shroud", 17f, 26f)},
+        {("Sabotender", "Gladiator"), ("Southern Thanalan", 14f, 13f)},
+        {("Qiqirn Roerunner", "Gladiator"), ("Eastern Thanalan", 24f, 23f)},
+        {("Goblin Thug", "Gladiator"), ("South Shroud", 27f, 20f)},
+        {("Coeurlclaw Cutter", "Gladiator"), ("South Shroud", 28f, 21f)},
+        {("Apkallu", "Gladiator"), ("Eastern La Noscea", 28f, 36f)},
+        {("Pteroc", "Gladiator"), ("Bloodshore", 15f, 18f)},
+        {("Floating Eye", "Gladiator"), ("Central Shroud", 10f, 23f)},
+        {("Mamool Ja Sophist", "Gladiator"), ("Sorrel Haven", 27f, 23f)},
+        {("Uragnite", "Gladiator"), ("Upper La Noscea", 29f, 24f)},
+        {("Adamantoise", "Gladiator"), ("Bronze Lake", 17f, 30f)},
+        {("Sandworm", "Gladiator"), ("Southern Thanalan", 17f, 33f)},
+        {("Death Gaze", "Gladiator"), ("Central Shroud", 16f, 21f)},
+        {("Velociraptor", "Gladiator"), ("Outer La Noscea", 19f, 15f)},
+        {("Fallen Wizard", "Gladiator"), ("Southern Thanalan", 20f, 37f)},
+        {("Snow Wolf Pup", "Gladiator"), ("Coerthas Central Highlands", 21f, 29f)},
+        {("Treant", "Gladiator"), ("South Shroud", 22f, 26f)},
+        {("Vodoriga", "Gladiator"), ("Coerthas Central Highlands", 27f, 14f)},
+        {("Hippocerf", "Gladiator"), ("Coerthas Central Highlands", 8f, 20f)},
+        {("Grenade", "Gladiator"), ("Whitebrim", 22f, 13f)},
+        {("Preying Mantis", "Gladiator"), ("Western La Noscea", 15f, 34f)},
+        {("Lammergeyer", "Gladiator"), ("The Isles of Umbra", 12f, 36f)},
+        {("Oldgrowth Treant", "Gladiator"), ("East Shroud", 26f, 20f)},
+        {("3rd Cohort Eques", "Gladiator"), ("Larkscall", 29f, 21f)},
+        {("Dead Man's Moan", "Gladiator"), ("Western La Noscea", 12f, 36f)},
+        {("Morbol", "Gladiator"), ("The Isles of Umbra", 23f, 21f)},
+        {("Mudpuppy", "Gladiator"), ("Mor Dhona", 13f, 11f)},
+        {("Lake Cobra", "Gladiator"), ("Mor Dhona", 27f, 13f)},
+        {("Giant Lugger", "Gladiator"), ("Coerthas Central Highlands", 13f, 27f)},
+        {("Tempered Orator", "Gladiator"), ("Southern Thanalan", 22f, 19f)},
+        {("Dullahan", "Gladiator"), ("North Shroud", 22f, 19f)},
+        {("Basilisk", "Gladiator"), ("Northern Thanalan", 25f, 21f)},
+        {("Gigas Bhikkhu", "Gladiator"), ("Mor Dhona", 33f, 15f)},
+        {("2nd Cohort Hoplomachus", "Gladiator"), ("North Silvertear", 25f, 21f)},
+        {("Little Ladybug", "Lancer"), ("Central Shroud", 24f, 18f)},
+        {("Ground Squirrel", "Lancer"), ("Central Shroud", 22f, 17f)},
+        {("Forest Funguar", "Lancer"), ("Central Shroud", 25f, 19f)},
+        {("Miteling", "Lancer"), ("North Shroud", 26f, 26f)},
+        {("Opo-opo", "Lancer"), ("North Shroud", 27f, 24f)},
+        {("Microchu", "Lancer"), ("North Shroud", 26f, 22f)},
+        {("Black Eft", "Lancer"), ("Central Shroud", 26f, 20f)},
+        {("Bog Yarzon", "Lancer"), ("Central Shroud", 24f, 24f)},
+        {("Hoglet", "Lancer"), ("Central Shroud", 30f, 23f)},
+        {("Anole", "Lancer"), ("Central Shroud", 31f, 20f)},
+        {("Diremite", "Lancer"), ("Central Shroud", 18f, 19f)},
+        {("Tree Slug", "Lancer"), ("East Shroud", 13f, 26f)},
+        {("Arbor Buzzard", "Lancer"), ("Central Shroud", 25f, 29f)},
+        {("Treant Sapling", "Lancer"), ("Central Shroud", 22f, 16f)},
+        {("Mandragora", "Lancer"), ("East Shroud", 14f, 25f)},
+        {("Wild Hoglet", "Lancer"), ("East Shroud", 13f, 23f)},
+        {("Lemur", "Lancer"), ("East Shroud", 15f, 27f)},
+        {("Boring Weevil", "Lancer"), ("East Shroud", 15f, 27f)},
+        {("Faerie Funguar", "Lancer"), ("East Shroud", 19f, 28f)},
+        {("Giant Gnat", "Lancer"), ("East Shroud", 19f, 27f)},
+        {("Boar Poacher", "Lancer"), ("East Shroud", 19f, 30f)},
+        {("Ziz Gorlin", "Lancer"), ("East Shroud", 20f, 25f)},
+        {("Black Bat", "Lancer"), ("East Shroud", 17f, 22f)},
+        {("Qiqirn Beater", "Lancer"), ("South Shroud", 15f, 17f)},
+        {("Antelope Doe", "Lancer"), ("South Shroud", 18f, 22f)},
+        {("Stoneshell", "Lancer"), ("Upper La Noscea", 13f, 24f)},
+        {("Smallmouth Orobon", "Lancer"), ("South Shroud", 16f, 18f)},
+        {("Yarzon Scavenger", "Lancer"), ("North Shroud", 20f, 31f)},
+        {("Redbelly Lookout", "Lancer"), ("South Shroud", 24f, 18f)},
+        {("Antelope Stag", "Lancer"), ("South Shroud", 26f, 18f)},
+        {("Moondrip Piledriver", "Lancer"), ("Western Thanalan", 16f, 7f)},
+        {("Sabotender", "Lancer"), ("Southern Thanalan", 14f, 14f)},
+        {("Goblin Thug", "Lancer"), ("South Shroud", 27f, 20f)},
+        {("Sandskin Peiste", "Lancer"), ("Southern Thanalan", 19f, 10f)},
+        {("Corpse Brigade Firedancer", "Lancer"), ("Southern Thanalan", 24f, 9f)},
+        {("Coeurlclaw Poacher", "Lancer"), ("South Shroud", 28f, 21f)},
+        {("Apkallu", "Lancer"), ("Eastern La Noscea", 28f, 35f)},
+        {("Midland Condor", "Lancer"), ("South Shroud", 17f, 26f)},
+        {("Floating Eye", "Lancer"), ("Central Shroud", 10f, 23f)},
+        {("Large Buffalo", "Lancer"), ("Eastern La Noscea", 28f, 30f)},
+        {("Smoke Bomb", "Lancer"), ("Southern Thanalan", 19f, 34f)},
+        {("Sundrake", "Lancer"), ("Southern Thanalan", 25f, 38f)},
+        {("Spriggan", "Lancer"), ("Central Shroud", 10f, 16f)},
+        {("Basalt Golem", "Lancer"), ("Outer La Noscea", 13f, 15f)},
+        {("Ringtail", "Lancer"), ("Outer La Noscea", 15f, 11f)},
+        {("Ornery Karakul", "Lancer"), ("Coerthas Central Highlands", 25f, 19f)},
+        {("Lesser Kalong", "Lancer"), ("South Shroud", 22f, 24f)},
+        {("Snow Wolf Pup", "Lancer"), ("Coerthas Central Highlands", 21f, 29f)},
+        {("Dryad", "Lancer"), ("North Shroud", 22f, 23f)},
+        {("Bateleur", "Lancer"), ("Coerthas Central Highlands", 17f, 17f)},
+        {("Downy Aevis", "Lancer"), ("Coerthas Central Highlands", 27f, 10f)},
+        {("Mirrorknight", "Lancer"), ("Eastern Thanalan", 26f, 24f)},
+        {("Dragonfly", "Lancer"), ("Coerthas Central Highlands", 9f, 14f)},
+        {("Baritine Croc", "Lancer"), ("Coerthas Central Highlands", 3f, 21f)},
+        {("Dead Man's Moan", "Lancer"), ("Western La Noscea", 15f, 35f)},
+        {("3rd Cohort Signifer", "Lancer"), ("East Shroud", 32f, 20f)},
+        {("Morbol", "Lancer"), ("East Shroud", 23f, 21f)},
+        {("Wild Hog", "Lancer"), ("South Shroud", 29f, 24f)},
+        {("Daring Harrier", "Lancer"), ("Mor Dhona", 16f, 15f)},
+        {("Lake Cobra", "Lancer"), ("Mor Dhona", 25f, 12f)},
+        {("Snow Wolf", "Lancer"), ("Coerthas Central Highlands", 16f, 32f)},
+        {("Sea Wasp", "Lancer"), ("Western La Noscea", 13f, 17f)},
+        {("5th Cohort Vanguard", "Lancer"), ("Mor Dhona", 10f, 13f)},
+        {("Natalan Watchwolf", "Lancer"), ("Coerthas Central Highlands", 34f, 23f)},
+        {("Sylphlands Sentinel", "Lancer"), ("East Shroud", 24f, 11f)},
+        {("Basilisk", "Lancer"), ("Northern Thanalan", 22f, 24f)},
+        {("2nd Cohort Eques", "Lancer"), ("Eastern La Noscea", 30f, 21f)},
+        {("Little Ladybug", "Marauder"), ("Middle La Noscea", 23f, 24f)},
+        {("Wharf Rat", "Marauder"), ("Middle La Noscea", 21f, 23f)},
+        {("Aurelia", "Marauder"), ("Lower La Noscea", 24f, 26f)},
+        {("Bee Cloud", "Marauder"), ("Middle La Noscea", 19f, 18f)},
+        {("Wild Dodo", "Marauder"), ("Lower La Noscea", 29f, 19f)},
+        {("Tiny Mandragora", "Marauder"), ("Middle La Noscea", 22f, 18f)},
+        {("Bogy", "Marauder"), ("Middle La Noscea", 20f, 19f)},
+        {("Wounded Aurochs", "Marauder"), ("Middle La Noscea", 18f, 17f)},
+        {("Grounded Raider", "Marauder"), ("Middle La Noscea", 20f, 17f)},
+        {("Megalocrab", "Marauder"), ("Middle La Noscea", 14f, 13f)},
+        {("Firefly", "Marauder"), ("Lower La Noscea", 26f, 37f)},
+        {("Mossless Goobbue", "Marauder"), ("Lower La Noscea", 22f, 24f)},
+        {("Fat Dodo", "Marauder"), ("Western La Noscea", 32f, 27f)},
+        {("Moraby Mole", "Marauder"), ("Lower La Noscea", 21f, 34f)},
+        {("Qiqirn Eggdigger", "Marauder"), ("Lower La Noscea", 18f, 35f)},
+        {("Rhotano Buccaneer", "Marauder"), ("Western La Noscea", 33f, 27f)},
+        {("Dusk Bat", "Marauder"), ("Western La Noscea", 28f, 24f)},
+        {("Puk Hatchling", "Marauder"), ("Western La Noscea", 28f, 24f)},
+        {("Hedgemole", "Marauder"), ("Western La Noscea", 26f, 23f)},
+        {("Rothlyt Pelican", "Marauder"), ("Western La Noscea", 24f, 22f)},
+        {("Killer Mantis", "Marauder"), ("Western La Noscea", 21f, 22f)},
+        {("Wild Wolf", "Marauder"), ("Upper La Noscea", 13f, 26f)},
+        {("Stoneshell", "Marauder"), ("Upper La Noscea", 13f, 24f)},
+        {("Diseased Treant", "Marauder"), ("East Shroud", 17f, 23f)},
+        {("Yarzon Scavenger", "Marauder"), ("Western Thanalan", 15f, 7f)},
+        {("Redbelly Larcener", "Marauder"), ("South Shroud", 23f, 19f)},
+        {("Shroud Hare", "Marauder"), ("North Shroud", 17f, 27f)},
+        {("Sabotender", "Marauder"), ("Southern Thanalan", 14f, 14f)},
+        {("Balloon", "Marauder"), ("North Shroud", 17f, 26f)},
+        {("Phurble", "Marauder"), ("Eastern Thanalan", 19f, 28f)},
+        {("Sandskin Peiste", "Marauder"), ("Southern Thanalan", 22f, 21f)},
+        {("Axe Beak", "Marauder"), ("Eastern Thanalan", 27f, 17f)},
+        {("Toadstool", "Marauder"), ("Central Shroud", 14f, 17f)},
+        {("Floating Eye", "Marauder"), ("Central Shroud", 10f, 23f)},
+        {("Stroper", "Marauder"), ("South Shroud", 19f, 28f)},
+        {("Adamantoise", "Marauder"), ("South Shroud", 15f, 29f)},
+        {("Smoke Bomb", "Marauder"), ("Southern Thanalan", 19f, 34f)},
+        {("Grass Raptor", "Marauder"), ("Eastern La Noscea", 15f, 26f)},
+        {("Snipper", "Marauder"), ("Eastern La Noscea", 31f, 35f)},
+        {("Bloodshore Bell", "Marauder"), ("Eastern La Noscea", 31f, 26f)},
+        {("Jungle Coeurl", "Marauder"), ("Eastern La Noscea", 19f, 28f)},
+        {("Snow Wolf Pup", "Marauder"), ("Coerthas Central Highlands", 21f, 29f)},
+        {("Redhorn Ogre", "Marauder"), ("Coerthas Central Highlands", 24f, 13f)},
+        {("Ornery Karakul", "Marauder"), ("Coerthas Central Highlands", 25f, 19f)},
+        {("Highland Goobbue", "Marauder"), ("Coerthas Central Highlands", 25f, 19f)},
+        {("Downy Aevis", "Marauder"), ("Coerthas Central Highlands", 26f, 10f)},
+        {("Snowstorm Goobbue", "Marauder"), ("Coerthas Central Highlands", 19f, 17f)},
+        {("Grenade", "Marauder"), ("Outer La Noscea", 23f, 13f)},
+        {("Molted Ziz", "Marauder"), ("East Shroud", 25f, 24f)},
+        {("Quartz Doblyn", "Marauder"), ("Eastern Thanalan", 31f, 26f)},
+        {("Dead Man's Moan", "Marauder"), ("The Burning Wall", 15f, 35f)},
+        {("Morbol", "Marauder"), ("Western La Noscea", 23f, 21f)},
+        {("Crater Golem", "Marauder"), ("Central Shroud", 11f, 17f)},
+        {("Wild Hog", "Marauder"), ("South Shroud", 29f, 24f)},
+        {("Biast", "Marauder"), ("Coerthas Central Highlands", 16f, 30f)},
+        {("5th Cohort Signifer", "Marauder"), ("Mor Dhona", 9f, 14f)},
+        {("Synthetic Doblyn", "Marauder"), ("Outer La Noscea", 23f, 8f)},
+        {("Watchwolf", "Marauder"), ("U'Ghamaro Mines", 20f, 20f)},
+        {("Iron Tortoise", "Marauder"), ("North Shroud", 19f, 23f)},
+        {("Milkroot Cluster", "Marauder"), ("East Shroud", 23f, 16f)},
+        {("4th Cohort Secutor", "Marauder"), ("Western Thanalan", 10f, 6f)},
+        {("2nd Cohort Laquearius", "Marauder"), ("Eastern La Noscea", 28f, 21f)},
+        {("Huge Hornet", "Pugilist"), ("Central Thanalan", 21f, 26f)},
+        {("Star Marmot", "Pugilist"), ("Central Thanalan", 20f, 27f)},
+        {("Cactuar", "Pugilist"), ("Western Thanalan", 27f, 24f)},
+        {("Snapping Shrew", "Pugilist"), ("Central Thanalan", 23f, 27f)},
+        {("Orobon", "Pugilist"), ("Central Thanalan", 21f, 24f)},
+        {("Nesting Buzzard", "Pugilist"), ("Western Thanalan", 21f, 25f)},
+        {("Spriggan Graverobber", "Pugilist"), ("Central Thanalan", 17f, 23f)},
+        {("Goblin Mugger", "Pugilist"), ("Western Thanalan", 18f, 26f)},
+        {("Sandtoad", "Pugilist"), ("Western Thanalan", 22f, 22f)},
+        {("Eft", "Pugilist"), ("Central Thanalan", 23f, 18f)},
+        {("Sun Midge Swarm", "Pugilist"), ("Western Thanalan", 17f, 15f)},
+        {("Desert Peiste", "Pugilist"), ("Western Thanalan", 24f, 20f)},
+        {("Bomb", "Pugilist"), ("Western Thanalan", 27f, 16f)},
+        {("Cochineal Cactuar", "Pugilist"), ("Central Thanalan", 25f, 21f)},
+        {("Antling Sentry", "Pugilist"), ("Central Thanalan", 16f, 14f)},
+        {("Giant Tortoise", "Pugilist"), ("Western Thanalan", 28f, 25f)},
+        {("Arbor Buzzard", "Pugilist"), ("Western Thanalan", 17f, 16f)},
+        {("Scaphite", "Pugilist"), ("Western Thanalan", 17f, 14f)},
+        {("Thickshell", "Pugilist"), ("Western Thanalan", 16f, 16f)},
+        {("Tuco-tuco", "Pugilist"), ("Eastern Thanalan", 15f, 20f)},
+        {("Myotragus Nanny", "Pugilist"), ("Eastern Thanalan", 18f, 22f)},
+        {("Blowfly Swarm", "Pugilist"), ("Eastern Thanalan", 11f, 22f)},
+        {("Vandalous Imp", "Pugilist"), ("Eastern Thanalan", 14f, 18f)},
+        {("Bloated Bogy", "Pugilist"), ("Western Thanalan", 13f, 11f)},
+        {("Rotting Corpse", "Pugilist"), ("Eastern Thanalan", 15f, 16f)},
+        {("Rotting Noble", "Pugilist"), ("Eastern Thanalan", 15f, 16f)},
+        {("Overgrown Ivy", "Pugilist"), ("East Shroud", 23f, 29f)},
+        {("Smallmouth Orobon", "Pugilist"), ("South Shroud", 16f, 18f)},
+        {("Forest Yarzon", "Pugilist"), ("Upper La Noscea", 11f, 21f)},
+        {("Coeurl Pup", "Pugilist"), ("Upper La Noscea", 9f, 20f)},
+        {("Shroud Hare", "Pugilist"), ("North Shroud", 21f, 30f)},
+        {("Bark Eft", "Pugilist"), ("South Shroud", 17f, 27f)},
+        {("Fallen Mage", "Pugilist"), ("Southern Thanalan", 17f, 24f)},
+        {("Ziz", "Pugilist"), ("North Shroud", 16f, 27f)},
+        {("Corpse Brigade Knuckledancer", "Pugilist"), ("Southern Thanalan", 24f, 9f)},
+        {("Clay Golem", "Pugilist"), ("North Shroud", 16f, 29f)},
+        {("Coeurlclaw Hunter", "Pugilist"), ("South Shroud", 28f, 22f)},
+        {("Lindwurm", "Pugilist"), ("Central Shroud", 13f, 19f)},
+        {("Bigmouth Orobon", "Pugilist"), ("South Shroud", 18f, 30f)},
+        {("Apkallu", "Pugilist"), ("Eastern La Noscea", 28f, 35f)},
+        {("Mamool Ja Breeder", "Pugilist"), ("Upper La Noscea", 33f, 26f)},
+        {("Russet Yarzon", "Pugilist"), ("Southern Thanalan", 14f, 32f)},
+        {("Smoke Bomb", "Pugilist"), ("Southern Thanalan", 19f, 34f)},
+        {("Death Gaze", "Pugilist"), ("Central Shroud", 17f, 22f)},
+        {("Jungle Coeurl", "Pugilist"), ("Eastern La Noscea", 17f, 28f)},
+        {("Goobbue", "Pugilist"), ("Eastern La Noscea", 17f, 31f)},
+        {("Basalt Golem", "Pugilist"), ("Outer La Noscea", 13f, 15f)},
+        {("Velociraptor", "Pugilist"), ("Outer La Noscea", 19f, 15f)},
+        {("Highland Goobbue", "Pugilist"), ("Coerthas Central Highlands", 23f, 29f)},
+        {("Feral Croc", "Pugilist"), ("Coerthas Central Highlands", 25f, 21f)},
+        {("Redhorn Ogre", "Pugilist"), ("Coerthas Central Highlands", 26f, 12f)},
+        {("Ochu", "Pugilist"), ("East Shroud", 26f, 21f)},
+        {("Molted Ziz", "Pugilist"), ("East Shroud", 25f, 24f)},
+        {("Snowstorm Goobbue", "Pugilist"), ("Coerthas Central Highlands", 23f, 17f)},
+        {("Quartz Doblyn", "Pugilist"), ("Eastern Thanalan", 31f, 26f)},
+        {("Dead Man's Moan", "Pugilist"), ("Western La Noscea", 15f, 35f)},
+        {("3rd Cohort Signifer", "Pugilist"), ("East Shroud", 32f, 20f)},
+        {("Wild Hog", "Pugilist"), ("South Shroud", 29f, 24f)},
+        {("Raging Harrier", "Pugilist"), ("Mor Dhona", 16f, 15f)},
+        {("Biast", "Pugilist"), ("Coerthas Central Highlands", 11f, 29f)},
+        {("Gigas Shramana", "Pugilist"), ("Mor Dhona", 27f, 11f)},
+        {("Snow Wolf", "Pugilist"), ("Coerthas Central Highlands", 16f, 32f)},
+        {("5th Cohort Hoplomachus", "Pugilist"), ("Mor Dhona", 12f, 12f)},
+        {("Dreamtoad", "Pugilist"), ("East Shroud", 26f, 18f)},
+        {("Hapalit", "Pugilist"), ("Mor Dhona", 31f, 5f)},
+        {("Zahar'ak Battle Drake", "Pugilist"), ("Southern Thanalan", 29f, 19f)},
+        {("Basilisk", "Pugilist"), ("Northern Thanalan", 22f, 24f)},
+        {("Shelfclaw Reaver", "Pugilist"), ("Western La Noscea", 13f, 16f)},
+        {("Wharf Rat", "Rogue"), ("Middle La Noscea", 21f, 23f)},
+        {("Lost Lamb", "Rogue"), ("Middle La Noscea", 23f, 24f)},
+        {("Aurelia", "Rogue"), ("Lower La Noscea", 24f, 26f)},
+        {("Wild Dodo", "Rogue"), ("Lower La Noscea", 29f, 19f)},
+        {("Pugil", "Rogue"), ("Middle La Noscea", 20f, 22f)},
+        {("Goblin Fisher", "Rogue"), ("Middle La Noscea", 23f, 21f)},
+        {("Tiny Mandragora", "Rogue"), ("Middle La Noscea", 22f, 18f)},
+        {("Cave Bat", "Rogue"), ("Lower La Noscea", 25f, 15f)},
+        {("Galago", "Rogue"), ("Lower La Noscea", 29f, 14f)},
+        {("Grounded Pirate", "Rogue"), ("Middle La Noscea", 20f, 16f)},
+        {("Grounded Raider", "Rogue"), ("Middle La Noscea", 20f, 17f)},
+        {("Megalocrab", "Rogue"), ("Middle La Noscea", 14f, 13f)},
+        {("Wild Jackal", "Rogue"), ("Lower La Noscea", 23f, 34f)},
+        {("Roseling", "Rogue"), ("Western La Noscea", 34f, 30f)},
+        {("Sewer Mole", "Rogue"), ("Western La Noscea", 33f, 28f)},
+        {("Fat Dodo", "Rogue"), ("Western La Noscea", 32f, 27f)},
+        {("Moraby Mole", "Rogue"), ("Lower La Noscea", 21f, 34f)},
+        {("Qiqirn Eggdigger", "Rogue"), ("Lower La Noscea", 18f, 35f)},
+        {("Puk Hatchling", "Rogue"), ("Western La Noscea", 28f, 22f)},
+        {("Rothlyt Pelican", "Rogue"), ("Western La Noscea", 24f, 22f)},
+        {("Killer Mantis", "Rogue"), ("Western La Noscea", 21f, 22f)},
+        {("Hedgemole", "Rogue"), ("Western La Noscea", 26f, 23f)},
+        {("Wild Wolf", "Rogue"), ("Upper La Noscea", 13f, 26f)},
+        {("Bumble Beetle", "Rogue"), ("Upper La Noscea", 12f, 23f)},
+        {("Black Bat", "Rogue"), ("East Shroud", 17f, 22f)},
+        {("Gall Gnat", "Rogue"), ("East Shroud", 22f, 30f)},
+        {("Overgrown Ivy", "Rogue"), ("East Shroud", 22f, 29f)},
+        {("Bark Eft", "Rogue"), ("South Shroud", 18f, 24f)},
+        {("Redbelly Lookout", "Rogue"), ("South Shroud", 23f, 18f)},
+        {("Redbelly Larcener", "Rogue"), ("South Shroud", 23f, 18f)},
+        {("Antelope Stag", "Rogue"), ("South Shroud", 26f, 20f)},
+        {("River Yarzon", "Rogue"), ("South Shroud", 23f, 22f)},
+        {("Corpse Brigade Knuckledancer", "Rogue"), ("Southern Thanalan", 24f, 11f)},
+        {("Corpse Brigade Firedancer", "Rogue"), ("Southern Thanalan", 24f, 11f)},
+        {("Coeurlclaw Hunter", "Rogue"), ("South Shroud", 28f, 21f)},
+        {("Coeurlclaw Cutter", "Rogue"), ("South Shroud", 28f, 21f)},
+        {("Sandstone Golem", "Rogue"), ("Southern Thanalan", 22f, 12f)},
+        {("Large Buffalo", "Rogue"), ("Eastern La Noscea", 28f, 30f)},
+        {("Grass Raptor", "Rogue"), ("Eastern La Noscea", 16f, 25f)},
+        {("Qiqirn Gullroaster", "Rogue"), ("Eastern La Noscea", 27f, 33f)},
+        {("Colibri", "Rogue"), ("Eastern La Noscea", 31f, 24f)},
+        {("Coeurl", "Rogue"), ("Outer La Noscea", 14f, 14f)},
+        {("Highland Condor", "Rogue"), ("Outer La Noscea", 15f, 17f)},
+        {("Basalt Golem", "Rogue"), ("Outer La Noscea", 13f, 15f)},
+        {("Velociraptor", "Rogue"), ("Outer La Noscea", 19f, 15f)},
+        {("Feral Croc", "Rogue"), ("Coerthas Central Highlands", 25f, 20f)},
+        {("Highland Goobbue", "Rogue"), ("Coerthas Central Highlands", 25f, 20f)},
+        {("Redhorn Ogre", "Rogue"), ("Coerthas Central Highlands", 26f, 12f)},
+        {("Taurus", "Rogue"), ("Coerthas Central Highlands", 32f, 12f)},
+        {("Bateleur", "Rogue"), ("Coerthas Central Highlands", 16f, 19f)},
+        {("Chinchilla", "Rogue"), ("Coerthas Central Highlands", 16f, 19f)},
+        {("Golden Fleece", "Rogue"), ("Eastern Thanalan", 26f, 25f)},
+        {("Quartz Doblyn", "Rogue"), ("Eastern Thanalan", 30f, 25f)},
+        {("Nix", "Rogue"), ("Mor Dhona", 19f, 9f)},
+        {("Mudpuppy", "Rogue"), ("Mor Dhona", 13f, 11f)},
+        {("Daring Harrier", "Rogue"), ("Mor Dhona", 16f, 15f)},
+        {("Raging Harrier", "Rogue"), ("Mor Dhona", 16f, 15f)},
+        {("Gigas Shramana", "Rogue"), ("Mor Dhona", 27f, 11f)},
+        {("Gigas Sozu", "Rogue"), ("Mor Dhona", 27f, 11f)},
+        {("Hippogryph", "Rogue"), ("Mor Dhona", 27f, 8f)},
+        {("Hapalit", "Rogue"), ("Mor Dhona", 31f, 5f)},
+        {("2nd Cohort Eques", "Rogue"), ("Eastern La Noscea", 29f, 20f)},
+        {("2nd Cohort Signifer", "Rogue"), ("Eastern La Noscea", 29f, 20f)},
+        {("2nd Cohort Secutor", "Rogue"), ("Eastern La Noscea", 30f, 19f)},
+        {("2nd Cohort Vanguard", "Rogue"), ("Eastern La Noscea", 30f, 19f)},
+        {("Little Ladybug", "Thaumaturge"), ("Western Thanalan", 28f, 24f)},
+        {("Huge Hornet", "Thaumaturge"), ("Central Thanalan", 22f, 27f)},
+        {("Cactuar", "Thaumaturge"), ("Western Thanalan", 27f, 24f)},
+        {("Snapping Shrew", "Thaumaturge"), ("Central Thanalan", 24f, 30f)},
+        {("Syrphid Cloud", "Thaumaturge"), ("Central Thanalan", 18f, 21f)},
+        {("Yarzon Feeder", "Thaumaturge"), ("Western Thanalan", 24f, 27f)},
+        {("Rusty Coblyn", "Thaumaturge"), ("Western Thanalan", 20f, 28f)},
+        {("Spriggan Graverobber", "Thaumaturge"), ("Central Thanalan", 18f, 23f)},
+        {("Qiqirn Shellsweeper", "Thaumaturge"), ("Central Thanalan", 17f, 19f)},
+        {("Sun Bat", "Thaumaturge"), ("Central Thanalan", 26f, 18f)},
+        {("Copper Coblyn", "Thaumaturge"), ("Western Thanalan", 27f, 16f)},
+        {("Bomb", "Thaumaturge"), ("Western Thanalan", 27f, 16f)},
+        {("Cochineal Cactuar", "Thaumaturge"), ("Central Thanalan", 23f, 19f)},
+        {("Quiveron Attendant", "Thaumaturge"), ("Central Thanalan", 23f, 20f)},
+        {("Giant Tortoise", "Thaumaturge"), ("Western Thanalan", 21f, 26f)},
+        {("Antling Sentry", "Thaumaturge"), ("Central Thanalan", 19f, 16f)},
+        {("Thickshell", "Thaumaturge"), ("Western Thanalan", 16f, 16f)},
+        {("Toxic Toad", "Thaumaturge"), ("Central Thanalan", 27f, 18f)},
+        {("Tuco-tuco", "Thaumaturge"), ("Eastern Thanalan", 15f, 24f)},
+        {("Myotragus Nanny", "Thaumaturge"), ("Eastern Thanalan", 18f, 22f)},
+        {("Blowfly Swarm", "Thaumaturge"), ("Eastern Thanalan", 12f, 21f)},
+        {("Rotting Corpse", "Thaumaturge"), ("Eastern Thanalan", 15f, 16f)},
+        {("Bloated Bogy", "Thaumaturge"), ("Western Thanalan", 13f, 11f)},
+        {("Kedtrap", "Thaumaturge"), ("South Shroud", 21f, 20f)},
+        {("Overgrown Ivy", "Thaumaturge"), ("Upper Paths", 23f, 29f)},
+        {("Yarzon Scavenger", "Thaumaturge"), ("Western Thanalan", 15f, 8f)},
+        {("Forest Yarzon", "Thaumaturge"), ("Cape Westwind (area)", 11f, 21f)},
+        {("Laughing Toad", "Thaumaturge"), ("Western Thanalan", 15f, 7f)},
+        {("Bark Eft", "Thaumaturge"), ("The Footfalls", 17f, 24f)},
+        {("Jumping Djigga", "Thaumaturge"), ("East Shroud", 15f, 21f)},
+        {("Glowfly", "Thaumaturge"), ("The Bramble Patch", 15f, 21f)},
+        {("River Yarzon", "Thaumaturge"), ("South Shroud", 23f, 22f)},
+        {("Potter Wasp Swarm", "Thaumaturge"), ("Southern Thanalan", 20f, 16f)},
+        {("Phurble", "Thaumaturge"), ("Eastern Thanalan", 23f, 20f)},
+        {("Corpse Brigade Knuckledancer", "Thaumaturge"), ("Southern Thanalan", 24f, 9f)},
+        {("Fire Sprite", "Thaumaturge"), ("Southern Thanalan", 13f, 20f)},
+        {("Stroper", "Thaumaturge"), ("Central Shroud", 12f, 21f)},
+        {("Adamantoise", "Thaumaturge"), ("South Shroud", 16f, 30f)},
+        {("Mamool Ja Executioner", "Thaumaturge"), ("Upper La Noscea", 27f, 23f)},
+        {("Revenant", "Thaumaturge"), ("Central Shroud", 12f, 20f)},
+        {("Russet Yarzon", "Thaumaturge"), ("Southern Thanalan", 14f, 32f)},
+        {("Smoke Bomb", "Thaumaturge"), ("Southern Thanalan", 19f, 35f)},
+        {("Dung Midge Swarm", "Thaumaturge"), ("Eastern La Noscea", 18f, 28f)},
+        {("Gigantoad", "Thaumaturge"), ("Eastern La Noscea", 18f, 26f)},
+        {("Spriggan", "Thaumaturge"), ("Central Shroud", 11f, 16f)},
+        {("Salamander", "Thaumaturge"), ("Upper La Noscea", 28f, 24f)},
+        {("Plasmoid", "Thaumaturge"), ("Outer La Noscea", 25f, 18f)},
+        {("Ice Sprite", "Thaumaturge"), ("Coerthas Central Highlands", 20f, 31f)},
+        {("Feral Croc", "Thaumaturge"), ("Coerthas Central Highlands", 26f, 24f)},
+        {("Will-o'-the-wisp", "Thaumaturge"), ("South Shroud", 23f, 24f)},
+        {("Golden Fleece", "Thaumaturge"), ("Eastern Thanalan", 27f, 24f)},
+        {("Oldgrowth Treant", "Thaumaturge"), ("East Shroud", 25f, 20f)},
+        {("Dragonfly", "Thaumaturge"), ("Coerthas Central Highlands", 9f, 14f)},
+        {("Crater Golem", "Thaumaturge"), ("Central Shroud", 10f, 18f)},
+        {("Dead Man's Moan", "Thaumaturge"), ("Western La Noscea", 15f, 34f)},
+        {("3rd Cohort Secutor", "Thaumaturge"), ("East Shroud", 32f, 20f)},
+        {("Morbol", "Thaumaturge"), ("East Shroud", 23f, 21f)},
+        {("Nix", "Thaumaturge"), ("Mor Dhona", 19f, 9f)},
+        {("Lesser Kalong", "Thaumaturge"), ("South Shroud", 28f, 22f)},
+        {("Gigas Sozu", "Thaumaturge"), ("Mor Dhona", 29f, 14f)},
+        {("Giant Logger", "Thaumaturge"), ("Coerthas Central Highlands", 13f, 26f)},
+        {("Iron Tortoise", "Thaumaturge"), ("Southern Thanalan", 19f, 23f)},
+        {("Synthetic Doblyn", "Thaumaturge"), ("Outer La Noscea", 23f, 8f)},
+        {("Ked", "Thaumaturge"), ("South Shroud", 32f, 24f)},
+        {("4th Cohort Hoplomachus", "Thaumaturge"), ("Western Thanalan", 12f, 7f)},
+        {("2nd Cohort Signifer", "Thaumaturge"), ("Eastern La Noscea", 27f, 21f)},
+        {("Amalj'aa Hunter", "Immortal Flames "), ("Eastern Thanalan", 19f, 28f)},
+        {("Firemane", "Immortal Flames "), ("Halatali", 11f, 13f)},
+        {("Sylvan Sough", "Immortal Flames "), ("East Shroud", 19f, 21f)},
+        {("Kobold Footman", "Immortal Flames "), ("Upper La Noscea", 11f, 22f)},
+        {("Kobold Pickman", "Immortal Flames "), ("Upper La Noscea", 11f, 22f)},
+        {("Amalj'aa Seer", "Immortal Flames "), ("Southern Thanalan", 20f, 15f)},
+        {("Ixali Lightwing", "Immortal Flames "), ("North Shroud", 22f, 28f)},
+        {("Ixali Boundwing", "Immortal Flames "), ("Coerthas Central Highlands", 32f, 27f)},
+        {("Amalj'aa Halberdier", "Immortal Flames "), ("Southern Thanalan", 25f, 34f)},
+        {("Kobold Missionary", "Immortal Flames "), ("Eastern La Noscea", 28f, 25f)},
+        {("Kobold Sidesman", "Immortal Flames "), ("Upper La Noscea", 26f, 19f)},
+        {("Kobold Quarryman", "Immortal Flames "), ("Outer La Noscea", 22f, 14f)},
+        {("Sylvan Screech", "Immortal Flames "), ("East Shroud", 21f, 21f)},
+        {("Shelfspine Sahagin", "Immortal Flames "), ("Western La Noscea", 19f, 21f)},
+        {("Amalj'aa Archer", "Immortal Flames "), ("Southern Thanalan", 20f, 23f)},
+        {("Ixali Windtalon", "Immortal Flames "), ("North Shroud", 20f, 20f)},
+        {("U'Ghamaro Priest", "Immortal Flames "), ("Outer La Noscea", 23f, 8f)},
+        {("Sapsa Shelfspine", "Immortal Flames "), ("Western La Noscea", 16f, 15f)},
+        {("Zahar'ak Thaumaturge", "Immortal Flames "), ("Southern Thanalan", 32f, 18f)},
+        {("Natalan Windtalon", "Immortal Flames "), ("Coerthas Central Highlands", 31f, 17f)},
+        {("Natalan Boldwing", "Immortal Flames "), ("Coerthas Central Highlands", 31f, 17f)},
+        {("Amalj'aa Hunter", "Maelstrom "), ("Eastern Thanalan", 19f, 28f)},
+        {("Sylvan Groan", "Maelstrom "), ("East Shroud", 19f, 21f)},
+        {("Sylvan Sough", "Maelstrom "), ("East Shroud", 19f, 21f)},
+        {("Kobold Pickman", "Maelstrom "), ("Upper La Noscea", 11f, 22f)},
+        {("Amalj'aa Bruiser", "Maelstrom "), ("Southern Thanalan", 20f, 15f)},
+        {("Ixali Straightbeak", "Maelstrom "), ("North Shroud", 23f, 28f)},
+        {("Ixali Wildtalon", "Maelstrom "), ("Coerthas Central Highlands", 30f, 27f)},
+        {("Amalj'aa Divinator", "Maelstrom "), ("Southern Thanalan", 27f, 34f)},
+        {("Kobold Pitman", "Maelstrom "), ("Eastern La Noscea", 28f, 26f)},
+        {("Kobold Bedesman", "Maelstrom "), ("Outer La Noscea", 22f, 13f)},
+        {("Kobold Priest", "Maelstrom "), ("Outer La Noscea", 22f, 12f)},
+        {("Sylvan Sigh", "Maelstrom "), ("East Shroud", 23f, 21f)},
+        {("Shelfscale Sahagin", "Maelstrom "), ("Western La Noscea", 18f, 21f)},
+        {("Amalj'aa Pugilist", "Maelstrom "), ("Southern Thanalan", 20f, 23f)},
+        {("Ixali Boldwing", "Maelstrom "), ("North Shroud", 21f, 20f)},
+        {("Sylpheed Screech", "Maelstrom "), ("East Shroud", 27f, 19f)},
+        {("U'Ghamaro Bedesman", "Maelstrom "), ("Outer La Noscea", 22f, 6f)},
+        {("Trenchtooth Sahagin", "Maelstrom "), ("Western La Noscea", 20f, 20f)},
+        {("Sapsa Shelfclaw", "Maelstrom "), ("Western La Noscea", 18f, 16f)},
+        {("Zahar'ak Archer", "Maelstrom "), ("Southern Thanalan", 29f, 20f)},
+        {("Natalan Fogcaller", "Maelstrom "), ("Coerthas Central Highlands", 32f, 18f)},
+        {("Natalan Boldwing", "Maelstrom "), ("Coerthas Central Highlands", 31f, 17f)},
+        {("Amalj'aa Javelinier", "Order of the Twin Adder "), ("Eastern Thanalan", 19f, 27f)},
+        {("Sylvan Scream", "Order of the Twin Adder "), ("East Shroud", 19f, 21f)},
+        {("Kobold Pickman", "Order of the Twin Adder "), ("Upper La Noscea", 13f, 22f)},
+        {("Amalj'aa Bruiser", "Order of the Twin Adder "), ("Southern Thanalan", 21f, 14f)},
+        {("Ixali Deftalon", "Order of the Twin Adder "), ("North Shroud", 22f, 28f)},
+        {("Amalj'aa Ranger", "Order of the Twin Adder "), ("Eastern Thanalan", 24f, 20f)},
+        {("Ixali Fearcaller", "Order of the Twin Adder "), ("Coerthas Central Highlands", 31f, 28f)},
+        {("Amalj'aa Sniper", "Order of the Twin Adder "), ("Southern Thanalan", 26f, 34f)},
+        {("Kobold Missionary", "Order of the Twin Adder "), ("Eastern La Noscea", 28f, 26f)},
+        {("Kobold Sidesman", "Order of the Twin Adder "), ("Upper La Noscea", 26f, 19f)},
+        {("Kobold Roundsman", "Order of the Twin Adder "), ("Outer La Noscea", 22f, 14f)},
+        {("Sylvan Snarl", "Order of the Twin Adder "), ("East Shroud", 23f, 20f)},
+        {("Shelfclaw Sahagin", "Order of the Twin Adder "), ("Western La Noscea", 18f, 21f)},
+        {("Amalj'aa Lancer", "Order of the Twin Adder "), ("Southern Thanalan", 22f, 21f)},
+        {("U'Ghamaro Roundsman", "Order of the Twin Adder "), ("Outer La Noscea", 23f, 9f)},
+        {("Ixali Windtalon", "Order of the Twin Adder "), ("North Shroud", 20f, 20f)},
+        {("Sylpheed Snarl", "Order of the Twin Adder "), ("East Shroud", 27f, 18f)},
+        {("U'Ghamaro Quarryman", "Order of the Twin Adder "), ("Outer La Noscea", 23f, 8f)},
+        {("Sapsa Shelftooth", "Order of the Twin Adder "), ("Western La Noscea", 17f, 15f)},
+        {("Zahar'ak Pugilist", "Order of the Twin Adder "), ("Southern Thanalan", 28f, 20f)},
+        {("Natalan Swiftbeak", "Order of the Twin Adder "), ("Coerthas Central Highlands", 31f, 17f)},
+        {("Natalan Boldwing", "Order of the Twin Adder "), ("Coerthas Central Highlands", 31f, 17f)},
 
-        IEnumerable<uint> zoneIDs = theMob.UnkData3.Select(u => (uint)u.PlaceNameZone);
-        var theZone = placeNames.Where(p => p.RowId != 0 && zoneIDs.Contains(p.RowId)).First();
-        var zone = theZone.Name;
+    };
 
-        var coords = getNameCoordsDict()[name];
-
-        return (name, zone, coords);
-    }
-
-    private static Dictionary<string, float[]> getNameCoordsDict()
-    {
-        var goods = new Dictionary<string, float[]>();
-
-        foreach (var row in getNameCoordsCSV().Split('\n').Skip(1))
-        {
-            var columns = row.Split(',');
-            if (columns[1].Equals("")) continue;
-
-            var name = columns[0];
-            var coords_x = float.Parse(columns[1]);
-            string s = columns[2].Split('\r')[0].Trim();
-            SimpleLog.Log(s);
-            var coords_y = float.Parse(s);
-
-            goods.Add(name, new[] { coords_x, coords_y });
-        }
-
-        return goods;
-    }
-
-    private static string getNameCoordsCSV()
-    {
-        return @"name,coords_x,coords_y
-Little Ladybug,21.38,24.63
-Wharf Rat,21.16,24.4
-Lost Lamb,23.12,25.59
-Wind Sprite,28.47,35.96
-Nesting Buzzard,32.33,16.29
-Bogy,20.35,18.74
-Cave Bat,26.84,15.82
-Galago,29.76,14.45
-Grounded Pirate,20.19,17
-Lightning Sprite,14.39,18.98
-Ground Squirrel,30.4,25.93
-Forest Funguar,24.4,18.38
-Miteling,25.65,27.96
-Midge Swarm,27.38,24.65
-Water Sprite,18.61,19.88
-Black Eft,26.34,19.91
-Anole,31.06,20.45
-Trickster Imp,26.47,25.31
-Roselet,23.01,26.08
-Chigoe,27.03,19
-Microchu,27.67,21.49
-Syrphid Swarm,26.84,25.05
-Northern Vulture,11.62,23.5
-Star Marmot,29.6,24.42
-Cactuar,27.97,24.86
-Snapping Shrew,23.21,27.31
-Hammer Beak,23.2,25.42
-Antling Worker,21.55,18.95
-Earth Sprite,22.86,26.24
-Spriggan Graverobber,17.4,23.68
-Qiqirn Shellsweeper,17.32,18.92
-Antling Soldier,25.14,18.32
-Dusty Mongrel,22.58,22.05
-Opo-opo,27.4,24.6
-Bog Yarzon,22.97,21.22
-Hoglet,29.76,23.44
-Diremite,19.8,18.69
-Tree Slug,13,25
-Aurelia,25.39,25.3
-Bee Cloud,22.22,20.83
-Wild Dodo,28,20
-Tiny Mandragora,22.87,18.14
-Wounded Aurochs,18.6,17.23
-Grounded Raider,20.25,16.89
-Megalocrab,15.81,14.32
-Huge Hornet,20.1,26.62
-Orobon,18.46,16.28
-Goblin Mugger,,
-Sandtoad,23.55,22.79
-Eft,23.83,18.37
-Sun Midge Swarm,23.99,20.36
-Desert Peiste,25.02,20.04
-Syrphid Cloud,21.72,18.52
-Yarzon Feeder,23,27
-Rusty Coblyn,21.63,27.57
-Sun Bat,25.04,17.59
-Sewer Mole,33.62,28.62
-Mossless Goobbue,23.11,23.92
-Fat Dodo,33.97,28.71
-Arbor Buzzard,31.14,29.55
-Qiqirn Eggdigger,18,35
-Dusk Bat,26.89,24.02
-Puk Hatchling,22.29,20.37
-Hedgemole,26.4,23.56
-Rothlyt Pelican,24.26,23.67
-Killer Mantis,22.1,22.09
-Bumble Beetle,13.07,25.8
-Hornet Swarm,20.51,21.82
-Magicked Bones,19.49,27.62
-Treant Sapling,27.46,27.41
-Goblin Hunter,13,27
-Mandragora,14.18,25.55
-Wild Hoglet,13.23,23.95
-Lemur,16.39,26.55
-Faerie Funguar,19.21,28.69
-Giant Gnat,18,27
-Raptor Poacher,19.78,30.16
-Antelope Doe,14.95,17.83
-Wild Boar,18.47,24.7
-Firefly,23.15,20.33
-Boring Weevil,15.93,26.93
-Wolf Poacher,19.64,30.14
-Qiqirn Beater,21.86,30.32
-Black Bat,18.11,24.61
-Copper Coblyn,26,16
-Bomb,27.62,17.13
-Cochineal Cactuar,24.62,20.28
-Giant Tortoise,27.7,24.68
-Thickshell,15.95,16.37
-Scaphite,16.98,14.64
-Tuco-tuco,13.66,26.6
-Myotragus Billy,17.41,22.37
-Vandalous Imp,14.41,18.24
-Bloated Bogy,13,11
-Rotting Noble,14.99,16.68
-Boar Poacher,19.72,30.1
-Ziz Gorlin,20.63,25.85
-Moraby Mole,21,34
-Rhotano Buccaneer,33.68,27.56
-Wild Wolf,13.17,25.75
-Antling Sentry,16,15
-Myotragus Nanny,17.14,22.33
-Blowfly Swarm,11.95,22.51
-Rotting Corpse,14.87,16.72
-Quiveron Attendant,24.1,20.94
-Toxic Toad,27.76,19.12
-Overgrown Ivy,23,29
-Lead Coblyn,13,11
-Kedtrap,16.78,20.42
-Coeurl Pup,9.47,21.37
-Antelope Stag,22.5,19.95
-Balloon,21.16,30.72
-Chasm Buzzard,22.19,19.91
-Axe Beak,24.78,18.41
-Clay Golem,18.22,28.73
-Sandstone Golem,23.24,12.3
-Brood Ziz,16.16,20.27
-Lindwurm,13.42,19.1
-Stoneshell,13.56,24.46
-Diseased Treant,17,23
-Overgrown Offering,18.85,19.04
-Yarzon Scavenger,14.43,7.81
-Forest Yarzon,12.33,21.74
-Jumping Djigga,16.06,20.91
-Redbelly Sharpeye,23,19.48
-Banemite,24.35,25.8
-Sandskin Peiste,20.05,10.16
-Ziz,16.36,27.67
-Toadstool,15.84,17.94
-Apkallu,29.18,35.7
-Laughing Toad,15.21,6.49
-Bark Eft,19.21,23.37
-Glowfly,15.59,20.87
-Sabotender,15.06,14.94
-Qiqirn Roerunner,23.42,23.12
-Goblin Thug,27.76,21.46
-Coeurlclaw Cutter,29.6,21.4
-Pteroc,14.79,19
-Smallmouth Orobon,17,18
-Redbelly Lookout,22.97,19.26
-Moondrip Piledriver,17.85,6.79
-Corpse Brigade Firedancer,,
-Coeurlclaw Poacher,29.56,21.13
-Midland Condor,17.7,26.95
-Redbelly Larcener,23.07,19.28
-Shroud Hare,21.02,30.46
-Phurble,23.59,21.47
-Floating Eye,11,22
-Fallen Mage,19,17
-Corpse Brigade Knuckledancer,24.24,9.64
-Coeurlclaw Hunter,29.41,21.46
-River Yarzon,23.48,22.43
-Potter Wasp Swarm,15.6,15.41
-Fire Sprite,14.54,20.33
-Qiqirn Gullroaster,26,32
-Grass Raptor,20.21,26.92
-Gigantoad,17.97,26.91
-Sundrake,25,38
-Colibri,30.73,24.64
-Coeurl,14.51,15.03
-Mildewed Goobbue,16.87,32.46
-Snow Wolf Pup,22.49,28.11
-Dryad,22.9,24.35
-Feral Croc,26.67,23.08
-Taurus,33.79,14.21
-Sandworm,15.7,35.96
-Russet Yarzon,13.59,32.27
-Giant Pelican,20.3,32.08
-Smoke Bomb,19.19,36.07
-Spriggan,11.86,15.99
-Bloodshore Bell,31.59,26.08
-Jungle Coeurl,18.8,27.94
-Ringtail,15.38,12.02
-Highland Condor,16.48,17.15
-Salamander,27.58,23.3
-Fallen Pikeman,20.79,38.47
-Ice Sprite,23.75,28.12
-Vodoriga,29.43,15.23
-Baritine Croc,3.49,21.57
-Mamool Ja Infiltrator,34.31,24.78
-Bigmouth Orobon,18.02,30.8
-Revenant,12,20
-Ornery Karakul,29.55,29.72
-Deepvoid Deathmouse,25.68,21.99
-Downy Aevis,25.86,9.58
-Will-o-the-wisp,23.68,24.98
-Dragonfly,9.3,13.41
-Mamool Ja Sophist,34.62,24.87
-Adamantoise,15.98,30.24
-Uragnite,33,24
-Velociraptor,19.73,15.97
-Fallen Wizard,20.92,38.67
-Treant,23.63,23.62
-Grenade,,
-Large Buffalo,28.44,30.73
-Basalt Golem,14.41,15.85
-Bateleur,17.83,18.37
-Mirrorknight,30.29,24.25
-Stroper,20.77,28.6
-Snipper,31.19,35.27
-Redhorn Ogre,28.02,10.89
-Highland Goobbue,24,20
-Snowstorm Goobbue,22.06,17.4
-Mamool Ja Breeder,34.09,25.05
-Goobbue,18.09,30.95
-Ochu,25,24
-Mamool Ja Executioner,34.17,24.84
-Dung Midge Swarm,20.56,27.21
-Plasmoid,7.63,31.63
-Golden Fleece,30.1,24.27
-Quartz Doblyn,23.46,26.06
-Lammergeyer,12.11,36.14
-3rd Cohort Laquearius,,
-Nix,17.42,9.77
-Mudpuppy,14.62,30.41
-Wild Hog,30.04,24.76
-Watchwolf,21.43,20.78
-5th Cohort Laquearius,11.36,13.48
-Snow Wolf,,
-Axolotl,14,15.5
-Natalan Watchwolf,33.21,21.07
-Zaharak Battle Drake,30.88,19.26
-4th Cohort Vanguard,10.68,6.03
-Hippocerf,10.64,19.54
-Dead Mans Moan,15.8,35.84
-Morbol,23,21
-Lesser Kalong,,
-Giant Reader,14.04,27.19
-Hippogryph,29.93,8.82
-5th Cohort Secutor,11.29,14.27
-Tempered Gladiator,22,19
-Sylphlands Condor,28.29,16.45
-Milkroot Sapling,23.72,14.83
-Ahriman,,
-Shelfeye Reaver,13,17
-3rd Cohort Hoplomachus,17.74,17.79
-5th Cohort Eques,11.31,14.31
-Sea Wasp,14,17
-Sylph Bonnet,25.96,13.44
-2nd Cohort Vanguard,29.7,19.98
-Preying Mantis,15.29,34.44
-3rd Cohort Eques,,
-Lake Cobra,25.96,12.93
-Giant Lugger,13.87,26.66
-Tempered Orator,21,20
-Dullahan,23.69,20.39
-Basilisk,22.46,24.6
-Gigas Bhikkhu,33.1,15.65
-2nd Cohort Hoplomachus,28.13,21.05
-Daring Harrier,16.96,16.11
-5th Cohort Vanguard,10.97,15.1
-Sylphlands Sentinel,23.41,10.85
-2nd Cohort Eques,28.8,20.44
-Molted Ziz,26.47,24.13
-Crater Golem,10.9,17.42
-Biast,14.45,28.7
-5th Cohort Signifer,11.1,14.61
-Synthetic Doblyn,22.33,7.39
-Iron Tortoise,19.18,24.82
-Milkroot Cluster,24.05,17.17
-4th Cohort Secutor,10.63,6.44
-2nd Cohort Laquearius,28.4,20.64
-3rd Cohort Signifer,,
-Raging Harrier,17.04,16.45
-Gigas Shramana,29.75,12.69
-5th Cohort Hoplomachus,11.77,13.67
-Dreamtoad,27.28,18.56
-Hapalit,31.21,6
-Shelfclaw Reaver,13,17
-3rd Cohort Secutor,,
-Gigas Sozu,29.29,13.11
-Giant Logger,14.59,26.73
-Ked,32.35,24.02
-4th Cohort Hoplomachus,11.25,6.33
-2nd Cohort Signifer,28.67,20.66";
-    }
 }
