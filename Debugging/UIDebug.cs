@@ -461,7 +461,7 @@ public unsafe class UIDebug : DebugHelper {
     }
 
         
-    private static void PrintNode(AtkResNode* node, bool printSiblings = true, string treePrefix = "", bool textOnly = false)
+    public static void PrintNode(AtkResNode* node, bool printSiblings = true, string treePrefix = "", bool textOnly = false)
     {
         if (node == null)
             return;
