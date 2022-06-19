@@ -56,6 +56,7 @@ public abstract class ItemHotkey : IDisposable {
         Config.Enabled = true;
         if (!Enabled) OnEnable();
         Enabled = true;
+        if (!fromTweakEnable) SaveConfig();
     }
 
     public void Disable(bool fromTweakDisable = false) {
