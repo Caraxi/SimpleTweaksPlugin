@@ -311,6 +311,12 @@ namespace SimpleTweaksPlugin.Debugging {
 
         private static unsafe void PrintOutValue(ulong addr, List<string> path, Type type, object value, MemberInfo member) {
             try {
+
+                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)) {
+                    value = type.GetMethod("ToArray")?.Invoke(value, null);
+                    type = value.GetType();
+                }
+                
                 var valueParser = member.GetCustomAttribute(typeof(ValueParser));
                 var fixedBuffer = (FixedBufferAttribute) member.GetCustomAttribute(typeof(FixedBufferAttribute));
                 var fixedArray = (FixedArrayAttribute)member.GetCustomAttribute(typeof(FixedArrayAttribute));
@@ -523,7 +529,7 @@ namespace SimpleTweaksPlugin.Debugging {
                 }
 
             }
-
+            
             var pushedColor = 0;
             var openedNode = false;
             try {
@@ -649,5 +655,30 @@ namespace SimpleTweaksPlugin.Debugging {
             if (pushedColor > 0) ImGui.PopStyleColor(pushedColor);
 
         }
+
+        public static unsafe void PrintAddress(void* address) {
+            var ulongAddress = (ulong)address;
+            
+            try {
+                if (endModule == 0 && beginModule == 0) {
+                    try {
+                        beginModule = (ulong)Process.GetCurrentProcess().MainModule.BaseAddress.ToInt64();
+                        endModule = (beginModule + (ulong)Process.GetCurrentProcess().MainModule.ModuleMemorySize);
+                    } catch {
+                        endModule = 1;
+                    }
+                }
+            } catch { }
+            
+            ClickToCopy(address);
+            
+            if (beginModule > 0 && ulongAddress >= beginModule && ulongAddress <= endModule) {
+                ImGui.SameLine();
+                ImGui.PushStyleColor(ImGuiCol.Text, 0xffcbc0ff);
+                ClickToCopyText($"ffxiv_dx11.exe+{(ulongAddress - beginModule):X}");
+                ImGui.PopStyleColor();
+            }
+        }
+        
     }
 }

@@ -3,7 +3,7 @@
     <Target Name="PackagePlugin" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
         <DalamudPackager
                 ProjectDir="$(ProjectDir)"
-                OutputPath="$(OutputPath)..\$(Configuration).ILMerge"
+                OutputPath="$(OutputPath)"
                 AssemblyName="$(AssemblyName)"
                 MakeZip="true"/>
     </Target>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Dalamud.Game.ClientState.Keys;
+using Lumina.Data.Parsing.Uld;
 using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json;
 using SimpleTweaksPlugin.Sheets;
@@ -56,6 +57,7 @@ public abstract class ItemHotkey : IDisposable {
         Config.Enabled = true;
         if (!Enabled) OnEnable();
         Enabled = true;
+        if (!fromTweakEnable) SaveConfig();
     }
 
     public void Disable(bool fromTweakDisable = false) {
