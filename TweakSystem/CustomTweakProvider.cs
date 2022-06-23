@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace SimpleTweaksPlugin.TweakSystem; 
 
@@ -7,12 +8,13 @@ public class CustomTweakProvider : TweakProvider {
     private readonly TweakLoadContext loadContext;
 
     public string AssemblyPath { get; }
-
-    private FileInfo LoadedFileInfo;
+    
+    private DateTime lastWriteTime;
 
     public CustomTweakProvider(string path) {
-        LoadedFileInfo = new FileInfo(path);
-        loadContext = new TweakLoadContext();
+        var loadedFileInfo = new FileInfo(path);
+        lastWriteTime = loadedFileInfo.LastWriteTime;
+        loadContext = new TweakLoadContext(loadedFileInfo.Name, loadedFileInfo.Directory);
         AssemblyPath = path;
         Assembly = loadContext.LoadFromFile(path);
         Service.PluginInterface.UiBuilder.Draw += OnDraw;
@@ -25,8 +27,9 @@ public class CustomTweakProvider : TweakProvider {
         }
 
         if (Service.PluginInterface.UiBuilder.FrameCount % 100 == 0) {
+            
             var f = new FileInfo(AssemblyPath);
-            if (LoadedFileInfo.LastWriteTime != f.LastWriteTime) {
+            if (f.Exists && lastWriteTime != f.LastWriteTime) {
                 SimpleLog.Log($"Detected Change in {AssemblyPath}");
                 Dispose();
                 Loc.ClearCache();

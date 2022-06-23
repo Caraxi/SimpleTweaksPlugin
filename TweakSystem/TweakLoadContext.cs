@@ -1,14 +1,55 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
+using Dalamud.Plugin;
+using FFXIVClientStructs;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace SimpleTweaksPlugin.TweakSystem; 
 
 public class TweakLoadContext : AssemblyLoadContext {
+
+    private DirectoryInfo directory;
+    private string name;
+    
+    
+    public TweakLoadContext(string name, DirectoryInfo directoryInfo) {
+        directory = directoryInfo;
+    }
+
+
+    private static Dictionary<string, Assembly> handledAssemblies;
+
+    static TweakLoadContext() {
+        handledAssemblies = new Dictionary<string, Assembly>() {
+            ["SimpleTweaksPlugin"] = Assembly.GetExecutingAssembly(),
+            ["FFXIVClientStructs"] = typeof(Resolver).Assembly,
+            ["Dalamud"] = typeof(DalamudPluginInterface).Assembly
+        };
+    }
+    
+    
+    
     protected override Assembly? Load(AssemblyName assemblyName) {
-        var currentAssembly = Assembly.GetExecutingAssembly();
-        var currentAssemblyName = currentAssembly.GetName();
-        return assemblyName.Name == currentAssemblyName.Name ? currentAssembly : base.Load(assemblyName);
+        SimpleLog.Log($"[{name}] Attempting to load {assemblyName.FullName}");
+
+        if (assemblyName.Name != null && handledAssemblies.ContainsKey(assemblyName.Name)) {
+            SimpleLog.Log($"[{name}] Forwarded reference to {assemblyName.Name}");
+            return handledAssemblies[assemblyName.Name];
+        }
+        
+        var file = Path.Join(directory.FullName, $"{assemblyName.Name}.dll");
+        if (File.Exists(file)) {
+            try {
+                SimpleLog.Log($"[{name}] Attempting to load {assemblyName.Name} from {file}");
+                return LoadFromFile(file);
+            } catch {
+                //
+            }
+        }
+        
+        return base.Load(assemblyName);
     }
 
     public Assembly LoadFromFile(string filePath) {
