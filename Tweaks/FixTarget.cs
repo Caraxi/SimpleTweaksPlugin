@@ -27,13 +27,13 @@ public class FixTarget : Tweak {
             _ => null
         };
 
-        Service.Chat.ChatMessage += OnChatMessage;
+        Service.Chat.CheckMessageHandled += OnChatMessage;
 
         base.Enable();
     }
 
     public override void Disable() {
-        Service.Chat.ChatMessage -= OnChatMessage;
+        Service.Chat.CheckMessageHandled -= OnChatMessage;
         base.Disable();
     }
 
