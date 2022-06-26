@@ -25,7 +25,7 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
     
     public override uint Version => 2;
 
-    public override string Description => "Modifies the Synthesize button in the Crafting Log to swith job or stand up from the crafting position, allowing you to stop crafting without closing the crafting log.";
+    public override string Description => "Modifies the Synthesize button in the Crafting Log to switch job or stand up from the crafting position, allowing you to stop crafting without closing the crafting log.";
     
     private delegate void* ClickSynthesisButton(void* a1, void* a2);
     
