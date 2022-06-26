@@ -54,7 +54,7 @@ public unsafe class ShowShieldOnHPBar: UiAdjustments.SubTweak
         {
             var parameterWidget = Common.GetUnitBase("_ParameterWidget");
             if (parameterWidget == null) return;
-            if (parameterWidget->UldManager.LoadedState != 3) return;
+            if (parameterWidget->UldManager.LoadedState != AtkLoadState.Loaded) return;
             if (!parameterWidget->IsVisible) return;
             var hpGaugeBar = ((AtkComponentNode*) parameterWidget->UldManager.NodeList[2]);
             var hpNineGrid = (AtkNineGridNode*) hpGaugeBar->Component->UldManager.NodeList[3];
