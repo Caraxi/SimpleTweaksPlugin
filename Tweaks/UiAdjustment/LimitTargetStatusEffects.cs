@@ -6,10 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Logging;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -72,12 +74,18 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             ImGui.SameLine();
             ImGui.TextColored(ImGuiColors.DalamudGrey, "(?)");
             if (ImGui.IsItemHovered()) {
-                ImGui.SetTooltip("If you find status that should be filtered but are not, please report it using the feedback button\nor by pinging Aireil in goat place Discord.");
+                ImGui.SetTooltip("If you find status that should be filtered but are not, please report it by using the feedback button\nor by pinging Aireil in goat place Discord.");
             }
 
             ImGui.Text("Custom filtered status (added to the settings above):");
-            if (statusSheet != null && ImGui.BeginTable("##FilteredStatusCustom", 3, ImGuiTableFlags.BordersInnerH | ImGuiTableFlags.BordersInnerV,
-                    new Vector2(-1.0f, -1.0f * ImGuiHelpers.GlobalScale))) {
+
+            var ySize = 23.0f + (25.0f * Config.FilteredStatusCustom.Count);
+            if (ySize > 125.0f) {
+                ySize = 125.0f;
+            }
+
+            if (statusSheet != null && ImGui.BeginTable("##FilteredStatusCustom", 3, ImGuiTableFlags.BordersInnerH | ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.ScrollY,
+                    new Vector2(-1.0f, ySize * ImGuiHelpers.GlobalScale))) {
                 ImGui.TableSetupScrollFreeze(0, 1);
 
                 ImGui.TableSetupColumn("Status ID");
@@ -153,10 +161,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private long UpdateTargetStatusDetour(void* agentHud, void* numberArray, void* stringArray, StatusManager statusManager, void* target, void* isLocalPlayerAndRollPlaying) {
             long ret = 0;
             try {
-                if (Config.FilterOnlyInCombat && Service.Condition[ConditionFlag.InCombat]) {
-                    return updateTargetStatusHook.Original(agentHud, numberArray, stringArray, statusManager, target, isLocalPlayerAndRollPlaying);
-                }
-
                 GameObject* localPlayer = null;
                 var filteredIndex = 0;
                 for (ushort i = 0; i < 30; i++) {
@@ -168,10 +172,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                     if (localPlayer == null) {
                         localPlayer = GameObjectManager.GetGameObjectByIndex(0);
-                    }
-
-                    if (localPlayer == null) {
-                        break;
+                        if (localPlayer == null || (Config.FilterOnlyInCombat && (((Character*)localPlayer)->StatusFlags & (byte) StatusFlags.InCombat) == 0)) {
+                            break;
+                        }
                     }
 
                     if (status->SourceID == localPlayer->ObjectID) {
@@ -306,6 +309,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             return new HashSet<ushort>() {
                 248, // Circle of Scorn (PLD)
                 725, // Goring Blade (PLD)
+                2721, // Blade of Valor (PLD)
 
                 1837, // Sonic Break (GNB)
                 1838, // Bow Shock (GNB)
@@ -328,6 +332,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 246, // Demolish (MNK)
 
+                118, // Chaos Thrust (DRG)
                 2719, // Chaotic Spring (DRG)
 
                 3254, // Trick Attack (NIN)
@@ -339,6 +344,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 1200, // Caustic Bite (BRD)
                 1201, // Stormbite (BRD)
 
+                861, // Wildfire (MCH)
                 1866, // Bioblaster (MCH)
 
                 161, // Thunder (BLM)
@@ -349,6 +355,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 1723, // Windburn (BLU)
                 1714, // Bleeding (BLU)
                 1736, // Dropsy (BLU)
+
+                236, // Choco Beak (Chocobo)
             };
         }
     }
