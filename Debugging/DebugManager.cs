@@ -370,16 +370,35 @@ namespace SimpleTweaksPlugin.Debugging {
                         
                         if (fixedArray != null) {
 
-                            if (ImGui.TreeNode($"Fixed {fixedArray.Type.Name} Array##{member.Name}-{addr}-{string.Join("-", path)}")) {
 
-                                var arrAddr = (IntPtr) addr;
-                                for (var i = 0; i < fixedArray.Count; i++) {
-                                    var arrObj = Marshal.PtrToStructure(arrAddr, fixedArray.Type);
-                                    PrintOutObject(arrObj, (ulong)arrAddr.ToInt64(), new List<string>(path) { $"_arrValue_{i}" }, false, $"[{i}] {arrObj}");
-                                    arrAddr += Marshal.SizeOf(fixedArray.Type);
+                            if (fixedArray.Type == typeof(string) && fixedArray.Count == 1) {
+
+                                
+                                var text = Marshal.PtrToStringUTF8((IntPtr)addr);
+                                if (text != null) {
+                                    ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 0));
+                                    ImGui.TextDisabled("\"");
+                                    ImGui.SameLine();
+                                    ImGui.Text(text);
+                                    ImGui.SameLine();
+                                    ImGui.PopStyleVar();
+                                    
+                                    ImGui.TextDisabled("\"");
+                                } else {
+                                    ImGui.TextDisabled("null");
                                 }
+                            } else {
+                                if (ImGui.TreeNode($"Fixed {fixedArray.Type.Name} Array##{member.Name}-{addr}-{string.Join("-", path)}")) {
 
-                                ImGui.TreePop();
+                                    var arrAddr = (IntPtr) addr;
+                                    for (var i = 0; i < fixedArray.Count; i++) {
+                                        var arrObj = Marshal.PtrToStructure(arrAddr, fixedArray.Type);
+                                        PrintOutObject(arrObj, (ulong)arrAddr.ToInt64(), new List<string>(path) { $"_arrValue_{i}" }, false, $"[{i}] {arrObj}");
+                                        arrAddr += Marshal.SizeOf(fixedArray.Type);
+                                    }
+
+                                    ImGui.TreePop();
+                                }
                             }
                             
                         } else {
@@ -394,33 +413,33 @@ namespace SimpleTweaksPlugin.Debugging {
 
                                 if (display) {
                                     var sX = ImGui.GetCursorPosX();
-                                    for (uint i = 0; i < fixedBuffer.Length; i++) {
+                                    for (uint i = 0; i < fixedBuffer.Length; i += 1) {
                                         if (fixedBuffer.ElementType == typeof(byte)) {
                                             var v = *(byte*)(addr + i);
                                             if (i != 0 && i % 16 != 0) ImGui.SameLine();
                                             ImGui.SetCursorPosX(sX + ImGui.CalcTextSize(ImGui.GetIO().KeyShift?"0000":"000").X * (i % 16));
                                             ImGui.Text(ImGui.GetIO().KeyShift ? $"{v:000}" : $"{v:X2}");
                                         } else if (fixedBuffer.ElementType == typeof(short)) {
-                                            var v = *(short*)(addr + i);
+                                            var v = *(short*)(addr + i * 2);
                                             if (i != 0 && i % 8 != 0) ImGui.SameLine();
                                             ImGui.Text(ImGui.GetIO().KeyShift ? $"{v:000000}" : $"{v:X4}");
                                         } else if (fixedBuffer.ElementType == typeof(ushort)) {
-                                            var v = *(ushort*)(addr + i);
+                                            var v = *(ushort*)(addr + i * 2);
                                             if (i != 0 && i % 8 != 0) ImGui.SameLine();
                                             ImGui.Text(ImGui.GetIO().KeyShift ? $"{v:00000}" : $"{v:X4}");
                                         }  else if (fixedBuffer.ElementType == typeof(int)) {
-                                            var v = *(int*)(addr + i);
+                                            var v = *(int*)(addr + i * 4);
                                             if (i != 0 && i % 4 != 0) ImGui.SameLine();
                                             ImGui.Text(ImGui.GetIO().KeyShift ? $"{v:0000000000}" : $"{v:X8}");
                                         }  else if (fixedBuffer.ElementType == typeof(uint)) {
-                                            var v = *(uint*)(addr + i);
+                                            var v = *(uint*)(addr + i * 4);
                                             if (i != 0 && i % 4 != 0) ImGui.SameLine();
                                             ImGui.Text(ImGui.GetIO().KeyShift ? $"{v:000000000}" : $"{v:X8}");
                                         } else if (fixedBuffer.ElementType == typeof(long)) {
-                                            var v = *(long*)(addr + i);
+                                            var v = *(long*)(addr + i * 8);
                                             ImGui.Text(ImGui.GetIO().KeyShift ? $"{v}" : $"{v:X16}");
                                         } else if (fixedBuffer.ElementType == typeof(ulong)) {
-                                            var v = *(ulong*)(addr + i);
+                                            var v = *(ulong*)(addr + i * 8);
                                             ImGui.Text(ImGui.GetIO().KeyShift ? $"{v}" : $"{v:X16}");
                                         } else {
                                             var v = *(byte*)(addr + i);
@@ -587,7 +606,12 @@ namespace SimpleTweaksPlugin.Debugging {
                             ImGui.Text($"fixed");
                             ImGui.SameLine();
                             if (fixedArray != null) {
-                                ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{fixedArray.Type.Name}[{fixedArray.Count:X}]");
+                                if (fixedArray.Type == typeof(string) && fixedArray.Count == 1) {
+                                    ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{fixedArray.Type.Name}");
+                                } else {
+                                    ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{fixedArray.Type.Name}[{fixedArray.Count:X}]");
+                                }
+                                
                             } else {
                                 ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{fixedBuffer.ElementType.Name}[0x{fixedBuffer.Length:X}]");
                             }
@@ -632,7 +656,7 @@ namespace SimpleTweaksPlugin.Debugging {
                         ImGui.TextColored(new Vector4(0.2f, 0.6f, 0.4f, 1), $"{p.Name}: ");
                         ImGui.SameLine();
 
-                        if (p.PropertyType.IsByRefLike) {
+                        if (p.PropertyType.IsByRefLike || p.GetMethod.GetParameters().Length > 0) {
                             ImGui.TextDisabled("Unable to display");
                         } else {
                             PrintOutValue(addr, new List<string>(path) { p.Name }, p.PropertyType, p.GetValue(obj), p);

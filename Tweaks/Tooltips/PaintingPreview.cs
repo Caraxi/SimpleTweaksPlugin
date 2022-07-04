@@ -36,7 +36,7 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
     
     private void AfterItemDetailUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
         if (atkUnitBase == null) return;
-        var imageNode = (AtkImageNode*) Common.GetNodeByID(atkUnitBase->UldManager, CustomNodes.PaintingPreview, NodeType.Image);
+        var imageNode = (AtkImageNode*) Common.GetNodeByID(&atkUnitBase->UldManager, CustomNodes.PaintingPreview, NodeType.Image);
         if (imageNode != null) imageNode->AtkResNode.ToggleVisibility(false);
         
         var itemId = (uint)Service.GameGui.HoveredItem;
@@ -142,7 +142,7 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
         lastImage = 0;
         var unitBase = Common.GetUnitBase("ItemDetail");
         if (unitBase != null) {
-            var imageNode = (AtkImageNode*) Common.GetNodeByID(unitBase->UldManager, CustomNodes.PaintingPreview, NodeType.Image);
+            var imageNode = (AtkImageNode*) Common.GetNodeByID(&unitBase->UldManager, CustomNodes.PaintingPreview, NodeType.Image);
             if (imageNode != null) {
                 if (imageNode->AtkResNode.PrevSiblingNode != null)
                     imageNode->AtkResNode.PrevSiblingNode->NextSiblingNode = imageNode->AtkResNode.NextSiblingNode;

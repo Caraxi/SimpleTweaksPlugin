@@ -8,8 +8,8 @@ using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Gui.ContextMenus;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.System.String;
-using TextPayload = Dalamud.Game.Text.SeStringHandling.Payloads.TextPayload;
 
 namespace SimpleTweaksPlugin.Utility; 
 
@@ -113,6 +113,28 @@ public static class Extensions {
         }
     }
         
+    public static void AppendLine(this SeString str, List<Payload> payloads) {
+        str.Append(payloads);
+        str.Append(NewLinePayload.Payload);
+    }
+    public static void AppendLine(this SeString str, Payload payload) {
+        str.Append(payload);
+        str.Append(NewLinePayload.Payload);
+    }
+    public static void AppendLine(this SeString str, SeString other) {
+        str.Append(other);
+        str.Append(NewLinePayload.Payload);
+    }
+    public static void AppendLine(this SeString str, params Payload[] payloads) {
+        str.Append(new List<Payload>(payloads));
+        str.Append(NewLinePayload.Payload);
+    }
     
-    
+    public static bool AnyExcept(this Condition condition, params ConditionFlag[] exceptFlags) {
+        for (int flag = 0; flag < 100; ++flag) {
+            if (exceptFlags.Contains((ConditionFlag)flag)) continue;
+            if (condition[flag]) return true;
+        }
+        return false;
+    }
 }

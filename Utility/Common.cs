@@ -332,10 +332,10 @@ public static unsafe class Common {
         return new Vector3(fr / 255f, fg / 255f, fb / 255f);
     }
 
-    public static AtkResNode* GetNodeByID(AtkUldManager uldManager, uint nodeId, NodeType? type = null) => GetNodeByID<AtkResNode>(uldManager, nodeId, type);
-    public static T* GetNodeByID<T>(AtkUldManager uldManager, uint nodeId, NodeType? type = null) where T : unmanaged {
-        for (var i = 0; i < uldManager.NodeListCount; i++) {
-            var n = uldManager.NodeList[i];
+    public static AtkResNode* GetNodeByID(AtkUldManager* uldManager, uint nodeId, NodeType? type = null) => GetNodeByID<AtkResNode>(uldManager, nodeId, type);
+    public static T* GetNodeByID<T>(AtkUldManager* uldManager, uint nodeId, NodeType? type = null) where T : unmanaged {
+        for (var i = 0; i < uldManager->NodeListCount; i++) {
+            var n = uldManager->NodeList[i];
             if (n->NodeID != nodeId || type != null && n->Type != type.Value) continue;
             return (T*)n;
         }

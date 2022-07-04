@@ -222,7 +222,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
             backgroundImage->AtkResNode.ToggleVisibility(false);
             for (var i = 0U; i < 2; i++) {
                 // Create
-                var bgImageNode = Common.GetNodeByID<AtkImageNode>(equipmentComponent->UldManager, CustomNodes.GearPositionsBg + i, NodeType.Image);
+                var bgImageNode = Common.GetNodeByID<AtkImageNode>(&equipmentComponent->UldManager, CustomNodes.GearPositionsBg + i, NodeType.Image);
                 if (bgImageNode == null) {
                     SimpleLog.Log($"Create Custom BG Image Node#{i}");
 
@@ -313,7 +313,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
             backgroundImage->AtkResNode.ToggleVisibility(true);
 
             for (var i = 0U; i < 2; i++) {
-                var bgImageNode = Common.GetNodeByID<AtkImageNode>(equipmentComponent->UldManager, CustomNodes.GearPositionsBg + i, NodeType.Image);
+                var bgImageNode = Common.GetNodeByID<AtkImageNode>(&equipmentComponent->UldManager, CustomNodes.GearPositionsBg + i, NodeType.Image);
                 if (bgImageNode != null) {
                     if (bgImageNode->AtkResNode.PrevSiblingNode != null)
                         bgImageNode->AtkResNode.PrevSiblingNode->NextSiblingNode = bgImageNode->AtkResNode.NextSiblingNode;
