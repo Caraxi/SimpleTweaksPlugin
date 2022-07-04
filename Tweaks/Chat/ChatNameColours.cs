@@ -34,6 +34,18 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
     private string inputServerName = string.Empty;
     private string addError = string.Empty;
 
+    public class Region {
+        public class DataCentre {
+            public string Name = string.Empty;
+            public List<string> Worlds = new();
+        }
+        
+        public string Name;
+        public List<DataCentre> DataCentres;
+    }
+    
+    public List<Region> Regions = new();
+
     private ushort? GetColourKey(string playerName, string worldName, bool forceRandom = false) {
         var forced = Config.ForcedColours.FirstOrDefault(f => f.PlayerName == playerName && f.WorldName == worldName);
         if (forced != null) return forced.ColourKey;
@@ -51,14 +63,45 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
         this.uiColorSheet = Service.Data.Excel.GetSheet<UIColor>();
         this.worldSheet = Service.Data.Excel.GetSheet<World>();
 
-        if (uiColorSheet == null || worldSheet == null) {
+        var dcSheet = Service.Data.Excel.GetSheet<WorldDCGroupType>();
+        
+        if (uiColorSheet == null || worldSheet == null || dcSheet == null) {
             Ready = false;
             return;
         }
 
+        
+        Region GetRegion(byte regionId, string name) {
+            return new Region() {
+                Name = name,
+                DataCentres = dcSheet
+                    .Where(dc => dc.Region == regionId)
+                    .Select(dc => new Region.DataCentre() {
+                        Name = dc.Name.RawString,
+                        Worlds = worldSheet
+                            .Where(w => w.DataCenter.Row == dc.RowId && w.IsPublic)
+                            .Select(w => w.Name.RawString)
+                            .ToList()
+                    })
+                    .Where(dc => dc.Worlds.Count > 0)
+                    .ToList()
+            };
+        }
+        
+        Regions = new List<Region>() {
+            GetRegion(1, "JP"),
+            GetRegion(2, "NA"),
+            GetRegion(3, "EU"),
+            GetRegion(4, "OCE"),
+        };
+        
         base.Setup();
     }
 
+
+    private float serverListPopupWidth = 0;
+    private bool comboOpen = false;
+    
     protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
 
         var buttonSize = new Vector2(22, 22) * ImGui.GetIO().FontGlobalScale;
@@ -96,8 +139,7 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
                 } else {
                     fColor = new Vector4(1);
                 }
-
-
+                
                 ImGui.PushStyleColor(ImGuiCol.Text, fColor);
                 ImGui.Text($"{fc.PlayerName}");
                 ImGui.PopStyleColor();
@@ -105,14 +147,12 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
                 ImGui.Text($"{fc.WorldName}");
                 ImGui.TableNextColumn();
                 ImGuiExt.UiColorPicker($"##picker_{fc.PlayerName}@{fc.WorldName}", ref fc.ColourKey);
-
             }
 
             if (del != null) {
                 Config.ForcedColours.Remove(del);
             }
-
-
+            
             ImGui.TableNextColumn();
             if (ImGui.Button("+##newPlayerName", buttonSize)) {
                 addError = string.Empty;
@@ -131,22 +171,56 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
             ImGui.TableNextColumn();
 
             if (Service.ClientState?.LocalPlayer != null) {
+                
+                var currentWorld = Service.ClientState.LocalPlayer.CurrentWorld.GameData?.Name.RawString;
+                var currentRegion = Regions.Find(r => r.DataCentres.Any(dc => dc.Worlds.Contains(currentWorld)));
+                var currentDc = currentRegion?.DataCentres?.Find(dc => dc.Worlds.Contains(currentWorld));
+
                 ImGui.SetNextItemWidth(-1);
                 ImGui.InputText("##inputNewPlayerName", ref inputNewPlayerName, 25);
                 ImGui.TableNextColumn();
-
-                var serverList = worldSheet.Where(w => w.DataCenter.Row == Service.ClientState.LocalPlayer.CurrentWorld.GameData.DataCenter.Row).Select(w => w.Name.ToString()).ToList();
-                var serverIndex = serverList.IndexOf(inputServerName);
-                if (serverIndex == -1) {
-                    serverIndex = serverList.IndexOf(Service.ClientState.LocalPlayer.CurrentWorld.GameData.Name.ToString());
-                    inputServerName = serverList[serverIndex];
-                }
-
+                
                 ImGui.SetNextItemWidth(-1);
-                if (ImGui.Combo("##inputServer", ref serverIndex, serverList.ToArray(), serverList.Count)) {
-                    inputServerName = serverList[serverIndex];
-                }
 
+                ImGui.PushStyleVar(ImGuiStyleVar.PopupBorderSize, 3);
+                
+                if (ImGui.BeginCombo("##inputServer", inputServerName, ImGuiComboFlags.PopupAlignLeft | ImGuiComboFlags.HeightLarge)) {
+                    
+                    ImGui.Dummy(new Vector2(serverListPopupWidth, 1));
+                    if (ImGui.BeginTabBar("serverSelectDC")) {
+                        foreach (var r in Regions) {
+                            
+                            if (ImGui.BeginTabItem(r.Name)) {
+                                if (ImGui.BeginTabBar("regionSelectDC")) {
+                                    foreach (var dc in r.DataCentres.Where(dc => ImGui.BeginTabItem(dc.Name))) {
+                                        foreach (var w in dc.Worlds.Where(w => ImGui.Selectable(w, inputServerName == w))) {
+                                            inputServerName = w;
+                                        }
+
+                                        ImGui.EndTabItem();
+                                    }
+
+                                    ImGui.EndTabBar();
+                                }
+
+                                ImGui.EndTabItem();
+                            }
+                            if (r == currentRegion && comboOpen == false) ImGui.SetKeyboardFocusHere();
+                        }
+
+                        ImGui.EndTabBar();
+                    }
+                    if (ImGui.GetWindowContentRegionWidth() > serverListPopupWidth) {
+                        serverListPopupWidth = ImGui.GetWindowContentRegionWidth();
+                    }
+                    
+                    comboOpen = true;
+                    ImGui.EndCombo();
+                } else {
+                    comboOpen = false;
+                }
+                
+                ImGui.PopStyleVar();
                 ImGui.TableNextColumn();
                 ImGui.TextColored(new Vector4(1, 0, 0, 1), addError);
             }
@@ -164,7 +238,7 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
     
     private readonly XivChatType[] chatTypes = {
         NoviceNetwork, TellIncoming, TellOutgoing,
-        Say, Yell, Shout, Echo,
+        Say, Yell, Shout, Echo, Debug,
         Party, Alliance, CrossParty, PvPTeam,
         Ls1, Ls2, Ls3, Ls4,
         Ls5, Ls6, Ls7, Ls8,
