@@ -15,7 +15,12 @@ public unsafe class BlueActionInfo : TooltipTweaks.SubTweak {
         var aozActionTransient = Service.Data.Excel.GetSheet<AozActionTransient>()?.GetRow(aozAction.RowId);
         if (aozActionTransient?.Stats == null) return;
         var descriptionString = GetTooltipString(stringArrayData, TooltipTweaks.ActionTooltipField.Description);
-        if (descriptionString.TextValue.Contains("Rank: ★")) return; // Don't append when it already exists.
+        if (descriptionString.TextValue.Contains(Service.ClientState.ClientLanguage switch {
+                Dalamud.ClientLanguage.English => "Rank: ★",
+                Dalamud.ClientLanguage.German => "Rang: ★",
+                Dalamud.ClientLanguage.French => "Rang: ★",
+                Dalamud.ClientLanguage.Japanese => "ランク：★",
+                _ => "Rank: ★" })) return; // Don't append when it already exists.
         var infoStr = aozActionTransient.Stats.ToDalamudString();
         descriptionString.Append(NewLinePayload.Payload);
         descriptionString.Append(NewLinePayload.Payload);
