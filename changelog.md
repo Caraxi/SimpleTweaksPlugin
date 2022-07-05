@@ -1,8 +1,24 @@
 # Changelog
 
 ## [Unreleased]
+
+## [1.7.3.0]
+
+***New Tweaks***
+> **`Extra Information for Tooltips`** - Adds options to show an item's Grand Company Seal value, the gear sets it is a part of and if the item is craftable.
+
+
 ***Added Features***
 > **`Improved Blue Mage Action Tooltips`** Added spellbook number to tooltip.
+
+> **`Chat Name Colours`** Added support for setting custom colours for Travellers from other data centers.
+
+> **`Target Status Adjustments`** Now supports filtering status effects. *(Aireil)*
+
+***Bug Fixes***
+> **`Item Hotkeys`** Fixed enabled state not saving in some instances.
+
+> **`Fix Target`** Fixed tweak not working when chat message is filtered.
 
 ## [1.7.2.1]
 > Fixed a issue causing `Item Hotkeys` tweak to not work.
