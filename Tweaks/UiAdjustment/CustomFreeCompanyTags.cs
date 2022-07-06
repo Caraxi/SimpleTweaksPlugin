@@ -23,6 +23,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
         public Dictionary<string, TagCustomization> FcCustomizations = new();
         public TagCustomization DefaultCustomization = new();
         public TagCustomization WandererCustomization = new() { Enabled = false, Replacement = "<crossworldicon><homeworld>"};
+        public TagCustomization TravellerCustomization;
     }
 
     public class TagCustomization {
@@ -41,6 +42,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
     public override void Enable() {
         if (Enabled) return;
         Config = LoadConfig<Configs>() ?? new Configs();
+        Config.TravellerCustomization ??= new TagCustomization() { Enabled = Config.WandererCustomization.Enabled, Replacement = Config.WandererCustomization.Replacement };
         updateNameplateHook ??= Common.Hook<UpdateNameplateDelegate>("40 53 55 56 41 56 48 81 EC ?? ?? ?? ?? 48 8B 84 24", UpdateNameplatesDetour);
         updateNameplateHook?.Enable();
         base.Enable();
@@ -65,7 +67,12 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
             string companyTag = string.Empty;
             if (battleChara->Character.HomeWorld != battleChara->Character.CurrentWorld) {
                 // Wanderer
-                customization = Config.WandererCustomization;
+                var w = Service.Data.Excel.GetSheet<World>()?.GetRow(battleChara->Character.HomeWorld);
+                if (w == null || w.DataCenter.Row == Service.ClientState.LocalPlayer?.CurrentWorld?.GameData?.DataCenter?.Row) {
+                    customization = Config.WandererCustomization;
+                } else {
+                    customization = Config.TravellerCustomization;
+                }
             } else {
                 companyTag = Encoding.UTF8.GetString(battleChara->Character.FreeCompanyTag, 6).Trim('\0', ' ');
 
@@ -219,6 +226,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
         
     private string defaultString = "Default (FC)";
     private string wandererString = "Wanderer";
+    private string travellerString = "Traveller";
     private string newFcName = string.Empty;
     protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
 
@@ -254,6 +262,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
             }
                 
             TagCustomizationEditor(ref wandererString, Config.WandererCustomization, false);
+            TagCustomizationEditor(ref travellerString, Config.TravellerCustomization, false);
             TagCustomizationEditor(ref defaultString, Config.DefaultCustomization, false);
             // TagCustomizationEditor(ref noCompanyString, Config.NoCompanyCustomization, false);
                 
