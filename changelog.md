@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [1.7.3.1]
+***Improvements***
+> **`Custom Free Company Tags`** - Now allows setting Wanderer and Traveller tags individually.
+
+***Bug Fixes***
+> **`Blue Mage Action Tooltips`** - Fixed duplicate tooltip on non-english languages.
+
 ## [1.7.3.0]
 
 ***New Tweaks***
