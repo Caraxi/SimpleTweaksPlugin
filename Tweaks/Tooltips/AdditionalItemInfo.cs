@@ -150,6 +150,7 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
                     str.Append(new UIForegroundPayload(539));
                     str.Append($"Selling blocked by {tweak.Name}");
                     str.Append(UIForegroundPayload.UIForegroundOff);
+                    str.AppendLine();
                 }
             }
         }
