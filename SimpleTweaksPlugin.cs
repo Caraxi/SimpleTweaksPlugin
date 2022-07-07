@@ -294,6 +294,19 @@ namespace SimpleTweaksPlugin {
             return null;
         }
 
+        public T GetTweak<T>(IEnumerable<BaseTweak>? tweakList = null) where T : BaseTweak {
+            tweakList ??= Tweaks;
+            foreach (var t in tweakList) {
+                if (t is T tweak) return tweak;
+                if (t is SubTweakManager stm) {
+                    var fromSub = GetTweak<T>(stm.GetTweakList());
+                    if (fromSub != null) return fromSub;
+                }
+            }
+            return null;
+        }
+        
+
         public void SaveAllConfig() {
             foreach (var tp in TweakProviders.Where(tp => !tp.IsDisposed)) {
                 foreach (var t in tp.Tweaks) {

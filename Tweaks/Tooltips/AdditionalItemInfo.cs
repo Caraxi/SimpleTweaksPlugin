@@ -29,6 +29,10 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         
         [TweakConfigOption("Gearsets")]
         public bool Gearsets = false;
+        
+        [TweakConfigOption("No Sell List", ConditionalDisplay = true)]
+        public bool NoSellList = false;
+        public bool ShouldShowNoSellList() => SimpleTweaksPlugin.Plugin.GetTweak<NoSellList>()?.Enabled ?? false;
     }
 
     public Configs Config { get; private set; }
@@ -138,6 +142,17 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
             
         }
         
+        if (Config.NoSellList) {
+            var tweak = SimpleTweaksPlugin.Plugin.GetTweak<NoSellList>();
+            if (tweak is { Enabled: true }) {
+                var config = tweak.Config;
+                if (config.NoSellList.Contains(item.RowId) || config.CustomLists.Any(l => l.Enabled && l.NoSellList.Contains(item.RowId))) {
+                    str.Append(new UIForegroundPayload(539));
+                    str.Append($"Selling blocked by {tweak.Name}");
+                    str.Append(UIForegroundPayload.UIForegroundOff);
+                }
+            }
+        }
         
         while (str.Payloads.Count > 0 && str.Payloads[^1].Type == PayloadType.NewLine) {
             str.Payloads.RemoveAt(str.Payloads.Count - 1);
