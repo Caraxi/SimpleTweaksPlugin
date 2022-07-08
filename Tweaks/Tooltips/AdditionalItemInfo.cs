@@ -79,12 +79,17 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
             var recipes = Service.Data.Excel.GetSheet<ExtendedRecipeLookup>()?.GetRow(item.RowId);
             if (recipes != null) {
                 var j = new List<string>();
-                foreach (var r in recipes.Recipes) {
+                var c = new List<string>();
+                for (var i = 0U; i < recipes.Recipes.Length; i++) {
+                    var r = recipes.Recipes[i];
                     if (r == null || r.Row == 0 || r.Value?.CraftType?.Value?.Name == null) continue;
+                    var cj = Service.Data.Excel.GetSheet<ClassJob>()?.GetRow(8 + i);
+                    if (cj == null) continue;
                     j.Add(r.Value.CraftType.Value.Name.ToDalamudString().TextValue);
+                    c.Add(cj.Abbreviation.ToDalamudString().TextValue);
                 }
 
-                str.AppendLine(j.Count == 8 ? $"Craftable - All" : $"Craftable - {string.Join(", ", j)}");
+                str.AppendLine(j.Count == 8 ? $"Craftable - All" : j.Count >= 4 ? $"Craftable - {string.Join(",", c)}" : $"Craftable - {string.Join(", ", j)}");
             }
         }
         
