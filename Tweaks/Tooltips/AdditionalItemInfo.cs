@@ -202,6 +202,9 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
 
         var insertNode = atkUnitBase->GetNodeById(2);
         if (insertNode == null) return;
+
+        var baseTextNode = atkUnitBase->GetTextNodeById(43);
+        if (baseTextNode == null) return;
         
         if (textNode == null) {
             
@@ -217,25 +220,25 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
             textNode->AtkResNode.SetWidth(50);
             textNode->AtkResNode.SetHeight(20);
             
-            textNode->AtkResNode.Color.A = 0xFF;
-            textNode->AtkResNode.Color.R = 0xFF;
-            textNode->AtkResNode.Color.G = 0xFF;
-            textNode->AtkResNode.Color.B = 0xFF;
+            textNode->AtkResNode.Color.A = baseTextNode->AtkResNode.Color.A;
+            textNode->AtkResNode.Color.R = baseTextNode->AtkResNode.Color.R;
+            textNode->AtkResNode.Color.G = baseTextNode->AtkResNode.Color.G;
+            textNode->AtkResNode.Color.B = baseTextNode->AtkResNode.Color.B;
 
-            textNode->TextColor.A = 0xFF;
-            textNode->TextColor.R = 0xFF;
-            textNode->TextColor.G = 0xFF;
-            textNode->TextColor.B = 0xFF;
+            textNode->TextColor.A = baseTextNode->TextColor.A;
+            textNode->TextColor.R = baseTextNode->TextColor.R;
+            textNode->TextColor.G = baseTextNode->TextColor.G;
+            textNode->TextColor.B = baseTextNode->TextColor.B;
             
-            textNode->EdgeColor.A = 0xFF;
-            textNode->EdgeColor.R = 0x00;
-            textNode->EdgeColor.G = 0x00;
-            textNode->EdgeColor.B = 0x00;
+            textNode->EdgeColor.A = baseTextNode->EdgeColor.A;
+            textNode->EdgeColor.R = baseTextNode->EdgeColor.R;
+            textNode->EdgeColor.G = baseTextNode->EdgeColor.G;
+            textNode->EdgeColor.B = baseTextNode->EdgeColor.B;
 
             textNode->LineSpacing = 18;
             textNode->AlignmentFontType = 0x00;
             textNode->FontSize = 12;
-            textNode->TextFlags = (byte)(TextFlags.Emboss | TextFlags.MultiLine | TextFlags.AutoAdjustNodeSize);
+            textNode->TextFlags = (byte)((TextFlags)baseTextNode->TextFlags | TextFlags.MultiLine | TextFlags.AutoAdjustNodeSize);
             textNode->TextFlags2 = 0;
             
             var prev = insertNode->PrevSiblingNode;
