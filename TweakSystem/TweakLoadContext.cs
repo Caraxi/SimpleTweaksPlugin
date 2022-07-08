@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Runtime.Loader;
 using Dalamud.Plugin;
 using FFXIVClientStructs;
-using FFXIVClientStructs.FFXIV.Component.GUI;
 using XivCommon;
 
 namespace SimpleTweaksPlugin.TweakSystem; 
