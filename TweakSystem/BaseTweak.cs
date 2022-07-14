@@ -160,7 +160,7 @@ public abstract class BaseTweak {
             DrawCommon();
         }
 
-        if (hasChanged) ConfigChanged();
+        if (hasChanged && Enabled) ConfigChanged();
         return configTreeOpen;
     }
 
@@ -243,7 +243,7 @@ public abstract class BaseTweak {
             ImGui.TextWrapped($"{ex.StackTrace}");
         }
 
-        if (configChanged) {
+        if (configChanged && Enabled) {
             ConfigChanged();
         }
     }
