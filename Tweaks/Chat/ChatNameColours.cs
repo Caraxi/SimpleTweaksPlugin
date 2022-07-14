@@ -210,8 +210,8 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
 
                         ImGui.EndTabBar();
                     }
-                    if (ImGui.GetWindowContentRegionWidth() > serverListPopupWidth) {
-                        serverListPopupWidth = ImGui.GetWindowContentRegionWidth();
+                    if (ImGuiExt.GetWindowContentRegionSize().X > serverListPopupWidth) {
+                        serverListPopupWidth = ImGuiExt.GetWindowContentRegionSize().X;
                     }
                     
                     comboOpen = true;

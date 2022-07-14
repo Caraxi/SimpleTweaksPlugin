@@ -170,7 +170,7 @@ public unsafe class UIDebug : DebugHelper {
         ImGui.GetIO().WantCaptureKeyboard = true;
         ImGui.GetIO().WantCaptureMouse = true;
         ImGui.GetIO().WantTextInput = true;
-        if (ImGui.IsKeyPressed((int)VirtualKey.ESCAPE)) {
+        if (ImGui.IsKeyPressed(ImGuiKey.Escape)) {
             elementSelectorActive = false;
             FreeExclusiveDraw();
             return;
@@ -187,7 +187,7 @@ public unsafe class UIDebug : DebugHelper {
         var y = 100f;
         foreach (var s in new[]{"Select an Element", "Press ESCAPE to cancel"}) {
             var size = ImGui.CalcTextSize(s);
-            var x = ImGui.GetWindowContentRegionWidth() / 2f - size.X / 2;
+            var x = ImGuiExt.GetWindowContentRegionSize().X / 2f - size.X / 2;
             drawList.AddText(new Vector2(x, y), 0xFFFFFFFF, s);
             y += size.Y;
         }
@@ -349,7 +349,7 @@ public unsafe class UIDebug : DebugHelper {
         }
 
 
-        ImGui.SameLine(ImGui.GetWindowContentRegionWidth() - 25);
+        ImGui.SameLine(ImGuiExt.GetWindowContentRegionSize().X - 25);
         if (ImGui.SmallButton("V")) {
             atkUnitBase->Flags ^= 0x20;
         }

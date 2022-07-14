@@ -3,6 +3,7 @@ using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
@@ -44,7 +45,7 @@ public unsafe class SyncGathererBars : Tweak {
         ImGui.Text("Select bars to sync between miner and botanist.");
         ImGui.Indent();
 
-        var columns = (int) (ImGui.GetWindowContentRegionWidth() / (150f * ImGui.GetIO().FontGlobalScale));
+        var columns = (int) (ImGuiExt.GetWindowContentRegionSize().X / (150f * ImGui.GetIO().FontGlobalScale));
 
         ImGui.Columns(columns, "hotbarColumns", false);
         for (var i = 0; i < Config.StandardBars.Length; i++) {

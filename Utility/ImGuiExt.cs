@@ -204,4 +204,8 @@ public static class ImGuiExt {
         return modified;
     }
 
+    public static Vector2 GetWindowContentRegionSize() {
+        return ImGui.GetWindowContentRegionMax() - ImGui.GetWindowContentRegionMin();
+    }
+
 }

@@ -8,6 +8,7 @@ using System.Reflection;
 using Dalamud.Plugin;
 using ImGuiNET;
 using Newtonsoft.Json;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.TweakSystem; 
 
@@ -72,7 +73,7 @@ public abstract class BaseTweak {
             var minPos = ImGui.GetCursorPosX();
             var text = $"[{this.Key}]";
             var size = ImGui.CalcTextSize(text);
-            ImGui.SetCursorPosX(Math.Max(minPos, ImGui.GetWindowContentRegionWidth() - size.X));
+            ImGui.SetCursorPosX(Math.Max(minPos, ImGuiExt.GetWindowContentRegionSize().X - size.X));
             ImGui.TextDisabled(text);
             if (ImGui.IsItemHovered()) {
                 ImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
