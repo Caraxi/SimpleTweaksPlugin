@@ -187,7 +187,9 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                 
             foreach (var t in searchResults) {
                 if (HiddenTweaks.Contains(t.Key) && !t.Enabled) continue;
-                DrawTweakConfig(t, ref changed);
+                var tweakConfigChanged = false;
+                DrawTweakConfig(t, ref tweakConfigChanged);
+                changed |= tweakConfigChanged;
             }
                 
             ImGui.EndChild();
