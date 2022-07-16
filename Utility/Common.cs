@@ -173,27 +173,9 @@ public static unsafe class Common {
         *(xivString.StringPtr + i) = 0;
     }
 
-    public enum GameOptionKind : uint {
-        GamePadMode        = 0x089, // [bool] Character Config -> Mouse Mode / GamePad Mode
-        LegacyMovement     = 0x08A, // [bool] Character Config -> Control Settings -> General -> Standard Type / Legacy Type
-        DisplayItemHelp    = 0x130, // [bool] Character Config -> UI Settings -> General -> Display Item Help
-        DisplayActionHelp  = 0x136, // [bool] Character Config -> UI Settings -> General -> Display Action Help
-
-        ClockDisplayType   = 0x153, // [enum/byte] 0 = Default, 1 = 24H, 2 = 12H 
-        ClockTypeEorzea    = 0x155, // [bool]
-        ClockTypeLocal     = 0x156, // [bool]
-        ClockTypeServer    = 0x157, // [bool]
-    }
-
-
-    public static T GetGameOption<T>(GameOptionKind opt) {
-        var optionBase = (byte**)(Service.Framework.Address.BaseAddress + 0x2B28);
-        return Marshal.PtrToStructure<T>(new IntPtr(*optionBase + 0xAAE0 + (16 * (uint)opt)));
-    }
-
     public static HookWrapper<T> Hook<T>(string signature, T detour, int addressOffset = 0) where T : Delegate {
         var addr = Service.SigScanner.ScanText(signature);
-        var h = new Hook<T>(addr + addressOffset, detour);
+        var h = Dalamud.Hooking.Hook<T>.FromAddress(addr + addressOffset, detour);
         var wh = new HookWrapper<T>(h);
         HookList.Add(wh);
         return wh;

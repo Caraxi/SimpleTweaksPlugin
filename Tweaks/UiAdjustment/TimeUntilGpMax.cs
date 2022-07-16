@@ -22,7 +22,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
     private float timePerTick = 3f;
     private int forceVisible = 0;
     public delegate void UpdateParamDelegate(uint a1, uint* a2, byte a3);
-    private Hook<UpdateParamDelegate> updateParamHook;
+    private HookWrapper<UpdateParamDelegate> updateParamHook;
         
     public class Configs : TweakConfig {
         public int GpGoal = -1;
@@ -46,7 +46,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         lastUpdate.Restart();
-        updateParamHook ??= new Hook<UpdateParamDelegate>(Service.SigScanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 83 3D ?? ?? ?? ?? ?? 41 0F B6 E8 48 8B DA 8B F1 0F 84 ?? ?? ?? ?? 48 89 7C 24"), new UpdateParamDelegate(UpdateParamDetour));
+        updateParamHook ??= Common.Hook<UpdateParamDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 83 3D ?? ?? ?? ?? ?? 41 0F B6 E8 48 8B DA 8B F1 0F 84 ?? ?? ?? ?? 48 89 7C 24", UpdateParamDetour);
         updateParamHook.Enable();
         Service.Framework.Update += FrameworkUpdate;
         base.Enable();
@@ -59,7 +59,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
             if (!lastGpChangeStopwatch.IsRunning) {
                 lastGpChangeStopwatch.Restart();
             } else {
-                if (Service.ClientState.LocalPlayer.CurrentGp > lastGp && lastGpChangeStopwatch.ElapsedMilliseconds > 1000 && lastGpChangeStopwatch.ElapsedMilliseconds < 4000) {
+                if (Service.ClientState.LocalPlayer.CurrentGp > lastGp && lastGpChangeStopwatch.ElapsedMilliseconds is > 1000 and < 4000) {
                     var diff = (int) Service.ClientState.LocalPlayer.CurrentGp - (int) lastGp;
                     if (diff < 20) {
                         gpPerTick = diff;
@@ -95,6 +95,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
 
     private void FrameworkUpdate(Framework framework) {
         try {
+            if (Service.ClientState.LocalContentId == 0) return;
             if (!lastUpdate.IsRunning) lastUpdate.Restart();
             if (lastUpdate.ElapsedMilliseconds < 1000) return;
             lastUpdate.Restart();
