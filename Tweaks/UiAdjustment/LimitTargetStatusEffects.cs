@@ -341,6 +341,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 2586, // Death's Design (RPR)
 
+                124, // Venomous Bite (BRD)
+                129, // Windbite (BRD)
                 1200, // Caustic Bite (BRD)
                 1201, // Stormbite (BRD)
 
