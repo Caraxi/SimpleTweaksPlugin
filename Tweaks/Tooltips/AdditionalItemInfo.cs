@@ -92,7 +92,7 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         }
         
         if (Config.GrandCompanySealValue) {
-            if (item.Rarity > 1 && item.PriceLow > 0) {
+            if (item.Rarity > 1 && item.PriceLow > 0 && item.ClassJobCategory.Row > 0) {
                 var gcSealValue = Service.Data.Excel.GetSheet<GCSupplyDutyReward>()?.GetRow(item.LevelItem.Row);
                 if (gcSealValue is { SealsExpertDelivery: > 0 }) {
                     
