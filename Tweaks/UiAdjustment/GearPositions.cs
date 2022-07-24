@@ -1,5 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
@@ -273,7 +274,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
                     part->UldAsset = asset;
                     bgImageNode->PartsList = partsList;
 
-                    bgImageNode->LoadTexture("ui/uld/BagStatus.tex");
+                    bgImageNode->LoadTexture("ui/uld/BagStatus.tex", (uint) (ConfigModule.Instance()->GetValue(ConfigOption.UiAssetType)->Int + 1));
 
                     bgImageNode->AtkResNode.ToggleVisibility(true);
 
