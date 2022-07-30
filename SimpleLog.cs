@@ -40,27 +40,27 @@ public static class SimpleLog {
         foreach (var m in SplitMessage(message)) PluginLog.Error($"[{callerPath.Substring(_subStrIndex)}::{callerName}:{lineNumber}] {m}");
     }
 #else
-        public static void Verbose(object message) {
+        public static void Verbose(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
             foreach(var m in SplitMessage(message)) PluginLog.LogVerbose($"{m}");
         }
 
-        public static void Debug(object message) {
+        public static void Debug(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
             foreach (var m in SplitMessage(message)) PluginLog.LogDebug($"{m}");
         }
 
-        public static void Information(object message) {
+        public static void Information(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
             foreach (var m in SplitMessage(message)) PluginLog.LogInformation($"{m}");
         }
 
-        public static void Fatal(object message) {
+        public static void Fatal(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
             foreach (var m in SplitMessage(message)) PluginLog.LogFatal($"{m}");
         }
 
-        public static void Log(object message) {
+        public static void Log(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
             foreach (var m in SplitMessage(message)) PluginLog.Log($"{m}");
         }
 
-        public static void Error(object message) {
+        public static void Error(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
             foreach (var m in SplitMessage(message)) PluginLog.Error($"{m}");
         }
 #endif

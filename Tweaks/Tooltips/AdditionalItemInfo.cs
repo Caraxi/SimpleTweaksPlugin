@@ -257,8 +257,6 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
             atkUnitBase->UldManager.UpdateDrawNodeList();
         }
         
-        SimpleLog.Log($"{lines.TextValue}");
-        
         textNode->AtkResNode.ToggleVisibility(true);
         textNode->SetText(lines.Encode());
         textNode->ResizeNodeForCurrentText();
