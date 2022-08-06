@@ -41,9 +41,16 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
     
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        itemTooltipOnUpdateHook ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 54 41 55 41 56 41 57 48 83 EC 20 4C 8B AA", AfterItemDetailUpdate);
+        itemTooltipOnUpdateHook ??= Common.Hook<Common.AddonOnUpdate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 54 41 55 41 56 41 57 48 83 EC 20 4C 8B AA", ItemTooltipUpdate);
         itemTooltipOnUpdateHook?.Enable();        
         base.Enable();
+    }
+
+    private void* ItemTooltipUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** nums, StringArrayData** strings) {
+        BeforeItemDetailUpdate(atkUnitBase);
+        var ret = itemTooltipOnUpdateHook.Original(atkUnitBase, nums, strings);
+        AfterItemDetailUpdate(atkUnitBase, nums, strings);
+        return ret;
     }
 
     private static List<(int gearsetId, string name)> GetGearSetsWithItem(uint itemId, bool hq) {
@@ -194,6 +201,19 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         return str;
     }
 
+    private void BeforeItemDetailUpdate(AtkUnitBase* atkUnitBase) {
+        var textNode = Common.GetNodeByID<AtkTextNode>(&atkUnitBase->UldManager, CustomNodes.AdditionalInfo, NodeType.Text);
+        if (textNode != null) {
+            if (textNode->AtkResNode.IsVisible) {
+                var insertNode = atkUnitBase->GetNodeById(2);
+                if (insertNode == null) return;
+                atkUnitBase->WindowNode->AtkResNode.SetHeight((ushort)(atkUnitBase->WindowNode->AtkResNode.Height - textNode->AtkResNode.Height));
+                atkUnitBase->WindowNode->Component->UldManager.SearchNodeById(2)->SetHeight(atkUnitBase->WindowNode->AtkResNode.Height);
+                insertNode->SetPositionFloat(insertNode->X, insertNode->Y - textNode->AtkResNode.Height);
+            }
+        }
+    }
+    
     private void AfterItemDetailUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
         if (!atkUnitBase->IsVisible) return;
         var textNode = Common.GetNodeByID<AtkTextNode>(&atkUnitBase->UldManager, CustomNodes.AdditionalInfo, NodeType.Text);
