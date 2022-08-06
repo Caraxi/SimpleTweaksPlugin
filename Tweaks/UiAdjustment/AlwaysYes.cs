@@ -23,6 +23,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         public bool MateriaRetrievals = true;
         public bool GlamourDispels = true;
         public bool Desynthesis = true;
+        public bool Lobby = true;
         public List<string> ExceptionsYesNo = new();
     }
 
@@ -80,6 +81,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         hasChanged |= ImGui.Checkbox("Materia retrievals", ref Config.MateriaRetrievals);
         hasChanged |= ImGui.Checkbox("Glamour dispels", ref Config.GlamourDispels);
         hasChanged |= ImGui.Checkbox("Desynthesis", ref Config.Desynthesis);
+        hasChanged |= ImGui.Checkbox("Character selection dialogs", ref Config.Lobby);
 
         if (hasChanged) {
             SaveConfig(Config);
@@ -123,6 +125,15 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 return;
             case "SalvageDialog":
                 if (Config.Desynthesis) SetFocusYes(args.Addon, 24);
+                return;
+            case "LobbyWKTCheck":
+                if (Config.Lobby) SetFocusYes(args.Addon, 4);
+                return;
+            case "LobbyDKTWorldList":
+                if (Config.Lobby) SetFocusYes(args.Addon, 23);
+                return;
+            case "LobbyDKTCheckExec":
+                if (Config.Lobby) SetFocusYes(args.Addon, 3);
                 return;
         }
     }
