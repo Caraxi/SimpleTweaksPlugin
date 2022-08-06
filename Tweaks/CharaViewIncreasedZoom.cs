@@ -35,7 +35,7 @@ public unsafe class CharaViewIncreasedZoom : Tweak {
 
     private void ZoomDetour(CharaView* charaView, float delta) {
         if (charaView->Camera != null && charaView->Camera->AnotherCamera != null) {
-            charaView->Camera->AnotherCamera->Zoom += delta * (charaView->Camera->AnotherCamera->Zoom / 4);
+            charaView->Camera->AnotherCamera->Zoom += delta * (charaView->Camera->AnotherCamera->Zoom / 24);
             if (charaView->Camera->AnotherCamera->Zoom < MinZoom) charaView->Camera->AnotherCamera->Zoom = MinZoom;
             if (charaView->Camera->AnotherCamera->Zoom > MaxZoom) charaView->Camera->AnotherCamera->Zoom = MaxZoom;
         }
