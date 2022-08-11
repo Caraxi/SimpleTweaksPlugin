@@ -30,6 +30,7 @@ public unsafe class RefreshMarketPrices : Tweak
 
     private IntPtr waitMessageCodeChangeAddress = IntPtr.Zero;
     private byte[] waitMessageCodeOriginalBytes = new byte[5];
+    private bool waitMessageCodeErrored = false;
 
     private CancellationTokenSource cancelSource = null;
 
@@ -40,6 +41,7 @@ public unsafe class RefreshMarketPrices : Tweak
         handlePricesHook ??= Common.Hook<HandlePrices>("E8 ?? ?? ?? ?? 8B 5B 04 85 DB", HandlePricesDetour);
         handlePricesHook?.Enable();
 
+        waitMessageCodeErrored = false;
         waitMessageCodeChangeAddress =
             Service.SigScanner.ScanText(
                 "BA ?? ?? ?? ?? E8 ?? ?? ?? ?? 4C 8B C0 BA ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 45 33 C9");
@@ -47,11 +49,13 @@ public unsafe class RefreshMarketPrices : Tweak
         {
             if (!SafeMemory.WriteBytes(waitMessageCodeChangeAddress, new byte[] { 0xBA, 0xB9, 0x1A, 0x00, 0x00 }))
             {
+                waitMessageCodeErrored = true;
                 SimpleLog.Error("Failed to write new instruction");
             }
         }
         else
         {
+            waitMessageCodeErrored = true;
             SimpleLog.Error("Failed to read original instruction");
         }
 
@@ -103,7 +107,7 @@ public unsafe class RefreshMarketPrices : Tweak
     public override void Disable()
     {
         if (!Enabled) return;
-        if (!SafeMemory.WriteBytes(waitMessageCodeChangeAddress, waitMessageCodeOriginalBytes))
+        if (!waitMessageCodeErrored && !SafeMemory.WriteBytes(waitMessageCodeChangeAddress, waitMessageCodeOriginalBytes))
         {
             SimpleLog.Error("Failed to write original instruction");
         }
