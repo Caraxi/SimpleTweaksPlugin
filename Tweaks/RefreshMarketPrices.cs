@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Dalamud;
 using Dalamud.Game;
 using Dalamud.Logging;
+using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
@@ -14,84 +17,80 @@ namespace SimpleTweaksPlugin.Tweaks;
 public unsafe class RefreshMarketPrices : Tweak
 {
     public override string Name => "Refresh Market Prices";
-    public override string Description => "Retries to get prices upon receiving the 'Please wait and try your search again' message";
+
+    public override string Description =>
+        "Retries to get prices upon receiving the 'Please wait and try your search again' message";
+
     protected override string Author => "Chalkos";
 
     private HookWrapper<HandlePrices> handlePricesHook;
 
-    private delegate void* HandlePrices(void* unk1, void* unk2, void* unk3, void* unk4, void* unk5, void* unk6,
+    private delegate long HandlePrices(void* unk1, void* unk2, void* unk3, void* unk4, void* unk5, void* unk6,
         void* unk7);
 
-    private HookWrapper<Callback> callbackHook;
-
-    private delegate void* Callback(AtkUnitBase* atkUnitBase, int count, AtkValue* values, void* a4);
+    private IntPtr waitMessageCodeChangeAddress = IntPtr.Zero;
+    private byte[] waitMessageCodeOriginalBytes = new byte[5];
 
     private CancellationTokenSource cancelSource = null;
 
-    private int itemSearchLastSelectedItem = 0;
-
-
     public override void Enable()
     {
+        if (Enabled) return;
+
         handlePricesHook ??= Common.Hook<HandlePrices>("E8 ?? ?? ?? ?? 8B 5B 04 85 DB", HandlePricesDetour);
         handlePricesHook?.Enable();
 
-        callbackHook ??= Common.Hook<Callback>("E8 ?? ?? ?? ?? 8B 4C 24 20 0F B6 D8", CallbackDetour);
-        callbackHook?.Enable();
+        waitMessageCodeChangeAddress =
+            Service.SigScanner.ScanText(
+                "BA ?? ?? ?? ?? E8 ?? ?? ?? ?? 4C 8B C0 BA ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 45 33 C9");
+        if (SafeMemory.ReadBytes(waitMessageCodeChangeAddress, 5, out waitMessageCodeOriginalBytes))
+        {
+            if (!SafeMemory.WriteBytes(waitMessageCodeChangeAddress, new byte[] { 0xBA, 0xB9, 0x1A, 0x00, 0x00 }))
+            {
+                SimpleLog.Error("Failed to write new instruction");
+            }
+        }
+        else
+        {
+            SimpleLog.Error("Failed to read original instruction");
+        }
+
         base.Enable();
     }
 
-    private void* CallbackDetour(AtkUnitBase* atkUnitBase, int count, AtkValue* values, void* a4)
-    {
-        if (atkUnitBase != Common.GetUnitBase("ItemSearch")) goto Original;
-        if (count != 2) goto Original;
-        if (values->Type != ValueType.Int || values->Int != 5) goto Original;
-        var value2 = values + 1;
-        if (value2->Type != ValueType.Int) goto Original;
-
-        itemSearchLastSelectedItem = value2->Int;
-
-        Original:
-        return callbackHook.Original(atkUnitBase, count, values, a4);
-    }
-
-    private void* HandlePricesDetour(void* unk1, void* unk2, void* unk3, void* unk4, void* unk5, void* unk6, void* unk7)
+    private long HandlePricesDetour(void* unk1, void* unk2, void* unk3, void* unk4, void* unk5, void* unk6, void* unk7)
     {
         cancelSource?.Cancel();
         cancelSource?.Dispose();
         cancelSource = new CancellationTokenSource();
 
-        Service.Framework.RunOnTick(() =>
-        {
-            if (Common.GetUnitBase<AddonItemSearchResult>(out var addonItemSearchResult)
-                && AddonItemSearchResultThrottled(addonItemSearchResult))
-            {
-                Service.Framework.RunOnTick(RefreshPrices, TimeSpan.FromSeconds(0.5), 0, cancelSource.Token);
-            }
-        });
+        var result = handlePricesHook.Original.Invoke(unk1, unk2, unk3, unk4, unk5, unk6, unk7);
 
-        return handlePricesHook.Original.Invoke(unk1, unk2, unk3, unk4, unk5, unk6, unk7);
+        if (result != 1)
+            Service.Framework.RunOnTick(() =>
+            {
+                if (Common.GetUnitBase<AddonItemSearchResult>(out var addonItemSearchResult)
+                    && AddonItemSearchResultThrottled(addonItemSearchResult))
+                {
+                    Service.Framework.RunOnTick(RefreshPrices, TimeSpan.FromSeconds(0.5), 0, cancelSource.Token);
+                }
+            });
+
+        return result;
     }
 
     private void RefreshPrices()
     {
         var addonItemSearchResult = Common.GetUnitBase<AddonItemSearchResult>();
-        var addonItemSearch = Common.GetUnitBase("ItemSearch");
-        var addonRetainerSell = Common.GetUnitBase("RetainerSell");
 
-        if (!AddonItemSearchResultThrottled(addonItemSearchResult) ||
-            ((addonItemSearch == null || !addonItemSearch->IsVisible) &&
-             (addonRetainerSell == null || !addonRetainerSell->IsVisible))) return;
+        if (!AddonItemSearchResultThrottled(addonItemSearchResult)) return;
 
-        Common.GenerateCallback(&addonItemSearchResult->AtkUnitBase, -1);
-
-        if (addonItemSearch != null && addonItemSearch->IsVisible)
+        // open advanced search, search, close it
+        Common.GenerateCallback(&addonItemSearchResult->AtkUnitBase, 1);
+        if (Common.GetUnitBase("ItemSearchFilter", out var isf))
         {
-            Common.GenerateCallback(addonItemSearch, 5, itemSearchLastSelectedItem);
-        }
-        else if (addonRetainerSell != null && addonRetainerSell->IsVisible)
-        {
-            Common.GenerateCallback(addonRetainerSell, 4);
+            Common.GenerateCallback(isf, 0);
+            Common.CloseAddon("ItemSearchFilter");
         }
     }
 
@@ -103,7 +102,12 @@ public unsafe class RefreshMarketPrices : Tweak
 
     public override void Disable()
     {
-        callbackHook?.Disable();
+        if (!Enabled) return;
+        if (!SafeMemory.WriteBytes(waitMessageCodeChangeAddress, waitMessageCodeOriginalBytes))
+        {
+            SimpleLog.Error("Failed to write original instruction");
+        }
+
         handlePricesHook?.Disable();
         cancelSource?.Cancel();
         cancelSource?.Dispose();
@@ -112,10 +116,7 @@ public unsafe class RefreshMarketPrices : Tweak
 
     public override void Dispose()
     {
-        callbackHook?.Dispose();
-        handlePricesHook?.Dispose();
-        cancelSource?.Cancel();
-        cancelSource?.Dispose();
+        Disable();
         base.Dispose();
     }
 }
