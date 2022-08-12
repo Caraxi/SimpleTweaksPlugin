@@ -134,6 +134,10 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
         ImGui.SetNextItemWidth(100);
 
         if (settingKey == hotkey.Key) {
+            if (ImGui.GetIO().KeyAlt && !newKeys.Contains(VirtualKey.MENU)) newKeys.Add(VirtualKey.MENU);
+            if (ImGui.GetIO().KeyShift && !newKeys.Contains(VirtualKey.SHIFT)) newKeys.Add(VirtualKey.SHIFT);
+            if (ImGui.GetIO().KeyCtrl && !newKeys.Contains(VirtualKey.CONTROL)) newKeys.Add(VirtualKey.CONTROL);
+            
             for (var k = 0; k < ImGui.GetIO().KeysDown.Count && k < 160; k++) {
                 if (ImGui.GetIO().KeysDown[k]) {
                     if (!newKeys.Contains((VirtualKey)k)) {
@@ -146,11 +150,11 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
                         }
 
                         newKeys.Add((VirtualKey)k);
-                        newKeys.Sort();
                     }
                 }
             }
 
+            newKeys.Sort();
             strKeybind = string.Join("+", newKeys.Select(k => k.GetKeyName()));
         }
 
