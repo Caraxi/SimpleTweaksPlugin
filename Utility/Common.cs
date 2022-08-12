@@ -111,6 +111,21 @@ public static unsafe class Common {
             
         return (T*) Service.GameGui.GetAddonByName(name, index);
     }
+
+    public static bool GetUnitBase<T>(out T* unitBase, string name=null, int index = 1) where T : unmanaged {
+        unitBase = null;
+        if (string.IsNullOrEmpty(name)) {
+            var attr = (Addon) typeof(T).GetCustomAttribute(typeof(Addon));
+            if (attr != null) {
+                name = attr.AddonIdentifiers.FirstOrDefault();
+            }
+        }
+
+        if (string.IsNullOrEmpty(name)) return false;
+            
+        unitBase = (T*) Service.GameGui.GetAddonByName(name, index);
+        return unitBase != null;
+    }
     
     public static IntPtr Alloc(ulong size) {
         if (_gameAlloc == null || _getGameAllocator == null) return IntPtr.Zero;
