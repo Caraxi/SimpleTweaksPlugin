@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Text;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Keys;
-using Dalamud.Game.Gui.ContextMenus;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
@@ -77,34 +76,6 @@ public static class Extensions {
     public static bool Duty(this Condition condition) => condition[ConditionFlag.BoundByDuty] || condition[ConditionFlag.BoundByDuty56] || condition[ConditionFlag.BoundByDuty95] || condition[ConditionFlag.BoundToDuty97];
     public static string GetKeyName(this VirtualKey k) => NamedKeys.ContainsKey(k) ? NamedKeys[k] : k.ToString();
     
-    
-    /// <summary>
-    /// Adds a new context menu item, and removes the [D] from the name.
-    /// </summary>
-    public static void AddSimpleItem(this ContextMenuOpenedArgs args, SeString name, CustomContextMenuItemSelectedDelegate action) {
-        args.AddCustomItem(name, action);
-        try {
-            var itemList = args.GetItems();
-            if (itemList == null || itemList.Count < 1) return;
-            var lastItem = itemList[^1];
-            if (lastItem.Name.Payloads.Count > 3 && lastItem.Name.Payloads[1] is TextPayload tpl) {
-                tpl.Text = $"{(char)SeIconChar.ServerTimeEn} ";
-            }
-        } catch (Exception ex) {
-            SimpleLog.Log(ex);
-        }
-    }
-
-    public static List<ContextMenuItem> GetItems(this ContextMenuOpenedArgs args) {
-        try {
-            var itemList = (List<ContextMenuItem>)args.GetType().GetProperty("Items", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(args);
-            return itemList ?? new List<ContextMenuItem>();
-        } catch (Exception ex) {
-            SimpleLog.Log(ex);
-            return new List<ContextMenuItem>();
-        }
-    }
-
     public static void Replace(this List<byte> byteList, IEnumerable<byte> search, IEnumerable<byte> replace) {
         for (var i = 0; i < byteList.Count; i++) {
             if (Equals(byteList.Skip(i).Take(search.Count()), search)) {
