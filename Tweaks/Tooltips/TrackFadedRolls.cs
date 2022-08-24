@@ -16,33 +16,13 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
     public override string Name => "Track Faded Orchestrion Rolls";
     protected override string Author => "KazWolfe";
     public override string Description => "Adds the collected checkmark to Faded Orchestrion Rolls.";
-
-    private const string IsItemUnlockedSignature = "E8 ?? ?? ?? ?? 83 F8 01 75 03";
-    private const string IsOrchestrionUnlockedSignature = "E8 ?? ?? ?? ?? 88 44 3B 08";
-    // private const string UnlockBitmaskSignature = "48 8D 0D ?? ?? ?? ?? E9 ?? ?? ?? ?? CC 40 53";
     
     private delegate byte IsItemActionUnlocked(UIState* uiState, IntPtr item);
     private HookWrapper<IsItemActionUnlocked>? _isItemActionUnlockedHookWrapper;
 
-    private delegate byte IsOrchestrionUnlockedDelegate(IntPtr mask, uint id);
-    private IsOrchestrionUnlockedDelegate? _isOrchestrionUnlocked;
-
-    private IntPtr _superUnlockBitmask;
-    
     public override void Enable() {
-        if (this._isOrchestrionUnlocked == null &&
-            Service.SigScanner.TryScanText(IsOrchestrionUnlockedSignature, out var ptr)) {
-            this._isOrchestrionUnlocked = Marshal.GetDelegateForFunctionPointer<IsOrchestrionUnlockedDelegate>(ptr);
-        }
-
-        this._superUnlockBitmask = new IntPtr(&UIState.Instance()->PlayerState);
-
-        // We *need* this signature. If it doesn't exist, don't load the tweak.
-        if (this._isOrchestrionUnlocked == null)
-            throw new InvalidOperationException("Cannot find signature for IsOrchestrionUnlocked!");
-
         this._isItemActionUnlockedHookWrapper ??=
-            Common.Hook<IsItemActionUnlocked>(IsItemUnlockedSignature, this.IsItemActionUnlockedDetour);
+            Common.Hook<IsItemActionUnlocked>(UIState.fpIsItemActionUnlocked, this.IsItemActionUnlockedDetour);
         this._isItemActionUnlockedHookWrapper?.Enable();
 
         base.Enable();
@@ -75,7 +55,7 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
         if (luminaItem == null) return 4;
         
         var areAllUnlocked = GetRollsCraftedWithItem(luminaItem)
-            .TrueForAll(o => this._isOrchestrionUnlocked!(this._superUnlockBitmask, o.AdditionalData) == 1);
+            .TrueForAll(o => UIState.Instance()->PlayerState.IsOrchestrionRollUnlocked(o.AdditionalData));
 
         return areAllUnlocked ? (byte) 1 : (byte) 2;
     }
