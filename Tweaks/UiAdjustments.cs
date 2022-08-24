@@ -59,14 +59,14 @@ namespace SimpleTweaksPlugin.Tweaks {
         public static unsafe AtkResNode** CopyNodeList(AtkResNode** originalList, ushort originalSize, ushort newSize = 0) {
             if (newSize <= originalSize) newSize = (ushort) (originalSize + 1);
             var oldListPtr = new IntPtr(originalList);
-            var newListPtr = Common.Alloc((ulong)((newSize + 1) * 8));
+            var newListPtr = UiHelper.Alloc((ulong)((newSize + 1) * 8));
             var clone = new IntPtr[originalSize];
             Marshal.Copy(oldListPtr, clone, 0, originalSize);
             Marshal.Copy(clone, 0, newListPtr, originalSize);
             return (AtkResNode**)(newListPtr);
         }
         public static unsafe AtkTextNode* CloneNode(AtkTextNode* original, bool autoInsert = true) {
-            var newAllocation = Common.Alloc((ulong) sizeof(AtkTextNode));
+            var newAllocation = UiHelper.Alloc((ulong) sizeof(AtkTextNode));
 
             var bytes = new byte[sizeof(AtkTextNode)];
             Marshal.Copy(new IntPtr(original), bytes, 0, bytes.Length);
@@ -95,7 +95,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                 _ => throw new Exception("Unsupported Type")
             };
 
-            var allocation = Common.Alloc((ulong) size);
+            var allocation = UiHelper.Alloc((ulong) size);
             var bytes = new byte[size];
             Marshal.Copy(new IntPtr(original), bytes, 0, bytes.Length);
             Marshal.Copy(bytes, 0, allocation, bytes.Length);

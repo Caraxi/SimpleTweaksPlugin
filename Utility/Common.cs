@@ -27,14 +27,7 @@ public static unsafe class Common {
 
     private delegate void* AddonSetupDelegate(AtkUnitBase* addon);
     private static HookWrapper<AddonSetupDelegate> addonSetupHook;
-
-    private delegate IntPtr GameAlloc(ulong size, IntPtr unk, IntPtr allocator, IntPtr alignment);
-
-    private delegate IntPtr GetGameAllocator();
-
-    private static GameAlloc _gameAlloc;
-    private static GetGameAllocator _getGameAllocator;
-
+    
     public static IntPtr PlayerStaticAddress { get; private set; }
 
     private static IntPtr LastCommandAddress;
@@ -50,15 +43,10 @@ public static unsafe class Common {
     public static event Action<SetupAddonArgs> AddonPreSetup; 
     
     public static void Setup() {
-        var gameAllocPtr = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 49 83 CF FF 4C 8B F0");
-        var getGameAllocatorPtr = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 8B 75 08");
-        
+
         PlayerStaticAddress = Service.SigScanner.GetStaticAddressFromSig("8B D7 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B7 E8");
         LastCommandAddress = Service.SigScanner.GetStaticAddressFromSig("4C 8D 05 ?? ?? ?? ?? 41 B1 01 49 8B D4 E8 ?? ?? ?? ?? 83 EB 06");
         LastCommand = (Utf8String*) (LastCommandAddress);
-
-        _gameAlloc = Marshal.GetDelegateForFunctionPointer<GameAlloc>(gameAllocPtr);
-        _getGameAllocator = Marshal.GetDelegateForFunctionPointer<GetGameAllocator>(getGameAllocatorPtr);
         
         addonSetupHook = Hook<AddonSetupDelegate>("E8 ?? ?? ?? ?? 8B 83 ?? ?? ?? ?? C1 E8 14", AddonSetupDetour);
         addonSetupHook?.Enable();
@@ -127,11 +115,6 @@ public static unsafe class Common {
         return unitBase != null;
     }
     
-    public static IntPtr Alloc(ulong size) {
-        if (_gameAlloc == null || _getGameAllocator == null) return IntPtr.Zero;
-        return _gameAlloc(size, IntPtr.Zero, _getGameAllocator(), IntPtr.Zero);
-    }
-        
     public static void WriteSeString(byte** startPtr, IntPtr alloc, SeString seString) {
         if (startPtr == null) return;
         var start = *(startPtr);

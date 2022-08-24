@@ -13,10 +13,11 @@
         <DebugSymbols>true</DebugSymbols>
         <DebugType>full</DebugType>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     </PropertyGroup>
     <PropertyGroup Label="Feature">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>1.7.4.0</Version>
+        <Version>1.7.5.0</Version>
     </PropertyGroup>
 	<PropertyGroup>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
@@ -33,19 +34,21 @@
       <None Update="images\icon.png">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <Compile Remove="Tweaks\UiAdjustment\PartyListStatusTimers.cs" />
+      <Compile Remove="Tweaks\UiAdjustment\ExtendedDesynthesisWindow.cs" />
     </ItemGroup>
     <ItemGroup>
       <PackageReference Include="System.Numerics.Vectors" Version="4.1.3.0" />
-      <PackageReference Include="DalamudPackager" Version="2.1.6" />
-      <PackageReference Include="XivCommon" Version="5.0.1-alpha.1" />
+      <PackageReference Include="DalamudPackager" Version="2.1.8" />
+      <PackageReference Include="XivCommon" Version="6.0.0" />
     </ItemGroup>
     <PropertyGroup>
-        <DalamudPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev</DalamudPath>
+        <DalamudLibPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev</DalamudLibPath>
     </PropertyGroup>
 	<ItemGroup>
 		<Reference Include="Dalamud">
             <Private>false</Private>
-            <HintPath>$(DalamudPath)\Dalamud.dll</HintPath>
+            <HintPath>$(DalamudLibPath)\Dalamud.dll</HintPath>
 		</Reference>
 		<Reference Include="FFXIVClientStructs">
 			<Private>true</Private>
@@ -54,23 +57,23 @@
 		<Reference Include="Microsoft.CSharp" />
         <Reference Include="Newtonsoft.Json">
             <Private>false</Private>
-            <HintPath>$(DalamudPath)\Newtonsoft.Json.dll</HintPath>
+            <HintPath>$(DalamudLibPath)\Newtonsoft.Json.dll</HintPath>
 		</Reference>
 		<Reference Include="ImGui.NET">
             <Private>false</Private>
-            <HintPath>$(DalamudPath)\ImGui.NET.dll</HintPath>
+            <HintPath>$(DalamudLibPath)\ImGui.NET.dll</HintPath>
 		</Reference>
 		<Reference Include="ImGuiScene">
             <Private>false</Private>
-            <HintPath>$(DalamudPath)\ImGuiScene.dll</HintPath>
+            <HintPath>$(DalamudLibPath)\ImGuiScene.dll</HintPath>
 		</Reference>
 		<Reference Include="Lumina">
             <Private>false</Private>
-            <HintPath>$(DalamudPath)\Lumina.dll</HintPath>
+            <HintPath>$(DalamudLibPath)\Lumina.dll</HintPath>
 		</Reference>
 		<Reference Include="Lumina.Excel">
             <Private>false</Private>
-            <HintPath>$(DalamudPath)\Lumina.Excel.dll</HintPath>
+            <HintPath>$(DalamudLibPath)\Lumina.Excel.dll</HintPath>
 		</Reference>
     </ItemGroup>
 </Project>

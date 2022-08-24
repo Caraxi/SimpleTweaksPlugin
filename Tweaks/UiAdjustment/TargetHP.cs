@@ -176,7 +176,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (textNode == null) {
                 textNode = UiHelper.CloneNode(cloneTextNode);
                 textNode->AtkResNode.NodeID = CustomNodes.TargetHP;
-                var newStrPtr = Common.Alloc(512);
+                var newStrPtr = UiHelper.Alloc(512);
                 textNode->NodeText.StringPtr = (byte*) newStrPtr;
                 textNode->NodeText.BufSize = 512;
                 textNode->SetText("");
