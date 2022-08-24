@@ -34,7 +34,6 @@
       <None Update="images\icon.png">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <Compile Remove="Tweaks\UiAdjustment\PartyListStatusTimers.cs" />
       <Compile Remove="Tweaks\UiAdjustment\ExtendedDesynthesisWindow.cs" />
     </ItemGroup>
     <ItemGroup>
