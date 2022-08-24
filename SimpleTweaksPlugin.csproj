@@ -30,7 +30,6 @@
       <EmbeddedResource Remove="Publish\**" />
       <None Remove="lib\**" />
       <None Remove="Publish\**" />
-      <Compile Remove="Tweaks\UiAdjustment\ExtraEstateTeleportation.cs" />
       <None Update="images\icon.png">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
