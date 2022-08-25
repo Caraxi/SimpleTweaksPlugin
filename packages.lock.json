@@ -22,9 +22,9 @@
       },
       "XivCommon": {
         "type": "Direct",
-        "requested": "[6.0.0, )",
-        "resolved": "6.0.0",
-        "contentHash": "8HwrC7mnkcaP+JxRoIIu9MqFElQRVL8HOr8EQ6Te+11zzvKoXTZZrZ7VWETF2CHfB+7c1v5wONZKqZJ2hETpjg=="
+        "requested": "[6.0.1, )",
+        "resolved": "6.0.1",
+        "contentHash": "X58/iHscbwzF9JziooBKYE4S0XDYuGYI7Eg5Er1LhdQSjGwMLes0whRdKtH591wIhefFiS5G14W6EEL3Qt76wg=="
       },
       "Microsoft.NETCore.Platforms": {
         "type": "Transitive",
