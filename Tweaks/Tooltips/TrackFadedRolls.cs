@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Utility;
 
@@ -18,7 +19,7 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
 
     private const string IsItemUnlockedSignature = "E8 ?? ?? ?? ?? 83 F8 01 75 03";
     private const string IsOrchestrionUnlockedSignature = "E8 ?? ?? ?? ?? 88 44 3B 08";
-    private const string UnlockBitmaskSignature = "48 8D 0D ?? ?? ?? ?? E9 ?? ?? ?? ?? CC 40 53";
+    // private const string UnlockBitmaskSignature = "48 8D 0D ?? ?? ?? ?? E9 ?? ?? ?? ?? CC 40 53";
     
     private delegate byte IsItemActionUnlocked(UIState* uiState, IntPtr item);
     private HookWrapper<IsItemActionUnlocked>? _isItemActionUnlockedHookWrapper;
@@ -34,7 +35,7 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
             this._isOrchestrionUnlocked = Marshal.GetDelegateForFunctionPointer<IsOrchestrionUnlockedDelegate>(ptr);
         }
 
-        this._superUnlockBitmask = Service.SigScanner.GetStaticAddressFromSig(UnlockBitmaskSignature);
+        this._superUnlockBitmask = new IntPtr(&UIState.Instance()->PlayerState);
 
         // We *need* this signature. If it doesn't exist, don't load the tweak.
         if (this._isOrchestrionUnlocked == null)

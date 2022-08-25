@@ -53,11 +53,11 @@ public class DesynthesisSkill : TooltipTweaks.SubTweak {
                 if (seStr != null && seStr.Payloads.Count > 0) {
                     if (seStr.Payloads.Last() is TextPayload textPayload && textPayload.Text != null) {
                         if (Config.Delta) {
-                            textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthDelta:+#;-#}");
+                            textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthDelta:+#;-#})");
                             textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({desynthDelta:+#;-#})");
                         } else {
                             textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({MathF.Floor(desynthLevel):F0})");
-                            textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({MathF.Floor(desynthLevel):F0)})");
+                            textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({MathF.Floor(desynthLevel):F0})");
                         }
                         SetTooltipString(stringArrayData, useDescription ? ItemDescription : ExtractableProjectableDesynthesizable, seStr);
                     }
