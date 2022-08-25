@@ -36,7 +36,7 @@ namespace SimpleTweaksPlugin.Tweaks {
         };
 
         public override void Setup() {
-            shadowManager = *(ShadowManager**)Service.SigScanner.GetStaticAddressFromSig("89 50 28 48 8B 05 ?? ?? ?? ?? 8B 89 ?? ?? ?? ?? 89 48 2C C3 8B 4A 10");
+            shadowManager = *(ShadowManager**)Service.SigScanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 48 8B 0C 02");
             if (shadowManager != null) base.Setup();
         }
 
