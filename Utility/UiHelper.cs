@@ -40,6 +40,8 @@ public static unsafe partial class UiHelper {
         n = n->PrevSiblingNode;
         SetSize(n, width, height); // Focused Border
         n = n->PrevSiblingNode;
+        SetSize(n, width, height); // Gradient
+        n = n->PrevSiblingNode;
         SetSize(n, (ushort) (width - 5), null); // Header Node
         n = n->ChildNode;
         SetSize(n, (ushort) (width - 20), null); // Header Seperator
