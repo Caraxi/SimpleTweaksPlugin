@@ -40,11 +40,11 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
         [FieldOffset(0x144)] public ushort Unknown;
     }
     
-    [StructLayout(LayoutKind.Explicit, Size = 0xBFC)]
+    [StructLayout(LayoutKind.Explicit, Size = 0xC04)]
     public struct CraftingLogNumberArray {
-        [FieldOffset(139 * 4)] public int RecipeCount;
-        [FieldOffset(140 * 4)] public int Unknown140;
-        [FieldOffset(141 * 4)] public RecipeList Recipes;
+        [FieldOffset(140 * 4)] public int RecipeCount;
+        [FieldOffset(141 * 4)] public int Unknown140;
+        [FieldOffset(142 * 4)] public RecipeList Recipes;
 
         [StructLayout(LayoutKind.Sequential, Size = 4 * 5 * 100)]
         public struct RecipeList {
@@ -206,7 +206,7 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
         if (Service.ClientState.LocalPlayer == null) return CraftReadyState.NotReady;
         var agentRecipeNote = AgentRecipeNote.Instance();
         var atkArrayDataHolder = Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder;
-        var craftingLogRawNumberArray = atkArrayDataHolder.NumberArrays[26];
+        var craftingLogRawNumberArray = atkArrayDataHolder.NumberArrays[28];
         var craftingLogNumberArray = (CraftingLogNumberArray*) craftingLogRawNumberArray->IntArray;
         var selectedRecipeData = craftingLogNumberArray->Recipes[agentRecipeNote->SelectedRecipeIndex];
         if (selectedRecipeData == null) return CraftReadyState.NotReady;
@@ -226,7 +226,7 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
     private void CraftingLogUpdated(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
         var ready = GetCraftReadyState(out _);
         if (ready == CraftReadyState.NotReady) return;
-        var craftButton = (AtkComponentNode*) atkUnitBase->GetNodeById(103);
+        var craftButton = (AtkComponentNode*) atkUnitBase->GetNodeById(104);
         if (craftButton->AtkResNode.Type != (NodeType)1005) return;
         var craftButtonComp = (AtkComponentButton*) craftButton->Component;
         if (craftButtonComp == null || craftButtonComp->ButtonTextNode == null) return;
