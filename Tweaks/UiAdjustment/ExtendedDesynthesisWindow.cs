@@ -465,7 +465,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         
         private byte UpdateListDetour(IntPtr a1, IntPtr a2, IntPtr a3) {
             var ret = updateListHook.Original(a1, a2, a3);
-            Update();
+            try {
+                Update();
+            } catch (Exception ex) {
+                SimpleLog.Error(ex);
+            }
             return ret;
         }
 

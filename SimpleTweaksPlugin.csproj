@@ -34,7 +34,6 @@
       <None Update="images\icon.png">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <Compile Remove="Tweaks\UiAdjustment\ExtendedDesynthesisWindow.cs" />
       <Compile Remove="Tweaks\UiAdjustment\PartyListStatusTimers.cs" />
       <Compile Remove="Tweaks\UiAdjustment\StopCraftingButton.cs" />
       <Compile Remove="Tweaks\UiAdjustment\LargeCooldownCounter.cs" />
