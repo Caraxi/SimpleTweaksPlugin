@@ -16,6 +16,8 @@ namespace SimpleTweaksPlugin.Tweaks {
         public override string Name => "Fixed Shadow Distance";
         public override string Description => "Sets a fixed value for the shadow rendering, preventing it from changing when flying.";
 
+        public override uint Version => 2;
+
         public class Configs : TweakConfig {
             public float ShadowDistance = 1800;
         }

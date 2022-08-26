@@ -1,2 +1,3 @@
 StopCraftingButton
 UiAdjustments@LockWindowPosition
+FixedShadowDistance
