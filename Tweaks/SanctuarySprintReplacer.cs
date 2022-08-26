@@ -20,7 +20,7 @@ internal unsafe class SanctuarySprintReplacer : Tweak {
     private delegate uint GetDutyActionId(ushort dutyActionSlot);
     private GetDutyActionId? _getDutyActionId;
     
-    private delegate void UseActionDelegate(ActionManager* mgr, ActionType actionType, uint actionID, long targetID, uint a4, uint a5, uint a6, void* a7);
+    private delegate byte UseActionDelegate(ActionManager* mgr, ActionType actionType, uint actionID, long targetID, int a4, int a5, int a6, void* a7);
     private HookWrapper<UseActionDelegate>? _useActionHook;
 
     public override void Enable() {
@@ -47,17 +47,13 @@ internal unsafe class SanctuarySprintReplacer : Tweak {
         base.Dispose();
     }
 
-    private void UseActionDetour(ActionManager* mgr, ActionType type, uint id, long targetid, uint a4, uint a5, uint a6, void* a7) {
-        if (this._getDutyActionId == null) {
-            this._useActionHook!.Original(mgr, type, id, targetid, a4, a5, a6, a7);
-            return;
-        }
+    private byte UseActionDetour(ActionManager* mgr, ActionType type, uint id, long targetid, int a4, int a5, int a6, void* a7) {
+        if (this._getDutyActionId == null)
+            return this._useActionHook!.Original(mgr, type, id, targetid, a4, a5, a6, a7);
 
-        if (AgentMap.Instance()->CurrentTerritoryId != 1055) {
-            this._useActionHook!.Original(mgr, type, id, targetid, a4, a5, a6, a7);
-            return;
-        }
-        
+        if (AgentMap.Instance()->CurrentTerritoryId != 1055)
+            return this._useActionHook!.Original(mgr, type, id, targetid, a4, a5, a6, a7);
+
         // Override sprint
         if (type == ActionType.General && id == 4) {
             if (this._getDutyActionId(0) == 31314) {
@@ -68,7 +64,6 @@ internal unsafe class SanctuarySprintReplacer : Tweak {
             }
         }
 
-
-        this._useActionHook!.Original(mgr, type, id, targetid, a4, a5, a6, a7);
+        return this._useActionHook!.Original(mgr, type, id, targetid, a4, a5, a6, a7);
     }
 }
