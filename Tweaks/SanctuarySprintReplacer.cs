@@ -13,7 +13,6 @@ internal unsafe class SanctuarySprintReplacer : Tweak {
     public override string Name => "Island Sanctuary Sprint Replacer";
     public override string Description => "Replaces the normal Sprint action with Isle Sprint while in the Island Sanctuary.";
     protected override string Author => "KazWolfe";
-    public override bool Experimental => true;
 
     private const string GetDutyActionIdSignature = "E8 ?? ?? ?? ?? EB 17 33 C9";
 
