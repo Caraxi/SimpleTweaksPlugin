@@ -85,7 +85,7 @@ namespace SimpleTweaksPlugin {
 
         public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface) {
             pluginInterface.Create<Service>();
-            FFXIVClientStructs.Resolver.Initialize(Service.SigScanner.SearchBase, new FileInfo(Path.Combine(pluginInterface.GetPluginConfigDirectory(), "sigCache.json")));
+            FFXIVClientStructs.Resolver.Initialize(Service.SigScanner.SearchBase);
 
             Plugin = this;
 #if DEBUG
