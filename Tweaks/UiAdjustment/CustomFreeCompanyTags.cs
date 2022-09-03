@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
@@ -29,6 +30,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
     public class TagCustomization {
         public bool Enabled;
         public string Replacement = string.Empty;
+        public bool HideInDuty;
     }
 
     public Configs Config { get; private set; }
@@ -87,6 +89,10 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                 
 
             if (customization != null && customization.Enabled) {
+                if (customization.HideInDuty && Service.Condition[ConditionFlag.BoundByDuty56]) {
+                    customization = new TagCustomization() { Enabled = true, Replacement = "" };
+                }
+                
                 if (customization.Replacement.Trim().Length == 0) {
                     namePlateInfo->FcName.StringPtr[0] = 0;
                 } else {
@@ -262,7 +268,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
             }
                 
             TagCustomizationEditor(ref wandererString, Config.WandererCustomization, false);
-            TagCustomizationEditor(ref travellerString, Config.TravellerCustomization, false);
+            TagCustomizationEditor(ref travellerString, Config.TravellerCustomization, false, true);
             TagCustomizationEditor(ref defaultString, Config.DefaultCustomization, false);
             // TagCustomizationEditor(ref noCompanyString, Config.NoCompanyCustomization, false);
                 
@@ -311,7 +317,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
         Rename,
     }
         
-    private ChangeType TagCustomizationEditor(ref string name, TagCustomization tc, bool canChange = true) {
+    private ChangeType TagCustomizationEditor(ref string name, TagCustomization tc, bool canChange = true, bool showHideInDuty = false) {
         ImGui.TableNextColumn();
 
         var changeType = ChangeType.None;
@@ -351,7 +357,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
             }
                 
         } else {
-            ImGui.SetNextItemWidth(-1);
+            ImGui.SetNextItemWidth(showHideInDuty ? (-120 * ImGui.GetIO().FontGlobalScale) : -1);
             
             if (tc.Enabled) {
                 ImGui.InputTextWithHint($"##fcList#{GetType().Name}_replacement_{name}", "Hidden", ref tc.Replacement, 200);
@@ -405,6 +411,11 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
             } else {
                 var s = string.Empty;
                 ImGui.InputTextWithHint($"##fcList#{GetType().Name}_replacement_{name}", "Unchanged", ref s, 50, ImGuiInputTextFlags.ReadOnly);
+            }
+            
+            if (showHideInDuty) {
+                ImGui.SameLine();
+                ImGui.Checkbox($"Hide in Duty##{GetType().Name}_hideInDuty_{name}", ref tc.HideInDuty);
             }
         }
             
