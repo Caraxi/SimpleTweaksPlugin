@@ -36,9 +36,9 @@
       </None>
     </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="System.Numerics.Vectors" Version="4.1.3.0" />
+      <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
       <PackageReference Include="DalamudPackager" Version="2.1.8" />
-      <PackageReference Include="XivCommon" Version="6.0.1" />
+      <PackageReference Include="XivCommon" Version="6.0.2" />
     </ItemGroup>
     <PropertyGroup>
         <DalamudLibPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev</DalamudLibPath>
