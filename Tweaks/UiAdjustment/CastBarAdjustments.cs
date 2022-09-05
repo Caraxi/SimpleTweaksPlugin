@@ -34,8 +34,15 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
         public Alignment AlignName = Alignment.Left;
         public Alignment AlignCounter = Alignment.Right;
 
-        public int OffsetNamePosition = 0;
-        public int OffsetCounterPosition = 0;
+
+        public bool ShouldSerializeOffsetNamePosition() => OffsetNamePosition != null;
+        public int? OffsetNamePosition = null; // TODO: Remove
+        
+        public bool ShouldSerializeOffsetCounterPosition() => OffsetCounterPosition != null;
+        public int? OffsetCounterPosition = null; // TODO: Remove
+
+        public Vector2 OffsetName = new(0);
+        public Vector2 OffsetCounter = new(0);
     }
 
     public Configs Config { get; private set; }
@@ -56,11 +63,9 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
             hasChanged |= ImGuiExt.HorizontalAlignmentSelector(LocString("Align Countdown Text"), ref Config.AlignCounter);
 
             ImGui.SetCursorPosX(configAlignmentX);
-            ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-            hasChanged |= ImGui.InputInt(LocString("Offset") + "##offsetCounterPosition", ref Config.OffsetCounterPosition);
-            if (Config.OffsetCounterPosition < -100) Config.OffsetCounterPosition = -100;
-            if (Config.OffsetCounterPosition > 100) Config.OffsetCounterPosition = 100;
-
+            ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
+            hasChanged |= ImGui.SliderFloat2(LocString("Offset") + "##offsetCounterPosition", ref Config.OffsetCounter, -100, 100, $"%.0f");
+            Config.OffsetCounter = Vector2.Clamp(Config.OffsetCounter, new Vector2(-100), new Vector2(100));
         }
         hasChanged |= ImGui.Checkbox(LocString("Hide Ability Name"), ref Config.RemoveName);
         if (!Config.RemoveName) {
@@ -69,11 +74,10 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
             ImGui.SetCursorPosX(configAlignmentX);
             hasChanged |= ImGuiExt.HorizontalAlignmentSelector(LocString("Align Ability Name"), ref Config.AlignName);
             ImGui.SetCursorPosX(configAlignmentX);
-            ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-            hasChanged |= ImGui.InputInt(LocString("Offset") + "##offsetNamePosition", ref Config.OffsetNamePosition);
-
-            if (Config.OffsetNamePosition < -100) Config.OffsetNamePosition = -100;
-            if (Config.OffsetNamePosition > 100) Config.OffsetNamePosition = 100;
+            ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
+            
+            hasChanged |= ImGui.SliderFloat2(LocString("Offset") + "##offsetNamePosition", ref Config.OffsetName, -100, 100, "%.0f");
+            Config.OffsetName = Vector2.Clamp(Config.OffsetName, new Vector2(-100), new Vector2(100));
         }
 
         hasChanged |= ImGui.Checkbox(LocString("Show SlideCast Marker"), ref Config.SlideCast);
@@ -109,6 +113,13 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
 
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
+        
+        // TODO: Remove
+        if (Config.OffsetCounterPosition != null) Config.OffsetCounter.X = Config.OffsetCounterPosition.Value;
+        if (Config.OffsetNamePosition != null) Config.OffsetName.X = Config.OffsetNamePosition.Value;
+        Config.OffsetNamePosition = null;
+        Config.OffsetCounterPosition = null;
+
         castBarOnUpdateHook ??= Common.Hook<CastBarOnUpdateDelegate>("48 83 EC 38 48 8B 92", CastBarOnUpdateDetour);
         castBarOnUpdateHook.Enable();
         base.Enable();
@@ -167,10 +178,10 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
             skillNameText->AtkResNode.ToggleVisibility(true);
 
             UiHelper.SetSize(skillNameText, 170, null);
-            UiHelper.SetPosition(skillNameText, barNode->X + 4, null);
+            UiHelper.SetPosition(skillNameText, barNode->X + 4, 0);
 
             UiHelper.SetSize(countdownText, 42, null);
-            UiHelper.SetPosition(countdownText, 170, null);
+            UiHelper.SetPosition(countdownText, 170, 30);
             interruptedText->AtkResNode.SetScale(1, 1);
 
             if (slideMarker != null) {
@@ -205,7 +216,7 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
         if (Config.RemoveCastingText && !Config.RemoveCounter) {
             countdownText->AlignmentFontType = (byte) (0x20 | (byte) Config.AlignCounter);
             UiHelper.SetSize(countdownText, barNode->Width - 8, null);
-            UiHelper.SetPosition(countdownText, (barNode->X + 4) + Config.OffsetCounterPosition, null);
+            UiHelper.SetPosition(countdownText, (barNode->X + 4) + Config.OffsetCounter.X, 30 + Config.OffsetCounter.Y);
         } else {
             countdownText->AlignmentFontType = (byte)(0x20 | (byte)Alignment.Right);
             UiHelper.SetSize(countdownText, 42, null);
@@ -214,7 +225,7 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
 
         if (!Config.RemoveName) {
             skillNameText->AlignmentFontType = (byte) (0x00 | (byte) Config.AlignName);
-            UiHelper.SetPosition(skillNameText, (barNode->X + 4) + Config.OffsetNamePosition, null);
+            UiHelper.SetPosition(skillNameText, (barNode->X + 4) + Config.OffsetName.X, Config.OffsetName.Y);
             UiHelper.SetSize(skillNameText, barNode->Width - 8, null);
         }
 
@@ -348,8 +359,6 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
                 classicSlideMarker->AtkResNode.Color.B = (byte) (255 * c.Z);
 
                 classicSlideMarker->AtkResNode.Color.A = (byte) (255 * c.W);
-                classicSlideMarker->AtkResNode.Flags_2 |= 1;
-                
             }
         }
     }
