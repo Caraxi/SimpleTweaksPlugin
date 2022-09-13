@@ -12,8 +12,8 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 public unsafe class IslandQuickCollectAndResume : Tweak {
 
-    public override string Name => "Quick Collect from Island Produce Producer";
-    public override string Description => "Hold a modifier key to collect yield from produce producer.";
+    public override string Name => "Quick Collect from Island Mammets";
+    public override string Description => "Hold a modifier key to collect yield from produce producer and creature comforter.";
 
     public class Configs : TweakConfig {
         public bool Shift = true;
@@ -57,13 +57,17 @@ public unsafe class IslandQuickCollectAndResume : Tweak {
         ImGui.Unindent();
     };
     
-    private string collectText = "Collect Yield & Resume Gardening Services";
+    private string collectTextGarden = "Collect Yield & Resume Gardening Services";
+    private string collectTextPasture = "Collect Leavings & Resume Caretaking Services";
     
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
 
-        var sellRow = Service.Data.Excel.GetSheet<Addon>()?.GetRow(15339);
-        if (sellRow != null) collectText = sellRow.Text?.RawString ?? "Collect Yield & Resume Gardening Services";
+        var collectRowGarden = Service.Data.Excel.GetSheet<Addon>()?.GetRow(15339);
+        if (collectRowGarden != null) collectTextGarden = collectRowGarden.Text?.RawString ?? "Collect Yield & Resume Gardening Services";
+
+        var collectRowPasture = Service.Data.Excel.GetSheet<Addon>()?.GetRow(15221);
+        if (collectRowPasture != null) collectTextPasture = collectRowPasture.Text?.RawString ?? "Collect Leavings & Resume Caretaking Services";
 
         openContextMenuHook ??= Common.Hook<OpenContextMenu>("E8 ?? ?? ?? ?? 45 88 7C 24", OpenContextDetour);
         openContextMenuHook?.Enable();
@@ -86,7 +90,7 @@ public unsafe class IslandQuickCollectAndResume : Tweak {
                 }
                 var contextItemName = contextItemParam.ValueString();
 
-                if (contextItemName == collectText) {
+                if (contextItemName == collectTextGarden || contextItemName == collectTextPasture) {
                     var addonId = agent->AgentInterface.GetAddonID();
                     if (addonId == 0) return retVal;
                     var addon = Common.GetAddonByID(addonId);
