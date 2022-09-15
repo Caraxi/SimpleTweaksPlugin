@@ -20,8 +20,14 @@ public unsafe class OpenCraftingRecipe : ItemHotkey {
         }
     }
 
+    private bool doShowCache;
+    private uint doShowCacheId;
+    
     public override bool DoShow(ExtendedItem item) {
-        return Service.Data.Excel.GetSheet<Recipe>()?.Any(r => r.ItemResult.Row == item.RowId) ?? false;
+        if (doShowCacheId == item.RowId) return doShowCache;
+        doShowCacheId = item.RowId;
+        doShowCache = Service.Data.Excel.GetSheet<Recipe>()?.Any(r => r.ItemResult.Row == item.RowId) ?? false;
+        return doShowCache;
     }
 }
 
