@@ -15,6 +15,7 @@ using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using SimpleTweaksPlugin.Debugging;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace SimpleTweaksPlugin.Utility; 
@@ -36,7 +37,20 @@ public static unsafe class Common {
     
     public static event Action FrameworkUpdate;
     
-    public static void InvokeFrameworkUpdate() => FrameworkUpdate?.Invoke();
+    public static void InvokeFrameworkUpdate() {
+        if (!PerformanceMonitor.DoFrameworkMonitor) {
+            FrameworkUpdate?.Invoke();
+            return;
+        }
+
+        if (FrameworkUpdate == null) return;
+        foreach (var updateDelegate in FrameworkUpdate.GetInvocationList()) {
+            
+            PerformanceMonitor.Begin($"[FrameworkUpdate]{updateDelegate.Target?.GetType().Name}.{updateDelegate.Method.Name}");
+            updateDelegate.DynamicInvoke();
+            PerformanceMonitor.End($"[FrameworkUpdate]{updateDelegate.Target?.GetType().Name}.{updateDelegate.Method.Name}");
+        }
+    }
     public static void* ThrowawayOut { get; private set; } = (void*) Marshal.AllocHGlobal(1024);
 
     public static event Action<SetupAddonArgs> AddonSetup; 
