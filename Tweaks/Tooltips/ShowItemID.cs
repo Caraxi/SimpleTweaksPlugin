@@ -1,4 +1,5 @@
 ﻿using Dalamud.Game.Text.SeStringHandling.Payloads;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -17,6 +18,9 @@ public class ShowItemID : TooltipTweaks.SubTweak {
         public bool ShouldShowBoth() => Hex;
         [TweakConfigOption("Show Both HEX and Decimal", 1, ConditionalDisplay = true, SameLine = true)]
         public bool Both = false;
+        
+        [TweakConfigOption("Show Resolved Action ID", 2)]
+        public bool ShowResolvedActionId = true;
     }
 
     public Configs Config { get; private set; }
@@ -63,13 +67,14 @@ public class ShowItemID : TooltipTweaks.SubTweak {
                 seStr.Payloads.Add(new TextPayload("   "));
             }
             seStr.Payloads.Add(new UIForegroundPayload(3));
+            var id = Config.ShowResolvedActionId ? ActionManager.Instance()->GetAdjustedActionId(action.Id) : action.Id;
             seStr.Payloads.Add(new TextPayload($"["));
             if (Config.Hex == false || Config.Both) {
-                seStr.Payloads.Add(new TextPayload($"{action.Id}"));
+                seStr.Payloads.Add(new TextPayload($"{id}"));
             }
             if (Config.Hex) {
                 if (Config.Both) seStr.Payloads.Add(new TextPayload(" - "));
-                seStr.Payloads.Add(new TextPayload($"0x{action.Id:X}"));
+                seStr.Payloads.Add(new TextPayload($"0x{id:X}"));
             }
             seStr.Payloads.Add(new TextPayload($"]"));
             seStr.Payloads.Add(new UIForegroundPayload(0));
