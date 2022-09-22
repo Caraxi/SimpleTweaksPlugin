@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -31,6 +32,14 @@ public unsafe class EstateListCommand : CommandTweak {
             Service.Chat.PrintError($"/{Command} <name>");
             return;
         }
+
+        if (arguments.StartsWith("<") && arguments.EndsWith(">")) {
+            var resolved = Framework.Instance()->GetUiModule()->GetPronounModule()->ResolvePlaceholder(arguments, 1, 0);
+            if (resolved != null) {
+                arguments = MemoryHelper.ReadStringNullTerminated(new IntPtr(resolved->GetName()));
+            }
+        }
+
         var useContentId = ulong.TryParse(arguments, out var contentId);
         var friend = Plugin.XivCommon.Functions.FriendList.List
             .FirstOrDefault(friend => {
