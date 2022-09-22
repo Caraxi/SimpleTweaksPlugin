@@ -18,33 +18,6 @@ using SimpleTweaksPlugin.Utility;
 namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
 public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
-    
-    public class OldHotkeyConfig : TweakConfig {
-        public VirtualKey[] CopyHotkey = { VirtualKey.CONTROL, VirtualKey.C };
-        public bool CopyHotkeyEnabled;
-
-        public VirtualKey[] TeamcraftLinkHotkey = {VirtualKey.CONTROL, VirtualKey.T};
-        public bool TeamcraftLinkHotkeyEnabled;
-        public bool TeamcraftLinkHotkeyForceBrowser;
-
-        public VirtualKey[] GardlandToolsLinkHotkey = {VirtualKey.CONTROL, VirtualKey.G};
-        public bool GardlandToolsLinkHotkeyEnabled;
-
-        public VirtualKey[] GamerEscapeLinkHotkey = {VirtualKey.CONTROL, VirtualKey.E};
-        public bool GamerEscapeLinkHotkeyEnabled;
-            
-        public VirtualKey[] UniversalisHotkey = {VirtualKey.CONTROL, VirtualKey.U};
-        public bool UniversalisHotkeyEnabled;
-        
-        public VirtualKey[] ErionesLinkHotkey = {VirtualKey.SHIFT, VirtualKey.E};
-        public bool ErionesLinkHotkeyEnabled;
-        
-        public VirtualKey[] OpenRecipeHotkey = {VirtualKey.CONTROL, VirtualKey.R};
-        public bool OpenRecipeEnabled;
-        
-        public bool HideHotkeysOnTooltip;
-    }
-    
     public override string Name => "Item Hotkeys";
     public override string Description => "Adds hotkeys for various actions when the item detail window is visible.";
 
@@ -58,7 +31,6 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
     private readonly string weirdTabChar = Encoding.UTF8.GetString(new byte[] {0xE3, 0x80, 0x80});
     
     private HookWrapper<Common.AddonOnUpdate> itemDetailOnUpdateHook;
-    
     
     public override void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         if (Config.HideHotkeysOnTooltip) return;
@@ -108,8 +80,6 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
     }
 
     public Configs Config { get; private set; }
-
-
 
     private string settingKey;
     private string focused;
@@ -237,56 +207,14 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
     }
 
     public override void Enable() {
-
         Config = LoadConfig<Configs>() ?? new Configs();
-
-        try {
-            if (!Config.HasLoadedOld) {
-                var old = LoadConfig<OldHotkeyConfig>("TooltipTweaks@CopyHotkey");
-                if (old == null) goto SkipConfigLoad;
-
-                ItemHotkey SetupFromOld(Type t, bool enabled, VirtualKey[] keys) {
-                    var k = Hotkeys.First(h => h.GetType() == t);
-                    if (k.GetType() != t) return null;
-                    k.LoadConfig();
-                    k.Config.Enabled = enabled;
-                    k.Config.Key = keys;
-                    k.SaveConfig();
-                    return k;
-                }
-
-                SetupFromOld(typeof(CopyNameHotkey), old.CopyHotkeyEnabled, old.CopyHotkey);
-                SetupFromOld(typeof(ViewOnUniversalis), old.UniversalisHotkeyEnabled, old.UniversalisHotkey);
-                SetupFromOld(typeof(ViewOnGamerEscape), old.GamerEscapeLinkHotkeyEnabled, old.GamerEscapeLinkHotkey);
-                SetupFromOld(typeof(ViewOnGarlandTools), old.GardlandToolsLinkHotkeyEnabled, old.GardlandToolsLinkHotkey);
-                SetupFromOld(typeof(ViewOnGarlandTools), old.GardlandToolsLinkHotkeyEnabled, old.GardlandToolsLinkHotkey);
-                (SetupFromOld(typeof(ViewOnTeamcraft), old.TeamcraftLinkHotkeyEnabled, old.TeamcraftLinkHotkey).Config as ViewOnTeamcraft.HotkeyConfig)!.ForceBrowser = old.TeamcraftLinkHotkeyForceBrowser;
-
-                SkipConfigLoad:
-                Config.HasLoadedOld = true;
-                SaveConfig(Config);
-            }
-        } catch {
-            Config.HasLoadedOld = true;
-            SaveConfig(Config);
-        }
-        
-        
         foreach (var h in Hotkeys) {
             h.Enable(true);
         }
         
-        
-        
-        
-        
         Common.FrameworkUpdate += OnFrameworkUpdate;
-
         itemDetailOnUpdateHook ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 54 41 55 41 56 41 57 48 83 EC 20 4C 8B AA", AddonItemDetailOnUpdate);
         itemDetailOnUpdateHook?.Enable();
-        
-        
-
         base.Enable();
     }
 

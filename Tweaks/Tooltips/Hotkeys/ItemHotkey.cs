@@ -96,6 +96,7 @@ public abstract class ItemHotkey : IDisposable {
                 var jsonString = File.ReadAllText(configFile);
                 Config = (ItemHotkeyConfig) JsonConvert.DeserializeObject(jsonString, configType);
             }
+            Config ??= (ItemHotkeyConfig)Activator.CreateInstance(configType);
         } catch (Exception ex) {
             Config = (ItemHotkeyConfig) Activator.CreateInstance(configType);
             SimpleLog.Error(ex);
