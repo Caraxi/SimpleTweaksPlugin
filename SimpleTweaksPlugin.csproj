@@ -49,8 +49,10 @@
             <HintPath>$(DalamudLibPath)\Dalamud.dll</HintPath>
 		</Reference>
 		<Reference Include="FFXIVClientStructs">
-			<Private>true</Private>
-			<HintPath>$(SolutionDir)\lib\FFXIVClientStructs\bin\$(ConfigurationName)\FFXIVClientStructs.dll</HintPath>
+			<Private Condition="'$(Configuration)' == 'Debug'">true</Private>
+			<Private Condition="'$(Configuration)' == 'Release'">false</Private>
+			<HintPath Condition="'$(Configuration)' == 'Debug'">$(SolutionDir)\lib\FFXIVClientStructs\bin\$(ConfigurationName)\FFXIVClientStructs.dll</HintPath>
+			<HintPath Condition="'$(Configuration)' == 'Release'">$(DalamudLibPath)\FFXIVClientStructs.dll</HintPath>
 		</Reference>
 		<Reference Include="Microsoft.CSharp" />
         <Reference Include="Newtonsoft.Json">
