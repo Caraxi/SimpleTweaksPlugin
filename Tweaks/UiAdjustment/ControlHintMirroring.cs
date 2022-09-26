@@ -27,6 +27,7 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
 
     public override string Name => "Duplicate Keybind Hints Between Hotbars";
     public override string Description => "Will display the keybind hint for any hotbar slot onto unbound slots with the same action.";
+    protected override string Author => "BoredDan";
 
     private static readonly string[] allActionBars = {
         "_ActionBar",
