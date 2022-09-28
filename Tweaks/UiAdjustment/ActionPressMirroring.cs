@@ -62,10 +62,6 @@ public unsafe class ActionPressMirroring : UiAdjustments.SubTweak
         var hotbarModule = Framework.Instance()->GetUiModule()->GetRaptureHotbarModule();
         var name = Marshal.PtrToStringUTF8(new IntPtr(ab->AtkUnitBase.Name));
         if (name == null) goto PulseSlot;
-        if(name.StartsWith("_ActionBarEx"))
-        {
-            SimpleLog.Log(ab->RaptureHotbarId);
-        }
         var hotbar = hotbarModule->HotBar[ab->RaptureHotbarId];
         if (hotbar == null) goto PulseSlot;
         var numSlots = ab->SlotCount;
