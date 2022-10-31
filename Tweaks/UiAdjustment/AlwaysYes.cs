@@ -24,6 +24,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         public bool GlamourDispels = true;
         public bool Desynthesis = true;
         public bool Lobby = true;
+        public bool ItemExchangeConfirmations = true;
         public List<string> ExceptionsYesNo = new();
     }
 
@@ -82,6 +83,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         hasChanged |= ImGui.Checkbox("Glamour dispels", ref Config.GlamourDispels);
         hasChanged |= ImGui.Checkbox("Desynthesis", ref Config.Desynthesis);
         hasChanged |= ImGui.Checkbox("Character selection dialogs", ref Config.Lobby);
+        hasChanged |= ImGui.Checkbox("Item exchange confirmations", ref Config.ItemExchangeConfirmations);
 
         if (hasChanged) {
             SaveConfig(Config);
@@ -134,6 +136,9 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 return;
             case "LobbyDKTCheckExec":
                 if (Config.Lobby) SetFocusYes(args.Addon, 3);
+                return;
+            case "ShopExchangeItemDialog":
+                if (Config.ItemExchangeConfirmations) SetFocusYes(args.Addon, 18);
                 return;
         }
     }
