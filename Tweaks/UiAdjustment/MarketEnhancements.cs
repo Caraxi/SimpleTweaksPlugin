@@ -37,7 +37,7 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
     public MarketEnhancementsConfig Config { get; private set; }
         
     public override string Name => "Market Enhancements";
-    public override string Description => "UI Enhancements for market board such as including tax and highlighting laxy tax.";
+    public override string Description => "UI Enhancements for market board such as including tax and highlighting lazy tax.";
     public override bool UseAutoConfig => true;
         
     private delegate void UpdateResultDelegate(AtkUnitBase* addonItemSearchResult, uint a2, ulong* a3, void* a4);
