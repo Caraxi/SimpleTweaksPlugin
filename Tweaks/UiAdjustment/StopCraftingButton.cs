@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Dalamud.Game.Command;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
@@ -11,7 +12,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks; 
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
 
 // E8 ?? ?? ?? ?? 48 8B 4B 10 33 FF C6 83
 
@@ -204,20 +205,14 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
     private CraftReadyState GetCraftReadyState(ref uint requiredClass, out ushort selectedRecipeId) {
         selectedRecipeId = 0;
         if (Service.ClientState.LocalPlayer == null) return CraftReadyState.NotReady;
-        var agentRecipeNote = AgentRecipeNote.Instance();
-        var atkArrayDataHolder = Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder;
-        var craftingLogRawNumberArray = atkArrayDataHolder.NumberArrays[28];
-        var craftingLogNumberArray = (CraftingLogNumberArray*) craftingLogRawNumberArray->IntArray;
-        var selectedRecipeData = craftingLogNumberArray->Recipes[agentRecipeNote->SelectedRecipeIndex];
-        if (selectedRecipeData == null) return CraftReadyState.NotReady;
-        var selectedRecipe = Service.Data.Excel.GetSheet<Recipe>()?.GetRow(selectedRecipeData->RecipeID);
-        selectedRecipeId = selectedRecipeData->RecipeID;
+        var uiRecipeNote = RecipeNote.Instance();
+        var selectedRecipe = uiRecipeNote->RecipeList->SelectedRecipe;
         if (selectedRecipe == null) return CraftReadyState.NotReady;
-        var recipeJobId = selectedRecipe.CraftType.Row + 8;
-        requiredClass = recipeJobId;
-        var requiredJob = Service.Data.Excel.GetSheet<ClassJob>()?.GetRow(recipeJobId);
+        selectedRecipeId = selectedRecipe->RecipeId;
+        requiredClass = uiRecipeNote->Jobs[selectedRecipe->CraftType];
+        var requiredJob = Service.Data.Excel.GetSheet<ClassJob>()?.GetRow(requiredClass);
         if (requiredJob == null) return CraftReadyState.NotReady;
-        if (Service.ClientState.LocalPlayer.ClassJob.Id == recipeJobId) return CraftReadyState.Ready;
+        if (Service.ClientState.LocalPlayer.ClassJob.Id == requiredClass) return CraftReadyState.Ready;
         var localPlayer = (Character*) Service.ClientState.LocalPlayer.Address;
         return localPlayer->EventState == 5 ? CraftReadyState.AlreadyCrafting : CraftReadyState.WrongClass;
     }
