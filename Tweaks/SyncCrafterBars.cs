@@ -54,6 +54,7 @@ public class SyncCrafterBars : Tweak {
 
     public void PerformCrafterBarSync(uint copyFrom) {
         if (Service.ClientState.LocalPlayer == null) return;
+        if (Service.ClientState.IsPvP) return;
         if (!crafterJobs.Contains(copyFrom)) return;
         var copyJob = classJobSheet.GetRow(copyFrom);
         if (copyJob == null) return;
