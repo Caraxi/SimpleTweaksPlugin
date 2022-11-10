@@ -36,7 +36,12 @@ jobs:
             Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
             
       - name: Build
+        if: "contains(github.event.head_commit.message, '[release]')"
         run: msbuild SimpleTweaksPlugin.sln /p:Configuration=Release
+
+      - name: Build
+        if: "!contains(github.event.head_commit.message, '[release]')"
+        run: msbuild SimpleTweaksPlugin/SimpleTweaksPlugin.Dev.sln /p:Configuration=Debug
 
       - name: Extract Publish
         run: |
