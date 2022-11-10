@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
@@ -52,6 +53,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             
         }
 
+        private readonly ushort[] nonCombatTerritory = {
+            1055, // Island Sanctuary
+        };
+
+        private bool InCombatDuty => Service.Condition[ConditionFlag.BoundByDuty] && !nonCombatTerritory.Contains(Service.ClientState.TerritoryType);
+        
         private void Update(bool reset = false) {
             var stage = AtkStage.GetSingleton();
             var loadedUnitsList = &stage->RaptureAtkUnitManager->AtkUnitManager.AllLoadedUnitsList;
@@ -64,7 +71,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var name = Marshal.PtrToStringAnsi(new IntPtr(addon->Name));
                 
                 if (name != null && name.StartsWith("JobHud")) {
-                    if (reset || Config.ShowInDuty && Service.Condition[ConditionFlag.BoundByDuty]) {
+                    if (reset || Config.ShowInDuty && InCombatDuty) {
                         if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
                     } else if (Config.ShowInCombat && Service.Condition[ConditionFlag.InCombat]) {
                         outOfCombatTimer.Restart();
