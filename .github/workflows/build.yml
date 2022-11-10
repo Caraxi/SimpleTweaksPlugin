@@ -20,8 +20,13 @@ jobs:
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v1.0.5
         
-      - name: Restore NuGet Packages
+      - name: Restore NuGet Packages [Release]
+        if: "contains(github.event.head_commit.message, '[release]')"
         run: nuget restore SimpleTweaksPlugin.sln
+        
+      - name: Restore NuGet Packages [Debug]
+        if: "!contains(github.event.head_commit.message, '[release]')"
+        run: nuget restore dev/SimpleTweaksPlugin.Dev.sln
 
       - name: Download Dalamud
         if: "!contains(github.event.head_commit.message, '[stg]')"
