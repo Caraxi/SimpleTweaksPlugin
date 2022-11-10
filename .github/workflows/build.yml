@@ -13,7 +13,7 @@ jobs:
           submodules: 'true'
       
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1.1
+        uses: microsoft/setup-msbuild@v1.1.1
         with:
           vs-prerelease: true
         
@@ -35,13 +35,13 @@ jobs:
             Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/stg/latest.zip -OutFile latest.zip
             Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
             
-      - name: Build
+      - name: Build [Release]
         if: "contains(github.event.head_commit.message, '[release]')"
         run: msbuild SimpleTweaksPlugin.sln /p:Configuration=Release
 
-      - name: Build
+      - name: Build [Debug]
         if: "!contains(github.event.head_commit.message, '[release]')"
-        run: msbuild SimpleTweaksPlugin/SimpleTweaksPlugin.Dev.sln /p:Configuration=Debug
+        run: msbuild dev/SimpleTweaksPlugin.Dev.sln /p:Configuration=Debug
 
       - name: Extract Publish
         run: |
