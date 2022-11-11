@@ -19,18 +19,18 @@ jobs:
         uses: NuGet/setup-nuget@v1.0.5
         
       - name: Restore NuGet Packages
-        run: nuget restore SimpleTweaksPlugin.sln
+        run: nuget restore dev/SimpleTweaksPlugin.Dev.sln
 
       - name: Download Dalamud
         run: |
           Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
           Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
       - name: Build
-        run: msbuild SimpleTweaksPlugin.sln /p:Configuration=Release
+        run: msbuild dev/SimpleTweaksPlugin.Dev.sln /p:Configuration=Debug
 
       - name: Extract Publish
         run: |
-          Expand-Archive -Force ./bin/x64/Release/SimpleTweaksPlugin/latest.zip ./Artifact
+          Expand-Archive -Force ./bin/x64/Debug/SimpleTweaksPlugin/latest.zip ./Artifact
           
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v2.2.1
