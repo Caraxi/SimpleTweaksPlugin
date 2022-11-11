@@ -515,6 +515,10 @@
     "message": "Desynthesis Delta",
     "description": "[DesynthesisSkill] Show Desynthesis Skill - Desynthesis Delta"
   },
+    "TooltipTweaks@DesynthesisSkill / Colour Value": {
+    "message": "Colour Value",
+    "description": "[DesynthesisSkill] Show Desynthesis Skill - Colour Value"
+  },
   "TooltipTweaks@DesynthesisSkill / Name": {
     "message": "Show Desynthesis Skill",
     "description": "[DesynthesisSkill] Tweak Name"
