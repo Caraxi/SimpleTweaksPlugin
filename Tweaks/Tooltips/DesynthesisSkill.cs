@@ -74,17 +74,36 @@ public class DesynthesisSkill : TooltipTweaks.SubTweak {
                 }
 
                 if (seStr != null && seStr.Payloads.Count > 0) {
-                    if (seStr.Payloads.Last() is TextPayload textPayload && textPayload.Text != null) {
-                        textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ");
-                        textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ");
-                        if (Config.Delta) {
-                            if (Config.Colour) seStr.Payloads.Add(new UIForegroundPayload(c));
-                            seStr.Payloads.Add(new TextPayload($"({desynthDelta:+#;-#})"));
-                            if (Config.Colour) seStr.Payloads.Add(new UIForegroundPayload(0));
+
+                    // Turns out .Last() is broken when mixed with AllaganTools for items where the Desynth value is in ItemDescription, as I think AT Adds to the payloads.
+                    // And with the original change for colouring, we switched from a simple replace to adding payloads.
+                    // For some reason this gets called twice, and with the above change, would result in us adding the desynth skill twice.
+                    var textPayload = seStr.Payloads.OfType<TextPayload>().Where(p => p.Text != null).LastOrDefault(p => p.Text.Contains($": {item.LevelItem.Row},00") || p.Text.Contains($": {item.LevelItem.Row}.00"));
+                    if (textPayload != null)
+                    {
+                        // Until we fix AllaganTools, if we're in an ItemDescription, just Replace (and unfortunately don't colour)
+                        if (useDescription) {
+                            if (Config.Delta) {
+                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthDelta:+#;-#})");
+                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({desynthDelta:+#;-#})");
+                            } else {
+                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({MathF.Floor(desynthLevel):F0})");
+                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({MathF.Floor(desynthLevel):F0})");
+                            }
                         } else {
+                            textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} <split>");
+                            textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} <split>");
+                            
+                            // Since we're not doing a replace anymore, we need to split the string, as sometimes there's text after the skill level
+                            var parts = textPayload.Text.Split("<split>");
+                            textPayload.Text = parts[0];
+
                             if (Config.Colour) seStr.Payloads.Add(new UIForegroundPayload(c));
-                            seStr.Payloads.Add(new TextPayload($"({MathF.Floor(desynthLevel):F0})"));
+                            seStr.Payloads.Add(new TextPayload(Config.Delta ? $"({desynthDelta:+#;-#})" : $"({MathF.Floor(desynthLevel):F0})"));
                             if (Config.Colour) seStr.Payloads.Add(new UIForegroundPayload(0));
+
+                            if (parts.Length > 1)
+                                seStr.Payloads.Add(new TextPayload(parts[1]));
                         }
                         SetTooltipString(stringArrayData, useDescription ? ItemDescription : ExtractableProjectableDesynthesizable, seStr);
                     }
