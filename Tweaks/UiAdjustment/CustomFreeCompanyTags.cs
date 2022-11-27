@@ -31,6 +31,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
         public bool Enabled;
         public string Replacement = string.Empty;
         public bool HideInDuty;
+        public bool HideQuoteMarks;
     }
 
     public Configs Config { get; private set; }
@@ -96,9 +97,9 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                 if (customization.Replacement.Trim().Length == 0) {
                     namePlateInfo->FcName.StringPtr[0] = 0;
                 } else {
-                    var payloads = new List<Payload> {
-                        new TextPayload(" «")
-                    };
+                    var payloads = new List<Payload>();
+                    if (!customization.HideQuoteMarks) 
+                        payloads.Add(new TextPayload(" «"));
 
                     var cText = string.Empty;
 
@@ -212,7 +213,8 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                     if (resetGlow) payloads.Add(new UIGlowPayload(0));
                     if (resetItalic) payloads.Add(new EmphasisItalicPayload(false));
                         
-                    payloads.Add(new TextPayload("»"));
+                    if (!customization.HideQuoteMarks) 
+                        payloads.Add(new TextPayload("»"));
                     namePlateInfo->FcName.SetSeString(new SeString(payloads));
                 }
             }
@@ -357,7 +359,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
             }
                 
         } else {
-            ImGui.SetNextItemWidth(showHideInDuty ? (-120 * ImGui.GetIO().FontGlobalScale) : -1);
+            ImGui.SetNextItemWidth((showHideInDuty ? -200 : -80) * ImGui.GetIO().FontGlobalScale);
             
             if (tc.Enabled) {
                 ImGui.InputTextWithHint($"##fcList#{GetType().Name}_replacement_{name}", "Hidden", ref tc.Replacement, 200);
@@ -417,6 +419,10 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                 ImGui.SameLine();
                 ImGui.Checkbox($"Hide in Duty##{GetType().Name}_hideInDuty_{name}", ref tc.HideInDuty);
             }
+            
+            ImGui.SameLine();
+            ImGui.SetCursorPosX((ImGui.GetWindowContentRegionMax().X - 80 * ImGui.GetIO().FontGlobalScale) + ImGui.GetStyle().ItemSpacing.X);
+            ImGui.Checkbox($"Hide «»##{GetType().Name}_hideQuotes_{name}", ref tc.HideQuoteMarks);
         }
             
         return changeType;
