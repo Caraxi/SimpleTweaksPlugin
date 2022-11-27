@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Dalamud.Hooking;
 using Dalamud.Interface;
+using Dalamud.Interface.Colors;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -33,6 +34,7 @@ public unsafe class AgentDebug : DebugHelper {
     private float agentListWidth = 100f;
     private bool agentListActiveOnly = false;
     private bool agentListKnownOnly = true;
+    private bool sortById = false;
     private Type selectedAgentType;
 
     
@@ -138,6 +140,14 @@ public unsafe class AgentDebug : DebugHelper {
                     ImGui.Checkbox("Active Only", ref agentListActiveOnly);
                     ImGui.SameLine();
                     ImGui.Checkbox("Known Only", ref agentListKnownOnly);
+                    if (ImGui.Checkbox("ID Order", ref sortById)) {
+                        if (sortById) {
+                            sortedAgentList = sortedAgentList.OrderBy(a => (uint) a.id).ToList();
+                        } else {
+                            sortedAgentList = sortedAgentList.OrderBy(a => $"{a}").ToList();
+                        }
+                    }
+                    
                     ImGui.Separator();
                     if (ImGui.BeginChild("AgentListScroll", new Vector2(-1, -1), false)) {
                         foreach (var agent in sortedAgentList) {
@@ -151,6 +161,10 @@ public unsafe class AgentDebug : DebugHelper {
                             ImGui.PushFont(UiBuilder.IconFont);
                             ImGui.Text($"{(char)FontAwesomeIcon.Atom}");
                             ImGui.PopFont();
+                            ImGui.PopStyleColor();
+                            ImGui.SameLine();
+                            ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudGrey);
+                            ImGui.Text($"[{((uint)agent.id):000}]");
                             ImGui.PopStyleColor();
                             ImGui.SameLine();
                             
