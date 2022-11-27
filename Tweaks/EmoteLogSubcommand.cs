@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using FFXIVClientStructs.FFXIV.Client.System.String;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -8,11 +7,11 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 public unsafe class EmoteLogSubcommand : Tweak {
     public override string Name => "Emote Log Subcommand";
-    public override string Description => "Adds a 'log' subcommand for emotes when emotelog is disabled.  /yes log";
+    public override string Description => "Adds a 'text' subcommand for emotes when emotelog is disabled.  /yes text";
 
-    [StructLayout(LayoutKind.Explicit, Size = 0x4E8)]
+    [StructLayout(LayoutKind.Explicit, Size = 0x10)]
     public struct EmoteCommandStruct {
-        [FieldOffset(0x480)] public Utf8String Command;
+        [FieldOffset(0x08)] public short TextCommandParam;
     }
 
     private delegate void* ExecuteEmoteCommand(void* a1, EmoteCommandStruct* command, void* a3);
@@ -32,7 +31,7 @@ public unsafe class EmoteLogSubcommand : Tweak {
     private void* ExecuteDetour(void* a1, EmoteCommandStruct* command, void* a3) {
         var didEnable = false;
         try {
-            if (command->Command.ToString().Contains(" log", StringComparison.InvariantCultureIgnoreCase)) {
+            if (command->TextCommandParam is 20 or 21) {
                 if (!EmoteTextType) {
                     EmoteTextType = didEnable = true;
                 }
