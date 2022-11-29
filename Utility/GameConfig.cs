@@ -66,8 +66,7 @@ public static unsafe class GameConfig {
         public void Set(string name, bool value) {
             if (!TryGetIndex(name, out var index)) return;
             if (!TryGetEntry(index, out var entry)) return;
-            
-            entry->Value.UInt = value ? 1U : 0U;
+            entry->SetValue(value ? 1U : 0U);
         }
         
         public bool TryGetUInt(string name, out uint value) {
@@ -86,7 +85,7 @@ public static unsafe class GameConfig {
         public void Set(string name, uint value) {
             if (!TryGetIndex(name, out var index)) return;
             if (!TryGetEntry(index, out var entry)) return;
-            entry->Value.UInt = value;
+            entry->SetValue(value);
         }
         
         public bool TryGetFloat(string name, out float value) {
@@ -105,7 +104,28 @@ public static unsafe class GameConfig {
         public void Set(string name, float value) {
             if (!TryGetIndex(name, out var index)) return;
             if (!TryGetEntry(index, out var entry)) return;
-            entry->Value.Float = value;
+            entry->SetValue(value);
+        }
+        
+        public bool TryGetString(string name, out string value) {
+            value = string.Empty;
+            if (!TryGetIndex(name, out var index)) return false;
+            if (!TryGetEntry(index, out var entry)) return false;
+            if (entry->Type != 4) return false;
+            if (entry->Value.String == null) return false;
+            value = entry->Value.String->ToString();
+            return true;
+        }
+
+        public string GetString(string name) {
+            if (!TryGetString(name, out var value)) throw new Exception($"Failed to get String '{name}'");
+            return value;
+        }
+
+        public void Set(string name, string value) {
+            if (!TryGetIndex(name, out var index)) return;
+            if (!TryGetEntry(index, out var entry)) return;
+            entry->SetValue(value);
         }
     }
 
