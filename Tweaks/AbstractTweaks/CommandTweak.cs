@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Dalamud.Game.Command;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -51,4 +53,11 @@ public abstract class CommandTweak : Tweak {
         registeredCommands.Clear();
         base.Disable();
     }
+
+    protected List<string> GetArgumentList(string args) => Regex.Matches(args, @"[\""].+?[\""]|[^ ]+")
+            .Select(m => {
+                if (m.Value.StartsWith('"') && m.Value.EndsWith('"')) { return m.Value.Substring(1, m.Value.Length - 2); }
+                return m.Value;
+            })
+            .ToList();
 }
