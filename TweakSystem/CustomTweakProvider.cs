@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.Reflection;
 
 namespace SimpleTweaksPlugin.TweakSystem; 
 
@@ -20,6 +19,14 @@ public class CustomTweakProvider : TweakProvider {
         Service.PluginInterface.UiBuilder.Draw += OnDraw;
     }
 
+    public CustomTweakProvider(Assembly assembly) {
+        var loadedFileInfo = new FileInfo(assembly.Location);
+        lastWriteTime = loadedFileInfo.LastWriteTime;
+        loadContext = new TweakLoadContext(loadedFileInfo.Name, loadedFileInfo.Directory);
+        AssemblyPath = assembly.Location;
+        Assembly = assembly;
+    }
+    
     private void OnDraw() {
         if (IsDisposed) {
             Service.PluginInterface.UiBuilder.Draw -= OnDraw;
