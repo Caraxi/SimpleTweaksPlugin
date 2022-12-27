@@ -21,6 +21,8 @@ public unsafe class QuickSellItems : Tweak {
         public bool Shift = true;
         public bool Ctrl = false;
         public bool Alt = false;
+
+        public bool RetainerSell = false;
     }
 
     private delegate void* OpenInventoryContext(AgentInventoryContext* agent, InventoryType inventory, ushort slot, int a4, ushort a5, byte a6);
@@ -58,6 +60,8 @@ public unsafe class QuickSellItems : Tweak {
         ImGui.EndGroup();
         ImGui.Unindent();
         ImGui.Dummy(Vector2.Zero);
+        ImGui.Checkbox("Enable tweak in retainer inventory", ref Config.RetainerSell);
+        ImGui.Dummy(Vector2.Zero);
 
         
         ImGui.Text("You may still receive a prompt to confirm for some items.\nThis can be disabled in the Character Configuration.");
@@ -80,14 +84,28 @@ public unsafe class QuickSellItems : Tweak {
         InventoryType.ArmoryRings, 
         InventoryType.ArmoryOffHand
     };
+    
+    public InventoryType[] RetainerInventories = {
+        InventoryType.RetainerPage1,
+        InventoryType.RetainerPage2,
+        InventoryType.RetainerPage3,
+        InventoryType.RetainerPage4,
+        InventoryType.RetainerPage5,
+        InventoryType.RetainerPage6,
+        InventoryType.RetainerPage7,
+    };
 
     private string sellText = "Sell";
+    private string retainerSellText = "Have Retainer Sell Items";
     
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
 
         var sellRow = Service.Data.Excel.GetSheet<Addon>()?.GetRow(93);
         if (sellRow != null) sellText = sellRow.Text?.RawString ?? "Sell";
+
+        var retainerSellRow = Service.Data.Excel.GetSheet<Addon>()?.GetRow(5480);
+        if (retainerSellRow != null) retainerSellText = retainerSellRow.Text?.RawString ?? "Have Retainer Sell Items";
 
         openInventoryContextHook ??= Common.Hook<OpenInventoryContext>("83 B9 ?? ?? ?? ?? ?? 7E 11", OpenInventoryContextDetour);
         openInventoryContextHook?.Enable();
@@ -100,7 +118,7 @@ public unsafe class QuickSellItems : Tweak {
         var retVal = openInventoryContextHook.Original(agent, inventoryType, slot, a4, a5, a6);
 
         try {
-            if (CanSellFrom.Contains(inventoryType) && HotkeyIsHeld && Common.GetUnitBase("Shop") != null) {
+            void TrySell(string sellText) {
                 var inventory = InventoryManager.Instance()->GetInventoryContainer(inventoryType);
                 if (inventory != null) {
                     var itemSlot = inventory->GetInventorySlot(slot);
@@ -109,9 +127,9 @@ public unsafe class QuickSellItems : Tweak {
                         var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(itemId);
                         if (item != null) {
                             var addonId = agent->AgentInterface.GetAddonID();
-                            if (addonId == 0) return retVal;
+                            if (addonId == 0) return;
                             var addon = Common.GetAddonByID(addonId);
-                            if (addon == null) return retVal;
+                            if (addon == null) return;
 
                             for (var i = 0; i < agent->ContextItemCount; i++) {
                                 var contextItemParam = agent->EventParamsSpan[agent->ContexItemStartIndex + i];
@@ -122,12 +140,20 @@ public unsafe class QuickSellItems : Tweak {
                                     Common.GenerateCallback(addon, 0, i, 0U, 0, 0);
                                     agent->AgentInterface.Hide();
                                     UiHelper.Close(addon);
-                                    return retVal;
+                                    return;
                                 }
                             }
                         }
                     }
                 }
+            }
+
+            if (CanSellFrom.Contains(inventoryType) && HotkeyIsHeld && Common.GetUnitBase("Shop") != null) {
+                TrySell(sellText);
+            }
+
+            if (Config.RetainerSell && RetainerInventories.Contains(inventoryType) && HotkeyIsHeld && Common.GetUnitBase("RetainerGrid0") != null) {
+                TrySell(retainerSellText);
             }
         } catch (Exception ex) {
             SimpleLog.Error(ex);
