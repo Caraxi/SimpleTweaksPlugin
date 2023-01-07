@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game.Text;
@@ -20,6 +19,7 @@ using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
+using Vector2 = System.Numerics.Vector2;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {

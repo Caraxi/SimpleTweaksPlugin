@@ -1,9 +1,9 @@
-﻿using System.Numerics;
-using Dalamud.Interface;
+﻿using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
+using Vector4 = System.Numerics.Vector4;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
