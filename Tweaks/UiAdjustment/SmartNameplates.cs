@@ -60,9 +60,9 @@ public unsafe class SmartNameplates : UiAdjustments.SubTweak {
             || (pc->Character.StatusFlags & (byte) StatusFlags.InCombat) == 0 // Alternate in combat flag
             || GetTargetType(actor) == 3
 
-            || (Config.IgnoreParty && (pc->Character.StatusFlags & (byte) StatusFlags.PartyMember) != 0) // Ignore party members
-            || (Config.IgnoreAlliance && (pc->Character.StatusFlags & (byte) StatusFlags.AllianceMember) != 0) // Ignore alliance members
-            || (Config.IgnoreFriends && (pc->Character.StatusFlags & (byte) StatusFlags.Friend) != 0) // Ignore friends
+            || (Config.IgnoreParty && (pc->Character.StatusFlags & 32) != 0) // Ignore party members
+            || (Config.IgnoreAlliance && (pc->Character.StatusFlags & 64) != 0) // Ignore alliance members
+            || (Config.IgnoreFriends && (pc->Character.StatusFlags & 128) != 0) // Ignore friends
             || (Config.IgnoreDead && pc->Character.Health == 0) // Ignore dead players
 
             // Ignore targets
