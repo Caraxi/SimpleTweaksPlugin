@@ -5,46 +5,57 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Chat;
 
-public unsafe class HideChat : ChatTweaks.SubTweak {
+public unsafe class HideChat : ChatTweaks.SubTweak
+{
     public override string Name => "Hide Chat";
     public override string Description => "Only show the chat windows and input box while typing.";
 
-    private readonly string[] chatLogNodeNames = { "ChatLog", "ChatLogPanel_0", "ChatLogPanel_1", "ChatLogPanel_2", "ChatLogPanel_3" };
+    // If the plugin is failing, most likely you will need to update these IDs
+    private readonly uint TextInputNodeID = 5;
+    private readonly uint TextInputCursorID = 2;
 
-    public override void Enable() {
+    private readonly string[] ChatLogNodeNames = { "ChatLog", "ChatLogPanel_0", "ChatLogPanel_1", "ChatLogPanel_2", "ChatLogPanel_3" };
+
+    public override void Enable()
+    {
         Service.Framework.Update += FrameworkUpdate;
         ToggleVisibility(false);
         base.Enable();
     }
-    public override void Disable() {
+    public override void Disable()
+    {
         Service.Framework.Update -= FrameworkUpdate;
         ToggleVisibility(true);
         base.Disable();
     }
 
-    private void FrameworkUpdate (Framework framework)
+    private void FrameworkUpdate(Framework framework)
     {
-        try {
-            // Visibility of chat logs are based on visibility of input cursor
-            ToggleVisibility(GetChatInputCursorNode()->IsVisible);
-        } catch (Exception ex) {
+        try
+        {
+            AtkResNode* inputCursor = GetChatInputCursorNode();
+            ToggleVisibility(inputCursor->IsVisible);
+        }
+        catch (Exception ex)
+        {
             SimpleLog.Error(ex);
         }
     }
 
-    private AtkResNode* GetChatInputCursorNode ()
+    private AtkResNode* GetChatInputCursorNode()
     {
-        var baseNode = Common.GetUnitBase("ChatLog");
-        var textInputComponentNode = (AtkComponentNode*) baseNode->GetNodeById(5);
-        var uldManager = &textInputComponentNode->Component->UldManager;
-        return Common.GetNodeByID(uldManager, 2);
+        AtkUnitBase* baseNode = Common.GetUnitBase("ChatLog");
+        AtkComponentNode* textInputComponentNode = (AtkComponentNode*)baseNode->GetNodeById(TextInputNodeID);
+        AtkUldManager uldManager = textInputComponentNode->Component->UldManager;
+
+        return Common.GetNodeByID(&uldManager, TextInputCursorID);
     }
 
-    private void ToggleVisibility (bool visibility)
+    private void ToggleVisibility(bool visibility)
     {
-        foreach (string name in chatLogNodeNames)
+        foreach (string name in ChatLogNodeNames)
         {
-            var node = Common.GetUnitBase(name);
+            AtkUnitBase* node = Common.GetUnitBase(name);
             if (node == null) continue;
             node->RootNode->ToggleVisibility(visibility);
         };
