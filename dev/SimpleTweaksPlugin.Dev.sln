@@ -10,7 +10,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleTweaksPlugin", "..\Si
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFXIVClientStructs", "..\lib\FFXIVClientStructs\FFXIVClientStructs\FFXIVClientStructs.csproj", "{3DBAEE68-9D94-4807-BCB1-E42EDD52B489}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFXIVClientStructs.Generators", "..\lib\FFXIVClientStructs\FFXIVClientStructs.Generators\FFXIVClientStructs.Generators.csproj", "{B3AAEACB-E6D2-43C6-9E29-C35021F0AE98}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVClientStructs.InteropSourceGenerators", "..\lib\FFXIVClientStructs\FFXIVClientStructs.InteropSourceGenerators\FFXIVClientStructs.InteropSourceGenerators.csproj", "{EF2BDA76-134F-40DC-AAA7-12E809743BAD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,14 +22,14 @@ Global
 		{3DBAEE68-9D94-4807-BCB1-E42EDD52B489}.Debug|x64.Build.0 = Debug|Any CPU
 		{3DBAEE68-9D94-4807-BCB1-E42EDD52B489}.Release|x64.ActiveCfg = Release|Any CPU
 		{3DBAEE68-9D94-4807-BCB1-E42EDD52B489}.Release|x64.Build.0 = Release|Any CPU
-		{B3AAEACB-E6D2-43C6-9E29-C35021F0AE98}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{B3AAEACB-E6D2-43C6-9E29-C35021F0AE98}.Debug|x64.Build.0 = Debug|Any CPU
-		{B3AAEACB-E6D2-43C6-9E29-C35021F0AE98}.Release|x64.ActiveCfg = Release|Any CPU
-		{B3AAEACB-E6D2-43C6-9E29-C35021F0AE98}.Release|x64.Build.0 = Release|Any CPU
 		{FAF7F5F2-708A-4FEA-BAE7-F73A3438A0D5}.Debug|x64.ActiveCfg = Debug|x64
 		{FAF7F5F2-708A-4FEA-BAE7-F73A3438A0D5}.Debug|x64.Build.0 = Debug|x64
 		{FAF7F5F2-708A-4FEA-BAE7-F73A3438A0D5}.Release|x64.ActiveCfg = Release|x64
 		{FAF7F5F2-708A-4FEA-BAE7-F73A3438A0D5}.Release|x64.Build.0 = Release|x64
+		{EF2BDA76-134F-40DC-AAA7-12E809743BAD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EF2BDA76-134F-40DC-AAA7-12E809743BAD}.Debug|x64.Build.0 = Debug|Any CPU
+		{EF2BDA76-134F-40DC-AAA7-12E809743BAD}.Release|x64.ActiveCfg = Release|Any CPU
+		{EF2BDA76-134F-40DC-AAA7-12E809743BAD}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

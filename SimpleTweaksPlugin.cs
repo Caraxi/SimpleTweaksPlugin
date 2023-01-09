@@ -77,18 +77,19 @@ namespace SimpleTweaksPlugin {
             }
             Common.HookList.Clear();
             Common.Shutdown();
-            this.XivCommon.Dispose();
+            this.XivCommon?.Dispose();
             SimpleEvent.Destroy();
         }
 
         public int UpdateFrom = -1;
 
         public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface) {
-            pluginInterface.Create<Service>();
-            FFXIVClientStructs.Resolver.Initialize(Service.SigScanner.SearchBase);
-
             Plugin = this;
+            pluginInterface.Create<Service>();
 #if DEBUG
+            FFXIVClientStructs.Interop.Resolver.GetInstance.SetupSearchSpace(Service.SigScanner.SearchBase);
+            FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
+            
             SimpleLog.SetupBuildPath();
 #endif
             this.PluginInterface = pluginInterface;
@@ -97,7 +98,17 @@ namespace SimpleTweaksPlugin {
             this.PluginConfig.Init(this, pluginInterface);
 
             IconManager = new IconManager(pluginInterface);
-            this.XivCommon = new XivCommonBase();
+
+            try {
+                this.XivCommon = new XivCommonBase();
+            } catch (Exception ex) {
+                SimpleLog.Error($"XivCommon failed to load\n{ex}");
+                ErrorList.Add(new CaughtError() {
+                    Exception = ex,
+                    Message = "XivCommon failed to load. Some tweaks will not function."
+                });
+            }
+
             SetupLocalization();
 
             UiHelper.Setup(Service.SigScanner);

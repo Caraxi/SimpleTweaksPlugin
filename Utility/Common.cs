@@ -200,6 +200,13 @@ public static unsafe class Common {
         return wh;
     }
 
+    public static HookWrapper<T> Hook<T>(nuint address, T detour) where T : Delegate {
+        var h = Dalamud.Hooking.Hook<T>.FromAddress((nint)address, detour);
+        var wh = new HookWrapper<T>(h);
+        HookList.Add(wh);
+        return wh;
+    }
+    
     public static HookWrapper<AddonOnUpdate> HookAfterAddonUpdate(IntPtr address, NoReturnAddonOnUpdate after) {
         Hook<AddonOnUpdate> hook = null;
         hook = new Hook<AddonOnUpdate>(address, (atkUnitBase, nums, strings) => {
