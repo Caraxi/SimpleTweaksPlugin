@@ -12,6 +12,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFXIVClientStructs", "..\li
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVClientStructs.InteropSourceGenerators", "..\lib\FFXIVClientStructs\FFXIVClientStructs.InteropSourceGenerators\FFXIVClientStructs.InteropSourceGenerators.csproj", "{EF2BDA76-134F-40DC-AAA7-12E809743BAD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XivCommon", "..\lib\XivCommon\XivCommon\XivCommon.csproj", "{3EA20088-A01E-404E-917D-3CFA2EF3D587}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -30,6 +32,10 @@ Global
 		{EF2BDA76-134F-40DC-AAA7-12E809743BAD}.Debug|x64.Build.0 = Debug|Any CPU
 		{EF2BDA76-134F-40DC-AAA7-12E809743BAD}.Release|x64.ActiveCfg = Release|Any CPU
 		{EF2BDA76-134F-40DC-AAA7-12E809743BAD}.Release|x64.Build.0 = Release|Any CPU
+		{3EA20088-A01E-404E-917D-3CFA2EF3D587}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3EA20088-A01E-404E-917D-3CFA2EF3D587}.Debug|x64.Build.0 = Debug|Any CPU
+		{3EA20088-A01E-404E-917D-3CFA2EF3D587}.Release|x64.ActiveCfg = Release|Any CPU
+		{3EA20088-A01E-404E-917D-3CFA2EF3D587}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

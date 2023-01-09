@@ -14,11 +14,8 @@
         "resolved": "4.5.0",
         "contentHash": "QQTlPTl06J/iiDbJCiepZ4H//BVraReU4O4EoRw1U02H5TLUIT7xn3GnDp9AXPSlJUDyFs4uWjWafNX6WrAojQ=="
       },
-      "XivCommon": {
-        "type": "Direct",
-        "requested": "[6.0.2, )",
-        "resolved": "6.0.2",
-        "contentHash": "C/GnQ61iO0yEpf8LPixU3tCThar1MWUiBkO8gdZHNtVskg8AvFeuIxk7Zmkf2yeAJ0drR/KOTdSS7GpbsgmoaQ=="
+      "xivcommon": {
+        "type": "Project"
       }
     }
   }

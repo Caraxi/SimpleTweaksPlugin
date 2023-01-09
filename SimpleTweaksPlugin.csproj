@@ -38,7 +38,6 @@
     <ItemGroup>
       <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
       <PackageReference Include="DalamudPackager" Version="2.1.10" />
-      <PackageReference Include="XivCommon" Version="6.0.2" />
     </ItemGroup>
     <PropertyGroup>
         <DalamudLibPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev</DalamudLibPath>
@@ -54,6 +53,7 @@
 			<HintPath Condition="'$(Configuration)' == 'Debug'">$(ProjectDir)\lib\FFXIVClientStructs\bin\$(ConfigurationName)\FFXIVClientStructs.dll</HintPath>
 			<HintPath Condition="'$(Configuration)' == 'Release'">$(DalamudLibPath)\FFXIVClientStructs.dll</HintPath>
 		</Reference>
+        <ProjectReference Include="lib\XivCommon\XivCommon\XivCommon.csproj" />
 		<Reference Include="Microsoft.CSharp" />
         <Reference Include="Newtonsoft.Json">
             <Private>false</Private>
