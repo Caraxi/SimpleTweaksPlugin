@@ -20,7 +20,7 @@ public unsafe class HideChat : ChatTweaks.SubTweak
     public override string Name => "Hide Chat";
     public override string Description => $"Provides commands to hide the chat. ({Command} show|toggle|hide)";
 
-    protected override string Author => "@dookssh";
+    protected override string Author => "@dookssh @VariableVixen";
 
     // Note that since this is a chat SubTweak, we cannot inherit from CommandTweak
     private string Command = "/chatvis";
