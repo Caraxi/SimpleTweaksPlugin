@@ -40,8 +40,6 @@ public unsafe class HideChat : ChatTweaks.SubTweak
 
         if (!hasChanged) return;
         SetOnDemand(Config.IsOnDemand);
-
-        // reset back to visible
         if (!Config.IsOnDemand) SetVisibility(true);
     };
 
@@ -112,9 +110,16 @@ public unsafe class HideChat : ChatTweaks.SubTweak
 
     private AtkResNode* GetChatInputCursorNode()
     {
-        AtkUnitBase* baseNode = Common.GetUnitBase("ChatLog");
-        AtkComponentNode* textInputComponentNode = (AtkComponentNode*)baseNode->GetNodeById(TextInputNodeID);
-        AtkUldManager uldManager = textInputComponentNode->Component->UldManager;
+        var baseNode = Common.GetUnitBase("ChatLog");
+        if (baseNode == null) return null;
+
+        var textInputComponentNode = (AtkComponentNode*)baseNode->GetNodeById(TextInputNodeID);
+        if (textInputComponentNode == null) return null;
+
+        var textInputBaseNode = textInputComponentNode->Component;
+        if (textInputBaseNode == null) return null;
+
+        AtkUldManager uldManager = textInputBaseNode->UldManager;
 
         return Common.GetNodeByID(&uldManager, TextInputCursorID);
     }
