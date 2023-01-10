@@ -36,10 +36,8 @@ public unsafe class HideChat : ChatTweaks.SubTweak
     protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) =>
     {
         hasChanged |= ImGui.Checkbox("Show on demand when typing.", ref Config.IsOnDemand);
-        ImGui.Text("/chatvis show|hide|toggle is supported while this is active.");
 
         if (!hasChanged) return;
-        SetOnDemand(Config.IsOnDemand);
         if (!Config.IsOnDemand) SetVisibility(true);
     };
 
@@ -53,7 +51,7 @@ public unsafe class HideChat : ChatTweaks.SubTweak
             ShowInHelp = ShowInHelp
         });
 
-        SetOnDemand(true);
+        Service.Framework.Update += FrameworkUpdate;
         base.Enable();
     }
 
@@ -61,7 +59,7 @@ public unsafe class HideChat : ChatTweaks.SubTweak
     {
         SaveConfig(Config);
         Service.Commands.RemoveHandler(Command);
-        SetOnDemand(false);
+        Service.Framework.Update -= FrameworkUpdate;
         SetVisibility(true);
         base.Disable();
     }
@@ -71,7 +69,11 @@ public unsafe class HideChat : ChatTweaks.SubTweak
         try
         {
             var visibility = GetChatInputCursorNode()->IsVisible;
-            SetVisibility(visibility);
+
+            if (visibility)
+                SetVisibility(true);
+            else if (Config.IsOnDemand)
+                SetVisibility(false);
         }
         catch (Exception ex)
         {
@@ -87,12 +89,10 @@ public unsafe class HideChat : ChatTweaks.SubTweak
         {
             case "show":
                 SetVisibility(true);
-                if (Config.IsOnDemand) SetOnDemand(false);
                 break;
 
             case "hide":
                 SetVisibility(false);
-                if (Config.IsOnDemand) SetOnDemand(true);
                 break;
 
             case "toggle":
@@ -100,7 +100,6 @@ public unsafe class HideChat : ChatTweaks.SubTweak
                 var isVisible = baseNode->RootNode->IsVisible;
 
                 SetVisibility(!isVisible);
-                if (Config.IsOnDemand) SetOnDemand(isVisible);
                 break;
 
             default:
@@ -122,12 +121,6 @@ public unsafe class HideChat : ChatTweaks.SubTweak
         AtkUldManager uldManager = textInputBaseNode->UldManager;
 
         return Common.GetNodeByID(&uldManager, TextInputCursorID);
-    }
-
-    private void SetOnDemand(bool flag)
-    {
-        if (flag) Service.Framework.Update += FrameworkUpdate;
-        else Service.Framework.Update -= FrameworkUpdate;
     }
 
     private void SetVisibility(bool visibility)
