@@ -127,7 +127,8 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                                     }
                                     case "<homeworld>": {
                                         var world = Service.Data.Excel.GetSheet<World>().GetRow(battleChara->Character.HomeWorld);
-                                        payloads.Add(new TextPayload(world.Name));
+                                        
+                                        payloads.Add(new TextPayload(world?.Name ?? $"UnknownWorld#{battleChara->Character.HomeWorld}"));
                                         break;
                                     }
                                     case "<level>": {

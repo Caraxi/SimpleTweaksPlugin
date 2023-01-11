@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Dalamud.Game.ClientState;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel;
@@ -18,13 +20,12 @@ namespace SimpleTweaksPlugin {
 }
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips {
-    public class FoodStats : TooltipTweaks.SubTweak {
+    public unsafe class FoodStats : TooltipTweaks.SubTweak {
         public override string Name => "Show expected food and potion stats";
         public override string Description => "Calculates the stat results a consumable will have based on your current stats.";
-
-        private IntPtr playerStaticAddress;
+        
         private IntPtr getBaseParamAddress;
-        private delegate ulong GetBaseParam(IntPtr playerAddress, uint baseParamId);
+        private delegate ulong GetBaseParam(PlayerState* playerAddress, uint baseParamId);
         private GetBaseParam getBaseParam;
 
         public class Configs : TweakConfig {
@@ -39,10 +40,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                     getBaseParamAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 44 8B C0 33 D2 48 8B CB E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 48 8D 0D");
                     getBaseParam = Marshal.GetDelegateForFunctionPointer<GetBaseParam>(getBaseParamAddress);
                 }
-
-                if (playerStaticAddress == IntPtr.Zero) {
-                    playerStaticAddress = Service.SigScanner.GetStaticAddressFromSig("8B D7 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B7 E8");
-                }
+                
                 base.Setup();
             } catch (Exception ex) {
                 Plugin.Error(this, ex);
@@ -185,7 +183,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                             if (bonus.IsRelative) {
                                 hasChange = true;
 
-                                var currentStat = getBaseParam(playerStaticAddress, bonus.BaseParam);
+                                var currentStat = getBaseParam(&UIState.Instance()->PlayerState, bonus.BaseParam);
                                 var relativeAdd = (short)(currentStat * (value / 100f));
                                 var change = relativeAdd > max ? max : relativeAdd;
 

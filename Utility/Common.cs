@@ -29,8 +29,6 @@ public static unsafe class Common {
     private delegate void* AddonSetupDelegate(AtkUnitBase* addon);
     private static HookWrapper<AddonSetupDelegate> addonSetupHook;
     
-    public static IntPtr PlayerStaticAddress { get; private set; }
-
     private static IntPtr LastCommandAddress;
         
     public static Utf8String* LastCommand { get; private set; }
@@ -57,8 +55,6 @@ public static unsafe class Common {
     public static event Action<SetupAddonArgs> AddonPreSetup; 
     
     public static void Setup() {
-
-        PlayerStaticAddress = Service.SigScanner.GetStaticAddressFromSig("8B D7 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B7 E8");
         LastCommandAddress = Service.SigScanner.GetStaticAddressFromSig("4C 8D 05 ?? ?? ?? ?? 41 B1 01 49 8B D4 E8 ?? ?? ?? ?? 83 EB 06");
         LastCommand = (Utf8String*) (LastCommandAddress);
         
