@@ -148,6 +148,7 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
     private bool UpdateHotbarRecordedControlHints(AddonActionBarBase* ab, StringArrayData* strArrayData = null)
     {
         if (ab == null || ab->ActionBarSlots == null) return false;
+        if (ab->RaptureHotbarId > recordedControlHints.Length) return false;
 
         if (strArrayData == null)
         {
