@@ -6,6 +6,7 @@ using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
@@ -41,7 +42,7 @@ public unsafe class EstateListCommand : CommandTweak {
         }
 
         var useContentId = ulong.TryParse(arguments, out var contentId);
-        var friend = Plugin.XivCommon.Functions.FriendList.List
+        var friend = FriendList.List
             .FirstOrDefault(friend => {
                 if (friend.HomeWorld != Service.ClientState.LocalPlayer?.CurrentWorld.Id) return false;
                 if (useContentId && contentId > 0 && friend.ContentId == contentId) return true;

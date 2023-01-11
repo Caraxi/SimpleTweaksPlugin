@@ -1,6 +1,3 @@
 [submodule "lib/FFXIVClientStructs"]
 	path = lib/FFXIVClientStructs
 	url = https://github.com/aers/FFXIVClientStructs.git
-[submodule "lib/XivCommon"]
-	path = lib/XivCommon
-	url = https://github.com/Caraxi/XivCommon.git

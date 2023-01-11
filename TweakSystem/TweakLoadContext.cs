@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Runtime.Loader;
 using Dalamud.Plugin;
 using FFXIVClientStructs.Interop;
-using XivCommon;
 
 namespace SimpleTweaksPlugin.TweakSystem; 
 
@@ -27,7 +26,6 @@ public class TweakLoadContext : AssemblyLoadContext {
             ["SimpleTweaksPlugin"] = typeof(SimpleTweaksPlugin).Assembly,
             ["FFXIVClientStructs"] = typeof(Resolver).Assembly,
             ["Dalamud"] = typeof(DalamudPluginInterface).Assembly,
-            ["XivCommon"] = typeof(XivCommonBase).Assembly
         };
     }
     

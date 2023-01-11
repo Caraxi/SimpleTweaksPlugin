@@ -48,7 +48,7 @@ public unsafe class ContentsFinderConfirmClassSwitch : Tweak {
         for (var i = 0; i < 101; i++) {
             var gs = RaptureGearsetModule.Instance()->Gearset[i];
             if (gs->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists) && gs->ClassJob == classJobId) {
-                Plugin.XivCommon.Functions.Chat.SendMessage($"/gearset change {gs->ID + 1}");
+                ChatHelper.SendMessage($"/gearset change {gs->ID + 1}");
                 return;
             }
         }

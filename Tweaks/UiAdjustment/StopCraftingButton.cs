@@ -164,7 +164,7 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
                 case CraftReadyState.WrongClass: {
                     var gearset = GetGearsetForClassJob(requiredClass);
                     if (gearset != null) {
-                        Plugin.XivCommon.Functions.Chat.SendMessage($"/gearset change {gearset.Value + 1}");
+                        ChatHelper.SendMessage($"/gearset change {gearset.Value + 1}");
                         return null;
                     } 
 

@@ -13,7 +13,6 @@ using Dalamud.Interface.Internal.Notifications;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Utility;
-using XivCommon;
 #if DEBUG
 using System.Runtime.CompilerServices;
 #endif
@@ -28,8 +27,6 @@ namespace SimpleTweaksPlugin {
         public List<TweakProvider> TweakProviders = new();
 
         public IconManager IconManager { get; private set; }
-        public XivCommonBase XivCommon { get; private set; }
-
 
         private bool drawConfigWindow = false;
 
@@ -77,7 +74,6 @@ namespace SimpleTweaksPlugin {
             }
             Common.HookList.Clear();
             Common.Shutdown();
-            this.XivCommon?.Dispose();
             SimpleEvent.Destroy();
         }
 
@@ -98,16 +94,6 @@ namespace SimpleTweaksPlugin {
             this.PluginConfig.Init(this, pluginInterface);
 
             IconManager = new IconManager(pluginInterface);
-
-            try {
-                this.XivCommon = new XivCommonBase();
-            } catch (Exception ex) {
-                SimpleLog.Error($"XivCommon failed to load\n{ex}");
-                ErrorList.Add(new CaughtError() {
-                    Exception = ex,
-                    Message = "XivCommon failed to load. Some tweaks will not function."
-                });
-            }
 
             SetupLocalization();
 

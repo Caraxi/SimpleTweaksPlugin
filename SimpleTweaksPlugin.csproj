@@ -53,7 +53,6 @@
 			<HintPath Condition="'$(Configuration)' == 'Debug'">$(ProjectDir)\lib\FFXIVClientStructs\bin\$(ConfigurationName)\FFXIVClientStructs.dll</HintPath>
 			<HintPath Condition="'$(Configuration)' == 'Release'">$(DalamudLibPath)\FFXIVClientStructs.dll</HintPath>
 		</Reference>
-        <ProjectReference Include="lib\XivCommon\XivCommon\XivCommon.csproj" />
 		<Reference Include="Microsoft.CSharp" />
         <Reference Include="Newtonsoft.Json">
             <Private>false</Private>
@@ -76,4 +75,7 @@
             <HintPath>$(DalamudLibPath)\Lumina.Excel.dll</HintPath>
 		</Reference>
     </ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Utility\FriendList" />
+	</ItemGroup>
 </Project>
