@@ -67,7 +67,7 @@ public unsafe class CombatMovementControl : Tweak {
     }
 
     private void OnConditionChange(ConditionFlag flag, bool value) {
-        if (flag != ConditionFlag.InCombat) {
+        if (flag == ConditionFlag.InCombat) {
             var v = value ? Config.InCombat : Config.OutOfCombat;
             if (v == MoveModeType.Ignore) return;
             GameConfig.UiControl.Set("MoveMode", (uint) v);
