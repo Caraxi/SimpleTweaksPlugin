@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using Dalamud.Game;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
@@ -54,17 +55,10 @@ public unsafe class ComboTimer : UiAdjustments.SubTweak {
     public Configs Config { get; private set; }
 
     public override bool UseAutoConfig => true;
-    private Combo* combo;
 
-    [StructLayout(LayoutKind.Explicit, Size = 0x8)]
-    public struct Combo {
-        [FieldOffset(0x00)] public float Timer;
-        [FieldOffset(0x04)] public uint Action;
-    }
-        
+
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        if (combo == null) combo = (Combo*) Service.SigScanner.GetStaticAddressFromSig("F3 0F 11 05 ?? ?? ?? ?? F3 0F 10 45");
         Service.Framework.Update += FrameworkUpdate;
         base.Enable();
     }
@@ -181,6 +175,8 @@ public unsafe class ComboTimer : UiAdjustments.SubTweak {
             return;
         }
 
+        var combo = &ActionManager.Instance()->Combo;
+        
         if (combo->Action != 0 && !comboActions.ContainsKey(combo->Action)) {
             comboActions.Add(combo->Action, Service.Data.Excel.GetSheet<Action>().OrderBy(a => a.ClassJobLevel).FirstOrDefault(a => a.ActionCombo.Row == combo->Action)?.ClassJobLevel ?? 255);
         }
