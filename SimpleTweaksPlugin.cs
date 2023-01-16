@@ -13,7 +13,6 @@ using Dalamud.Interface.Internal.Notifications;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Utility;
-using XivCommon;
 #if DEBUG
 using System.Runtime.CompilerServices;
 #endif
@@ -28,8 +27,6 @@ namespace SimpleTweaksPlugin {
         public List<TweakProvider> TweakProviders = new();
 
         public IconManager IconManager { get; private set; }
-        public XivCommonBase XivCommon { get; private set; }
-
 
         private bool drawConfigWindow = false;
 
@@ -77,18 +74,18 @@ namespace SimpleTweaksPlugin {
             }
             Common.HookList.Clear();
             Common.Shutdown();
-            this.XivCommon.Dispose();
             SimpleEvent.Destroy();
         }
 
         public int UpdateFrom = -1;
 
         public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface) {
-            pluginInterface.Create<Service>();
-            FFXIVClientStructs.Resolver.Initialize(Service.SigScanner.SearchBase);
-
             Plugin = this;
+            pluginInterface.Create<Service>();
 #if DEBUG
+            FFXIVClientStructs.Interop.Resolver.GetInstance.SetupSearchSpace(Service.SigScanner.SearchBase);
+            FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
+            
             SimpleLog.SetupBuildPath();
 #endif
             this.PluginInterface = pluginInterface;
@@ -97,7 +94,7 @@ namespace SimpleTweaksPlugin {
             this.PluginConfig.Init(this, pluginInterface);
 
             IconManager = new IconManager(pluginInterface);
-            this.XivCommon = new XivCommonBase();
+
             SetupLocalization();
 
             UiHelper.Setup(Service.SigScanner);

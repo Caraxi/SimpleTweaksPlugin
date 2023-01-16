@@ -48,6 +48,7 @@ public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
             deepDungeonUnitBase->UldManager.NodeListCount < 84) return;
 
         var resNode = deepDungeonUnitBase->UldManager.NodeList[0];
+        var guideNode = deepDungeonUnitBase->UldManager.SearchNodeById(3);
         var windowCollisionNode = (AtkCollisionNode*) deepDungeonUnitBase->UldManager.NodeList[1];
         var windowNode = (AtkComponentNode*) deepDungeonUnitBase->UldManager.NodeList[2];
         var itemsEffectsInfoNode = deepDungeonUnitBase->UldManager.NodeList[3];
@@ -65,6 +66,7 @@ public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
 
         if (reset) {
             gearInfoNode->ToggleVisibility(true);
+            guideNode->ToggleVisibility(true);
             deepDungeonUnitBase->UldManager.NodeList[76]->Color.A = 255;
             deepDungeonUnitBase->UldManager.NodeList[76]->ToggleVisibility(true); // Job infos
             deepDungeonUnitBase->UldManager.NodeList[78]->ToggleVisibility(true);
@@ -90,6 +92,7 @@ public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
         }
 
         gearInfoNode->ToggleVisibility(false);
+        guideNode->ToggleVisibility(false);
         deepDungeonUnitBase->UldManager.NodeList[76]->Color.A = 0;
         deepDungeonUnitBase->UldManager.NodeList[76]->ToggleVisibility(false); // Job infos
         deepDungeonUnitBase->UldManager.NodeList[78]->ToggleVisibility(false);

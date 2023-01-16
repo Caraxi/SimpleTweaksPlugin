@@ -23,8 +23,8 @@ internal unsafe class SanctuarySprintReplacer : Tweak {
     private HookWrapper<UseActionDelegate>? _useActionHook;
 
     public override void Enable() {
-        this._useActionHook ??= Common.Hook<UseActionDelegate>(ActionManager.fpUseAction, this.UseActionDetour);
-        this._useActionHook.Enable();
+        this._useActionHook ??= Common.Hook<UseActionDelegate>(ActionManager.Addresses.UseAction.Value, this.UseActionDetour);
+        this._useActionHook?.Enable();
 
         if (this._getDutyActionId == null &&
             Service.SigScanner.TryScanText(GetDutyActionIdSignature, out var ptr)) {

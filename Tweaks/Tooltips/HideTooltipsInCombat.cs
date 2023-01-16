@@ -62,14 +62,14 @@ public class HideTooltipsInCombat : TooltipTweaks.SubTweak {
             Hide("ItemDetailDisp", Config.HideItem, ref hidItem);
             Hide("ToolTipDisp", Config.HidePopUp, ref hidPopUp);
         } else {
-            void Show(string name, bool doShow, ref bool isHide) {
-                if (doShow && isHide) GameConfig.UiControl.Set(name, true);
+            void Show(string name, ref bool isHide) {
+                if (isHide) GameConfig.UiControl.Set(name, true);
                 isHide = false;
             }
             
-            Show("ActionDetailDisp", Config.HideAction, ref hidAction);
-            Show("ItemDetailDisp", Config.HideItem, ref hidItem);
-            Show("ToolTipDisp", Config.HidePopUp, ref hidPopUp);
+            Show("ActionDetailDisp", ref hidAction);
+            Show("ItemDetailDisp", ref hidItem);
+            Show("ToolTipDisp", ref hidPopUp);
         }
     }
 }

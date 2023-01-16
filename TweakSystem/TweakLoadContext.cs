@@ -3,8 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
 using Dalamud.Plugin;
-using FFXIVClientStructs;
-using XivCommon;
+using FFXIVClientStructs.Interop;
 
 namespace SimpleTweaksPlugin.TweakSystem; 
 
@@ -14,7 +13,8 @@ public class TweakLoadContext : AssemblyLoadContext {
     private string name;
     
     
-    public TweakLoadContext(string name, DirectoryInfo directoryInfo) {
+    
+    public TweakLoadContext(string name, DirectoryInfo directoryInfo) : base(true) {
         directory = directoryInfo;
     }
 
@@ -23,10 +23,9 @@ public class TweakLoadContext : AssemblyLoadContext {
 
     static TweakLoadContext() {
         handledAssemblies = new Dictionary<string, Assembly>() {
-            ["SimpleTweaksPlugin"] = Assembly.GetExecutingAssembly(),
+            ["SimpleTweaksPlugin"] = typeof(SimpleTweaksPlugin).Assembly,
             ["FFXIVClientStructs"] = typeof(Resolver).Assembly,
             ["Dalamud"] = typeof(DalamudPluginInterface).Assembly,
-            ["XivCommon"] = typeof(XivCommonBase).Assembly
         };
     }
     

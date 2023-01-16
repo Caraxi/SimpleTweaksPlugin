@@ -26,7 +26,7 @@ public unsafe class CharaViewIncreasedZoom : Tweak {
 
     [StructLayout(LayoutKind.Explicit, Size = 0xEF)]
     public struct Camera {
-        [FieldOffset(0xB4)] public float Zoom;
+        [FieldOffset(0xB8)] public float Zoom;
         [FieldOffset(0xE0)] public Camera* AnotherCamera;
     }
 

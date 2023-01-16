@@ -49,7 +49,7 @@ public class SyncCrafterBars : Tweak {
 
     public void ExecuteCommand(string command) {
         SimpleLog.Log($"Execute Command: {command}");
-        Plugin.XivCommon.Functions.Chat.SendMessage(command);
+        ChatHelper.SendMessage(command);
     }
 
     public void PerformCrafterBarSync(uint copyFrom) {

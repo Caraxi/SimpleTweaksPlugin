@@ -103,7 +103,7 @@ public unsafe class CharacterClassSwitcher : Tweak {
                     var gearsetId = GetGearsetForClassJob(classJob);
                     if (gearsetId != null) {
                         SimpleLog.Log($"Send Command: /gearset change {gearsetId.Value + 1}");
-                        Plugin.XivCommon.Functions.Chat.SendMessage($"/gearset change {gearsetId.Value + 1}");
+                        ChatHelper.SendMessage($"/gearset change {gearsetId.Value + 1}");
                     } else {
                         Service.Chat.PrintError($"No saved gearset for {classJob.Name.RawString}");
                     }

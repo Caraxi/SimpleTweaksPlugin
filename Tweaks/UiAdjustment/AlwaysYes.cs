@@ -18,6 +18,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         public bool DutyConfirmation = true;
         public bool CardsShop = true;
         public bool RetainerVentures = true;
+        public bool RetainerEntrustDuplicates = true;
         public bool MateriaMelds = true;
         public bool MateriaExtractions = true;
         public bool MateriaRetrievals = true;
@@ -77,6 +78,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         hasChanged |= ImGui.Checkbox("Duty confirmations", ref Config.DutyConfirmation);
         hasChanged |= ImGui.Checkbox("TT cards sales", ref Config.CardsShop);
         hasChanged |= ImGui.Checkbox("Retainer ventures", ref Config.RetainerVentures);
+        hasChanged |= ImGui.Checkbox("Retainer entrust duplicates", ref Config.RetainerEntrustDuplicates);
         hasChanged |= ImGui.Checkbox("Materia melds", ref Config.MateriaMelds);
         hasChanged |= ImGui.Checkbox("Materia extractions", ref Config.MateriaExtractions);
         hasChanged |= ImGui.Checkbox("Materia retrievals", ref Config.MateriaRetrievals);
@@ -109,6 +111,9 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 return;
             case "RetainerTaskAsk":
                 if (Config.RetainerVentures) SetFocusYes(args.Addon, 40);
+                return;
+            case "RetainerItemTransferList":
+                if (Config.RetainerVentures) SetFocusYes(args.Addon, 7);
                 return;
             case "RetainerTaskResult":
                 if (Config.RetainerVentures) SetFocusYes(args.Addon, 20);
