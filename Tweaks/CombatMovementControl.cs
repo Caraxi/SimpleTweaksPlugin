@@ -73,9 +73,6 @@ public unsafe class CombatMovementControl : Tweak {
             var v = unsheathedState == 1 ? Config.WeaponDrawn : Config.WeaponSheathed;
             if (v == MoveModeType.Ignore) return;
 
-            ////GameConfig.UiControl.Set("MoveMode", (uint) v);
-
-            var cVal = configModule->GetIntValue(ConfigOption.MoveMode);
             configModule->SetOption(ConfigOption.MoveMode, (int)v);
         }
     }
@@ -87,9 +84,6 @@ public unsafe class CombatMovementControl : Tweak {
             var v = value ? Config.InDuty : Config.OutOfDuty;
             if (v == MoveModeType.Ignore) return;
 
-            ////GameConfig.UiControl.Set("MoveMode", (uint) v);
-
-            var cVal = configModule->GetIntValue(ConfigOption.MoveMode);
             configModule->SetOption(ConfigOption.MoveMode, (int)v);
             inDuty = value;
         }
@@ -99,9 +93,6 @@ public unsafe class CombatMovementControl : Tweak {
             var v = value ? Config.InCombat : Config.OutOfCombat;
             if (v == MoveModeType.Ignore) return;
 
-            ////GameConfig.UiControl.Set("MoveMode", (uint) v);
-
-            var cVal = configModule->GetIntValue(ConfigOption.MoveMode);
             configModule->SetOption(ConfigOption.MoveMode, (int)v);
             inCombat = value;
         }
