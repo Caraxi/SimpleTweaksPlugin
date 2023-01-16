@@ -14,7 +14,7 @@ public unsafe class CombatMovementControl : Tweak {
     private bool inCombat;
 
     public override string Name => "Combat Movement Type Control";
-    public override string Description => "Set movement type between Standard and Legacy when in/out of duty, combat or when weapon is drawn/sheathed. Is Duty configured and you are in Duty, Combat and Weapon will be ignored. Is Combat configuerd and you are in Combat, Weapon will be ignored. ";
+    public override string Description => "Set movement type between Standard and Legacy when in/out of duty, combat or when weapon is drawn/sheathed.\n(Is Duty configured and you are in Duty, Combat and Weapon will be ignored.)\n(Is Combat configuerd and you are in Combat, Weapon will be ignored.)";
     
     public enum MoveModeType {
         Ignore = -1,
