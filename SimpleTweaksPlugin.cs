@@ -377,7 +377,7 @@ namespace SimpleTweaksPlugin {
                 }
             }
 
-            if (Service.PluginInterface.IsDevMenuOpen && Service.PluginInterface.IsDev) {
+            if (Service.PluginInterface.IsDevMenuOpen && (Service.PluginInterface.IsDev || PluginConfig.ShowInDevMenu)) {
                 if (ImGui.BeginMainMenuBar()) {
                     if (ImGui.MenuItem("Simple Tweaks")) {
                         if (ImGui.GetIO().KeyShift) {
