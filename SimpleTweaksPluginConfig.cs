@@ -32,6 +32,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     public bool HideKofi;
     public bool ShowExperimentalTweaks;
     public bool DisableAutoOpen;
+    public bool ShowInDevMenu;
 
     public bool ShowTweakDescriptions = true;
     public bool ShowTweakIDs;
@@ -251,6 +252,9 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                     ImGui.Separator();
                     #if DEBUG
                     if (ImGui.Checkbox("Disable Auto Open", ref DisableAutoOpen)) Save();
+                    ImGui.Separator();
+                    #else
+                    if (ImGui.Checkbox("Show in Dev Menu", ref ShowInDevMenu)) Save();
                     ImGui.Separator();
                     #endif
 
