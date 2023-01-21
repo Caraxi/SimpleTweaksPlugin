@@ -1,4 +1,5 @@
-﻿using Dalamud.Game.ClientState.Conditions;
+﻿using System;
+using Dalamud.Game.ClientState.Conditions;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
@@ -50,9 +51,9 @@ public unsafe class CombatMovementControl : Tweak {
     }
 
 
-    private byte? previousUnsheathedState;
+    private bool? previousUnsheathedState;
     private void OnFrameworkUpdate() {
-        var unsheathedState = UIState.Instance()->WeaponState.WeaponUnsheathed;
+        var unsheathedState = UIState.Instance()->WeaponState.IsUnsheathed;
         if (previousUnsheathedState == null) {
             previousUnsheathedState = unsheathedState;
             return;
@@ -60,7 +61,7 @@ public unsafe class CombatMovementControl : Tweak {
         
         if (unsheathedState != previousUnsheathedState) {
             previousUnsheathedState = unsheathedState;
-            var v = unsheathedState == 1 ? Config.WeaponDrawn : Config.WeaponSheathed;
+            var v = unsheathedState ? Config.WeaponDrawn : Config.WeaponSheathed;
             if (v == MoveModeType.Ignore) return;
             GameConfig.UiControl.Set("MoveMode", (uint) v);
         }
