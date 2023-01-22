@@ -8,7 +8,6 @@ namespace SimpleTweaksPlugin.Tweaks;
 public unsafe class TreasureHuntTargets : Tweak {
     public override string Name => "Block Targeting Treasure Hunt Enemies";
     public override string Description => "Disable targeting for enemies that are part of another players Treasure Hunt duty.";
-    public override bool Experimental => true;
     
     private delegate bool GetIsTargetable(GameObject* character);
     private HookWrapper<GetIsTargetable> isTargetableHook;
