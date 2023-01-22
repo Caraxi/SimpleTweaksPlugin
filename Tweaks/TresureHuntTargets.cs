@@ -9,7 +9,7 @@ public unsafe class TreasureHuntTargets : Tweak {
     public override string Name => "Block Targeting Treasure Hunt Enemies";
     public override string Description => "Disable targeting for enemies that are part of another players Treasure Hunt duty.";
     
-    private delegate bool GetIsTargetable(GameObject* character);
+    private delegate byte GetIsTargetable(GameObject* character);
     private HookWrapper<GetIsTargetable> isTargetableHook;
 
     public override void Enable() {
@@ -19,16 +19,12 @@ public unsafe class TreasureHuntTargets : Tweak {
         base.Enable();
     }
 
-    private bool IsTargetableDetour(GameObject* potentialTarget) {
+    private byte IsTargetableDetour(GameObject* potentialTarget) {
         var isTargetable = isTargetableHook.Original(potentialTarget);
-        if (!isTargetable) 
-            return false;
-        if (potentialTarget->ObjectKind != 2) 
-            return true;
-        if (potentialTarget->EventId.Type != EventHandlerType.TreasureHuntDirector) 
-            return true;
-
-        return potentialTarget->NamePlateIconId == 60094;
+        if (isTargetable == 0) return 0;
+        if (potentialTarget->ObjectKind != 2) return isTargetable;
+        if (potentialTarget->EventId.Type != EventHandlerType.TreasureHuntDirector) return isTargetable;
+        return potentialTarget->NamePlateIconId == 60094 ? isTargetable : byte.MinValue;
     }
 
     public override void Disable() {
