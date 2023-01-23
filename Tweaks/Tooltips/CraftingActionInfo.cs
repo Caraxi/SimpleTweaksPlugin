@@ -41,6 +41,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
         // Find Progress
         var p = (ProgressEfficiencyCalculation*) agent->Progress;
         for (var i = 0; i < sizeof(ProgressEfficiencyCalculations) / sizeof(ProgressEfficiencyCalculation); i++) {
+            if (p == null) break;
             if (p->ActionId == Action.Id) {
                 progress = p->ProgressIncrease;
                 break;
@@ -50,6 +51,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
         
         var q = (QualityEfficiencyCalculation*) agent->Quality;
         for (var i = 0; i < sizeof(QualityEfficiencyCalculations) / sizeof(QualityEfficiencyCalculation); i++) {
+            if (q == null) break;
             if (q->ActionId == Action.Id) {
                 quality = q->QualityIncrease;
                 break;
