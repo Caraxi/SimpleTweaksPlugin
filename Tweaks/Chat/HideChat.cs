@@ -1,5 +1,6 @@
 ﻿using Dalamud.Game;
 using Dalamud.Game.Command;
+using Dalamud.Game.ClientState.Conditions;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
@@ -10,15 +11,8 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 
 public unsafe class HideChat : ChatTweaks.SubTweak
 {
-    public class HideChatConfig : TweakConfig
-    {
-        public bool IsOnDemand = false;
-    }
-
-    public HideChatConfig Config { get; private set; }
-
     public override string Name => "Hide Chat";
-    public override string Description => $"Provides commands to hide the chat. ({Command} show|toggle|hide)";
+    public override string Description => $"Provides commands to hide the chat. ({Command} show|hide|toggle)";
 
     protected override string Author => "@dookssh @VariableVixen";
 
@@ -30,21 +24,10 @@ public unsafe class HideChat : ChatTweaks.SubTweak
     // If the plugin is failing, most likely you will need to update these IDs
     private readonly uint TextInputNodeID = 5;
     private readonly uint TextInputCursorID = 2;
-
     private readonly string[] ChatLogNodeNames = { "ChatLog", "ChatLogPanel_0", "ChatLogPanel_1", "ChatLogPanel_2", "ChatLogPanel_3" };
-
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) =>
-    {
-        hasChanged |= ImGui.Checkbox("Show on demand when typing.", ref Config.IsOnDemand);
-
-        if (!hasChanged) return;
-        if (!Config.IsOnDemand) SetVisibility(true);
-    };
 
     public override void Enable()
     {
-        Config = LoadConfig<HideChatConfig>() ?? new HideChatConfig();
-
         Service.Commands.AddHandler(Command, new CommandInfo(OnCommand)
         {
             HelpMessage = HelpMessage,
@@ -57,7 +40,6 @@ public unsafe class HideChat : ChatTweaks.SubTweak
 
     public override void Disable()
     {
-        SaveConfig(Config);
         Service.Commands.RemoveHandler(Command);
         Service.Framework.Update -= FrameworkUpdate;
         SetVisibility(true);
@@ -68,12 +50,10 @@ public unsafe class HideChat : ChatTweaks.SubTweak
     {
         try
         {
-            var visibility = GetChatInputCursorNode()->IsVisible;
-
-            if (visibility)
-                SetVisibility(true);
-            else if (Config.IsOnDemand)
-                SetVisibility(false);
+            // Always show chat when actively typing
+            var inputCursorNode = GetChatInputCursorNode();
+            if (inputCursorNode == null) return;
+            if (inputCursorNode->IsVisible) SetVisibility(true);
         }
         catch (Exception ex)
         {
