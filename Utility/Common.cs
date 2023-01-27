@@ -431,6 +431,21 @@ public static unsafe class Common {
         updateCursorHook?.Disable();
     }
     
+    public static string GetTexturePath(AtkImageNode* imageNode) {
+        if (imageNode == null) return null;
+        var partList = imageNode->PartsList;
+        if (partList == null || partList->Parts == null) return null;
+        if (imageNode->PartId >= partList->PartCount) return null;
+        var part = &partList->Parts[imageNode->PartId];
+        var textureInfo = part->UldAsset;
+        if (textureInfo == null) return null;
+        if (textureInfo->AtkTexture.TextureType != TextureType.Resource) return null;
+        var resource = textureInfo->AtkTexture.Resource;
+        if (resource == null) return null;
+        var handle = resource->TexFileResourceHandle;
+        if (handle == null) return null;
+        return handle->ResourceHandle.FileName.ToString();
+    }
     
 }
 

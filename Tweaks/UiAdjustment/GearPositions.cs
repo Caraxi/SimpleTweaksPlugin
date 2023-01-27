@@ -221,6 +221,12 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
         var backgroundImage = (AtkImageNode*) equipmentComponent->UldManager.SearchNodeById(15);
         if (backgroundImage != null) {
             backgroundImage->AtkResNode.ToggleVisibility(false);
+            var backgroundImagePath = Common.GetTexturePath(backgroundImage);
+            var isHighQuality = false;
+            if (!string.IsNullOrEmpty(backgroundImagePath)) {
+                isHighQuality = backgroundImagePath.EndsWith("_hr1.tex");
+            }
+
             for (var i = 0U; i < 2; i++) {
                 // Create
                 var bgImageNode = Common.GetNodeByID<AtkImageNode>(&equipmentComponent->UldManager, CustomNodes.GearPositionsBg + i, NodeType.Image);
@@ -274,7 +280,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
                     part->UldAsset = asset;
                     bgImageNode->PartsList = partsList;
 
-                    bgImageNode->LoadTexture("ui/uld/BagStatus.tex", (uint) (ConfigModule.Instance()->GetValue(ConfigOption.UiAssetType)->Int + 1));
+                    bgImageNode->LoadTexture("ui/uld/BagStatus.tex", (uint)(isHighQuality ? 2 : 1));
 
                     bgImageNode->AtkResNode.ToggleVisibility(true);
 
