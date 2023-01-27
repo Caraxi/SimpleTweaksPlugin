@@ -42,13 +42,15 @@ public unsafe class EstateListCommand : CommandTweak {
         }
 
         var useContentId = ulong.TryParse(arguments, out var contentId);
-        var friend = FriendList.List
-            .FirstOrDefault(friend => {
+        var friends = FriendList.List
+            .Where(friend => {
                 if (friend.HomeWorld != Service.ClientState.LocalPlayer?.CurrentWorld.Id) return false;
                 if (useContentId && contentId > 0 && friend.ContentId == contentId) return true;
-                return friend.Name.TextValue.Equals(arguments, StringComparison.InvariantCultureIgnoreCase);
-            });
+                return friend.Name.TextValue.StartsWith(arguments, StringComparison.InvariantCultureIgnoreCase);
+            }).ToList();
         
+        var friend = friends.FirstOrDefault(friend => friend.Name.TextValue.StartsWith(arguments, StringComparison.InvariantCultureIgnoreCase));
+        if (friend.ContentId == 0) friend = friends.FirstOrDefault();
         if (friend.ContentId == 0) {
             Service.Chat.PrintError($"No friend with name \"{arguments}\" on your current world.");
             return;
