@@ -53,7 +53,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
         SaveConfig(Config);
         Common.FrameworkUpdate -= FrameworkUpdate;
         PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.CraftingActionInfoIdentifier);
-        base.Dispose();
+        base.Disable();
     }
 
     private void SetGhost(AtkTextNode* textNode, AtkTextNode* maxTextNode, AtkComponentNode* gauge, uint addValue) {
