@@ -11,13 +11,6 @@ using SimpleTweaksPlugin.Utility;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 using GameObject = Dalamud.Game.ClientState.Objects.Types.GameObject;
 
-namespace SimpleTweaksPlugin {
-    public partial class UiAdjustmentsConfig {
-        public bool ShouldSerializeTargetHP() => TargetHP != null;
-        public TargetHP.Configs TargetHP = null;
-    }
-}
-
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class TargetHP : UiAdjustments.SubTweak {
         public class Configs : TweakConfig {
@@ -93,14 +86,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Description => "Displays the exact (or optionally rounded) value of target's hitpoints.";
 
         public override void Enable() {
-            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.TargetHP ?? new Configs();
+            Config = LoadConfig<Configs>() ?? new Configs();
             Service.Framework.Update += FrameworkUpdate;
             base.Enable();
         }
 
         public override void Disable() {
             SaveConfig(Config);
-            PluginConfig.UiAdjustments.TargetHP = null;
             Service.Framework.Update -= FrameworkUpdate;
             Update(true);
             base.Disable();
