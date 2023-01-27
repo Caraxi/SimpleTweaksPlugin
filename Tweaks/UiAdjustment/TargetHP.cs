@@ -74,7 +74,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             hasChanged |= ImGui.Checkbox("Disable Focus Target HP", ref Config.NoFocus);
 
             if (!Config.NoFocus) {
-                hasChanged |= ImGui.Checkbox("Align Left##AdjustTargetHPFocusAlignLeft", ref Config.FocusAlignLeft);
+                hasChanged |= ImGui.Checkbox("Align Left on Focus Target##AdjustTargetHPFocusAlignLeft", ref Config.FocusAlignLeft);
                 ImGui.SetNextItemWidth(150);
                 hasChanged |= ImGui.InputFloat("Focus Target X Offset##AdjustTargetHPFocusPositionX", ref Config.FocusPosition.X, 1, 5, "%.0f");
                 ImGui.SetNextItemWidth(150);
