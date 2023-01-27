@@ -7,6 +7,7 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Enums;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 #if DEBUG
 using SimpleTweaksPlugin.Debugging;
@@ -60,6 +61,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private bool InCombatDuty => Service.Condition[ConditionFlag.BoundByDuty] && !nonCombatTerritory.Contains(Service.ClientState.TerritoryType);
         
         private void Update(bool reset = false) {
+            if (Common.GetUnitBase("JobHudNotice") != null) reset = true;
             var stage = AtkStage.GetSingleton();
             var loadedUnitsList = &stage->RaptureAtkUnitManager->AtkUnitManager.AllLoadedUnitsList;
             var addonList = &loadedUnitsList->AtkUnitEntries;
