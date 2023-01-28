@@ -5,6 +5,7 @@ using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using System;
+using Dalamud.Game.Command;
 
 namespace SimpleTweaksPlugin.Tweaks.Chat;
 
@@ -20,10 +21,16 @@ public unsafe class HideChatAuto : ChatTweaks.SubTweak
 
     public HideChatAutoConfig Config { get; private set; }
 
+    // Note that since this is a chat SubTweak, we cannot inherit from CommandTweak
+    private string Command = "/autochatvis";
+    private string HelpMessage => $"[{Plugin.Name} {Name}";
+    private bool ShowInHelp = true;
     public override string Name => "Hide Chat Automatically";
-    public override string Description => $"Hides chat automatically except when typing.";
+    public override string Description => $"Hides chat automatically except when typing.\n" +
+                                          $"Provides command to temporarily enable/disable ({Command} enable|disable|toggle)";
     protected override string Author => "@dookssh";
 
+    private bool Paused = false;
     // If the plugin is failing, most likely you will need to update these IDs
     private readonly uint TextInputNodeID = 5;
     private readonly uint TextInputCursorID = 2;
@@ -47,6 +54,12 @@ public unsafe class HideChatAuto : ChatTweaks.SubTweak
 
     public override void Enable()
     {
+        Service.Commands.AddHandler(Command, new CommandInfo(OnCommand)
+        {
+            HelpMessage = HelpMessage,
+            ShowInHelp = ShowInHelp
+        });
+        
         Config = LoadConfig<HideChatAutoConfig>() ?? new HideChatAutoConfig();
         Service.Framework.Update += FrameworkUpdate;
         base.Enable();
@@ -54,6 +67,7 @@ public unsafe class HideChatAuto : ChatTweaks.SubTweak
 
     public override void Disable()
     {
+        Service.Commands.RemoveHandler(Command);
         SaveConfig(Config);
         Service.Framework.Update -= FrameworkUpdate;
         SetVisibility(true);
@@ -64,6 +78,8 @@ public unsafe class HideChatAuto : ChatTweaks.SubTweak
     {
         try
         {
+            if (Paused) return;
+            
             // Always show chat when actively typing
             var inputCursorNode = GetChatInputCursorNode();
             if (inputCursorNode == null) return;
@@ -93,6 +109,21 @@ public unsafe class HideChatAuto : ChatTweaks.SubTweak
         }
     }
 
+    private void OnCommand(string command, string args)
+    {
+        var argList = args.ToLower().Split(" ");
+
+        Paused = argList[0] switch
+        {
+            "enable" => false,
+            "unpause" => false,
+            "pause" => true,
+            "disable" => true,
+            "toggle" => !Paused,
+            _ => Paused
+        };
+    }
+    
     private AtkResNode* GetChatInputCursorNode()
     {
         var baseNode = Common.GetUnitBase("ChatLog");
