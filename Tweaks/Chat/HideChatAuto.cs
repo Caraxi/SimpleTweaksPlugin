@@ -71,7 +71,6 @@ public unsafe class HideChatAuto : ChatTweaks.SubTweak
             var visibility = inputCursorNode->IsVisible;
             if (visibility)
             {
-                Dalamud.Logging.PluginLog.Log(visibility.ToString());
                 SetVisibility(true);
                 return;
             }
