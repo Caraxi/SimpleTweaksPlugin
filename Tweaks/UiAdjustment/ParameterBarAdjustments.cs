@@ -218,6 +218,7 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
         if (hpNode != null) UpdateParameter(hpNode, reset ? DefaultConfig.HpBar : Config.HpBar, reset ? DefaultConfig.HpValue : Config.HpValue, reset ? DefaultConfig.HpColor : Config.HpColor, reset ? DefaultConfig.HideHpTitle : Config.HideHpTitle);
 
         var centerHpBar = hideMp && Config.CenterHpWithMpHidden;
-        hpNode->AtkResNode.SetPositionFloat(centerHpBar ? 176 : 96, 12);
+        if (centerHpBar)
+            hpNode->AtkResNode.SetPositionFloat(Config.HpBar.OffsetX + ((Config.MpBar.OffsetX - Config.HpBar.OffsetX) / 2), Config.HpBar.OffsetY + ((Config.MpBar.OffsetY - Config.HpBar.OffsetY) / 2));
     }
 }
