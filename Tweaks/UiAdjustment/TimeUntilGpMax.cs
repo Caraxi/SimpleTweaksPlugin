@@ -214,7 +214,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
             var minutesUntilFull = 0;
             if (Config.eorzeaTime) {
                 var hoursUntilFull = 0;
-	        secondsUntilFull = (secondsUntilFull * 3600) / 175;
+	        secondsUntilFull = (secondsUntilFull * 3600) / 175;    /* convert Earth seconds into Eorzea seconds */
 		while (secondsUntilFull >= 60) {
 		    minutesUntilFull += 1;
 		    secondsUntilFull -= 60;
@@ -223,7 +223,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
   		    minutesUntilFull -= 60;
                     hoursUntilFull += 1;
                 }
-		textNode->SetText($"{hoursUntilFull:00}:{minutesUntilFull:00}:{(int)secondsUntilFull:00}");
+		textNode->SetText($"{hoursUntilFull:00}:{minutesUntilFull:00}:{(int)secondsUntilFull:00}");    /* It may be more than 59:59 so we need hours */
 	    }
             else
             {
