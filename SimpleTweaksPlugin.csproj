@@ -36,6 +36,8 @@
       </None>
     </ItemGroup>
     <ItemGroup>
+      <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+      <PackageReference Include="Microsoft.NETCore.App" Version="2.2.8" />
       <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
       <PackageReference Include="DalamudPackager" Version="2.1.10" />
     </ItemGroup>
@@ -52,6 +54,7 @@
 			<Private Condition="'$(Configuration)' == 'Release'">false</Private>
 			<HintPath Condition="'$(Configuration)' == 'Debug'">$(ProjectDir)\lib\FFXIVClientStructs\bin\$(ConfigurationName)\FFXIVClientStructs.dll</HintPath>
 			<HintPath Condition="'$(Configuration)' == 'Release'">$(DalamudLibPath)\FFXIVClientStructs.dll</HintPath>
+			<Private>True</Private>
 		</Reference>
 		<Reference Include="Microsoft.CSharp" />
         <Reference Include="Newtonsoft.Json">

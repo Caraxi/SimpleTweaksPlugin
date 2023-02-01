@@ -31,7 +31,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
     }
 
     protected override DrawConfigDelegate DrawConfigTree => ((ref bool hasChanged) => {
-        ImGui.Checkbox(LocString("eorzeaTime", "Display ETA in Eorzea Time (vs Earth time)"), ref TweakConfig.eorzeaTime);
+        ImGui.Checkbox(LocString("eorzeaTime", "Display ETA in Eorzea Time (vs Earth time)"), ref Config.eorzeaTime);
         ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
         hasChanged |= ImGui.SliderInt("Target GP##timeUntilGpMax", ref Config.GpGoal, -1, 1000);
         ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
@@ -211,18 +211,29 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
 
             if (secondsUntilFull < 0) secondsUntilFull = 0;
             var minutesUntilFull = 0;
-            var hoursUntilFull = 0;
-            while (secondsUntilFull >= 60) {
-                minutesUntilFull += 1;
-                secondsUntilFull -= 60;
-            }
-            if (eorzeaTime) {
-                while(minutesUntilFull >= 60) {
-                         minutesUntilFull -= 60;
-                         hoursUntilFull += 1;
+            if (Config.eorzeaTime) {
+                var hoursUntilFull = 0;
+			 secondsUntilFull = (secondsUntilFull * 3600) / 175;
+		      while (secondsUntilFull >= 60) {
+		          minutesUntilFull += 1;
+			     secondsUntilFull -= 60;
+		      }
+			 while (minutesUntilFull >= 60) {
+  		          minutesUntilFull -= 60;
+                    hoursUntilFull += 1;
                 }
-            }
-            textNode->SetText($"{hoursUntilFull:00}:{minutesUntilFull:00}:{(int)secondsUntilFull:00}");
+		      textNode->SetText($"{hoursUntilFull:00}:{minutesUntilFull:00}:{(int)secondsUntilFull:00}");
+	       }
+            else
+            {
+			 while (secondsUntilFull >= 60)
+			 {
+				minutesUntilFull += 1;
+				secondsUntilFull -= 60;
+			 }
+			 textNode->SetText($"{minutesUntilFull:00}:{(int)secondsUntilFull:00}");
+	       }
+            
         } else {
             textNode->AtkResNode.ToggleVisibility(false);
         }
