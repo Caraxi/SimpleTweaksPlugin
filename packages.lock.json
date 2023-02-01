@@ -1,19 +1,22 @@
 {
   "version": 1,
   "dependencies": {
-    "net7.0-windows7.0": {
-      "DalamudPackager": {
-        "type": "Direct",
-        "requested": "[2.1.10, )",
-        "resolved": "2.1.10",
-        "contentHash": "S6NrvvOnLgT4GDdgwuKVJjbFo+8ZEj+JsEYk9ojjOR/MMfv1dIFpT8aRJQfI24rtDcw1uF+GnSSMN4WW1yt7fw=="
-      },
-      "System.Numerics.Vectors": {
-        "type": "Direct",
-        "requested": "[4.5.0, )",
-        "resolved": "4.5.0",
-        "contentHash": "QQTlPTl06J/iiDbJCiepZ4H//BVraReU4O4EoRw1U02H5TLUIT7xn3GnDp9AXPSlJUDyFs4uWjWafNX6WrAojQ=="
-      }
-    }
+     "net7.0-windows7.0": {
+          "DalamudPackager": {
+               "type": "Direct",
+               "requested": "[2.1.10, )",
+               "resolved": "2.1.10",
+               "contentHash": "S6NrvvOnLgT4GDdgwuKVJjbFo+8ZEj+JsEYk9ojjOR/MMfv1dIFpT8aRJQfI24rtDcw1uF+GnSSMN4WW1yt7fw=="
+          },
+          "System.Numerics.Vectors": {
+               "type": "Direct",
+               "requested": "[4.5.0, )",
+               "resolved": "4.5.0",
+               "contentHash": "QQTlPTl06J/iiDbJCiepZ4H//BVraReU4O4EoRw1U02H5TLUIT7xn3GnDp9AXPSlJUDyFs4uWjWafNX6WrAojQ=="
+          },
+          "xivcommon": {
+               "type": "Project"
+          }
+     }
   }
 }
