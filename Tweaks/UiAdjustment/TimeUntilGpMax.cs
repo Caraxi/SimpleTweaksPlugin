@@ -21,16 +21,17 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
     private int gpPerTick = 5;
     private float timePerTick = 3f;
     private int forceVisible = 0;
-    private bool eorzeaTime = true;
     public delegate void UpdateParamDelegate(uint a1, uint* a2, byte a3);
     private HookWrapper<UpdateParamDelegate> updateParamHook;
         
     public class Configs : TweakConfig {
         public int GpGoal = -1;
         public Vector2 PositionOffset = new(0);
+        public bool eorzeaTime = true;
     }
 
     protected override DrawConfigDelegate DrawConfigTree => ((ref bool hasChanged) => {
+        ImGui.Checkbox(LocString("eorzeaTime", "Display ETA in Eorzea Time (vs Earth time)"), ref TweakConfig.eorzeaTime);
         ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
         hasChanged |= ImGui.SliderInt("Target GP##timeUntilGpMax", ref Config.GpGoal, -1, 1000);
         ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
@@ -38,7 +39,6 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
             forceVisible = 5;
             hasChanged = true;
         }
-
         if (hasChanged) Update();
     });
 
