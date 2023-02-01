@@ -211,23 +211,18 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
 
             if (secondsUntilFull < 0) secondsUntilFull = 0;
             var minutesUntilFull = 0;
+            var hoursUntilFull = 0;
             while (secondsUntilFull >= 60) {
                 minutesUntilFull += 1;
                 secondsUntilFull -= 60;
             }
-            textNode->SetText($"{minutesUntilFull:00}:{(int)secondsUntilFull:00}");
-            if(eorzeaTime){
-                  int tempMin = 0, tempSec = 0;
-                    tempSec += secondsUntilFull + (60 * minutesUntilFull);
-                    tempSec *= ((float)3600 / (float)175);
-                    while (tempSec >= 60)
-				{
-                         tempMin += 1;
-                         tempSec -= 60;
-				}
-                    minutesUntilFull = tempMin;
-                    secondsUntilFull = tempSec;
-            }          
+            if (eorzeaTime) {
+                while(minutesUntilFull >= 60) {
+                         minutesUntilFull -= 60;
+                         hoursUntilFull += 1;
+                }
+            }
+            textNode->SetText($"{hoursUntilFull:00}:{minutesUntilFull:00}:{(int)secondsUntilFull:00}");
         } else {
             textNode->AtkResNode.ToggleVisibility(false);
         }
