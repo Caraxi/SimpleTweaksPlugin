@@ -21,6 +21,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
     private int gpPerTick = 5;
     private float timePerTick = 3f;
     private int forceVisible = 0;
+    private bool eorzeaTime = true;
     public delegate void UpdateParamDelegate(uint a1, uint* a2, byte a3);
     private HookWrapper<UpdateParamDelegate> updateParamHook;
         
@@ -215,6 +216,18 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
                 secondsUntilFull -= 60;
             }
             textNode->SetText($"{minutesUntilFull:00}:{(int)secondsUntilFull:00}");
+            if(eorzeaTime){
+                  int tempMin = 0, tempSec = 0;
+                    tempSec += secondsUntilFull + (60 * minutesUntilFull);
+                    tempSec *= ((float)3600 / (float)175);
+                    while (tempSec >= 60)
+				{
+                         tempMin += 1;
+                         tempSec -= 60;
+				}
+                    minutesUntilFull = tempMin;
+                    secondsUntilFull = tempSec;
+            }          
         } else {
             textNode->AtkResNode.ToggleVisibility(false);
         }
