@@ -22,13 +22,13 @@ public unsafe class HighResScreenshots : Tweak {
     private HookWrapper<IsInputIDClickedDelegate> isInputIDClickedHook;
 
     protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-        ImGui.Text("This tweak will increase the resolution of screenshots taken in game. It will NOT increase the scale of your HUD/plugin windows.");
-        ImGui.Text("Your HUD will appear smaller while the screenshot is processing.");
+        ImGui.TextWrapped("This tweak will increase the resolution of screenshots taken in game. It will NOT increase the scale of your HUD/plugin windows.");
+        ImGui.TextWrapped("Your HUD will appear smaller while the screenshot is processing.");
         
         ImGui.NewLine();
         
-        ImGui.Text("Higher scale will take longer and use more resources.");
-        ImGui.Text("The higher the scale is, the longer the delay lasts. Experiment with these settings to find the best options for your system.");
+        ImGui.TextWrapped("Higher scale will take longer and use more resources.");
+        ImGui.TextWrapped("The higher the scale is, the longer the delay lasts. Experiment with these settings to find the best options for your system.");
         
         ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale * 100);
         hasChanged |= ImGui.InputInt("Scale", ref Config.Scale);
