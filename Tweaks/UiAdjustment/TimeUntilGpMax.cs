@@ -39,6 +39,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
             forceVisible = 5;
             hasChanged = true;
         }
+
         if (hasChanged) Update();
     });
 
