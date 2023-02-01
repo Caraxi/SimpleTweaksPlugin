@@ -27,7 +27,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
         public int GpGoal = -1;
         public Vector2 PositionOffset = new(0);
-        public bool eorzeaTime = true;
+        public bool eorzeaTime = false;
     }
 
     protected override DrawConfigDelegate DrawConfigTree => ((ref bool hasChanged) => {
