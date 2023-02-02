@@ -1,4 +1,5 @@
-﻿using Dalamud.Interface;
+﻿using System;
+using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
@@ -13,28 +14,31 @@ public unsafe class HighResScreenshots : Tweak {
 
     public class Configs : TweakConfig {
         public int Scale = 2;
-        public int Delay = 5;
+        public float Delay = 1.0f;
     }
 
     public Configs Config { get; private set; }
 
     private delegate byte IsInputIDClickedDelegate(nint a1, int a2);
+
     private HookWrapper<IsInputIDClickedDelegate> isInputIDClickedHook;
 
     protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-        ImGui.TextWrapped("This tweak will increase the resolution of screenshots taken in game. It will NOT increase the scale of your HUD/plugin windows.");
+        ImGui.TextWrapped(
+            "This tweak will increase the resolution of screenshots taken in game. It will NOT increase the scale of your HUD/plugin windows.");
         ImGui.TextWrapped("Your HUD will appear smaller while the screenshot is processing.");
-        
+
         ImGui.NewLine();
-        
+
         ImGui.TextWrapped("Higher scale will take longer and use more resources.");
-        ImGui.TextWrapped("The higher the scale is, the longer the delay lasts. Experiment with these settings to find the best options for your system.");
-        
+        ImGui.TextWrapped(
+            "The higher the scale is, the longer the delay lasts. Experiment with these settings to find the best options for your system.");
+
         ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale * 100);
         hasChanged |= ImGui.InputInt("Scale", ref Config.Scale);
-        
+
         ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale * 100);
-        hasChanged |= ImGui.InputInt("Delay", ref Config.Delay);
+        hasChanged |= ImGui.InputFloat("Delay", ref Config.Delay);
 
         if (Config.Scale < 2) Config.Scale = 2;
         if (Config.Delay < 0) Config.Delay = 0;
@@ -43,30 +47,25 @@ public unsafe class HighResScreenshots : Tweak {
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
 
-        isInputIDClickedHook ??= Common.Hook<IsInputIDClickedDelegate>("E9 ?? ?? ?? ?? 83 7F 44 02", IsInputIDClickedDetour);
+        isInputIDClickedHook ??=
+            Common.Hook<IsInputIDClickedDelegate>("E9 ?? ?? ?? ?? 83 7F 44 02", IsInputIDClickedDetour);
         isInputIDClickedHook?.Enable();
 
         base.Enable();
     }
 
-    private int stage;
-    private int delayTicks;
+    private bool shouldPress;
     private uint oldWidth;
     private uint oldHeight;
-    
+
     const int ScreenshotButton = 543;
-    
+
     // IsInputIDClicked is called from Client::UI::UIInputModule.CheckScreenshotState, which is polled
-    // We split into three stages on press:
-    // - change res
-    // - wait for delay & take screenshot
-    // - fix res
+    // We change the res when the button is pressed and tell it to take a screenshot the next time it is polled
     private byte IsInputIDClickedDetour(nint a1, int a2) {
         var orig = isInputIDClickedHook.Original(a1, a2);
-        
-        if (orig == 1 && a2 == ScreenshotButton && stage == 0) {
-            stage = 1;
 
+        if (orig == 1 && a2 == ScreenshotButton && !shouldPress) {
             var device = Device.Instance();
             oldWidth = device->Width;
             oldHeight = device->Height;
@@ -75,28 +74,23 @@ public unsafe class HighResScreenshots : Tweak {
             device->NewHeight = oldHeight * (uint)Config.Scale;
             device->RequestResolutionChange = 1;
 
-            return 0;
-        }
-
-        if (a2 == ScreenshotButton && stage == 1) {
-            delayTicks++;
-            if (delayTicks >= Config.Delay) {
-                stage = 2;
-                delayTicks = 0;
-
-                return 1;
-            }
+            Service.Framework.RunOnTick(() => { shouldPress = true; }, delay: TimeSpan.FromSeconds(Config.Delay));
 
             return 0;
         }
 
-        if (a2 == ScreenshotButton && stage == 2) {
-            stage = 0;
+        if (a2 == ScreenshotButton && shouldPress) {
+            shouldPress = false;
+            
+            // Reset the res back to normal after the screenshot is taken
+            Service.Framework.RunOnTick(() => {
+                var device = Device.Instance();
+                device->NewWidth = oldWidth;
+                device->NewHeight = oldHeight;
+                device->RequestResolutionChange = 1;
+            }, delayTicks: 1);
 
-            var device = Device.Instance();
-            device->NewWidth = oldWidth;
-            device->NewHeight = oldHeight;
-            device->RequestResolutionChange = 1;
+            return 1;
         }
 
         return orig;
