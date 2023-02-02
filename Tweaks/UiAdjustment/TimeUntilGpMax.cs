@@ -225,7 +225,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
                     hoursUntilFull += 1;
                 }
 
-                textNode->SetText($"{hoursUntilFull:00}:{minutesUntilFull:00}:{(int)secondsUntilFull:00}"); /* It may be more than 59:59 so we need hours */
+                textNode->SetText($"{hoursUntilFull:00}:{minutesUntilFull:00}");
             } else {
                 while (secondsUntilFull >= 60) {
                     minutesUntilFull += 1;
