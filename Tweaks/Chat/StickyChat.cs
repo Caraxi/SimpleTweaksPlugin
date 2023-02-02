@@ -52,6 +52,12 @@ public unsafe partial class StickyChat : ChatTweaks.SubTweak
         base.Disable();
     }
 
+    public override void Dispose()
+    {
+        processChatInputHook?.Dispose();
+        base.Dispose();
+    }
+
     private byte ProcessChatInputDetour(nint uiModule, byte** message, nint a3)
     {
         try
