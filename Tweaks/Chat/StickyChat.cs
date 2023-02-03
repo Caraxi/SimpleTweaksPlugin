@@ -60,6 +60,8 @@ public unsafe partial class StickyChat : ChatTweaks.SubTweak
 
     private byte ProcessChatInputDetour(nint uiModule, byte** message, nint a3)
     {
+        var result = processChatInputHook!.Original(uiModule, message, a3);
+        
         try
         {
             var stringSize = StringLength(message);
@@ -118,8 +120,8 @@ public unsafe partial class StickyChat : ChatTweaks.SubTweak
         {
             PluginLog.Error(e, "Something went wrong in StickyChat, let MidoriKami know!");
         }
-        
-        return processChatInputHook!.Original(uiModule, message, a3);
+
+        return result;
     }
 
     private static int StringLength(byte** message)
