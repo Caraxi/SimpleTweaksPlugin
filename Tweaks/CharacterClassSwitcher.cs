@@ -100,6 +100,18 @@ public unsafe class CharacterClassSwitcher : Tweak {
                     }
                 }
             }
+
+            var dohIconImage = atkUnitBase->GetImageNodeById(64);
+            if (dohIconImage != null) {
+                dohIconImage->AtkResNode.Flags |= (short)(NodeFlags.EmitsEvents | NodeFlags.HasCollision | NodeFlags.RespondToMouse);
+                dohIconImage->AtkResNode.AddEvent(AtkEventType.MouseClick, 0x53542000, (AtkEventListener*) atkUnitBase, (AtkResNode*) dohIconImage, false);
+            }
+            var dohHeaderText = atkUnitBase->GetTextNodeById(65);
+            if (dohHeaderText != null) {
+                dohHeaderText->AtkResNode.Flags |= (short)(NodeFlags.EmitsEvents | NodeFlags.HasCollision | NodeFlags.RespondToMouse);
+                dohHeaderText->AtkResNode.AddEvent(AtkEventType.MouseClick, 0x53542000, (AtkEventListener*) atkUnitBase, (AtkResNode*) dohIconImage, false);
+            }
+            
             SimpleLog.Log("CharacterClass Events Setup");
         }
     }
@@ -115,6 +127,8 @@ public unsafe class CharacterClassSwitcher : Tweak {
     }
 
     private byte EventDetour(AtkUnitBase* atkUnitBase, AtkEventType eventType, uint eventParam, AtkEvent* atkEvent, byte* a5) {
+        if (eventType == AtkEventType.MouseClick && eventParam == 0x53542000) // Open Desynthesis Skill Window
+            return eventHook.Original(atkUnitBase, AtkEventType.ButtonClick, 22, atkEvent, a5);
         if (eventType == AtkEventType.InputReceived) {
             if (a5 == null || a5[0] != 0x01 || a5[4] != 1) return eventHook.Original(atkUnitBase, eventType, eventParam, atkEvent, a5);
         }
