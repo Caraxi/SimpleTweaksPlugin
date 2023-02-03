@@ -6,16 +6,13 @@ using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-// TODO:
-// - Work out a way to function on DoH
-
 namespace SimpleTweaksPlugin.Tweaks; 
 
 public unsafe class CharacterClassSwitcher : Tweak {
     public override string Name => "Character Window Job Switcher";
-    public override string Description => "Allow clicking on classes to switch to gearsets. [Note: does not work on crafters]";
+    public override string Description => "Allow clicking on classes to switch to gearsets.";
 
-    private delegate byte EventHandle(AtkUnitBase* atkUnitBase, AtkEventType eventType, uint eventParam, AtkEvent* atkEvent, void* a5);
+    private delegate byte EventHandle(AtkUnitBase* atkUnitBase, AtkEventType eventType, uint eventParam, AtkEvent* atkEvent, byte* a5);
     private delegate void* SetupHandle(AtkUnitBase* atkUnitBase, int a2);
     private HookWrapper<EventHandle> eventHook;
     private HookWrapper<SetupHandle> setupHook;
@@ -59,6 +56,15 @@ public unsafe class CharacterClassSwitcher : Tweak {
         { 35, 60 }, // RDM
         { 36, 62 }, // BLU
 
+        { 08, 67 }, // CRP
+        { 09, 68 }, // BSM
+        { 10, 69 }, // ARM
+        { 11, 70 }, // GSM
+        { 12, 71 }, // LTW
+        { 13, 72 }, // WVR
+        { 14, 73 }, // ALC
+        { 15, 74 }, // CUL
+        
         { 16, 80 }, // MIN
         { 17, 82 }, // BTN
         { 18, 84 }, // FSH
@@ -71,11 +77,28 @@ public unsafe class CharacterClassSwitcher : Tweak {
             foreach (var (cjId, nodeId) in ClassJobComponentMap) {
                 var componentNode = (AtkComponentNode*) atkUnitBase->GetNodeById(nodeId);
                 if (componentNode == null) continue;
-                if (componentNode->AtkResNode.Type != (NodeType)1003) continue;
-                var colNode = (AtkCollisionNode*)componentNode->Component->UldManager.SearchNodeById(8);
-                if (colNode == null) continue;
-                if (colNode->AtkResNode.Type != NodeType.Collision) continue;
-                colNode->AtkResNode.AddEvent(AtkEventType.MouseClick, 0x53541000 + cjId, (AtkEventListener*) atkUnitBase, (AtkResNode*) colNode, false);
+
+                switch (componentNode->AtkResNode.Type) {
+                    case (NodeType)1001: {
+                        // DoH
+                        var evt = componentNode->AtkResNode.AtkEventManager.Event;
+                        while (evt != null && evt->Param == 14 + cjId) {
+                            if (evt->Type == (byte)AtkEventType.ButtonClick) evt->Param = 0x53541000 + cjId;
+                            evt = evt->NextEvent;
+                        }
+                        
+                        break;
+                    }
+                    case (NodeType)1003: {
+                        // Others
+                        var colNode = (AtkCollisionNode*)componentNode->Component->UldManager.SearchNodeById(8);
+                        if (colNode == null) continue;
+                        if (colNode->AtkResNode.Type != NodeType.Collision) continue;
+                        colNode->AtkResNode.AddEvent(AtkEventType.MouseClick, 0x53541000 + cjId, (AtkEventListener*) atkUnitBase, (AtkResNode*) colNode, false);
+                        colNode->AtkResNode.AddEvent(AtkEventType.InputReceived, 0x53541000 + cjId, (AtkEventListener*) atkUnitBase, (AtkResNode*) colNode, false);
+                        break;
+                    }
+                }
             }
             SimpleLog.Log("CharacterClass Events Setup");
         }
@@ -91,14 +114,16 @@ public unsafe class CharacterClassSwitcher : Tweak {
         return retVal;
     }
 
-    private byte EventDetour(AtkUnitBase* atkUnitBase, AtkEventType eventType, uint eventParam, AtkEvent* atkEvent, void* a5) {
+    private byte EventDetour(AtkUnitBase* atkUnitBase, AtkEventType eventType, uint eventParam, AtkEvent* atkEvent, byte* a5) {
+        if (eventType == AtkEventType.InputReceived) {
+            if (a5 == null || a5[0] != 0x01 || a5[4] != 1) return eventHook.Original(atkUnitBase, eventType, eventParam, atkEvent, a5);
+        }
         try {
-            if (eventType == AtkEventType.MouseClick && (eventParam & 0x53541000) == 0x53541000) {
-                if (atkEvent->Node == null || atkEvent->Node->PrevSiblingNode == null) return 0;
-                if (atkEvent->Node->PrevSiblingNode->Color.A == 0x3F) return 0;
+            if (eventType is AtkEventType.MouseClick or AtkEventType.ButtonClick or AtkEventType.InputReceived && (eventParam & 0x53541000) == 0x53541000) {
                 var cjId = eventParam - 0x53541000;
-                SimpleLog.Log($"Change Class: ClassJob#{cjId}");
                 var classJob = Service.Data.Excel.GetSheet<ClassJob>()?.GetRow(cjId);
+                SimpleLog.Log($"Change Class: ClassJob#{cjId} ({classJob.Abbreviation.RawString})");
+                
                 if (classJob != null) {
                     var gearsetId = GetGearsetForClassJob(classJob);
                     if (gearsetId != null) {
@@ -142,11 +167,25 @@ public unsafe class CharacterClassSwitcher : Tweak {
                 foreach (var (cjId, nodeId) in ClassJobComponentMap) {
                     var componentNode = (AtkComponentNode*) atkUnitBase->GetNodeById(nodeId);
                     if (componentNode == null) continue;
-                    if (componentNode->AtkResNode.Type != (NodeType)1003) continue;
-                    var colNode = (AtkCollisionNode*)componentNode->Component->UldManager.SearchNodeById(8);
-                    if (colNode == null) continue;
-                    if (colNode->AtkResNode.Type != NodeType.Collision) continue;
-                    colNode->AtkResNode.RemoveEvent(AtkEventType.MouseClick, 0x53541000 + cjId, (AtkEventListener*) atkUnitBase, false);
+
+                    switch (componentNode->AtkResNode.Type) {
+                        case (NodeType)1001: {
+                            var evt = componentNode->AtkResNode.AtkEventManager.Event;
+                            while (evt != null) {
+                                if (evt->Type == (byte)AtkEventType.ButtonClick && evt->Param == 0x53541000 + cjId) evt->Param = 14 + cjId;
+                                evt = evt->NextEvent;
+                            }
+                            break;
+                        }
+                        case (NodeType)1003: {
+                            var colNode = (AtkCollisionNode*)componentNode->Component->UldManager.SearchNodeById(8);
+                            if (colNode == null) continue;
+                            if (colNode->AtkResNode.Type != NodeType.Collision) continue;
+                            colNode->AtkResNode.RemoveEvent(AtkEventType.MouseClick, 0x53541000 + cjId, (AtkEventListener*) atkUnitBase, false);
+                            colNode->AtkResNode.RemoveEvent(AtkEventType.InputReceived, 0x53541000 + cjId, (AtkEventListener*) atkUnitBase, false);
+                            break;
+                        }
+                    }
                 }
             } catch {
                 //
