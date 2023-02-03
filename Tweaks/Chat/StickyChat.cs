@@ -34,7 +34,7 @@ public unsafe partial class StickyChat : ChatTweaks.SubTweak
     
     public override void Setup()
     {
-        if(Ready) return;
+        if (Ready) return;
 
         SignatureHelper.Initialise(this);
         Ready = true;
