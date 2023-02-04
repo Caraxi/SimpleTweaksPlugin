@@ -10,6 +10,7 @@ using System.Reflection;
 using Dalamud;
 using Dalamud.Game;
 using Dalamud.Interface.Internal.Notifications;
+using Dalamud.Interface.Windowing;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Utility;
@@ -27,8 +28,6 @@ namespace SimpleTweaksPlugin {
         public List<TweakProvider> TweakProviders = new();
 
         public IconManager IconManager { get; private set; }
-
-        private bool drawConfigWindow = false;
 
         public string AssemblyLocation { get; private set; } = Assembly.GetExecutingAssembly().Location;
         
@@ -79,6 +78,9 @@ namespace SimpleTweaksPlugin {
 
         public int UpdateFrom = -1;
 
+        private ConfigWindow configWindow = new ConfigWindow();
+        private WindowSystem windowSystem = new WindowSystem("SimpleTweaksPlugin");
+
         public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface) {
             Plugin = this;
             pluginInterface.Create<Service>();
@@ -103,6 +105,8 @@ namespace SimpleTweaksPlugin {
 
             Common.Setup();
 
+            windowSystem.AddWindow(configWindow);
+            
             PluginInterface.UiBuilder.Draw += this.BuildUI;
             pluginInterface.UiBuilder.OpenConfigUi += OnOpenConfig;
 
@@ -135,7 +139,7 @@ namespace SimpleTweaksPlugin {
 #if DEBUG
             if (!PluginConfig.DisableAutoOpen) {
                 DebugManager.Enabled = true;
-                drawConfigWindow = true;
+                configWindow.IsOpen = true;
             }
 #endif
             DebugManager.Reload();
@@ -271,10 +275,7 @@ namespace SimpleTweaksPlugin {
                 }
             }
 
-            drawConfigWindow = !drawConfigWindow;
-            if (!drawConfigWindow) {
-                SaveAllConfig();
-            }
+            configWindow.IsOpen = !configWindow.IsOpen;
         }
 
         public BaseTweak? GetTweakById(string s, IEnumerable<BaseTweak>? tweakList = null) {
@@ -317,6 +318,9 @@ namespace SimpleTweaksPlugin {
         }
 
         private void BuildUI() {
+            
+            
+            
             foreach (var e in ErrorList.Where(e => e.IsNew && e.Tweak != null)) {
                 e.IsNew = false;
                 e.Tweak.Disable();
@@ -327,12 +331,7 @@ namespace SimpleTweaksPlugin {
                 DebugManager.DrawDebugWindow(ref DebugManager.Enabled);
             }
 
-            var windowWasOpen = drawConfigWindow;
-            drawConfigWindow = drawConfigWindow && PluginConfig.DrawConfigUI();
-
-            if (windowWasOpen && !drawConfigWindow) {
-                SaveAllConfig();
-            }
+            windowSystem.Draw();
 
             if (ShowErrorWindow) {
                 if (ErrorList.Count > 0) {
@@ -383,7 +382,7 @@ namespace SimpleTweaksPlugin {
                         if (ImGui.GetIO().KeyShift) {
                             DebugManager.Enabled = !DebugManager.Enabled;
                         } else {
-                            drawConfigWindow = !drawConfigWindow;
+                            configWindow.IsOpen = !configWindow.IsOpen;
                         }
                     }
                     ImGui.EndMainMenuBar();

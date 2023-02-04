@@ -122,14 +122,9 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
         ImGui.Separator();
     }
         
-    public bool DrawConfigUI() {
-        var drawConfig = true;
+    public void DrawConfigUI() {
         var changed = false;
-        var scale = ImGui.GetIO().FontGlobalScale;
-        var windowFlags = ImGuiWindowFlags.NoCollapse;
-        ImGui.SetNextWindowSizeConstraints(new Vector2(600 * scale, 200 * scale), new Vector2(800 * scale, 800 * scale));
-        ImGui.Begin($"{plugin.Name} Config", ref drawConfig, windowFlags);
-            
+
         var showbutton = plugin.ErrorList.Count != 0 || !HideKofi;
         var buttonText = plugin.ErrorList.Count > 0 ? $"{plugin.ErrorList.Count} Errors Detected" : "Support on Ko-fi";
         var buttonColor = (uint) (plugin.ErrorList.Count > 0 ? 0x000000FF : 0x005E5BFF);
@@ -501,14 +496,9 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                 ImGui.EndTabBar();
             }
         }
-            
-        ImGui.End();
-
         if (changed) {
             Save();
         }
-            
-        return drawConfig;
     }
 
     public void RefreshSearch() => lastSearchInput = string.Empty;
