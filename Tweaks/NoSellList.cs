@@ -81,7 +81,7 @@ public unsafe class NoSellList : Tweak {
                             ImGui.SetTooltip("Loads list of items from clipboard. One item per line, supports Teamcraft item list format.");
                         }
                     } else {
-                        if (ImGui.Button("Add Item")) {
+                        if (ImGui.Button("Add Item") && !string.IsNullOrWhiteSpace(inputNewItemName)) {
                             addItemError = string.Empty;
                             var id = 0U;
                             var idValid = uint.TryParse(inputNewItemName, out id);
@@ -119,6 +119,7 @@ public unsafe class NoSellList : Tweak {
                             itemList.Add(item.RowId);
                             changed = true;
                             inputNewItemName = string.Empty;
+                            addItemError = string.Empty;
                         }
                     }
                     
