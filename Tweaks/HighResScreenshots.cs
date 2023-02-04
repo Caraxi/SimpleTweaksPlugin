@@ -11,6 +11,7 @@ public unsafe class HighResScreenshots : Tweak {
     public override string Name => "High Resolution Screenshots";
     public override string Description => "Increases the resolution in game screenshots are taken at.";
     protected override string Author => "NotNite";
+    public override bool Experimental => true;
 
     public class Configs : TweakConfig {
         public int Scale = 2;
