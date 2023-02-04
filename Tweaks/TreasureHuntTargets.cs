@@ -24,6 +24,7 @@ public unsafe class TreasureHuntTargets : Tweak {
     private byte IsTargetableDetour(GameObject* potentialTarget) {
         var isTargetable = isTargetableHook.Original(potentialTarget);
         if (isTargetable == 0) return 0;
+        if (potentialTarget == null) return isTargetable;
         if (potentialTarget->ObjectKind != 2) return isTargetable;
         if (potentialTarget->SubKind != 5) return isTargetable;
         if (potentialTarget->EventId.Type != EventHandlerType.TreasureHuntDirector) return isTargetable;
