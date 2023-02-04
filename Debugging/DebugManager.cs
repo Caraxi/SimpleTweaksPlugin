@@ -21,11 +21,6 @@ using SimpleTweaksPlugin.Utility;
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {
         public DebugConfig Debugging = new DebugConfig();
-
-        public bool ShouldSerializeDebugging() {
-            return DebugManager.Enabled;
-        }
-
     }
 }
 
@@ -62,8 +57,6 @@ namespace SimpleTweaksPlugin.Debugging {
         private static Dictionary<string, Action> debugPages = new();
 
         private static float sidebarSize = 0;
-
-        public static bool Enabled = false;
 
         public static void RegisterDebugPage(string key, Action action) {
             if (debugPages.ContainsKey(key)) {
@@ -117,7 +110,7 @@ namespace SimpleTweaksPlugin.Debugging {
             _plugin = plugin;
         }
 
-        public static void DrawDebugWindow(ref bool open) {
+        public static void DrawDebugWindow() {
             if (_plugin == null) return;
             if (!_setupDebugHelpers) {
                 _setupDebugHelpers = true;
@@ -135,8 +128,8 @@ namespace SimpleTweaksPlugin.Debugging {
                 } catch (Exception ex) {
                     SimpleLog.Error(ex);
                     _setupDebugHelpers = false;
-                    Enabled = false;
                     DebugHelpers.Clear();
+                    _plugin.DebugWindow.IsOpen = false;
                     return;
                 }
             }
@@ -155,57 +148,49 @@ namespace SimpleTweaksPlugin.Debugging {
                 }
 
             }
-
-            ImGui.SetNextWindowSize(new Vector2(500, 350) * ImGui.GetIO().FontGlobalScale, ImGuiCond.FirstUseEver);
-            ImGui.SetNextWindowSizeConstraints(new Vector2(350, 350) * ImGui.GetIO().FontGlobalScale, new Vector2(2000, 2000) * ImGui.GetIO().FontGlobalScale);
-            ImGui.PushStyleColor(ImGuiCol.WindowBg, 0xFF000000);
-            if (ImGui.Begin($"SimpleTweaksPlugin - Debug [{Assembly.GetExecutingAssembly().GetName().Version}]###stDebugMenu", ref open)) {
-
-                if (ImGui.BeginChild("###debugPages", new Vector2(sidebarSize, -1) * ImGui.GetIO().FontGlobalScale, true)) {
+            
+            if (ImGui.BeginChild("###debugPages", new Vector2(sidebarSize, -1) * ImGui.GetIO().FontGlobalScale, true)) {
 
 
-                    var keys = debugPages.Keys.ToList();
-                    keys.Sort(((s, s1) => {
-                        if (s.StartsWith("[") && !s1.StartsWith("[")) {
-                            return 1;
-                        }
-                        return string.CompareOrdinal(s, s1);
-                    }));
-
-                    foreach (var k in keys) {
-
-                        if (ImGui.Selectable($"{k}##debugPageOption", _plugin.PluginConfig.Debugging.SelectedPage == k)) {
-                            _plugin.PluginConfig.Debugging.SelectedPage = k;
-                            _plugin.PluginConfig.Save();
-                        }
-
+                var keys = debugPages.Keys.ToList();
+                keys.Sort(((s, s1) => {
+                    if (s.StartsWith("[") && !s1.StartsWith("[")) {
+                        return 1;
                     }
+                    return string.CompareOrdinal(s, s1);
+                }));
 
+                foreach (var k in keys) {
+
+                    if (ImGui.Selectable($"{k}##debugPageOption", _plugin.PluginConfig.Debugging.SelectedPage == k)) {
+                        _plugin.PluginConfig.Debugging.SelectedPage = k;
+                        _plugin.PluginConfig.Save();
+                    }
 
                 }
 
-                ImGui.EndChild();
-                ImGui.SameLine();
 
-                if (ImGui.BeginChild("###debugView", new Vector2(-1, -1), true, ImGuiWindowFlags.HorizontalScrollbar)){
-                    if (string.IsNullOrEmpty(_plugin.PluginConfig.Debugging.SelectedPage) || !debugPages.ContainsKey(_plugin.PluginConfig.Debugging.SelectedPage)) {
-                        ImGui.Text("Select Debug Page");
-                    } else {
-                        try {
-                            debugPages[_plugin.PluginConfig.Debugging.SelectedPage]();
-                        } catch (Exception ex) {
-                            SimpleLog.Error(ex);
-                            ImGui.TextColored(new Vector4(1, 0, 0, 1), ex.ToString());
-                        }
-
-                    }
-                }
-
-                ImGui.EndChild();
             }
 
-            ImGui.End();
-            ImGui.PopStyleColor();
+            ImGui.EndChild();
+            ImGui.SameLine();
+
+            if (ImGui.BeginChild("###debugView", new Vector2(-1, -1), true, ImGuiWindowFlags.HorizontalScrollbar)){
+                if (string.IsNullOrEmpty(_plugin.PluginConfig.Debugging.SelectedPage) || !debugPages.ContainsKey(_plugin.PluginConfig.Debugging.SelectedPage)) {
+                    ImGui.Text("Select Debug Page");
+                } else {
+                    try {
+                        debugPages[_plugin.PluginConfig.Debugging.SelectedPage]();
+                    } catch (Exception ex) {
+                        SimpleLog.Error(ex);
+                        ImGui.TextColored(new Vector4(1, 0, 0, 1), ex.ToString());
+                    }
+
+                }
+            }
+
+            ImGui.EndChild();
+
         }
 
         public static void Dispose() {

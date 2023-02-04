@@ -39,6 +39,11 @@ namespace SimpleTweaksPlugin {
 
         public IEnumerable<BaseTweak> Tweaks => TweakProviders.Where(tp => !tp.IsDisposed).SelectMany(tp => tp.Tweaks).OrderBy(t => t.Name);
 
+        public readonly ConfigWindow ConfigWindow = new ConfigWindow();
+        public readonly DebugWindow DebugWindow = new DebugWindow();
+        public readonly WindowSystem WindowSystem = new WindowSystem("SimpleTweaksPlugin");
+        
+        
         internal CultureInfo Culture {
             get {
                 if (setCulture != null) return setCulture;
@@ -78,9 +83,6 @@ namespace SimpleTweaksPlugin {
 
         public int UpdateFrom = -1;
 
-        private ConfigWindow configWindow = new ConfigWindow();
-        private WindowSystem windowSystem = new WindowSystem("SimpleTweaksPlugin");
-
         public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface) {
             Plugin = this;
             pluginInterface.Create<Service>();
@@ -105,7 +107,8 @@ namespace SimpleTweaksPlugin {
 
             Common.Setup();
 
-            windowSystem.AddWindow(configWindow);
+            WindowSystem.AddWindow(ConfigWindow);
+            WindowSystem.AddWindow(DebugWindow);
             
             PluginInterface.UiBuilder.Draw += this.BuildUI;
             pluginInterface.UiBuilder.OpenConfigUi += OnOpenConfig;
@@ -138,8 +141,8 @@ namespace SimpleTweaksPlugin {
 
 #if DEBUG
             if (!PluginConfig.DisableAutoOpen) {
-                DebugManager.Enabled = true;
-                configWindow.IsOpen = true;
+                DebugWindow.IsOpen = true;
+                ConfigWindow.IsOpen = true;
             }
 #endif
             DebugManager.Reload();
@@ -172,7 +175,7 @@ namespace SimpleTweaksPlugin {
 
         private void OnOpenConfig() {
             if (ImGui.GetIO().KeyShift && ImGui.GetIO().KeyCtrl) {
-                DebugManager.Enabled = true;
+                DebugWindow.IsOpen = true;
                 return;
             }
             OnConfigCommandHandler(null, null);
@@ -181,7 +184,7 @@ namespace SimpleTweaksPlugin {
         public void OnConfigCommandHandler(object command, object args) {
             if (args is string argString) {
                 if (argString == "Debug") {
-                    DebugManager.Enabled = !DebugManager.Enabled;
+                    DebugWindow.IsOpen = !DebugWindow.IsOpen;
                     return;
                 }
 
@@ -275,7 +278,7 @@ namespace SimpleTweaksPlugin {
                 }
             }
 
-            configWindow.IsOpen = !configWindow.IsOpen;
+            ConfigWindow.IsOpen = !ConfigWindow.IsOpen;
         }
 
         public BaseTweak? GetTweakById(string s, IEnumerable<BaseTweak>? tweakList = null) {
@@ -327,11 +330,7 @@ namespace SimpleTweaksPlugin {
                 Service.PluginInterface.UiBuilder.AddNotification($"{e.Tweak.Name} has been disabled due to an error.", "Simple Tweaks", NotificationType.Error, 5000);
             }
 
-            if (DebugManager.Enabled) {
-                DebugManager.DrawDebugWindow(ref DebugManager.Enabled);
-            }
-
-            windowSystem.Draw();
+            WindowSystem.Draw();
 
             if (ShowErrorWindow) {
                 if (ErrorList.Count > 0) {
@@ -380,9 +379,9 @@ namespace SimpleTweaksPlugin {
                 if (ImGui.BeginMainMenuBar()) {
                     if (ImGui.MenuItem("Simple Tweaks")) {
                         if (ImGui.GetIO().KeyShift) {
-                            DebugManager.Enabled = !DebugManager.Enabled;
+                            DebugWindow.IsOpen = !DebugWindow.IsOpen;
                         } else {
-                            configWindow.IsOpen = !configWindow.IsOpen;
+                            ConfigWindow.IsOpen = !ConfigWindow.IsOpen;
                         }
                     }
                     ImGui.EndMainMenuBar();
