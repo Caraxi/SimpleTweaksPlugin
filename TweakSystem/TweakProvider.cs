@@ -30,15 +30,21 @@ public class TweakProvider : IDisposable {
                     if (tweak.Version > 1) blacklistKey += $"::{tweak.Version}";
                     if (SimpleTweaksPlugin.Plugin.PluginConfig.BlacklistedTweaks.Contains(blacklistKey)) {
                         SimpleLog.Log("Skipping blacklisted tweak: " + tweak.Key);
+                        var blTweak = new BlacklistedTweak(tweak.Key, tweak.Name, "Disabled due to known issues.");
+                        blTweak.InterfaceSetup(SimpleTweaksPlugin.Plugin, Service.PluginInterface, SimpleTweaksPlugin.Plugin.PluginConfig, this);
+                        Tweaks.Add(blTweak);
                         continue;
                     }
-                    tweak.Setup();
-                    if (tweak.Ready && (SimpleTweaksPlugin.Plugin.PluginConfig.EnabledTweaks.Contains(t.Name) || tweak is SubTweakManager {AlwaysEnabled: true})) {
-                        SimpleLog.Debug($"Enable: {t.Name}");
-                        try {
-                            tweak.Enable();
-                        } catch (Exception ex) {
-                            SimpleTweaksPlugin.Plugin.Error(tweak, ex, true, $"Error in Enable for '{tweak.Name}");
+
+                    if (tweak is not IDisabledTweak) {
+                        tweak.Setup();
+                        if (tweak.Ready && (SimpleTweaksPlugin.Plugin.PluginConfig.EnabledTweaks.Contains(t.Name) || tweak is SubTweakManager {AlwaysEnabled: true})) {
+                            SimpleLog.Debug($"Enable: {t.Name}");
+                            try {
+                                tweak.Enable();
+                            } catch (Exception ex) {
+                                SimpleTweaksPlugin.Plugin.Error(tweak, ex, true, $"Error in Enable for '{tweak.Name}");
+                            }
                         }
                     }
 

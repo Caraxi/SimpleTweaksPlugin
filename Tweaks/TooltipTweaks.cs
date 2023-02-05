@@ -118,8 +118,10 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         var retVal = actionTooltipHook.Original(addon, a2, a3);
         try {
             foreach (var t in SubTweaks.Where(t => t.Enabled)) {
+                if (t is not TooltipTweaks.SubTweak st) continue;
+
                 try {
-                    t.OnActionTooltip(addon, HoveredAction);
+                    st.OnActionTooltip(addon, HoveredAction);
                 } catch (Exception ex) {
                     Plugin.Error(this, t, ex);
                 }
@@ -167,8 +169,9 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
     public unsafe void* GenerateItemTooltipDetour(AtkUnitBase* addonItemDetail, NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         try {
             foreach (var t in SubTweaks.Where(t => t.Enabled)) {
+                if (t is not TooltipTweaks.SubTweak st) continue;
                 try {
-                    t.OnGenerateItemTooltip(numberArrayData, stringArrayData);
+                    st.OnGenerateItemTooltip(numberArrayData, stringArrayData);
                 } catch (Exception ex) {
                     Plugin.Error(this, t, ex);
                 }
@@ -182,8 +185,9 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
     public unsafe void* GenerateActionTooltipDetour(AtkUnitBase* addonItemDetail, NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         try {
             foreach (var t in SubTweaks.Where(t => t.Enabled)) {
+                if (t is not TooltipTweaks.SubTweak st) continue;
                 try {
-                    t.OnGenerateActionTooltip(numberArrayData, stringArrayData);
+                    st.OnGenerateActionTooltip(numberArrayData, stringArrayData);
                 } catch (Exception ex) {
                     Plugin.Error(this, t, ex);
                 }

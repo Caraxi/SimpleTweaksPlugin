@@ -15,7 +15,7 @@ public abstract class SubTweakManager : Tweak {
 
 public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
 
-    public List<T> SubTweaks = new List<T>();
+    public List<BaseTweak> SubTweaks = new List<BaseTweak>();
 
     public override List<BaseTweak> GetTweakList() {
         return SubTweaks.Cast<BaseTweak>().ToList();
@@ -27,7 +27,7 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
 
     public override void Setup() {
 
-        var tweakList = new List<T>();
+        var tweakList = new List<BaseTweak>();
 
         foreach (var t in GetType().Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(T)))) {
             try {
@@ -37,10 +37,15 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
                 if (tweak.Version > 1) blacklistKey += $"::{tweak.Version}";
                 if (PluginConfig.BlacklistedTweaks.Contains(blacklistKey)) {
                     SimpleLog.Log("Skipping blacklisted tweak: " + tweak.Key);
+                    var blTweak = new BlacklistedTweak(tweak.Key, tweak.Name, "Disabled due to known issues.");
+                    blTweak.InterfaceSetup(SimpleTweaksPlugin.Plugin, Service.PluginInterface, SimpleTweaksPlugin.Plugin.PluginConfig, this.TweakProvider);
+                    tweakList.Add(blTweak);
                     continue;
                 }
                 tweak.InterfaceSetup(this.Plugin, this.PluginInterface, this.PluginConfig, this.TweakProvider);
-                tweak.Setup();
+                if (tweak is not IDisabledTweak) {
+                    tweak.Setup();
+                }
                 tweakList.Add(tweak);
             } catch (Exception ex) {
                 Plugin.Error(this, ex, true, $"Error in Setup of '{t.Name}' @ '{this.Name}'");
@@ -62,7 +67,8 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
     public override void Enable() {
         if (!Ready) return;
         foreach (var t in SubTweaks) {
-            if (PluginConfig.EnabledTweaks.Contains(GetTweakKey(t))) {
+            if (t is IDisabledTweak) continue;
+            if (PluginConfig.EnabledTweaks.Contains(GetTweakKey(t as T))) {
                 try {
                     SimpleLog.Log($"Enable: {t.Name} @ {Name}");
                     t.Enable();

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using Dalamud.Interface.Colors;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -62,7 +63,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
         var enabled = t.Enabled;
         if (t.Experimental && !ShowExperimentalTweaks && !enabled) return;
 
-        if (!enabled && ImGui.GetIO().KeyShift) {
+        if (t is IDisabledTweak || (!enabled && ImGui.GetIO().KeyShift)) {
             if (HiddenTweaks.Contains(t.Key)) {
                 if (ImGui.Button($"S##unhideTweak_{t.Key}", new Vector2(23) * ImGui.GetIO().FontGlobalScale)) {
                     HiddenTweaks.Remove(t.Key);
@@ -106,6 +107,20 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
         ImGui.SameLine();
         var descriptionX = ImGui.GetCursorPosX();
         if (!t.DrawConfig(ref hasChange)) {
+            if (t is IDisabledTweak dt) {
+                if (!string.IsNullOrEmpty(dt.DisabledMessage)) {
+                    ImGui.SetCursorPosX(descriptionX);
+                    ImGui.PushStyleColor(ImGuiCol.HeaderHovered, 0x0);
+                    ImGui.PushStyleColor(ImGuiCol.HeaderActive, 0x0);
+                    ImGui.TreeNodeEx(" ", ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen);
+                    ImGui.PopStyleColor();
+                    ImGui.PopStyleColor();
+                    ImGui.SameLine();
+                    ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
+                    ImGui.TextWrapped($"{dt.DisabledMessage}");
+                    ImGui.PopStyleColor();
+                }
+            } else
             if (ShowTweakDescriptions && !string.IsNullOrEmpty(t.Description)) {
                 ImGui.SetCursorPosX(descriptionX);
                 ImGui.PushStyleColor(ImGuiCol.HeaderHovered, 0x0);
@@ -409,6 +424,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                             foreach (var hidden in HiddenTweaks) {
                                 var tweak = plugin.GetTweakById(hidden);
                                 if (tweak == null) continue;
+                                if (tweak is IDisabledTweak) ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudGrey);
                                 if (ImGui.Button($"S##unhideTweak_{tweak.Key}", new Vector2(23) * ImGui.GetIO().FontGlobalScale)) {
                                     removeKey = hidden;
                                 }
@@ -418,6 +434,12 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
 
                                 ImGui.SameLine();
                                 ImGui.Text(tweak.LocalizedName);
+
+                                if (tweak is IDisabledTweak) {
+                                    ImGui.SameLine();
+                                    ImGui.Text("[Disabled]");
+                                    ImGui.PopStyleColor();
+                                }
                             }
 
                             if (removeKey != null) {
