@@ -1,5 +1,6 @@
 ﻿using System;
 using Dalamud.Interface;
+using Dalamud.Interface.Colors;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
@@ -35,9 +36,17 @@ public unsafe class HighResScreenshots : Tweak {
         ImGui.TextWrapped(
             "The higher the scale is, the longer the delay lasts. Experiment with these settings to find the best options for your system.");
 
+        ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
+        ImGui.TextWrapped("The game WILL crash if you set the scale too high.");
+        ImGui.PopStyleColor();
+
         ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale * 100);
         hasChanged |= ImGui.InputInt("Scale", ref Config.Scale);
 
+        ImGui.SameLine();
+        var device = Device.Instance();
+        ImGui.TextDisabled($"{device->Width*Config.Scale}x{device->Height*Config.Scale}");
+        
         ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale * 100);
         hasChanged |= ImGui.InputFloat("Delay", ref Config.Delay);
 
