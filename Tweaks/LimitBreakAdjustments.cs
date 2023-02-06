@@ -8,7 +8,7 @@ using SimpleTweaksPlugin.Utility;
 namespace SimpleTweaksPlugin.Tweaks;
 
 public unsafe class LimitBreakAdjustments : UiAdjustments.SubTweak {
-    public override string Name => "Limit Breat Adjustments";
+    public override string Name => "Limit Break Adjustments";
     public override string Description => "Simple customization of the limit break bars";
 
     public class Configs : TweakConfig {
