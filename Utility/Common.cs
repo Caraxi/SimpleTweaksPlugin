@@ -448,6 +448,13 @@ public static unsafe class Common {
         return handle->ResourceHandle.FileName.ToString();
     }
     
+    public static string ReadString(byte* b, int maxLength = 0, bool nullIsEmpty = true) {
+        if (b == null) return nullIsEmpty ? string.Empty : null;
+        if (maxLength > 0) return Encoding.UTF8.GetString(b, maxLength).Split('\0')[0];
+        var l = 0;
+        while (b[l] != 0) l++;
+        return Encoding.UTF8.GetString(b, l);
+    }
 }
 
 public unsafe class SetupAddonArgs {
