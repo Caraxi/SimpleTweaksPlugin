@@ -24,7 +24,7 @@ public unsafe class MoreMoney : UiAdjustments.SubTweak
 
     public class Config : TweakConfig
     {
-        public Direction DisplayDirection = Direction.Down;
+        public Direction DisplayDirection = Direction.Up;
         public List<CurrencyEntry> Currencies = new();
     }
     
