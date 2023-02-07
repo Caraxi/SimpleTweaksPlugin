@@ -1,11 +1,17 @@
-﻿using System.Linq;
+﻿#nullable enable
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Text;
-using Dalamud.Memory;
+using Dalamud.Interface;
+using Dalamud.Interface.Components;
+using Dalamud.Utility;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
-using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using ImGuiNET;
+using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
@@ -15,68 +21,226 @@ public unsafe class MoreMoney : UiAdjustments.SubTweak
     public override string Name => "MoMoney";
     protected override string Author => "MidoriKami";
     public override string Description => "Allows you to display extra currencies.";
+
+    public class Config : TweakConfig
+    {
+        public Direction DisplayDirection = Direction.Down;
+        public List<CurrencyEntry> Currencies = new();
+    }
+    
+    public class CurrencyEntry
+    {
+        public uint ItemId;
+        public int IconId;
+        public bool HqItem;
+        public string Name = string.Empty;
+    }
+
+    public enum Direction 
+    {
+        Left,
+        Right,
+        Up,
+        Down,
+    }
+
+    public Config TweakConfig { get; private set; } = null!;
+
+    protected override DrawConfigDelegate DrawConfigTree => (ref bool _) =>
+    {
+        DrawDirectionComboBox();
+        DrawAddCurrency();
+        
+        ImGuiHelpers.ScaledDummy(10.0f);
+        DrawCurrencies();
+    };
+    
     private static AtkUnitBase* AddonMoney => Common.GetUnitBase("_Money");
 
-    private short count;
-    
+    private const uint ImageBaseId = 1000U;
+    private const uint CounterBaseId = 2000U;
+    private string searchString = string.Empty;
+    private List<Item> searchedItems = new();
+    private bool hqItemSearch;
+
     public override void Enable()
     {
+        TweakConfig = LoadConfig<Config>() ?? new Config();
         Common.FrameworkUpdate += OnFrameworkUpdate;
         base.Enable();
     }
 
     public override void Disable()
     {
+        SaveConfig(TweakConfig);
         Common.FrameworkUpdate -= OnFrameworkUpdate;
-        
-        if (AddonMoney is not null)
-        {
-            TryFreeIconNode(1000);
-            TryFreeIconNode(1001);
-            
-            TryFreeCounterNode(2000);
-            TryFreeCounterNode(2001);
-        }
+        FreeAllNodes();
+
         base.Disable();
     }
 
     public override void Dispose()
     {
         Common.FrameworkUpdate -= OnFrameworkUpdate;
-
-        if (AddonMoney is not null)
-        {
-            TryFreeIconNode(1000);
-            TryFreeIconNode(1001);
-            
-            TryFreeCounterNode(2000);
-            TryFreeCounterNode(2001);
-        }
+        FreeAllNodes();
         base.Dispose();
     }
-    
+
     private void OnFrameworkUpdate()
     {
         if (AddonMoney is null) return;
 
+        // Size of one currency
+        var resNodeSize = new Vector2(AddonMoney->RootNode->Width, AddonMoney->RootNode->Height);
+        
         // Button Component Node
         var currencyPositionNode = Common.GetNodeByID(&AddonMoney->UldManager, 3);
-        var currencyPosition = new Vector2(currencyPositionNode->X, currencyPositionNode->Y);
-        var currencySize = new Vector2(currencyPositionNode->Width, currencyPositionNode->Height);
+        var currencyBasePosition = new Vector2(currencyPositionNode->X, currencyPositionNode->Y);
         
         // Counter Node
         var counterPositionNode= Common.GetNodeByID(&AddonMoney->UldManager, 2);
-        var counterPosition = new Vector2(counterPositionNode->X, counterPositionNode->Y);
-        var counterSize = new Vector2(counterPositionNode->Width, counterPositionNode->Height);
+        var counterBasePosition = new Vector2(counterPositionNode->X, counterPositionNode->Y);
+
+        // Make all counter nodes first, because if a icon node overlaps it even slightly it'll hide itself.
+        foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
+        {
+            var currencyInfo = TweakConfig.Currencies[(int) index];
+
+            var counterPosition = TweakConfig.DisplayDirection switch
+            {
+                Direction.Left => new Vector2(-resNodeSize.X * (index + 1), 0) + counterBasePosition,
+                Direction.Right => new Vector2(resNodeSize.X * (index + 1), 0) + counterBasePosition,
+                Direction.Up => counterBasePosition + new Vector2(0, -resNodeSize.Y * (index + 1)),
+                Direction.Down => counterBasePosition + new Vector2(0, resNodeSize.Y * (index + 1)),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            TryMakeCounterNode(CounterBaseId + index, counterPosition);
+            TryUpdateCounterNode(CounterBaseId + index, InventoryManager.Instance()->GetInventoryItemCount(currencyInfo.ItemId));
+        }
         
-        TryMakeCounterNode(2000, counterPosition + new Vector2(0, -currencySize.Y));
-        TryMakeCounterNode(2001, counterPosition + new Vector2(0, -currencySize.Y * 2.0f));
-        
-        TryMakeIconNode(1000, currencyPosition + new Vector2(0, -currencySize.Y));
-        TryMakeIconNode(1001, currencyPosition + new Vector2(0, -currencySize.Y * 2));
-        
-        TryUpdateCounterNode(2000, count++);
-        TryUpdateCounterNode(2001, count * 2);
+        foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
+        {
+            var currencyInfo = TweakConfig.Currencies[(int) index];
+
+            var iconPosition = TweakConfig.DisplayDirection switch
+            {
+                Direction.Left => new Vector2(-resNodeSize.X * (index + 1), 0) + currencyBasePosition,
+                Direction.Right => new Vector2(resNodeSize.X * (index + 1), 0) + currencyBasePosition,
+                Direction.Up => currencyBasePosition + new Vector2(0, -resNodeSize.Y * (index + 1)),
+                Direction.Down => currencyBasePosition + new Vector2(0, resNodeSize.Y * (index + 1)),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            
+            TryMakeIconNode(ImageBaseId + index, iconPosition, currencyInfo.IconId, currencyInfo.HqItem);
+        }
+    }
+
+    private void DrawDirectionComboBox()
+    {
+        var regionSize = ImGui.GetContentRegionAvail();
+        ImGui.SetNextItemWidth(regionSize.X / 2.0f);
+        if (ImGui.BeginCombo("Direction", TweakConfig.DisplayDirection.ToString()))
+        {
+            foreach (var direction in Enum.GetValues<Direction>())
+            {
+                if (ImGui.Selectable(direction.ToString(), TweakConfig.DisplayDirection == direction))
+                {
+                    TweakConfig.DisplayDirection = direction;
+                    SaveConfig(TweakConfig);
+                    FreeAllNodes();
+                }
+            }
+            
+            ImGui.EndCombo();
+        }
+    }
+
+    private void DrawAddCurrency()
+    {
+        var regionSize = ImGui.GetContentRegionAvail();
+        ImGui.SetNextItemWidth(regionSize.X / 2.0f);
+        if (ImGui.InputTextWithHint("###ItemSearch", "Search", ref searchString, 60, ImGuiInputTextFlags.AutoSelectAll))
+        {
+            if (searchString != string.Empty)
+            {
+                searchedItems = Service.Data.GetExcelSheet<Item>()!
+                    .OrderBy(item => item.ItemSortCategory.Row)
+                    .Where(item => item.Name.ToDalamudString().TextValue.ToLower().Contains(searchString.ToLower()))
+                    .Take(3)
+                    .ToList();
+            }
+        }
+        ImGui.SameLine();
+        ImGui.Checkbox("HQ Item", ref hqItemSearch);
+
+        foreach (var item in searchedItems)
+        {
+            if (ImGuiComponents.IconButton($"AddCurrencyButton{item.RowId}", FontAwesomeIcon.Plus))
+            {
+                TweakConfig.Currencies.Add(new CurrencyEntry
+                {
+                    IconId = item.Icon,
+                    ItemId = hqItemSearch ? 1_000_000 + item.RowId : item.RowId,
+                    Name = item.Name.ToDalamudString() + (hqItemSearch ? " HQ" : string.Empty),
+                    HqItem = hqItemSearch,
+                });
+                
+                FreeAllNodes();
+            }
+            ImGui.SameLine();
+
+            var icon = Plugin.IconManager.GetIconTexture(item.Icon, hqItemSearch);
+            if (icon is not null)
+            {
+                ImGui.Image(icon.ImGuiHandle, new Vector2(23.0f, 23.0f));
+                ImGui.SameLine();
+            }
+            ImGui.TextUnformatted($"{item.RowId:D6} - {item.Name.ToDalamudString()}");
+        }
+
+        // Add spacing
+        foreach (var _ in Enumerable.Range(0, 3 - searchedItems.Count))
+        {
+            ImGui.TextUnformatted("");
+        }
+    }
+    
+    private void DrawCurrencies()
+    {
+        foreach (var index in Enumerable.Range(0, TweakConfig.Currencies.Count))
+        {
+            var currency = TweakConfig.Currencies[index];
+            
+            if (ImGuiComponents.IconButton($"RemoveCurrencyButton{index}", FontAwesomeIcon.Trash))
+            {
+                FreeAllNodes();
+                TweakConfig.Currencies.Remove(currency);
+                break;
+            }
+            ImGui.SameLine();
+            
+            var icon = Plugin.IconManager.GetIconTexture(currency.IconId, currency.HqItem);
+            if (icon is not null)
+            {
+                ImGui.Image(icon.ImGuiHandle, new Vector2(23.0f, 23.0f));
+                ImGui.SameLine();
+            }
+            
+            ImGui.TextUnformatted(currency.Name);
+        }
+    }
+    
+    private void FreeAllNodes()
+    {
+        if (AddonMoney is not null)
+        {
+            foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
+            {
+                TryFreeIconNode(ImageBaseId + index);
+                TryFreeCounterNode(CounterBaseId + index);
+            }
+        }
     }
 
     private void TryUpdateCounterNode(uint nodeId, int newCount)
@@ -84,23 +248,16 @@ public unsafe class MoreMoney : UiAdjustments.SubTweak
         var counterNode = (AtkCounterNode*) Common.GetNodeByID(&AddonMoney->UldManager, nodeId);
         if (counterNode is not null)
         {
-            var countString = $"{newCount:n0}";
-            var numCommas = countString.Count(character => character == ',');
-            var numNumbers = countString.Length - numCommas;
-
-            var width = 10 * numNumbers + 8 * numCommas + 6 + 5;
-            
-            counterNode->NodeText.SetString($"{newCount:N0}");
-            counterNode->Width = width;
+            counterNode->SetText(newCount.ToString("n0"));
         }
     }
-
-    private void TryMakeIconNode(uint nodeId, Vector2 position)
+    
+    private void TryMakeIconNode(uint nodeId, Vector2 position, int icon, bool hqIcon)
     {
         var iconNode = Common.GetNodeByID(&AddonMoney->UldManager, nodeId);
         if (iconNode is null)
         {
-            MakeIconNode(nodeId, position);
+            MakeIconNode(nodeId, position, icon, hqIcon);
         }
     }
 
@@ -131,7 +288,7 @@ public unsafe class MoreMoney : UiAdjustments.SubTweak
         }
     }
     
-    private void MakeIconNode(uint nodeId, Vector2 position)
+    private void MakeIconNode(uint nodeId, Vector2 position, int icon, bool hqIcon)
     {
         var imageNode = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
         imageNode->AtkResNode.Type = NodeType.Image;
@@ -186,7 +343,7 @@ public unsafe class MoreMoney : UiAdjustments.SubTweak
         part->UldAsset = asset;
         imageNode->PartsList = partsList;
         
-        imageNode->LoadIconTexture(65087, 0);
+        imageNode->LoadIconTexture(hqIcon ? icon + 1_000_000 : icon, 0);
         imageNode->AtkResNode.ToggleVisibility(true);
 
         imageNode->AtkResNode.SetWidth(36);
