@@ -11,6 +11,7 @@ using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using ImGuiScene;
+using Lumina.Data.Parsing.Uld;
 using SimpleTweaksPlugin.Utility;
 using Action = System.Action;
 using Addon = FFXIVClientStructs.Attributes.Addon;
@@ -189,6 +190,7 @@ public unsafe class UIDebug : DebugHelper {
             var size = ImGui.CalcTextSize(s);
             var x = ImGuiExt.GetWindowContentRegionSize().X / 2f - size.X / 2;
             drawList.AddText(new Vector2(x, y), 0xFFFFFFFF, s);
+            
             y += size.Y;
         }
             
@@ -351,7 +353,11 @@ public unsafe class UIDebug : DebugHelper {
 
         ImGui.SameLine(ImGuiExt.GetWindowContentRegionSize().X - 25);
         if (ImGui.SmallButton("V")) {
-            atkUnitBase->Flags ^= 0x20;
+            if (atkUnitBase->IsVisible) {
+                atkUnitBase->Flags ^= 0x20;
+            } else {
+                atkUnitBase->Show(0);
+            }
         }
             
         ImGui.Separator();
@@ -512,6 +518,8 @@ public unsafe class UIDebug : DebugHelper {
         var customNodeName = customNodeIds.ContainsKey(id) ? customNodeIds[id] : string.Empty;
         return string.IsNullOrEmpty(customNodeName) ? (includeHashOnNoMatch ? $"#{id}" : $"{id}") : $"{customNodeName}#{id}";
     }
+
+    private static int counterNodeInputNumber = 0;
     
     private static void PrintSimpleNode(AtkResNode* node, string treePrefix, bool textOnly = false)
     {
@@ -597,7 +605,11 @@ public unsafe class UIDebug : DebugHelper {
                         ImGui.PopStyleColor();
                     }
 
-                    ImGui.InputText($"Replace Text##{(ulong) textNode:X}", new IntPtr(textNode->NodeText.StringPtr), (uint) textNode->NodeText.BufSize);
+                    var s = textNode->NodeText.ToString();
+
+                    if (ImGui.InputText($"Replace Text##{(ulong)textNode:X}", ref s, 512, ImGuiInputTextFlags.EnterReturnsTrue)) {
+                        textNode->SetText(s);
+                    }
 
 
                     ImGui.Text($"AlignmentType: {(AlignmentType)textNode->AlignmentFontType}[{textNode->AlignmentFontType:X2}]  FontSize: {textNode->FontSize}  CharSpacing: {textNode->CharSpacing}  LineSpacing: {textNode->LineSpacing}");
@@ -624,7 +636,22 @@ public unsafe class UIDebug : DebugHelper {
                     break;
                 case NodeType.Counter:
                     var counterNode = (AtkCounterNode*)node;
-                    ImGui.Text($"text: {Marshal.PtrToStringAnsi(new IntPtr(counterNode->NodeText.StringPtr))}");
+
+                    var text = counterNode->NodeText.ToString();
+                    ImGui.Text($"text: {text}");
+
+                    if (ImGui.InputText($"Replace Text##{(ulong)counterNode:X}", ref text, 100, ImGuiInputTextFlags.EnterReturnsTrue)) {
+                        counterNode->SetText(text);
+                    }
+
+                    ImGui.InputInt($"##input_{(ulong)counterNode:X}", ref counterNodeInputNumber);
+                    ImGui.SameLine();
+                    if (ImGui.Button($"Set##{(ulong)counterNode:X}")) {
+                        counterNode->SetNumber(counterNodeInputNumber);
+                    }
+                    
+                    
+                    
                     break;
                 case NodeType.NineGrid:
                 case NodeType.Image:
