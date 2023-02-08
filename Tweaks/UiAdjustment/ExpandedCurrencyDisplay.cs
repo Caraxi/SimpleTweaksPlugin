@@ -16,13 +16,13 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
-public unsafe class MoreMoney : UiAdjustments.SubTweak
+public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
 {
-    public override string Name => "MoMoney";
+    public override string Name => "Expanded Currency Display";
     protected override string Author => "MidoriKami";
     public override string Description => "Allows you to display extra currencies.";
 
-    public class Config : TweakConfig
+    private class Config : TweakConfig
     {
         public Direction DisplayDirection = Direction.Up;
         public List<CurrencyEntry> Currencies = new();
@@ -44,14 +44,16 @@ public unsafe class MoreMoney : UiAdjustments.SubTweak
         Down,
     }
 
-    public Config TweakConfig { get; private set; } = null!;
+    private Config TweakConfig { get; set; } = null!;
 
     protected override DrawConfigDelegate DrawConfigTree => (ref bool _) =>
     {
         DrawDirectionComboBox();
+        
+        ImGuiHelpers.ScaledDummy(5.0f);
         DrawAddCurrency();
         
-        ImGuiHelpers.ScaledDummy(10.0f);
+        ImGuiHelpers.ScaledDummy(5.0f);
         DrawCurrencies();
     };
     
@@ -75,7 +77,6 @@ public unsafe class MoreMoney : UiAdjustments.SubTweak
         SaveConfig(TweakConfig);
         Common.FrameworkUpdate -= OnFrameworkUpdate;
         FreeAllNodes();
-
         base.Disable();
     }
 
@@ -138,8 +139,10 @@ public unsafe class MoreMoney : UiAdjustments.SubTweak
 
     private void DrawDirectionComboBox()
     {
+        ImGui.TextUnformatted("Select which direction relative to Currency Display to show new items");
+        
         var regionSize = ImGui.GetContentRegionAvail();
-        ImGui.SetNextItemWidth(regionSize.X / 2.0f);
+        ImGui.SetNextItemWidth(regionSize.X * 2.0f / 3.0f);
         if (ImGui.BeginCombo("Direction", TweakConfig.DisplayDirection.ToString()))
         {
             foreach (var direction in Enum.GetValues<Direction>())
@@ -158,8 +161,10 @@ public unsafe class MoreMoney : UiAdjustments.SubTweak
 
     private void DrawAddCurrency()
     {
+        ImGui.TextUnformatted("Search and select items to display");
+        
         var regionSize = ImGui.GetContentRegionAvail();
-        ImGui.SetNextItemWidth(regionSize.X / 2.0f);
+        ImGui.SetNextItemWidth(regionSize.X * 2.0f / 3.0f);
         if (ImGui.InputTextWithHint("###ItemSearch", "Search", ref searchString, 60, ImGuiInputTextFlags.AutoSelectAll))
         {
             if (searchString != string.Empty)
@@ -167,47 +172,58 @@ public unsafe class MoreMoney : UiAdjustments.SubTweak
                 searchedItems = Service.Data.GetExcelSheet<Item>()!
                     .OrderBy(item => item.ItemSortCategory.Row)
                     .Where(item => item.Name.ToDalamudString().TextValue.ToLower().Contains(searchString.ToLower()))
-                    .Take(3)
+                    .Take(10)
                     .ToList();
             }
         }
         ImGui.SameLine();
         ImGui.Checkbox("HQ Item", ref hqItemSearch);
+        ImGuiComponents.HelpMarker("To track HQ items such as Tinctures or Foods, enable 'HQ Item'\nIf an item doesn't display an icon, then it is not a valid item to use for the currency display.");
 
-        foreach (var item in searchedItems)
+        if (ImGui.BeginChild("###SearchResultChild", new Vector2(regionSize.X * 2.0f / 3.0f, 100.0f * ImGuiHelpers.GlobalScale), true))
         {
-            if (ImGuiComponents.IconButton($"AddCurrencyButton{item.RowId}", FontAwesomeIcon.Plus))
+            if (searchedItems.Count == 0)
             {
-                TweakConfig.Currencies.Add(new CurrencyEntry
-                {
-                    IconId = item.Icon,
-                    ItemId = hqItemSearch ? 1_000_000 + item.RowId : item.RowId,
-                    Name = item.Name.ToDalamudString() + (hqItemSearch ? " HQ" : string.Empty),
-                    HqItem = hqItemSearch,
-                });
+                var innerRegion = ImGui.GetContentRegionAvail();
+                var text = "Search for Items Above";
+                var textSize = ImGui.CalcTextSize(text);
                 
-                FreeAllNodes();
+                ImGui.SetCursorPos(innerRegion / 2.0f - textSize / 2.0f);
+                ImGui.TextUnformatted(text);
             }
-            ImGui.SameLine();
-
-            var icon = Plugin.IconManager.GetIconTexture(item.Icon, hqItemSearch);
-            if (icon is not null)
+            
+            foreach (var item in searchedItems)
             {
-                ImGui.Image(icon.ImGuiHandle, new Vector2(23.0f, 23.0f));
+                if (ImGuiComponents.IconButton($"AddCurrencyButton{item.RowId}", FontAwesomeIcon.Plus))
+                {
+                    TweakConfig.Currencies.Add(new CurrencyEntry
+                    {
+                        IconId = item.Icon,
+                        ItemId = hqItemSearch ? 1_000_000 + item.RowId : item.RowId,
+                        Name = item.Name.ToDalamudString() + (hqItemSearch ? " HQ" : string.Empty),
+                        HqItem = hqItemSearch,
+                    });
+                
+                    FreeAllNodes();
+                }
                 ImGui.SameLine();
-            }
-            ImGui.TextUnformatted($"{item.RowId:D6} - {item.Name.ToDalamudString()}");
-        }
 
-        // Add spacing
-        foreach (var _ in Enumerable.Range(0, 3 - searchedItems.Count))
-        {
-            ImGui.TextUnformatted("");
+                var icon = Plugin.IconManager.GetIconTexture(item.Icon, hqItemSearch);
+                if (icon is not null)
+                {
+                    ImGui.Image(icon.ImGuiHandle, new Vector2(23.0f, 23.0f));
+                    ImGui.SameLine();
+                }
+                ImGui.TextUnformatted($"{item.RowId:D6} - {item.Name.ToDalamudString()}");
+            }
         }
+        ImGui.EndChild();
     }
     
     private void DrawCurrencies()
     {
+        ImGui.TextUnformatted("Items being displayed:\n");
+        
         foreach (var index in Enumerable.Range(0, TweakConfig.Currencies.Count))
         {
             var currency = TweakConfig.Currencies[index];
