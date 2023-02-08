@@ -22,7 +22,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     protected override string Author => "MidoriKami";
     public override string Description => "Allows you to display extra currencies.";
 
-    private class Config : TweakConfig
+    public class Config : TweakConfig
     {
         public Direction DisplayDirection = Direction.Up;
         public List<CurrencyEntry> Currencies = new();
@@ -96,11 +96,13 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         
         // Button Component Node
         var currencyPositionNode = Common.GetNodeByID(&AddonMoney->UldManager, 3);
+        if (currencyPositionNode == null) return;
         var currencyBasePosition = new Vector2(currencyPositionNode->X, currencyPositionNode->Y);
         
         // Counter Node
-        var counterPositionNode= Common.GetNodeByID(&AddonMoney->UldManager, 2);
-        var counterBasePosition = new Vector2(counterPositionNode->X, counterPositionNode->Y);
+        var counterPositionNode= Common.GetNodeByID<AtkCounterNode>(&AddonMoney->UldManager, 2, NodeType.Counter);
+        if (counterPositionNode == null) return;
+        var counterBasePosition = new Vector2(counterPositionNode->AtkResNode.X, counterPositionNode->AtkResNode.Y);
 
         // Make all counter nodes first, because if a icon node overlaps it even slightly it'll hide itself.
         foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
@@ -116,7 +118,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
                 _ => throw new ArgumentOutOfRangeException()
             };
 
-            TryMakeCounterNode(CounterBaseId + index, counterPosition);
+            TryMakeCounterNode(CounterBaseId + index, counterPosition, counterPositionNode->PartsList);
             TryUpdateCounterNode(CounterBaseId + index, InventoryManager.Instance()->GetInventoryItemCount(currencyInfo.ItemId));
         }
         
@@ -287,12 +289,12 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         }
     }
 
-    private void TryMakeCounterNode(uint nodeId, Vector2 position)
+    private void TryMakeCounterNode(uint nodeId, Vector2 position, AtkUldPartsList* partsList)
     {
         var counterNode = Common.GetNodeByID(&AddonMoney->UldManager, nodeId);
         if (counterNode is null)
         {
-            MakeCounterNode(nodeId, position);
+            MakeCounterNode(nodeId, position, partsList);
         }
     }
 
@@ -377,7 +379,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         AddonMoney->UldManager.UpdateDrawNodeList();
     }
 
-    private void MakeCounterNode(uint nodeId, Vector2 position)
+    private void MakeCounterNode(uint nodeId, Vector2 position, AtkUldPartsList* partsList)
     {
         var counterNode = IMemorySpace.GetUISpace()->Create<AtkCounterNode>();
         counterNode->AtkResNode.Type = NodeType.Counter;
@@ -388,53 +390,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         counterNode->CommaWidth = 8;
         counterNode->SpaceWidth = 6;
         counterNode->TextAlign = 5;
-        
-        var partsList = (AtkUldPartsList*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldPartsList), 8);
-        if (partsList == null) 
-        {
-            SimpleLog.Error("Failed to alloc memory for parts list.");
-            counterNode->AtkResNode.Destroy(false);
-            IMemorySpace.Free(counterNode, (ulong)sizeof(AtkCounterNode));
-            return;
-        }
-        
-        partsList->Id = 1;
-        partsList->PartCount = 1;
-        
-        var part = (AtkUldPart*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldPart), 8);
-        if (part == null) 
-        {
-            SimpleLog.Error("Failed to alloc memory for part.");
-            IMemorySpace.Free(partsList, (ulong)sizeof(AtkUldPartsList));
-            counterNode->AtkResNode.Destroy(false);
-            IMemorySpace.Free(counterNode, (ulong)sizeof(AtkCounterNode));
-            return;
-        }
-
-        part->U = 0;
-        part->V = 0;
-        part->Width = 22;
-        part->Height = 22;
-        
-        partsList->Parts = part;
-
-        var asset = (AtkUldAsset*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldAsset), 8);
-        if (asset == null) 
-        {
-            SimpleLog.Error("Failed to alloc memory for asset.");
-            IMemorySpace.Free(part, (ulong)sizeof(AtkUldPart));
-            IMemorySpace.Free(partsList, (ulong)sizeof(AtkUldPartsList));
-            counterNode->AtkResNode.Destroy(false);
-            IMemorySpace.Free(counterNode, (ulong)sizeof(AtkCounterNode));
-            return;
-        }
-
-        asset->Id = 1;
-        asset->AtkTexture.Ctor();
-        part->UldAsset = asset;
         counterNode->PartsList = partsList;
-        
-        ((AtkImageNode*)counterNode)->LoadTexture("ui/uld/money_number_hr1.tex");
         counterNode->AtkResNode.ToggleVisibility(true);
         
         counterNode->AtkResNode.SetWidth(128);
@@ -484,10 +440,6 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
                 counterNode->AtkResNode.NextSiblingNode->PrevSiblingNode = counterNode->AtkResNode.PrevSiblingNode;
             
             AddonMoney->UldManager.UpdateDrawNodeList();
-
-            IMemorySpace.Free(counterNode->PartsList->Parts->UldAsset, (ulong) sizeof(AtkUldPart));
-            IMemorySpace.Free(counterNode->PartsList->Parts, (ulong) sizeof(AtkUldPart));
-            IMemorySpace.Free(counterNode->PartsList, (ulong) sizeof(AtkUldPartsList));
             counterNode->AtkResNode.Destroy(false);
             IMemorySpace.Free(counterNode, (ulong)sizeof(AtkCounterNode));
         }
