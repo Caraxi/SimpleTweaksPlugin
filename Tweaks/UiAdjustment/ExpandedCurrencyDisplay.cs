@@ -178,7 +178,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         }
         ImGui.SameLine();
         ImGui.Checkbox("HQ Item", ref hqItemSearch);
-        ImGuiComponents.HelpMarker("To track HQ items such as Tinctures or Foods, enable 'HQ Item'\nIf an item doesn't display an icon, then it is not a valid item to use for the currency display.");
+        ImGuiComponents.HelpMarker("To track HQ items such as Tinctures or Foods, enable 'HQ Item'");
 
         if (ImGui.BeginChild("###SearchResultChild", new Vector2(regionSize.X * 2.0f / 3.0f, 100.0f * ImGuiHelpers.GlobalScale), true))
         {
@@ -194,27 +194,28 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
             
             foreach (var item in searchedItems)
             {
-                if (ImGuiComponents.IconButton($"AddCurrencyButton{item.RowId}", FontAwesomeIcon.Plus))
-                {
-                    TweakConfig.Currencies.Add(new CurrencyEntry
-                    {
-                        IconId = item.Icon,
-                        ItemId = hqItemSearch ? 1_000_000 + item.RowId : item.RowId,
-                        Name = item.Name.ToDalamudString() + (hqItemSearch ? " HQ" : string.Empty),
-                        HqItem = hqItemSearch,
-                    });
-                
-                    FreeAllNodes();
-                }
-                ImGui.SameLine();
-
                 var icon = Plugin.IconManager.GetIconTexture(item.Icon, hqItemSearch);
                 if (icon is not null)
                 {
+                    if (ImGuiComponents.IconButton($"AddCurrencyButton{item.RowId}", FontAwesomeIcon.Plus))
+                    {
+                        TweakConfig.Currencies.Add(new CurrencyEntry
+                        {
+                            IconId = item.Icon,
+                            ItemId = hqItemSearch ? 1_000_000 + item.RowId : item.RowId,
+                            Name = item.Name.ToDalamudString() + (hqItemSearch ? " HQ" : string.Empty),
+                            HqItem = hqItemSearch,
+                        });
+                
+                        FreeAllNodes();
+                    }
+                    ImGui.SameLine();
+                    
                     ImGui.Image(icon.ImGuiHandle, new Vector2(23.0f, 23.0f));
                     ImGui.SameLine();
+                    
+                    ImGui.TextUnformatted($"{item.RowId:D6} - {item.Name.ToDalamudString()}");
                 }
-                ImGui.TextUnformatted($"{item.RowId:D6} - {item.Name.ToDalamudString()}");
             }
         }
         ImGui.EndChild();
