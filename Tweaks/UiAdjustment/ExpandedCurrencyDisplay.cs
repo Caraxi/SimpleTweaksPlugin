@@ -90,6 +90,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     private void OnFrameworkUpdate()
     {
         if (AddonMoney is null) return;
+        if (AddonMoney->RootNode is null) return;
 
         // Size of one currency
         var resNodeSize = new Vector2(AddonMoney->RootNode->Width, AddonMoney->RootNode->Height);
