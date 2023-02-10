@@ -640,7 +640,6 @@ public unsafe class UIDebug : DebugHelper {
                     var text = counterNode->NodeText.ToString();
                     ImGui.Text($"text: {text}");
 
-                    #if DEBUG
                     if (ImGui.InputText($"Replace Text##{(ulong)counterNode:X}", ref text, 100, ImGuiInputTextFlags.EnterReturnsTrue)) {
                         counterNode->SetText(text);
                     }
@@ -650,7 +649,7 @@ public unsafe class UIDebug : DebugHelper {
                     if (ImGui.Button($"Set##{(ulong)counterNode:X}")) {
                         counterNode->SetNumber(counterNodeInputNumber);
                     }
-                    #endif
+                    
                     
                     
                     break;

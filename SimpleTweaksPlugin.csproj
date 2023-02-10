@@ -34,7 +34,6 @@
       <None Update="images\icon.png">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <Compile Remove="Tweaks\UiAdjustment\ExpandedCurrencyDisplay.cs" />
     </ItemGroup>
     <ItemGroup>
       <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
