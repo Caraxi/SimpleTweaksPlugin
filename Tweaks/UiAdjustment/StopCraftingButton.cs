@@ -206,6 +206,7 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
         selectedRecipeId = 0;
         if (Service.ClientState.LocalPlayer == null) return CraftReadyState.NotReady;
         var uiRecipeNote = RecipeNote.Instance();
+        if (uiRecipeNote == null || uiRecipeNote->RecipeList == null) return CraftReadyState.NotReady;
         var selectedRecipe = uiRecipeNote->RecipeList->SelectedRecipe;
         if (selectedRecipe == null) return CraftReadyState.NotReady;
         selectedRecipeId = selectedRecipe->RecipeId;
