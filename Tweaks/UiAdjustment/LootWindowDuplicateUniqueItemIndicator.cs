@@ -1,11 +1,14 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud.Hooking;
 using Dalamud.Logging;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Component.Exd;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Utility;
@@ -75,24 +78,27 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
                 // If we can't match the item in lumina, skip.
                 var itemData = Service.Data.GetExcelSheet<Item>()!.GetRow(itemInfo.ItemId);
                 if(itemData is null) continue;
-                
-                // If the item is not unique, skip.
-                if (!itemData.IsUnique) continue;
 
-                // If we have any of this unique item
-                if (InventoryManager.Instance()->GetInventoryItemCount(itemData.RowId) > 0)
+                switch (itemData)
                 {
-                    var targetListItemId = listItemIndexArray[index];
-                    var targetListItemNode = Common.GetNodeByID<AtkComponentNode>(&listComponentNode->Component->UldManager, (uint) targetListItemId);
-                    if (targetListItemNode is not null && targetListItemNode->Component is not null)
-                    {
-                        // Here we modify the node to indicate that the player already has this item
-                        // I'm not convinced that coloring it red is the best choice
-                        // If you or anyone else has a better method to indicate that this item is not rollable, modify the code below
-                        var imageNode = Common.GetNodeByID<AtkImageNode>(&targetListItemNode->Component->UldManager, 11);
+                    // Item is unique, and isn't consumable, just check quantity
+                    case { IsUnique: true, ItemAction.Row: 0 } when GetItemCount(itemInfo.ItemId) > 0:
+                        
+                    // Item has a unlock action, 1 means item has been unlocked
+                    case { ItemAction.Row: not 0 } when UIState.Instance()->IsItemActionUnlocked(ExdModule.GetItemRowById(itemInfo.ItemId)) is 1:
+                        
+                        var targetListItemId = listItemIndexArray[index];
+                        var targetListItemNode = Common.GetNodeByID<AtkComponentNode>(&listComponentNode->Component->UldManager, (uint) targetListItemId);
+                        if (targetListItemNode is not null && targetListItemNode->Component is not null)
+                        {
+                            // Here we modify the node to indicate that the player already has this item
+                            // I'm not convinced that coloring it red is the best choice
+                            // If you or anyone else has a better method to indicate that this item is not rollable, modify the code below
+                            var imageNode = Common.GetNodeByID<AtkImageNode>(&targetListItemNode->Component->UldManager, 11);
 
-                        imageNode->AtkResNode.AddRed = 0x55;
-                    }
+                            imageNode->AtkResNode.AddRed = 0x55;
+                        }
+                        break;
                 }
             }
         }
@@ -102,6 +108,20 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         }
 
         return result;
+    }
+
+    private int GetItemCount(uint itemId)
+    {
+        // Only check main inventories, don't include any special inventories
+        var inventories = new List<InventoryType>
+        {
+            InventoryType.Inventory1,
+            InventoryType.Inventory2,
+            InventoryType.Inventory3,
+            InventoryType.Inventory4,
+        };
+                
+        return inventories.Sum(inventory => InventoryManager.Instance()->GetItemCountInContainer(itemId, inventory));
     }
     
     [StructLayout(LayoutKind.Explicit, Size = 0x28)]
