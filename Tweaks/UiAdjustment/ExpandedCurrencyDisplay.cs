@@ -90,6 +90,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     private void OnFrameworkUpdate()
     {
         if (AddonMoney is null) return;
+        if (AddonMoney->RootNode is null) return;
 
         // Size of one currency
         var resNodeSize = new Vector2(AddonMoney->RootNode->Width, AddonMoney->RootNode->Height);
@@ -111,8 +112,8 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
 
             var counterPosition = TweakConfig.DisplayDirection switch
             {
-                Direction.Left => new Vector2(-resNodeSize.X * (index + 1), 0) + counterBasePosition,
-                Direction.Right => new Vector2(resNodeSize.X * (index + 1), 0) + counterBasePosition,
+                Direction.Left => counterBasePosition + new Vector2(-resNodeSize.X * (index + 1), 0),
+                Direction.Right => counterBasePosition + new Vector2(resNodeSize.X * (index + 1), 0),
                 Direction.Up => counterBasePosition + new Vector2(0, -resNodeSize.Y * (index + 1)),
                 Direction.Down => counterBasePosition + new Vector2(0, resNodeSize.Y * (index + 1)),
                 _ => throw new ArgumentOutOfRangeException()
@@ -128,8 +129,8 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
 
             var iconPosition = TweakConfig.DisplayDirection switch
             {
-                Direction.Left => new Vector2(-resNodeSize.X * (index + 1), 0) + currencyBasePosition,
-                Direction.Right => new Vector2(resNodeSize.X * (index + 1), 0) + currencyBasePosition,
+                Direction.Left => currencyBasePosition + new Vector2(-resNodeSize.X * (index + 1), 0),
+                Direction.Right => currencyBasePosition + new Vector2(resNodeSize.X * (index + 1), 0),
                 Direction.Up => currencyBasePosition + new Vector2(0, -resNodeSize.Y * (index + 1)),
                 Direction.Down => currencyBasePosition + new Vector2(0, resNodeSize.Y * (index + 1)),
                 _ => throw new ArgumentOutOfRangeException()
@@ -315,7 +316,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         imageNode->AtkResNode.Flags = 8243;
         imageNode->AtkResNode.DrawFlags = 0;
         imageNode->WrapMode = 1;
-        imageNode->Flags = 0;
+        imageNode->Flags = (byte) ImageNodeFlags.AutoFit;
         
         var partsList = (AtkUldPartsList*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldPartsList), 8);
         if (partsList == null) 
