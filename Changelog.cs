@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
@@ -91,7 +92,9 @@ public class Changelog : Window {
 
     public Changelog() : base("###simpleTweaksChangelog") {
         CurrentVersion = Assembly.GetExecutingAssembly().GetName().Version;
-        this.WindowName = $"Simple Tweaks Changelog ({CurrentVersion})###simpleTweaksChangelog";
+        WindowName = $"Simple Tweaks Changelog ({CurrentVersion})###simpleTweaksChangelog";
+        Size = ImGuiHelpers.ScaledVector2(600, 600);
+        SizeCondition = ImGuiCond.FirstUseEver;
     }
 
     public override void OnOpen() {
