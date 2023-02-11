@@ -19,6 +19,11 @@ public unsafe class HouseLightCommand : CommandTweak {
 
     private readonly string[] permanentMarkers = { "save" };
     
+    public override void Setup() {
+        AddChangelogNewTweak("1.8.2.0");
+        base.Setup();
+    }
+
     protected override void OnCommand(string args) {
 
         var housingManager = HousingManager.Instance();

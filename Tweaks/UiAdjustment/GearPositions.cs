@@ -19,6 +19,10 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
     private delegate byte AddonControllerInput(AtkUnitBase* atkUnitBase, Dir a2, byte a3);
     private HookWrapper<AddonControllerInput> addonControllerInputHook;
 
+    public override void Setup() {
+        AddChangelog("1.8.1.1", "Fixed widget display when using standard UI quality.");
+        base.Setup();
+    }
 
     public override void Enable() {
         bagWidgetUpdate ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 55 56 57 41 54 41 55 41 56 41 57 48 83 EC 20 4C 8B 62 38", BagWidgetUpdate);

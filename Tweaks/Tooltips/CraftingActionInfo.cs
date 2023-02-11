@@ -29,6 +29,11 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
     private string progressString;
     private string qualityString;
     
+    public override void Setup() {
+        AddChangelog("1.8.1.1", "Fixed tweak not disabling correctly.");
+        base.Setup();
+    }
+
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         progressString ??= Service.Data.Excel.GetSheet<Addon>()?.GetRow(213)?.Text?.RawString ?? "Progress";

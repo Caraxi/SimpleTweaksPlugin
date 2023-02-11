@@ -54,6 +54,12 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
 
     private bool inPVP = false;
 
+    public override void Setup() {
+        AddChangelog("1.8.1.2", "Fixed positioning of HP bar.");
+        AddChangelog("1.8.1.1", "Added option to center HP bar when MP bar is hidden.");
+        base.Setup();
+    }
+
     public override void Enable() {
         var nbJobs = Service.Data.Excel.GetSheet<ClassJob>()?.ColumnCount ?? 0;
         var classJobCategoriesSheet = Service.Data.Excel.GetSheet<ClassJobCategory>();

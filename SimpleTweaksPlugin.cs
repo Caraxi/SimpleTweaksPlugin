@@ -42,6 +42,7 @@ namespace SimpleTweaksPlugin {
         public readonly ConfigWindow ConfigWindow = new ConfigWindow();
         public readonly DebugWindow DebugWindow = new DebugWindow();
         public readonly WindowSystem WindowSystem = new WindowSystem("SimpleTweaksPlugin");
+        public readonly Changelog ChangelogWindow = new();
         
         
         internal CultureInfo Culture {
@@ -109,6 +110,8 @@ namespace SimpleTweaksPlugin {
 
             WindowSystem.AddWindow(ConfigWindow);
             WindowSystem.AddWindow(DebugWindow);
+            WindowSystem.AddWindow(ChangelogWindow);
+            Changelog.AddGeneralChangelogs();
             
             PluginInterface.UiBuilder.Draw += this.BuildUI;
             pluginInterface.UiBuilder.OpenConfigUi += OnOpenConfig;

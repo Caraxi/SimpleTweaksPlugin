@@ -37,6 +37,11 @@ public unsafe class KeepOpen : Tweak {
         }
     };
 
+    public override void Setup() {
+        AddChangelogNewTweak("1.8.2.1");
+        base.Setup();
+    }
+
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         hideHook ??= Common.Hook<HideUnitBase>("E8 ?? ?? ?? ?? 32 DB 0F BE D3", HideDetour);

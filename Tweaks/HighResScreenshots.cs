@@ -54,6 +54,11 @@ public unsafe class HighResScreenshots : Tweak {
         if (Config.Delay < 0) Config.Delay = 0;
     };
 
+    public override void Setup() {
+        AddChangelogNewTweak("1.8.2.0");
+        base.Setup();
+    }
+
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
 

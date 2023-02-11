@@ -42,6 +42,10 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     public string CustomCulture = string.Empty;
     public string Language = null;
 
+    public string LastSeenChangelog = string.Empty;
+    public bool AutoOpenChangelog = false;
+    public bool DisableChangelogNotification = false;
+
     public void Init(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface) {
         this.plugin = plugin;
         this.pluginInterface = pluginInterface;
@@ -57,6 +61,20 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     [NonSerialized] private string searchInput = string.Empty;
     [NonSerialized] private string lastSearchInput = string.Empty;
     [NonSerialized] private List<BaseTweak> searchResults = new List<BaseTweak>();
+
+    internal void FocusTweak(BaseTweak tweak) {
+        searchInput = tweak.Name;
+        lastSearchInput = tweak.Name;
+        searchResults.Clear();
+        searchResults.Add(tweak);
+    }
+
+    internal void ClearSearch() {
+        searchInput = string.Empty;
+        lastSearchInput = string.Empty;
+        searchResults.Clear();
+    }
+
     private string addCustomProviderInput = string.Empty;
 
     private void DrawTweakConfig(BaseTweak t, ref bool hasChange) {
@@ -141,9 +159,9 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     public void DrawConfigUI() {
         var changed = false;
 
-        var showbutton = plugin.ErrorList.Count != 0 || !HideKofi;
-        var buttonText = plugin.ErrorList.Count > 0 ? $"{plugin.ErrorList.Count} Errors Detected" : "Support on Ko-fi";
-        var buttonColor = (uint) (plugin.ErrorList.Count > 0 ? 0x000000FF : 0x005E5BFF);
+        var showbutton = plugin.ErrorList.Count != 0 || Changelog.HasNewChangelog || !HideKofi;
+        var buttonText = plugin.ErrorList.Count > 0 ? $"{plugin.ErrorList.Count} Errors Detected" : Changelog.HasNewChangelog ? "New Changelog Available" : "Support on Ko-fi";
+        var buttonColor = (uint) (plugin.ErrorList.Count > 0 ? 0x000000FF : Changelog.HasNewChangelog ? 0x0011AA05 : 0x005E5BFF);
             
         if (showbutton) {
             ImGui.SetNextItemWidth(-(ImGui.CalcTextSize(buttonText).X + ImGui.GetStyle().FramePadding.X * 2 + ImGui.GetStyle().ItemSpacing.X));
@@ -160,9 +178,11 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
             ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xAA000000 | buttonColor);
 
             if (ImGui.Button(buttonText, new Vector2(-1, ImGui.GetItemRectSize().Y))) {
-                if (plugin.ErrorList.Count == 0) {
+                if (plugin.ErrorList.Count == 0 && !Changelog.HasNewChangelog) {
                     Common.OpenBrowser("https://ko-fi.com/Caraxi");
-                } else {
+                } else if (Changelog.HasNewChangelog) {
+                    plugin.ChangelogWindow.IsOpen = true;
+                } else  {
                     plugin.ShowErrorWindow = true;
                 }
             }
@@ -273,6 +293,17 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                     if (ImGui.Checkbox(Loc.Localize("General Options / Show Tweak Descriptions","Show tweak descriptions."), ref ShowTweakDescriptions)) Save();
                     ImGui.Separator();
                     if (ImGui.Checkbox(Loc.Localize("General Options / Show Tweak IDs", "Show tweak IDs."), ref ShowTweakIDs)) Save();
+                    ImGui.Separator();
+                    
+                    if (ImGui.Checkbox(Loc.Localize("General Options / Auto Open Changelog", "Open New Changelogs Automatically"), ref AutoOpenChangelog)) Save();
+                    ImGui.Separator();
+                    if (ImGui.Checkbox(Loc.Localize("General Options / Disable Changelog Notice", "Disable Changelog Notifications"), ref DisableChangelogNotification)) Save();
+
+                    ImGui.SameLine();
+                    if (ImGui.Button("Open Changelog")) {
+                        plugin.ChangelogWindow.IsOpen = true;
+                    }
+                    
                     ImGui.Separator();
                     #if DEBUG
                     if (ImGui.Checkbox("Disable Auto Open", ref DisableAutoOpen)) Save();

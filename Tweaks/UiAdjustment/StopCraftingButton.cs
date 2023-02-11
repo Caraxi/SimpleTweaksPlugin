@@ -73,6 +73,11 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
 
     private HookWrapper<Common.AddonOnUpdate> craftingLogUpdateHook;
     
+    public override void Setup() {
+        AddChangelog("1.8.2.1", "Fixed a potential crash in specific circumstances.");
+        base.Setup();
+    }
+
     public override void Enable() {
         craftingLogUpdateHook ??= Common.HookAfterAddonUpdate("40 55 57 41 54 41 55 41 57 48 8D AC 24", CraftingLogUpdated);
         craftingLogUpdateHook?.Enable();

@@ -92,6 +92,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Name => "Target HP";
         public override string Description => "Displays the exact (or optionally rounded) value of target's hitpoints.";
 
+        public override void Setup() {
+            AddChangelog("1.8.1.1", "Added option to align text to the left.");
+            base.Setup();
+        }
+        
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
             Service.Framework.Update += FrameworkUpdate;

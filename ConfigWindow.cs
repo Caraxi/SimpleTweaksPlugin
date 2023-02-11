@@ -2,6 +2,7 @@ using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin; 
 
@@ -24,5 +25,6 @@ public class ConfigWindow : Window {
     public override void OnClose() {
         base.OnClose();
         SimpleTweaksPlugin.Plugin.SaveAllConfig();
+        SimpleTweaksPlugin.Plugin.PluginConfig.ClearSearch();
     }
 }

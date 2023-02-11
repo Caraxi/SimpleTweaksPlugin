@@ -19,6 +19,11 @@ public unsafe class EstateListCommand : CommandTweak {
     private delegate IntPtr ShowEstateTeleportationDelegate(AgentInterface* friendListAgent, ulong contentId);
     private ShowEstateTeleportationDelegate showEstateTeleportation;
     
+    public override void Setup() {
+        AddChangelog("1.8.1.1", "Now allows partial matching of friend names.");
+        base.Setup();
+    }
+
     public override void Enable() {
         if (showEstateTeleportation == null && Service.SigScanner.TryScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 45 33 F6 48 8B CF 44 89 B3 ?? ?? ?? ?? E8", out var ptr)) {
             showEstateTeleportation = Marshal.GetDelegateForFunctionPointer<ShowEstateTeleportationDelegate>(ptr);

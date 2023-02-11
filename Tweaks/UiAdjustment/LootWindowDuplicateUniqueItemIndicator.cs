@@ -29,6 +29,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     public override void Setup()
     {
         if (Ready) return;
+        AddChangelogNewTweak("1.8.2.1");
 
         SignatureHelper.Initialise(this);
         Ready = true;

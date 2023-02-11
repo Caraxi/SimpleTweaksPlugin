@@ -9,6 +9,11 @@ public unsafe class MinionAway : CommandTweak {
     public override string Name => "Dismiss Minion Command";
     public override string Description => $"Adds a command to dismiss your current minion. /{Command}";
 
+    public override void Setup() {
+        AddChangelogNewTweak("1.8.2.0");
+        base.Setup();
+    }
+
     protected override void OnCommand(string args) {
         var c = (Character*)(Service.ClientState.LocalPlayer?.Address ?? IntPtr.Zero);
         if (c == null) return;

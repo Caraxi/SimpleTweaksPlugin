@@ -33,6 +33,11 @@ public unsafe class LimitBreakAdjustments : UiAdjustments.SubTweak {
         ImGui.DragFloat2("Text Position", ref Config.TextPosition);
     };
 
+    public override void Setup() {
+        AddChangelogNewTweak("1.8.2.0");
+        base.Setup();
+    }
+
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         Common.FrameworkUpdate += OnFrameworkUpdate;

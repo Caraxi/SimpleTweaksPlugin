@@ -359,5 +359,8 @@ public abstract class BaseTweak {
         Ready = false;
     }
 
+    protected ChangelogEntry AddChangelog(string version, string log) => Changelog.Add(this, version, log);
+    protected ChangelogEntry AddChangelogNewTweak(string version) => Changelog.AddNewTweak(this, version).Author(Author);
+
 
 }
