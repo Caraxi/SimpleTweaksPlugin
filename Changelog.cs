@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Windowing;
@@ -104,7 +105,7 @@ public class Changelog : Window {
         base.OnOpen();
     }
 
-    private bool ShouldShowTweak(BaseTweak tweak) {
+    private static bool ShouldShowTweak(BaseTweak tweak) {
         if (tweak == null) return false;
         var config = SimpleTweaksPlugin.Plugin.PluginConfig;
 
@@ -117,10 +118,98 @@ public class Changelog : Window {
         return true;
     }
 
-    public override void Draw() {
+    private static string GenerateChangelogMarkdown(Version changelogVersion = null, StringBuilder stringBuilder = null) {
+        stringBuilder ??= new StringBuilder();
 
+        if (changelogVersion == null) {
+            stringBuilder.AppendLine("# Changelog");
+            stringBuilder.AppendLine();
+            foreach (var version in Entries.Keys.OrderByDescending(v => v)) {
+                var versionLabel = version.Major == 99 ? "Unreleased" : $"{version}";
+
+                stringBuilder.AppendLine($"## [{versionLabel}]");
+                GenerateChangelogMarkdown(version, stringBuilder);
+                stringBuilder.AppendLine();
+            }
+
+            
+            return stringBuilder.ToString();
+        }
+
+        if (Entries.TryGetValue(changelogVersion, out var changelogs)) {
+            
+            var generalChanges = changelogs.Where(c => c.Tweak == null);
+            var newTweaks = changelogs.Where(c => c.IsNewTweak && c.Tweak != null).OrderBy(c => c.Tweak.Name);
+            var tweakChanges = changelogs.Where(c => c.Tweak != null && c.IsNewTweak == false).OrderBy(c => c.Tweak.Name);
+
+            if (generalChanges.Any()) {
+
+                if (newTweaks.Any() || tweakChanges.Any()) {
+                    stringBuilder.AppendLine("***General Changes***");
+                }
+
+                foreach (var c in generalChanges) {
+                    stringBuilder.Append($"> {c.Change}");
+                    if (!string.IsNullOrEmpty(c.ChangeAuthor)) {
+                        stringBuilder.Append($" *({c.ChangeAuthor})*");
+                    }
+                    stringBuilder.AppendLine();
+                }
+                
+                if (newTweaks.Any() || tweakChanges.Any()) {
+                    stringBuilder.AppendLine();
+                }
+            }
+
+            if (newTweaks.Any()) {
+                stringBuilder.AppendLine("***New Tweaks***");
+
+                foreach (var c in newTweaks) {
+                    stringBuilder.Append($"> **`{c.Tweak.Name}`** - {c.Tweak.Description.Split('\n')[0]}");
+                    if (!string.IsNullOrEmpty(c.ChangeAuthor)) {
+                        stringBuilder.Append($" *({c.ChangeAuthor})*");
+                    }
+                    stringBuilder.AppendLine("\n");
+                }
+
+                if (tweakChanges.Any()) {
+                    stringBuilder.AppendLine();
+                }
+            }
+
+            if (tweakChanges.Any()) {
+                stringBuilder.AppendLine("***Tweak Changes***");
+                foreach (var c in tweakChanges) {
+                    stringBuilder.Append($"> **`{c.Tweak.Name}`** - {c.Change}");
+                    if (!string.IsNullOrEmpty(c.ChangeAuthor)) {
+                        stringBuilder.Append($" *({c.ChangeAuthor})*");
+                    }
+                    stringBuilder.AppendLine("\n");
+                }
+            }
+            
+            
+            
+        }
+        
+        return stringBuilder.ToString();
+    }
+    
+    public override void Draw() {
+#if DEBUG
+        if (ImGui.Button("Copy Full Changelog")) {
+            ImGui.SetClipboardText(GenerateChangelogMarkdown());
+        }
+#endif       
         foreach (var (version, changelogs) in Entries.OrderByDescending(v => v.Key)) {
 
+#if DEBUG
+            if (ImGui.Button($"C##{version}")) {
+                ImGui.SetClipboardText(GenerateChangelogMarkdown(version));
+            }
+            ImGui.SameLine();
+#endif
+            
             var flags = CurrentVersion == version ? ImGuiTreeNodeFlags.DefaultOpen | ImGuiTreeNodeFlags.CollapsingHeader : ImGuiTreeNodeFlags.CollapsingHeader;
 #if DEBUG
             if (version.Major == 99) flags |= ImGuiTreeNodeFlags.DefaultOpen;

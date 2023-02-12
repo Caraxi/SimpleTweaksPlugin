@@ -1,119 +1,60 @@
 # Changelog
 
 ## [Unreleased]
-
-## [1.7.3.1]
-***Improvements***
-> **`Custom Free Company Tags`** - Now allows setting Wanderer and Traveller tags individually.
-
-***Bug Fixes***
-> **`Blue Mage Action Tooltips`** - Fixed duplicate tooltip on non-english languages.
-
-## [1.7.3.0]
+***General Changes***
+> Added a changelog
 
 ***New Tweaks***
-> **`Extra Information for Tooltips`** - Adds options to show an item's Grand Company Seal value, the gear sets it is a part of and if the item is craftable.
+> **`Expanded Currency Display`** - Allows you to display extra currencies. *(MidoriKami)*
 
 
-***Added Features***
-> **`Improved Blue Mage Action Tooltips`** Added spellbook number to tooltip.
-
-> **`Chat Name Colours`** Added support for setting custom colours for Travellers from other data centers.
-
-> **`Target Status Adjustments`** Now supports filtering status effects. *(Aireil)*
-
-***Bug Fixes***
-> **`Item Hotkeys`** Fixed enabled state not saving in some instances.
-
-> **`Fix Target`** Fixed tweak not working when chat message is filtered.
-
-## [1.7.2.1]
-> Fixed a issue causing `Item Hotkeys` tweak to not work.
-
-## [1.7.2.0]
+## [1.8.2.1]
 ***New Tweaks***
-> **`Improved Chat Font Sizes`** - Allows changing the font size for the chat windows beyond the default limits, and allows docked chat tabs to keep their font size separate from the main tab.
+> **`Keep Windows Open`** - Prevents certain windows from hiding under specific circumstances.
 
-> **`Equip Recommended Command`** - Adds a command to equip the recommended items for your current class.
-
-> **`Improved Blue Mage Action Tooltips`** - Adds Damage Type, Aspect and Rank to blue mage action tooltips.
-
-> **`Duty Ready Class Switching`** - Click 'Previous' class icon in Duty Ready to switch class.
-
-> **`Disable Auto Chat Inputs`** - Prevent the game from inserting <flag> or other parameters into chat box.
-
-***Added Features***
-> **`Item Hotkeys`** - Added a new hotkey to open crafting recipes.
-
-> **`Always Yes`** - Added support for desynthesis prompts *(Aireil)*
-
-> **`Custom Free Company Tags`** - Added placeholder to display a player's current level.
-
-> **`Try on Correct Item`** - Can now be configured for each game window you try on an item from.
+> **`Loot Window Duplicate Unique Item Indicator`** - Recolors unique items that you already have in the loot window. *(MidoriKami)*
 
 
-## [1.7.1.1]
-***Improvements***
-> **`Always Yes`** - Add option to blacklist certain questions is yes(hold)no dialogs
-
-***Bug Fixes***
-> **`Improved Crafting Log`** - Fix disabling the tweak when the crafting window is not open.
+***Tweak Changes***
+> **`Improved Crafting Log`** - Fixed a potential crash in specific circumstances.
 
 
-## [1.7.1.0]
+## [1.8.2.0]
+***General Changes***
+> Now using the Dalamud Window system.
+ESC will now close Simple Tweaks windows.
+
 ***New Tweaks***
-> **`Open Adventurer Plate Command`** - `/playerplate <t>` to open Adventurer plate of your target, or any other placeholder should work too.
+> **`Dismiss Minion Command`** - Adds a command to dismiss your current minion. /minionaway
 
-> **`Hide Chat Panel Buttons`** - Hides chat tab name and close button while the tab is split from the main window.
+> **`High Resolution Screenshots`** - Increases the resolution in game screenshots are taken at. *(NotNite)*
 
-> **`Estate List Command`** - `/estatelist <friend>` to open the estate teleportation list for the given friend.
+> **`House Lights Command`** - Adds a command to control lighting in your own housing areas.
 
-***Returning Tweaks***
-> **`Improved Crafting Log`** - Back from being disabled, hopefully won't cause any more issues with people getting stuck in bad state.
+> **`Limit Break Adjustments`** - Simple customization of the limit break bars
 
-***Added Features***
-> **`Target HP`** - Added option to not hide the Auto Attack icon.
+> **`Sticky Chat`** - Sets chat channel when you use temporary chat messages. *(MidoriKami)*
 
-> **`Extended Desynthesis Window`** - Added option to change the sort order of the All Items category.
 
-> **`Always Yes`** - More target windows to set default for. (*Aireil*)
+***Tweak Changes***
+> **`Time Until GP Max`** - Added an option to display time in Eorzean Hours *(peterberbec)*
 
-## [1.7.0.2]
-***Bug Fixes***
-> **`Extended Desynthesis Window` - Fixed a game crash when changing certain config options.**
 
-> **`No Sell List`** - Fixed incorrect error message appearance in certain cases.
+## [1.8.1.2]
+***Tweak Changes***
+> **`Parameter Bar Adjustments`** - Fixed positioning of HP bar.
 
-> **`Large Cooldown Counter`** - Fixed certain actions not correctly showing their large cooldowns.
 
-***Added Features***
-> **`Extended Desynthesis Window`** - Added option to exclude armoury chest from 'All Items' display.
+## [1.8.1.1]
+***Tweak Changes***
+> **`Adjust Equipment Positions`** - Fixed widget display when using standard UI quality.
 
-## [1.7.0.0]
-***New Tweaks***
-> **`No Sell List`** - Allows you to define a list of items that can not be sold to a vendor.
+> **`Estate List Command`** - Now allows partial matching of friend names.
 
-> **`Quick Sell at Vendors`** - Hold a modifier key to sell items from your inventory in one click.
+> **`Improved Crafting Action Tooltips`** - Fixed tweak not disabling correctly.
 
-> **`Always Yes`** (*by Aireil*) - Default cursor to yes when using confirm (numpad 0 or controller).
+> **`Parameter Bar Adjustments`** - Added option to center HP bar when MP bar is hidden.
 
-> **`Show Painting Preview`** - Add an image preview for paintings to item tooltips.
+> **`Target HP`** - Added option to align text to the left.
 
-> **`Screenshot File Name`** (*by PunishedPineapple*) - Change the file name format for screenshots.
-
-> **`Recolor Own Status Timers`** - Allows the recoloring of the personal status timers color.
-
-***Added Features***
-> **`Set Option Command`** - Added 'Hide Unassigned Hotbar Slots' to available options.
-
-> **`Extended Desynthesis Window`** - Added an optional extra category to the desynthesis window to show all available items in a single list, with additional options to hide gearset items as well as items that will not give desynthesis levels.
-
-***Bug Fixes***
-> **`Adjust Equipment Positions`** - Fixed controller navigation on Character Examine window. (*Ryan Hart*)
-
-> **`Legacy Camera Lock`** - Fixed 'Disable While Auto Running' option not working correctly.
-
-> **`Custom Free Company Tags`** - Fixed config sometimes not saving correctly. (*Airiel*)
-
-> **`Smart Nameplates`** - Fixed config sometimes not saving correctly. (*Airiel*)
 
