@@ -263,7 +263,9 @@ public class Changelog : Window {
 
                         if (tweakTreeOpen) {
                             ImGui.Indent();
-                            ImGui.TextDisabled(c.Tweak.Description);
+                            ImGui.PushStyleColor(ImGuiCol.Text, ImGui.GetColorU32(ImGuiCol.TextDisabled));
+                            ImGui.TextWrapped(c.Tweak.Description);
+                            ImGui.PopStyleColor();
                             ImGui.Unindent();
                             ImGui.TreePop();
                         }
