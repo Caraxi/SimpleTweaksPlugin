@@ -61,6 +61,7 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
 
         protected static InventoryItem Item => HoveredItem;
         protected static HoveredActionDetail Action => HoveredAction;
+        protected static uint LoadedItem => LastLoadedItem;
     }
 
     public override string Name => "Tooltip Tweaks";
@@ -79,6 +80,9 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
     private unsafe delegate void* GenerateActionTooltip(AtkUnitBase* addonActionDetail, NumberArrayData* numberArrayData, StringArrayData* stringArrayData);
     private HookWrapper<GenerateActionTooltip> generateActionTooltipHook;
 
+    private unsafe delegate void* GetItemRowDelegate(uint itemId);
+    private HookWrapper<GetItemRowDelegate> getItemRowHook;
+
     public override unsafe void Enable() {
         if (!Ready) return;
 
@@ -87,16 +91,22 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         actionHoveredHook ??= Common.Hook<ActionHoveredDelegate>("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 83 F8 0F", ActionHoveredDetour);
         generateItemTooltipHook ??= Common.Hook<GenerateItemTooltip>("48 89 5C 24 ?? 55 56 57 41 54 41 55 41 56 41 57 48 83 EC 50 48 8B 42 20", GenerateItemTooltipDetour);
         generateActionTooltipHook ??= Common.Hook<GenerateActionTooltip>("E8 ?? ?? ?? ?? 48 8B D5 48 8B CF E8 ?? ?? ?? ?? 41 8D 45 FF 83 F8 01 77 6D", GenerateActionTooltipDetour);
+        getItemRowHook ??= Common.Hook<GetItemRowDelegate>("E8 ?? ?? ?? ?? 4C 8B F8 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B D0", GetItemRowDetour);
 
         itemHoveredHook?.Enable();
         actionTooltipHook?.Enable();
         actionHoveredHook?.Enable();
         generateItemTooltipHook?.Enable();
         generateActionTooltipHook?.Enable();
+        getItemRowHook?.Enable();
 
         base.Enable();
     }
 
+    private unsafe void* GetItemRowDetour(uint itemId) {
+        LastLoadedItem = itemId;
+        return getItemRowHook.Original(itemId);
+    }
 
     public class HoveredActionDetail {
         public int Category;
@@ -106,6 +116,10 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
     }
 
     public static readonly HoveredActionDetail HoveredAction = new HoveredActionDetail();
+
+
+    public static uint LastLoadedItem { get; private set; }
+    
     private void ActionHoveredDetour(ulong a1, int a2, uint a3, int a4, byte a5) {
         HoveredAction.Category = a2;
         HoveredAction.Id = a3;
@@ -146,6 +160,7 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         actionHoveredHook?.Disable();
         generateItemTooltipHook?.Disable();
         generateActionTooltipHook?.Disable();
+        getItemRowHook?.Disable();
         base.Disable();
     }
 
@@ -155,6 +170,7 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         actionHoveredHook?.Dispose();
         generateItemTooltipHook?.Dispose();
         generateActionTooltipHook?.Dispose();
+        getItemRowHook?.Dispose();
         foreach (var i in ItemStringPointers.Values) {
             Marshal.FreeHGlobal(i);
         }
