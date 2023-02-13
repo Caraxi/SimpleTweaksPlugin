@@ -22,7 +22,7 @@ public class FixTarget : Tweak {
         regex = Service.ClientState.ClientLanguage switch {
             ClientLanguage.Japanese => new Regex(@"^\d+?番目のターゲット名の指定が正しくありません。： (.+)$"),
             ClientLanguage.German => new Regex(@"^Der Unterbefehl \[Name des Ziels\] an der \d+\. Stelle des Textkommandos \((.+)\) ist fehlerhaft\.$"),
-            ClientLanguage.French => new Regex(@"^Le \d+er? argument “nom de la cible” est incorrect (.*?)\.$"),
+            ClientLanguage.French => new Regex(@"^Le \d+er? argument “nom de la cible” est incorrect \((.*?)\)\.$"),
             ClientLanguage.English => new Regex(@"^“(.+)” is not a valid target name\.$"),
             _ => null
         };
