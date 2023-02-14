@@ -173,7 +173,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         var textNode = (AtkTextNode *)unitBase->UldManager.SearchNodeById(2);
         if (textNode == null) return false;
 
-        var text = Common.ReadSeString(textNode->NodeText).TextValue;
+        var text = Common.ReadSeString(textNode->NodeText).TextValue.ReplaceLineEndings(string.Empty);
 
         return text != string.Empty && Config.ExceptionsYesNo.Any(val => text.Contains(val));
     }
