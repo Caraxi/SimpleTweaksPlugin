@@ -220,6 +220,7 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         ItemUiCategory,
         ItemDescription = 13,
         Effects = 16,
+        ClassJobCategory = 22,
         DurabilityPercent = 28,
         SpiritbondPercent = 30,
         ExtractableProjectableDesynthesizable = 35,
