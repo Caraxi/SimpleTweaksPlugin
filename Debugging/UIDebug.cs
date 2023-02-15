@@ -64,9 +64,9 @@ public unsafe class UIDebug : DebugHelper {
         "Units 18"
     };
 
-    private RawDX11Scene.BuildUIDelegate originalHandler;
+    private static RawDX11Scene.BuildUIDelegate originalHandler;
 
-    private bool SetExclusiveDraw(Action action) {
+    internal static bool SetExclusiveDraw(Action action) {
         // Possibly the most cursed shit I've ever done.
         if (originalHandler != null) return false;
         try {
@@ -94,7 +94,7 @@ public unsafe class UIDebug : DebugHelper {
         return false;
     }
         
-    private bool FreeExclusiveDraw() {
+    internal static bool FreeExclusiveDraw() {
         if (originalHandler == null) return true;
         try {
             var dalamudAssembly = Service.PluginInterface.GetType().Assembly;
