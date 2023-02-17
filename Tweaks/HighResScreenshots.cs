@@ -3,6 +3,7 @@ using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
 using ImGuiNET;
+using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -17,6 +18,7 @@ public unsafe class HighResScreenshots : Tweak {
     public class Configs : TweakConfig {
         public int Scale = 2;
         public float Delay = 1.0f;
+        public bool HideDalamudUi;
     }
 
     public Configs Config { get; private set; }
@@ -52,10 +54,12 @@ public unsafe class HighResScreenshots : Tweak {
 
         if (Config.Scale < 2) Config.Scale = 2;
         if (Config.Delay < 0) Config.Delay = 0;
+        hasChanged |= ImGui.Checkbox("Hide Dalamud UI in screenshots", ref Config.HideDalamudUi);
     };
 
     public override void Setup() {
         AddChangelogNewTweak("1.8.2.0");
+        AddChangelog(Changelog.UnreleasedVersion, "Added option to hide dalamud UI for screenshot.");
         base.Setup();
     }
 
@@ -89,7 +93,10 @@ public unsafe class HighResScreenshots : Tweak {
             device->NewHeight = oldHeight * (uint)Config.Scale;
             device->RequestResolutionChange = 1;
 
-            Service.Framework.RunOnTick(() => { shouldPress = true; }, delay: TimeSpan.FromSeconds(Config.Delay));
+            Service.Framework.RunOnTick(() => {
+                if (Config.HideDalamudUi) UIDebug.SetExclusiveDraw(() => { });
+                shouldPress = true;
+            }, delay: TimeSpan.FromSeconds(Config.Delay));
 
             return 0;
         }
@@ -99,6 +106,7 @@ public unsafe class HighResScreenshots : Tweak {
             
             // Reset the res back to normal after the screenshot is taken
             Service.Framework.RunOnTick(() => {
+                UIDebug.FreeExclusiveDraw();
                 var device = Device.Instance();
                 device->NewWidth = oldWidth;
                 device->NewHeight = oldHeight;
@@ -112,6 +120,7 @@ public unsafe class HighResScreenshots : Tweak {
     }
 
     public override void Disable() {
+        UIDebug.FreeExclusiveDraw();
         SaveConfig(Config);
         isInputIDClickedHook?.Disable();
         base.Disable();
