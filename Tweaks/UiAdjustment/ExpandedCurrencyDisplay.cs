@@ -243,6 +243,36 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
                 TweakConfig.Currencies.Remove(currency);
                 break;
             }
+            var iconButtonSize = ImGui.GetItemRectSize();
+            ImGui.SameLine();
+
+            if (index != 0)
+            {
+                if (ImGuiComponents.IconButton($"CurrencyUpButton{index}", FontAwesomeIcon.ArrowUp)) {
+                    FreeAllNodes();
+                    TweakConfig.Currencies.Remove(currency);
+                    TweakConfig.Currencies.Insert(index - 1, currency);
+                }
+            }
+            else
+            {
+                ImGui.Dummy(iconButtonSize);
+            }
+            ImGui.SameLine();
+
+            if (index < TweakConfig.Currencies.Count - 1)
+            {
+                if (ImGuiComponents.IconButton($"CurrencyDownButton{index}", FontAwesomeIcon.ArrowDown))
+                {
+                    FreeAllNodes();
+                    TweakConfig.Currencies.Remove(currency);
+                    TweakConfig.Currencies.Insert(index + 1, currency);
+                }
+            }
+            else
+            {
+                ImGui.Dummy(iconButtonSize);
+            }
             ImGui.SameLine();
             
             var icon = Plugin.IconManager.GetIconTexture(currency.IconId, currency.HqItem);
