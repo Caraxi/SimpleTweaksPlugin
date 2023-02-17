@@ -120,8 +120,24 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
             InventoryType.Inventory2,
             InventoryType.Inventory3,
             InventoryType.Inventory4,
+            
+            InventoryType.EquippedItems,
+            
+            InventoryType.ArmoryMainHand,
+            InventoryType.ArmoryHead,
+            InventoryType.ArmoryBody,
+            InventoryType.ArmoryHands,
+            InventoryType.ArmoryWaist,
+            InventoryType.ArmoryLegs,
+            InventoryType.ArmoryFeets,
+
+            InventoryType.ArmoryOffHand,
+            InventoryType.ArmoryEar,
+            InventoryType.ArmoryNeck,
+            InventoryType.ArmoryWrist,
+            InventoryType.ArmoryRings,
         };
-                
+
         return inventories.Sum(inventory => InventoryManager.Instance()->GetItemCountInContainer(itemId, inventory));
     }
     
