@@ -29,6 +29,7 @@ public static unsafe partial class UiHelper {
         height ??= windowNode->AtkResNode.Height;
 
         if (width < 64) width = 64;
+        if (height < 16) height = 16;
 
         SetSize(windowNode, width, height);  // Window
         var n = windowNode->Component->UldManager.RootNode;
@@ -40,7 +41,11 @@ public static unsafe partial class UiHelper {
         n = n->PrevSiblingNode;
         SetSize(n, width, height); // Focused Border
         n = n->PrevSiblingNode;
-        SetSize(n, width, height); // Gradient
+        if (GameConfig.System.GetUInt("ColorThemeType") == 3) {
+            SetSize(n, width - 8, height - 16); // Gradient
+        } else {
+            SetSize(n, width, height); // Gradient
+        }
         n = n->PrevSiblingNode;
         SetSize(n, (ushort) (width - 5), null); // Header Node
         n = n->ChildNode;
