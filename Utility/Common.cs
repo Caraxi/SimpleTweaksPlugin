@@ -29,6 +29,9 @@ public static unsafe class Common {
     private delegate void* AddonSetupDelegate(AtkUnitBase* addon);
     private static HookWrapper<AddonSetupDelegate> addonSetupHook;
     
+    private delegate void FinalizeAddonDelegate(AtkUnitManager* unitManager, AtkUnitBase** atkUnitBase);
+    private static HookWrapper<FinalizeAddonDelegate> finalizeAddonHook;
+
     private static IntPtr LastCommandAddress;
         
     public static Utf8String* LastCommand { get; private set; }
@@ -44,7 +47,6 @@ public static unsafe class Common {
 
         if (FrameworkUpdate == null) return;
         foreach (var updateDelegate in FrameworkUpdate.GetInvocationList()) {
-            
             PerformanceMonitor.Begin($"[FrameworkUpdate]{updateDelegate.Target?.GetType().Name}.{updateDelegate.Method.Name}");
             updateDelegate.DynamicInvoke();
             PerformanceMonitor.End($"[FrameworkUpdate]{updateDelegate.Target?.GetType().Name}.{updateDelegate.Method.Name}");
@@ -54,6 +56,7 @@ public static unsafe class Common {
 
     public static event Action<SetupAddonArgs> AddonSetup; 
     public static event Action<SetupAddonArgs> AddonPreSetup; 
+    public static event Action<SetupAddonArgs> AddonFinalize;
     
     public static void Setup() {
         LastCommandAddress = Service.SigScanner.GetStaticAddressFromSig("4C 8D 05 ?? ?? ?? ?? 41 B1 01 49 8B D4 E8 ?? ?? ?? ?? 83 EB 06");
@@ -61,6 +64,9 @@ public static unsafe class Common {
         
         addonSetupHook = Hook<AddonSetupDelegate>("E8 ?? ?? ?? ?? 8B 83 ?? ?? ?? ?? C1 E8 14", AddonSetupDetour);
         addonSetupHook?.Enable();
+
+        finalizeAddonHook = Hook<FinalizeAddonDelegate>("E8 ?? ?? ?? ?? 48 8B 7C 24 ?? 41 8B C6", FinalizeAddonDetour);
+        finalizeAddonHook?.Enable();
 
         updateCursorHook = Hook<AtkModuleUpdateCursor>("48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 20 4C 8B F1 E8 ?? ?? ?? ?? 49 8B CE", UpdateCursorDetour);
         updateCursorHook?.Enable();
@@ -84,6 +90,17 @@ public static unsafe class Common {
         }
 
         return retVal;
+    }
+
+    private static void FinalizeAddonDetour(AtkUnitManager* unitManager, AtkUnitBase** atkUnitBase) {
+        try {
+            AddonFinalize?.Invoke(new SetupAddonArgs() {
+                Addon = atkUnitBase[0]
+            });
+        } catch (Exception ex) {
+            SimpleLog.Error(ex);
+        }
+        finalizeAddonHook?.Original(unitManager, atkUnitBase);
     }
 
     public static UIModule* UIModule => Framework.Instance()->GetUiModule();
@@ -351,6 +368,9 @@ public static unsafe class Common {
         
         updateCursorHook?.Disable();
         updateCursorHook?.Dispose();
+        
+        finalizeAddonHook?.Disable();
+        finalizeAddonHook?.Dispose();
     }
 
     public const int UnitListCount = 18;
