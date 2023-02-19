@@ -10,7 +10,16 @@ public static unsafe partial class UiHelper
 {
     public record PartInfo(ushort U, ushort V, ushort Width, ushort Height);
     
-    public static AtkImageNode* MakeImageNode(uint id) => MakeImageNode(id, new PartInfo(0, 0, 0, 0));
+    /// <summary>
+    /// Makes an image node with allocated and initialized components:<br/>
+    /// 1x AtkUldPartsList<br/>
+    /// 1x AtkUldPart<br/>
+    /// 1x AtkUldAsset<br/>
+    /// </summary>
+    /// <param name="id">Id of the new node</param>
+    /// <param name="partInfo">Texture U,V coordinates and Texture Width,Height</param>
+    /// <remarks>Returns null if allocation of any component failed</remarks>
+    /// <returns>Fully Allocated AtkImageNode</returns>
     public static AtkImageNode* MakeImageNode(uint id, PartInfo partInfo)
     {
         if (!TryMakeImageNode(id, 0, 0, 0, 0, out var imageNode))
@@ -78,13 +87,13 @@ public static unsafe partial class UiHelper
         }
     }
 
-    private static void FreeImageNode(AtkImageNode* node)
+    public static void FreeImageNode(AtkImageNode* node)
     {
         node->AtkResNode.Destroy(false);
         IMemorySpace.Free(node, (ulong)sizeof(AtkImageNode));
     }
     
-    private static bool TryMakeImageNode(uint id, short resNodeFlags, uint resNodeDrawFlags, byte wrapMode, byte imageNodeFlags, [NotNullWhen(true)] out AtkImageNode* imageNode)
+    public static bool TryMakeImageNode(uint id, short resNodeFlags, uint resNodeDrawFlags, byte wrapMode, byte imageNodeFlags, [NotNullWhen(true)] out AtkImageNode* imageNode)
     {
         imageNode = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
 
@@ -102,7 +111,7 @@ public static unsafe partial class UiHelper
         return false;
     }
 
-    private static void FreePartsList(AtkUldPartsList* partsList)
+    public static void FreePartsList(AtkUldPartsList* partsList)
     {
         foreach (var index in Enumerable.Range(0, (int)partsList->PartCount))
         {
@@ -115,7 +124,7 @@ public static unsafe partial class UiHelper
         IMemorySpace.Free(partsList, (ulong)sizeof(AtkUldPartsList));
     }
     
-    private static bool TryMakePartsList(uint id, [NotNullWhen(true)] out AtkUldPartsList* partsList)
+    public static bool TryMakePartsList(uint id, [NotNullWhen(true)] out AtkUldPartsList* partsList)
     {
         partsList = (AtkUldPartsList*) IMemorySpace.GetUISpace()->Malloc((ulong) sizeof(AtkUldPartsList), 8);
 
@@ -130,22 +139,22 @@ public static unsafe partial class UiHelper
         return false;
     }
 
-    private static void AddPartsList(AtkImageNode* imageNode, AtkUldPartsList* partsList)
+    public static void AddPartsList(AtkImageNode* imageNode, AtkUldPartsList* partsList)
     {
         imageNode->PartsList = partsList;
     }
     
-    private static void AddPartsList(AtkCounterNode* counterNode, AtkUldPartsList* partsList)
+    public static void AddPartsList(AtkCounterNode* counterNode, AtkUldPartsList* partsList)
     {
         counterNode->PartsList = partsList;
     }
 
-    private static void FreePart(AtkUldPart* part)
+    public static void FreePart(AtkUldPart* part)
     {
         IMemorySpace.Free(part, (ulong)sizeof(AtkUldPart));
     }
     
-    private static bool TryMakePart(ushort u, ushort v, ushort width, ushort height, [NotNullWhen(true)] out AtkUldPart* part)
+    public static bool TryMakePart(ushort u, ushort v, ushort width, ushort height, [NotNullWhen(true)] out AtkUldPart* part)
     {
         part = (AtkUldPart*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldPart), 8);
 
@@ -161,7 +170,7 @@ public static unsafe partial class UiHelper
         return false;
     }
 
-    private static void AddPart(AtkUldPartsList* partsList, AtkUldPart* part)
+    public static void AddPart(AtkUldPartsList* partsList, AtkUldPart* part)
     {
         // copy pointer to old array
         var oldPartArray = partsList->Parts;
@@ -188,12 +197,12 @@ public static unsafe partial class UiHelper
         partsList->PartCount = newSize;
     }
 
-    private static void FreeAsset(AtkUldAsset* asset)
+    public static void FreeAsset(AtkUldAsset* asset)
     {
         IMemorySpace.Free(asset, (ulong) sizeof(AtkUldPart));
     }
     
-    private static bool TryMakeAsset(uint id, [NotNullWhen(true)] out AtkUldAsset* asset)
+    public static bool TryMakeAsset(uint id, [NotNullWhen(true)] out AtkUldAsset* asset)
     {
         asset = (AtkUldAsset*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldAsset), 8);
 
@@ -207,7 +216,7 @@ public static unsafe partial class UiHelper
         return false;
     }
 
-    private static void AddAsset(AtkUldPart* part, AtkUldAsset* asset)
+    public static void AddAsset(AtkUldPart* part, AtkUldAsset* asset)
     {
         part->UldAsset = asset;
     }
