@@ -94,6 +94,8 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     
     private void OnAddonFinalize(SetupAddonArgs obj)
     {
+        if (obj.AddonName != "NeedGreed") return;
+        
         var listComponentNode = (AtkComponentNode*) obj.Addon->GetNodeById(6);
         if (listComponentNode is not null && listComponentNode->Component is not null)
         {
