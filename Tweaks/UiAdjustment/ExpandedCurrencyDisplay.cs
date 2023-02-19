@@ -292,8 +292,17 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         {
             foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
             {
-                TryFreeIconNode(ImageBaseId + index);
-                TryFreeCounterNode(CounterBaseId + index);
+                var iconNode = Common.GetNodeByID<AtkImageNode>(&AddonMoney->UldManager, ImageBaseId + index);
+                if (iconNode is not null)
+                {
+                    UiHelper.UnlinkAndFreeImageNode(iconNode, AddonMoney);
+                }
+                
+                var counterNode = Common.GetNodeByID<AtkCounterNode>(&AddonMoney->UldManager, CounterBaseId + index);
+                if (counterNode is not null)
+                {
+                    FreeCounterNode(counterNode);
+                }
             }
         }
     }
@@ -316,15 +325,6 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         }
     }
 
-    private void TryFreeIconNode(uint nodeId)
-    {
-        var iconNode = Common.GetNodeByID(&AddonMoney->UldManager, nodeId);
-        if (iconNode is not null)
-        {
-            FreeImageNode(nodeId);
-        }
-    }
-
     private void TryMakeCounterNode(uint nodeId, Vector2 position, AtkUldPartsList* partsList)
     {
         var counterNode = Common.GetNodeByID(&AddonMoney->UldManager, nodeId);
@@ -333,71 +333,14 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
             MakeCounterNode(nodeId, position, partsList);
         }
     }
-
-    private void TryFreeCounterNode(uint nodeId)
-    {
-        var counterNode = Common.GetNodeByID(&AddonMoney->UldManager, nodeId);
-        if (counterNode is not null)
-        {
-            FreeCounterNode(nodeId);
-        }
-    }
     
     private void MakeIconNode(uint nodeId, Vector2 position, int icon, bool hqIcon)
     {
-        var imageNode = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
-        imageNode->AtkResNode.Type = NodeType.Image;
-        imageNode->AtkResNode.NodeID = nodeId;
+        var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(0, 0, 36, 36));
         imageNode->AtkResNode.Flags = 8243;
-        imageNode->AtkResNode.DrawFlags = 0;
         imageNode->WrapMode = 1;
         imageNode->Flags = (byte) ImageNodeFlags.AutoFit;
-        
-        var partsList = (AtkUldPartsList*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldPartsList), 8);
-        if (partsList == null) 
-        {
-            SimpleLog.Error("Failed to alloc memory for parts list.");
-            imageNode->AtkResNode.Destroy(false);
-            IMemorySpace.Free(imageNode, (ulong)sizeof(AtkImageNode));
-            return;
-        }
-        
-        partsList->Id = 0;
-        partsList->PartCount = 1;
 
-        var part = (AtkUldPart*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldPart), 8);
-        if (part == null) 
-        {
-            SimpleLog.Error("Failed to alloc memory for part.");
-            IMemorySpace.Free(partsList, (ulong)sizeof(AtkUldPartsList));
-            imageNode->AtkResNode.Destroy(false);
-            IMemorySpace.Free(imageNode, (ulong)sizeof(AtkImageNode));
-            return;
-        }
-
-        part->U = 0;
-        part->V = 0;
-        part->Width = 36;
-        part->Height = 36;
-
-        partsList->Parts = part;
-
-        var asset = (AtkUldAsset*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldAsset), 8);
-        if (asset == null) 
-        {
-            SimpleLog.Error("Failed to alloc memory for asset.");
-            IMemorySpace.Free(part, (ulong)sizeof(AtkUldPart));
-            IMemorySpace.Free(partsList, (ulong)sizeof(AtkUldPartsList));
-            imageNode->AtkResNode.Destroy(false);
-            IMemorySpace.Free(imageNode, (ulong)sizeof(AtkImageNode));
-            return;
-        }
-
-        asset->Id = 0;
-        asset->AtkTexture.Ctor();
-        part->UldAsset = asset;
-        imageNode->PartsList = partsList;
-        
         imageNode->LoadIconTexture(hqIcon ? icon + 1_000_000 : icon, 0);
         imageNode->AtkResNode.ToggleVisibility(true);
 
@@ -405,14 +348,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         imageNode->AtkResNode.SetHeight(36);
         imageNode->AtkResNode.SetPositionShort((short)position.X, (short)position.Y);
         
-        var node = AddonMoney->RootNode->ChildNode;
-        while (node->PrevSiblingNode != null) node = node->PrevSiblingNode;
-
-        node->PrevSiblingNode = (AtkResNode*) imageNode;
-        imageNode->AtkResNode.NextSiblingNode = node;
-        imageNode->AtkResNode.ParentNode = node->ParentNode;
-        
-        AddonMoney->UldManager.UpdateDrawNodeList();
+        UiHelper.LinkNodeAtEnd(imageNode, AddonMoney);
     }
 
     private void MakeCounterNode(uint nodeId, Vector2 position, AtkUldPartsList* partsList)
@@ -443,41 +379,19 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         AddonMoney->UldManager.UpdateDrawNodeList();
     }
 
-    private void FreeImageNode(uint nodeId)
+    private void FreeCounterNode(AtkCounterNode* node)
     {
-        var imageNode = Common.GetNodeByID<AtkImageNode>(&AddonMoney->UldManager, nodeId, NodeType.Image);
-        if (imageNode != null)
+        if (node != null)
         {
-            if (imageNode->AtkResNode.PrevSiblingNode != null)
-                imageNode->AtkResNode.PrevSiblingNode->NextSiblingNode = imageNode->AtkResNode.NextSiblingNode;
+            if (node->AtkResNode.PrevSiblingNode != null)
+                node->AtkResNode.PrevSiblingNode->NextSiblingNode = node->AtkResNode.NextSiblingNode;
             
-            if (imageNode->AtkResNode.NextSiblingNode != null)
-                imageNode->AtkResNode.NextSiblingNode->PrevSiblingNode = imageNode->AtkResNode.PrevSiblingNode;
+            if (node->AtkResNode.NextSiblingNode != null)
+                node->AtkResNode.NextSiblingNode->PrevSiblingNode = node->AtkResNode.PrevSiblingNode;
             
             AddonMoney->UldManager.UpdateDrawNodeList();
-
-            IMemorySpace.Free(imageNode->PartsList->Parts->UldAsset, (ulong) sizeof(AtkUldPart));
-            IMemorySpace.Free(imageNode->PartsList->Parts, (ulong) sizeof(AtkUldPart));
-            IMemorySpace.Free(imageNode->PartsList, (ulong) sizeof(AtkUldPartsList));
-            imageNode->AtkResNode.Destroy(false);
-            IMemorySpace.Free(imageNode, (ulong)sizeof(AtkImageNode));
-        }
-    }
-
-    private void FreeCounterNode(uint nodeId)
-    {
-        var counterNode = Common.GetNodeByID<AtkCounterNode>(&AddonMoney->UldManager, nodeId, NodeType.Counter);
-        if (counterNode != null)
-        {
-            if (counterNode->AtkResNode.PrevSiblingNode != null)
-                counterNode->AtkResNode.PrevSiblingNode->NextSiblingNode = counterNode->AtkResNode.NextSiblingNode;
-            
-            if (counterNode->AtkResNode.NextSiblingNode != null)
-                counterNode->AtkResNode.NextSiblingNode->PrevSiblingNode = counterNode->AtkResNode.PrevSiblingNode;
-            
-            AddonMoney->UldManager.UpdateDrawNodeList();
-            counterNode->AtkResNode.Destroy(false);
-            IMemorySpace.Free(counterNode, (ulong)sizeof(AtkCounterNode));
+            node->AtkResNode.Destroy(false);
+            IMemorySpace.Free(node, (ulong)sizeof(AtkCounterNode));
         }
     }
 }
