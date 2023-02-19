@@ -22,14 +22,10 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     public override string Description => "Recolors unique items that you already have in the loot window.";
 
     private delegate nint OnRequestedUpdateDelegate(nint a1, nint a2, nint a3);
-    private delegate void Finalize(AtkUnitBase* addon);
 
     [Signature("40 53 48 83 EC 20 48 8B 42 58", DetourName = nameof(OnNeedGreedRequestedUpdate))]
     private readonly Hook<OnRequestedUpdateDelegate>? needGreedOnRequestedUpdateHook = null!;
-    
-    [Signature("48 89 5C 24 ?? 57 48 83 EC 20 0F B7 99 ?? ?? ?? ?? 48 8B F9 E8 ?? ?? ?? ?? 45 33 C0 0F B7 D3 48 8D 88 ?? ?? ?? ?? E8 ?? ?? ?? ?? 45 33 C9 48 8B CF 41 8D 51 01 45 8D 41 0B", DetourName = nameof(AddonNeedGreedFinalize))]
-    private readonly Hook<Finalize>? onFinalizeHook = null;
-    
+
     private static AtkUnitBase* AddonNeedGreed => (AtkUnitBase*) Service.GameGui.GetAddonByName("NeedGreed");
 
     private const uint CrossBaseId = 1000U;
@@ -48,7 +44,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     {
         needGreedOnRequestedUpdateHook?.Enable();
         Common.AddonSetup += OnAddonSetup;
-        onFinalizeHook?.Enable();
+        Common.AddonFinalize += OnAddonFinalize;
         base.Enable();
     }
 
@@ -56,7 +52,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     {
         needGreedOnRequestedUpdateHook?.Disable();
         Common.AddonSetup -= OnAddonSetup;
-        onFinalizeHook?.Disable();
+        Common.AddonFinalize -= OnAddonFinalize;
         base.Disable();
     }
 
@@ -64,7 +60,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     {
         needGreedOnRequestedUpdateHook?.Dispose();
         Common.AddonSetup -= OnAddonSetup;
-        onFinalizeHook?.Dispose();
+        Common.AddonFinalize -= OnAddonFinalize;
         base.Dispose();
     }
 
@@ -96,41 +92,32 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         }
     }
     
-    private void AddonNeedGreedFinalize(AtkUnitBase* addon)
+    private void OnAddonFinalize(SetupAddonArgs obj)
     {
-        try
+        var listComponentNode = (AtkComponentNode*) obj.Addon->GetNodeById(6);
+        if (listComponentNode is not null && listComponentNode->Component is not null)
         {
-            var listComponentNode = (AtkComponentNode*) addon->GetNodeById(6);
-            if (listComponentNode is not null && listComponentNode->Component is not null)
+            foreach (uint index in Enumerable.Range(21001, 31).Prepend(2).ToArray())
             {
-                foreach (uint index in Enumerable.Range(21001, 31).Prepend(2).ToArray())
-                {
-                    var componentUldManager = &listComponentNode->Component->UldManager;
+                var componentUldManager = &listComponentNode->Component->UldManager;
                     
-                    var lootItemNode = Common.GetNodeByID<AtkComponentNode>(componentUldManager, index);
-                    if (lootItemNode is not null)
+                var lootItemNode = Common.GetNodeByID<AtkComponentNode>(componentUldManager, index);
+                if (lootItemNode is not null)
+                {
+                    var crossNode = Common.GetNodeByID<AtkImageNode>(componentUldManager, CrossBaseId + index);
+                    if (crossNode is not null)
                     {
-                        var crossNode = Common.GetNodeByID<AtkImageNode>(componentUldManager, CrossBaseId + index);
-                        if (crossNode is not null)
-                        {
-                            UiHelper.UnlinkAndFreeImageNode(crossNode, AddonNeedGreed);
-                        }
+                        UiHelper.UnlinkAndFreeImageNode(crossNode, AddonNeedGreed);
+                    }
                         
-                        var padlockNode = Common.GetNodeByID<AtkImageNode>(componentUldManager, PadlockBaseId + index);
-                        if (padlockNode is not null)
-                        {
-                            UiHelper.UnlinkAndFreeImageNode(padlockNode, AddonNeedGreed);
-                        }
+                    var padlockNode = Common.GetNodeByID<AtkImageNode>(componentUldManager, PadlockBaseId + index);
+                    if (padlockNode is not null)
+                    {
+                        UiHelper.UnlinkAndFreeImageNode(padlockNode, AddonNeedGreed);
                     }
                 }
             }
         }
-        catch (Exception e)
-        {
-            PluginLog.Error(e, "Something went wrong in LootWindowDuplicateUniqueItemIndicator, let MidoriKami know!");
-        }
-
-        onFinalizeHook!.Original(addon);
     }
 
     private nint OnNeedGreedRequestedUpdate(nint addon, nint a2, nint a3)
