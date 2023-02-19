@@ -22,10 +22,19 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     public override string Description => "Recolors unique items that you already have in the loot window.";
 
     private delegate nint OnRequestedUpdateDelegate(nint a1, nint a2, nint a3);
+    private delegate void Finalize(AtkUnitBase* addon);
 
     [Signature("40 53 48 83 EC 20 48 8B 42 58", DetourName = nameof(OnNeedGreedRequestedUpdate))]
     private readonly Hook<OnRequestedUpdateDelegate>? needGreedOnRequestedUpdateHook = null!;
+    
+    [Signature("48 89 5C 24 ?? 57 48 83 EC 20 0F B7 99 ?? ?? ?? ?? 48 8B F9 E8 ?? ?? ?? ?? 45 33 C0 0F B7 D3 48 8D 88 ?? ?? ?? ?? E8 ?? ?? ?? ?? 45 33 C9 48 8B CF 41 8D 51 01 45 8D 41 0B", DetourName = nameof(AddonNeedGreedFinalize))]
+    private readonly Hook<Finalize>? onFinalizeHook = null;
+    
+    private static AtkUnitBase* AddonNeedGreed => (AtkUnitBase*) Service.GameGui.GetAddonByName("NeedGreed");
 
+    private const uint CrossBaseId = 1000U;
+    private const uint PadlockBaseId = 2000U;
+    
     public override void Setup()
     {
         if (Ready) return;
@@ -38,19 +47,90 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     public override void Enable()
     {
         needGreedOnRequestedUpdateHook?.Enable();
+        Common.AddonSetup += OnAddonSetup;
+        onFinalizeHook?.Enable();
         base.Enable();
     }
 
     public override void Disable()
     {
         needGreedOnRequestedUpdateHook?.Disable();
+        Common.AddonSetup -= OnAddonSetup;
+        onFinalizeHook?.Disable();
         base.Disable();
     }
 
     public override void Dispose()
     {
         needGreedOnRequestedUpdateHook?.Dispose();
+        Common.AddonSetup -= OnAddonSetup;
+        onFinalizeHook?.Dispose();
         base.Dispose();
+    }
+
+    private void OnAddonSetup(SetupAddonArgs obj)
+    {
+        if (obj.AddonName != "NeedGreed") return;
+        
+        var listComponentNode = (AtkComponentNode*) obj.Addon->GetNodeById(6);
+        if (listComponentNode is null || listComponentNode->Component is null) return;
+        
+        foreach (uint index in Enumerable.Range(21001, 31).Prepend(2).ToArray())
+        {
+            var componentUldManager = &listComponentNode->Component->UldManager;
+                    
+            var lootItemNode = Common.GetNodeByID<AtkComponentNode>(componentUldManager, index);
+            if (lootItemNode is null) continue;
+                
+            var crossNode = Common.GetNodeByID(componentUldManager, CrossBaseId + index);
+            if (crossNode is null)
+            {
+                MakeCrossNode(CrossBaseId + index, (short) lootItemNode->AtkResNode.Y, (short) lootItemNode->AtkResNode.Y, lootItemNode);
+            }
+                        
+            var padlockNode = Common.GetNodeByID(componentUldManager, PadlockBaseId + index);
+            if (padlockNode is null)
+            {
+                MakePadlockNode(PadlockBaseId + index, (short) lootItemNode->AtkResNode.Y, (short) lootItemNode->AtkResNode.Y, lootItemNode);
+            }
+        }
+    }
+    
+    private void AddonNeedGreedFinalize(AtkUnitBase* addon)
+    {
+        try
+        {
+            var listComponentNode = (AtkComponentNode*) addon->GetNodeById(6);
+            if (listComponentNode is not null && listComponentNode->Component is not null)
+            {
+                foreach (uint index in Enumerable.Range(21001, 31).Prepend(2).ToArray())
+                {
+                    var componentUldManager = &listComponentNode->Component->UldManager;
+                    
+                    var lootItemNode = Common.GetNodeByID<AtkComponentNode>(componentUldManager, index);
+                    if (lootItemNode is not null)
+                    {
+                        var crossNode = Common.GetNodeByID<AtkImageNode>(componentUldManager, CrossBaseId + index);
+                        if (crossNode is not null)
+                        {
+                            UiHelper.UnlinkAndFreeImageNode(crossNode, AddonNeedGreed);
+                        }
+                        
+                        var padlockNode = Common.GetNodeByID<AtkImageNode>(componentUldManager, PadlockBaseId + index);
+                        if (padlockNode is not null)
+                        {
+                            UiHelper.UnlinkAndFreeImageNode(padlockNode, AddonNeedGreed);
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            PluginLog.Error(e, "Something went wrong in LootWindowDuplicateUniqueItemIndicator, let MidoriKami know!");
+        }
+
+        onFinalizeHook!.Original(addon);
     }
 
     private nint OnNeedGreedRequestedUpdate(nint addon, nint a2, nint a3)
@@ -80,25 +160,31 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
                 var itemData = Service.Data.GetExcelSheet<Item>()!.GetRow(itemInfo.ItemId);
                 if(itemData is null) continue;
 
+                var targetListItemId = listItemIndexArray[index];
+                var targetListItemNode = Common.GetNodeByID<AtkComponentNode>(&listComponentNode->Component->UldManager, (uint) targetListItemId);
+
+                if (targetListItemNode is null || targetListItemNode->Component is null) continue;
+                
+                var crossNode = Common.GetNodeByID<AtkImageNode>(&targetListItemNode->Component->UldManager, CrossBaseId + (uint) targetListItemId);
+                var padlockNode = Common.GetNodeByID<AtkImageNode>(&targetListItemNode->Component->UldManager, PadlockBaseId + (uint) targetListItemId);
+                
                 switch (itemData)
                 {
                     // Item is unique, and isn't consumable, just check quantity
                     case { IsUnique: true, ItemAction.Row: 0 } when GetItemCount(itemInfo.ItemId) > 0:
-                        
-                    // Item has a unlock action, 1 means item has been unlocked
-                    case { ItemAction.Row: not 0 } when UIState.Instance()->IsItemActionUnlocked(ExdModule.GetItemRowById(itemInfo.ItemId)) is 1:
-                        
-                        var targetListItemId = listItemIndexArray[index];
-                        var targetListItemNode = Common.GetNodeByID<AtkComponentNode>(&listComponentNode->Component->UldManager, (uint) targetListItemId);
-                        if (targetListItemNode is not null && targetListItemNode->Component is not null)
-                        {
-                            // Here we modify the node to indicate that the player already has this item
-                            // I'm not convinced that coloring it red is the best choice
-                            // If you or anyone else has a better method to indicate that this item is not rollable, modify the code below
-                            var imageNode = Common.GetNodeByID<AtkImageNode>(&targetListItemNode->Component->UldManager, 11);
+                        crossNode->AtkResNode.ToggleVisibility(true);
+                        padlockNode->AtkResNode.ToggleVisibility(false);
+                        break;
 
-                            imageNode->AtkResNode.AddRed = 0x55;
-                        }
+                    // Item has a unlock action, 1 means item has been unlocked
+                    case { } when UIState.Instance()->IsItemActionUnlocked(ExdModule.GetItemRowById(itemInfo.ItemId)) is 1:
+                        crossNode->AtkResNode.ToggleVisibility(false);
+                        padlockNode->AtkResNode.ToggleVisibility(true);
+                        break;
+                    
+                    default:
+                        crossNode->AtkResNode.ToggleVisibility(false);
+                        padlockNode->AtkResNode.ToggleVisibility(false);
                         break;
                 }
             }
@@ -109,6 +195,42 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         }
 
         return result;
+    }
+    
+    private void MakeCrossNode(uint nodeId, short x, short y, AtkComponentNode* parent)
+    {
+        var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(0, 0, 32, 32));
+        imageNode->AtkResNode.Flags = 8243;
+
+        imageNode->LoadIconTexture(61502, 1);
+        imageNode->AtkResNode.ToggleVisibility(true);
+
+        imageNode->AtkResNode.SetWidth(32);
+        imageNode->AtkResNode.SetHeight(32);
+        imageNode->AtkResNode.SetScale(1.25f, 1.25f);
+        imageNode->AtkResNode.SetPositionShort((short)(x + 14u), (short)(y + 14u));
+        
+        var targetTextNode = Common.GetNodeByID<AtkResNode>(&parent->Component->UldManager, 11);
+        UiHelper.LinkNodeAfterTargetNode(imageNode, parent, targetTextNode);
+    }
+
+    private void MakePadlockNode(uint nodeId, short x, short y, AtkComponentNode* parent)
+    {
+        var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(48, 0, 20, 24));
+        imageNode->AtkResNode.Flags = 8243;
+        imageNode->WrapMode = 1;
+
+        imageNode->LoadTexture("ui/uld/ActionBar_hr1.tex");
+        imageNode->AtkResNode.ToggleVisibility(true);
+
+        imageNode->AtkResNode.Color.A = 0xAA;
+
+        imageNode->AtkResNode.SetWidth(20);
+        imageNode->AtkResNode.SetHeight(24);
+        imageNode->AtkResNode.SetPositionShort((short)(x + 22u), (short)(y + 20u));
+        
+        var targetTextNode = Common.GetNodeByID<AtkResNode>(&parent->Component->UldManager, 11);
+        UiHelper.LinkNodeAfterTargetNode(imageNode, parent, targetTextNode);
     }
 
     private int GetItemCount(uint itemId)

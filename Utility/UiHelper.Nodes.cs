@@ -69,6 +69,20 @@ public static unsafe partial class UiHelper
         
         parent->UldManager.UpdateDrawNodeList();
     }
+
+    public static void LinkNodeAfterTargetNode(AtkImageNode* imageNode, AtkComponentNode* parent, AtkResNode* targetNode)
+    {
+        var prev = targetNode->PrevSiblingNode;
+        imageNode->AtkResNode.ParentNode = targetNode->ParentNode;
+
+        targetNode->PrevSiblingNode = (AtkResNode*) imageNode;
+        prev->NextSiblingNode = (AtkResNode*) imageNode;
+
+        imageNode->AtkResNode.PrevSiblingNode = prev;
+        imageNode->AtkResNode.NextSiblingNode = targetNode;
+
+        parent->Component->UldManager.UpdateDrawNodeList();
+    }
     
     public static void UnlinkAndFreeImageNode(AtkImageNode* node, AtkUnitBase* parent)
     {
