@@ -208,6 +208,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         imageNode->AtkResNode.SetWidth(32);
         imageNode->AtkResNode.SetHeight(32);
         imageNode->AtkResNode.SetScale(1.25f, 1.25f);
+        imageNode->AtkResNode.SetPositionShort(14, 14);
         
         imageNode->AtkResNode.ToggleVisibility(true);
         
@@ -227,6 +228,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
 
         imageNode->AtkResNode.SetWidth(20);
         imageNode->AtkResNode.SetHeight(24);
+        imageNode->AtkResNode.SetPositionShort(22, 20); 
         
         imageNode->AtkResNode.ToggleVisibility(true);
         
