@@ -16,13 +16,13 @@ using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Utility;
 #if DEBUG
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 #endif
 
 #pragma warning disable CS0659
 namespace SimpleTweaksPlugin {
     public class SimpleTweaksPlugin : IDalamudPlugin {
         public string Name => "Simple Tweaks";
-        public DalamudPluginInterface PluginInterface { get; private set; }
         public SimpleTweaksPluginConfig PluginConfig { get; private set; }
 
         public List<TweakProvider> TweakProviders = new();
@@ -65,7 +65,7 @@ namespace SimpleTweaksPlugin {
         public void Dispose() {
             SimpleLog.Debug("Dispose");
             Service.Framework.Update -= FrameworkOnUpdate;
-            PluginInterface.UiBuilder.Draw -= this.BuildUI;
+            Service.PluginInterface.UiBuilder.Draw -= this.BuildUI;
             RemoveCommands();
 
             foreach (var t in TweakProviders.Where(t => !t.IsDisposed)) {
@@ -87,18 +87,24 @@ namespace SimpleTweaksPlugin {
         public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface) {
             Plugin = this;
             pluginInterface.Create<Service>();
-#if DEBUG
-            FFXIVClientStructs.Interop.Resolver.GetInstance.SetupSearchSpace(Service.SigScanner.SearchBase);
-            FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
             
+#if DEBUG
             SimpleLog.SetupBuildPath();
+            Task.Run(() => {
+                FFXIVClientStructs.Interop.Resolver.GetInstance.SetupSearchSpace(Service.SigScanner.SearchBase);
+                FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
+                Service.Framework.RunOnFrameworkThread(Initalize);
+            });
+#else
+            Initalize();
 #endif
-            this.PluginInterface = pluginInterface;
+        }
 
-            this.PluginConfig = (SimpleTweaksPluginConfig)pluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
-            this.PluginConfig.Init(this, pluginInterface);
+        private void Initalize() {
+            this.PluginConfig = (SimpleTweaksPluginConfig)Service.PluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
+            this.PluginConfig.Init(this);
 
-            IconManager = new IconManager(pluginInterface);
+            IconManager = new IconManager();
 
             SetupLocalization();
 
@@ -113,8 +119,8 @@ namespace SimpleTweaksPlugin {
             WindowSystem.AddWindow(ChangelogWindow);
             Changelog.AddGeneralChangelogs();
             
-            PluginInterface.UiBuilder.Draw += this.BuildUI;
-            pluginInterface.UiBuilder.OpenConfigUi += OnOpenConfig;
+            Service.PluginInterface.UiBuilder.Draw += this.BuildUI;
+            Service.PluginInterface.UiBuilder.OpenConfigUi += OnOpenConfig;
 
             SetupCommands();
 
@@ -153,6 +159,7 @@ namespace SimpleTweaksPlugin {
 
             Service.Framework.Update += FrameworkOnUpdate;
         }
+        
 
         private void FrameworkOnUpdate(Framework framework) => Common.InvokeFrameworkUpdate();
 

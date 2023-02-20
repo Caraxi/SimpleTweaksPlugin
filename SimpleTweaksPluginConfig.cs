@@ -16,9 +16,6 @@ namespace SimpleTweaksPlugin;
 
 public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     [NonSerialized]
-    private DalamudPluginInterface pluginInterface;
-
-    [NonSerialized]
     private SimpleTweaksPlugin plugin;
 
     public int Version { get; set; } = 3;
@@ -46,14 +43,13 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     public bool AutoOpenChangelog = false;
     public bool DisableChangelogNotification = false;
 
-    public void Init(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface) {
+    public void Init(SimpleTweaksPlugin plugin) {
         this.plugin = plugin;
-        this.pluginInterface = pluginInterface;
         HiddenTweaks.RemoveAll(t => EnabledTweaks.Contains(t));
     }
 
     public void Save() {
-        pluginInterface.SavePluginConfig(this);
+        Service.PluginInterface.SavePluginConfig(this);
     }
 
     [NonSerialized] private SubTweakManager setTab = null;
@@ -337,7 +333,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                             }
 #endif
 
-                            var locDir = pluginInterface.GetPluginLocDirectory();
+                            var locDir = Service.PluginInterface.GetPluginLocDirectory();
 
                             var locFiles = Directory.GetDirectories(locDir);
 

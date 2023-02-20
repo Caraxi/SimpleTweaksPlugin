@@ -110,7 +110,10 @@ namespace SimpleTweaksPlugin.Debugging {
             _plugin = plugin;
         }
 
+        private static Stopwatch initDelay = Stopwatch.StartNew();
+
         public static void DrawDebugWindow() {
+            if (initDelay.ElapsedMilliseconds < 500) return;
             if (_plugin == null) return;
             if (!_setupDebugHelpers) {
                 _setupDebugHelpers = true;
