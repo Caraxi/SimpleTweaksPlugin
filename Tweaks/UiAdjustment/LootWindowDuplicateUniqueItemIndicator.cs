@@ -17,9 +17,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTweak
 {
-    public override string Name => "Loot Window Duplicate Unique Item Indicator";
+    public override string Name => "Enhanced Loot Window";
     protected override string Author => "MidoriKami";
-    public override string Description => "Recolors unique items that you already have in the loot window.";
+    public override string Description => "Marks unlootable and already obtained items in the loot window.";
 
     private delegate nint OnRequestedUpdateDelegate(nint a1, nint a2, nint a3);
 
@@ -81,13 +81,13 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
             var crossNode = Common.GetNodeByID(componentUldManager, CrossBaseId + index);
             if (crossNode is null)
             {
-                MakeCrossNode(CrossBaseId + index, (short) lootItemNode->AtkResNode.Y, (short) lootItemNode->AtkResNode.Y, lootItemNode);
+                MakeCrossNode(CrossBaseId + index, lootItemNode);
             }
                         
             var padlockNode = Common.GetNodeByID(componentUldManager, PadlockBaseId + index);
             if (padlockNode is null)
             {
-                MakePadlockNode(PadlockBaseId + index, (short) lootItemNode->AtkResNode.Y, (short) lootItemNode->AtkResNode.Y, lootItemNode);
+                MakePadlockNode(PadlockBaseId + index, lootItemNode);
             }
         }
     }
@@ -156,21 +156,32 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
                 
                 var crossNode = Common.GetNodeByID<AtkImageNode>(&targetListItemNode->Component->UldManager, CrossBaseId + (uint) targetListItemId);
                 var padlockNode = Common.GetNodeByID<AtkImageNode>(&targetListItemNode->Component->UldManager, PadlockBaseId + (uint) targetListItemId);
+
+                // Get item datasheet pointer now, so we can check it for null before checking itemActionUnlocked
+                var exdItem = ExdModule.GetItemRowById(itemInfo.ItemId);
                 
                 switch (itemData)
                 {
-                    // Item is unique, and isn't consumable, just check quantity
+                    // Item is unique, and has no unlock action, and is unobtainable if we have any in our inventory
                     case { IsUnique: true, ItemAction.Row: 0 } when GetItemCount(itemInfo.ItemId) > 0:
+                        
+                    // Item is unobtainable if unlocked
+                    // Category 81: Minion
+                    // Category 63: Mount when ItemSortCategory is 175
+                    // Category 63: Chocobo Barding when ItemSortCategory is 130
+                    case { ItemUICategory.Row: 81 } when exdItem is null || UIState.Instance()->IsItemActionUnlocked(exdItem) is 1:
+                    case { ItemUICategory.Row: 63, ItemSortCategory.Row: 175 } when exdItem is null || UIState.Instance()->IsItemActionUnlocked(exdItem) is 1:
                         crossNode->AtkResNode.ToggleVisibility(true);
                         padlockNode->AtkResNode.ToggleVisibility(false);
                         break;
 
-                    // Item has a unlock action, 1 means item has been unlocked
-                    case { } when UIState.Instance()->IsItemActionUnlocked(ExdModule.GetItemRowById(itemInfo.ItemId)) is 1:
+                    // Item can be obtained if unlocked
+                    case { } when exdItem is null || UIState.Instance()->IsItemActionUnlocked(exdItem) is 1:
                         crossNode->AtkResNode.ToggleVisibility(false);
                         padlockNode->AtkResNode.ToggleVisibility(true);
                         break;
                     
+                    // Item can be obtained normally
                     default:
                         crossNode->AtkResNode.ToggleVisibility(false);
                         padlockNode->AtkResNode.ToggleVisibility(false);
@@ -186,37 +197,38 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         return result;
     }
     
-    private void MakeCrossNode(uint nodeId, short x, short y, AtkComponentNode* parent)
+    private void MakeCrossNode(uint nodeId, AtkComponentNode* parent)
     {
         var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(0, 0, 32, 32));
         imageNode->AtkResNode.Flags = 8243;
+        imageNode->WrapMode = 1;
 
-        imageNode->LoadIconTexture(61502, 1);
-        imageNode->AtkResNode.ToggleVisibility(true);
+        imageNode->LoadIconTexture(61502, 0);
 
         imageNode->AtkResNode.SetWidth(32);
         imageNode->AtkResNode.SetHeight(32);
         imageNode->AtkResNode.SetScale(1.25f, 1.25f);
-        imageNode->AtkResNode.SetPositionShort((short)(x + 14u), (short)(y + 14u));
+        
+        imageNode->AtkResNode.ToggleVisibility(true);
         
         var targetTextNode = Common.GetNodeByID<AtkResNode>(&parent->Component->UldManager, 11);
         UiHelper.LinkNodeAfterTargetNode(imageNode, parent, targetTextNode);
     }
 
-    private void MakePadlockNode(uint nodeId, short x, short y, AtkComponentNode* parent)
+    private void MakePadlockNode(uint nodeId, AtkComponentNode* parent)
     {
         var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(48, 0, 20, 24));
         imageNode->AtkResNode.Flags = 8243;
         imageNode->WrapMode = 1;
 
         imageNode->LoadTexture("ui/uld/ActionBar_hr1.tex");
-        imageNode->AtkResNode.ToggleVisibility(true);
 
         imageNode->AtkResNode.Color.A = 0xAA;
 
         imageNode->AtkResNode.SetWidth(20);
         imageNode->AtkResNode.SetHeight(24);
-        imageNode->AtkResNode.SetPositionShort((short)(x + 22u), (short)(y + 20u));
+        
+        imageNode->AtkResNode.ToggleVisibility(true);
         
         var targetTextNode = Common.GetNodeByID<AtkResNode>(&parent->Component->UldManager, 11);
         UiHelper.LinkNodeAfterTargetNode(imageNode, parent, targetTextNode);
