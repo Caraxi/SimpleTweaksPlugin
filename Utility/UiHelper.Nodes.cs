@@ -60,6 +60,11 @@ public static unsafe partial class UiHelper
 
     public static void LinkNodeAtEnd(AtkImageNode* imageNode, AtkUnitBase* parent)
     {
+        // If the parent, root, or child are null, then the Addon isn't loaded yet.
+        if (parent is null) return;
+        if (parent->RootNode is null) return;
+        if (parent->RootNode->ChildNode is null) return;
+        
         var node = parent->RootNode->ChildNode;
         while (node->PrevSiblingNode != null) node = node->PrevSiblingNode;
 
@@ -72,6 +77,8 @@ public static unsafe partial class UiHelper
 
     public static void LinkNodeAfterTargetNode(AtkImageNode* imageNode, AtkComponentNode* parent, AtkResNode* targetNode)
     {
+        if (parent is null || targetNode is null || imageNode is null) return;
+        
         var prev = targetNode->PrevSiblingNode;
         imageNode->AtkResNode.ParentNode = targetNode->ParentNode;
 
@@ -86,19 +93,18 @@ public static unsafe partial class UiHelper
     
     public static void UnlinkAndFreeImageNode(AtkImageNode* node, AtkUnitBase* parent)
     {
-        if (node != null)
-        {
-            if (node->AtkResNode.PrevSiblingNode != null)
-                node->AtkResNode.PrevSiblingNode->NextSiblingNode = node->AtkResNode.NextSiblingNode;
+        if (node is null || parent is null) return;
+        
+        if (node->AtkResNode.PrevSiblingNode is not null)
+            node->AtkResNode.PrevSiblingNode->NextSiblingNode = node->AtkResNode.NextSiblingNode;
             
-            if (node->AtkResNode.NextSiblingNode != null)
-                node->AtkResNode.NextSiblingNode->PrevSiblingNode = node->AtkResNode.PrevSiblingNode;
+        if (node->AtkResNode.NextSiblingNode is not null)
+            node->AtkResNode.NextSiblingNode->PrevSiblingNode = node->AtkResNode.PrevSiblingNode;
             
-            parent->UldManager.UpdateDrawNodeList();
+        parent->UldManager.UpdateDrawNodeList();
 
-            FreePartsList(node->PartsList);
-            FreeImageNode(node);
-        }
+        FreePartsList(node->PartsList);
+        FreeImageNode(node);
     }
 
     #region TryMakeComponents
