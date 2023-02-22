@@ -58,13 +58,22 @@ public static unsafe partial class UiHelper
         return imageNode;
     }
 
+    /// <summary>
+    /// Checks if the addon has a valid root and child node.<br/>
+    /// Useful for ensuring that an addon is fully loaded before adding new UI nodes to it.
+    /// </summary>
+    /// <param name="addon">Pointer to addon to check</param>
+    public static bool IsAddonReady(AtkUnitBase* addon)
+    {
+        if (addon is null) return false;
+        if (addon->RootNode is null) return false;
+        if (addon->RootNode->ChildNode is null) return false;
+
+        return true;
+    }
+
     public static void LinkNodeAtEnd(AtkImageNode* imageNode, AtkUnitBase* parent)
     {
-        // If the parent, root, or child are null, then the Addon isn't loaded yet.
-        if (parent is null) return;
-        if (parent->RootNode is null) return;
-        if (parent->RootNode->ChildNode is null) return;
-        
         var node = parent->RootNode->ChildNode;
         while (node->PrevSiblingNode != null) node = node->PrevSiblingNode;
 
@@ -77,8 +86,6 @@ public static unsafe partial class UiHelper
 
     public static void LinkNodeAfterTargetNode(AtkImageNode* imageNode, AtkComponentNode* parent, AtkResNode* targetNode)
     {
-        if (parent is null || targetNode is null || imageNode is null) return;
-        
         var prev = targetNode->PrevSiblingNode;
         imageNode->AtkResNode.ParentNode = targetNode->ParentNode;
 
@@ -93,8 +100,6 @@ public static unsafe partial class UiHelper
     
     public static void UnlinkAndFreeImageNode(AtkImageNode* node, AtkUnitBase* parent)
     {
-        if (node is null || parent is null) return;
-        
         if (node->AtkResNode.PrevSiblingNode is not null)
             node->AtkResNode.PrevSiblingNode->NextSiblingNode = node->AtkResNode.NextSiblingNode;
             
