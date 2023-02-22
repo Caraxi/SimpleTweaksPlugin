@@ -1,7 +1,6 @@
-﻿using System.Numerics;
+﻿#nullable enable
+using System;
 using Dalamud.Game.ClientState.Objects.Types;
-using Dalamud.Interface.Components;
-using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
@@ -15,8 +14,9 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak
     public override string Description => "Displays an icon next to interruptable castbars";
     protected override string Author => "MidoriKami";
 
-    private static AtkUnitBase* AddonCastBar => Common.GetUnitBase("_TargetInfoCastBar");
+    private static AtkUnitBase* AddonTargetInfoCastBar => Common.GetUnitBase("_TargetInfoCastBar");
     private static AtkUnitBase* AddonTargetInfo => Common.GetUnitBase("_TargetInfo");
+    private static AtkUnitBase* AddonFocusTargetInfo => Common.GetUnitBase("_FocusTargetInfo");
     
     private const uint InterjectImageNodeId = 1000U;
     private const uint HeadGrazeImageNodeId = 2000U;
@@ -25,48 +25,36 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak
 
     private class Config : TweakConfig
     {
-        public bool PreviewPosition;
-        public int OffsetX;
-        public int OffsetY;
+        public NodePosition Position = NodePosition.TopLeft;
     }
-    
+
+    private enum NodePosition
+    {
+        Left,
+        Right,
+        TopLeft
+    }
+
     protected override DrawConfigDelegate DrawConfigTree => (ref bool _) =>
     {
+        ImGui.TextUnformatted("Select which direction relative to Cast Bar to show interrupt icon");
+        
         var regionSize = ImGui.GetContentRegionAvail();
-        
-        ImGui.Text("Position Offset for Icon");
-
-        ImGui.TextUnformatted("( X , Y ) Position:");
-        ImGui.SameLine();
-        
-        ImGui.SetNextItemWidth(regionSize.X / 3.0f);
-        if (ImGui.DragInt("##XCoordinate", ref TweakConfig.OffsetX, 1920 * 0.003f, -1920, 1920))
+        ImGui.SetNextItemWidth(regionSize.X * 1.0f / 3.0f);
+        if (ImGui.BeginCombo("Direction", TweakConfig.Position.ToString()))
         {
-            FreeAllNodes();
+            foreach (var direction in Enum.GetValues<NodePosition>())
+            {
+                if (ImGui.Selectable(direction.ToString(), TweakConfig.Position == direction))
+                {
+                    TweakConfig.Position = direction;
+                    SaveConfig(TweakConfig);
+                    FreeAllNodes();
+                }
+            }
+            
+            ImGui.EndCombo();
         }
-        
-        if (ImGui.IsItemDeactivatedAfterEdit())
-        {
-            SaveConfig(TweakConfig);
-        }
-        
-        ImGui.SameLine();
-        
-        ImGui.SetNextItemWidth(regionSize.X / 3.0f);
-
-        if (ImGui.DragInt("##YCoordinate", ref TweakConfig.OffsetY, 1920 * 0.003f, -1920, 1920))
-        {
-            FreeAllNodes();
-        }
-        
-        if (ImGui.IsItemDeactivatedAfterEdit())
-        {
-            SaveConfig(TweakConfig);
-        }
-        ImGuiComponents.HelpMarker("You can Control + Click the slider to enter an exact value.");
-
-        ImGui.Checkbox("Preview Position", ref TweakConfig.PreviewPosition);
-        ImGuiComponents.HelpMarker("You must have a target selected to preview the icons. You can target self.");
     };
     
     public override void Setup()
@@ -99,215 +87,116 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak
     
     private void OnFrameworkUpdate()
     {
-        // The user can have the castBar split out
-        if (AddonCastBar is not null)
-        {
-            UpdateCastBarNodes();
-        }
+        // Castbar is split from target info
+        if (AddonTargetInfoCastBar is not null && AddonTargetInfoCastBar->IsVisible) UpdateAddon(AddonTargetInfoCastBar, 6, 2, Service.Targets.Target);
 
-        // Or combined with the target info element
-        if (AddonTargetInfo is not null)
-        {
-            UpdateTargetInfoNodes();
-        }
+        // Castbar is combined with target info
+        if (AddonTargetInfo is not null && AddonTargetInfo->IsVisible) UpdateAddon(AddonTargetInfo, 14, 10, Service.Targets.Target);
+
+        // Focus target castbar
+        if (AddonFocusTargetInfo is not null && AddonFocusTargetInfo->IsVisible) UpdateAddon(AddonFocusTargetInfo, 7, 3, Service.Targets.FocusTarget);
     }
 
-    private void UpdateCastBarNodes()
+    private void UpdateAddon(AtkUnitBase* addon, uint interruptNodeId, uint positioningNodeId, GameObject? target)
     {
-        // Use the inner actual castBar for sizing
-        var containingResourceNode = Common.GetNodeByID<AtkImageNode>(&AddonCastBar->UldManager, 2);
-        if (containingResourceNode is null) return;
-        var castBarPosition = new Vector2(containingResourceNode->AtkResNode.X, containingResourceNode->AtkResNode.Y);
-
-        // We want this node to make sure ours goes visible/not visible at the right time.
-        var castBarImageNode = Common.GetNodeByID<AtkImageNode>(&AddonCastBar->UldManager, 7);
-
-        MakeAndUpdateNodes(AddonCastBar, castBarPosition, castBarImageNode);
-    }
-
-    private void UpdateTargetInfoNodes()
-    {
-        // Use the inner actual castBar for sizing
-        var containingResourceNode = Common.GetNodeByID<AtkImageNode>(&AddonTargetInfo->UldManager, 10);
-        if (containingResourceNode is null) return;
-        var castBarPosition = new Vector2(containingResourceNode->AtkResNode.X, containingResourceNode->AtkResNode.Y);
-
-        // We want this node to make sure ours goes visible/not visible at the right time.
-        var castBarImageNode = Common.GetNodeByID<AtkImageNode>(&AddonTargetInfo->UldManager, 15);
-
-        MakeAndUpdateNodes(AddonTargetInfo, castBarPosition, castBarImageNode);
-    }
-    
-    private void MakeAndUpdateNodes(AtkUnitBase* addon, Vector2 castBarPosition, AtkImageNode* castBarImageNode)
-    {
-        var interjectNode = Common.GetNodeByID(&AddonCastBar->UldManager, InterjectImageNodeId);
-        var headGrazeNode = Common.GetNodeByID(&AddonCastBar->UldManager, HeadGrazeImageNodeId);
-
-        if (interjectNode is null || headGrazeNode is null)
+        var interruptNode = Common.GetNodeByID<AtkImageNode>(&addon->UldManager, interruptNodeId);
+        var castbarNode = Common.GetNodeByID(&addon->UldManager, positioningNodeId);
+        if (interruptNode is not null && castbarNode is not null)
         {
-            if (interjectNode is null)
-            {
-                var position = castBarPosition - new Vector2(36, 8);
-                var offset = new Vector2(TweakConfig.OffsetX, TweakConfig.OffsetY);
-                MakeImageNode(addon, InterjectImageNodeId, position + offset, 808);
-            }
-
-            if (headGrazeNode is null)
-            {
-                var position = castBarPosition - new Vector2(36, 8);
-                var offset = new Vector2(TweakConfig.OffsetX, TweakConfig.OffsetY);
-                MakeImageNode(addon, HeadGrazeImageNodeId, position + offset, 848);
-            }
-        }
-        else // Image Nodes are valid
-        {
-            UpdateIcons(castBarImageNode, interjectNode, headGrazeNode);
+            TryMakeNodes(addon, castbarNode);
+            UpdateIcons(interruptNode->AtkResNode.IsVisible, addon, target);
         }
     }
     
-    private void UpdateIcons(AtkImageNode* castBarImageNode, AtkResNode* interjectNode, AtkResNode* headGrazeNode)
+    private void TryMakeNodes(AtkUnitBase* parent, AtkResNode* positionNode)
     {
-        if (TweakConfig.PreviewPosition)
-        {
-            interjectNode->ToggleVisibility(true);
-            headGrazeNode->ToggleVisibility(true);
-            return;
-        }
+        var interject = Common.GetNodeByID<AtkImageNode>(&parent->UldManager, InterjectImageNodeId);
+        if (interject is null) MakeImageNode(parent, InterjectImageNodeId, 808, positionNode);
+
+        var headGraze = Common.GetNodeByID<AtkImageNode>(&parent->UldManager, HeadGrazeImageNodeId);
+        if(headGraze is null) MakeImageNode(parent, HeadGrazeImageNodeId, 848, positionNode);
+    }
+    
+    private void UpdateIcons(bool castBarVisible, AtkUnitBase* parent, GameObject? target)
+    {
+        var interject = Common.GetNodeByID<AtkImageNode>(&parent->UldManager, InterjectImageNodeId);
+        var headGraze = Common.GetNodeByID<AtkImageNode>(&parent->UldManager, HeadGrazeImageNodeId);
+
+        if (interject is null || headGraze is null) return;
         
-        var castBarVisible = castBarImageNode != null && castBarImageNode->AtkResNode.IsVisible;
-
-        if (Service.Targets.Target as BattleChara is { IsCasting: true, IsCastInterruptible: true } && castBarVisible)
+        if (target as BattleChara is { IsCasting: true, IsCastInterruptible: true } && castBarVisible)
         {
             switch (Service.ClientState.LocalPlayer)
             {
                 // Tank
                 case { ClassJob.GameData.Role: 1, Level: >= 18 }:
-                    interjectNode->ToggleVisibility(true);
-                    headGrazeNode->ToggleVisibility(false);
+                    interject->AtkResNode.ToggleVisibility(true);
+                    headGraze->AtkResNode.ToggleVisibility(false);
                     break;
 
                 // Physical Ranged
                 case { ClassJob.GameData.UIPriority: >= 30 and <= 39, Level: >= 24 }:
-                    interjectNode->ToggleVisibility(false);
-                    headGrazeNode->ToggleVisibility(true);
+                    interject->AtkResNode.ToggleVisibility(false);
+                    headGraze->AtkResNode.ToggleVisibility(true);
                     break;
             }
         }
         else
         {
-            interjectNode->ToggleVisibility(false);
-            headGrazeNode->ToggleVisibility(false);
+            interject->AtkResNode.ToggleVisibility(false);
+            headGraze->AtkResNode.ToggleVisibility(false);
         }
     }
 
-    private void MakeImageNode(AtkUnitBase* addon, uint nodeId, Vector2 position, int icon)
+    private void MakeImageNode(AtkUnitBase* parent, uint nodeId, int icon, AtkResNode* positioningNode)
     {
-        var imageNode = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
-        imageNode->AtkResNode.Type = NodeType.Image;
-        imageNode->AtkResNode.NodeID = nodeId;
+        var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(0, 0, 36, 36));
         imageNode->AtkResNode.Flags = 8243;
-        imageNode->AtkResNode.DrawFlags = 0;
         imageNode->WrapMode = 1;
         imageNode->Flags = (byte) ImageNodeFlags.AutoFit;
-        
-        var partsList = (AtkUldPartsList*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldPartsList), 8);
-        if (partsList == null) 
-        {
-            SimpleLog.Error("Failed to alloc memory for parts list.");
-            imageNode->AtkResNode.Destroy(false);
-            IMemorySpace.Free(imageNode, (ulong)sizeof(AtkImageNode));
-            return;
-        }
-        
-        partsList->Id = 0;
-        partsList->PartCount = 1;
-
-        var part = (AtkUldPart*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldPart), 8);
-        if (part == null) 
-        {
-            SimpleLog.Error("Failed to alloc memory for part.");
-            IMemorySpace.Free(partsList, (ulong)sizeof(AtkUldPartsList));
-            imageNode->AtkResNode.Destroy(false);
-            IMemorySpace.Free(imageNode, (ulong)sizeof(AtkImageNode));
-            return;
-        }
-
-        part->U = 0;
-        part->V = 0;
-        part->Width = 36;
-        part->Height = 36;
-
-        partsList->Parts = part;
-
-        var asset = (AtkUldAsset*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldAsset), 8);
-        if (asset == null) 
-        {
-            SimpleLog.Error("Failed to alloc memory for asset.");
-            IMemorySpace.Free(part, (ulong)sizeof(AtkUldPart));
-            IMemorySpace.Free(partsList, (ulong)sizeof(AtkUldPartsList));
-            imageNode->AtkResNode.Destroy(false);
-            IMemorySpace.Free(imageNode, (ulong)sizeof(AtkImageNode));
-            return;
-        }
-
-        asset->Id = 0;
-        asset->AtkTexture.Ctor();
-        part->UldAsset = asset;
-        imageNode->PartsList = partsList;
         
         imageNode->LoadIconTexture(icon, 0);
         imageNode->AtkResNode.ToggleVisibility(true);
 
         imageNode->AtkResNode.SetWidth(36);
         imageNode->AtkResNode.SetHeight(36);
-        imageNode->AtkResNode.SetPositionShort((short)position.X, (short)position.Y);
-        
-        var node = addon->RootNode->ChildNode;
-        while (node->PrevSiblingNode != null) node = node->PrevSiblingNode;
 
-        node->PrevSiblingNode = (AtkResNode*) imageNode;
-        imageNode->AtkResNode.NextSiblingNode = node;
-        imageNode->AtkResNode.ParentNode = node->ParentNode;
+        switch (TweakConfig.Position)
+        {
+            case NodePosition.Left:
+                imageNode->AtkResNode.SetPositionFloat(positioningNode->X - 36, positioningNode->Y - 8);
+                break;
+            
+            case NodePosition.Right:
+                imageNode->AtkResNode.SetPositionFloat(positioningNode->X + positioningNode->Width, positioningNode->Y - 8);
+                break;
+            
+            case NodePosition.TopLeft:
+                imageNode->AtkResNode.SetPositionFloat(positioningNode->X, positioningNode->Y - 36);
+                break;
+        }
         
-        addon->UldManager.UpdateDrawNodeList();
+        UiHelper.LinkNodeAtEnd(imageNode, parent);
     }
 
     private void FreeAllNodes()
     {
-        TryFreeImageNode(AddonCastBar, InterjectImageNodeId);
-        TryFreeImageNode(AddonCastBar, HeadGrazeImageNodeId);
+        TryFreeImageNode(AddonTargetInfoCastBar, InterjectImageNodeId);
+        TryFreeImageNode(AddonTargetInfoCastBar, HeadGrazeImageNodeId);
         
         TryFreeImageNode(AddonTargetInfo, InterjectImageNodeId);
         TryFreeImageNode(AddonTargetInfo, HeadGrazeImageNodeId);
+        
+        TryFreeImageNode(AddonFocusTargetInfo, InterjectImageNodeId);
+        TryFreeImageNode(AddonFocusTargetInfo, HeadGrazeImageNodeId);
     }
     
     private void TryFreeImageNode(AtkUnitBase* addon, uint nodeId)
     {
-        var imageNode = Common.GetNodeByID(&addon->UldManager, nodeId);
+        var imageNode = Common.GetNodeByID<AtkImageNode>(&addon->UldManager, nodeId);
         if (imageNode is not null)
         {
-            FreeImageNode(addon, nodeId);
-        }
-    }
-    
-    private void FreeImageNode(AtkUnitBase* addon, uint nodeId)
-    {
-        var imageNode = Common.GetNodeByID<AtkImageNode>(&addon->UldManager, nodeId, NodeType.Image);
-        if (imageNode != null)
-        {
-            if (imageNode->AtkResNode.PrevSiblingNode != null)
-                imageNode->AtkResNode.PrevSiblingNode->NextSiblingNode = imageNode->AtkResNode.NextSiblingNode;
-            
-            if (imageNode->AtkResNode.NextSiblingNode != null)
-                imageNode->AtkResNode.NextSiblingNode->PrevSiblingNode = imageNode->AtkResNode.PrevSiblingNode;
-            
-            addon->UldManager.UpdateDrawNodeList();
-
-            IMemorySpace.Free(imageNode->PartsList->Parts->UldAsset, (ulong) sizeof(AtkUldPart));
-            IMemorySpace.Free(imageNode->PartsList->Parts, (ulong) sizeof(AtkUldPart));
-            IMemorySpace.Free(imageNode->PartsList, (ulong) sizeof(AtkUldPartsList));
-            imageNode->AtkResNode.Destroy(false);
-            IMemorySpace.Free(imageNode, (ulong)sizeof(AtkImageNode));
+            UiHelper.UnlinkAndFreeImageNode(imageNode, addon);
         }
     }
 }
