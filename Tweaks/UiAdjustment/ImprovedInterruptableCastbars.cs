@@ -110,6 +110,8 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak
     
     private void TryMakeNodes(AtkUnitBase* parent, AtkResNode* positionNode)
     {
+        if (!UiHelper.IsAddonReady(parent)) return;
+        
         var interject = Common.GetNodeByID<AtkImageNode>(&parent->UldManager, InterjectImageNodeId);
         if (interject is null) MakeImageNode(parent, InterjectImageNodeId, 808, positionNode);
 

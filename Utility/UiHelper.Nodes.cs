@@ -58,6 +58,20 @@ public static unsafe partial class UiHelper
         return imageNode;
     }
 
+    /// <summary>
+    /// Checks if the addon has a valid root and child node.<br/>
+    /// Useful for ensuring that an addon is fully loaded before adding new UI nodes to it.
+    /// </summary>
+    /// <param name="addon">Pointer to addon to check</param>
+    public static bool IsAddonReady(AtkUnitBase* addon)
+    {
+        if (addon is null) return false;
+        if (addon->RootNode is null) return false;
+        if (addon->RootNode->ChildNode is null) return false;
+
+        return true;
+    }
+
     public static void LinkNodeAtEnd(AtkImageNode* imageNode, AtkUnitBase* parent)
     {
         var node = parent->RootNode->ChildNode;
@@ -86,19 +100,16 @@ public static unsafe partial class UiHelper
     
     public static void UnlinkAndFreeImageNode(AtkImageNode* node, AtkUnitBase* parent)
     {
-        if (node != null)
-        {
-            if (node->AtkResNode.PrevSiblingNode != null)
-                node->AtkResNode.PrevSiblingNode->NextSiblingNode = node->AtkResNode.NextSiblingNode;
+        if (node->AtkResNode.PrevSiblingNode is not null)
+            node->AtkResNode.PrevSiblingNode->NextSiblingNode = node->AtkResNode.NextSiblingNode;
             
-            if (node->AtkResNode.NextSiblingNode != null)
-                node->AtkResNode.NextSiblingNode->PrevSiblingNode = node->AtkResNode.PrevSiblingNode;
+        if (node->AtkResNode.NextSiblingNode is not null)
+            node->AtkResNode.NextSiblingNode->PrevSiblingNode = node->AtkResNode.PrevSiblingNode;
             
-            parent->UldManager.UpdateDrawNodeList();
+        parent->UldManager.UpdateDrawNodeList();
 
-            FreePartsList(node->PartsList);
-            FreeImageNode(node);
-        }
+        FreePartsList(node->PartsList);
+        FreeImageNode(node);
     }
 
     #region TryMakeComponents
