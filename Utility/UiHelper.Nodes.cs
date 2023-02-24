@@ -79,6 +79,19 @@ public static unsafe partial class UiHelper
         return textNode;
     }
 
+    [Obsolete("Use generic LinkNodeAtEnd(AtkResNode* ...) function instead.")]
+    public static void LinkNodeAtEnd(AtkImageNode* imageNode, AtkUnitBase* parent)
+    {
+        var node = parent->RootNode->ChildNode;
+        while (node->PrevSiblingNode != null) node = node->PrevSiblingNode;
+
+        node->PrevSiblingNode = (AtkResNode*) imageNode;
+        imageNode->AtkResNode.NextSiblingNode = node;
+        imageNode->AtkResNode.ParentNode = node->ParentNode;
+        
+        parent->UldManager.UpdateDrawNodeList();
+    }
+    
     public static void LinkNodeAtEnd(AtkResNode* imageNode, AtkUnitBase* parent)
     {
         var node = parent->RootNode->ChildNode;
@@ -90,7 +103,22 @@ public static unsafe partial class UiHelper
         
         parent->UldManager.UpdateDrawNodeList();
     }
+    
+    [Obsolete("Use generic LinkNodeAtEnd(AtkResNode* ...) function instead.")]
+    public static void LinkNodeAfterTargetNode(AtkImageNode* imageNode, AtkComponentNode* parent, AtkResNode* targetNode)
+    {
+        var prev = targetNode->PrevSiblingNode;
+        imageNode->AtkResNode.ParentNode = targetNode->ParentNode;
 
+        targetNode->PrevSiblingNode = (AtkResNode*) imageNode;
+        prev->NextSiblingNode = (AtkResNode*) imageNode;
+
+        imageNode->AtkResNode.PrevSiblingNode = prev;
+        imageNode->AtkResNode.NextSiblingNode = targetNode;
+
+        parent->Component->UldManager.UpdateDrawNodeList();
+    }
+    
     public static void LinkNodeAfterTargetNode(AtkResNode* imageNode, AtkComponentNode* parent, AtkResNode* targetNode)
     {
         var prev = targetNode->PrevSiblingNode;
