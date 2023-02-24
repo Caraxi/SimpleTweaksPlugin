@@ -88,6 +88,8 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
     {
         Common.FrameworkUpdate += OnFrameworkUpdate;
         TweakConfig = LoadConfig<Config>() ?? new Config();
+        Service.ClientState.EnterPvP += OnEnterPvP;
+        Service.ClientState.LeavePvP += OnLeavePvP;
         base.Enable();
     }
 
@@ -95,6 +97,8 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
     {
         SaveConfig(TweakConfig);
         Common.FrameworkUpdate -= OnFrameworkUpdate;
+        Service.ClientState.EnterPvP -= OnEnterPvP;
+        Service.ClientState.LeavePvP -= OnLeavePvP;
         FreeAllNodes();
         base.Disable();
     }
@@ -102,10 +106,23 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
     public override void Dispose()
     {
         Common.FrameworkUpdate -= OnFrameworkUpdate;
+        Service.ClientState.EnterPvP -= OnEnterPvP;
+        Service.ClientState.LeavePvP -= OnLeavePvP;
         FreeAllNodes();
         base.Dispose();
     }
+
+    private void OnEnterPvP()
+    {
+        Common.FrameworkUpdate -= OnFrameworkUpdate;
+        FreeAllNodes();
+    }
     
+    private void OnLeavePvP()
+    {
+        Common.FrameworkUpdate += OnFrameworkUpdate;
+    }
+
     private void OnFrameworkUpdate()
     {
         // Castbar is split from target info
