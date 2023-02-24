@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Numerics;
 using Dalamud.Game.ClientState.Objects.Types;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -31,7 +32,6 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
     {
         public bool FocusTargetEnabled;
         public NodePosition FocusTargetPosition = NodePosition.Left;
-        
         public NodePosition CastbarPosition = NodePosition.BottomRight;
     }
 
@@ -86,8 +86,9 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
 
     public override void Enable()
     {
-        Common.FrameworkUpdate += OnFrameworkUpdate;
         TweakConfig = LoadConfig<Config>() ?? new Config();
+        
+        Common.FrameworkUpdate += OnFrameworkUpdate;
         Service.ClientState.EnterPvP += OnEnterPvP;
         Service.ClientState.LeavePvP += OnLeavePvP;
         base.Enable();
@@ -96,10 +97,13 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
     public override void Disable()
     {
         SaveConfig(TweakConfig);
+        
         Common.FrameworkUpdate -= OnFrameworkUpdate;
         Service.ClientState.EnterPvP -= OnEnterPvP;
         Service.ClientState.LeavePvP -= OnLeavePvP;
+        
         FreeAllNodes();
+        
         base.Disable();
     }
 
@@ -108,13 +112,16 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
         Common.FrameworkUpdate -= OnFrameworkUpdate;
         Service.ClientState.EnterPvP -= OnEnterPvP;
         Service.ClientState.LeavePvP -= OnLeavePvP;
+        
         FreeAllNodes();
+        
         base.Dispose();
     }
 
     private void OnEnterPvP()
     {
         Common.FrameworkUpdate -= OnFrameworkUpdate;
+        
         FreeAllNodes();
     }
     
@@ -125,6 +132,14 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
 
     private void OnFrameworkUpdate()
     {
+        // If we get here while in any kind of PvP area, unregister this callback and free nodes.
+        if (Service.ClientState.IsPvP)
+        {
+            Common.FrameworkUpdate -= OnFrameworkUpdate;
+            FreeAllNodes();
+            return;
+        }
+        
         // Castbar is split from target info
         if (AddonTargetInfoCastBar is not null && AddonTargetInfoCastBar->IsVisible) UpdateAddon(AddonTargetInfoCastBar, 7, 2, Service.Targets.Target);
 
@@ -172,6 +187,12 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
     private void MakeTextNode(AtkUnitBase* parent, uint nodeId, AtkResNode* positioningNode, bool focusTarget)
     {
         var textNode = UiHelper.MakeTextNode(nodeId);
+        
+        textNode->AtkResNode.Flags = 8243;
+        textNode->AtkResNode.Flags_2 = 2;
+        textNode->AtkResNode.DrawFlags = 2;
+        textNode->AtkResNode.Alpha_2 = 255;
+        
         textNode->TextColor = textColor;
         textNode->EdgeColor = edgeColor;
         textNode->BackgroundColor = backgroundColor;
@@ -179,39 +200,22 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
         textNode->AlignmentFontType = 37;
         textNode->FontSize = 20;
         textNode->TextFlags = 8;
-
-        var resNode = (AtkResNode*) textNode;
-
-        resNode->Flags = 8243;
-        resNode->Flags_2 = 2;
-        resNode->DrawFlags = 2;
-        resNode->Alpha_2 = 255;
-        resNode->SetWidth(80);
-        resNode->SetHeight(22);
-
-        switch (focusTarget ? TweakConfig.FocusTargetPosition : TweakConfig.CastbarPosition)
-        {
-            case NodePosition.Left:
-                textNode->AtkResNode.SetPositionFloat(positioningNode->X - 80, positioningNode->Y);
-                break;
-            
-            case NodePosition.Right:
-                textNode->AtkResNode.SetPositionFloat(positioningNode->X + positioningNode->Width, positioningNode->Y);
-                break;
-            
-            case NodePosition.TopLeft:
-                textNode->AtkResNode.SetPositionFloat(positioningNode->X, positioningNode->Y - 14);
-                break;
-            
-            case NodePosition.BottomLeft:
-                textNode->AtkResNode.SetPositionFloat(positioningNode->X, positioningNode->Y + 14);
-                break;
-            
-            case NodePosition.BottomRight:
-                textNode->AtkResNode.SetPositionFloat(positioningNode->X + positioningNode->Width - 80, positioningNode->Y + 14);
-                break;
-        }
         
+        textNode->AtkResNode.SetWidth(80);
+        textNode->AtkResNode.SetHeight(22);
+
+        var nodePosition = (focusTarget ? TweakConfig.FocusTargetPosition : TweakConfig.CastbarPosition) switch
+        {
+            NodePosition.Left => new Vector2(positioningNode->X - 80, positioningNode->Y),
+            NodePosition.Right => new Vector2(positioningNode->X + positioningNode->Width, positioningNode->Y),
+            NodePosition.TopLeft => new Vector2(positioningNode->X, positioningNode->Y - 14),
+            NodePosition.BottomLeft => new Vector2(positioningNode->X, positioningNode->Y + 14),
+            NodePosition.BottomRight => new Vector2(positioningNode->X + positioningNode->Width - 80, positioningNode->Y + 14),
+            _ => Vector2.Zero
+        };
+        
+        textNode->AtkResNode.SetPositionFloat(nodePosition.X, nodePosition.Y);
+
         UiHelper.LinkNodeAtEnd((AtkResNode*) textNode, parent);
     }
     
