@@ -760,6 +760,9 @@ public unsafe class UIDebug : DebugHelper {
     private static void PrintComponentNode(AtkResNode* node, string treePrefix, bool textOnly = false)
     {
         var compNode = (AtkComponentNode*)node;
+        var componentInfo = compNode->Component->UldManager;
+        var objectInfo = (AtkUldComponentInfo*)componentInfo.Objects;
+        if (objectInfo == null) return;
 
         bool popped = false;
         bool isVisible = (node->Flags & 0x10) == 0x10;
@@ -767,11 +770,8 @@ public unsafe class UIDebug : DebugHelper {
         if (isVisible && !textOnly)
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0, 255, 0, 255));
 
-        var componentInfo = compNode->Component->UldManager;
-
         var childCount = componentInfo.NodeListCount;
 
-        var objectInfo = (AtkUldComponentInfo*)componentInfo.Objects;
         if (elementSelectorFind.Length > 0) {
             ImGui.SetNextItemOpen(elementSelectorFind.Contains((ulong) node), ImGuiCond.Always);
         }
