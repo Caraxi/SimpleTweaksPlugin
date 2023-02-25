@@ -163,6 +163,8 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
 
     private void TryMakeNodes(AtkUnitBase* parent, AtkResNode* positionNode, bool focusTarget)
     {
+        if (!UiHelper.IsAddonReady(parent)) return;
+        
         var textNode = Common.GetNodeByID<AtkTextNode>(&parent->UldManager, CastbarTextNodeId);
         if (textNode is null) MakeTextNode(parent, CastbarTextNodeId, positionNode, focusTarget);
     }
