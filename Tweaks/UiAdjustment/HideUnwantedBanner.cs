@@ -1,7 +1,6 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Dalamud.Hooking;
 using Dalamud.Logging;
 using Dalamud.Utility.Signatures;
@@ -13,7 +12,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 public class HideUnwantedBanner : UiAdjustments.SubTweak
 {
     public override string Name => "Hide Unwanted Banners";
-    public override string Description => "Hide information banners such as 'Venture Complete', or 'Levequest Accepted'\nNote: Does not silence the accompanying sound notification.";
+    public override string Description => "Hide information banners such as 'Venture Complete', or 'Levequest Accepted'";
     protected override string Author => "MidoriKami";
 
     private delegate nint ImageSetImageTextureDelegate(nint addon, int a2, int a3, int a4);
