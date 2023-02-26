@@ -178,7 +178,7 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak
                 break;
         }
         
-        UiHelper.LinkNodeAtEnd(imageNode, parent);
+        UiHelper.LinkNodeAtEnd((AtkResNode*) imageNode, parent);
     }
 
     private void FreeAllNodes()
