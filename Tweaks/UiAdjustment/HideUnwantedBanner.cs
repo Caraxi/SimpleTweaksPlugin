@@ -21,44 +21,51 @@ public class HideUnwantedBanner : UiAdjustments.SubTweak
     [Signature("48 89 5C 24 ?? 57 48 83 EC 30 48 8B D9 89 91", DetourName = nameof(OnSetImageTexture))]
     private readonly Hook<ImageSetImageTextureDelegate>? setImageTextureHook = null!;
 
-    private record BannerSetting(bool Enabled, int Id, string Label)
-    {
-        public bool Enabled { get; set; } = Enabled;
-    }
+    private record BannerSetting(int Id, string Label);
 
+    private readonly List<BannerSetting> banners = new()
+    {
+        new BannerSetting(120031, "Levequest Accepted"),
+        new BannerSetting(120032, "Levequest Complete"),
+        new BannerSetting(120055, "Delivery Complete"),
+        new BannerSetting(120081, "FATE Joined"),
+        new BannerSetting(120082, "FATE Complete"),
+        new BannerSetting(120083, "FATE Failed"),
+        new BannerSetting(120084, "FATE Joined EXP BONUS"),
+        new BannerSetting(120085, "FATE Complete EXP BONUS"),
+        new BannerSetting(120086, "FATE Failed EXP BONUS"),
+        new BannerSetting(120093, "Treasure Obtained!"),
+        new BannerSetting(120094, "Treasure Found!"),
+        new BannerSetting(120095, "Venture Commenced!"),
+        new BannerSetting(120096, "Venture Accomplished!"),
+        new BannerSetting(120141, "Voyage Commenced"),
+        new BannerSetting(120142, "Voyage Complete"),
+    };
+    
     private class Config : TweakConfig
     {
-        public readonly List<BannerSetting> Banners = new()
-        {
-            new BannerSetting(false, 120031, "Levequest Accepted"),
-            new BannerSetting(false, 120032, "Levequest Complete"),
-            new BannerSetting(false, 120055, "Delivery Complete"),
-            new BannerSetting(false, 120081, "FATE Joined"),
-            new BannerSetting(false, 120082, "FATE Complete"),
-            new BannerSetting(false, 120083, "FATE Failed"),
-            new BannerSetting(false, 120084, "FATE Joined EXP BONUS"),
-            new BannerSetting(false, 120085, "FATE Complete EXP BONUS"),
-            new BannerSetting(false, 120086, "FATE Failed EXP BONUS"),
-            new BannerSetting(false, 120093, "Treasure Obtained!"),
-            new BannerSetting(false, 120094, "Treasure Found!"),
-            new BannerSetting(false, 120095, "Venture Commenced!"),
-            new BannerSetting(false, 120096, "Venture Accomplished!"),
-            new BannerSetting(false, 120141, "Voyage Commenced"),
-            new BannerSetting(false, 120142, "Voyage Complete"),
-        };
+        public readonly List<int> HiddenBanners = new();
     }
 
     private Config TweakConfig { get; set; } = null!;
     
     protected override DrawConfigDelegate DrawConfigTree => (ref bool _) =>
     {
-        foreach (var banner in TweakConfig.Banners)
+        foreach (var banner in banners)
         {
-            var enabled = banner.Enabled;
+            var enabled = TweakConfig.HiddenBanners.Contains(banner.Id);
             if (ImGui.Checkbox(banner.Label, ref enabled))
             {
-                banner.Enabled = enabled;
-                SaveConfig(TweakConfig);
+                if (TweakConfig.HiddenBanners.Contains(banner.Id) && !enabled)
+                {
+                    TweakConfig.HiddenBanners.Remove(banner.Id);
+                    SaveConfig(TweakConfig);
+                }
+                else if(!TweakConfig.HiddenBanners.Contains(banner.Id) && enabled)
+                {
+                    TweakConfig.HiddenBanners.Add(banner.Id);
+                    SaveConfig(TweakConfig);
+                }
             }
         }
     };
@@ -98,7 +105,7 @@ public class HideUnwantedBanner : UiAdjustments.SubTweak
         
         try
         {
-            if (TweakConfig.Banners.Any(bannerSetting => bannerSetting.Enabled && bannerSetting.Id == a2))
+            if (TweakConfig.HiddenBanners.Contains(a2))
             {
                 skipOriginal = true;
             }
