@@ -119,44 +119,16 @@ public static unsafe partial class UiHelper
         parent->Component->UldManager.UpdateDrawNodeList();
     }
 
-    public static void LinkNodeAfterTargetNode(AtkResNode* imageNode, AtkComponentNode* parent, AtkResNode* targetNode)
+    public static void LinkNodeAfterTargetNode(AtkResNode* node, AtkComponentNode* parent, AtkResNode* targetNode)
     {
         var prev = targetNode->PrevSiblingNode;
-        imageNode->ParentNode = targetNode->ParentNode;
+        node->ParentNode = targetNode->ParentNode;
 
-        targetNode->PrevSiblingNode = imageNode;
-        prev->NextSiblingNode = imageNode;
+        targetNode->PrevSiblingNode = node;
+        prev->NextSiblingNode = node;
 
-        imageNode->PrevSiblingNode = prev;
-        imageNode->NextSiblingNode = targetNode;
-
-        parent->Component->UldManager.UpdateDrawNodeList();
-    }
-    
-    public static void LinkNodeAfterTargetNode(AtkResNode* imageNode, AtkComponentNode* parent, AtkResNode* targetNode)
-    {
-        var prev = targetNode->PrevSiblingNode;
-        imageNode->ParentNode = targetNode->ParentNode;
-
-        targetNode->PrevSiblingNode = imageNode;
-        prev->NextSiblingNode = imageNode;
-
-        imageNode->PrevSiblingNode = prev;
-        imageNode->NextSiblingNode = targetNode;
-
-        parent->Component->UldManager.UpdateDrawNodeList();
-    }
-    
-    public static void LinkNodeAfterTargetNode(AtkResNode* imageNode, AtkComponentNode* parent, AtkResNode* targetNode)
-    {
-        var prev = targetNode->PrevSiblingNode;
-        imageNode->ParentNode = targetNode->ParentNode;
-
-        targetNode->PrevSiblingNode = imageNode;
-        prev->NextSiblingNode = imageNode;
-
-        imageNode->PrevSiblingNode = prev;
-        imageNode->NextSiblingNode = targetNode;
+        node->PrevSiblingNode = prev;
+        node->NextSiblingNode = targetNode;
 
         parent->Component->UldManager.UpdateDrawNodeList();
     }
