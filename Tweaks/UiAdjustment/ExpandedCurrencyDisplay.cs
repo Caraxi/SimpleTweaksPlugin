@@ -348,7 +348,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         imageNode->AtkResNode.SetHeight(36);
         imageNode->AtkResNode.SetPositionShort((short)position.X, (short)position.Y);
         
-        UiHelper.LinkNodeAtEnd(imageNode, AddonMoney);
+        UiHelper.LinkNodeAtEnd((AtkResNode*) imageNode, AddonMoney);
     }
 
     private void MakeCounterNode(uint nodeId, Vector2 position, AtkUldPartsList* partsList)

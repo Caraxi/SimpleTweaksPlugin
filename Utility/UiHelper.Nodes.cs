@@ -72,6 +72,14 @@ public static unsafe partial class UiHelper
         return true;
     }
 
+    public static AtkTextNode* MakeTextNode(uint id)
+    {
+        if (!TryMakeTextNode(id, out var textNode)) return null;
+
+        return textNode;
+    }
+
+    [Obsolete("Use generic LinkNodeAtEnd(AtkResNode* ...) function instead.")]
     public static void LinkNodeAtEnd(AtkImageNode* imageNode, AtkUnitBase* parent)
     {
         var node = parent->RootNode->ChildNode;
@@ -83,7 +91,20 @@ public static unsafe partial class UiHelper
         
         parent->UldManager.UpdateDrawNodeList();
     }
+    
+    public static void LinkNodeAtEnd(AtkResNode* imageNode, AtkUnitBase* parent)
+    {
+        var node = parent->RootNode->ChildNode;
+        while (node->PrevSiblingNode != null) node = node->PrevSiblingNode;
 
+        node->PrevSiblingNode = imageNode;
+        imageNode->NextSiblingNode = node;
+        imageNode->ParentNode = node->ParentNode;
+        
+        parent->UldManager.UpdateDrawNodeList();
+    }
+    
+    [Obsolete("Use generic LinkNodeAtEnd(AtkResNode* ...) function instead.")]
     public static void LinkNodeAfterTargetNode(AtkImageNode* imageNode, AtkComponentNode* parent, AtkResNode* targetNode)
     {
         var prev = targetNode->PrevSiblingNode;
@@ -94,6 +115,20 @@ public static unsafe partial class UiHelper
 
         imageNode->AtkResNode.PrevSiblingNode = prev;
         imageNode->AtkResNode.NextSiblingNode = targetNode;
+
+        parent->Component->UldManager.UpdateDrawNodeList();
+    }
+
+    public static void LinkNodeAfterTargetNode(AtkResNode* imageNode, AtkComponentNode* parent, AtkResNode* targetNode)
+    {
+        var prev = targetNode->PrevSiblingNode;
+        imageNode->ParentNode = targetNode->ParentNode;
+
+        targetNode->PrevSiblingNode = imageNode;
+        prev->NextSiblingNode = imageNode;
+
+        imageNode->PrevSiblingNode = prev;
+        imageNode->NextSiblingNode = targetNode;
 
         parent->Component->UldManager.UpdateDrawNodeList();
     }
@@ -113,6 +148,20 @@ public static unsafe partial class UiHelper
     }
 
     #region TryMakeComponents
+
+    public static bool TryMakeTextNode(uint id, [NotNullWhen(true)] out AtkTextNode* textNode)
+    {
+        textNode = IMemorySpace.GetUISpace()->Create<AtkTextNode>();
+
+        if (textNode is not null)
+        {
+            textNode->AtkResNode.Type = NodeType.Text;
+            textNode->AtkResNode.NodeID = id;
+            return true;
+        }
+
+        return false;
+    }
     
     public static bool TryMakeImageNode(uint id, short resNodeFlags, uint resNodeDrawFlags, byte wrapMode, byte imageNodeFlags, [NotNullWhen(true)] out AtkImageNode* imageNode)
     {
@@ -231,6 +280,12 @@ public static unsafe partial class UiHelper
     {
         node->AtkResNode.Destroy(false);
         IMemorySpace.Free(node, (ulong)sizeof(AtkImageNode));
+    }
+
+    public static void FreeTextNode(AtkTextNode* node)
+    {
+        node->AtkResNode.Destroy(false);
+        IMemorySpace.Free(node, (ulong)sizeof(AtkTextNode));
     }
     
     public static void FreePartsList(AtkUldPartsList* partsList)
