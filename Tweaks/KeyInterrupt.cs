@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.ClientState.Keys;
 using Dalamud.Logging;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
@@ -42,25 +43,6 @@ public partial class KeyInterrupt : Tweak {
         LLKHF_INJECTED = 0x10,
         LLKHF_ALTDOWN = 0x20,
         LLKHF_UP = 0x80,
-    }
-
-    [Flags]
-    private enum HeldKeyFlags {
-        // We use flags so that we can (cheaply) check for things like either ctrl key, even if it's more annoying.
-        
-        LeftShift = 0b00000001,
-        RightShift = 0b00000010,
-        LeftCtrl = 0b00000100,
-        RightCtrl = 0b00001000,
-        LeftAlt = 0b00010000,
-        RightAlt = 0b00100000,
-        LeftMeta = 0b01000000,
-        RightMeta = 0b10000000,
-
-        Ctrl = LeftCtrl | RightCtrl,
-        Alt = LeftAlt | RightAlt,
-        Meta = LeftMeta | RightMeta,
-        Shift = LeftShift | RightShift
     }
 
     private struct KeyInfoStruct {
@@ -108,6 +90,9 @@ public partial class KeyInterrupt : Tweak {
     [LibraryImport("user32.dll")]
     private static partial nint DispatchMessageW(nint msg);
 
+    [LibraryImport("user32.dll")]
+    private static partial short GetAsyncKeyState(int vKey);
+
     private KeyInterruptConfig _config = new();
 
     private nint _keyboardHookId;
@@ -116,8 +101,6 @@ public partial class KeyInterrupt : Tweak {
     // Storing the delegate as a class member prevents it from being GC'd and causing crashes
     // See: https://stackoverflow.com/a/65250050
     private HookHandlerDelegate? _delegate;
-
-    private HeldKeyFlags _heldKeys = 0;
 
     private CancellationTokenSource? _cts;
 
@@ -197,19 +180,17 @@ public partial class KeyInterrupt : Tweak {
         // When this tweak runs, this method runs on *every keyboard event across the entire system*. As such, if this
         // takes too long, it *will* be noticeable to the user, including if/when they're not in the game. Yes, this
         // does in fact turn FFXIV into a de facto key logger. We have to do this to capture certain keys.
-
-        this.SetHeldKeys(lParam.vkCode, lParam.flags != KeyInfoFlags.LLKHF_UP);
-
+        
         if (!TryFindGameWindow(out var handle)) goto ORIGINAL;
         if (GetForegroundWindow() != handle) goto ORIGINAL;
 
         if (this._config.InCombatOnly && !Service.Condition[ConditionFlag.InCombat]) goto ORIGINAL;
 
-        switch (lParam.vkCode) {
-            case 0x09 when lParam.flags == KeyInfoFlags.LLKHF_ALTDOWN && this._config.BlockAltTab: // VK_TAB
-            case 0x73 when lParam.flags == KeyInfoFlags.LLKHF_ALTDOWN: // VK_F4
-            case 0x1B when (this._heldKeys & HeldKeyFlags.Ctrl) != HeldKeyFlags.Ctrl && this._config.BlockCtrlEsc: // VK_ESCAPE
-            case (0x5B or 0x5C) when this._config.BlockWinKey: // VK_WINL and VK_WINR
+        switch ((VirtualKey) lParam.vkCode) {
+            case VirtualKey.TAB when lParam.flags == KeyInfoFlags.LLKHF_ALTDOWN && this._config.BlockAltTab:
+            case VirtualKey.F4 when lParam.flags == KeyInfoFlags.LLKHF_ALTDOWN:
+            case VirtualKey.ESCAPE when IsKeyDown(VirtualKey.CONTROL) && this._config.BlockCtrlEsc:
+            case VirtualKey.LWIN or VirtualKey.RWIN when this._config.BlockWinKey:
                 // Send this keystroke to the game directly so it can be used as a keybind 
                 SendMessageW(handle, lParam.flags == KeyInfoFlags.LLKHF_UP ? WM_KEYUP : WM_KEYDOWN, lParam.vkCode, 0);
                 return 1;
@@ -219,25 +200,8 @@ public partial class KeyInterrupt : Tweak {
         return CallNextHookEx(this._keyboardHookId, nCode, wParam, ref lParam);
     }
 
-    private void SetHeldKeys(int key, bool keyDown) {
-        HeldKeyFlags flag = key switch {
-            0xA0 => HeldKeyFlags.LeftShift,
-            0xA1 => HeldKeyFlags.RightShift,
-            0xA2 => HeldKeyFlags.LeftCtrl,
-            0xA3 => HeldKeyFlags.RightCtrl,
-            0xA4 => HeldKeyFlags.LeftAlt,
-            0xA5 => HeldKeyFlags.RightAlt,
-            0x5B => HeldKeyFlags.LeftMeta,
-            0x5C => HeldKeyFlags.RightMeta,
-            _ => 0
-        };
-
-        if (flag == 0) return;
-
-        if (keyDown)
-            this._heldKeys |= flag;
-        else
-            this._heldKeys &= ~flag;
+    private static bool IsKeyDown(VirtualKey vKey) {
+        return (GetAsyncKeyState((int) vKey) & 0x8000) > 0;
     }
 
     private static bool TryFindGameWindow(out nint handle) {
