@@ -8,9 +8,11 @@ using Dalamud.Logging;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.Exd;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
@@ -22,14 +24,34 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     public override string Description => "Marks unlootable and already obtained items in the loot window.";
 
     private delegate nint OnRequestedUpdateDelegate(nint a1, nint a2, nint a3);
-
+    private delegate nint MoveAddonDetour(RaptureAtkModule* atkModule, AtkUnitBase* addon, nint idk2);
+    
     [Signature("40 53 48 83 EC 20 48 8B 42 58", DetourName = nameof(OnNeedGreedRequestedUpdate))]
     private readonly Hook<OnRequestedUpdateDelegate>? needGreedOnRequestedUpdateHook = null!;
+
+    [Signature("40 53 48 83 EC 20 80 A2 ?? ?? ?? ?? ??", DetourName = nameof(OnNeedGreedMove))]
+    private readonly Hook<MoveAddonDetour>? needGreedOnMoveHook = null!;
 
     private static AtkUnitBase* AddonNeedGreed => (AtkUnitBase*) Service.GameGui.GetAddonByName("NeedGreed");
 
     private const uint CrossBaseId = 1000U;
     private const uint PadlockBaseId = 2000U;
+    
+    public class Config : TweakConfig
+    {
+        [TweakConfigOption("Lock Window Position")]
+        public bool LockWindowPosition = false;
+
+        [TweakConfigOption("Mark Un-obtainable Items")]
+        public bool MarkUnobtainable = true;
+
+        [TweakConfigOption("Mark Already Unlocked Items")]
+        public bool MarkAlreadyObtained = true;
+    }
+
+    public Config TweakConfig { get; private set; } = null!;
+
+    public override bool UseAutoConfig => true;
     
     public override void Setup()
     {
@@ -42,7 +64,10 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
 
     public override void Enable()
     {
+        TweakConfig = LoadConfig<Config>() ?? new Config();
+        
         needGreedOnRequestedUpdateHook?.Enable();
+        needGreedOnMoveHook?.Enable();
         Common.AddonSetup += OnAddonSetup;
         Common.AddonFinalize += OnAddonFinalize;
         base.Enable();
@@ -50,7 +75,10 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
 
     public override void Disable()
     {
+        SaveConfig(TweakConfig);
+        
         needGreedOnRequestedUpdateHook?.Disable();
+        needGreedOnMoveHook?.Disable();
         Common.AddonSetup -= OnAddonSetup;
         Common.AddonFinalize -= OnAddonFinalize;
         base.Disable();
@@ -59,6 +87,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     public override void Dispose()
     {
         needGreedOnRequestedUpdateHook?.Dispose();
+        needGreedOnMoveHook?.Dispose();
         Common.AddonSetup -= OnAddonSetup;
         Common.AddonFinalize -= OnAddonFinalize;
         base.Dispose();
@@ -163,20 +192,20 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
                 switch (itemData)
                 {
                     // Item is unique, and has no unlock action, and is unobtainable if we have any in our inventory
-                    case { IsUnique: true, ItemAction.Row: 0 } when GetItemCount(itemInfo.ItemId) > 0:
+                    case { IsUnique: true, ItemAction.Row: 0 } when GetItemCount(itemInfo.ItemId) > 0 && TweakConfig.MarkUnobtainable:
                         
                     // Item is unobtainable if unlocked
                     // Category 81: Minion
                     // Category 63: Mount when ItemSortCategory is 175
                     // Category 63: Chocobo Barding when ItemSortCategory is 130
-                    case { ItemUICategory.Row: 81 } when exdItem is null || UIState.Instance()->IsItemActionUnlocked(exdItem) is 1:
-                    case { ItemUICategory.Row: 63, ItemSortCategory.Row: 175 } when exdItem is null || UIState.Instance()->IsItemActionUnlocked(exdItem) is 1:
+                    case { ItemUICategory.Row: 81 } when exdItem is null || UIState.Instance()->IsItemActionUnlocked(exdItem) is 1 && TweakConfig.MarkUnobtainable:
+                    case { ItemUICategory.Row: 63, ItemSortCategory.Row: 175 } when exdItem is null || UIState.Instance()->IsItemActionUnlocked(exdItem) is 1 && TweakConfig.MarkUnobtainable:
                         crossNode->AtkResNode.ToggleVisibility(true);
                         padlockNode->AtkResNode.ToggleVisibility(false);
                         break;
 
                     // Item can be obtained if unlocked
-                    case { } when exdItem is null || UIState.Instance()->IsItemActionUnlocked(exdItem) is 1:
+                    case { } when exdItem is null || UIState.Instance()->IsItemActionUnlocked(exdItem) is 1 && TweakConfig.MarkAlreadyObtained:
                         crossNode->AtkResNode.ToggleVisibility(false);
                         padlockNode->AtkResNode.ToggleVisibility(true);
                         break;
@@ -195,6 +224,22 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         }
 
         return result;
+    }
+
+    private nint OnNeedGreedMove(RaptureAtkModule* atkModule, AtkUnitBase* addon, nint idk2)
+    {
+        var skipOriginal = false;
+        
+        try
+        {
+            skipOriginal = TweakConfig.LockWindowPosition && addon == AddonNeedGreed;
+        }
+        catch (Exception e)
+        {
+            PluginLog.Error(e, "Something went wrong in LootWindowDuplicateUniqueItemIndicator, let MidoriKami know!");
+        }
+
+        return skipOriginal ? nint.Zero : needGreedOnMoveHook!.Original(atkModule, addon, idk2);
     }
     
     private void MakeCrossNode(uint nodeId, AtkComponentNode* parent)
