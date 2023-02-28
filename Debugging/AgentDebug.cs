@@ -5,7 +5,6 @@ using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Dalamud.Hooking;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using FFXIVClientStructs.Attributes;
@@ -23,8 +22,8 @@ public unsafe class AgentDebug : DebugHelper {
 
     private delegate void* GetAgentByInternalIDDelegate(void* agentModule, AgentId agentId);
 
-    private Hook<GetAgentByInternalIDDelegate> getAgentByInternalIdHook;
-    private Hook<GetAgentByInternalIDDelegate> getAgentByInternalId2Hook;
+    private HookWrapper<GetAgentByInternalIDDelegate> getAgentByInternalIdHook;
+    private HookWrapper<GetAgentByInternalIDDelegate> getAgentByInternalId2Hook;
 
     private List<(AgentId id, ulong address, ulong hitCount)> agentGetLog = new();
 
@@ -366,9 +365,8 @@ public unsafe class AgentDebug : DebugHelper {
 
     private void SetupLogging() {
         agentGetLog = new List<(AgentId, ulong, ulong)>();
-        getAgentByInternalIdHook ??= new Hook<GetAgentByInternalIDDelegate>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 83 FE 0D"), new GetAgentByInternalIDDelegate(GetAgentByInternalIDDetour));
-        getAgentByInternalId2Hook ??= new Hook<GetAgentByInternalIDDelegate>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 85 C0 74 12 0F BF 80"), new GetAgentByInternalIDDelegate(GetAgentByInternalIDDetour));
-            
+        getAgentByInternalIdHook ??= Common.Hook("E8 ?? ?? ?? ?? 83 FE 0D", new GetAgentByInternalIDDelegate(GetAgentByInternalIDDetour));
+        getAgentByInternalId2Hook ??= Common.Hook("E8 ?? ?? ?? ?? 48 85 C0 74 12 0F BF 80", new GetAgentByInternalIDDelegate(GetAgentByInternalIDDetour));
         getAgentByInternalIdHook?.Enable();
         getAgentByInternalId2Hook?.Enable();
     }

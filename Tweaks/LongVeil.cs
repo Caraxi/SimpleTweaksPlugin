@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Dalamud.Hooking;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
@@ -14,14 +14,14 @@ public unsafe class LongVeil : Tweak {
     }
 
     private delegate bool FlagSlotUpdateDelegate(IntPtr a1, uint a2, EquipData* a3);
-    private Hook<FlagSlotUpdateDelegate> flagSlotUpdateHook;
+    private HookWrapper<FlagSlotUpdateDelegate> flagSlotUpdateHook;
         
     public override string Name => "Long Veil";
     public override string Description => "Replaces the wedding veils with their long variants that are usually only shown in the sanctum of the twelve.";
 
     public override void Enable() {
-        flagSlotUpdateHook ??= new Hook<FlagSlotUpdateDelegate>(
-            Service.SigScanner.ScanText("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 8B DA 49 8B F0 48 8B F9 83 FA 0A"),
+        flagSlotUpdateHook ??= Common.Hook(
+            Service.SigScanner.ScanText("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 8B DA 49 8B F0 48 8B F9 83 FA 0A"), 
             new FlagSlotUpdateDelegate(FlagSlotUpdateDetour));
         flagSlotUpdateHook?.Enable();
         base.Enable();
