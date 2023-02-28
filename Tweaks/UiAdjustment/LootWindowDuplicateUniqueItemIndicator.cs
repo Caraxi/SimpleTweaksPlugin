@@ -21,7 +21,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
 {
     public override string Name => "Enhanced Loot Window";
     protected override string Author => "MidoriKami";
-    public override string Description => "Marks unlootable and already obtained items in the loot window.";
+    public override string Description => "Marks unobtainable and already unlocked items in the loot window.\nAdditionally allows you to lock the loot window's position.";
 
     private delegate nint OnRequestedUpdateDelegate(nint a1, nint a2, nint a3);
     private delegate nint MoveAddonDetour(RaptureAtkModule* atkModule, AtkUnitBase* addon, nint idk2);
@@ -34,8 +34,21 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
 
     private static AtkUnitBase* AddonNeedGreed => (AtkUnitBase*) Service.GameGui.GetAddonByName("NeedGreed");
 
+    private readonly int[] listItemNodeIdArray = Enumerable.Range(21001, 31).Prepend(2).ToArray();
+
     private const uint CrossBaseId = 1000U;
     private const uint PadlockBaseId = 2000U;
+
+    private const int MinionCategory = 81;
+    private const int MountCategory = 63;
+    private const int MountSubCategory = 175;
+
+    private enum ItemStatus
+    {
+        Unobtainable,
+        AlreadyUnlocked,
+        Normal
+    }
     
     public class Config : TweakConfig
     {
@@ -57,6 +70,10 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     {
         if (Ready) return;
         AddChangelogNewTweak("1.8.2.1");
+        AddChangelog(Changelog.UnreleasedVersion, "Rebuilt tweak to use images");
+        AddChangelog(Changelog.UnreleasedVersion, "Fixed tweak not checking armory and equipped items");
+        AddChangelog(Changelog.UnreleasedVersion, "Added 'Lock Loot Window' feature");
+        AddChangelog(Changelog.UnreleasedVersion, "Added configuration options");
 
         SignatureHelper.Initialise(this);
         Ready = true;
@@ -100,7 +117,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         var listComponentNode = (AtkComponentNode*) obj.Addon->GetNodeById(6);
         if (listComponentNode is null || listComponentNode->Component is null) return;
         
-        foreach (uint index in Enumerable.Range(21001, 31).Prepend(2).ToArray())
+        foreach (uint index in listItemNodeIdArray)
         {
             var componentUldManager = &listComponentNode->Component->UldManager;
                     
@@ -126,27 +143,25 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         if (obj.AddonName != "NeedGreed") return;
         
         var listComponentNode = (AtkComponentNode*) obj.Addon->GetNodeById(6);
-        if (listComponentNode is not null && listComponentNode->Component is not null)
+        if (listComponentNode is null || listComponentNode->Component is null) return;
+        
+        foreach (uint index in listItemNodeIdArray)
         {
-            foreach (uint index in Enumerable.Range(21001, 31).Prepend(2).ToArray())
-            {
-                var componentUldManager = &listComponentNode->Component->UldManager;
+            var componentUldManager = &listComponentNode->Component->UldManager;
                     
-                var lootItemNode = Common.GetNodeByID<AtkComponentNode>(componentUldManager, index);
-                if (lootItemNode is not null)
-                {
-                    var crossNode = Common.GetNodeByID<AtkImageNode>(componentUldManager, CrossBaseId + index);
-                    if (crossNode is not null)
-                    {
-                        UiHelper.UnlinkAndFreeImageNode(crossNode, AddonNeedGreed);
-                    }
+            var lootItemNode = Common.GetNodeByID<AtkComponentNode>(componentUldManager, index);
+            if (lootItemNode is null) continue;
+            
+            var crossNode = Common.GetNodeByID<AtkImageNode>(componentUldManager, CrossBaseId + index);
+            if (crossNode is not null)
+            {
+                UiHelper.UnlinkAndFreeImageNode(crossNode, AddonNeedGreed);
+            }
                         
-                    var padlockNode = Common.GetNodeByID<AtkImageNode>(componentUldManager, PadlockBaseId + index);
-                    if (padlockNode is not null)
-                    {
-                        UiHelper.UnlinkAndFreeImageNode(padlockNode, AddonNeedGreed);
-                    }
-                }
+            var padlockNode = Common.GetNodeByID<AtkImageNode>(componentUldManager, PadlockBaseId + index);
+            if (padlockNode is not null)
+            {
+                UiHelper.UnlinkAndFreeImageNode(padlockNode, AddonNeedGreed);
             }
         }
     }
@@ -157,63 +172,45 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
 
         try
         {
-            var callingAddon = (AtkUnitBase*) addon;
+            var callingAddon = (AddonNeedGreed*) addon;
 
-            var listComponentNode = (AtkComponentNode*) callingAddon->GetNodeById(6);
-            if (listComponentNode is null) return result;
-            if (listComponentNode->Component is null) return result;
+            var listComponentNode = (AtkComponentNode*) callingAddon->AtkUnitBase.GetNodeById(6);
+            if (listComponentNode is null || listComponentNode->Component is null) return result;
             
-            // Array of ListItemNode ID's, in display order
-            var listItemIndexArray = Enumerable.Range(21001, 31).Prepend(2).ToArray();
-            var lootItemInfoArray = (LootItemInfo*)(addon + 0x228);
-
             // For each possible item slot, get the item info
             foreach (var index in Enumerable.Range(0, 32))
             {
                 // If this data slot doesn't have an item id, skip.
-                var itemInfo = lootItemInfoArray[index];
+                var itemInfo = callingAddon->ItemsSpan[index];
                 if (itemInfo.ItemId is 0) continue;
 
                 // If we can't match the item in lumina, skip.
                 var itemData = Service.Data.GetExcelSheet<Item>()!.GetRow(itemInfo.ItemId);
                 if(itemData is null) continue;
 
-                var targetListItemId = listItemIndexArray[index];
-                var targetListItemNode = Common.GetNodeByID<AtkComponentNode>(&listComponentNode->Component->UldManager, (uint) targetListItemId);
-
-                if (targetListItemNode is null || targetListItemNode->Component is null) continue;
-                
-                var crossNode = Common.GetNodeByID<AtkImageNode>(&targetListItemNode->Component->UldManager, CrossBaseId + (uint) targetListItemId);
-                var padlockNode = Common.GetNodeByID<AtkImageNode>(&targetListItemNode->Component->UldManager, PadlockBaseId + (uint) targetListItemId);
-
-                // Get item datasheet pointer now, so we can check it for null before checking itemActionUnlocked
-                var exdItem = ExdModule.GetItemRowById(itemInfo.ItemId);
+                var listItemNodeId = listItemNodeIdArray[index];
+                var listItemNode = Common.GetNodeByID<AtkComponentNode>(&listComponentNode->Component->UldManager, (uint) listItemNodeId);
+                if (listItemNode is null || listItemNode->Component is null) continue;
                 
                 switch (itemData)
                 {
                     // Item is unique, and has no unlock action, and is unobtainable if we have any in our inventory
-                    case { IsUnique: true, ItemAction.Row: 0 } when GetItemCount(itemInfo.ItemId) > 0 && TweakConfig.MarkUnobtainable:
+                    case { IsUnique: true, ItemAction.Row: 0 } when PlayerHasItem(itemInfo.ItemId):
                         
-                    // Item is unobtainable if unlocked
-                    // Category 81: Minion
-                    // Category 63: Mount when ItemSortCategory is 175
-                    // Category 63: Chocobo Barding when ItemSortCategory is 130
-                    case { ItemUICategory.Row: 81 } when exdItem is null || UIState.Instance()->IsItemActionUnlocked(exdItem) is 1 && TweakConfig.MarkUnobtainable:
-                    case { ItemUICategory.Row: 63, ItemSortCategory.Row: 175 } when exdItem is null || UIState.Instance()->IsItemActionUnlocked(exdItem) is 1 && TweakConfig.MarkUnobtainable:
-                        crossNode->AtkResNode.ToggleVisibility(true);
-                        padlockNode->AtkResNode.ToggleVisibility(false);
+                    // Item is unobtainable if its a minion/mount and already unlocked
+                    case { ItemUICategory.Row: MinionCategory } when IsItemAlreadyUnlocked(itemInfo.ItemId):
+                    case { ItemUICategory.Row: MountCategory, ItemSortCategory.Row: MountSubCategory } when IsItemAlreadyUnlocked(itemInfo.ItemId):
+                        UpdateNodeVisibility(listItemNode, listItemNodeId, ItemStatus.Unobtainable);
                         break;
 
                     // Item can be obtained if unlocked
-                    case { } when exdItem is null || UIState.Instance()->IsItemActionUnlocked(exdItem) is 1 && TweakConfig.MarkAlreadyObtained:
-                        crossNode->AtkResNode.ToggleVisibility(false);
-                        padlockNode->AtkResNode.ToggleVisibility(true);
+                    case { } when IsItemAlreadyUnlocked(itemInfo.ItemId):
+                        UpdateNodeVisibility(listItemNode, listItemNodeId, ItemStatus.AlreadyUnlocked);
                         break;
                     
                     // Item can be obtained normally
                     default:
-                        crossNode->AtkResNode.ToggleVisibility(false);
-                        padlockNode->AtkResNode.ToggleVisibility(false);
+                        UpdateNodeVisibility(listItemNode, listItemNodeId, ItemStatus.Normal);
                         break;
                 }
             }
@@ -224,6 +221,39 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         }
 
         return result;
+    }
+
+    private void UpdateNodeVisibility(AtkComponentNode* listItemNode, int listItemId, ItemStatus status)
+    {
+        var crossNode = Common.GetNodeByID<AtkImageNode>(&listItemNode->Component->UldManager, CrossBaseId + (uint) listItemId);
+        var padlockNode = Common.GetNodeByID<AtkImageNode>(&listItemNode->Component->UldManager, PadlockBaseId + (uint) listItemId);
+        
+        if (crossNode is null || padlockNode is null) return;
+        
+        switch (status)
+        {
+            case ItemStatus.AlreadyUnlocked when TweakConfig.MarkAlreadyObtained:
+                crossNode->AtkResNode.ToggleVisibility(false);
+                padlockNode->AtkResNode.ToggleVisibility(true);
+                break;
+            
+            case ItemStatus.Unobtainable when TweakConfig.MarkUnobtainable:
+                crossNode->AtkResNode.ToggleVisibility(true);
+                padlockNode->AtkResNode.ToggleVisibility(false);
+                break;
+            
+            default:
+            case ItemStatus.Normal:
+                crossNode->AtkResNode.ToggleVisibility(false);
+                padlockNode->AtkResNode.ToggleVisibility(false);
+                break;
+        }
+    }
+
+    private bool IsItemAlreadyUnlocked(uint itemId)
+    {
+        var exdItem = ExdModule.GetItemRowById(itemId);
+        return exdItem is null || UIState.Instance()->IsItemActionUnlocked(exdItem) is 1;
     }
 
     private nint OnNeedGreedMove(RaptureAtkModule* atkModule, AtkUnitBase* addon, nint idk2)
@@ -281,7 +311,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         UiHelper.LinkNodeAfterTargetNode((AtkResNode*) imageNode, parent, targetTextNode);
     }
 
-    private int GetItemCount(uint itemId)
+    private bool PlayerHasItem(uint itemId)
     {
         // Only check main inventories, don't include any special inventories
         var inventories = new List<InventoryType>
@@ -308,12 +338,6 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
             InventoryType.ArmoryRings,
         };
 
-        return inventories.Sum(inventory => InventoryManager.Instance()->GetItemCountInContainer(itemId, inventory));
-    }
-    
-    [StructLayout(LayoutKind.Explicit, Size = 0x28)]
-    private struct LootItemInfo
-    {
-        [FieldOffset(0x00)] public readonly uint ItemId;
+        return inventories.Sum(inventory => InventoryManager.Instance()->GetItemCountInContainer(itemId, inventory)) > 0;
     }
 }
