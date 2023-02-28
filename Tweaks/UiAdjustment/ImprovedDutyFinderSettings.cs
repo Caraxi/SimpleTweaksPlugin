@@ -19,7 +19,7 @@ using LootRule = ContentsFinder.LootRule;
 
 public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
     public override string Name => "Improved Duty Finder Settings";
-    public override string Description => "Turn the duty finder settings in buttons.";
+    public override string Description => "Turn the duty finder settings into buttons.";
     protected override string Author => "Aireil";
 
     public override void Setup() {
