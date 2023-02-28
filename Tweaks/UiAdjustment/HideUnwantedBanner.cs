@@ -71,9 +71,9 @@ public class HideUnwantedBanner : UiAdjustments.SubTweak
     
     public override void Setup()
     {
-        AddChangelogNewTweak(Changelog.UnreleasedVersion).Author("MidoriKami");
         if (Ready) return;
-        
+        AddChangelogNewTweak(Changelog.UnreleasedVersion).Author("MidoriKami");
+
         SignatureHelper.Initialise(this);
         base.Setup();
     }
