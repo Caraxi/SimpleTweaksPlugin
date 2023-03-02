@@ -104,6 +104,11 @@ public partial class KeyInterrupt : Tweak {
 
     private CancellationTokenSource? _cts;
 
+    public override void Setup() {
+        AddChangelogNewTweak(Changelog.UnreleasedVersion);
+        base.Setup();
+    }
+
     public override void Enable() {
         this._config = this.LoadConfig<KeyInterruptConfig>() ?? this._config;
 
