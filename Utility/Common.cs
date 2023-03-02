@@ -208,7 +208,7 @@ public static unsafe class Common {
     }
 
     public static HookWrapper<T> Hook<T>(void* address, T detour) where T : Delegate {
-        var h = new Hook<T>(new IntPtr(address), detour);
+        var h =  Dalamud.Hooking.Hook<T>.FromAddress(new nint(address), detour);
         var wh = new HookWrapper<T>(h);
         HookList.Add(wh);
         return wh;
@@ -220,10 +220,17 @@ public static unsafe class Common {
         HookList.Add(wh);
         return wh;
     }
-    
+
+    public static HookWrapper<T> Hook<T>(nint address, T detour) where T : Delegate {
+        var h = Dalamud.Hooking.Hook<T>.FromAddress(address, detour);
+        var wh = new HookWrapper<T>(h);
+        HookList.Add(wh);
+        return wh;
+    }
+
     public static HookWrapper<AddonOnUpdate> HookAfterAddonUpdate(IntPtr address, NoReturnAddonOnUpdate after) {
         Hook<AddonOnUpdate> hook = null;
-        hook = new Hook<AddonOnUpdate>(address, (atkUnitBase, nums, strings) => {
+        hook = Dalamud.Hooking.Hook<AddonOnUpdate>.FromAddress(address, (atkUnitBase, nums, strings) => {
             var retVal = hook.Original(atkUnitBase, nums, strings);
             try {
                 after(atkUnitBase, nums, strings);

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Dalamud.Hooking;
 using System.Numerics;
 using System.Text;
 using Dalamud.Game.ClientState.Conditions;
@@ -8,6 +7,7 @@ using Dalamud.Utility;
 using ImGuiNET;
 using SimpleTweaksPlugin.Tweaks;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin {
     public partial class SimpleTweaksPluginConfig {
@@ -141,14 +141,14 @@ namespace SimpleTweaksPlugin.Tweaks {
         public override string Description => "Allows disabling of the target function on left and right mouse clicks.";
 
         private delegate void* ClickTarget(void** a1, byte* a2, bool a3);
-        private Hook<ClickTarget> rightClickTargetHook;
-        private Hook<ClickTarget> leftClickTargetHook;
+        private HookWrapper<ClickTarget> rightClickTargetHook;
+        private HookWrapper<ClickTarget> leftClickTargetHook;
         
         public override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.DisableClickTargeting ?? new Configs();
             
-            rightClickTargetHook ??= new Hook<ClickTarget>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 48 85 C0 74 1B"), new ClickTarget(RightClickTargetDetour));
-            leftClickTargetHook ??= new Hook<ClickTarget>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 84 C0 74 16"), new ClickTarget(LeftClickTargetDetour));
+            rightClickTargetHook ??= Common.Hook(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 48 85 C0 74 1B"), new ClickTarget(RightClickTargetDetour));
+            leftClickTargetHook ??= Common.Hook(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 84 C0 74 16"), new ClickTarget(LeftClickTargetDetour));
             if (Config.DisableRightClick || Config.UseNameFilter) rightClickTargetHook?.Enable();
             if (Config.DisableLeftClick || Config.UseNameFilter) leftClickTargetHook?.Enable();
             base.Enable();

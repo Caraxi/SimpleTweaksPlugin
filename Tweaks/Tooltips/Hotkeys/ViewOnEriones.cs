@@ -14,7 +14,7 @@ public class ViewOnEriones : ItemHotkey {
     public override void OnTriggered(ExtendedItem item) {
         var jpItem = Service.Data.Excel.GetSheet<ExtendedItem>(Language.Japanese)?.GetRow(item.RowId);
         if (jpItem == null) return;
-        var name = Uri.EscapeUriString(jpItem.Name);
+        var name = Uri.EscapeDataString(jpItem.Name);
         Common.OpenBrowser($"https://eriones.com/search?i={name}");
     }
 }

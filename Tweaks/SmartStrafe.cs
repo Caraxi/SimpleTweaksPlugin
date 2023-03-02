@@ -1,9 +1,9 @@
 using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Hooking;
 using ImGuiNET;
 using System;
 using System.Runtime.InteropServices;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks
 {
@@ -76,7 +76,7 @@ namespace SimpleTweaksPlugin.Tweaks
         [return: MarshalAs(UnmanagedType.U1)]
         private delegate bool CheckStrafeKeybindDelegate(IntPtr ptr, Keybind keybind);
 
-        private Hook<CheckStrafeKeybindDelegate> Hook;
+        private HookWrapper<CheckStrafeKeybindDelegate> Hook;
 
         public override void Enable() {
             TweakConfig = LoadConfig<Config>() ?? new Config();
@@ -86,9 +86,9 @@ namespace SimpleTweaksPlugin.Tweaks
             // different places for different purposes. This one is used (among
             // other things) by the movement code to check if you are pressing the
             // strafe keybinds.
-            Hook ??= new Hook<CheckStrafeKeybindDelegate>(
-                Service.SigScanner.ScanText(Signatures.CheckStrafeKeybind),
-                CheckStrafeKeybind);
+            Hook ??= Common.Hook(
+                Service.SigScanner.ScanText(Signatures.CheckStrafeKeybind), 
+                new CheckStrafeKeybindDelegate(CheckStrafeKeybind));
             Hook.Enable();
 
             base.Enable();

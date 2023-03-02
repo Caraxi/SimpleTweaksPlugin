@@ -16,14 +16,14 @@ public class ViewOnGamerEscape : ItemHotkey {
     public override void OnTriggered(ExtendedItem item) {
         var enItem = Service.Data.Excel.GetSheet<ExtendedItem>(Language.English)?.GetRow(item.RowId);
         if (enItem == null) return;
-        var name = Uri.EscapeUriString(enItem.Name);
+        var name = Uri.EscapeDataString(enItem.Name);
         Common.OpenBrowser($"https://ffxiv.gamerescape.com/w/index.php?search={name}");
     }
     
     public override void OnTriggered(EventItem item) {
         var enItem = Service.Data.Excel.GetSheet<ExtendedItem>(Language.English)?.GetRow(item.RowId);
         if (enItem == null) return;
-        var name = Uri.EscapeUriString(enItem.Name);
+        var name = Uri.EscapeDataString(enItem.Name);
         Common.OpenBrowser($"https://ffxiv.gamerescape.com/w/index.php?search={name}");
     }
 }

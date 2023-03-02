@@ -7,7 +7,6 @@ using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Game;
-using Dalamud.Hooking;
 using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -185,17 +184,17 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override string Description => "Allows setting custom time formats for the in game clock. Uses C# formatting strings.";
 
         public unsafe delegate void SetText(AtkTextNode* self, byte* strPtr);
-        private Hook<SetText> setTextHook;
-        private IntPtr setTextAddress = IntPtr.Zero;
+        private HookWrapper<SetText> setTextHook;
+        private nint setTextAddress = nint.Zero;
 
         public override unsafe void Enable() {
             TweakConfig = LoadConfig<Config>() ?? PluginConfig.UiAdjustments.CustomTimeFormats ?? new Config(); 
-            if (setTextAddress == IntPtr.Zero) {
+            if (setTextAddress == nint.Zero) {
                 setTextAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 41 BC ?? ?? ?? ?? 48 8D BD") + 9;
                 SimpleLog.Verbose($"SetTextAddress: {setTextAddress.ToInt64():X}");
             }
 
-            setTextHook ??= new Hook<SetText>(setTextAddress, new SetText(SetTextDetour));
+            setTextHook ??= Common.Hook(setTextAddress, new SetText(SetTextDetour));
             setTextHook?.Enable();
             Service.Framework.Update += OnFrameworkUpdate;
             base.Enable();

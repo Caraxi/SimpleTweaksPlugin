@@ -4,9 +4,9 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
-using Dalamud.Hooking;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
@@ -134,10 +134,10 @@ public class CommandAlias : Tweak {
     public override string Name => "Command Alias";
     public override string Description => "Allows replacing commands typed into chat box with other commands.";
 
-    private IntPtr processChatInputAddress;
-    private unsafe delegate byte ProcessChatInputDelegate(IntPtr uiModule, byte** a2, IntPtr a3);
+    private nint processChatInputAddress;
+    private unsafe delegate byte ProcessChatInputDelegate(nint uiModule, byte** a2, nint a3);
 
-    private Hook<ProcessChatInputDelegate> processChatInputHook;
+    private HookWrapper<ProcessChatInputDelegate> processChatInputHook;
 
     public override void Setup() {
         if (Ready) return;
@@ -162,12 +162,12 @@ public class CommandAlias : Tweak {
             SaveConfig(TweakConfig);
         }
 
-        processChatInputHook ??= new Hook<ProcessChatInputDelegate>(processChatInputAddress, ProcessChatInputDetour);
+        processChatInputHook ??= Common.Hook(processChatInputAddress, new ProcessChatInputDelegate(ProcessChatInputDetour));
         processChatInputHook?.Enable();
         Enabled = true;
     }
 
-    private unsafe byte ProcessChatInputDetour(IntPtr uiModule, byte** message, IntPtr a3) {
+    private unsafe byte ProcessChatInputDetour(nint uiModule, byte** message, nint a3) {
         try {
             var bc = 0;
             for (var i = 0; i <= 500; i++) {
