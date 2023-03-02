@@ -175,7 +175,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
 
         if (textNode is null) return;
         
-        if (target as BattleChara is { IsCasting: true } targetInfo && castBarVisible)
+        if (target as BattleChara is { IsCasting: true } targetInfo && castBarVisible && targetInfo.TotalCastTime > targetInfo.CurrentCastTime)
         {
             textNode->AtkResNode.ToggleVisibility(true);
             textNode->SetText($"{targetInfo.TotalCastTime - targetInfo.CurrentCastTime:00.00}");
