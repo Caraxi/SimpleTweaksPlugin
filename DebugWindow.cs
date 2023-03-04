@@ -8,7 +8,7 @@ namespace SimpleTweaksPlugin;
 
 public class DebugWindow : Window {
     public DebugWindow() : base("SimpleTweaksPlugin - Debug") {
-        WindowName = $"SimpleTweaksPlugin - Debug [{Assembly.GetExecutingAssembly().GetName().Version}]###stDebugMenu";
+        WindowName = $"SimpleTweaksPlugin - Debug [{Assembly.GetExecutingAssembly().GetName().Version}] - Client Structs Version#{FFXIVClientStructs.Interop.Resolver.Version}###stDebugMenu";
         
         Size = ImGuiHelpers.ScaledVector2(500, 350);
         SizeCondition = ImGuiCond.FirstUseEver;
