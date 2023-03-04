@@ -38,6 +38,10 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         Service.PluginInterface.UiBuilder.Draw -= this.OnDraw;
         this.DisposeIcons();
         var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName("ContentsFinder");
+        if (addon == null) {
+            addon = (AtkUnitBase*)Service.GameGui.GetAddonByName("RaidFinder");
+        }
+
         if (addon != null) {
             var buttons = addon->UldManager.SearchNodeById(6);
             if (buttons != null) {
@@ -212,6 +216,10 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
 
     private void OnDraw() {
         var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName("ContentsFinder");
+        if (addon == null) {
+            addon = (AtkUnitBase*)Service.GameGui.GetAddonByName("RaidFinder");
+        }
+
         if (addon == null || !this.iconsReady || !this.Enabled) {
             return;
         }
