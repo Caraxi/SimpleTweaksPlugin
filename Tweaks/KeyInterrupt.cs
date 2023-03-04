@@ -105,7 +105,7 @@ public partial class KeyInterrupt : Tweak {
     private CancellationTokenSource? _cts;
 
     public override void Setup() {
-        AddChangelogNewTweak(Changelog.UnreleasedVersion);
+        AddChangelogNewTweak("1.8.3.0");
         base.Setup();
     }
 

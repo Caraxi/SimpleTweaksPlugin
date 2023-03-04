@@ -66,7 +66,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     private bool hqItemSearch;
 
     public override void Setup() {
-        AddChangelogNewTweak(Changelog.UnreleasedVersion).Author("MidoriKami");
+        AddChangelogNewTweak("1.8.3.0");
         base.Setup();
     }
 

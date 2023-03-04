@@ -38,8 +38,8 @@ public class ChangelogEntry {
 
 public class Changelog : Window {
     internal static void AddGeneralChangelogs() {
-        Add(Changelog.UnreleasedVersion, "Added a changelog");
-        Add(Changelog.UnreleasedVersion, "Fixed graphical issue when resizing windows on clear blue theme.");
+        Add("1.8.3.0", "Added a changelog");
+        Add("1.8.3.0", "Fixed graphical issue when resizing windows on clear blue theme.");
         Add("1.8.2.0", "Now using the Dalamud Window system.\nESC will now close Simple Tweaks windows.");
     }
 

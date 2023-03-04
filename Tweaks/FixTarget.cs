@@ -18,7 +18,7 @@ public class FixTarget : Tweak {
     private Regex regex;
 
     public override void Setup() {
-        AddChangelog(Changelog.UnreleasedVersion, "Fixed tweak not working in french.").Author("Aireil");
+        AddChangelog("1.8.3.0", "Fixed tweak not working in french.").Author("Aireil");
         base.Setup();
     }
 

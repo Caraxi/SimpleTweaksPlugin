@@ -59,7 +59,7 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak
     
     public override void Setup()
     {
-        AddChangelogNewTweak(Changelog.UnreleasedVersion).Author("MidoriKami");
+        AddChangelogNewTweak("1.8.3.0");
         base.Setup();
     }
 

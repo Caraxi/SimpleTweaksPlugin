@@ -43,7 +43,7 @@ public unsafe class TrackGachaItems : TooltipTweaks.SubTweak {
     private HookWrapper<IsItemActionUnlocked>? _isItemActionUnlockedHookWrapper;
 
     public override void Setup() {
-        AddChangelogNewTweak(Changelog.UnreleasedVersion);
+        AddChangelogNewTweak("1.8.3.0");
         base.Setup();
     }
 

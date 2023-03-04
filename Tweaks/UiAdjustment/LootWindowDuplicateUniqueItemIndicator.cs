@@ -70,10 +70,10 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     {
         if (Ready) return;
         AddChangelogNewTweak("1.8.2.1");
-        AddChangelog(Changelog.UnreleasedVersion, "Rebuilt tweak to use images");
-        AddChangelog(Changelog.UnreleasedVersion, "Fixed tweak not checking armory and equipped items");
-        AddChangelog(Changelog.UnreleasedVersion, "Added 'Lock Loot Window' feature");
-        AddChangelog(Changelog.UnreleasedVersion, "Added configuration options");
+        AddChangelog("1.8.3.0", "Rebuilt tweak to use images");
+        AddChangelog("1.8.3.0", "Fixed tweak not checking armory and equipped items");
+        AddChangelog("1.8.3.0", "Added 'Lock Loot Window' feature");
+        AddChangelog("1.8.3.0", "Added configuration options");
 
         SignatureHelper.Initialise(this);
         Ready = true;

@@ -49,7 +49,7 @@ public unsafe partial class EchoPartyFinder : ChatTweaks.SubTweak
     public override void Setup()
     {
         if (Ready) return;
-        AddChangelogNewTweak(Changelog.UnreleasedVersion).Author("MidoriKami");
+        AddChangelogNewTweak("1.8.3.0");
 
         onLookingForGroupEventHook ??= Common.Hook(AgentLookingForGroup->VTable->ReceiveEvent, new ReceiveEventDelegate(OnLookingForGroupReceiveEvent));
         base.Setup();

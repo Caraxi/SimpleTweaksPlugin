@@ -1,18 +1,51 @@
 # Changelog
 
-## [Unreleased]
+## [1.8.3.0]
 ***General Changes***
 > Added a changelog
+> Fixed graphical issue when resizing windows on clear blue theme.
 
 ***New Tweaks***
+> **`Echo Party Finder`** - Prints Party Finder description to chat upon joining a group. *(MidoriKami)*
+
 > **`Expanded Currency Display`** - Allows you to display extra currencies. *(MidoriKami)*
+
+> **`Extended Macro Icons`** - Allow using specific Icon IDs when using '/macroicon # id' inside of a macro.
+
+> **`Hide Unwanted Banners`** - Hide information banners such as 'Venture Complete', or 'Levequest Accepted' *(MidoriKami)*
+
+> **`Improved Duty Finder Settings`** - Turn the duty finder settings into buttons. *(Aireil)*
+
+> **`Improved Interruptable Castbars`** - Displays an icon next to interruptable castbars *(MidoriKami)*
+
+> **`Keyboard Gaming Mode`** - Block Alt-Tab and other keys to keep you in the game. *(KazWolfe)*
+
+> **`Simplified Equipment Job Display`** - Hides classes from equipment tooltips when their jobs are unlocked.
+
+> **`Target Castbar Countdown`** - Displays time remaining on targets ability cast. *(MidoriKami)*
+
+> **`Track Gacha Items`** - Adds the collectable checkmark to gacha items, such as Triple Triad card packs, when all potential items have been obtained.
+
+
+***Tweak Changes***
+> **`Enhanced Loot Window`** - Rebuilt tweak to use images
+
+> **`Enhanced Loot Window`** - Fixed tweak not checking armory and equipped items
+
+> **`Enhanced Loot Window`** - Added 'Lock Loot Window' feature
+
+> **`Enhanced Loot Window`** - Added configuration options
+
+> **`Fix '/target' command`** - Fixed tweak not working in french. *(Aireil)*
+
+> **`High Resolution Screenshots`** - Added option to hide dalamud UI for screenshot.
 
 
 ## [1.8.2.1]
 ***New Tweaks***
-> **`Keep Windows Open`** - Prevents certain windows from hiding under specific circumstances.
+> **`Enhanced Loot Window`** - Marks unobtainable and already unlocked items in the loot window. *(MidoriKami)*
 
-> **`Loot Window Duplicate Unique Item Indicator`** - Recolors unique items that you already have in the loot window. *(MidoriKami)*
+> **`Keep Windows Open`** - Prevents certain windows from hiding under specific circumstances.
 
 
 ***Tweak Changes***

@@ -23,7 +23,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
     protected override string Author => "Aireil";
 
     public override void Setup() {
-        AddChangelogNewTweak(Changelog.UnreleasedVersion).Author("Aireil");
+        AddChangelogNewTweak("1.8.3.0");
         base.Setup();
     }
 

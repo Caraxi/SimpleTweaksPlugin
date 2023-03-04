@@ -16,7 +16,7 @@ public unsafe class SimplifiedClassJobDisplay : TooltipTweaks.SubTweak {
     private Dictionary<string, (ClassJob, ClassJob)> replaceGroup = new();
     
     public override void Setup() {
-        AddChangelogNewTweak(Changelog.UnreleasedVersion);
+        AddChangelogNewTweak("1.8.3.0");
         abbrToClassJob = Service.Data.Excel.GetSheet<ClassJob>().ToDictionary(cj => cj.Abbreviation.RawString);
         replaceGroup = new Dictionary<string, (ClassJob, ClassJob)>();
         foreach (var cj in abbrToClassJob.Values) {

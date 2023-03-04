@@ -18,7 +18,7 @@ public unsafe class ExtendedMacroIcon : Tweak {
     private HookWrapper<GetIconIdDelegate> getIconIdHook;
 
     public override void Setup() {
-        AddChangelogNewTweak(Changelog.UnreleasedVersion);
+        AddChangelogNewTweak("1.8.3.0");
         base.Setup();
     }
 

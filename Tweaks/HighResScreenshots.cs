@@ -59,7 +59,7 @@ public unsafe class HighResScreenshots : Tweak {
 
     public override void Setup() {
         AddChangelogNewTweak("1.8.2.0");
-        AddChangelog(Changelog.UnreleasedVersion, "Added option to hide dalamud UI for screenshot.");
+        AddChangelog("1.8.3.0", "Added option to hide dalamud UI for screenshot.");
         base.Setup();
     }
 
