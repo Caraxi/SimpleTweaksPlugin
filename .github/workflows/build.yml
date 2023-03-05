@@ -41,7 +41,8 @@ jobs:
       - name: Restore NuGet Packages [Debug]
         if: "!contains(github.event.head_commit.message, '[release]')"
         id: restoreNugetAttempt1Debug
-        run: nuget restore dev/SimpleTweaksPlugin.Dev.sln\
+        continue-on-error: true
+        run: nuget restore dev/SimpleTweaksPlugin.Dev.sln
 
       - name: Restore NuGet Packages [Debug] Attempt 2
         if: steps.restoreNugetAttempt1Debug.outcome == 'failure'
