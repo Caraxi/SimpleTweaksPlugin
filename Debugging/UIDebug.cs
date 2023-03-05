@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
@@ -8,6 +9,7 @@ using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface;
+using Dalamud.Interface.Components;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using ImGuiScene;
@@ -40,6 +42,7 @@ public unsafe class UIDebug : DebugHelper {
     private static int loadImageVersion = 0;
     private static ulong[] elementSelectorFind = {};
     private AtkUnitBase* selectedUnitBase = null;
+    private string addressSearchInput = string.Empty;
 
     public const int UnitListCount = 18;
     private readonly bool[] selectedInList = new bool[UnitListCount];
@@ -65,6 +68,80 @@ public unsafe class UIDebug : DebugHelper {
     };
 
     private static RawDX11Scene.BuildUIDelegate originalHandler;
+
+
+    internal bool FindByAddress(AtkResNode* node, ulong address, out List<ulong>? path) {
+        if (node == null) {
+            path = null;
+            return false;
+        }
+
+        if ((ulong)node == address) {
+            path = new List<ulong>() { (ulong) node };
+            return true;
+        }
+
+        if ((int)node->Type >= 1000) {
+            var cNode = (AtkComponentNode*)node;
+
+            if (cNode->Component != null) {
+                if ((ulong)cNode->Component == address) {
+                    path = new List<ulong>() { (ulong) node };
+                    return true;
+                }
+                
+                if (FindByAddress(cNode->Component->UldManager.RootNode, address, out path) && path != null) {
+                    path.Add((ulong)node);
+                    return true;
+                }
+            }
+        }
+
+        if (FindByAddress(node->ChildNode, address, out path) && path != null) {
+            path.Add((ulong)node);
+            return true;
+        }
+
+        if (FindByAddress(node->PrevSiblingNode, address, out path) && path != null) {
+            return true;
+        }
+        
+        path = null;
+        return false;
+    }
+    
+    internal bool FindByAddress(AtkUnitBase* atkUnitBase, ulong address) {
+        if (atkUnitBase->RootNode == null) return false;
+        if (FindByAddress(atkUnitBase->RootNode, address, out var path)) {
+            elementSelectorScrolled = false;
+            elementSelectorFind = path.ToArray();
+            elementSelectorCountdown = 100;
+            return true;
+        }
+        return false;
+    }
+
+    internal void FindByAddress(ulong address) {
+        var stage = AtkStage.GetSingleton();
+                
+        var unitManagers = &stage->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
+        
+        for (var i = 0; i < UnitListCount; i++) {
+            var unitManager = &unitManagers[i];
+            var unitBaseArray = &(unitManager->AtkUnitEntries);
+            for (var j = 0; j < unitManager->Count; j++) {
+                
+                var unitBase = unitBaseArray[j];
+
+                if ((ulong)unitBase == address || FindByAddress(unitBase, address)) {
+                    selectedUnitBase = unitBase;
+                    Plugin.PluginConfig.Debugging.SelectedAtkUnitBase = address;
+                    Plugin.PluginConfig.Save();
+                    return;
+                }
+            }
+        }
+    }
 
     internal static bool SetExclusiveDraw(Action action) {
         // Possibly the most cursed shit I've ever done.
@@ -127,7 +204,8 @@ public unsafe class UIDebug : DebugHelper {
             selectedUnitBase = (AtkUnitBase*) (Plugin.PluginConfig.Debugging.SelectedAtkUnitBase);
         }
 
-        ImGui.BeginChild("st_uiDebug_unitBaseSelect", new Vector2(250, -1), true);
+        ImGui.BeginGroup();
+        ImGui.BeginChild("st_uiDebug_unitBaseSelect", new Vector2(250, -44), true);
             
         ImGui.SetNextItemWidth(-38);
         ImGui.InputTextWithHint("###atkUnitBaseSearch", "Search", ref Plugin.PluginConfig.Debugging.AtkUnitBaseSearch, 0x20);
@@ -149,6 +227,18 @@ public unsafe class UIDebug : DebugHelper {
             
         DrawUnitBaseList();
         ImGui.EndChild();
+        if (ImGui.BeginChild("###uiDebug_addressSearch", new Vector2(250, 0), true)) {
+            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 32);
+            ImGui.InputTextWithHint("###addressSearchInput", "Address Search", ref addressSearchInput, 18, ImGuiInputTextFlags.AutoSelectAll);
+            ImGui.SameLine();
+            if (ImGuiComponents.IconButton(FontAwesomeIcon.Search)) {
+                if (ulong.TryParse(addressSearchInput, NumberStyles.HexNumber | NumberStyles.AllowHexSpecifier, NumberFormatInfo.InvariantInfo, out var address)) {
+                    FindByAddress(address);
+                }
+            }
+        }
+        ImGui.EndChild();
+        ImGui.EndGroup();
         if (selectedUnitBase != null) {
             ImGui.SameLine();
             ImGui.BeginChild("st_uiDebug_selectedUnitBase", new Vector2(-1, -1), true);
