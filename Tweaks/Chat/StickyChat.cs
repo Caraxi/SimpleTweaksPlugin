@@ -20,16 +20,16 @@ public unsafe partial class StickyChat : ChatTweaks.SubTweak
     [Signature("E8 ?? ?? ?? ?? FE 86 ?? ?? ?? ?? C7 86 ?? ?? ?? ?? ?? ?? ?? ??", DetourName = nameof(ProcessChatInputDetour))]
     private readonly Hook<ProcessChatInputDelegate>? processChatInputHook = null;
 
-    [GeneratedRegex("^\\/cwl[0-8] .+")]
+    [GeneratedRegex("^\\/cwl[1-8] .+")]
     private static partial Regex CrossWorldLinkshellShort();
     
-    [GeneratedRegex("^\\/cwlinkshell[0-8] .+")]
+    [GeneratedRegex("^\\/cwlinkshell[1-8] .+")]
     private static partial Regex CrossWorldLinkshellLong();
     
-    [GeneratedRegex("^\\/l[0-8] .+")]
+    [GeneratedRegex("^\\/l[1-8] .+")]
     private static partial Regex LinkshellShort();
     
-    [GeneratedRegex("^\\/linkshell[0-8] .+")]
+    [GeneratedRegex("^\\/linkshell[1-8] .+")]
     private static partial Regex LinkshellLong();
     
     public override void Setup()
