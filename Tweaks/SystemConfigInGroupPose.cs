@@ -34,7 +34,7 @@ public unsafe class SystemConfigInGroupPose : Tweak {
     
     
     public override void Setup() {
-        AddChangelogNewTweak(Changelog.UnreleasedVersion);
+        AddChangelogNewTweak("1.8.3.0");
         base.Setup();
     }
 
