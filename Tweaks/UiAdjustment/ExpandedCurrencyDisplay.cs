@@ -312,7 +312,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         var counterNode = (AtkCounterNode*) Common.GetNodeByID(&AddonMoney->UldManager, nodeId);
         if (counterNode is not null)
         {
-            counterNode->SetText(newCount.ToString("n0"));
+            counterNode->SetText(newCount.ToString("n0", Plugin.Culture));
         }
     }
     
