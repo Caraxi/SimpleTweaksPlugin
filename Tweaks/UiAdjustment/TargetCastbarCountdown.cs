@@ -32,7 +32,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
     {
         public bool FocusTargetEnabled;
         public NodePosition FocusTargetPosition = NodePosition.Left;
-        public NodePosition CastbarPosition = NodePosition.BottomRight;
+        public NodePosition CastbarPosition = NodePosition.BottomLeft;
     }
 
     private enum NodePosition
