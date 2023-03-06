@@ -40,6 +40,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
         Right,
         Left, 
         TopLeft,
+        TopRight,
         BottomLeft,
         BottomRight
     }
@@ -211,6 +212,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
             NodePosition.Left => new Vector2(positioningNode->X - 80, positioningNode->Y),
             NodePosition.Right => new Vector2(positioningNode->X + positioningNode->Width, positioningNode->Y),
             NodePosition.TopLeft => new Vector2(positioningNode->X, positioningNode->Y - 14),
+            NodePosition.TopRight => new Vector2(positioningNode->X + positioningNode->Width - 80, positioningNode->Y - 14),
             NodePosition.BottomLeft => new Vector2(positioningNode->X, positioningNode->Y + 14),
             NodePosition.BottomRight => new Vector2(positioningNode->X + positioningNode->Width - 80, positioningNode->Y + 14),
             _ => Vector2.Zero
