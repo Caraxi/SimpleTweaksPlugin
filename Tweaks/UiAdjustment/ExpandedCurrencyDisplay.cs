@@ -67,6 +67,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
 
     public override void Setup() {
         AddChangelogNewTweak("1.8.3.0");
+        AddChangelog(Changelog.UnreleasedVersion, "Use SimpleTweaks.FormatCulture for number display, should fix French issue");
         base.Setup();
     }
 
@@ -312,7 +313,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         var counterNode = (AtkCounterNode*) Common.GetNodeByID(&AddonMoney->UldManager, nodeId);
         if (counterNode is not null)
         {
-            counterNode->SetText(newCount.ToString("n0"));
+            counterNode->SetText(newCount.ToString("n0", Plugin.Culture));
         }
     }
     
