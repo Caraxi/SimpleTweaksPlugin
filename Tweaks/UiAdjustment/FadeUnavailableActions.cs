@@ -65,12 +65,15 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
 
         try
         {
-            if (node->AtkComponentIcon is not null && node->AtkComponentIcon->AtkComponentBase.OwnerNode is not null)
+            if (Service.ClientState.LocalPlayer is { IsCasting: false })
             {
-                var iconComponentContainer = node->AtkComponentIcon->AtkComponentBase.OwnerNode;
-                if (iconComponentContainer is not null)
+                if (node->AtkComponentIcon is not null && node->AtkComponentIcon->AtkComponentBase.OwnerNode is not null)
                 {
-                    iconComponentContainer->AtkResNode.Color.A = (byte)(enable ? 0xFF : 0xFF * ((100 - TweakConfig.FadePercentage) / 100.0f));
+                    var iconComponentContainer = node->AtkComponentIcon->AtkComponentBase.OwnerNode;
+                    if (iconComponentContainer is not null)
+                    {
+                        iconComponentContainer->AtkResNode.Color.A = (byte)(enable ? 0xFF : 0xFF * ((100 - TweakConfig.FadePercentage) / 100.0f));
+                    }
                 }
             }
         }
