@@ -32,6 +32,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
     public override void Setup()
     {
         if (Ready) return;
+        AddChangelogNewTweak("1.8.3.1");
         SignatureHelper.Initialise(this);
         
         base.Setup();

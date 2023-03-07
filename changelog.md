@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.8.3.1]
+***New Tweaks***
+> **`Fade Unavailable Actions`** - Instead of darkening icons, makes them transparent when unavailable *(MidoriKami)*
+
+
+***Tweak Changes***
+> **`Expanded Currency Display`** - Use configured format culture for number display, should fix French issue
+
+> **`Target Castbar Countdown`** - Add TopRight option for displaying countdown
+
+
 ## [1.8.3.0]
 ***General Changes***
 > Added a changelog
@@ -21,6 +32,8 @@
 > **`Keyboard Gaming Mode`** - Block Alt-Tab and other keys to keep you in the game. *(KazWolfe)*
 
 > **`Simplified Equipment Job Display`** - Hides classes from equipment tooltips when their jobs are unlocked.
+
+> **`SystemConfig in Group Pose`** - Allows the use of the /systemconfig command while in gpose.
 
 > **`Target Castbar Countdown`** - Displays time remaining on targets ability cast. *(MidoriKami)*
 
