@@ -23,6 +23,9 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
     {
         [TweakConfigOption("Fade Percentage", IntMax = 90, IntMin = 0, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EditorSize = 150)]
         public int FadePercentage = 70;
+
+        [TweakConfigOption("Apply Transparency to Frame")]
+        public bool ApplyToFrame = true;
     }
 
     public Config TweakConfig { get; private set; } = null!;
@@ -33,6 +36,9 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
     {
         if (Ready) return;
         AddChangelogNewTweak("1.8.3.1");
+        AddChangelog(Changelog.UnreleasedVersion, "Tweak now only applies to the icon image itself and not the entire button");
+        AddChangelog(Changelog.UnreleasedVersion, "Add option to apply transparency to the slot frame of the icon");
+        
         SignatureHelper.Initialise(this);
         
         base.Setup();
@@ -68,12 +74,25 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
         {
             if (Service.ClientState.LocalPlayer is { IsCasting: false })
             {
-                if (node->AtkComponentIcon is not null && node->AtkComponentIcon->AtkComponentBase.OwnerNode is not null)
+                if (node is not null && node->AtkComponentIcon is not null && node->AtkComponentIcon->IconImage is not null && node->AtkComponentIcon->Frame is not null)
                 {
-                    var iconComponentContainer = node->AtkComponentIcon->AtkComponentBase.OwnerNode;
-                    if (iconComponentContainer is not null)
+                    var conditionalTransparencyValue = (byte)(enable ? 0xFF : 0xFF * ((100 - TweakConfig.FadePercentage) / 100.0f));
+                    
+                    var iconImage = node->AtkComponentIcon->IconImage;
+                    var frameNode = node->AtkComponentIcon->Frame;
+                    
+                    iconImage->AtkResNode.Color.A = conditionalTransparencyValue;
+                    frameNode->Color.A = TweakConfig.ApplyToFrame ? conditionalTransparencyValue : (byte) 0xFF;
+
+                    // Force the game to un-darken the icons
+                    if (!enable)
                     {
-                        iconComponentContainer->AtkResNode.Color.A = (byte)(enable ? 0xFF : 0xFF * ((100 - TweakConfig.FadePercentage) / 100.0f));
+                        iconImage->AtkResNode.MultiplyRed = 100;
+                        iconImage->AtkResNode.MultiplyGreen = 100;
+                        iconImage->AtkResNode.MultiplyBlue = 100;
+                        iconImage->AtkResNode.MultiplyRed_2 = 100;
+                        iconImage->AtkResNode.MultiplyGreen_2 = 100;
+                        iconImage->AtkResNode.MultiplyBlue_2 = 100;
                     }
                 }
             }
