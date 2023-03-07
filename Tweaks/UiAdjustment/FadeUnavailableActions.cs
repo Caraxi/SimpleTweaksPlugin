@@ -21,8 +21,8 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
 
     public class Config : TweakConfig
     {
-        [TweakConfigOption("Fade Percentage", IntMax = 100, IntMin = 10, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EditorSize = 150)]
-        public int FadePercentage = 30;
+        [TweakConfigOption("Fade Percentage", IntMax = 90, IntMin = 0, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EditorSize = 150)]
+        public int FadePercentage = 70;
     }
 
     public Config TweakConfig { get; private set; } = null!;
@@ -70,7 +70,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
                 var iconComponentContainer = node->AtkComponentIcon->AtkComponentBase.OwnerNode;
                 if (iconComponentContainer is not null)
                 {
-                    iconComponentContainer->AtkResNode.Color.A = (byte)(enable ? 0xFF : 0xFF * (TweakConfig.FadePercentage / 100.0f));
+                    iconComponentContainer->AtkResNode.Color.A = (byte)(enable ? 0xFF : 0xFF * ((100 - TweakConfig.FadePercentage) / 100.0f));
                 }
             }
         }
