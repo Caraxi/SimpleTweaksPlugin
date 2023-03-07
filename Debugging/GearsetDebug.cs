@@ -19,7 +19,7 @@ public unsafe class GearsetDebug : DebugHelper {
         ImGui.SameLine();
         DebugManager.ClickToCopyText($"{(ulong)raptureGearsetModule:X}");
         ImGui.SameLine();
-        ImGui.Text($"{Encoding.ASCII.GetString(raptureGearsetModule->ModuleName, 15)}");
+        ImGui.Text($"{Encoding.ASCII.GetString(raptureGearsetModule->UserFileEvent.FileName, 15)}");
             
         ImGui.Columns(6);
         ImGui.Text($"##");

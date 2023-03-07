@@ -83,7 +83,7 @@ public unsafe class CharacterClassSwitcher : Tweak {
                         // DoH
                         var evt = componentNode->AtkResNode.AtkEventManager.Event;
                         while (evt != null && evt->Param == 14 + cjId) {
-                            if (evt->Type == (byte)AtkEventType.ButtonClick) evt->Param = 0x53541000 + cjId;
+                            if (evt->Type == AtkEventType.ButtonClick) evt->Param = 0x53541000 + cjId;
                             evt = evt->NextEvent;
                         }
                         
@@ -186,7 +186,7 @@ public unsafe class CharacterClassSwitcher : Tweak {
                         case (NodeType)1001: {
                             var evt = componentNode->AtkResNode.AtkEventManager.Event;
                             while (evt != null) {
-                                if (evt->Type == (byte)AtkEventType.ButtonClick && evt->Param == 0x53541000 + cjId) evt->Param = 14 + cjId;
+                                if (evt->Type == AtkEventType.ButtonClick && evt->Param == 0x53541000 + cjId) evt->Param = 14 + cjId;
                                 evt = evt->NextEvent;
                             }
                             break;
