@@ -32,7 +32,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
     {
         public bool FocusTargetEnabled;
         public NodePosition FocusTargetPosition = NodePosition.Left;
-        public NodePosition CastbarPosition = NodePosition.BottomRight;
+        public NodePosition CastbarPosition = NodePosition.BottomLeft;
     }
 
     private enum NodePosition
@@ -40,6 +40,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
         Right,
         Left, 
         TopLeft,
+        TopRight,
         BottomLeft,
         BottomRight
     }
@@ -81,6 +82,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
     public override void Setup()
     {
         AddChangelogNewTweak("1.8.3.0");
+        AddChangelog(Changelog.UnreleasedVersion, "Add TopRight option for displaying countdown");
         base.Setup();
     }
 
@@ -211,6 +213,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
             NodePosition.Left => new Vector2(positioningNode->X - 80, positioningNode->Y),
             NodePosition.Right => new Vector2(positioningNode->X + positioningNode->Width, positioningNode->Y),
             NodePosition.TopLeft => new Vector2(positioningNode->X, positioningNode->Y - 14),
+            NodePosition.TopRight => new Vector2(positioningNode->X + positioningNode->Width - 80, positioningNode->Y - 14),
             NodePosition.BottomLeft => new Vector2(positioningNode->X, positioningNode->Y + 14),
             NodePosition.BottomRight => new Vector2(positioningNode->X + positioningNode->Width - 80, positioningNode->Y + 14),
             _ => Vector2.Zero
