@@ -195,9 +195,11 @@ public static unsafe class GameConfig {
         }
 
         public void Set(string name, uint value) {
-            if (!TryGetIndex(name, out var index)) return;
-            if (!TryGetEntry(index, out var entry)) return;
-            entry->SetValue(value);
+            Service.Framework.RunOnFrameworkThread(() => {
+                if (!TryGetIndex(name, out var index)) return;
+                if (!TryGetEntry(index, out var entry)) return;
+                entry->SetValue(value);
+            });
         }
         
         public bool TryGetFloat(string name, out float value) {
@@ -214,9 +216,11 @@ public static unsafe class GameConfig {
         }
 
         public void Set(string name, float value) {
-            if (!TryGetIndex(name, out var index)) return;
-            if (!TryGetEntry(index, out var entry)) return;
-            entry->SetValue(value);
+            Service.Framework.RunOnFrameworkThread(() => {
+                if (!TryGetIndex(name, out var index)) return;
+                if (!TryGetEntry(index, out var entry)) return;
+                entry->SetValue(value);
+            });
         }
         
         public bool TryGetString(string name, out string value) {
@@ -235,9 +239,11 @@ public static unsafe class GameConfig {
         }
 
         public void Set(string name, string value) {
-            if (!TryGetIndex(name, out var index)) return;
-            if (!TryGetEntry(index, out var entry)) return;
-            entry->SetValue(value);
+            Service.Framework.RunOnFrameworkThread(() => {
+                if (!TryGetIndex(name, out var index)) return;
+                if (!TryGetEntry(index, out var entry)) return;
+                entry->SetValue(value);
+            });
         }
     }
 
