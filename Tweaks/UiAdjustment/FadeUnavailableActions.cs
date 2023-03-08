@@ -35,7 +35,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
         public bool ApplyToFrame = true;
 
         [TweakConfigOption("Apply Only to Sync'd Actions")]
-        public bool ApplyToSyncActions = true;
+        public bool ApplyToSyncActions = false;
     }
     
     public Config TweakConfig { get; private set; } = null!;
