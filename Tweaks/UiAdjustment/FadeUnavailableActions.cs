@@ -1,10 +1,15 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Dalamud.Hooking;
 using Dalamud.Logging;
 using Dalamud.Utility.Signatures;
+using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
+using Action = Lumina.Excel.GeneratedSheets.Action;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
@@ -14,10 +19,12 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
     public override string Description => "Instead of darkening icons, makes them transparent when unavailable";
     protected override string Author => "MidoriKami";
 
-    private delegate nint DisableSlotDelegate(AtkComponentDragDrop* node, bool disable);
+    private delegate void UpdateHotBarSlotDelegate(AddonActionBarBase* addon, SlotData* uiData, NumberArrayData* numberArray, StringArrayData* stringArray, int numberArrayIndex, int stringArrayIndex);
+    
+    [Signature("E8 ?? ?? ?? ?? 49 81 C6 ?? ?? ?? ?? 83 C7 10", DetourName = nameof(OnHotBarSlotUpdate))]
+    private readonly Hook<UpdateHotBarSlotDelegate>? onHotBarSlotUpdateHook = null!;
 
-    [Signature("E8 ?? ?? ?? ?? 48 8B 17 B8", DetourName = nameof(OnDisableSlot))]
-    private readonly Hook<DisableSlotDelegate>? onDisableSlotHook = null!;
+    private readonly Dictionary<uint, Action> actionCache = new();
 
     public class Config : TweakConfig
     {
@@ -26,8 +33,11 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
 
         [TweakConfigOption("Apply Transparency to Frame")]
         public bool ApplyToFrame = true;
-    }
 
+        [TweakConfigOption("Apply Only to Sync'd Actions")]
+        public bool ApplyToSyncActions = true;
+    }
+    
     public Config TweakConfig { get; private set; } = null!;
 
     public override bool UseAutoConfig => true;
@@ -48,7 +58,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
     {
         TweakConfig = LoadConfig<Config>() ?? new Config();
         
-        onDisableSlotHook?.Enable();
+        onHotBarSlotUpdateHook?.Enable();
         base.Enable();
     }
 
@@ -56,52 +66,125 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
     {
         SaveConfig(TweakConfig);
         
-        onDisableSlotHook?.Disable();
+        onHotBarSlotUpdateHook?.Disable();
         base.Disable();
     }
 
     public override void Dispose()
     {
-        onDisableSlotHook?.Dispose();
+        onHotBarSlotUpdateHook?.Dispose();
         base.Dispose();
     }
 
-    private nint OnDisableSlot(AtkComponentDragDrop* node, bool enable)
+    private void OnHotBarSlotUpdate(AddonActionBarBase* addon, SlotData* hotBarSlotData, NumberArrayData* numberArray, StringArrayData* stringArray, int numberArrayIndex, int stringArrayIndex)
     {
-        var result = onDisableSlotHook!.Original(node, enable);
-
         try
         {
-            if (Service.ClientState.LocalPlayer is { IsCasting: false })
-            {
-                if (node is not null && node->AtkComponentIcon is not null && node->AtkComponentIcon->IconImage is not null && node->AtkComponentIcon->Frame is not null)
-                {
-                    var conditionalTransparencyValue = (byte)(enable ? 0xFF : 0xFF * ((100 - TweakConfig.FadePercentage) / 100.0f));
-                    
-                    var iconImage = node->AtkComponentIcon->IconImage;
-                    var frameNode = node->AtkComponentIcon->Frame;
-                    
-                    iconImage->AtkResNode.Color.A = conditionalTransparencyValue;
-                    frameNode->Color.A = TweakConfig.ApplyToFrame ? conditionalTransparencyValue : (byte) 0xFF;
-
-                    // Force the game to un-darken the icons
-                    if (!enable)
-                    {
-                        iconImage->AtkResNode.MultiplyRed = 100;
-                        iconImage->AtkResNode.MultiplyGreen = 100;
-                        iconImage->AtkResNode.MultiplyBlue = 100;
-                        iconImage->AtkResNode.MultiplyRed_2 = 100;
-                        iconImage->AtkResNode.MultiplyGreen_2 = 100;
-                        iconImage->AtkResNode.MultiplyBlue_2 = 100;
-                    }
-                }
-            }
+            ProcessHotBarSlot(hotBarSlotData, numberArray, numberArrayIndex);
         }
         catch (Exception e)
         {
             PluginLog.Error(e, "Something went wrong in FadeUnavailableActions, let MidoriKami know!");
         }
+        
+        onHotBarSlotUpdateHook!.Original(addon, hotBarSlotData, numberArray, stringArray, numberArrayIndex, stringArrayIndex);
+    }
 
-        return result;
+    private void ProcessHotBarSlot(SlotData* hotBarSlotData, NumberArrayData* numberArray, int numberArrayIndex)
+    {
+        if (hotBarSlotData->ActionId > ushort.MaxValue) return;
+        if (Service.ClientState.LocalPlayer is { IsCasting: true } ) return;
+
+        var numberArrayData = (NumberArrayStruct*) (&numberArray->IntArray[numberArrayIndex]);
+
+        if (TweakConfig.ApplyToSyncActions)
+        {
+            var action = GetAction(hotBarSlotData->ActionId);
+            var actionLevel = action.ClassJobLevel;
+            var playerLevel = Service.ClientState.LocalPlayer?.Level ?? 0;
+
+            switch (action)
+            {
+                case { IsRoleAction: false } when actionLevel > playerLevel:
+                    ApplyTransparency(hotBarSlotData, true);
+                    break;
+                
+                default:
+                    ApplyTransparency(hotBarSlotData, false);
+                    break;
+            }
+        }
+        else
+        {
+            ApplyTransparency(hotBarSlotData, ShouldFadeAction(numberArrayData));
+        }
+    }
+
+    private Action GetAction(uint actionId)
+    {
+        var adjustedActionId = ActionManager.Instance()->GetAdjustedActionId(actionId);
+
+        if (actionCache.TryGetValue(adjustedActionId, out var action)) return action;
+
+        action = Service.Data.GetExcelSheet<Action>()!.GetRow(adjustedActionId)!;
+        actionCache.Add(adjustedActionId, action);
+        return action;
+    }
+
+    private bool ShouldFadeAction(NumberArrayStruct* numberArrayData)
+    {
+        return !(numberArrayData->ActionAvailable_1 && numberArrayData->ActionAvailable_2);
+    }
+
+    private void ApplyTransparency(SlotData* hotBarSlotData, bool fade)
+    {
+        if (hotBarSlotData is null) return;
+        var iconComponent = (AtkComponentIcon*) hotBarSlotData->IconComponentNode->Component;
+
+        if (iconComponent is null) return;
+        if (iconComponent->IconImage is null) return;
+        if (iconComponent->Frame is null) return;
+
+        if (fade)
+        {
+            iconComponent->IconImage->AtkResNode.Color.A = (byte)(0xFF * ((100 - TweakConfig.FadePercentage) / 100.0f));
+            if(TweakConfig.ApplyToFrame) iconComponent->Frame->Color.A = (byte)(0xFF * ((100 - TweakConfig.FadePercentage) / 100.0f));
+            
+            iconComponent->IconImage->AtkResNode.MultiplyRed = 100;
+            iconComponent->IconImage->AtkResNode.MultiplyGreen = 100;
+            iconComponent->IconImage->AtkResNode.MultiplyBlue = 100;
+            iconComponent->IconImage->AtkResNode.MultiplyRed_2 = 100;
+            iconComponent->IconImage->AtkResNode.MultiplyGreen_2 = 100;
+            iconComponent->IconImage->AtkResNode.MultiplyBlue_2 = 100;
+        }
+        else
+        {
+            iconComponent->IconImage->AtkResNode.Color.A = 0xFF;
+            iconComponent->Frame->Color.A = 0xFF;
+        }
+    }
+
+    [StructLayout(LayoutKind.Explicit, Size = 0x40)]
+    private struct NumberArrayStruct
+    {
+        [FieldOffset(0x00)] public uint ClassJobId;
+        [FieldOffset(0x0C)] public uint ActionId;
+        [FieldOffset(0x14)] public bool ActionAvailable_1;
+        [FieldOffset(0x18)] public bool ActionAvailable_2;
+        [FieldOffset(0x20)] public int CooldownPercent;
+        [FieldOffset(0x28)] public int ManaCost;
+    }
+    
+    [StructLayout(LayoutKind.Explicit, Size = 0xC8)]
+    private struct SlotData
+    {
+        [FieldOffset(0x04)] public uint ActionId;
+        [FieldOffset(0x88)] public AtkComponentDragDrop* DragDropNode;
+        [FieldOffset(0x90)] public AtkComponentNode* IconComponentNode;
+        [FieldOffset(0x98)] public AtkTextNode* HotkeyTextNode;
+        [FieldOffset(0xA0)] public AtkResNode* FrameNode;
+        [FieldOffset(0xA8)] public AtkImageNode* ChargeIconNode;
+        [FieldOffset(0xB0)] public AtkResNode* RecastNode;
+        [FieldOffset(0xB8)] public byte* TooltipString;
     }
 }
