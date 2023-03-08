@@ -21,77 +21,100 @@ public unsafe class SetOptionCommand : CommandTweak {
     protected override string HelpMessage => "Usage: /setoption <option> <value>";
     protected override string[] Alias => new[] { "setopt" };
 
-    [UnmanagedFunctionPointer(CallingConvention.ThisCall)] 
-    private delegate void DispatchEvent(AgentInterface* agentConfigCharacter, void* outVal, AtkValue* atkValue, uint atkValueCount);
-
-    private DispatchEvent dispatchEvent;
-
-    public enum OptionType {
-        Bool,
-        ToggleGamepadMode, // bool with extra shit
-        NameDisplayModeBattle,
-        NameDisplayMode,
-        IntList,
+    public enum OptionGroup {
+        System,
+        UiConfig,
+        UiControl,
     }
 
-    public class OptionDefinition {
+    public interface IOptionDefinition {
         public string Name { get; }
-        public ConfigOption ID { get; }
-        public OptionType OptionType { get; }
+        public string ID { get; }
+        public OptionGroup OptionGroup { get; }
         public string[] Alias { get; }
-        public Dictionary<string, int> Values { get; init; } = new();
-        public Dictionary<string, int> ValueAlias { get; init; } = new();
+        
+        public bool AllowToggle { get; }
+        
+        public IEnumerable<string> ValueNames { get; }
+        public IEnumerable<string> AliasValueNames { get; }
+    }
+    
+    public class OptionDefinition<T> : IOptionDefinition {
+        public string Name { get; }
+        public string ID { get; }
+        public OptionGroup OptionGroup { get; }
+        public string[] Alias { get; }
+        
+        public bool AllowToggle { get; set; }
 
-        public OptionDefinition(string name, ConfigOption id, OptionType type, params string[] alias) {
+        private readonly Lazy<(Dictionary<string, T> main, Dictionary<string, T> alias)> values;
+
+        public Dictionary<string, T> Values => values.Value.main;
+        public Dictionary<string, T> ValueAlias => values.Value.alias;
+        public IEnumerable<string> ValueNames => Values.Keys;
+        public IEnumerable<string> AliasValueNames => ValueAlias.Keys;
+        public OptionDefinition(string name, string id, OptionGroup group, Func<(Dictionary<string, T>, Dictionary<string, T>)> valuesFunc, params string[] alias) {
             this.Name = name;
             this.ID = id;
-            this.OptionType = type;
+            this.OptionGroup = group;
             this.Alias = alias;
+            values = new Lazy<(Dictionary<string, T> main, Dictionary<string, T> alias)>(valuesFunc);
         }
 
     }
 
-    private readonly List<OptionDefinition> optionDefinitions = new() {
-        new OptionDefinition("GamepadMode", ConfigOption.PadMode, OptionType.ToggleGamepadMode, "gp"),
+    private static class ValueType {
+        public static (Dictionary<string, uint>, Dictionary<string, uint>) Boolean() {
+            var main = new Dictionary<string, uint>() {
+                ["off"] = 0, 
+                ["on"] = 1
+            };
+            var alias = new Dictionary<string, uint>() {
+                ["false"] = 0,
+                ["0"] = 0,
+                ["true"] = 1,
+                ["1"] = 1,
+            };
+            return (main, alias);
+        }
 
-        new OptionDefinition("ItemTooltips", ConfigOption.ItemDetailDisp, OptionType.Bool, "itt"),
-        new OptionDefinition("ActionTooltips", ConfigOption.ActionDetailDisp, OptionType.Bool, "att"),
-        new OptionDefinition("LegacyMovement", ConfigOption.MoveMode, OptionType.Bool, "lm"),
-        new OptionDefinition("HideUnassignedHotbarSlots", ConfigOption.HotbarEmptyVisible, OptionType.Bool, "huhs"),
-
-        new OptionDefinition("OwnDisplayName", ConfigOption.NamePlateDispTypeSelf, OptionType.NameDisplayModeBattle, "odn"),
-        new OptionDefinition("PartyDisplayName", ConfigOption.NamePlateDispTypeParty, OptionType.NameDisplayModeBattle, "pdn"),
-        new OptionDefinition("AllianceDisplayName", ConfigOption.NamePlateDispTypeAlliance, OptionType.NameDisplayModeBattle, "adn"),
-        new OptionDefinition("OtherPlayerDisplayName", ConfigOption.NamePlateDispTypeOther, OptionType.NameDisplayModeBattle, "opcdn"),
-        new OptionDefinition("FriendDisplayName", ConfigOption.NamePlateDispTypeFriend, OptionType.NameDisplayModeBattle, "fdn"),
-        
-        new OptionDefinition("DisplayNameSize", ConfigOption.NamePlateDispSize, OptionType.IntList, "dns") {
-            Values = new() { ["maximum"] = 0, ["large"] = 1, ["standard"] = 2 },
-            ValueAlias = new() { ["m"] = 0, ["max"] = 0, ["l"] = 1, ["s"] = 2, }
-        },
-    };
-
-
-    private readonly Dictionary<OptionType, string> optionTypeValueHints = new Dictionary<OptionType, string> {
-        {OptionType.Bool, "on | off | toggle"},
-        {OptionType.ToggleGamepadMode, "on | off | toggle"},
-        {OptionType.NameDisplayModeBattle, "always | battle | targeted | never"},
-    };
-        
-    public override void Setup() {
-        if (Ready) return;
-
-        try {
-            var dispatchEventPtr = Service.SigScanner.ScanText("48 89 5C 24 ?? 55 56 57 41 56 41 57 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? 4C 8B BC 24");
-            SimpleLog.Verbose($"DispatchEventPtr: {dispatchEventPtr.ToInt64():X}");
-            dispatchEvent = Marshal.GetDelegateForFunctionPointer<DispatchEvent>(dispatchEventPtr);
-
-            Ready = true;
-
-        } catch (Exception ex) {
-            SimpleLog.Error($"Failed to setup {this.GetType().Name}: {ex.Message}");
+        public static (Dictionary<string, uint>, Dictionary<string, uint>) NamePlateDisplay() {
+            var main = new Dictionary<string, uint> {
+                ["always"] = 0,
+                ["battle"] = 1,
+                ["targeted"] = 2,
+                ["never"] = 3,
+            };
+            var alias = new Dictionary<string, uint> {
+                ["a"] = 0,
+                ["b"] = 1,
+                ["t"] = 2,
+                ["target"] = 2,
+                ["n"] = 3,
+            };
+            return (main, alias);
         }
     }
+    
+    private readonly List<IOptionDefinition> optionDefinitions = new() {
+        new OptionDefinition<uint>("ItemTooltips", "ItemDetailDisp", OptionGroup.UiControl, ValueType.Boolean, "itt") { AllowToggle = true },
+        new OptionDefinition<uint>("ActionTooltips", "ActionDetailDisp", OptionGroup.UiControl, ValueType.Boolean, "att") { AllowToggle = true },
+        new OptionDefinition<uint>("LegacyMovement", "MoveMode", OptionGroup.UiControl, ValueType.Boolean, "lm") { AllowToggle = true },
+        new OptionDefinition<uint>("HideUnassignedHotbarSlots", "HotbarEmptyVisible", OptionGroup.UiConfig, ValueType.Boolean, "huhs") { AllowToggle = true },
+
+        new OptionDefinition<uint>("OwnDisplayName", "NamePlateDispTypeSelf", OptionGroup.UiConfig, ValueType.NamePlateDisplay, "odn") { AllowToggle = true },
+        new OptionDefinition<uint>("PartyDisplayName", "NamePlateDispTypeParty", OptionGroup.UiConfig, ValueType.NamePlateDisplay, "pdn") { AllowToggle = true },
+        new OptionDefinition<uint>("AllianceDisplayName", "NamePlateDispTypeAlliance", OptionGroup.UiConfig, ValueType.NamePlateDisplay, "adn") { AllowToggle = true },
+        new OptionDefinition<uint>("OtherPlayerDisplayName", "NamePlateDispTypeOther", OptionGroup.UiConfig, ValueType.NamePlateDisplay, "opcdn") { AllowToggle = true },
+        new OptionDefinition<uint>("FriendDisplayName", "NamePlateDispTypeFriend", OptionGroup.UiConfig, ValueType.NamePlateDisplay, "fdn") { AllowToggle = true },
+        
+        new OptionDefinition<uint>("DisplayNameSize", "NamePlateDispSize", OptionGroup.UiConfig, () => {
+            return (
+                new() { ["maximum"] = 0, ["large"] = 1, ["standard"] = 2 },
+                new() { ["m"] = 0, ["max"] = 0, ["l"] = 1, ["s"] = 2, }
+            );
+        }, "dns") { AllowToggle = true },
+    };
 
     protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
         ImGui.TextDisabled("/setopt list");
@@ -111,11 +134,9 @@ public unsafe class SetOptionCommand : CommandTweak {
                 ImGui.NextColumn();
                 ImGui.Text(o.Name);
                 ImGui.NextColumn();
-                if (o.OptionType == OptionType.IntList) {
-                    ImGui.Text(string.Join(" | ", o.Values.Keys));
-                } else {
-                    ImGui.Text(optionTypeValueHints.ContainsKey(o.OptionType) ? optionTypeValueHints[o.OptionType] : "");
-                }
+                var helpText = string.Join(" | ", o.ValueNames);
+                if (o.AllowToggle) helpText += " | toggle";
+                ImGui.Text(helpText);
                 ImGui.NextColumn();
                 var sb = new StringBuilder();
                 foreach (var a in o.Alias) {
@@ -166,107 +187,66 @@ public unsafe class SetOptionCommand : CommandTweak {
             optionValue = argList[1];
         }
 
-        var setValue = 0UL;
-        switch (optionDefinition.OptionType) {
-            case OptionType.Bool: {
-                switch (optionValue) {
-                    case "1":
-                    case "true":
-                    case "on":
-                        configModule->SetOption(optionDefinition.ID, 1);
-                        break;
-                    case "0":
-                    case "false":
-                    case "off":
-                        configModule->SetOption(optionDefinition.ID, 0);
-                        break;
-                    case "":
-                    case "t":
-                    case "toggle":
-                        var cVal = configModule->GetIntValue(optionDefinition.ID);
-                        configModule->SetOption(optionDefinition.ID, cVal > 0 ? 0 : 1);
-                        break;
-                    default:
-                        Service.Chat.PrintError($"/setoption {optionKind} ({optionTypeValueHints[optionDefinition.OptionType]})");
-                        break;
-                }
+        var optionSection = optionDefinition.OptionGroup switch {
+            OptionGroup.System => GameConfig.System,
+            OptionGroup.UiConfig => GameConfig.UiConfig,
+            OptionGroup.UiControl => GameConfig.UiControl,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+        
+        var inputValue = optionValue.ToLowerInvariant();
 
-                break;
-            }
-            case OptionType.ToggleGamepadMode: {
 
-                void SetGamepadMode(bool enabled) {
-                    var values = Common.CreateAtkValueArray(19, 0, enabled ? 1 : 0, 0);
-                    var agent = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(AgentId.ConfigCharacter);
-                    if (values != null && agent != null) {
-                        dispatchEvent(agent, Common.ThrowawayOut, values, 4);
+        if (optionDefinition.AllowToggle && inputValue is "t" or "toggle") {
+
+            switch (optionDefinition) {
+                case OptionDefinition<uint> i: {
+                    var optionDetail = optionSection[optionDefinition.ID];
+                    if (optionDetail == null) {
+                        Plugin.Error(this, new Exception($"Failed to get option detail for {optionDefinition.Name}"), allowContinue: true);
+                        return;
                     }
                     
-                    if (values != null) Marshal.FreeHGlobal(new IntPtr(values));
-                }
-                
-                switch (optionValue) {
-                    case "1":
-                    case "true":
-                    case "on":
-                        SetGamepadMode(true);
-                        break;
-                    case "0":
-                    case "false":
-                    case "off":
-                        SetGamepadMode(false);
-                        break;
-                    case "":
-                    case "t":
-                    case "toggle":
-                        SetGamepadMode(configModule->GetIntValue(optionDefinition.ID) == 0);
-                        break;
-                    default:
-                        Service.Chat.PrintError($"/setoption {optionKind} ({optionTypeValueHints[optionDefinition.OptionType]})");
-                        break;
-                }
+                    var toggleValue = optionSection.GetUInt(optionDefinition.ID);
+                    toggleValue += 1;
 
-                break;
-            }
-            case OptionType.NameDisplayModeBattle: {
-                switch (optionValue.ToLowerInvariant()) {
-                    case "a":
-                    case "always":
-                        configModule->SetOption(optionDefinition.ID, 0);
-                        break;
-                    case "b":
-                    case "battle":
-                        configModule->SetOption(optionDefinition.ID, 1);
-                        break;
-                    case "t":
-                    case "target":
-                    case "targeted":
-                        configModule->SetOption(optionDefinition.ID, 2);
-                        break;
-                    case "n":
-                    case "never": 
-                        configModule->SetOption(optionDefinition.ID, 3);
-                        break;
-                    default:
-                        Service.Chat.PrintError($"/setoption {optionKind} ({optionTypeValueHints[optionDefinition.OptionType]})");
-                        break;
+                    if (toggleValue > optionDetail.Entry->Properties.UInt.MaxValue) {
+                        toggleValue = optionDetail.Entry->Properties.UInt.MinValue;
+                    }
+
+                    optionSection.Set(optionDefinition.ID, toggleValue);
+
+                    var valueName = i.Values.Where(kvp => kvp.Value == toggleValue).Select(kvp => kvp.Key).FirstOrDefault() ?? i.ValueAlias.Where(kvp => kvp.Value == toggleValue).Select(kvp => kvp.Key).FirstOrDefault() ?? $"{toggleValue}";
+                    Service.Chat.Print($"{optionDefinition.Name} set to {valueName}");
+                    return;
                 }
-                break;
             }
-            case OptionType.IntList: {
-                var inputValue = optionValue.ToLowerInvariant();
-                if (optionDefinition.Values.ContainsKey(inputValue)) {
-                    configModule->SetOption(optionDefinition.ID, optionDefinition.Values[inputValue]);
-                } else if (optionDefinition.ValueAlias.ContainsKey(inputValue)) {
-                    configModule->SetOption(optionDefinition.ID, optionDefinition.ValueAlias[inputValue]);
-                } else {
-                    Service.Chat.PrintError($"/setoption {optionKind} ({string.Join(" | ", optionDefinition.Values.Keys)})");
+        }
+        
+        if (optionDefinition.ValueNames.Contains(inputValue)) {
+            switch (optionDefinition) {
+                case OptionDefinition<uint> i: {
+                    optionSection.Set(optionDefinition.ID, i.Values[inputValue]);
+                    break;
                 }
-                break;
+                case OptionDefinition<float> f: {
+                    optionSection.Set(optionDefinition.ID, f.Values[inputValue]);
+                    break;
+                }
             }
-            default:
-                Service.Chat.PrintError("Unsupported Option");
-                return;
+        } else if (optionDefinition.AliasValueNames.Contains(inputValue)) {
+            switch (optionDefinition) {
+                case OptionDefinition<uint> i: {
+                    optionSection.Set(optionDefinition.ID, i.Values[inputValue]);
+                    break;
+                }
+                case OptionDefinition<float> f: {
+                    optionSection.Set(optionDefinition.ID, f.Values[inputValue]);
+                    break;
+                }
+            }
+        } else {
+            Service.Chat.PrintError($"/setoption {optionKind} ({string.Join(" | ", optionDefinition.ValueNames)})");
         }
     }
 }
