@@ -4,8 +4,10 @@ using System.Runtime.InteropServices;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Chat;
@@ -18,6 +20,16 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak
 
     private readonly List<string> options = new();
     
+    public class Config : TweakConfig
+    {
+        [TweakConfigOption("Display Character Name")]
+        public bool DisplayCharacterName = false;
+    }
+
+    public Config TweakConfig { get; private set; } = null!;
+
+    public override bool UseAutoConfig => true;
+    
     public override void Setup()
     {
         if (Ready) return;
@@ -28,6 +40,8 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak
 
     public override void Enable()
     {
+        TweakConfig = LoadConfig<Config>() ?? new Config();
+        
         Common.AddonSetup += OnAddonSetup;
         Common.AddonFinalize += OnAddonFinalize;
         base.Enable();
@@ -35,6 +49,8 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak
     
     public override void Disable()
     {
+        SaveConfig(TweakConfig);
+        
         Common.AddonSetup -= OnAddonSetup;
         Common.AddonFinalize -= OnAddonFinalize;
         base.Disable();
@@ -108,8 +124,10 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak
                 .AddText(selectedString)
                 .Build();
 
+            var playerName = Common.ReadString(PlayerState.Instance()->CharacterName);
+            
             var name = new SeStringBuilder()
-                .AddUiForeground($"Story Selection", 62)
+                .AddUiForeground(TweakConfig.DisplayCharacterName ? playerName : "Story Selection", 62)
                 .Build();
 
             var entry = new XivChatEntry
