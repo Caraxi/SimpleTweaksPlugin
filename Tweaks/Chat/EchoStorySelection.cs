@@ -100,7 +100,7 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak
         if (list is null) return;
 
         var selectedItem = list->SelectedItemIndex;
-        if (selectedItem < options.Count)
+        if (selectedItem >= 0 && selectedItem < options.Count)
         {
             var selectedString = options[selectedItem];
         
