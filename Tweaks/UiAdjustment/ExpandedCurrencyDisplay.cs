@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Dalamud.Game.Text;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Utility;
@@ -33,6 +34,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         public uint ItemId;
         public int IconId;
         public bool HqItem;
+        public bool CollectibleItem;
         public string Name = string.Empty;
     }
 
@@ -64,10 +66,12 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     private string searchString = string.Empty;
     private List<Item> searchedItems = new();
     private bool hqItemSearch;
+    private bool collectibleItemSearch;
 
     public override void Setup() {
         AddChangelogNewTweak("1.8.3.0");
         AddChangelog("1.8.3.1", "Use configured format culture for number display, should fix French issue");
+        AddChangelog(Changelog.UnreleasedVersion, "Added support for Collectibles");
         base.Setup();
     }
 
@@ -125,7 +129,10 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
             };
 
             TryMakeCounterNode(CounterBaseId + index, counterPosition, counterPositionNode->PartsList);
-            TryUpdateCounterNode(CounterBaseId + index, InventoryManager.Instance()->GetInventoryItemCount(currencyInfo.ItemId));
+            var count = currencyInfo.CollectibleItem 
+                ? InventoryManager.Instance()->GetInventoryItemCount(currencyInfo.ItemId, minCollectability: 1)
+                : InventoryManager.Instance()->GetInventoryItemCount(currencyInfo.ItemId);
+            TryUpdateCounterNode(CounterBaseId + index, count);
         }
         
         foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
@@ -167,25 +174,38 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         }
     }
 
+    private void UpdateSearch() 
+    {
+        if (searchString != string.Empty)
+        {
+            searchedItems = Service.Data.GetExcelSheet<Item>()!
+                .OrderBy(item => item.ItemSortCategory.Row)
+                .Where(item => item.Name.ToDalamudString().TextValue.ToLower().Contains(searchString.ToLower()))
+                .Where(item => {
+                    if (collectibleItemSearch) return item.IsCollectable;
+                    if (hqItemSearch) return item.CanBeHq;
+                    return !item.AlwaysCollectable;
+                })
+                .Take(10)
+                .ToList();
+        }
+    }
+    
     private void DrawAddCurrency()
     {
         ImGui.TextUnformatted("Search and select items to display");
-        
+
         var regionSize = ImGui.GetContentRegionAvail();
         ImGui.SetNextItemWidth(regionSize.X * 2.0f / 3.0f);
         if (ImGui.InputTextWithHint("###ItemSearch", "Search", ref searchString, 60, ImGuiInputTextFlags.AutoSelectAll))
         {
-            if (searchString != string.Empty)
-            {
-                searchedItems = Service.Data.GetExcelSheet<Item>()!
-                    .OrderBy(item => item.ItemSortCategory.Row)
-                    .Where(item => item.Name.ToDalamudString().TextValue.ToLower().Contains(searchString.ToLower()))
-                    .Take(10)
-                    .ToList();
-            }
+            UpdateSearch();
         }
         ImGui.SameLine();
-        ImGui.Checkbox("HQ Item", ref hqItemSearch);
+        if (ImGui.Checkbox("HQ Item", ref hqItemSearch)) {
+            if (hqItemSearch) collectibleItemSearch = false;
+            UpdateSearch();
+        }
         ImGuiComponents.HelpMarker("To track HQ items such as Tinctures or Foods, enable 'HQ Item'");
 
         if (ImGui.BeginChild("###SearchResultChild", new Vector2(regionSize.X * 2.0f / 3.0f, 100.0f * ImGuiHelpers.GlobalScale), true))
@@ -210,9 +230,10 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
                         TweakConfig.Currencies.Add(new CurrencyEntry
                         {
                             IconId = item.Icon,
-                            ItemId = hqItemSearch ? 1_000_000 + item.RowId : item.RowId,
-                            Name = item.Name.ToDalamudString() + (hqItemSearch ? " HQ" : string.Empty),
+                            ItemId = hqItemSearch ? 1_000_000 + item.RowId : collectibleItemSearch ? 500_000 + item.RowId : item.RowId,
+                            Name = item.Name.ToDalamudString() + (hqItemSearch ? " HQ" : string.Empty) + (collectibleItemSearch ? $" {(char)SeIconChar.Collectible}" : string.Empty),
                             HqItem = hqItemSearch,
+                            CollectibleItem = collectibleItemSearch
                         });
                 
                         FreeAllNodes();
@@ -227,6 +248,15 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
             }
         }
         ImGui.EndChild();
+
+        ImGui.SameLine();
+        if (ImGui.Checkbox("Collectible Item", ref collectibleItemSearch)) {
+            if (collectibleItemSearch) hqItemSearch = false;
+            UpdateSearch();
+        }
+        ImGuiComponents.HelpMarker("To track Collectible items.");
+
+        
     }
     
     private void DrawCurrencies()
