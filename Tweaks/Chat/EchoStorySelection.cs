@@ -21,7 +21,7 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak
     public override void Setup()
     {
         if (Ready) return;
-        AddChangelogNewTweak(Changelog.UnreleasedVersion);
+        AddChangelogNewTweak("1.8.3.2");
         
         base.Setup();
     }

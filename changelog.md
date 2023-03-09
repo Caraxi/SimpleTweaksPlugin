@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.8.3.2]
+***New Tweaks***
+> **`Echo Story Selection`** - When given multiple choices during quests, print the selected option to chat. *(MidoriKami)*
+
+
+***Tweak Changes***
+> **`Fade Unavailable Actions`** - Tweak now only applies to the icon image itself and not the entire button
+
+> **`Fade Unavailable Actions`** - Add option to apply transparency to the slot frame of the icon
+
+> **`Fade Unavailable Actions`** - Add option to apply to sync'd skills only
+
+
 ## [1.8.3.1]
 ***New Tweaks***
 > **`Fade Unavailable Actions`** - Instead of darkening icons, makes them transparent when unavailable *(MidoriKami)*

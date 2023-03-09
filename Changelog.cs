@@ -256,6 +256,10 @@ public class Changelog : Window {
                             SimpleTweaksPlugin.Plugin.ConfigWindow.IsOpen = true;
                             SimpleTweaksPlugin.Plugin.PluginConfig.FocusTweak(c.Tweak);
                         }
+
+                        if (ImGui.IsItemHovered()) {
+                            ImGui.SetTooltip($"Click to find '{c.Tweak.Name}' in Simple Tweaks config window");
+                        }
                         
                         if (c.ChangeAuthor != null) {
                             ImGui.SameLine();

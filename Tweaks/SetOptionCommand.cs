@@ -21,6 +21,11 @@ public unsafe class SetOptionCommand : CommandTweak {
     protected override string HelpMessage => "Usage: /setoption <option> <value>";
     protected override string[] Alias => new[] { "setopt" };
 
+    public override void Setup() {
+        AddChangelog("1.8.3.2", "Improved reliability through patches");
+        base.Setup();
+    }
+
     public enum OptionGroup {
         System,
         UiConfig,

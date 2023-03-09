@@ -46,9 +46,9 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
     {
         if (Ready) return;
         AddChangelogNewTweak("1.8.3.1");
-        AddChangelog(Changelog.UnreleasedVersion, "Tweak now only applies to the icon image itself and not the entire button");
-        AddChangelog(Changelog.UnreleasedVersion, "Add option to apply transparency to the slot frame of the icon");
-        AddChangelog(Changelog.UnreleasedVersion, "Add option to apply to sync'd skills only");
+        AddChangelog("1.8.3.2", "Tweak now only applies to the icon image itself and not the entire button");
+        AddChangelog("1.8.3.2", "Add option to apply transparency to the slot frame of the icon");
+        AddChangelog("1.8.3.2", "Add option to apply to sync'd skills only");
         
         SignatureHelper.Initialise(this);
         
