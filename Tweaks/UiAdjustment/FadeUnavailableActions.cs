@@ -110,7 +110,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
                     break;
                 
                 default:
-                    ApplyTransparency(hotBarSlotData, false);
+                    // ApplyTransparency(hotBarSlotData, false);
                     break;
             }
         }
