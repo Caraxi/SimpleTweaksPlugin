@@ -95,8 +95,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
 
     private void OnFrameworkUpdate()
     {
-        if (AddonMoney is null) return;
-        if (AddonMoney->RootNode is null) return;
+        if (!UiHelper.IsAddonReady(AddonMoney)) return;
 
         // Size of one currency
         var resNodeSize = new Vector2(AddonMoney->RootNode->Width, AddonMoney->RootNode->Height);
@@ -289,7 +288,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     
     private void FreeAllNodes()
     {
-        if (AddonMoney is not null)
+        if (UiHelper.IsAddonReady(AddonMoney))
         {
             foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
             {
