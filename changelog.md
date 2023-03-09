@@ -6,11 +6,12 @@
 
 
 ***Tweak Changes***
-> **`Fade Unavailable Actions`** - Tweak now only applies to the icon image itself and not the entire button
+> **`Fade Unavailable Actions`**
+> - Tweak now only applies to the icon image itself and not the entire button
+> - Add option to apply transparency to the slot frame of the icon
+> - Add option to apply to sync'd skills only
 
-> **`Fade Unavailable Actions`** - Add option to apply transparency to the slot frame of the icon
-
-> **`Fade Unavailable Actions`** - Add option to apply to sync'd skills only
+> **`Set Option Command`** - Improved reliability through patches
 
 
 ## [1.8.3.1]
@@ -54,13 +55,11 @@
 
 
 ***Tweak Changes***
-> **`Enhanced Loot Window`** - Rebuilt tweak to use images
-
-> **`Enhanced Loot Window`** - Fixed tweak not checking armory and equipped items
-
-> **`Enhanced Loot Window`** - Added 'Lock Loot Window' feature
-
-> **`Enhanced Loot Window`** - Added configuration options
+> **`Enhanced Loot Window`**
+> - Rebuilt tweak to use images
+> - Fixed tweak not checking armory and equipped items
+> - Added 'Lock Loot Window' feature
+> - Added configuration options
 
 > **`Fix '/target' command`** - Fixed tweak not working in french. *(Aireil)*
 

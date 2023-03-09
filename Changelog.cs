@@ -180,12 +180,37 @@ public class Changelog : Window {
 
             if (tweakChanges.Any()) {
                 stringBuilder.AppendLine("***Tweak Changes***");
-                foreach (var c in tweakChanges) {
-                    stringBuilder.Append($"> **`{c.Tweak.Name}`** - {c.Change}");
-                    if (!string.IsNullOrEmpty(c.ChangeAuthor)) {
-                        stringBuilder.Append($" *({c.ChangeAuthor})*");
+
+                var tweakChangeGroups = tweakChanges.GroupBy(c => c.Tweak);
+                
+                foreach (var g in tweakChangeGroups) {
+                    if (!g.Any()) continue; // Who knows
+                    if (g.Count() >= 2) {
+                        
+                        stringBuilder.AppendLine($"> **`{g.Key.Name}`**");
+
+                        foreach (var c in g) {
+                            if (c.Tweak != g.Key) continue;
+                            stringBuilder.Append($"> - {c.Change}");
+                            if (!string.IsNullOrEmpty(c.ChangeAuthor)) {
+                                stringBuilder.Append($" *({c.ChangeAuthor})*");
+                            }
+                            stringBuilder.AppendLine();
+                        }
+
+                        stringBuilder.AppendLine();
+
+                    } else {
+                        var c = g.First();
+                        if (c.Tweak == null) continue;
+                        stringBuilder.Append($"> **`{c.Tweak.Name}`** - {c.Change}");
+                        if (!string.IsNullOrEmpty(c.ChangeAuthor)) {
+                            stringBuilder.Append($" *({c.ChangeAuthor})*");
+                        }
+                        stringBuilder.AppendLine("\n");
                     }
-                    stringBuilder.AppendLine("\n");
+                    
+                   
                 }
             }
             
