@@ -49,6 +49,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
         AddChangelog("1.8.3.2", "Tweak now only applies to the icon image itself and not the entire button");
         AddChangelog("1.8.3.2", "Add option to apply transparency to the slot frame of the icon");
         AddChangelog("1.8.3.2", "Add option to apply to sync'd skills only");
+        AddChangelog(Changelog.UnreleasedVersion, "Tweak now only applies to combat actions");
         
         SignatureHelper.Initialise(this);
         
@@ -97,6 +98,13 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
         if (Service.ClientState.LocalPlayer is { IsCasting: true } ) return;
 
         var numberArrayData = (NumberArrayStruct*) (&numberArray->IntArray[numberArrayIndex]);
+        
+        // If action type is not combat action, remove transparency and return
+        if (numberArrayData->ActionType != 45)
+        {
+            ApplyTransparency(hotBarSlotData, false);
+            return;
+        }
 
         if (TweakConfig.ApplyToSyncActions)
         {
@@ -132,10 +140,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
         return action;
     }
 
-    private bool ShouldFadeAction(NumberArrayStruct* numberArrayData)
-    {
-        return !(numberArrayData->ActionAvailable_1 && numberArrayData->ActionAvailable_2);
-    }
+    private bool ShouldFadeAction(NumberArrayStruct* numberArrayData) => !(numberArrayData->ActionAvailable_1 && numberArrayData->ActionAvailable_2);
 
     private void ApplyTransparency(SlotData* hotBarSlotData, bool fade)
     {
@@ -150,13 +155,6 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
         {
             iconComponent->IconImage->AtkResNode.Color.A = (byte)(0xFF * ((100 - TweakConfig.FadePercentage) / 100.0f));
             if(TweakConfig.ApplyToFrame) iconComponent->Frame->Color.A = (byte)(0xFF * ((100 - TweakConfig.FadePercentage) / 100.0f));
-            
-            iconComponent->IconImage->AtkResNode.MultiplyRed = 100;
-            iconComponent->IconImage->AtkResNode.MultiplyGreen = 100;
-            iconComponent->IconImage->AtkResNode.MultiplyBlue = 100;
-            iconComponent->IconImage->AtkResNode.MultiplyRed_2 = 100;
-            iconComponent->IconImage->AtkResNode.MultiplyGreen_2 = 100;
-            iconComponent->IconImage->AtkResNode.MultiplyBlue_2 = 100;
         }
         else
         {
@@ -168,7 +166,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
     [StructLayout(LayoutKind.Explicit, Size = 0x40)]
     private struct NumberArrayStruct
     {
-        [FieldOffset(0x00)] public uint ClassJobId;
+        [FieldOffset(0x00)] public uint ActionType;
         [FieldOffset(0x0C)] public uint ActionId;
         [FieldOffset(0x14)] public bool ActionAvailable_1;
         [FieldOffset(0x18)] public bool ActionAvailable_2;
