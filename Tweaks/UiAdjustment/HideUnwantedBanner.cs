@@ -15,7 +15,7 @@ public class HideUnwantedBanner : UiAdjustments.SubTweak
     public override string Description => "Hide information banners such as 'Venture Complete', or 'Levequest Accepted'";
     protected override string Author => "MidoriKami";
 
-    private delegate void ImageSetImageTextureDelegate(nint addon, int a2, int a3, int a4);
+    private delegate nint ImageSetImageTextureDelegate(nint addon, int a2, int a3, int a4);
 
     [Signature("48 89 5C 24 ?? 57 48 83 EC 30 48 8B D9 89 91", DetourName = nameof(OnSetImageTexture))]
     private readonly Hook<ImageSetImageTextureDelegate>? setImageTextureHook = null!;
@@ -98,7 +98,7 @@ public class HideUnwantedBanner : UiAdjustments.SubTweak
         base.Dispose();
     }
 
-    private void OnSetImageTexture(nint addon, int a2, int a3, int a4)
+    private nint OnSetImageTexture(nint addon, int a2, int a3, int a4)
     {
         var skipOriginal = false;
         
@@ -110,7 +110,7 @@ public class HideUnwantedBanner : UiAdjustments.SubTweak
         {
             PluginLog.Error(e, "Something went wrong in HideUnwantedBanners, let MidoriKami know!");
         }
-
-        if(!skipOriginal) setImageTextureHook!.Original(addon, a2, a3, a4);
+        
+        return skipOriginal ? nint.Zero : setImageTextureHook!.Original(addon, a2, a3, a4);
     }
 }
