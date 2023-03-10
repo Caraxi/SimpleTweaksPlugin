@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Dalamud.Interface;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
@@ -241,6 +242,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
 
         try {
             var windowScale = root->ScaleX;
+            ImGuiHelpers.ForceNextWindowMainViewport();
             ImGui.SetNextWindowPos(new Vector2(root->X + ((header->X + buttonsHeader->X) * windowScale), root->Y + (buttonsHeader->Y * windowScale)), ImGuiCond.Always);
             if (ImGui.Begin(
                     "ImprovedDutyFinderSettings",
