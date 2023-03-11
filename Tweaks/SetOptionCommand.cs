@@ -25,6 +25,7 @@ public unsafe class SetOptionCommand : CommandTweak {
         AddChangelog("1.8.3.2", "Improved reliability through patches");
         AddChangelog(Changelog.UnreleasedVersion, "Fixed issues when using gamepad mode");
         AddChangelog(Changelog.UnreleasedVersion, "Re-added accidentally remove gamepad mode option");
+        AddChangelog(Changelog.UnreleasedVersion, "Added 'LimitMouseToGameWindow'");
         base.Setup();
     }
 
@@ -109,6 +110,7 @@ public unsafe class SetOptionCommand : CommandTweak {
         new OptionDefinition<uint>("ActionTooltips", "ActionDetailDisp", OptionGroup.UiControl, ValueType.Boolean, "att") { AllowToggle = true },
         new OptionDefinition<uint>("LegacyMovement", "MoveMode", OptionGroup.UiControl, ValueType.Boolean, "lm") { AllowToggle = true },
         new OptionDefinition<uint>("HideUnassignedHotbarSlots", "HotbarEmptyVisible", OptionGroup.UiConfig, ValueType.Boolean, "huhs") { AllowToggle = true },
+        new OptionDefinition<uint>("LimitMouseToGameWindow", "MouseOpeLimit", OptionGroup.System, ValueType.Boolean, "lmtgw") { AllowToggle = true },
 
         new OptionDefinition<uint>("OwnDisplayName", "NamePlateDispTypeSelf", OptionGroup.UiConfig, ValueType.NamePlateDisplay, "odn") { AllowToggle = true },
         new OptionDefinition<uint>("PartyDisplayName", "NamePlateDispTypeParty", OptionGroup.UiConfig, ValueType.NamePlateDisplay, "pdn") { AllowToggle = true },
