@@ -25,7 +25,7 @@ public unsafe class SetOptionCommand : CommandTweak {
         AddChangelog("1.8.3.2", "Improved reliability through patches");
         AddChangelog(Changelog.UnreleasedVersion, "Fixed issues when using gamepad mode");
         AddChangelog(Changelog.UnreleasedVersion, "Re-added accidentally remove gamepad mode option");
-        AddChangelog(Changelog.UnreleasedVersion, "Added 'LimitMouseToGameWindow'");
+        AddChangelog(Changelog.UnreleasedVersion, "Added 'LimitMouseToGameWindow' and 'CharacterDisplayLimit'");
         AddChangelog(Changelog.UnreleasedVersion, "Fixed 'DisplayNameSize' using incorrect values");
         base.Setup();
     }
@@ -125,6 +125,13 @@ public unsafe class SetOptionCommand : CommandTweak {
                 new() { ["m"] = 2, ["max"] = 2, ["l"] = 1, ["s"] = 0, }
             );
         }, "dns") { AllowToggle = true },
+        
+        new OptionDefinition<uint>("CharacterDisplayLimit", "DisplayObjectLimitType", OptionGroup.System, () => {
+            return (
+                new() { ["maximum"] = 0, ["high"] = 1, ["normal"] = 2, ["low"] = 3, ["minimum"] = 4 },
+                new() { ["max"] = 0, ["min"] = 4 }
+            );
+        }, "cdl") { AllowToggle = true },
     };
 
     protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
