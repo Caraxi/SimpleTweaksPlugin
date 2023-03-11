@@ -63,6 +63,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
         lastSearchInput = tweak.Name;
         searchResults.Clear();
         searchResults.Add(tweak);
+        plugin.ConfigWindow.Collapsed = false;
     }
 
     internal void ClearSearch() {

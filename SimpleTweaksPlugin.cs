@@ -201,6 +201,12 @@ namespace SimpleTweaksPlugin {
                 if (!string.IsNullOrEmpty(argString.Trim())) {
                     var splitArgString = argString.Split(' ');
                     switch (splitArgString[0].ToLowerInvariant()) {
+                        case "cl":
+                        case "changes":
+                        case "changelog": {
+                            ChangelogWindow.IsOpen = !ChangelogWindow.IsOpen;
+                            return;
+                        }
                         case "t":
                         case "toggle": {
                             if (splitArgString.Length < 2) {
