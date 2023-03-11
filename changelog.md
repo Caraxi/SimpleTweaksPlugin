@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.8.4.0]
+***New Tweaks***
+> **`Hide quality bar while crafting NO-HQ item.`** - Hides the quality bar in the Synthesis window while crafting an item that can not be HQ or Collectable.
+
+
+***Tweak Changes***
+> **`Expanded Currency Display`** - Added support for Collectibles
+
+> **`Fade Unavailable Actions`**
+> - Tweak now only applies to combat actions
+> - Properly resets hotbar state on unload/disable
+
+> **`Improved Duty Finder Settings`** - Fixed UI displaying on wrong monitor in specific circumstances. *(Aireil)*
+
+> **`Set Option Command`**
+> - Fixed issues when using gamepad mode
+> - Re-added accidentally remove gamepad mode option
+> - Added 'LimitMouseToGameWindow' and 'CharacterDisplayLimit'
+> - Fixed 'DisplayNameSize' using incorrect values
+
+> **`Simplified Equipment Job Display`** - Fixed tweak for Japanese clients.
+
+
 ## [1.8.3.2]
 ***New Tweaks***
 > **`Echo Story Selection`** - When given multiple choices during quests, print the selected option to chat. *(MidoriKami)*
