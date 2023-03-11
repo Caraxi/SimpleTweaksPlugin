@@ -9,6 +9,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 using Action = Lumina.Excel.GeneratedSheets.Action;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
@@ -26,6 +27,8 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
 
     private readonly Dictionary<uint, Action> actionCache = new();
 
+    private readonly List<string> addonActionBarNames = new() { "_ActionBar", "_ActionBar01", "_ActionBar02", "_ActionBar03", "_ActionBar04", "_ActionBar05", "_ActionBar06", "_ActionBar07", "_ActionBar08", "_ActionBar09","_ActionCross", "_ActionDoubleCrossR", "_ActionDoubleCrossL" };
+    
     public class Config : TweakConfig
     {
         [TweakConfigOption("Fade Percentage", IntMax = 90, IntMin = 0, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EditorSize = 150)]
@@ -50,6 +53,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
         AddChangelog("1.8.3.2", "Add option to apply transparency to the slot frame of the icon");
         AddChangelog("1.8.3.2", "Add option to apply to sync'd skills only");
         AddChangelog(Changelog.UnreleasedVersion, "Tweak now only applies to combat actions");
+        AddChangelog(Changelog.UnreleasedVersion, "Properly resets hotbar state on unload/disable");
         
         SignatureHelper.Initialise(this);
         
@@ -59,7 +63,6 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
     public override void Enable()
     {
         TweakConfig = LoadConfig<Config>() ?? new Config();
-        
         onHotBarSlotUpdateHook?.Enable();
         base.Enable();
     }
@@ -67,17 +70,40 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
     public override void Disable()
     {
         SaveConfig(TweakConfig);
-        
         onHotBarSlotUpdateHook?.Disable();
+        ResetAllHotBars();
         base.Disable();
     }
 
     public override void Dispose()
     {
         onHotBarSlotUpdateHook?.Dispose();
+        ResetAllHotBars();
         base.Dispose();
     }
 
+    private void ResetAllHotBars()
+    {
+        foreach (var addonName in addonActionBarNames)
+        {
+            var addon = (AddonActionBarBase*) Common.GetUnitBase(addonName);
+            if (addon is null) continue;
+
+            foreach (var slot in addon->Slot)
+            {
+                if (slot.Icon is not null)
+                {
+                    var iconComponent = (AtkComponentIcon*) slot.Icon->Component;
+                    if (iconComponent is not null)
+                    {
+                        iconComponent->IconImage->AtkResNode.Color.A = 0xFF;
+                        iconComponent->Frame->Color.A = 0xFF;
+                    }
+                }
+            }
+        }
+    }
+    
     private void OnHotBarSlotUpdate(AddonActionBarBase* addon, SlotData* hotBarSlotData, NumberArrayData* numberArray, StringArrayData* stringArray, int numberArrayIndex, int stringArrayIndex)
     {
         try
