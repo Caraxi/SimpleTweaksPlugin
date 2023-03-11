@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Runtime.InteropServices;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Common.Configuration;
-using FFXIVClientStructs.STD;
 
 namespace SimpleTweaksPlugin.Utility; 
 
@@ -59,25 +55,21 @@ public static unsafe class GameConfig {
     }
     
     public class GameConfigSection {
-
-        private readonly ConfigBase* configBase;
-        
         private readonly Dictionary<string, uint> indexMap = new();
         private readonly Dictionary<uint, string> nameMap = new();
 
-        private string[] ignoredNames = Array.Empty<string>();
-        
-        public uint ConfigCount => configBase->ConfigCount;
-        
-        public GameConfigSection(ConfigBase* configBase, string[] ignoredNames = null) {
-            this.configBase = configBase;
+        internal delegate ConfigBase* GetConfigBaseDelegate();
 
-            if (ignoredNames != null) {
-                this.ignoredNames = ignoredNames;
-            }
-            
-            var e = configBase->ConfigEntry;
-            for (var i = 0U; i < configBase->ConfigCount; i++, e++) {
+        private GetConfigBaseDelegate GetConfigBase { get; }
+
+        public uint ConfigCount => GetConfigBase()->ConfigCount;
+        
+        internal GameConfigSection(ConfigBase* configBase) : this(() => configBase){ }
+
+        internal GameConfigSection(GetConfigBaseDelegate getConfigBase) {
+            GetConfigBase = getConfigBase;
+            var e = GetConfigBase()->ConfigEntry;
+            for (var i = 0U; i < GetConfigBase()->ConfigCount; i++, e++) {
                 if (e->Name == null) continue;
                 var eName = MemoryHelper.ReadStringNullTerminated(new IntPtr(e->Name));
                 if (!indexMap.ContainsKey(eName)) indexMap.Add(eName, i);
@@ -86,6 +78,7 @@ public static unsafe class GameConfig {
 
         public EntryWrapper? this[uint i] {
             get {
+                var configBase = GetConfigBase();
                 if (i >= configBase->ConfigCount) return null;
                 
                 var e = configBase->ConfigEntry;
@@ -106,6 +99,7 @@ public static unsafe class GameConfig {
         public EntryWrapper? this[string name] {
             get {
                 if (!TryGetIndex(name, out var i)) return null;
+                var configBase = GetConfigBase();
                 var e = configBase->ConfigEntry;
                 e += i;
                 if (e->Name == null) return null;
@@ -116,6 +110,7 @@ public static unsafe class GameConfig {
         public bool TryGetEntry(string name, out EntryWrapper result, StringComparison? nameComparison = null) {
             result = null;
             if (!TryGetIndex(name, out var i, nameComparison)) return false;
+            var configBase = GetConfigBase();
             var e = configBase->ConfigEntry;
             e += i;
             if (e->Name == null) return false; 
@@ -125,6 +120,7 @@ public static unsafe class GameConfig {
         
         public bool TryGetName(uint index, out string? name) {
             name = null;
+            var configBase = GetConfigBase();
             if (index >= configBase->ConfigCount) return false;
             var hasName = nameMap.TryGetValue(index, out name);
             if (hasName) return name != null;
@@ -139,6 +135,7 @@ public static unsafe class GameConfig {
         
         public bool TryGetIndex(string name, out uint index, StringComparison? stringComparison = null) {
             if (indexMap.TryGetValue(name, out index)) return true;
+            var configBase = GetConfigBase();
             var e = configBase->ConfigEntry;
             for (var i = 0U; i < configBase->ConfigCount; i++, e++) {
                 if (e->Name == null) continue;
@@ -156,6 +153,7 @@ public static unsafe class GameConfig {
         
         private bool TryGetEntry(uint index, out ConfigEntry* entry) {
             entry = null;
+            var configBase = GetConfigBase();
             if (configBase->ConfigEntry == null || index >= configBase->ConfigCount) return false;
             entry = configBase->ConfigEntry;
             entry += index;
@@ -248,14 +246,15 @@ public static unsafe class GameConfig {
     }
 
     static GameConfig() {
-        System = new GameConfigSection(&Framework.Instance()->SystemConfig.CommonSystemConfig.ConfigBase, new []{ "PadMode" });
-        UiConfig = new GameConfigSection(&Framework.Instance()->SystemConfig.CommonSystemConfig.UiConfig);
-        UiControl = new GameConfigSection(&Framework.Instance()->SystemConfig.CommonSystemConfig.UiControlConfig);
+        var commonConfig = &Framework.Instance()->SystemConfig.CommonSystemConfig;
+        System = new GameConfigSection(&commonConfig->ConfigBase);
+        UiConfig = new GameConfigSection(&commonConfig->UiConfig);
+        // TODO: Change UiControlConfig+1 to UiControlControllerConfig
+        UiControl = new GameConfigSection(() => UiConfig.TryGetBool("PadMode", out var padMode) && padMode ? &commonConfig->UiControlConfig + 1 : &commonConfig->UiControlConfig);
     }
 
-
-    public static GameConfigSection System;
-    public static GameConfigSection UiConfig;
-    public static GameConfigSection UiControl;
+    public static GameConfigSection System { get; }
+    public static GameConfigSection UiConfig { get; }
+    public static GameConfigSection UiControl { get; }
 }
 
