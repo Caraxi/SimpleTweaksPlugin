@@ -16,7 +16,7 @@ public unsafe class HideUnwantedBanner : UiAdjustments.SubTweak
     public override string Description => "Hide information banners such as 'Venture Complete', or 'Levequest Accepted'";
     protected override string Author => "MidoriKami";
 
-    private delegate void ImageSetImageTextureDelegate(AtkUnitBase* addon, int bannerId, int a3, int a4);
+    private delegate void ImageSetImageTextureDelegate(AtkUnitBase* addon, int bannerId, int a3, int sfxId);
 
     [Signature("48 89 5C 24 ?? 57 48 83 EC 30 48 8B D9 89 91", DetourName = nameof(OnSetImageTexture))]
     private readonly Hook<ImageSetImageTextureDelegate>? setImageTextureHook = null!;
