@@ -215,6 +215,7 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
         var selectedRecipe = uiRecipeNote->RecipeList->SelectedRecipe;
         if (selectedRecipe == null) return CraftReadyState.NotReady;
         selectedRecipeId = selectedRecipe->RecipeId;
+        if (selectedRecipe->CraftType >= 8) return CraftReadyState.NotReady;
         requiredClass = uiRecipeNote->Jobs[selectedRecipe->CraftType];
         var requiredJob = Service.Data.Excel.GetSheet<ClassJob>()?.GetRow(requiredClass);
         if (requiredJob == null) return CraftReadyState.NotReady;
