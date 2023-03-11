@@ -23,6 +23,8 @@ public unsafe class SetOptionCommand : CommandTweak {
 
     public override void Setup() {
         AddChangelog("1.8.3.2", "Improved reliability through patches");
+        AddChangelog(Changelog.UnreleasedVersion, "Fixed issues when using gamepad mode");
+        AddChangelog(Changelog.UnreleasedVersion, "Re-added accidentally remove gamepad mode option");
         base.Setup();
     }
 
@@ -102,6 +104,7 @@ public unsafe class SetOptionCommand : CommandTweak {
     }
     
     private readonly List<IOptionDefinition> optionDefinitions = new() {
+        new OptionDefinition<uint>("GamepadMode", "PadMode", OptionGroup.UiConfig, ValueType.Boolean, "gp") { AllowToggle = true },
         new OptionDefinition<uint>("ItemTooltips", "ItemDetailDisp", OptionGroup.UiControl, ValueType.Boolean, "itt") { AllowToggle = true },
         new OptionDefinition<uint>("ActionTooltips", "ActionDetailDisp", OptionGroup.UiControl, ValueType.Boolean, "att") { AllowToggle = true },
         new OptionDefinition<uint>("LegacyMovement", "MoveMode", OptionGroup.UiControl, ValueType.Boolean, "lm") { AllowToggle = true },
