@@ -26,6 +26,7 @@ public unsafe class SetOptionCommand : CommandTweak {
         AddChangelog(Changelog.UnreleasedVersion, "Fixed issues when using gamepad mode");
         AddChangelog(Changelog.UnreleasedVersion, "Re-added accidentally remove gamepad mode option");
         AddChangelog(Changelog.UnreleasedVersion, "Added 'LimitMouseToGameWindow'");
+        AddChangelog(Changelog.UnreleasedVersion, "Fixed 'DisplayNameSize' using incorrect values");
         base.Setup();
     }
 
