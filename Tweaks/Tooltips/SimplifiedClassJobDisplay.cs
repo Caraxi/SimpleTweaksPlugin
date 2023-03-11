@@ -20,7 +20,7 @@ public unsafe class SimplifiedClassJobDisplay : TooltipTweaks.SubTweak {
     
     public override void Setup() {
         AddChangelogNewTweak("1.8.3.0");
-        AddChangelog(Changelog.UnreleasedVersion, "Fixed tweak for Japanese clients.");
+        AddChangelog("1.8.4.0", "Fixed tweak for Japanese clients.");
         
         abbrToClassJob = Service.Data.Excel.GetSheet<ClassJob>()!.ToDictionary(TooltipClassJobNameDisplay);
         replaceGroup = new Dictionary<string, (ClassJob, ClassJob)>();

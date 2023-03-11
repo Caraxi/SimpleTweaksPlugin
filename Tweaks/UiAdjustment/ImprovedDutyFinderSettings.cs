@@ -25,7 +25,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
 
     public override void Setup() {
         AddChangelogNewTweak("1.8.3.0");
-        AddChangelog(Changelog.UnreleasedVersion, "Fixed UI displaying on wrong monitor in specific circumstances.").Author("Aireil");
+        AddChangelog("1.8.4.0", "Fixed UI displaying on wrong monitor in specific circumstances.").Author("Aireil");
         base.Setup();
     }
 

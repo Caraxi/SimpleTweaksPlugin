@@ -10,7 +10,7 @@ public unsafe class HideQualityWhenNoHQ : UiAdjustments.SubTweak {
     public override string Description => "Hides the quality bar in the Synthesis window while crafting an item that can not be HQ or Collectable.";
 
     public override void Setup() {
-        AddChangelogNewTweak(Changelog.UnreleasedVersion);
+        AddChangelogNewTweak("1.8.4.0");
         base.Setup();
     }
     

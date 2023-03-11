@@ -71,7 +71,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     public override void Setup() {
         AddChangelogNewTweak("1.8.3.0");
         AddChangelog("1.8.3.1", "Use configured format culture for number display, should fix French issue");
-        AddChangelog(Changelog.UnreleasedVersion, "Added support for Collectibles");
+        AddChangelog("1.8.4.0", "Added support for Collectibles");
         base.Setup();
     }
 

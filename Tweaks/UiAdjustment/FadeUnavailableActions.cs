@@ -52,8 +52,8 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
         AddChangelog("1.8.3.2", "Tweak now only applies to the icon image itself and not the entire button");
         AddChangelog("1.8.3.2", "Add option to apply transparency to the slot frame of the icon");
         AddChangelog("1.8.3.2", "Add option to apply to sync'd skills only");
-        AddChangelog(Changelog.UnreleasedVersion, "Tweak now only applies to combat actions");
-        AddChangelog(Changelog.UnreleasedVersion, "Properly resets hotbar state on unload/disable");
+        AddChangelog("1.8.4.0", "Tweak now only applies to combat actions");
+        AddChangelog("1.8.4.0", "Properly resets hotbar state on unload/disable");
         
         SignatureHelper.Initialise(this);
         

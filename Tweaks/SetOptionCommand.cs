@@ -23,10 +23,10 @@ public unsafe class SetOptionCommand : CommandTweak {
 
     public override void Setup() {
         AddChangelog("1.8.3.2", "Improved reliability through patches");
-        AddChangelog(Changelog.UnreleasedVersion, "Fixed issues when using gamepad mode");
-        AddChangelog(Changelog.UnreleasedVersion, "Re-added accidentally remove gamepad mode option");
-        AddChangelog(Changelog.UnreleasedVersion, "Added 'LimitMouseToGameWindow' and 'CharacterDisplayLimit'");
-        AddChangelog(Changelog.UnreleasedVersion, "Fixed 'DisplayNameSize' using incorrect values");
+        AddChangelog("1.8.4.0", "Fixed issues when using gamepad mode");
+        AddChangelog("1.8.4.0", "Re-added accidentally remove gamepad mode option");
+        AddChangelog("1.8.4.0", "Added 'LimitMouseToGameWindow' and 'CharacterDisplayLimit'");
+        AddChangelog("1.8.4.0", "Fixed 'DisplayNameSize' using incorrect values");
         base.Setup();
     }
 
