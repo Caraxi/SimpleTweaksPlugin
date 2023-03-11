@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Dalamud;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
@@ -14,14 +15,18 @@ public unsafe class SimplifiedClassJobDisplay : TooltipTweaks.SubTweak {
     private Dictionary<string, ClassJob> abbrToClassJob = new();
 
     private Dictionary<string, (ClassJob, ClassJob)> replaceGroup = new();
+
+    private string TooltipClassJobNameDisplay(ClassJob cj) => Service.ClientState.ClientLanguage == ClientLanguage.Japanese ? cj.Name.RawString : cj.Abbreviation.RawString;
     
     public override void Setup() {
         AddChangelogNewTweak("1.8.3.0");
-        abbrToClassJob = Service.Data.Excel.GetSheet<ClassJob>().ToDictionary(cj => cj.Abbreviation.RawString);
+        AddChangelog(Changelog.UnreleasedVersion, "Fixed tweak for Japanese clients.");
+        
+        abbrToClassJob = Service.Data.Excel.GetSheet<ClassJob>()!.ToDictionary(TooltipClassJobNameDisplay);
         replaceGroup = new Dictionary<string, (ClassJob, ClassJob)>();
         foreach (var cj in abbrToClassJob.Values) {
             if (cj.ClassJobParent.Row != 0 && cj.ClassJobParent.Value != null && cj.ExpArrayIndex == cj.ClassJobParent.Value.ExpArrayIndex) {
-                replaceGroup.Add($"{cj.ClassJobParent.Value.Abbreviation.RawString} {cj.Abbreviation.RawString}", (cj.ClassJobParent.Value!, cj));
+                replaceGroup.Add($"{TooltipClassJobNameDisplay(cj.ClassJobParent.Value)} {TooltipClassJobNameDisplay(cj)}", (cj.ClassJobParent.Value!, cj));
             }
         }
         base.Setup();
@@ -33,9 +38,9 @@ public unsafe class SimplifiedClassJobDisplay : TooltipTweaks.SubTweak {
         var split = textPayload.Text.Split(' ');
         var classJobs = split.Select(s => abbrToClassJob.TryGetValue(s, out var cj) ? cj : null).Where(cj => cj is not null).OrderBy(cj => cj.ExpArrayIndex).ThenBy(cj => cj.RowId).ToList();
         if (classJobs.Count != split.Length) return;
-        var newStr = string.Join(' ', classJobs.Select(cj => cj.Abbreviation.RawString));
+        var newStr = string.Join(' ', classJobs.Select(TooltipClassJobNameDisplay));
         foreach (var (key, (baseClass, job)) in replaceGroup) {
-            newStr = newStr.Replace(key, QuestManager.IsQuestComplete(job.UnlockQuest.Row) ? job.Abbreviation.RawString : baseClass.Abbreviation.RawString);
+            newStr = newStr.Replace(key, QuestManager.IsQuestComplete(job.UnlockQuest.Row) ? TooltipClassJobNameDisplay(job) : TooltipClassJobNameDisplay(baseClass));
         }
         SetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ClassJobCategory, newStr);
     }
