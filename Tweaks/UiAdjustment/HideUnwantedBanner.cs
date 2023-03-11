@@ -4,18 +4,19 @@ using System.Collections.Generic;
 using Dalamud.Hooking;
 using Dalamud.Logging;
 using Dalamud.Utility.Signatures;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
-public class HideUnwantedBanner : UiAdjustments.SubTweak
+public unsafe class HideUnwantedBanner : UiAdjustments.SubTweak
 {
     public override string Name => "Hide Unwanted Banners";
     public override string Description => "Hide information banners such as 'Venture Complete', or 'Levequest Accepted'";
     protected override string Author => "MidoriKami";
 
-    private delegate nint ImageSetImageTextureDelegate(nint addon, int a2, int a3, int a4);
+    private delegate void ImageSetImageTextureDelegate(AtkUnitBase* addon, int bannerId, int a3, int a4);
 
     [Signature("48 89 5C 24 ?? 57 48 83 EC 30 48 8B D9 89 91", DetourName = nameof(OnSetImageTexture))]
     private readonly Hook<ImageSetImageTextureDelegate>? setImageTextureHook = null!;
@@ -98,19 +99,19 @@ public class HideUnwantedBanner : UiAdjustments.SubTweak
         base.Dispose();
     }
 
-    private nint OnSetImageTexture(nint addon, int a2, int a3, int a4)
+    private void OnSetImageTexture(AtkUnitBase* addon, int bannerId, int a3, int soundEffectId)
     {
         var skipOriginal = false;
         
         try
         {
-            skipOriginal = TweakConfig.HiddenBanners.Contains(a2);
+            skipOriginal = TweakConfig.HiddenBanners.Contains(bannerId);
         }
         catch (Exception e)
         {
             PluginLog.Error(e, "Something went wrong in HideUnwantedBanners, let MidoriKami know!");
         }
-        
-        return skipOriginal ? nint.Zero : setImageTextureHook!.Original(addon, a2, a3, a4);
+
+        setImageTextureHook!.Original(addon, skipOriginal ? 0 : bannerId, a3, skipOriginal ? 0 : soundEffectId);
     }
 }
