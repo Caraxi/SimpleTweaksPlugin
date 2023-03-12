@@ -36,7 +36,7 @@ public partial class KeyInterrupt : Tweak {
 
     private const uint WM_KEYUP = 0x101;
     private const uint WM_KEYDOWN = 0x100;
-    
+
     [Flags]
     private enum KeyInfoFlags {
         LLKHF_EXTENDED = 0x01,
@@ -93,11 +93,11 @@ public partial class KeyInterrupt : Tweak {
     [LibraryImport("user32.dll")]
     private static partial short GetAsyncKeyState(int vKey);
 
-    private KeyInterruptConfig _config = new();
+    private KeyInterruptConfig _config = null!;
 
     private nint _keyboardHookId;
     private Thread? _thread;
-    
+
     // Storing the delegate as a class member prevents it from being GC'd and causing crashes
     // See: https://stackoverflow.com/a/65250050
     private HookHandlerDelegate? _delegate;
@@ -110,7 +110,7 @@ public partial class KeyInterrupt : Tweak {
     }
 
     public override void Enable() {
-        this._config = this.LoadConfig<KeyInterruptConfig>() ?? this._config;
+        this._config = this.LoadConfig<KeyInterruptConfig>() ?? new KeyInterruptConfig();
 
         this._delegate = this.OnKeystroke;
         this._cts = new CancellationTokenSource();
@@ -125,7 +125,7 @@ public partial class KeyInterrupt : Tweak {
                 this._delegate,
                 GetModuleHandleW(currentModule.ModuleName),
                 0);
-            
+
             while (!this._cts.IsCancellationRequested) {
                 // FIXME: This isn't great because we can hang the thread here for a *long* time in theory.
                 // In practice, this won't actually happen because our message bus is almost constantly getting data,
@@ -150,7 +150,8 @@ public partial class KeyInterrupt : Tweak {
         }
 
         this._cts?.Cancel();
-
+        
+        this.SaveConfig(this._config);
         base.Disable();
     }
 
@@ -168,7 +169,7 @@ public partial class KeyInterrupt : Tweak {
         if (ImGui.Checkbox("Block Windows Key", ref this._config.BlockWinKey)) {
             hasChanged = true;
         }
-        
+
         if (ImGui.Checkbox("Block Ctrl-Esc", ref this._config.BlockCtrlEsc)) {
             hasChanged = true;
         }
@@ -185,7 +186,7 @@ public partial class KeyInterrupt : Tweak {
         // When this tweak runs, this method runs on *every keyboard event across the entire system*. As such, if this
         // takes too long, it *will* be noticeable to the user, including if/when they're not in the game. Yes, this
         // does in fact turn FFXIV into a de facto key logger. We have to do this to capture certain keys.
-        
+
         if (!TryFindGameWindow(out var handle)) goto ORIGINAL;
         if (GetForegroundWindow() != handle) goto ORIGINAL;
 
