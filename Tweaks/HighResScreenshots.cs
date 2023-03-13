@@ -1,6 +1,7 @@
 ﻿using System;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
+using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using ImGuiNET;
@@ -16,11 +17,14 @@ public unsafe class HighResScreenshots : Tweak {
     protected override string Author => "NotNite";
     public override bool Experimental => true;
 
+    private nint copyrightShaderAddress;
+
     public class Configs : TweakConfig {
         public int Scale = 2;
         public float Delay = 1.0f;
         public bool HideDalamudUi;
         public bool HideGameUi;
+        public bool RemoveCopyright;
     }
 
     public Configs Config { get; private set; }
@@ -54,22 +58,43 @@ public unsafe class HighResScreenshots : Tweak {
         ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale * 100);
         hasChanged |= ImGui.InputFloat("Delay", ref Config.Delay);
 
-        if (Config.Scale < 2) Config.Scale = 2;
+        if (Config.Scale < 1) Config.Scale = 1;
         if (Config.Delay < 0) Config.Delay = 0;
         hasChanged |= ImGui.Checkbox("Hide Dalamud UI in screenshots", ref Config.HideDalamudUi);
         hasChanged |= ImGui.Checkbox("Hide Game UI in screenshots", ref Config.HideGameUi);
+        if (copyrightShaderAddress == 0) {
+            var disableColor = ImGui.GetColorU32(ImGuiCol.TextDisabled);
+            ImGui.PushStyleColor(ImGuiCol.Text, disableColor);
+            ImGui.PushStyleColor(ImGuiCol.FrameBg, disableColor);
+            ImGui.PushStyleColor(ImGuiCol.FrameBgActive, disableColor);
+            ImGui.PushStyleColor(ImGuiCol.FrameBgHovered, disableColor);
+            ImGui.PushStyleColor(ImGuiCol.CheckMark, disableColor);
+            var f = false;
+            ImGui.Checkbox("Remove copyight text", ref f);
+            ImGui.PopStyleColor(5);
+            if (ImGui.IsItemHovered()) {
+                ImGui.SetTooltip("Failed to locate address needed for this option.");
+            }
+        } else {
+            hasChanged |= ImGui.Checkbox("Remove copyright text", ref Config.RemoveCopyright);
+        }
     };
 
     public override void Setup() {
         AddChangelogNewTweak("1.8.2.0");
         AddChangelog("1.8.3.0", "Added option to hide dalamud UI for screenshot.");
         AddChangelog(Changelog.UnreleasedVersion, "Added option to hide game UI for screenshots.");
+        AddChangelog(Changelog.UnreleasedVersion, "Added option to remove the FFXIV Copyright from screenshots.");
         base.Setup();
     }
 
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
 
+        if (!Service.SigScanner.TryScanText("49 8B 57 30 45 33 C9", out copyrightShaderAddress)) {
+            copyrightShaderAddress = 0;
+        }
+        
         isInputIDClickedHook ??=
             Common.Hook<IsInputIDClickedDelegate>("E9 ?? ?? ?? ?? 83 7F 44 02", IsInputIDClickedDetour);
         isInputIDClickedHook?.Enable();
@@ -83,7 +108,7 @@ public unsafe class HighResScreenshots : Tweak {
 
     const int ScreenshotButton = 543;
     public bool originalUiVisibility;
-
+    byte[] originalCopyrightBytes = null;
     // IsInputIDClicked is called from Client::UI::UIInputModule.CheckScreenshotState, which is polled
     // We change the res when the button is pressed and tell it to take a screenshot the next time it is polled
     private byte IsInputIDClickedDetour(nint a1, int a2) {
@@ -117,6 +142,10 @@ public unsafe class HighResScreenshots : Tweak {
         if (a2 == ScreenshotButton && shouldPress) {
             shouldPress = false;
             
+            if (Config.RemoveCopyright && copyrightShaderAddress != 0 && originalCopyrightBytes == null) {
+                originalCopyrightBytes = ReplaceRaw(copyrightShaderAddress, new byte[] { 0xEB, 0x54 });
+            }
+            
             // Reset the res back to normal after the screenshot is taken
             Service.Framework.RunOnTick(() => {
                 UIDebug.FreeExclusiveDraw();
@@ -133,12 +162,29 @@ public unsafe class HighResScreenshots : Tweak {
                 device->RequestResolutionChange = 1;
             }, delayTicks: 1);
 
+            Service.Framework.RunOnTick(() => {
+                if (originalCopyrightBytes != null) {
+                    ReplaceRaw(copyrightShaderAddress, originalCopyrightBytes);
+                    originalCopyrightBytes = null;
+                }
+            }, delayTicks: 60);
+            
+
             return 1;
         }
 
         return orig;
     }
 
+    private static byte[] ReplaceRaw(nint address, byte[] data)
+    {
+        var originalBytes = MemoryHelper.ReadRaw(address, data.Length);
+        var oldProtection = MemoryHelper.ChangePermission(address, data.Length, MemoryProtection.ExecuteReadWrite);
+        MemoryHelper.WriteRaw(address, data);
+        MemoryHelper.ChangePermission(address, data.Length, oldProtection);
+        return originalBytes;
+    }
+    
     public override void Disable() {
         UIDebug.FreeExclusiveDraw();
         SaveConfig(Config);
