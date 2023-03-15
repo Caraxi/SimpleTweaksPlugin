@@ -14,6 +14,11 @@ public unsafe class TreasureHuntTargets : Tweak {
     private delegate byte GetIsTargetable(GameObject* character);
     private HookWrapper<GetIsTargetable> isTargetableHook;
 
+    public override void Setup() {
+        AddChangelog(Changelog.UnreleasedVersion, "Fixed incorrect blocking targeting of Alexandrite Map targets.");
+        base.Setup();
+    }
+
     public override void Enable() {
         isTargetableHook ??= Common.Hook<GetIsTargetable>("40 53 48 83 EC 20 F3 0F 10 89 ?? ?? ?? ?? 0F 57 C0 0F 2E C8 48 8B D9 7A 0A", IsTargetableDetour);
         isTargetableHook?.Enable();
@@ -28,7 +33,7 @@ public unsafe class TreasureHuntTargets : Tweak {
         if (potentialTarget->ObjectKind != 2) return isTargetable;
         if (potentialTarget->SubKind != 5) return isTargetable;
         if (potentialTarget->EventId.Type != EventHandlerType.TreasureHuntDirector) return isTargetable;
-        return potentialTarget->NamePlateIconId == 60094 ? isTargetable : byte.MinValue;
+        return potentialTarget->NamePlateIconId is 60094 or 60096 ? isTargetable : byte.MinValue;
     }
 
     public override void Disable() {
