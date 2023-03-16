@@ -84,8 +84,8 @@ public class DesynthesisSkill : TooltipTweaks.SubTweak {
                         // Until we fix AllaganTools, if we're in an ItemDescription, just Replace (and unfortunately don't colour)
                         if (useDescription) {
                             if (Config.Delta) {
-                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthDelta:+#;-#})");
-                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({desynthDelta:+#;-#})");
+                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthDelta:+#;-#;-0})");
+                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({desynthDelta:+#;-#;-0})");
                             } else {
                                 textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({MathF.Floor(desynthLevel):F0})");
                                 textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({MathF.Floor(desynthLevel):F0})");
@@ -99,7 +99,7 @@ public class DesynthesisSkill : TooltipTweaks.SubTweak {
                             textPayload.Text = parts[0];
 
                             if (Config.Colour) seStr.Payloads.Add(new UIForegroundPayload(c));
-                            seStr.Payloads.Add(new TextPayload(Config.Delta ? $"({desynthDelta:+#;-#})" : $"({MathF.Floor(desynthLevel):F0})"));
+                            seStr.Payloads.Add(new TextPayload(Config.Delta ? $"({desynthDelta:+#;-#;-0})" : $"({MathF.Floor(desynthLevel):F0})"));
                             if (Config.Colour) seStr.Payloads.Add(new UIForegroundPayload(0));
 
                             if (parts.Length > 1)
