@@ -204,6 +204,20 @@ public static class ImGuiExt {
         return modified;
     }
 
+    public static void ShadowedText(string text, int size = 1, Vector4? shadowColour = null) {
+        shadowColour ??= new Vector4(0, 0, 0, 0.75f);
+        var pos = ImGui.GetCursorPos();
+        for (var x = -size; x <= size; x++) {
+            for (var y = -size; y <= size; y++) {
+                ImGui.SetCursorPos(pos + new Vector2(x, y));
+                ImGui.TextColored(shadowColour.Value, text);
+                ImGui.SameLine();
+            }
+        }
+        ImGui.SetCursorPos(pos);
+        ImGui.Text(text);
+    }
+
     public static Vector2 GetWindowContentRegionSize() {
         return ImGui.GetWindowContentRegionMax() - ImGui.GetWindowContentRegionMin();
     }
