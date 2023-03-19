@@ -5,19 +5,20 @@ using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface;
+using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
+using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using ImGuiScene;
-using Lumina.Data.Parsing.Uld;
 using SimpleTweaksPlugin.Utility;
 using Action = System.Action;
 using Addon = FFXIVClientStructs.Attributes.Addon;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
+using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 #pragma warning disable 659
 
@@ -472,6 +473,83 @@ public unsafe class UIDebug : DebugHelper {
 #endif
         ImGui.Text($"Scale: {atkUnitBase->Scale*100}%%");
         ImGui.Text($"Widget Count {atkUnitBase->UldManager.ObjectCount}");
+        var atkValue = atkUnitBase->AtkValues;
+        if (atkUnitBase->AtkValuesCount > 0 && atkValue != null) {
+            
+            if (ImGui.TreeNode($"Atk Values ({atkUnitBase->AtkValuesCount})###atkValues_atkUnitBase")) {
+
+                if (ImGui.BeginTable("atkUnitBase_atkValueTable", 3)) {
+                    
+                    ImGui.TableSetupColumn("Index", ImGuiTableColumnFlags.WidthFixed, 50 * ImGui.GetIO().FontGlobalScale);
+                    ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, 120 * ImGui.GetIO().FontGlobalScale);
+                    ImGui.TableSetupColumn("Value");
+                    ImGui.TableHeadersRow();
+                    
+                    try {
+                        
+                        for (var i = 0; i < atkUnitBase->AtkValuesCount; i++) {
+                            ImGui.TableNextColumn();
+                            if (atkValue->Type == 0) {
+                                ImGui.TextDisabled($"#{i}");
+                            } else {
+                                ImGui.Text($"#{i}");
+                            }
+
+                            ImGui.TableNextColumn();
+                            if (atkValue->Type == 0) {
+                                ImGui.TextDisabled("Not Set");
+                            } else {
+                                ImGui.Text($"{atkValue->Type}");
+                            }
+                            
+                            ImGui.TableNextColumn();
+                            
+                            switch (atkValue->Type) {
+                                case 0:
+                                    break;
+                                case ValueType.Int: {
+                                    ImGui.Text($"{atkValue->Int}");
+                                    break;
+                                }
+                                case ValueType.AllocatedString:
+                                case ValueType.String8:
+                                case ValueType.String: {
+                                    var str = MemoryHelper.ReadSeStringNullTerminated(new nint(atkValue->String));
+                                    DebugManager.PrintOutObject(str, (ulong) atkValue);
+                                    break;
+                                }
+                                case ValueType.UInt: {
+                                    ImGui.Text($"{atkValue->Int}");
+                                    break;
+                                }
+                                case ValueType.Bool: {
+                                    ImGui.Text($"{atkValue->Byte != 0}");
+                                    break;
+                                }
+                                case ValueType.Texture: {
+                                    DebugManager.PrintOutObject(atkValue->Texture);
+                                    break;
+                                }
+                                default: {
+                                    ImGui.TextDisabled("Unhandled Type");
+                                    ImGui.SameLine();
+                                    DebugManager.PrintOutObject(atkValue);
+                                    break;
+                                }
+                            }
+                            
+                            atkValue++;
+                        }
+                        
+                    } catch (Exception ex) {
+                        ImGui.TextColored(ImGuiColors.DalamudRed, $"{ex}");
+                    }
+                    ImGui.EndTable();
+                }
+
+                ImGui.TreePop();
+            }
+        }
             
         ImGui.Separator();
 
