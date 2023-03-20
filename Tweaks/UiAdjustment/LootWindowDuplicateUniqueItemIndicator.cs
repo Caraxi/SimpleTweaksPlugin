@@ -184,8 +184,10 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
                 var itemInfo = callingAddon->ItemsSpan[index];
                 if (itemInfo.ItemId is 0) continue;
 
+                var adjustedItemId = itemInfo.ItemId > 1_000_000 ? itemInfo.ItemId - 1_000_000 : itemInfo.ItemId;
+                
                 // If we can't match the item in lumina, skip.
-                var itemData = Service.Data.GetExcelSheet<Item>()!.GetRow(itemInfo.ItemId);
+                var itemData = Service.Data.GetExcelSheet<Item>()!.GetRow(adjustedItemId);
                 if(itemData is null) continue;
 
                 var listItemNodeId = listItemNodeIdArray[index];
