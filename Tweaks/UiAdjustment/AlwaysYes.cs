@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Interface;
+using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
@@ -14,6 +15,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
     protected override string Author => "Aireil";
 
     public class Configs : TweakConfig {
+        public bool SelectCheckBox = true;
         public bool YesNo = true;
         public bool DutyConfirmation = true;
         public bool CardsShop = true;
@@ -34,9 +36,11 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
     private string newException = string.Empty;
 
     protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+        hasChanged |= ImGui.Checkbox("Default cursor to the checkbox when one exists", ref Config.SelectCheckBox);
         ImGui.Text("Enable for:");
-        hasChanged |= ImGui.Checkbox("Most yes/(hold)/no dialogs", ref Config.YesNo);
+        ImGui.Indent();
 
+        hasChanged |= ImGui.Checkbox("Most yes/(hold)/no dialogs", ref Config.YesNo);
         ImGui.Indent();
         if (ImGui.CollapsingHeader("Exceptions##AlwaysYes")) {
             ImGui.Text("Do not change default if dialog text contains:");
@@ -75,6 +79,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         }
 
         ImGui.Unindent();
+
         hasChanged |= ImGui.Checkbox("Duty confirmations", ref Config.DutyConfirmation);
         hasChanged |= ImGui.Checkbox("TT cards sales", ref Config.CardsShop);
         hasChanged |= ImGui.Checkbox("Retainer ventures", ref Config.RetainerVentures);
@@ -87,10 +92,17 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         hasChanged |= ImGui.Checkbox("Character selection dialogs", ref Config.Lobby);
         hasChanged |= ImGui.Checkbox("Item exchange confirmations", ref Config.ItemExchangeConfirmations);
 
+        ImGui.Unindent();
+
         if (hasChanged) {
             SaveConfig(Config);
         }
     };
+
+    public override void Setup() {
+        AddChangelog(Changelog.UnreleasedVersion, "Added an option to default cursor to the checkbox when one exists.");
+        base.Setup();
+    }
 
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
@@ -101,7 +113,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
     private void OnAddonSetup(SetupAddonArgs args) {
         switch (args.AddonName) {
             case "SelectYesno":
-                if (Config.YesNo && !IsYesnoAnException(args.Addon)) SetFocusYes(args.Addon, 8, 9);
+                if (Config.YesNo && !IsYesnoAnException(args.Addon)) SetFocusYes(args.Addon, 8, 9, 4);
                 return;
             case "ContentsFinderConfirm":
                 if (Config.DutyConfirmation) SetFocusYes(args.Addon, 63);
@@ -119,7 +131,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 if (Config.RetainerVentures) SetFocusYes(args.Addon, 20);
                 return;
             case "MateriaAttachDialog":
-                if (Config.MateriaMelds) SetFocusYes(args.Addon, 35);
+                if (Config.MateriaMelds) SetFocusYes(args.Addon, 35, null, 39);
                 return;
             case "MaterializeDialog":
                 if (Config.MateriaExtractions) SetFocusYes(args.Addon, 13);
@@ -131,7 +143,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 if (Config.GlamourDispels) SetFocusYes(args.Addon, 15);
                 return;
             case "SalvageDialog":
-                if (Config.Desynthesis) SetFocusYes(args.Addon, 24);
+                if (Config.Desynthesis) SetFocusYes(args.Addon, 24, null, 23);
                 return;
             case "LobbyWKTCheck":
                 if (Config.Lobby) SetFocusYes(args.Addon, 4);
@@ -148,19 +160,32 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         }
     }
 
-    private static void SetFocusYes(AtkUnitBase* unitBase, uint yesButtonId, uint? yesHoldButtonId = null) {
+    private void SetFocusYes(AtkUnitBase* unitBase, uint yesButtonId, uint? yesHoldButtonId = null, uint? checkBoxId = null) {
         if (unitBase == null) return;
 
         var yesButton = unitBase->UldManager.SearchNodeById(yesButtonId);
         if (yesButton == null) return;
 
-        var isYesHoldVersion = yesHoldButtonId != null && !yesButton->IsVisible;
-        if (isYesHoldVersion) {
-            yesButton = unitBase->UldManager.SearchNodeById(yesHoldButtonId.Value);
-            if (yesButton == null) return;
+        uint collisionId;
+        AtkResNode* targetNode;
+        var checkBox = checkBoxId != null ? unitBase->UldManager.SearchNodeById(checkBoxId.Value) : null;
+        var textCheckBox = checkBox != null ? (AtkTextNode*)((AtkComponentNode *)checkBox)->Component->UldManager.SearchNodeById(2) : null;
+        if (Config.SelectCheckBox && checkBox != null && checkBox->IsVisible && textCheckBox != null && !textCheckBox->NodeText.ToString().IsNullOrWhitespace()) {
+            collisionId = 5;
+            targetNode = checkBox;
+        } else {
+            var holdButton = yesHoldButtonId != null ? unitBase->UldManager.SearchNodeById(yesHoldButtonId.Value) : null;
+            if (holdButton != null && !yesButton->IsVisible) {
+                collisionId = 7;
+                targetNode = holdButton;
+            }
+            else {
+                collisionId = 4;
+                targetNode = yesButton;
+            }
         }
 
-        var yesCollision = ((AtkComponentNode *)yesButton)->Component->UldManager.SearchNodeById(isYesHoldVersion ? 7u : 4u);
+        var yesCollision = ((AtkComponentNode *)targetNode)->Component->UldManager.SearchNodeById(collisionId);
         if (yesCollision == null) return;
 
         unitBase->SetFocusNode(yesCollision);
