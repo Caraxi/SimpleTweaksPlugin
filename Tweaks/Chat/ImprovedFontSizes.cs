@@ -78,7 +78,9 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
         if (Common.GetUnitBase("ConfigCharacter", out var configCharacter)) {
             ImGui.Text("Please close the character config window to make changes to this tweak.");
             if (ImGui.Button("Close It")) {
-                configCharacter->Hide(true);
+                Service.Framework.RunOnFrameworkThread(() => {
+                    AgentModule.Instance()->GetAgentByInternalId(AgentId.ConfigCharacter)->Hide();
+                });
             }
             return;
         }
