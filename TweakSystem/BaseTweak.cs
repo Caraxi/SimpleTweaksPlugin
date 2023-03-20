@@ -19,6 +19,8 @@ public abstract class BaseTweak {
 
     public virtual bool Ready { get; protected set; }
     public virtual bool Enabled { get; protected set; }
+    
+    public bool IsDisposed { get; private set; }
 
     public virtual string Key => GetType().Name;
 
@@ -357,6 +359,11 @@ public abstract class BaseTweak {
 
     public virtual void Dispose() {
         Ready = false;
+    }
+
+    internal void InternalDispose() {
+        Dispose();
+        IsDisposed = true;
     }
 
     protected ChangelogEntry AddChangelog(string version, string log) => Changelog.Add(this, version, log);

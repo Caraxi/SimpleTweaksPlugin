@@ -23,7 +23,7 @@ public class TweakProvider : IDisposable {
         foreach (var t in Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(Tweak)) && !t.IsAbstract)) {
             SimpleLog.Debug($"Initalizing Tweak: {t.Name}");
             try {
-                var tweak = (Tweak) Activator.CreateInstance(t)!;
+                var tweak = (BaseTweak) Activator.CreateInstance(t)!;
                 tweak.InterfaceSetup(SimpleTweaksPlugin.Plugin, Service.PluginInterface, SimpleTweaksPlugin.Plugin.PluginConfig, this);
                 if (tweak.CanLoad) {
                     var blacklistKey = tweak.Key;
@@ -70,7 +70,7 @@ public class TweakProvider : IDisposable {
             }
             SimpleLog.Log($"Dispose: {t.Name}");
             try {
-                t.Dispose();
+                t.InternalDispose();
             } catch (Exception ex) {
                 SimpleLog.Error($"Error in Dispose for '{t.Name}'");
                 SimpleLog.Error(ex);
