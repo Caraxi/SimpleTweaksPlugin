@@ -274,10 +274,6 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
                         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (header->Y * windowScale));
                         ImGui.SetCursorPosX(ImGui.GetCursorPosX() - iconSize);
                         var tint = GetCurrentSettingValue(setting) == 0 ? new Vector4(0.5f) : new Vector4(1.0f);
-                        if (setting == DutyFinderSetting.LevelSync && GetCurrentSettingValue(DutyFinderSetting.UnrestrictedParty) == 0) {
-                            tint = new Vector4(0.3f);
-                        }
-
                         ImGui.Image(icon.ImGuiHandle, new Vector2(iconSize), new Vector2(0), new Vector2(1), tint);
 
                         if (ImGui.IsItemHovered()) {
