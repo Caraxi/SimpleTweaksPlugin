@@ -40,6 +40,8 @@ public unsafe class HideUnwantedBanner : UiAdjustments.SubTweak
         new BannerSetting(120096, "Venture Accomplished!"),
         new BannerSetting(120141, "Voyage Commenced"),
         new BannerSetting(120142, "Voyage Complete"),
+        new BannerSetting(121081, "Tribal Quest Accepted"),
+        new BannerSetting(121082, "Tribal Quest Complete"),
     };
     
     private class Config : TweakConfig
