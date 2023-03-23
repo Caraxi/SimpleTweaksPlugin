@@ -41,6 +41,7 @@ public class Changelog : Window {
         Add("1.8.3.0", "Added a changelog");
         Add("1.8.3.0", "Fixed graphical issue when resizing windows on clear blue theme.");
         Add("1.8.2.0", "Now using the Dalamud Window system.\nESC will now close Simple Tweaks windows.");
+        Add(Changelog.UnreleasedVersion, "Added command to open the config window to a specific tweak. (/tweaks find [id])");
     }
 
 #if DEBUG

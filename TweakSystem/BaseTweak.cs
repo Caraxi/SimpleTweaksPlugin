@@ -34,6 +34,7 @@ public abstract class BaseTweak {
     protected virtual string Author => null;
     public virtual bool Experimental => false;
     public virtual IEnumerable<string> Tags { get; } = new string[0];
+    internal bool ForceOpenConfig { private get; set; }
 
     public TweakProvider TweakProvider { get; private set; } = null;
 
@@ -137,9 +138,12 @@ public abstract class BaseTweak {
     }
         
     public bool DrawConfig(ref bool hasChanged) {
+        var shouldForceOpenConfig = ForceOpenConfig;
+        ForceOpenConfig = false;
         var configTreeOpen = false;
         if ((UseAutoConfig || DrawConfigTree != null) && Enabled) {
             var x = ImGui.GetCursorPosX();
+            if (shouldForceOpenConfig) ImGui.SetNextItemOpen(true);
             if (ImGui.TreeNode($"{LocalizedName}##treeConfig_{GetType().Name}")) {
                 configTreeOpen = true;
                 DrawCommon();

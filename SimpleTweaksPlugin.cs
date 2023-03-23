@@ -279,6 +279,22 @@ namespace SimpleTweaksPlugin {
                             Service.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
                             return;
                         }
+                        case "f":
+                        case "find": {
+                            if (splitArgString.Length < 2) {
+                                Service.Chat.PrintError("/tweaks find <tweakid>");
+                                return;
+                            }
+                            var tweak = GetTweakById(splitArgString[1]);
+                            if (tweak != null) {
+                                PluginConfig.FocusTweak(tweak);
+                                return;
+                                
+                            }
+                            Service.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
+
+                            return;
+                        }
                         default: {
                             var tweak = GetTweakById(splitArgString[0]);
                             if (tweak != null) {
