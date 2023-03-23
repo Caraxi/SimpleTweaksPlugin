@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -317,6 +318,11 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
     }
 
     private void ToggleSetting(DutyFinderSetting setting) {
+        // block setting change if queued for a duty
+        if (Service.Condition[ConditionFlag.BoundToDuty97]) {
+            return;
+        }
+
         // always need at least one language enabled
         if (setting is DutyFinderSetting.Ja or DutyFinderSetting.En or DutyFinderSetting.De or DutyFinderSetting.Fr) {
             var nbEnabledLanguages = GetCurrentSettingValue(DutyFinderSetting.Ja)
