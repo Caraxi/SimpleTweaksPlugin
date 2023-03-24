@@ -13,6 +13,7 @@ namespace SimpleTweaksPlugin;
 
 public class ChangelogEntry {
     public BaseTweak? Tweak { get; }
+    public TweakProvider? TweakProvider { get; }
     public Version Version { get; }
     public string Change { get; } = string.Empty;
     public bool IsNewTweak { get; }
@@ -20,6 +21,7 @@ public class ChangelogEntry {
 
     public ChangelogEntry(BaseTweak tweak, string version, string log, bool isNewTweak = false) {
         Tweak = tweak;
+        TweakProvider = tweak.TweakProvider;
         Version = Version.Parse(version);
         Change = log;
         IsNewTweak = isNewTweak;
@@ -62,7 +64,7 @@ public class Changelog : Window {
         return changelog;
     }
 
-    public static ChangelogEntry Add(string version, string log) {
+    internal static ChangelogEntry Add(string version, string log) {
         var changelog = new ChangelogEntry(version, log);
         Add(changelog);
         return changelog;
@@ -104,11 +106,13 @@ public class Changelog : Window {
         HasNewChangelog = false;
         SimpleTweaksPlugin.Plugin.PluginConfig.LastSeenChangelog = $"{CurrentVersion}";
         SimpleTweaksPlugin.Plugin.PluginConfig.Save();
+        foreach (var v in Entries) v.Value.RemoveAll(e => e.Tweak is { IsDisposed: true } || e.TweakProvider is { IsDisposed: true });
         base.OnOpen();
     }
 
     private static bool ShouldShowTweak(BaseTweak tweak) {
         if (tweak == null) return false;
+        if (tweak.IsDisposed) return false;
         var config = SimpleTweaksPlugin.Plugin.PluginConfig;
 
         // Don't show hidden tweaks
@@ -141,8 +145,8 @@ public class Changelog : Window {
         if (Entries.TryGetValue(changelogVersion, out var changelogs)) {
             
             var generalChanges = changelogs.Where(c => c.Tweak == null);
-            var newTweaks = changelogs.Where(c => c.IsNewTweak && c.Tweak != null).OrderBy(c => c.Tweak.Name);
-            var tweakChanges = changelogs.Where(c => c.Tweak != null && c.IsNewTweak == false).OrderBy(c => c.Tweak.Name);
+            var newTweaks = changelogs.Where(c => c.IsNewTweak && c.Tweak != null && c.TweakProvider is not CustomTweakProvider).OrderBy(c => c.Tweak.Name);
+            var tweakChanges = changelogs.Where(c => c.Tweak != null && c.IsNewTweak == false && c.TweakProvider is not CustomTweakProvider).OrderBy(c => c.Tweak.Name);
 
             if (generalChanges.Any()) {
 
