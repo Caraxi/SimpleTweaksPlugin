@@ -1,3 +1,4 @@
 StopCraftingButton
 UiAdjustments@LockWindowPosition
 FixedShadowDistance
+RefreshMarketPrices
