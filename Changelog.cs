@@ -133,9 +133,13 @@ public class Changelog : Window {
             foreach (var version in Entries.Keys.OrderByDescending(v => v)) {
                 var versionLabel = version.Major == 99 ? "Unreleased" : $"{version}";
 
-                stringBuilder.AppendLine($"## [{versionLabel}]");
-                GenerateChangelogMarkdown(version, stringBuilder);
-                stringBuilder.AppendLine();
+                var versionStringBuilder = new StringBuilder();
+
+                if (!string.IsNullOrWhiteSpace(GenerateChangelogMarkdown(version, versionStringBuilder))) {
+                    stringBuilder.AppendLine($"## [{versionLabel}]");
+                    stringBuilder.Append(versionStringBuilder);
+                    stringBuilder.AppendLine();
+                }
             }
 
             
