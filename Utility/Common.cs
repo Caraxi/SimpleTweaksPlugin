@@ -318,6 +318,11 @@ public static unsafe class Common {
         [FieldOffset(8)] public ulong Unknown8;
     }
 
+    public static EventObject* SendEvent(AgentId agentId, ulong eventKind, params object[] eventparams) {
+        var agent = AgentModule.Instance()->GetAgentByInternalId(agentId);
+        return agent == null ? null : SendEvent(agent, eventKind, eventparams);
+    }
+
     public static EventObject* SendEvent(AgentInterface* agentInterface, ulong eventKind, params object[] eventParams) {
         var eventObject = stackalloc EventObject[1];
         return SendEvent(agentInterface, eventObject, eventKind, eventParams);
