@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud;
+using Dalamud.Memory;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.Interop;
@@ -672,13 +673,29 @@ namespace SimpleTweaksPlugin.Debugging {
                         ImGui.SameLine();
 
                         ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.4f, 1), $"{f.Name}: ");
+                        var fullFieldName = $"{(obj.GetType().FullName ?? "UnknownType")}.{f.Name}";
+                        if (ImGui.GetIO().KeyShift && ImGui.IsItemHovered()) {
+                            ImGui.SetTooltip(fullFieldName);
+                        }
+
+                        if (ImGui.GetIO().KeyShift && ImGui.IsItemClicked()) {
+                            ImGui.SetClipboardText(fullFieldName);
+                        }
                         ImGui.SameLine();
 
-
-                        if (fixedBuffer != null) {
-                            PrintOutValue(addr + offsetAddress, new List<string>(path) { f.Name }, f.FieldType, f.GetValue(obj), f);
-                        } else {
-                            PrintOutValue(addr + offsetAddress, new List<string>(path) { f.Name }, f.FieldType, f.GetValue(obj), f);
+                        switch (fullFieldName) {
+                            case "FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject.Name" when fixedBuffer != null:
+                                var str = MemoryHelper.ReadSeString((nint)(addr + offsetAddress), fixedBuffer.Length); 
+                                // PrintOutValue(addr + offsetAddress, new List<string>(path) { f.Name }, typeof(SeString), str, f);
+                                PrintOutObject(str, addr + offsetAddress);
+                                break;
+                            default:
+                                if (fixedBuffer != null) {
+                                    PrintOutValue(addr + offsetAddress, new List<string>(path) { f.Name }, f.FieldType, f.GetValue(obj), f);
+                                } else {
+                                    PrintOutValue(addr + offsetAddress, new List<string>(path) { f.Name }, f.FieldType, f.GetValue(obj), f);
+                                }
+                                break;
                         }
 
                         if (layoutKind == LayoutKind.Sequential && f.IsStatic == false) {
