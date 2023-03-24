@@ -52,7 +52,7 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak
     public override void Setup()
     {
         if (Ready) return;
-        AddChangelogNewTweak(Changelog.UnreleasedVersion);
+        AddChangelogNewTweak("1.8.5.0");
 
         foreach (var entry in Service.Data.GetExcelSheet<ContentRoulette>()!.Where(roulette => roulette.Name != string.Empty))
         {

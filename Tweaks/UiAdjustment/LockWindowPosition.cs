@@ -74,7 +74,7 @@ public unsafe class LockWindowPosition : UiAdjustments.SubTweak {
     };
 
     public override void Setup() {
-        AddChangelogNewTweak(Changelog.UnreleasedVersion);
+        AddChangelogNewTweak("1.8.5.0");
         base.Setup();
     }
     

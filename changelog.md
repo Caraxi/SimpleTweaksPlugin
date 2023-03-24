@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.8.5.0]
+***General Changes***
+> Added command to open the config window to a specific tweak. (/tweaks find [id])
+
+***New Tweaks***
+> **`Color Duty Roulette Names`** - Colors Duty Roulette names to indicate their completion status *(MidoriKami)*
+
+
+***Tweak Changes***
+> **`Always Yes`** - Added an option to default cursor to the checkbox when one exists.
+
+> **`Block Targeting Treasure Hunt Enemies`** - Fixed incorrect blocking targeting of Alexandrite Map targets.
+
+> **`High Resolution Screenshots`**
+> - Added option to hide game UI for screenshots.
+> - Added option to remove the FFXIV Copyright from screenshots.
+
+
 ## [1.8.4.0]
 ***New Tweaks***
 > **`Hide quality bar while crafting NO-HQ item.`** - Hides the quality bar in the Synthesis window while crafting an item that can not be HQ or Collectable.

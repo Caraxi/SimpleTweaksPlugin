@@ -15,7 +15,7 @@ public unsafe class TreasureHuntTargets : Tweak {
     private HookWrapper<GetIsTargetable> isTargetableHook;
 
     public override void Setup() {
-        AddChangelog(Changelog.UnreleasedVersion, "Fixed incorrect blocking targeting of Alexandrite Map targets.");
+        AddChangelog("1.8.5.0", "Fixed incorrect blocking targeting of Alexandrite Map targets.");
         base.Setup();
     }
 

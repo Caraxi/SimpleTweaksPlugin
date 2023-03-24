@@ -83,8 +83,8 @@ public unsafe class HighResScreenshots : Tweak {
     public override void Setup() {
         AddChangelogNewTweak("1.8.2.0");
         AddChangelog("1.8.3.0", "Added option to hide dalamud UI for screenshot.");
-        AddChangelog(Changelog.UnreleasedVersion, "Added option to hide game UI for screenshots.");
-        AddChangelog(Changelog.UnreleasedVersion, "Added option to remove the FFXIV Copyright from screenshots.");
+        AddChangelog("1.8.5.0", "Added option to hide game UI for screenshots.");
+        AddChangelog("1.8.5.0", "Added option to remove the FFXIV Copyright from screenshots.");
         base.Setup();
     }
 
