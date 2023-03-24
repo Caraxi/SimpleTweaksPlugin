@@ -1,22 +1,17 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Threading;
 using Dalamud;
-using Dalamud.Game;
-using Dalamud.Logging;
-using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.UI;
-using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
-using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
 public unsafe class RefreshMarketPrices : Tweak
 {
     public override string Name => "Refresh Market Prices";
+    public override uint Version => 2;
 
     public override string Description =>
         "Retries to get prices upon receiving the 'Please wait and try your search again' message";
@@ -76,7 +71,7 @@ public unsafe class RefreshMarketPrices : Tweak
                 if (Common.GetUnitBase<AddonItemSearchResult>(out var addonItemSearchResult)
                     && AddonItemSearchResultThrottled(addonItemSearchResult))
                 {
-                    Service.Framework.RunOnTick(RefreshPrices, TimeSpan.FromSeconds(0.5), 0, cancelSource.Token);
+                    Service.Framework.RunOnTick(RefreshPrices, TimeSpan.FromSeconds(1f), 0, cancelSource.Token);
                 }
             });
 
@@ -86,16 +81,8 @@ public unsafe class RefreshMarketPrices : Tweak
     private void RefreshPrices()
     {
         var addonItemSearchResult = Common.GetUnitBase<AddonItemSearchResult>();
-
         if (!AddonItemSearchResultThrottled(addonItemSearchResult)) return;
-
-        // open advanced search, search, close it
-        Common.GenerateCallback(&addonItemSearchResult->AtkUnitBase, 1);
-        if (Common.GetUnitBase("ItemSearchFilter", out var isf))
-        {
-            Common.GenerateCallback(isf, 0);
-            Common.CloseAddon("ItemSearchFilter");
-        }
+        Common.SendEvent(AgentId.ItemSearch, 2, 0, 0);
     }
 
     private bool AddonItemSearchResultThrottled(AddonItemSearchResult* addon) => addon != null
