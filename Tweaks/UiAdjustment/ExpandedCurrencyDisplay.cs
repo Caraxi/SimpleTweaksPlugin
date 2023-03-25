@@ -90,13 +90,6 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         base.Disable();
     }
 
-    public override void Dispose()
-    {
-        Common.FrameworkUpdate -= OnFrameworkUpdate;
-        FreeAllNodes();
-        base.Dispose();
-    }
-
     private void OnFrameworkUpdate()
     {
         if (!UiHelper.IsAddonReady(AddonMoney)) return;
