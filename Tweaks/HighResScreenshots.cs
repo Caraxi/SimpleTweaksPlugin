@@ -119,9 +119,11 @@ public unsafe class HighResScreenshots : Tweak {
             oldWidth = device->Width;
             oldHeight = device->Height;
 
-            device->NewWidth = oldWidth * (uint)Config.Scale;
-            device->NewHeight = oldHeight * (uint)Config.Scale;
-            device->RequestResolutionChange = 1;
+            if (Config.Scale > 1) {
+                device->NewWidth = oldWidth * (uint)Config.Scale;
+                device->NewHeight = oldHeight * (uint)Config.Scale;
+                device->RequestResolutionChange = 1;
+            }
 
             if (Config.HideGameUi) {
                 var raptureAtkModule = Framework.Instance()->GetUiModule()->GetRaptureAtkModule();
@@ -157,9 +159,11 @@ public unsafe class HighResScreenshots : Tweak {
                 }
 
                 var device = Device.Instance();
-                device->NewWidth = oldWidth;
-                device->NewHeight = oldHeight;
-                device->RequestResolutionChange = 1;
+                if (device->Width != oldWidth || device->Height != oldHeight) {
+                    device->NewWidth = oldWidth;
+                    device->NewHeight = oldHeight;
+                    device->RequestResolutionChange = 1;
+                }
             }, delayTicks: 1);
 
             Service.Framework.RunOnTick(() => {
