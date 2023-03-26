@@ -286,8 +286,12 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
             descriptionString.Append(new UIGlowPayload(0));
             descriptionString.Append($"{quality}");
         }
-        
-        SetTooltipString(stringArrayData, TooltipTweaks.ActionTooltipField.Description, descriptionString);
+        try {
+            SetTooltipString(stringArrayData, TooltipTweaks.ActionTooltipField.Description, descriptionString);
+        } catch (Exception ex) {
+            SimpleLog.Error(ex);
+            Plugin.Error(this, ex);
+        }
     }
 }
 

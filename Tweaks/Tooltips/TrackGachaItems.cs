@@ -117,7 +117,13 @@ public unsafe class TrackGachaItems : TooltipTweaks.SubTweak {
                 description.Payloads.Add(new TextPayload($"Obtained: {obtainedCount}/{gachaList.Length}"));
                 description.Payloads.Add(new UIForegroundPayload(0));
             }
-            SetTooltipString(stringArrayData, TooltipTweaks.ActionTooltipField.Description, description);
+
+            try {
+                SetTooltipString(stringArrayData, TooltipTweaks.ActionTooltipField.Description, description);
+            } catch (Exception ex) {
+                SimpleLog.Error(ex);
+            }
+             
         }
 
     }

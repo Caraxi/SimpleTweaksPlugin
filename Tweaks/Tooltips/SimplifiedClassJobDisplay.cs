@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Dalamud;
@@ -42,6 +43,11 @@ public unsafe class SimplifiedClassJobDisplay : TooltipTweaks.SubTweak {
         foreach (var (key, (baseClass, job)) in replaceGroup) {
             newStr = newStr.Replace(key, QuestManager.IsQuestComplete(job.UnlockQuest.Row) ? TooltipClassJobNameDisplay(job) : TooltipClassJobNameDisplay(baseClass));
         }
-        SetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ClassJobCategory, newStr);
+
+        try {
+            SetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ClassJobCategory, newStr);
+        } catch (Exception ex) {
+            Plugin.Error(this, ex);
+        }
     }
 }

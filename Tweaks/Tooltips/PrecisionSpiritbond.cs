@@ -1,4 +1,5 @@
-﻿using FFXIVClientStructs.FFXIV.Component.GUI;
+﻿using System;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks;
@@ -29,7 +30,12 @@ public class PrecisionSpiritbond : SubTweak {
     public override unsafe void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         var c = GetTooltipString(stringArrayData, SpiritbondPercent);
         if (c == null || c.TextValue.StartsWith("?")) return;
-        SetTooltipString(stringArrayData, SpiritbondPercent, (Item.Spiritbond / 100f).ToString(Config.TrailingZero ? "F2" : "0.##") + "%");
+        try {
+            SetTooltipString(stringArrayData, SpiritbondPercent, (Item.Spiritbond / 100f).ToString(Config.TrailingZero ? "F2" : "0.##") + "%");
+        } catch (Exception ex) {
+            Plugin.Error(this, ex);
+        }
+        
     }
 
     protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {

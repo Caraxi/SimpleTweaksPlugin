@@ -28,34 +28,45 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         
         protected static unsafe SeString GetTooltipString(StringArrayData* stringArrayData, int field) {
             try {
+                if (stringArrayData->AtkArrayData.Size <= field) 
+                    throw new IndexOutOfRangeException($"Attempted to get Index#{field} ({field}) but size is only {stringArrayData->AtkArrayData.Size}");
+
                 var stringAddress = new IntPtr(stringArrayData->StringArray[field]);
                 return stringAddress == IntPtr.Zero ? null : MemoryHelper.ReadSeStringNullTerminated(stringAddress);
-            } catch {
-                return null;
+            } catch (Exception ex) {
+                SimpleLog.Error(ex);
+                return new SeString();
             }
         }
 
         protected static unsafe void SetTooltipString(StringArrayData* stringArrayData, TooltipTweaks.ItemTooltipField field, SeString seString) {
             try {
+                if (stringArrayData->AtkArrayData.Size <= (int)field) 
+                    throw new IndexOutOfRangeException($"Attempted to set Index#{(int)field} ({field}) but size is only {stringArrayData->AtkArrayData.Size}");
+
                 if (!ItemStringPointers.ContainsKey(field)) ItemStringPointers.Add(field, Marshal.AllocHGlobal(4096));
                 var bytes = seString.Encode();
                 Marshal.Copy(bytes, 0, ItemStringPointers[field], bytes.Length);
                 Marshal.WriteByte(ItemStringPointers[field], bytes.Length, 0);
                 stringArrayData->StringArray[(int)field] = (byte*)ItemStringPointers[field];
-            } catch {
-                //
+            } catch (Exception ex) {
+                throw;
             }
         }
         
         protected static unsafe void SetTooltipString(StringArrayData* stringArrayData, TooltipTweaks.ActionTooltipField field, SeString seString) {
             try {
+                if (stringArrayData->AtkArrayData.Size <= (int)field) {
+                    throw new IndexOutOfRangeException($"Attempted to set Index#{(int)field} ({field}) but size is only {stringArrayData->AtkArrayData.Size}");
+                }
+                    
                 if (!ActionStringPointers.ContainsKey(field)) ActionStringPointers.Add(field, Marshal.AllocHGlobal(4096));
                 var bytes = seString.Encode();
                 Marshal.Copy(bytes, 0, ActionStringPointers[field], bytes.Length);
                 Marshal.WriteByte(ActionStringPointers[field], bytes.Length, 0);
                 stringArrayData->StringArray[(int)field] = (byte*)ActionStringPointers[field];
             } catch {
-                //
+                throw;
             }
         }
 
@@ -65,6 +76,7 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
     }
 
     public override string Name => "Tooltip Tweaks";
+    public override uint Version => 2;
     private unsafe delegate IntPtr ActionTooltipDelegate(AtkUnitBase* a1, void* a2, ulong a3);
     private HookWrapper<ActionTooltipDelegate> actionTooltipHook;
 

@@ -1,4 +1,5 @@
-﻿using Dalamud.Game.Text.SeStringHandling.Payloads;
+﻿using System;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
@@ -54,7 +55,12 @@ public class ShowItemID : TooltipTweaks.SubTweak {
         }
         seStr.Payloads.Add(new TextPayload($"]"));
         seStr.Payloads.Add(new UIForegroundPayload(0));
-        SetTooltipString(stringArrayData, ItemUiCategory, seStr);
+        try {
+            SetTooltipString(stringArrayData, ItemUiCategory, seStr);
+        } catch (Exception ex) {
+            Plugin.Error(this, ex);
+        }
+        
     }
 
     public override unsafe void OnActionTooltip(AtkUnitBase* addon, TooltipTweaks.HoveredActionDetail action) {

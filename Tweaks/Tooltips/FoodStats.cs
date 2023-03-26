@@ -215,7 +215,12 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
 
                         if (payloads.Count > 0 && hasChange) {
                             var seStr = new SeString(payloads);
-                            SetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.Effects, seStr);
+                            try {
+                                SetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.Effects, seStr);
+                            } catch (Exception ex) {
+                                Plugin.Error(this, ex);
+                            }
+                            
                         }
                     }
 

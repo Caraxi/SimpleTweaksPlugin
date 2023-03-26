@@ -1,4 +1,5 @@
-﻿using FFXIVClientStructs.FFXIV.Component.GUI;
+﻿using System;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltipField;
@@ -28,7 +29,12 @@ public class PrecisionDurability : TooltipTweaks.SubTweak {
     public override unsafe void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         var c = GetTooltipString(stringArrayData, DurabilityPercent);
         if (c == null || c.TextValue.StartsWith("?")) return;
-        SetTooltipString(stringArrayData, DurabilityPercent, (Item.Condition / 300f).ToString(Config.TrailingZero ? "F2" : "0.##") + "%");
+        try {
+            SetTooltipString(stringArrayData, DurabilityPercent, (Item.Condition / 300f).ToString(Config.TrailingZero ? "F2" : "0.##") + "%");
+        } catch (Exception ex) {
+            Plugin.Error(this, ex);
+        }
+        
     }
 
     protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {

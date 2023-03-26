@@ -105,7 +105,13 @@ public class DesynthesisSkill : TooltipTweaks.SubTweak {
                             if (parts.Length > 1)
                                 seStr.Payloads.Add(new TextPayload(parts[1]));
                         }
-                        SetTooltipString(stringArrayData, useDescription ? ItemDescription : ExtractableProjectableDesynthesizable, seStr);
+
+                        try {
+                            SetTooltipString(stringArrayData, useDescription ? ItemDescription : ExtractableProjectableDesynthesizable, seStr);
+                        } catch (Exception ex) {
+                            Plugin.Error(this, ex);
+                        }
+                        
                     }
                 }
             }

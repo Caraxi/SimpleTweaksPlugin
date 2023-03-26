@@ -75,7 +75,12 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
         }
         
         if (v > 0) {
-            SetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ControlsDisplay, seStr);
+            try {
+                SetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ControlsDisplay, seStr);
+            } catch (Exception ex) {
+                Plugin.Error(this, ex);
+            }
+            
         }
     }
 

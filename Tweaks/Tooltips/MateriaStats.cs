@@ -154,7 +154,12 @@ public class MateriaStats : TooltipTweaks.SubTweak {
                         hasApplied = true;
                         if (data.TextValue.EndsWith("]")) continue;
                         ApplyMateriaDifference(data, baseParamDeltas[param.RowId], baseParamOriginal[param.RowId], baseParamLimits[param.RowId]);
-                        SetTooltipString(stringArrayData, field, data);
+                        try {
+                            SetTooltipString(stringArrayData, field, data);
+                        } catch (Exception ex) {
+                            Plugin.Error(this, ex);
+                        }
+                        
                     }
 
                 }
@@ -167,8 +172,12 @@ public class MateriaStats : TooltipTweaks.SubTweak {
                         seString.Payloads.Add(new TextPayload($" +{baseParamOriginal[param.RowId]}"));
                         ApplyMateriaDifference(seString, baseParamDeltas[param.RowId], baseParamOriginal[param.RowId], baseParamLimits[param.RowId]);
 
-                        SetTooltipString(stringArrayData, (TooltipTweaks.ItemTooltipField) (37 + baseParamLines), seString);
-                        numberArrayData->IntArray[21] += 1;
+                        try {
+                            SetTooltipString(stringArrayData, (TooltipTweaks.ItemTooltipField)(37 + baseParamLines), seString);
+                            numberArrayData->IntArray[21] += 1;
+                        } catch (Exception ex) {
+                            Plugin.Error(this, ex);
+                        }
                     }
                 }
             }
