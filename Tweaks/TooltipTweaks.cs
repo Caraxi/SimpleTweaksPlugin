@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Memory;
+using Dalamud.Memory.Exceptions;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
@@ -44,8 +45,16 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
                 if (stringArrayData->AtkArrayData.Size <= (int)field) 
                     throw new IndexOutOfRangeException($"Attempted to set Index#{(int)field} ({field}) but size is only {stringArrayData->AtkArrayData.Size}");
 
-                if (!ItemStringPointers.ContainsKey(field)) ItemStringPointers.Add(field, Marshal.AllocHGlobal(4096));
+                if (!ItemStringPointers.ContainsKey(field)) {
+                    var newAlloc = Marshal.AllocHGlobal(4096);
+                    if (newAlloc == nint.Zero) {
+                        throw new MemoryAllocationException("Failed to allocate memory.");
+                    }
+                    ItemStringPointers.Add(field, newAlloc);
+                }
+                
                 var bytes = seString.Encode();
+                if (bytes.Length > 4095) throw new Exception($"Attempted to set a string of length {bytes.Length} to {field}. Max size is 4096");
                 Marshal.Copy(bytes, 0, ItemStringPointers[field], bytes.Length);
                 Marshal.WriteByte(ItemStringPointers[field], bytes.Length, 0);
                 stringArrayData->StringArray[(int)field] = (byte*)ItemStringPointers[field];
@@ -60,8 +69,15 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
                     throw new IndexOutOfRangeException($"Attempted to set Index#{(int)field} ({field}) but size is only {stringArrayData->AtkArrayData.Size}");
                 }
                     
-                if (!ActionStringPointers.ContainsKey(field)) ActionStringPointers.Add(field, Marshal.AllocHGlobal(4096));
+                if (!ActionStringPointers.ContainsKey(field)) {
+                    var newAlloc = Marshal.AllocHGlobal(4096);
+                    if (newAlloc == nint.Zero) {
+                        throw new MemoryAllocationException("Failed to allocate memory.");
+                    }
+                    ActionStringPointers.Add(field, newAlloc);
+                }
                 var bytes = seString.Encode();
+                if (bytes.Length > 4095) throw new Exception($"Attempted to set a string of length {bytes.Length} to {field}. Max size is 4096");
                 Marshal.Copy(bytes, 0, ActionStringPointers[field], bytes.Length);
                 Marshal.WriteByte(ActionStringPointers[field], bytes.Length, 0);
                 stringArrayData->StringArray[(int)field] = (byte*)ActionStringPointers[field];
