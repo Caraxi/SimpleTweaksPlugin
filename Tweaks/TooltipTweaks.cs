@@ -42,6 +42,8 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
 
         protected static unsafe void SetTooltipString(StringArrayData* stringArrayData, TooltipTweaks.ItemTooltipField field, SeString seString) {
             try {
+                seString ??= new SeString();
+                
                 if (stringArrayData->AtkArrayData.Size <= (int)field) 
                     throw new IndexOutOfRangeException($"Attempted to set Index#{(int)field} ({field}) but size is only {stringArrayData->AtkArrayData.Size}");
 
@@ -65,6 +67,8 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         
         protected static unsafe void SetTooltipString(StringArrayData* stringArrayData, TooltipTweaks.ActionTooltipField field, SeString seString) {
             try {
+                seString ??= new SeString();
+                
                 if (stringArrayData->AtkArrayData.Size <= (int)field) {
                     throw new IndexOutOfRangeException($"Attempted to set Index#{(int)field} ({field}) but size is only {stringArrayData->AtkArrayData.Size}");
                 }
