@@ -1056,6 +1056,47 @@ public unsafe class UIDebug : DebugHelper {
             node->SetPositionFloat(v2.X, v2.Y);
         }
 
+        var evt = node->AtkEventManager.Event;
+        if (evt != null) {
+            if (ImGui.TreeNode($"Events##{(ulong)node:X}")) {
+                if (ImGui.BeginTable($"eventTable##{(ulong)node:X}", 7, ImGuiTableFlags.Resizable)) {
+                    ImGui.TableSetupColumn("#", ImGuiTableColumnFlags.WidthFixed, 30);
+                    ImGui.TableSetupColumn("Type", ImGuiTableColumnFlags.WidthFixed, 150);
+                    ImGui.TableSetupColumn("Param", ImGuiTableColumnFlags.WidthFixed, 80);
+                    ImGui.TableSetupColumn("Flags", ImGuiTableColumnFlags.WidthFixed, 80);
+                    ImGui.TableSetupColumn("Unk29", ImGuiTableColumnFlags.WidthFixed, 50);
+                    ImGui.TableSetupColumn("Target", ImGuiTableColumnFlags.WidthFixed, 100);
+                    ImGui.TableSetupColumn("Listener", ImGuiTableColumnFlags.WidthFixed, 100);
+                    
+                    ImGui.TableHeadersRow();
+
+                    var i = 0;
+                    while (evt != null) {
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{i++}");
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{evt->Type}");
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{evt->Param}");
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{evt->Flags}");
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{evt->Unk29}");
+                        ImGui.TableNextColumn();
+                        DebugManager.PrintAddress(evt->Target);
+                        ImGui.TableNextColumn();
+                        DebugManager.PrintAddress(evt->Listener);
+                        
+                        evt = evt->NextEvent;
+                    }
+                    
+                    ImGui.EndTable();
+                }
+
+                ImGui.TreePop();
+            }
+        }
+
 
     }
 
