@@ -18,7 +18,7 @@ public unsafe class CharacterClassSwitcher : Tweak {
     private HookWrapper<SetupHandle> setupHook;
 
     public override void Setup() {
-        AddChangelog(Changelog.UnreleasedVersion, "Fixed tweak not working on DoH without desynthesis unlocked.");
+        AddChangelog("1.8.5.1", "Fixed tweak not working on DoH without desynthesis unlocked.");
         base.Setup();
     }
 

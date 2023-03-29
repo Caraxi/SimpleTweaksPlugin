@@ -84,7 +84,7 @@ public unsafe class HighResScreenshots : Tweak {
         AddChangelog("1.8.3.0", "Added option to hide dalamud UI for screenshot.");
         AddChangelog("1.8.5.0", "Added option to hide game UI for screenshots.");
         AddChangelog("1.8.5.0", "Added option to remove the FFXIV Copyright from screenshots.");
-        AddChangelog(Changelog.UnreleasedVersion, "Renamed from 'High Resolution Screenshots' to 'Screenshot Improvements'");
+        AddChangelog("1.8.5.1", "Renamed from 'High Resolution Screenshots' to 'Screenshot Improvements'");
         base.Setup();
     }
 

@@ -116,7 +116,7 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
     private HookWrapper<GetItemRowDelegate> getItemRowHook;
 
     public override void Setup() {
-        AddChangelog(Changelog.UnreleasedVersion, "Added additional protections to attempt to reduce crashing. Please report any crashes you believe may be related to tooltips.");
+        AddChangelog("1.8.5.1", "Added additional protections to attempt to reduce crashing. Please report any crashes you believe may be related to tooltips.");
         base.Setup();
     }
 
