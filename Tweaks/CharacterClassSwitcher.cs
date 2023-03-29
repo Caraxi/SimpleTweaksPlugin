@@ -17,6 +17,11 @@ public unsafe class CharacterClassSwitcher : Tweak {
     private HookWrapper<EventHandle> eventHook;
     private HookWrapper<SetupHandle> setupHook;
 
+    public override void Setup() {
+        AddChangelog(Changelog.UnreleasedVersion, "Fixed tweak not working on DoH without desynthesis unlocked.");
+        base.Setup();
+    }
+
     public override void Enable() {
         eventHook ??= Common.Hook<EventHandle>("48 89 5C 24 ?? 57 48 83 EC 20 48 8B D9 4D 8B D1", EventDetour);
         eventHook.Enable();
@@ -81,10 +86,16 @@ public unsafe class CharacterClassSwitcher : Tweak {
                 switch (componentNode->AtkResNode.Type) {
                     case (NodeType)1001: {
                         // DoH
-                        var evt = componentNode->AtkResNode.AtkEventManager.Event;
-                        while (evt != null && evt->Param == 14 + cjId) {
-                            if (evt->Type == AtkEventType.ButtonClick) evt->Param = 0x53541000 + cjId;
-                            evt = evt->NextEvent;
+                        var colNode = Common.GetNodeByID<AtkCollisionNode>(&componentNode->Component->UldManager, 12, NodeType.Collision);
+                        if (colNode != null) {
+                            var evt = colNode->AtkResNode.AtkEventManager.Event;
+                            while (evt != null) {
+                                if (evt->Type is AtkEventType.MouseClick or AtkEventType.InputReceived) {
+                                    evt->Param = 0x53541000 + cjId;
+                                    evt->Listener = (AtkEventListener*)atkUnitBase;
+                                }
+                                evt = evt->NextEvent;
+                            }
                         }
                         
                         break;
@@ -184,10 +195,15 @@ public unsafe class CharacterClassSwitcher : Tweak {
 
                     switch (componentNode->AtkResNode.Type) {
                         case (NodeType)1001: {
-                            var evt = componentNode->AtkResNode.AtkEventManager.Event;
-                            while (evt != null) {
-                                if (evt->Type == AtkEventType.ButtonClick && evt->Param == 0x53541000 + cjId) evt->Param = 14 + cjId;
-                                evt = evt->NextEvent;
+                            var colNode = Common.GetNodeByID<AtkCollisionNode>(&componentNode->Component->UldManager, 12, NodeType.Collision);
+                            if (colNode != null) {
+                                var evt = colNode->AtkResNode.AtkEventManager.Event;
+                                while (evt != null) {
+                                    if (evt->Type is AtkEventType.MouseClick) evt->Param = 260;
+                                    if (evt->Type is AtkEventType.InputReceived) evt->Param = 512;
+                                    if (evt->Type is AtkEventType.MouseClick or AtkEventType.InputReceived) evt->Listener = (AtkEventListener*)componentNode->Component;
+                                    evt = evt->NextEvent;
+                                }
                             }
                             break;
                         }
