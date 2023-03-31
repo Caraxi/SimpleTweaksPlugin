@@ -286,7 +286,13 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         try {
             var windowScale = root->ScaleX;
             ImGuiHelpers.ForceNextWindowMainViewport();
-            ImGui.SetNextWindowPos(new Vector2(root->X + ((header->X + buttonsHeader->X) * windowScale), root->Y + (buttonsHeader->Y * windowScale)), ImGuiCond.Always);
+            ImGuiHelpers.SetNextWindowPosRelativeMainViewport(
+                new Vector2(
+                    root->X + ((header->X + buttonsHeader->X) * windowScale),
+                    root->Y + (buttonsHeader->Y * windowScale)
+                    ),
+                ImGuiCond.Always
+                );
             if (ImGui.Begin(
                     "ImprovedDutyFinderSettings",
                     ImGuiWindowFlags.NoTitleBar
