@@ -39,7 +39,6 @@ public static unsafe class Common {
     public static event Action FrameworkUpdate;
     
     public static void InvokeFrameworkUpdate() {
-        if (!SimpleTweaksPlugin.Plugin.PluginConfig.NoFools && Fools.IsFoolsDay) Fools.FrameworkUpdate();
         if (!PerformanceMonitor.DoFrameworkMonitor) {
             FrameworkUpdate?.Invoke();
             return;

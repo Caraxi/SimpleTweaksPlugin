@@ -44,6 +44,8 @@ public class Changelog : Window {
         Add("1.8.3.0", "Fixed graphical issue when resizing windows on clear blue theme.");
         Add("1.8.2.0", "Now using the Dalamud Window system.\nESC will now close Simple Tweaks windows.");
         Add("1.8.5.0", "Added command to open the config window to a specific tweak. (/tweaks find [id])");
+        Add("1.8.5.2", "Made April Fools Joke Stupid");
+        Add("1.8.5.3", "Removed April Fools joke due to potential crash.");
     }
 
 #if DEBUG
