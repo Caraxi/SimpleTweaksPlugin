@@ -109,9 +109,10 @@ public unsafe class AgentDebug : DebugHelper {
             var l = new List<AgentId>();
             
             var agentClasses = typeof(AgentInterface).Assembly.GetTypes().Select((t) => (t, t.GetCustomAttributes(typeof(AgentAttribute)).Cast<AgentAttribute>().ToArray())).Where(t => t.Item2.Length > 0).ToArray();
-            
-            foreach (var a in Enum.GetValues(typeof(AgentId)).Cast<AgentId>()) {
-                l.Add(a);
+
+            for (int a = 0; a < 425; a++)
+            {
+                l.Add((AgentId)a);
                 if ((uint)a > maxAgentId) {
                     maxAgentId = (uint)a;
                 }
