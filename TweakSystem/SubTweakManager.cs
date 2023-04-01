@@ -38,11 +38,11 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
                 if (PluginConfig.BlacklistedTweaks.Contains(blacklistKey)) {
                     SimpleLog.Log("Skipping blacklisted tweak: " + tweak.Key);
                     var blTweak = new BlacklistedTweak(tweak.Key, tweak.Name, "Disabled due to known issues.");
-                    blTweak.InterfaceSetup(SimpleTweaksPlugin.Plugin, Service.PluginInterface, SimpleTweaksPlugin.Plugin.PluginConfig, this.TweakProvider);
+                    blTweak.InterfaceSetup(SimpleTweaksPlugin.Plugin, Service.PluginInterface, SimpleTweaksPlugin.Plugin.PluginConfig, this.TweakProvider, this);
                     tweakList.Add(blTweak);
                     continue;
                 }
-                tweak.InterfaceSetup(this.Plugin, this.PluginInterface, this.PluginConfig, this.TweakProvider);
+                tweak.InterfaceSetup(this.Plugin, this.PluginInterface, this.PluginConfig, this.TweakProvider, this);
                 if (tweak is not IDisabledTweak) {
                     tweak.Setup();
                 }

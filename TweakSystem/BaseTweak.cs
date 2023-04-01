@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Dalamud.Interface.Colors;
 using Dalamud.Plugin;
 using ImGuiNET;
 using Newtonsoft.Json;
@@ -37,6 +38,7 @@ public abstract class BaseTweak {
     internal bool ForceOpenConfig { private get; set; }
 
     public TweakProvider TweakProvider { get; private set; } = null;
+    public SubTweakManager TweakManager { get; private set; } = null;
 
     public virtual bool CanLoad => true;
 
@@ -44,11 +46,12 @@ public abstract class BaseTweak {
 
     protected CultureInfo Culture => Plugin.Culture;
 
-    public void InterfaceSetup(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface, SimpleTweaksPluginConfig config, TweakProvider tweakProvider) {
+    public void InterfaceSetup(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface, SimpleTweaksPluginConfig config, TweakProvider tweakProvider, SubTweakManager tweakManager = null) {
         this.PluginInterface = pluginInterface;
         this.PluginConfig = config;
         this.Plugin = plugin;
         this.TweakProvider = tweakProvider;
+        this.TweakManager = tweakManager;
     }
 
     public string LocString(string key, string fallback, string description = null) {
@@ -84,6 +87,10 @@ public abstract class BaseTweak {
             if (ImGui.IsItemClicked()) {
                 ImGui.SetClipboardText(Key);
             }
+        }
+
+        if (TweakManager is { Enabled: false }) { 
+            ImGui.TextColored(ImGuiColors.DalamudRed, $"\tThis tweak is part of {TweakManager.Name}. Enable it in General Options.");
         }
     }
 

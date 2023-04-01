@@ -89,7 +89,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
         var enabled = t.Enabled;
         if (t.Experimental && !ShowExperimentalTweaks && !enabled) return;
 
-        if (t is IDisabledTweak || (!enabled && ImGui.GetIO().KeyShift)) {
+        if (t is IDisabledTweak || (!enabled && ImGui.GetIO().KeyShift) || t.TweakManager is {Enabled: false}) {
             if (HiddenTweaks.Contains(t.Key)) {
                 if (ImGui.Button($"S##unhideTweak_{t.Key}", new Vector2(23) * ImGui.GetIO().FontGlobalScale)) {
                     HiddenTweaks.Remove(t.Key);
