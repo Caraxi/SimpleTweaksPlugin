@@ -38,6 +38,7 @@ public class HookWrapper<T> : IHookWrapper where T : Delegate {
         wrappedHook?.Dispose();
     }
 
+    public nint Address => wrappedHook.Address;
     public T Original => wrappedHook.Original;
     public bool IsEnabled => wrappedHook.IsEnabled;
     public bool IsDisposed => wrappedHook.IsDisposed;
