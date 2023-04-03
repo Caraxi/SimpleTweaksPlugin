@@ -108,18 +108,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
         
         base.Disable();
     }
-
-    public override void Dispose()
-    {
-        Common.FrameworkUpdate -= OnFrameworkUpdate;
-        Service.ClientState.EnterPvP -= OnEnterPvP;
-        Service.ClientState.LeavePvP -= OnLeavePvP;
-        
-        FreeAllNodes();
-        
-        base.Dispose();
-    }
-
+    
     private void OnEnterPvP()
     {
         Common.FrameworkUpdate -= OnFrameworkUpdate;
