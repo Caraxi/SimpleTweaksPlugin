@@ -55,13 +55,6 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak
         Common.AddonFinalize -= OnAddonFinalize;
         base.Disable();
     }
-
-    public override void Dispose()
-    {
-        Common.AddonSetup -= OnAddonSetup;
-        Common.AddonFinalize -= OnAddonFinalize;
-        base.Dispose();
-    }
     
     private void OnAddonSetup(SetupAddonArgs obj)
     {
