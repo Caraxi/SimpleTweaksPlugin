@@ -78,7 +78,6 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
     public override void Dispose()
     {
         onHotBarSlotUpdateHook?.Dispose();
-        ResetAllHotBars();
         base.Dispose();
     }
 
