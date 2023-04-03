@@ -76,7 +76,6 @@ public unsafe partial class EchoPartyFinder : ChatTweaks.SubTweak
     public override void Dispose()
     {
         onLookingForGroupEventHook?.Dispose();
-        Service.ClientState.TerritoryChanged -= OnZoneChange;
         base.Dispose();
     }
 
