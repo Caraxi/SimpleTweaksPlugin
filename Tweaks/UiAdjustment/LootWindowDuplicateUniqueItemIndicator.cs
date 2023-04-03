@@ -24,13 +24,9 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     public override string Description => "Marks unobtainable and already unlocked items in the loot window.\nAdditionally allows you to lock the loot window's position.";
 
     private delegate nint OnRequestedUpdateDelegate(nint a1, nint a2, nint a3);
-    private delegate nint MoveAddonDetour(RaptureAtkModule* atkModule, AtkUnitBase* addon, nint idk2);
     
     [Signature("40 53 48 83 EC 20 48 8B 42 58", DetourName = nameof(OnNeedGreedRequestedUpdate))]
     private readonly Hook<OnRequestedUpdateDelegate>? needGreedOnRequestedUpdateHook = null!;
-
-    [Signature("40 53 48 83 EC 20 80 A2 ?? ?? ?? ?? ??", DetourName = nameof(OnNeedGreedMove))]
-    private readonly Hook<MoveAddonDetour>? needGreedOnMoveHook = null!;
 
     private static AtkUnitBase* AddonNeedGreed => (AtkUnitBase*) Service.GameGui.GetAddonByName("NeedGreed");
 
@@ -52,9 +48,6 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     
     public class Config : TweakConfig
     {
-        [TweakConfigOption("Lock Window Position")]
-        public bool LockWindowPosition = false;
-
         [TweakConfigOption("Mark Un-obtainable Items")]
         public bool MarkUnobtainable = true;
 
@@ -73,7 +66,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         AddChangelog("1.8.3.0", "Rebuilt tweak to use images");
         AddChangelog("1.8.3.0", "Fixed tweak not checking armory and equipped items");
         AddChangelog("1.8.3.0", "Added 'Lock Loot Window' feature");
-        AddChangelog("1.8.3.0", "Added configuration options");
+        AddChangelog(Changelog.UnreleasedVersion, "Removed Window Lock Feature, 'Lock Window Position' tweak has returned.");
 
         SignatureHelper.Initialise(this);
         Ready = true;
@@ -84,7 +77,6 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         TweakConfig = LoadConfig<Config>() ?? new Config();
         
         needGreedOnRequestedUpdateHook?.Enable();
-        needGreedOnMoveHook?.Enable();
         Common.AddonSetup += OnAddonSetup;
         Common.AddonFinalize += OnAddonFinalize;
         base.Enable();
@@ -95,7 +87,6 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         SaveConfig(TweakConfig);
         
         needGreedOnRequestedUpdateHook?.Disable();
-        needGreedOnMoveHook?.Disable();
         Common.AddonSetup -= OnAddonSetup;
         Common.AddonFinalize -= OnAddonFinalize;
         base.Disable();
@@ -104,9 +95,6 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     public override void Dispose()
     {
         needGreedOnRequestedUpdateHook?.Dispose();
-        needGreedOnMoveHook?.Dispose();
-        Common.AddonSetup -= OnAddonSetup;
-        Common.AddonFinalize -= OnAddonFinalize;
         base.Dispose();
     }
 
@@ -256,22 +244,6 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     {
         var exdItem = ExdModule.GetItemRowById(itemId);
         return exdItem is null || UIState.Instance()->IsItemActionUnlocked(exdItem) is 1;
-    }
-
-    private nint OnNeedGreedMove(RaptureAtkModule* atkModule, AtkUnitBase* addon, nint idk2)
-    {
-        var skipOriginal = false;
-        
-        try
-        {
-            skipOriginal = TweakConfig.LockWindowPosition && addon == AddonNeedGreed;
-        }
-        catch (Exception e)
-        {
-            PluginLog.Error(e, "Something went wrong in LootWindowDuplicateUniqueItemIndicator, let MidoriKami know!");
-        }
-
-        return skipOriginal ? nint.Zero : needGreedOnMoveHook!.Original(atkModule, addon, idk2);
     }
     
     private void MakeCrossNode(uint nodeId, AtkComponentNode* parent)
