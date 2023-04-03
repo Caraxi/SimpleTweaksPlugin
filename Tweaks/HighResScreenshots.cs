@@ -1,13 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using Dalamud.Game;
+using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using ImGuiNET;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
+using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
@@ -24,6 +28,12 @@ public unsafe class HighResScreenshots : Tweak {
         public bool HideDalamudUi;
         public bool HideGameUi;
         public bool RemoveCopyright;
+        public bool UseReShade = false;
+
+        public VirtualKey ReShadeMainKey = VirtualKey.SNAPSHOT;
+        public bool ReShadeCtrl = false;
+        public bool ReShadeShift = false;
+        public bool ReShadeAlt = false;
     }
 
     public Configs Config { get; private set; }
@@ -31,7 +41,12 @@ public unsafe class HighResScreenshots : Tweak {
     private delegate byte IsInputIDClickedDelegate(nint a1, int a2);
 
     private HookWrapper<IsInputIDClickedDelegate> isInputIDClickedHook;
+    
+    private delegate byte ReShadeKeyTest(byte* a1, uint a2, byte a3, byte a4, byte a5, byte a6);
+    private HookWrapper<ReShadeKeyTest> reShadeKeyTestHook;
 
+    private bool updatingReShadeKeybind = false;
+    
     protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
         ImGui.TextWrapped(
             "This tweak will increase the resolution of screenshots taken in game. It will NOT increase the scale of your HUD/plugin windows.");
@@ -77,6 +92,37 @@ public unsafe class HighResScreenshots : Tweak {
         } else {
             hasChanged |= ImGui.Checkbox("Remove copyright text", ref Config.RemoveCopyright);
         }
+
+        if (ImGui.Checkbox("[Experimental] Use ReShade to take screenshot", ref Config.UseReShade)) {
+            hasChanged = true;
+            DisableReShade();
+            if (Config.UseReShade) TryEnableReShade();
+        }
+
+        if (Config.UseReShade) {
+            ImGui.Indent();
+            ImGui.Indent();
+            if (reShadeKeyTestHook == null) {
+                ImGui.TextColored(ImGuiColors.DalamudRed, "Failed to hook ReShade.");
+            } else {
+                ImGui.TextWrapped("Take a screenshot using your FFXIV screenshot keybind.\nReShade will be used to take the screenshot instead.");
+                ImGui.Spacing();
+                var keybindText = new List<string>();
+                if (Config.ReShadeCtrl) keybindText.Add("CTRL");
+                if (Config.ReShadeAlt) keybindText.Add("ALT");
+                if (Config.ReShadeShift) keybindText.Add("SHIFT");
+                keybindText.Add($"{Config.ReShadeMainKey.GetFancyName()}");
+                
+                ImGui.Text($"Current Keybind: {string.Join(" + ", keybindText)}");
+                if (updatingReShadeKeybind) {
+                    ImGui.TextColored(ImGuiColors.DalamudOrange, "Take a screenshot with ReShade to update the keybind.");
+                } else if (ImGui.Button("Update Keybind")) {
+                    updatingReShadeKeybind = true;
+                }
+            }
+            ImGui.Unindent();
+            ImGui.Unindent();
+        }
     };
 
     public override void Setup() {
@@ -85,6 +131,7 @@ public unsafe class HighResScreenshots : Tweak {
         AddChangelog("1.8.5.0", "Added option to hide game UI for screenshots.");
         AddChangelog("1.8.5.0", "Added option to remove the FFXIV Copyright from screenshots.");
         AddChangelog("1.8.5.1", "Renamed from 'High Resolution Screenshots' to 'Screenshot Improvements'");
+        AddChangelog(Changelog.UnreleasedVersion, "Added experimental option to use ReShade for screenshots.");
         base.Setup();
     }
 
@@ -99,7 +146,68 @@ public unsafe class HighResScreenshots : Tweak {
             Common.Hook<IsInputIDClickedDelegate>("E9 ?? ?? ?? ?? 83 7F 44 02", IsInputIDClickedDetour);
         isInputIDClickedHook?.Enable();
 
+
+        if (Config.UseReShade) TryEnableReShade();
+
         base.Enable();
+    }
+
+    public void TryEnableReShade() {
+        if (reShadeKeyTestHook == null) {
+            foreach (var m in Process.GetCurrentProcess().Modules) {
+                if (m is not ProcessModule pm) return;
+                if (pm.FileVersionInfo?.FileDescription?.Contains("ReShade") ?? false) {
+                    var scanner = new SigScanner(pm);
+                    try {
+                        var a = scanner.ScanText("E8 ?? ?? ?? ?? 84 C0 74 10 40 38 BE 90");
+                        reShadeKeyTestHook = Common.Hook<ReShadeKeyTest>((nuint)a, ReShadeKeyTestDetour);
+                    } catch { }
+                }
+            }
+        }
+        reShadeKeyTestHook?.Enable();
+    }
+
+    public void DisableReShade() {
+        reShadeKeyTestHook?.Disable();
+    }
+    
+    private byte ReShadeKeyTestDetour(byte* a1, uint mainKey, byte ctrl, byte shift, byte alt, byte a6) {
+        var originalReturn = reShadeKeyTestHook.Original(a1, mainKey, ctrl, shift, alt, a6);
+
+        if (updatingReShadeKeybind && originalReturn == 1) {
+            Config.ReShadeMainKey = (VirtualKey)mainKey;
+            Config.ReShadeCtrl = ctrl > 0;
+            Config.ReShadeAlt = alt > 0;
+            Config.ReShadeShift = shift > 0;
+            updatingReShadeKeybind = false;
+        }
+
+        if (shouldPress && mainKey == (uint) Config.ReShadeMainKey && ctrl > 0 == Config.ReShadeCtrl && alt > 0 == Config.ReShadeAlt && shift > 0 == Config.ReShadeShift) {
+            shouldPress = false;
+            // Reset the res back to normal after the screenshot is taken
+            Service.Framework.RunOnTick(() => {
+                UIDebug.FreeExclusiveDraw();
+                if (Config.HideGameUi) {
+                    var raptureAtkModule = Framework.Instance()->GetUiModule()->GetRaptureAtkModule();
+                    if (originalUiVisibility && !raptureAtkModule->IsUiVisible) {
+                        raptureAtkModule->IsUiVisible = true;
+                    }
+                }
+
+                var device = Device.Instance();
+                if (device->Width != oldWidth || device->Height != oldHeight) {
+                    device->NewWidth = oldWidth;
+                    device->NewHeight = oldHeight;
+                    device->RequestResolutionChange = 1;
+                }
+            }, delayTicks: 60);
+            return 1;
+        }
+        
+        
+
+        return originalReturn;
     }
 
     private bool shouldPress;
@@ -141,7 +249,7 @@ public unsafe class HighResScreenshots : Tweak {
             return 0;
         }
 
-        if (a2 == ScreenshotButton && shouldPress) {
+        if (a2 == ScreenshotButton && shouldPress && (Config.UseReShade == false || reShadeKeyTestHook == null)) {
             shouldPress = false;
             
             if (Config.RemoveCopyright && copyrightShaderAddress != 0 && originalCopyrightBytes == null) {
@@ -193,6 +301,7 @@ public unsafe class HighResScreenshots : Tweak {
         UIDebug.FreeExclusiveDraw();
         SaveConfig(Config);
         isInputIDClickedHook?.Disable();
+        DisableReShade();
         base.Disable();
     }
 }
