@@ -77,13 +77,6 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak
         FreeAllNodes();
         base.Disable();
     }
-
-    public override void Dispose()
-    {
-        Common.FrameworkUpdate -= OnFrameworkUpdate;
-        FreeAllNodes();
-        base.Dispose();
-    }
     
     private void OnFrameworkUpdate()
     {
