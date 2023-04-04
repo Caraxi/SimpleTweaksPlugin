@@ -64,7 +64,7 @@ public unsafe class Fools2023 : JokeTweaks.SubTweak {
     }
 
     public override void Setup() {
-        AddChangelogNewTweak(Changelog.UnreleasedVersion);
+        AddChangelogNewTweak("1.8.6.0");
         base.Setup();
     }
 

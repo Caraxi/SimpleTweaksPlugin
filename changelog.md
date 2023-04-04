@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.8.6.0]
+***General Changes***
+> General fixes for 6.38
+
+***New Tweaks***
+> **`April Fools 2023`** - Re-enable the April Fools 2023 Features
+
+
+***Tweak Changes***
+> **`Enhanced Loot Window`** - Removed Window Lock Feature, 'Lock Window Position' tweak has returned.
+
+> **`Screenshot Improvements`** - Added experimental option to use ReShade for screenshots.
+
+
+## [1.8.5.3]
+> Removed April Fools joke due to potential crash.
+
+## [1.8.5.2]
+> Made April Fools Joke Stupid
+
+## [1.8.5.1]
+***Tweak Changes***
+> **`Character Window Job Switcher`** - Fixed tweak not working on DoH without desynthesis unlocked.
+
+> **`Screenshot Improvements`** - Renamed from 'High Resolution Screenshots' to 'Screenshot Improvements'
+
+> **`Tooltip Tweaks`** - Added additional protections to attempt to reduce crashing. Please report any crashes you believe may be related to tooltips.
+
+
 ## [1.8.5.0]
 ***General Changes***
 > Added command to open the config window to a specific tweak. (/tweaks find [id])
@@ -7,13 +36,15 @@
 ***New Tweaks***
 > **`Color Duty Roulette Names`** - Colors Duty Roulette names to indicate their completion status *(MidoriKami)*
 
+> **`Lock Window Positions`** - Allows locking the position of almost any UI window.
+
 
 ***Tweak Changes***
 > **`Always Yes`** - Added an option to default cursor to the checkbox when one exists.
 
 > **`Block Targeting Treasure Hunt Enemies`** - Fixed incorrect blocking targeting of Alexandrite Map targets.
 
-> **`High Resolution Screenshots`**
+> **`Screenshot Improvements`**
 > - Added option to hide game UI for screenshots.
 > - Added option to remove the FFXIV Copyright from screenshots.
 
@@ -100,11 +131,10 @@
 > - Rebuilt tweak to use images
 > - Fixed tweak not checking armory and equipped items
 > - Added 'Lock Loot Window' feature
-> - Added configuration options
 
 > **`Fix '/target' command`** - Fixed tweak not working in french. *(Aireil)*
 
-> **`High Resolution Screenshots`** - Added option to hide dalamud UI for screenshot.
+> **`Screenshot Improvements`** - Added option to hide dalamud UI for screenshot.
 
 
 ## [1.8.2.1]
@@ -126,11 +156,11 @@ ESC will now close Simple Tweaks windows.
 ***New Tweaks***
 > **`Dismiss Minion Command`** - Adds a command to dismiss your current minion. /minionaway
 
-> **`High Resolution Screenshots`** - Increases the resolution in game screenshots are taken at. *(NotNite)*
-
 > **`House Lights Command`** - Adds a command to control lighting in your own housing areas.
 
 > **`Limit Break Adjustments`** - Simple customization of the limit break bars
+
+> **`Screenshot Improvements`** - Allows taking higher resolution screenshots, Hiding Dalamud & Game UIs and removing the copyright notice from screenshots. *(NotNite)*
 
 > **`Sticky Chat`** - Sets chat channel when you use temporary chat messages. *(MidoriKami)*
 
