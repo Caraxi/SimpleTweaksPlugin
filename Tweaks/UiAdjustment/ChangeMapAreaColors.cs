@@ -19,7 +19,7 @@ public unsafe class ChangeMapAreaColors : UiAdjustments.SubTweak {
 
     protected override string Author => "KazWolfe";
 
-    private const string SetMapCircleColorSignature = "E8 ?? ?? ?? ?? 48 8B 0F 33 C0";
+    private const string SetMapCircleColorSignature = "E8 ?? ?? ?? ?? 0F B6 43 32 B9";
 
     private class MapColorConfig : TweakConfig {
         public class AreaEntry {
