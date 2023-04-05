@@ -84,6 +84,7 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak
     {
         if (Ready) return;
         AddChangelogNewTweak("1.8.5.0");
+        AddChangelog(Changelog.UnreleasedVersion, "Adds ability to select individual roulettes for recoloring.");
 
         foreach (var entry in Service.Data.GetExcelSheet<ContentRoulette>()!.Where(roulette => roulette.Name != string.Empty))
         {
