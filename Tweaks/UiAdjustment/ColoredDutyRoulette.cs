@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
+using Dalamud.Interface;
+using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -35,6 +37,8 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak
         
         public Vector4 IncompleteColor = new(1.0f, 0.0f, 0.0f, 1.0f);
         public Vector4 CompleteColor = new(0.0f, 1.0f, 0.0f, 1.0f);
+
+        public List<uint> EnabledRoulettes = new();
     }
     
     private Config TweakConfig { get; set; } = null!;
@@ -45,6 +49,33 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak
         if (ImGui.Checkbox("Recolor Incomplete Roulettes", ref TweakConfig.ColorIncompleteRoulette)) hasChanged = true;
         if (ImGui.ColorEdit4("Completed Color", ref TweakConfig.CompleteColor, ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaPreviewHalf)) hasChanged = true;
         if (ImGui.ColorEdit4("Incomplete Color", ref TweakConfig.IncompleteColor, ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaPreviewHalf)) hasChanged = true;
+
+        ImGuiHelpers.ScaledDummy(5.0f);
+        
+        ImGui.Text("Duty Selection");
+        ImGui.Separator();
+
+        var roulettes = Service.Data.GetExcelSheet<ContentRoulette>()!
+            .Where(roulette => roulette.Name != string.Empty && roulette.DutyType != string.Empty)
+            .OrderBy(roulette => roulette.SortKey);
+        
+        foreach (var roulette in roulettes)
+        {
+            var enabled = TweakConfig.EnabledRoulettes.Contains(roulette.RowId);
+            if(ImGui.Checkbox(roulette.Name.ToDalamudString().ToString(), ref enabled))
+            {
+                if (TweakConfig.EnabledRoulettes.Contains(roulette.RowId) && !enabled)
+                {
+                    TweakConfig.EnabledRoulettes.Remove(roulette.RowId);
+                    hasChanged = true;
+                }
+                else if (!TweakConfig.EnabledRoulettes.Contains(roulette.RowId) && enabled)
+                {
+                    TweakConfig.EnabledRoulettes.Add(roulette.RowId);
+                    hasChanged = true;
+                }
+            }
+        }
     };
 
     public override void RequestSaveConfig() => SaveConfig(TweakConfig);
@@ -53,6 +84,7 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak
     {
         if (Ready) return;
         AddChangelogNewTweak("1.8.5.0");
+        AddChangelog(Changelog.UnreleasedVersion, "Adds ability to select individual roulettes for recoloring.");
 
         foreach (var entry in Service.Data.GetExcelSheet<ContentRoulette>()!.Where(roulette => roulette.Name != string.Empty))
         {
@@ -105,11 +137,11 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak
             
                 switch (Controller->IsRouletteComplete((byte) rouletteId))
                 {
-                    case true when TweakConfig.ColorCompleteRoulette:
+                    case true when TweakConfig.ColorCompleteRoulette && TweakConfig.EnabledRoulettes.Contains(rouletteId):
                         SetNodeColor(dutyNameNode, TweakConfig.CompleteColor);
                         break;
                 
-                    case false when TweakConfig.ColorIncompleteRoulette:
+                    case false when TweakConfig.ColorIncompleteRoulette && TweakConfig.EnabledRoulettes.Contains(rouletteId):
                         SetNodeColor(dutyNameNode, TweakConfig.IncompleteColor);
                         break;
                 
