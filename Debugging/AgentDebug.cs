@@ -35,6 +35,7 @@ public unsafe class AgentDebug : DebugHelper {
     private bool agentListKnownOnly = true;
     private bool sortById = false;
     private Type selectedAgentType;
+    private string agentSearch = string.Empty;
 
     
     
@@ -148,6 +149,9 @@ public unsafe class AgentDebug : DebugHelper {
                     }
                     
                     ImGui.Separator();
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                    ImGui.InputTextWithHint($"###agentSearch", "Search...", ref agentSearch, 60, ImGuiInputTextFlags.AutoSelectAll);
+                    ImGui.Separator();
                     if (ImGui.BeginChild("AgentListScroll", new Vector2(-1, -1), false)) {
                         foreach (var agent in sortedAgentList) {
                             var agentInterface = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(agent.id);
@@ -155,6 +159,12 @@ public unsafe class AgentDebug : DebugHelper {
                             if (agentListKnownOnly && !agent.hasClass) continue;
                             var active = agentInterface->IsAgentActive();
                             if (agentListActiveOnly && !active) continue;
+                            if (!(
+                                    string.IsNullOrEmpty(agentSearch) ||                                                                // No Search
+                                    $"{agent.id}".Contains(agentSearch, StringComparison.InvariantCultureIgnoreCase) ||                 // Name Search
+                                    $"{(uint)agent.id}" == agentSearch ||                                                               // ID Search
+                                    $"{(ulong)agentInterface:X16}".Contains(agentSearch, StringComparison.InvariantCultureIgnoreCase)   // Address Search
+                            )) continue;
                             
                             ImGui.PushStyleColor(ImGuiCol.Text, agent.hasClass ? 0xFFFF5500: 0x000000);
                             ImGui.PushFont(UiBuilder.IconFont);
