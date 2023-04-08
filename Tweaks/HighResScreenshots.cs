@@ -201,6 +201,8 @@ public unsafe class HighResScreenshots : Tweak {
                     device->NewHeight = oldHeight;
                     device->RequestResolutionChange = 1;
                 }
+
+                isRunning = false;
             }, delayTicks: 60);
             return 1;
         }
@@ -213,6 +215,7 @@ public unsafe class HighResScreenshots : Tweak {
     private bool shouldPress;
     private uint oldWidth;
     private uint oldHeight;
+    private bool isRunning;
 
     const int ScreenshotButton = 543;
     public bool originalUiVisibility;
@@ -222,7 +225,8 @@ public unsafe class HighResScreenshots : Tweak {
     private byte IsInputIDClickedDetour(nint a1, int a2) {
         var orig = isInputIDClickedHook.Original(a1, a2);
 
-        if (orig == 1 && a2 == ScreenshotButton && !shouldPress) {
+        if (orig == 1 && a2 == ScreenshotButton && !shouldPress && !isRunning) {
+            isRunning = true;
             var device = Device.Instance();
             oldWidth = device->Width;
             oldHeight = device->Height;
@@ -279,12 +283,14 @@ public unsafe class HighResScreenshots : Tweak {
                     ReplaceRaw(copyrightShaderAddress, originalCopyrightBytes);
                     originalCopyrightBytes = null;
                 }
+                isRunning = false;
             }, delayTicks: 60);
             
 
             return 1;
         }
 
+        if (isRunning && a2 == ScreenshotButton) return 0;
         return orig;
     }
 
