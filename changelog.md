@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.8.6.1]
+***Tweak Changes***
+> **`Color Duty Roulette Names`** - Adds ability to select individual roulettes for recoloring.
+
+> **`Hide Tooltips in Combat`** - Improved logic to attempt to reduce settings getting stuck in incorrect state.
+
+> **`Tooltip Tweaks`** - Yet another attempt at fixing crashes.
+
+
 ## [1.8.6.0]
 ***General Changes***
 > General fixes for 6.38

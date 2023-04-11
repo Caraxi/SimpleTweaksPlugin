@@ -43,7 +43,7 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
     }
 
     public override void Setup() {
-        AddChangelog(Changelog.UnreleasedVersion, "Improved logic to attempt to reduce settings getting stuck in incorrect state.");
+        AddChangelog("1.8.6.1", "Improved logic to attempt to reduce settings getting stuck in incorrect state.");
         base.Setup();
     }
 
