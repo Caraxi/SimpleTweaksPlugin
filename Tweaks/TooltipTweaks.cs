@@ -15,8 +15,6 @@ namespace SimpleTweaksPlugin.Tweaks;
 public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
     public override bool AlwaysEnabled => true;
 
-    public static Dictionary<ItemTooltipField, IntPtr> ItemStringPointers = new();
-    public static Dictionary<ActionTooltipField, IntPtr> ActionStringPointers = new();
 
     public abstract class SubTweak : BaseTweak {
         public override string Key => $"{nameof(TooltipTweaks)}@{base.Key}";
@@ -43,23 +41,9 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         protected static unsafe void SetTooltipString(StringArrayData* stringArrayData, TooltipTweaks.ItemTooltipField field, SeString seString) {
             try {
                 seString ??= new SeString();
-                
-                if (stringArrayData->AtkArrayData.Size <= (int)field) 
-                    throw new IndexOutOfRangeException($"Attempted to set Index#{(int)field} ({field}) but size is only {stringArrayData->AtkArrayData.Size}");
-
-                if (!ItemStringPointers.ContainsKey(field)) {
-                    var newAlloc = Marshal.AllocHGlobal(4096);
-                    if (newAlloc == nint.Zero) {
-                        throw new MemoryAllocationException("Failed to allocate memory.");
-                    }
-                    ItemStringPointers.Add(field, newAlloc);
-                }
-                
-                var bytes = seString.Encode();
-                if (bytes.Length > 4095) throw new Exception($"Attempted to set a string of length {bytes.Length} to {field}. Max size is 4096");
-                Marshal.Copy(bytes, 0, ItemStringPointers[field], bytes.Length);
-                Marshal.WriteByte(ItemStringPointers[field], bytes.Length, 0);
-                stringArrayData->StringArray[(int)field] = (byte*)ItemStringPointers[field];
+                var bytes = seString.Encode().ToList();
+                bytes.Add(0);
+                stringArrayData->SetValue((int)field, bytes.ToArray(), false, true, false);
             } catch (Exception ex) {
                 throw;
             }
@@ -68,23 +52,9 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         protected static unsafe void SetTooltipString(StringArrayData* stringArrayData, TooltipTweaks.ActionTooltipField field, SeString seString) {
             try {
                 seString ??= new SeString();
-                
-                if (stringArrayData->AtkArrayData.Size <= (int)field) {
-                    throw new IndexOutOfRangeException($"Attempted to set Index#{(int)field} ({field}) but size is only {stringArrayData->AtkArrayData.Size}");
-                }
-                    
-                if (!ActionStringPointers.ContainsKey(field)) {
-                    var newAlloc = Marshal.AllocHGlobal(4096);
-                    if (newAlloc == nint.Zero) {
-                        throw new MemoryAllocationException("Failed to allocate memory.");
-                    }
-                    ActionStringPointers.Add(field, newAlloc);
-                }
-                var bytes = seString.Encode();
-                if (bytes.Length > 4095) throw new Exception($"Attempted to set a string of length {bytes.Length} to {field}. Max size is 4096");
-                Marshal.Copy(bytes, 0, ActionStringPointers[field], bytes.Length);
-                Marshal.WriteByte(ActionStringPointers[field], bytes.Length, 0);
-                stringArrayData->StringArray[(int)field] = (byte*)ActionStringPointers[field];
+                var bytes = seString.Encode().ToList();
+                bytes.Add(0);
+                stringArrayData->SetValue((int)field, bytes.ToArray(), false, true, false);
             } catch {
                 throw;
             }
@@ -117,6 +87,7 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
 
     public override void Setup() {
         AddChangelog("1.8.5.1", "Added additional protections to attempt to reduce crashing. Please report any crashes you believe may be related to tooltips.");
+        AddChangelog(Changelog.UnreleasedVersion, "Yet another attempt at fixing crashes.");
         base.Setup();
     }
 
@@ -208,14 +179,6 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         generateItemTooltipHook?.Dispose();
         generateActionTooltipHook?.Dispose();
         getItemRowHook?.Dispose();
-        foreach (var i in ItemStringPointers.Values) {
-            Marshal.FreeHGlobal(i);
-        }
-        foreach (var i in ActionStringPointers.Values) {
-            Marshal.FreeHGlobal(i);
-        }
-        ItemStringPointers.Clear();
-        ActionStringPointers.Clear();
         base.Dispose();
     }
 
