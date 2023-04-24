@@ -32,6 +32,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
         public string Replacement = string.Empty;
         public bool HideInDuty;
         public bool HideQuoteMarks;
+        public bool OwnLine;
     }
 
     public Configs Config { get; private set; }
@@ -41,7 +42,12 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
         
     public override string Name => "Custom Free Company Tags";
     public override string Description => "Allows hiding or customizing Free Company and Wanderer tags.";
-        
+
+    public override void Setup() {
+        AddChangelog(Changelog.UnreleasedVersion, "Added option to display FC tags on a separate line to character name.");
+        base.Setup();
+    }
+
     public override void Enable() {
         if (Enabled) return;
         Config = LoadConfig<Configs>() ?? new Configs();
@@ -98,6 +104,8 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                     namePlateInfo->FcName.StringPtr[0] = 0;
                 } else {
                     var payloads = new List<Payload>();
+                    if (customization.OwnLine)
+                        payloads.Add(new NewLinePayload());
                     if (!customization.HideQuoteMarks) 
                         payloads.Add(new TextPayload(" «"));
 
@@ -360,7 +368,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
             }
                 
         } else {
-            ImGui.SetNextItemWidth((showHideInDuty ? -200 : -80) * ImGui.GetIO().FontGlobalScale);
+            ImGui.SetNextItemWidth((showHideInDuty ? -290 : -180) * ImGui.GetIO().FontGlobalScale);
             
             if (tc.Enabled) {
                 ImGui.InputTextWithHint($"##fcList#{GetType().Name}_replacement_{name}", "Hidden", ref tc.Replacement, 200);
@@ -421,6 +429,9 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                 ImGui.Checkbox($"Hide in Duty##{GetType().Name}_hideInDuty_{name}", ref tc.HideInDuty);
             }
             
+            ImGui.SameLine();
+            ImGui.SetCursorPosX((ImGui.GetWindowContentRegionMax().X - 180 * ImGui.GetIO().FontGlobalScale) + ImGui.GetStyle().ItemSpacing.X);
+            ImGui.Checkbox($"Own Line##{GetType().Name}_ownLine_{name}", ref tc.OwnLine);
             ImGui.SameLine();
             ImGui.SetCursorPosX((ImGui.GetWindowContentRegionMax().X - 80 * ImGui.GetIO().FontGlobalScale) + ImGui.GetStyle().ItemSpacing.X);
             ImGui.Checkbox($"Hide «»##{GetType().Name}_hideQuotes_{name}", ref tc.HideQuoteMarks);
