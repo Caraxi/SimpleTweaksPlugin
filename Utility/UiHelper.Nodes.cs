@@ -320,7 +320,7 @@ public static unsafe partial class UiHelper
     
     public static void FreeAsset(AtkUldAsset* asset)
     {
-        IMemorySpace.Free(asset, (ulong) sizeof(AtkUldPart));
+        IMemorySpace.Free(asset, (ulong) sizeof(AtkUldAsset));
     }
     
     #endregion
