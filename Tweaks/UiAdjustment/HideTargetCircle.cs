@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Enums;
-using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -17,7 +15,7 @@ using SimpleTweaksPlugin.Debugging;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 {
-    public unsafe class HideJobGauge : UiAdjustments.SubTweak
+    public unsafe class HideTargetCircle : UiAdjustments.SubTweak
     {
         private readonly ushort[] nonCombatTerritory = {
             1055, // Island Sanctuary
@@ -25,9 +23,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 
         private readonly Stopwatch outOfCombatTimer = new Stopwatch();
         public Configs Config { get; private set; }
-        public override string Description => "Allow hiding the job gauge while not in combat or dungeons.";
-        public override string Name => "Hide Job Gauge";
+        public override string Description => "Allow hiding the target circle while not in combat or dungeons.";
+        public override string Name => "Hide Target Circle";
         public override bool UseAutoConfig => true;
+        protected override string Author => "darkarchon";
 
         private bool InCombatDuty => Service.Condition[ConditionFlag.BoundByDuty] && !nonCombatTerritory.Contains(Service.ClientState.TerritoryType);
 
@@ -68,42 +67,43 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 
         private void Update(bool reset = false)
         {
-            if (Common.GetUnitBase("JobHudNotice") != null) reset = true;
-            var stage = AtkStage.GetSingleton();
-            var loadedUnitsList = &stage->RaptureAtkUnitManager->AtkUnitManager.AllLoadedUnitsList;
-            var addonList = &loadedUnitsList->AtkUnitEntries;
 #if DEBUG
             PerformanceMonitor.Begin();
 #endif
-            for (var i = 0; i < loadedUnitsList->Count; i++)
-            {
-                var addon = addonList[i];
-                var name = Marshal.PtrToStringAnsi(new IntPtr(addon->Name));
 
-                if (name != null && name.StartsWith("JobHud"))
-                {
-                    if (reset || Config.ShowInDuty && InCombatDuty)
-                    {
-                        if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
-                    }
-                    else if (Config.ShowInCombat && Service.Condition[ConditionFlag.InCombat])
-                    {
-                        outOfCombatTimer.Restart();
-                        if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
-                    }
-                    else if (Config.ShowInCombat && outOfCombatTimer.ElapsedMilliseconds < Config.CombatBuffer * 1000)
-                    {
-                        if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
-                    }
-                    else if (Config.ShowWhileWeaponDrawn && Service.ClientState.LocalPlayer != null && Service.ClientState.LocalPlayer.StatusFlags.HasFlag(StatusFlags.WeaponOut))
-                    {
-                        if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
-                    }
-                    else
-                    {
-                        addon->UldManager.NodeListCount = 0;
-                    }
-                }
+            var targetCircleShown = GameConfig.UiControl.GetBool("TargetCircleType");
+            bool requestToBeShown = false;
+            bool requestToHide = false;
+
+            if (reset || Config.ShowInDuty && InCombatDuty)
+            {
+                requestToBeShown = true;
+            }
+            else if (Config.ShowInCombat && Service.Condition[ConditionFlag.InCombat])
+            {
+                requestToBeShown = true;
+                outOfCombatTimer.Restart();
+            }
+            else if (Config.ShowInCombat && outOfCombatTimer.ElapsedMilliseconds < Config.CombatBuffer * 1000)
+            {
+                requestToBeShown = true;
+            }
+            else if (Config.ShowWhileWeaponDrawn && Service.ClientState.LocalPlayer != null && Service.ClientState.LocalPlayer.StatusFlags.HasFlag(StatusFlags.WeaponOut))
+            {
+                requestToBeShown = true;
+            }
+            else
+            {
+                requestToHide = true;
+            }
+
+            if (!targetCircleShown && requestToBeShown)
+            {
+                GameConfig.UiControl.Set("TargetCircleType", 1);
+            }
+            else if (targetCircleShown && requestToHide)
+            {
+                GameConfig.UiControl.Set("TargetCircleType", 0);
             }
 #if DEBUG
             PerformanceMonitor.End();
@@ -113,13 +113,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         public class Configs : TweakConfig
         {
             [TweakConfigOption("Out of Combat Time (Seconds)", 3, EditorSize = 100, IntMin = 0, IntMax = 300, ConditionalDisplay = true)]
-            public int CombatBuffer;
+            public int CombatBuffer = 3;
 
             [TweakConfigOption("Show In Combat", 2)]
-            public bool ShowInCombat;
+            public bool ShowInCombat = true;
 
             [TweakConfigOption("Show In Duty", 1)]
-            public bool ShowInDuty;
+            public bool ShowInDuty = true;
 
             [TweakConfigOption("Show While Weapon Is Drawn", 4)]
             public bool ShowWhileWeaponDrawn;
