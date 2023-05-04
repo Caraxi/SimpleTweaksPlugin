@@ -10,41 +10,36 @@ using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
 #if DEBUG
-
 using SimpleTweaksPlugin.Debugging;
-
 #endif
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 {
     public unsafe class HideJobGauge : UiAdjustments.SubTweak
     {
-        private readonly ushort[] nonCombatTerritory = {
-            1055, // Island Sanctuary
-        };
-
-        private readonly Stopwatch outOfCombatTimer = new Stopwatch();
-        public Configs Config { get; private set; }
-        public override string Description => "Allow hiding the job gauge while not in combat or dungeons.";
         public override string Name => "Hide Job Gauge";
-        public override bool UseAutoConfig => true;
+        public override string Description => "Allow hiding the job gauge while not in combat or dungeons.";
 
-        private bool InCombatDuty => Service.Condition[ConditionFlag.BoundByDuty] && !nonCombatTerritory.Contains(Service.ClientState.TerritoryType);
-
-        public override void Disable()
+        public class Configs : TweakConfig
         {
-            Service.Framework.Update -= FrameworkUpdate;
-            try
-            {
-                Update(true);
-            }
-            catch
-            {
-                //
-            }
-            SaveConfig(Config);
-            base.Disable();
+
+            [TweakConfigOption("Show In Duty", 1)]
+            public bool ShowInDuty;
+
+            [TweakConfigOption("Show In Combat", 2)]
+            public bool ShowInCombat;
+
+            public bool ShouldShowCombatBuffer() => ShowInCombat;
+            [TweakConfigOption("Out of Combat Time (Seconds)", 3, EditorSize = 100, IntMin = 0, IntMax = 300, ConditionalDisplay = true)]
+            public int CombatBuffer;
+
+            [TweakConfigOption("Show While Weapon Is Drawn", 4)]
+            public bool ShowWhileWeaponDrawn;
         }
+
+        public Configs Config { get; private set; }
+        public override bool UseAutoConfig => true;
+        private readonly Stopwatch outOfCombatTimer = new Stopwatch();
 
         public override void Enable()
         {
@@ -62,9 +57,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             }
             catch
             {
-                //
+                // 
             }
+
         }
+
+        private readonly ushort[] nonCombatTerritory = {
+            1055, // Island Sanctuary
+        };
+
+        private bool InCombatDuty => Service.Condition[ConditionFlag.BoundByDuty] && !nonCombatTerritory.Contains(Service.ClientState.TerritoryType);
 
         private void Update(bool reset = false)
         {
@@ -104,27 +106,26 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                         addon->UldManager.NodeListCount = 0;
                     }
                 }
+
             }
 #if DEBUG
             PerformanceMonitor.End();
 #endif
         }
 
-        public class Configs : TweakConfig
+        public override void Disable()
         {
-            [TweakConfigOption("Out of Combat Time (Seconds)", 3, EditorSize = 100, IntMin = 0, IntMax = 300, ConditionalDisplay = true)]
-            public int CombatBuffer;
-
-            [TweakConfigOption("Show In Combat", 2)]
-            public bool ShowInCombat;
-
-            [TweakConfigOption("Show In Duty", 1)]
-            public bool ShowInDuty;
-
-            [TweakConfigOption("Show While Weapon Is Drawn", 4)]
-            public bool ShowWhileWeaponDrawn;
-
-            public bool ShouldShowCombatBuffer() => ShowInCombat;
+            Service.Framework.Update -= FrameworkUpdate;
+            try
+            {
+                Update(true);
+            }
+            catch
+            {
+                //
+            }
+            SaveConfig(Config);
+            base.Disable();
         }
     }
 }
