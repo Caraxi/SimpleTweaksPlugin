@@ -13,15 +13,12 @@ using SimpleTweaksPlugin.Utility;
 using SimpleTweaksPlugin.Debugging;
 #endif
 
-namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
-{
-    public unsafe class HideJobGauge : UiAdjustments.SubTweak
-    {
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
+    public unsafe class HideJobGauge : UiAdjustments.SubTweak {
         public override string Name => "Hide Job Gauge";
         public override string Description => "Allow hiding the job gauge while not in combat or dungeons.";
 
-        public class Configs : TweakConfig
-        {
+        public class Configs : TweakConfig {
 
             [TweakConfigOption("Show In Duty", 1)]
             public bool ShowInDuty;
@@ -40,26 +37,21 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         public Configs Config { get; private set; }
         public override bool UseAutoConfig => true;
         private readonly Stopwatch outOfCombatTimer = new Stopwatch();
-
-        public override void Enable()
-        {
+        
+        public override void Enable() {
             outOfCombatTimer.Restart();
             Config = LoadConfig<Configs>() ?? new Configs();
             Service.Framework.Update += FrameworkUpdate;
             base.Enable();
         }
-
-        private void FrameworkUpdate(Framework framework)
-        {
-            try
-            {
+        
+        private void FrameworkUpdate(Framework framework) {
+            try {
                 Update();
-            }
-            catch
-            {
+            } catch {
                 // 
             }
-
+            
         }
 
         private readonly ushort[] nonCombatTerritory = {
@@ -67,61 +59,45 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         };
 
         private bool InCombatDuty => Service.Condition[ConditionFlag.BoundByDuty] && !nonCombatTerritory.Contains(Service.ClientState.TerritoryType);
-
-        private void Update(bool reset = false)
-        {
+        
+        private void Update(bool reset = false) {
             if (Common.GetUnitBase("JobHudNotice") != null) reset = true;
             var stage = AtkStage.GetSingleton();
             var loadedUnitsList = &stage->RaptureAtkUnitManager->AtkUnitManager.AllLoadedUnitsList;
             var addonList = &loadedUnitsList->AtkUnitEntries;
-#if DEBUG
+            #if DEBUG
             PerformanceMonitor.Begin();
-#endif
-            for (var i = 0; i < loadedUnitsList->Count; i++)
-            {
+            #endif
+            for (var i = 0; i < loadedUnitsList->Count; i++) {
                 var addon = addonList[i];
                 var name = Marshal.PtrToStringAnsi(new IntPtr(addon->Name));
-
-                if (name != null && name.StartsWith("JobHud"))
-                {
-                    if (reset || Config.ShowInDuty && InCombatDuty)
-                    {
+                
+                if (name != null && name.StartsWith("JobHud")) {
+                    if (reset || Config.ShowInDuty && InCombatDuty) {
                         if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
-                    }
-                    else if (Config.ShowInCombat && Service.Condition[ConditionFlag.InCombat])
-                    {
+                    } else if (Config.ShowInCombat && Service.Condition[ConditionFlag.InCombat]) {
                         outOfCombatTimer.Restart();
                         if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
-                    }
-                    else if (Config.ShowInCombat && outOfCombatTimer.ElapsedMilliseconds < Config.CombatBuffer * 1000)
-                    {
+                    } else if (Config.ShowInCombat && outOfCombatTimer.ElapsedMilliseconds < Config.CombatBuffer * 1000) {
                         if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
-                    }
-                    else if (Config.ShowWhileWeaponDrawn && Service.ClientState.LocalPlayer != null && Service.ClientState.LocalPlayer.StatusFlags.HasFlag(StatusFlags.WeaponOut))
-                    {
+                    } else if (Config.ShowWhileWeaponDrawn && Service.ClientState.LocalPlayer != null && Service.ClientState.LocalPlayer.StatusFlags.HasFlag(StatusFlags.WeaponOut)) {
                         if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
-                    }
-                    else
-                    {
+                    } else {
                         addon->UldManager.NodeListCount = 0;
                     }
                 }
 
             }
-#if DEBUG
+            #if DEBUG
             PerformanceMonitor.End();
-#endif
+            #endif
         }
 
-        public override void Disable()
-        {
+        public override void Disable() {
             Service.Framework.Update -= FrameworkUpdate;
-            try
-            {
+            try {
                 Update(true);
-            }
-            catch
-            {
+            } catch {
                 //
             }
             SaveConfig(Config);
