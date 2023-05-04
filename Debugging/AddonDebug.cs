@@ -17,7 +17,7 @@ namespace SimpleTweaksPlugin.Debugging;
 public unsafe class AddonDebug : DebugHelper {
     public override string Name => "Addon Logging";
 
-    private delegate void* FireCallbackDelegate(AtkUnitBase* atkUnitBase, int valueCount, AtkValue* atkValues, ulong a4);
+    private delegate void* FireCallbackDelegate(AtkUnitBase* atkUnitBase, int valueCount, AtkValue* atkValues, byte updateVisibility);
     private HookWrapper<FireCallbackDelegate> fireCallbackHook;
     private bool enabled = false;
 
@@ -41,7 +41,7 @@ public unsafe class AddonDebug : DebugHelper {
         public List<ValueType> AtkValueTypes = new();
         public void* ReturnValue;
         public AtkUnitBase* AtkUnitBase;
-        public ulong A4Value;
+        public byte UpdateVisibility;
     }
 
     public class SetupCall {
@@ -146,7 +146,7 @@ public unsafe class AddonDebug : DebugHelper {
                 if (ImGui.BeginTable("callbacksTable", 4, ImGuiTableFlags.RowBg)) {
                     ImGui.TableSetupColumn("Addon", ImGuiTableColumnFlags.WidthFixed, 150);
                     ImGui.TableSetupColumn("Values", ImGuiTableColumnFlags.WidthFixed, 300);
-                    ImGui.TableSetupColumn("A4", ImGuiTableColumnFlags.WidthFixed, 150);
+                    ImGui.TableSetupColumn("Update visibility", ImGuiTableColumnFlags.WidthFixed, 150);
                     ImGui.TableSetupColumn("Return", ImGuiTableColumnFlags.WidthFixed, 60);
 
                     ImGui.TableHeadersRow();
@@ -160,8 +160,7 @@ public unsafe class AddonDebug : DebugHelper {
                         }
 
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{cb.A4Value}");
-                        DebugManager.ClickToCopyText($"{cb.A4Value:X}");
+                        ImGui.Text($"{cb.UpdateVisibility}");
                         ImGui.TableNextColumn();
                         DebugManager.ClickToCopyText($"{(ulong)cb.ReturnValue:X}");
                     }
@@ -364,7 +363,7 @@ public unsafe class AddonDebug : DebugHelper {
 
     private string callbacksSearch = string.Empty;
 
-    private void* CallbackDetour(AtkUnitBase* atkunitbase, int valuecount, AtkValue* atkvalues, ulong a4) {
+    private void* CallbackDetour(AtkUnitBase* atkunitbase, int valuecount, AtkValue* atkvalues, byte updateVisibility) {
         var atkValueList = new List<object>();
         var atkValueTypeList = new List<ValueType>();
         try {
@@ -396,13 +395,13 @@ public unsafe class AddonDebug : DebugHelper {
                 a++;
             }
         } catch {
-            return fireCallbackHook.Original(atkunitbase, valuecount, atkvalues, a4);
+            return fireCallbackHook.Original(atkunitbase, valuecount, atkvalues, updateVisibility);
         }
-        var ret = fireCallbackHook.Original(atkunitbase, valuecount, atkvalues, a4);
+        var ret = fireCallbackHook.Original(atkunitbase, valuecount, atkvalues, updateVisibility);
         try {
             Callbacks.Insert(0, new Callback() {
                 AtkUnitBaseName = Encoding.UTF8.GetString(atkunitbase->Name, 0x20).TrimEnd(),
-                A4Value = a4,
+                UpdateVisibility = updateVisibility,
                 AtkUnitBase = atkunitbase,
                 ReturnValue = ret,
                 AtkValues = atkValueList,
