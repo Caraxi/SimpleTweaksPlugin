@@ -65,6 +65,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             }
         }
 
+        public override void Setup() {
+            base.Setup();
+            AddChangelogNewTweak(Changelog.UnreleasedVersion);
+        }
+
         private void Update(bool reset = false)
         {
 #if DEBUG
