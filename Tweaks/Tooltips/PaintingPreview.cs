@@ -26,6 +26,11 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
 
     private HookWrapper<Common.AddonOnUpdate> itemTooltipOnUpdateHook;
 
+    public override void Setup() {
+        AddChangelog(Changelog.UnreleasedVersion, "Fixed extra spacing being added above the preview image.");
+        base.Setup();
+    }
+
     public override void Enable() {
         itemTooltipOnUpdateHook ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 54 41 55 41 56 41 57 48 83 EC 20 4C 8B AA", AfterItemDetailUpdate);
         itemTooltipOnUpdateHook?.Enable();        
@@ -50,6 +55,9 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
 
         var insertNode = atkUnitBase->GetNodeById(2);
         if (insertNode == null) return;
+        
+        var anchorNode = atkUnitBase->GetNodeById(46);
+        if (anchorNode == null) return;
         
         if (imageNode == null) {
             SimpleLog.Log($"Create Image Node");
@@ -130,11 +138,11 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
         imageNode->AtkResNode.SetWidth((ushort)(atkUnitBase->RootNode->Width - 20f));
         imageNode->AtkResNode.SetHeight((ushort)(imageNode->AtkResNode.Width * 0.6f));
         
-        imageNode->AtkResNode.SetPositionFloat(atkUnitBase->RootNode->Width / 2f - imageNode->AtkResNode.Width / 2f, atkUnitBase->WindowNode->AtkResNode.Height - 10f);
-        atkUnitBase->WindowNode->AtkResNode.SetHeight((ushort)(atkUnitBase->WindowNode->AtkResNode.Height + imageNode->AtkResNode.Height));
+        imageNode->AtkResNode.SetPositionFloat(atkUnitBase->RootNode->Width / 2f - imageNode->AtkResNode.Width / 2f, anchorNode->Y + anchorNode->GetHeight() + 8);
+        atkUnitBase->WindowNode->AtkResNode.SetHeight((ushort)(imageNode->AtkResNode.Y + imageNode->AtkResNode.GetHeight() + 8));
         
         atkUnitBase->WindowNode->Component->UldManager.SearchNodeById(2)->SetHeight(atkUnitBase->WindowNode->AtkResNode.Height);
-        insertNode->SetPositionFloat(insertNode->X, insertNode->Y + imageNode->AtkResNode.Height);
+        insertNode->SetPositionFloat(insertNode->X, atkUnitBase->WindowNode->AtkResNode.GetHeight() - 20);
     }
     
     public override void Disable() {
