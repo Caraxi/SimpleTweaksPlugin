@@ -44,7 +44,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
     public override string Description => "Allows hiding or customizing Free Company and Wanderer tags.";
 
     public override void Setup() {
-        AddChangelog(Changelog.UnreleasedVersion, "Added option to display FC tags on a separate line to character name.");
+        AddChangelog("1.8.7.0", "Added option to display FC tags on a separate line to character name.");
         base.Setup();
     }
 

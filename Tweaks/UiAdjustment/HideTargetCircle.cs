@@ -67,7 +67,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 
         public override void Setup() {
             base.Setup();
-            AddChangelogNewTweak(Changelog.UnreleasedVersion);
+            AddChangelogNewTweak("1.8.7.0");
         }
 
         private void Update(bool reset = false)

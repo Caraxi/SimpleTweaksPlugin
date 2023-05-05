@@ -24,7 +24,7 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
 
     public override void Setup() {
         base.Setup();
-        AddChangelog(Changelog.UnreleasedVersion, "Fixed tweak not functioning at all.");
+        AddChangelog("1.8.7.0", "Fixed tweak not functioning at all.");
     }
 
     public override void Enable() {

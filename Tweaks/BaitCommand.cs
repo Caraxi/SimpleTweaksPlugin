@@ -28,7 +28,7 @@ public unsafe class BaitCommand : CommandTweak {
     
     public override void Setup() {
         base.Setup();
-        AddChangelog(Changelog.UnreleasedVersion, "Fixed tweak not enabling when starting the game.");
+        AddChangelog("1.8.7.0", "Fixed tweak not enabling when starting the game.");
     }
 
     public override void Enable() {

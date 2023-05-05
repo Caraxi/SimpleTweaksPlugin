@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.8.7.0]
+***New Tweaks***
+> **`Duty List Background`** - Adds a configurable background to the Duty List *(MidoriKami)*
+
+> **`Hide Target Circle`** - Allow hiding the target circle while not in combat or dungeons. *(darkarchon)*
+
+
+***Tweak Changes***
+> **`Bait Command`** - Fixed tweak not enabling when starting the game.
+
+> **`Custom Free Company Tags`** - Added option to display FC tags on a separate line to character name.
+
+> **`Show Painting Preview`** - Fixed extra spacing being added above the preview image.
+
+> **`Track Faded Orchestrion Rolls`** - Fixed tweak not functioning at all.
+
+
 ## [1.8.6.1]
 ***Tweak Changes***
 > **`Color Duty Roulette Names`** - Adds ability to select individual roulettes for recoloring.

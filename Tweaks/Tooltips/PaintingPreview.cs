@@ -27,7 +27,7 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
     private HookWrapper<Common.AddonOnUpdate> itemTooltipOnUpdateHook;
 
     public override void Setup() {
-        AddChangelog(Changelog.UnreleasedVersion, "Fixed extra spacing being added above the preview image.");
+        AddChangelog("1.8.7.0", "Fixed extra spacing being added above the preview image.");
         base.Setup();
     }
 
