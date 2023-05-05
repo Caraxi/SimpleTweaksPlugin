@@ -26,6 +26,11 @@ public unsafe class BaitCommand : CommandTweak {
     private delegate byte ExecuteCommandDelegate(int id, int unk1, uint baitId, int unk2, int unk3);
     private ExecuteCommandDelegate executeCommand;
     
+    public override void Setup() {
+        base.Setup();
+        AddChangelog(Changelog.UnreleasedVersion, "Fixed tweak not enabling when starting the game.");
+    }
+
     public override void Enable() {
         currentBaitAddress =
             Service.SigScanner.GetStaticAddressFromSig("48 83 C4 30 5B C3 49 8B C8 E8 ?? ?? ?? ?? 3B 05");
