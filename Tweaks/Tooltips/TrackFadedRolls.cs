@@ -22,6 +22,11 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
     private delegate byte IsItemActionUnlocked(UIState* uiState, IntPtr item);
     private HookWrapper<IsItemActionUnlocked>? _isItemActionUnlockedHookWrapper;
 
+    public override void Setup() {
+        base.Setup();
+        AddChangelog(Changelog.UnreleasedVersion, "Fixed tweak not functioning at all.");
+    }
+
     public override void Enable() {
         this._isItemActionUnlockedHookWrapper ??=
             Common.Hook<IsItemActionUnlocked>(UIState.Addresses.IsItemActionUnlocked.Value, this.IsItemActionUnlockedDetour);
