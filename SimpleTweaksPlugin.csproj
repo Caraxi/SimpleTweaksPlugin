@@ -53,7 +53,6 @@
 			<HintPath Condition="'$(Configuration)' == 'Debug'">$(ProjectDir)\lib\FFXIVClientStructs\bin\$(ConfigurationName)\FFXIVClientStructs.dll</HintPath>
 			<HintPath Condition="'$(Configuration)' == 'Release'">$(DalamudLibPath)\FFXIVClientStructs.dll</HintPath>
 		</Reference>
-		<Reference Include="Microsoft.CSharp" />
         <Reference Include="Newtonsoft.Json">
             <Private>false</Private>
             <HintPath>$(DalamudLibPath)\Newtonsoft.Json.dll</HintPath>
