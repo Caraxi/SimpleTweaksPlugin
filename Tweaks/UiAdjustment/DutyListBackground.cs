@@ -48,6 +48,7 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak
         if (Ready) return;
 
         AddChangelogNewTweak("1.8.7.0");
+        AddChangelog(Changelog.UnreleasedVersion, "Improved tweak stability");
         
         Ready = true;
     }
@@ -83,10 +84,12 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak
             imageNode = AllocateImageNode();
             UiHelper.LinkNodeAtEnd((AtkResNode*)imageNode, AddonToDoList);
         }
-        
-        imageNode->AtkResNode.SetWidth(AddonToDoList->RootNode->Width);
-        imageNode->AtkResNode.SetHeight(AddonToDoList->RootNode->Height);
-        imageNode->AtkResNode.SetPositionFloat(0.1f, 0);
+        else
+        {
+            imageNode->AtkResNode.SetWidth(AddonToDoList->RootNode->Width);
+            imageNode->AtkResNode.SetHeight(AddonToDoList->RootNode->Height);
+            imageNode->AtkResNode.SetPositionFloat(0.1f, 0);
+        }
     }
     
     private void TryRemoveNode()
@@ -103,10 +106,10 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak
     private AtkImageNode* AllocateImageNode()
     {
         var imageNode = UiHelper.MakeImageNode(ImageNodeId, new UiHelper.PartInfo(0, 0, 0, 0));
-        imageNode->AtkResNode.Flags = (short) (NodeFlags.Enabled | NodeFlags.AnchorTop | NodeFlags.AnchorLeft | NodeFlags.Visible | NodeFlags.UseDepthBasedPriority);
+        imageNode->AtkResNode.Flags = (short) (NodeFlags.Enabled | NodeFlags.AnchorLeft | NodeFlags.Visible | NodeFlags.UseDepthBasedPriority);
         imageNode->WrapMode = 1;
-        imageNode->Flags = (byte) (ImageNodeFlags.AutoFit);
-            
+        imageNode->Flags = 0;
+
         UpdateBackgroundColor(imageNode);
 
         return imageNode;
@@ -114,9 +117,12 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak
     
     private void UpdateBackgroundColor(AtkImageNode* imageNode)
     {
-        imageNode->AtkResNode.Color.A = (byte) (TweakConfig.BackgroundColor.W * 255);
-        imageNode->AtkResNode.AddRed = (byte) (TweakConfig.BackgroundColor.X * 255);
-        imageNode->AtkResNode.AddGreen = (byte) (TweakConfig.BackgroundColor.Y * 255);
-        imageNode->AtkResNode.AddBlue = (byte) (TweakConfig.BackgroundColor.Z * 255);
+        if (imageNode is not null)
+        {
+            imageNode->AtkResNode.Color.A = (byte) (TweakConfig.BackgroundColor.W * 255);
+            imageNode->AtkResNode.AddRed = (byte) (TweakConfig.BackgroundColor.X * 255);
+            imageNode->AtkResNode.AddGreen = (byte) (TweakConfig.BackgroundColor.Y * 255);
+            imageNode->AtkResNode.AddBlue = (byte) (TweakConfig.BackgroundColor.Z * 255);
+        }
     }
 }
