@@ -514,8 +514,12 @@ public unsafe class UIDebug : DebugHelper {
                                 case ValueType.AllocatedString:
                                 case ValueType.String8:
                                 case ValueType.String: {
-                                    var str = MemoryHelper.ReadSeStringNullTerminated(new nint(atkValue->String));
-                                    DebugManager.PrintOutObject(str, (ulong) atkValue);
+                                    if (atkValue->String == null) {
+                                        ImGui.TextDisabled("null");
+                                    } else {
+                                        var str = MemoryHelper.ReadSeStringNullTerminated(new nint(atkValue->String));
+                                        DebugManager.PrintOutObject(str, (ulong) atkValue);
+                                    }
                                     break;
                                 }
                                 case ValueType.UInt: {
