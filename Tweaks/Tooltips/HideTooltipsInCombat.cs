@@ -22,7 +22,7 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
         public bool HideItem = false;
         [TweakConfigOption("Hide Item Tooltips out of Combat", 4)]
         public bool HideItemOoc = false;
-        [TweakConfigOption("Hide Pop-up Help out of Combat", 5)]
+        [TweakConfigOption("Hide Pop-up Help in Combat", 5)]
         public bool HidePopUp = false;
         [TweakConfigOption("Hide Pop-up Help out of Combat", 6)]
         public bool HidePopUpOoc = false;
