@@ -26,11 +26,16 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
         public bool HidePopUp = false;
         [TweakConfigOption("Hide Pop-up Help out of Combat", 6)]
         public bool HidePopUpOoc = false;
+        [TweakConfigOption("Hide Cross Bar Hints in Combat", 7)]
+        public bool HideCrossbarHints = false;
+        [TweakConfigOption("Hide Cross Bar Hints out of Combat", 7)]
+        public bool HideCrossbarHintsOoc = false;
     }
 
     public bool OriginalAction;
     public bool OriginalItem;
     public bool OriginalPopUp;
+    public bool OriginalCrossbarHints;
     
     public Configs Config { get; private set; }
 
@@ -43,6 +48,7 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
     }
 
     public override void Setup() {
+        AddChangelog(Changelog.UnreleasedVersion, "Added support for crossbar hints.");
         AddChangelog("1.8.6.1", "Improved logic to attempt to reduce settings getting stuck in incorrect state.");
         base.Setup();
     }
@@ -53,6 +59,8 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
         Service.ClientState.Login += OnLogin;
         if (Service.ClientState.LocalContentId != 0) OnLogin();
         if (Common.GetUnitBase("ConfigCharacterHudGeneral", out var addon)) ToggleConfigLock(addon, false);
+        if (Common.GetUnitBase("ConfigCharaHotbarXHB", out var xhbAddon)) ToggleXhbConfigLock(xhbAddon, false);
+
         base.Enable();
     }
 
@@ -60,6 +68,7 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
         OriginalAction = GameConfig.UiControl.GetBool("ActionDetailDisp");
         OriginalItem = GameConfig.UiControl.GetBool("ItemDetailDisp");
         OriginalPopUp = GameConfig.UiControl.GetBool("ToolTipDisp");
+        OriginalCrossbarHints = GameConfig.UiConfig.GetBool("HotbarCrossHelpDisp");
         Service.Condition.ConditionChange += OnConditionChange;
         OnConditionChange(ConditionFlag.InCombat, Service.Condition[ConditionFlag.InCombat]);
     }
@@ -71,53 +80,64 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
         Common.AddonSetup -= OnAddonSetup;
         
         if (Common.GetUnitBase("ConfigCharacterHudGeneral", out var addon)) ToggleConfigLock(addon, true);
+        if (Common.GetUnitBase("ConfigCharaHotbarXHB", out var xhbAddon)) ToggleXhbConfigLock(xhbAddon, true);
         
         base.Disable();
     }
 
-    private void SetVisible(string name, bool visible) {
-        if (GameConfig.UiControl.TryGetBool(name, out var isVisible)) {
+    private void SetVisible(string name, bool visible, bool uiConfig = false) {
+        if ((uiConfig ? GameConfig.UiConfig : GameConfig.UiControl).TryGetBool(name, out var isVisible)) {
             if (isVisible != visible) {
-                GameConfig.UiControl.Set(name, visible);
+                (uiConfig ? GameConfig.UiConfig : GameConfig.UiControl).Set(name, visible);
             }
         }
     }
     
     private void OnAddonSetup(SetupAddonArgs obj) {
-        if (obj.AddonName != "ConfigCharacterHudGeneral") return;
-        ToggleConfigLock(obj.Addon, false);
+        switch (obj.AddonName) {
+            case "ConfigCharacterHudGeneral":
+                ToggleConfigLock(obj.Addon, false);
+                break;
+            case "ConfigCharaHotbarXHB":
+                ToggleXhbConfigLock(obj.Addon, false);
+                break;
+        }
+    }
+
+    private void HandleCheckboxNode(AtkUnitBase* addon, bool allowEditing, uint id, uint addonTextId) {
+        var checkboxNode = addon->GetNodeById(id);
+        if (checkboxNode == null) return;
+        var checkbox = checkboxNode->GetAsAtkComponentCheckBox();
+        if (checkbox == null) return;
+        checkbox->AtkComponentButton.AtkComponentBase.SetEnabledState(allowEditing);
+            
+        var textNode2 = checkbox->AtkComponentButton.AtkComponentBase.UldManager.SearchNodeById(2);
+        if (textNode2 == null) return;
+        var textNode = textNode2->GetAsAtkTextNode();
+        if (textNode == null) return;
+
+        var text = Service.Data.GetExcelSheet<Addon>()?.GetRow(addonTextId);
+        if (text == null) return;
+
+        var seString = text.Text.ToDalamudString();
+        if (!allowEditing) {
+            seString.Append(new UIForegroundPayload(500));
+            seString.Append(" (Managed by Simple Tweaks)");
+            seString.Append(new UIForegroundPayload(0));
+        }
+        textNode->NodeText.SetString(seString.Encode());
+    }
+    
+    private unsafe void ToggleXhbConfigLock(AtkUnitBase* addon, bool allowEditing) {
+        if (addon == null) return;
+        HandleCheckboxNode(addon, allowEditing, 11, 7791);
     }
 
     private unsafe void ToggleConfigLock(AtkUnitBase* addon, bool allowEditing) {
         if (addon == null) return;
-
-        void HandleCheckboxNode(uint id, uint addonTextId) {
-            var checkboxNode = addon->GetNodeById(id);
-            if (checkboxNode == null) return;
-            var checkbox = checkboxNode->GetAsAtkComponentCheckBox();
-            if (checkbox == null) return;
-            checkbox->AtkComponentButton.AtkComponentBase.SetEnabledState(allowEditing);
-            
-            var textNode2 = checkbox->AtkComponentButton.AtkComponentBase.UldManager.SearchNodeById(2);
-            if (textNode2 == null) return;
-            var textNode = textNode2->GetAsAtkTextNode();
-            if (textNode == null) return;
-
-            var text = Service.Data.GetExcelSheet<Addon>()?.GetRow(addonTextId);
-            if (text == null) return;
-
-            var seString = text.Text.ToDalamudString();
-            if (!allowEditing) {
-                seString.Append(new UIForegroundPayload(500));
-                seString.Append(" (Managed by Simple Tweaks)");
-                seString.Append(new UIForegroundPayload(0));
-            }
-            textNode->NodeText.SetString(seString.Encode());
-        }
-
-        HandleCheckboxNode(30, 7663);
-        HandleCheckboxNode(43, 7665);
-        HandleCheckboxNode(47, 7666);
+        HandleCheckboxNode(addon, allowEditing, 30, 7663);
+        HandleCheckboxNode(addon, allowEditing, 43, 7665);
+        HandleCheckboxNode(addon, allowEditing, 47, 7666);
     }
 
     public void OnConditionChange(ConditionFlag flag, bool value) {
@@ -125,6 +145,7 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
             SetVisible("ActionDetailDisp", OriginalAction);
             SetVisible("ItemDetailDisp", OriginalItem);
             SetVisible("ToolTipDisp", OriginalPopUp);
+            SetVisible("HotbarCrossHelpDisp", OriginalCrossbarHints, true);
             return;
         }
         if (flag != ConditionFlag.InCombat) return;
@@ -133,10 +154,12 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
             SetVisible("ActionDetailDisp", !Config.HideAction);
             SetVisible("ItemDetailDisp", !Config.HideItem);
             SetVisible("ToolTipDisp", !Config.HidePopUp);
+            SetVisible("HotbarCrossHelpDisp", !Config.HideCrossbarHints, true);
         } else {
             SetVisible("ActionDetailDisp", !Config.HideActionOoc);
             SetVisible("ItemDetailDisp", !Config.HideItemOoc);
             SetVisible("ToolTipDisp", !Config.HidePopUpOoc);
+            SetVisible("HotbarCrossHelpDisp", !Config.HidePopUpOoc, true);
         }
     }
 }
