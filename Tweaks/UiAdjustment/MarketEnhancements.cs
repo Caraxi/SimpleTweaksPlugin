@@ -12,7 +12,7 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
 
-public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
+public unsafe class MarketEnhancements : UiAdjustments.SubTweak, IDisabledTweak {
         
     public class MarketEnhancementsConfig : TweakConfig {
         [TweakConfigOption("Include tax in total price.")]
@@ -39,6 +39,7 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
     public override string Name => "Market Enhancements";
     public override string Description => "UI Enhancements for market board such as including tax and highlighting lazy tax.";
     public override bool UseAutoConfig => true;
+    public string DisabledMessage => "Disabled due to additions in 6.4 - Some features have been added to the vanilla game, while others will return when they have been confirmed working again.";
         
     private delegate void UpdateResultDelegate(AtkUnitBase* addonItemSearchResult, uint a2, ulong* a3, void* a4);
     private UpdateResultDelegate updateResult;
