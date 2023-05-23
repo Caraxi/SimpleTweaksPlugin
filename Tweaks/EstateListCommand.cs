@@ -25,7 +25,7 @@ public unsafe class EstateListCommand : CommandTweak {
     }
 
     public override void Enable() {
-        if (showEstateTeleportation == null && Service.SigScanner.TryScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 45 33 F6 48 8B CF 44 89 B3 ?? ?? ?? ?? E8", out var ptr)) {
+        if (showEstateTeleportation == null && Service.SigScanner.TryScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 33 ED 48 8B CF 89 AB ?? ?? ?? ?? E8", out var ptr)) {
             showEstateTeleportation = Marshal.GetDelegateForFunctionPointer<ShowEstateTeleportationDelegate>(ptr);
         }
         if (showEstateTeleportation == null) return;
