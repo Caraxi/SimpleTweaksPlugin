@@ -52,7 +52,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
         if (Enabled) return;
         Config = LoadConfig<Configs>() ?? new Configs();
         Config.TravellerCustomization ??= new TagCustomization() { Enabled = Config.WandererCustomization.Enabled, Replacement = Config.WandererCustomization.Replacement };
-        updateNameplateHook ??= Common.Hook<UpdateNameplateDelegate>("40 53 55 56 41 56 48 81 EC ?? ?? ?? ?? 48 8B 84 24", UpdateNameplatesDetour);
+        updateNameplateHook ??= Common.Hook<UpdateNameplateDelegate>("40 55 56 57 41 56 48 81 EC ?? ?? ?? ?? 48 8B 84 24", UpdateNameplatesDetour);
         updateNameplateHook?.Enable();
         base.Enable();
     }

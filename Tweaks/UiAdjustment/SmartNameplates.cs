@@ -80,7 +80,7 @@ public unsafe class SmartNameplates : UiAdjustments.SubTweak {
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         targetManager = targetManager != IntPtr.Zero ? targetManager : Service.SigScanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? FF 50 ?? 48 85 DB", 3); // Taken from Dalamud
-        GetTargetType ??= Marshal.GetDelegateForFunctionPointer<GetTargetTypeDelegate>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 83 F8 06 0F 87 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 8B C0"));
+        GetTargetType ??= Marshal.GetDelegateForFunctionPointer<GetTargetTypeDelegate>(Service.SigScanner.ScanText("48 89 5C 24 ?? 57 48 83 EC 20 48 8B 01 48 8B F9 8B 1D"));
         shouldDisplayNameplateHook ??= Common.Hook(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 89 44 24 40 48 C7 85"), new ShouldDisplayNameplateDelegate(ShouldDisplayNameplateDetour));
         shouldDisplayNameplateHook?.Enable();
         base.Enable();
