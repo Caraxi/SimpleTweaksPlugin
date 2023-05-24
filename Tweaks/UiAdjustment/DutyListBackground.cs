@@ -48,7 +48,7 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak
         if (Ready) return;
 
         AddChangelogNewTweak("1.8.7.0");
-        AddChangelog(Changelog.UnreleasedVersion, "Improved tweak stability");
+        AddChangelog("1.8.7.1", "Improved tweak stability");
         
         Ready = true;
     }

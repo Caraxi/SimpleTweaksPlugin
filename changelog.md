@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.8.7.1]
+***General Changes***
+> General fixes for 6.4
+
+***Tweak Changes***
+> **`Duty List Background`** - Improved tweak stability
+
+> **`Hide Tooltips in Combat`** - Added support for crossbar hints.
+
+
 ## [1.8.7.0]
 ***New Tweaks***
 > **`Duty List Background`** - Adds a configurable background to the Duty List *(MidoriKami)*
