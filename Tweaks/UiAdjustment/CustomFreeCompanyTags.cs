@@ -30,7 +30,6 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
     public class TagCustomization {
         public bool Enabled;
         public string Replacement = string.Empty;
-        public bool HideInDuty;
         public bool HideQuoteMarks;
         public bool OwnLine;
     }
@@ -45,6 +44,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
 
     public override void Setup() {
         AddChangelog("1.8.7.0", "Added option to display FC tags on a separate line to character name.");
+        AddChangelog(Changelog.UnreleasedVersion, "Removed 'Hide in Duty' option from Wanderer. This is now a vanilla game option.");
         base.Setup();
     }
 
@@ -96,10 +96,6 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                 
 
             if (customization != null && customization.Enabled) {
-                if (customization.HideInDuty && Service.Condition[ConditionFlag.BoundByDuty56]) {
-                    customization = new TagCustomization() { Enabled = true, Replacement = "" };
-                }
-                
                 if (customization.Replacement.Trim().Length == 0) {
                     namePlateInfo->FcName.StringPtr[0] = 0;
                 } else {
@@ -279,7 +275,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
             }
                 
             TagCustomizationEditor(ref wandererString, Config.WandererCustomization, false);
-            TagCustomizationEditor(ref travellerString, Config.TravellerCustomization, false, true);
+            TagCustomizationEditor(ref travellerString, Config.TravellerCustomization, false);
             TagCustomizationEditor(ref defaultString, Config.DefaultCustomization, false);
             // TagCustomizationEditor(ref noCompanyString, Config.NoCompanyCustomization, false);
                 
@@ -328,7 +324,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
         Rename,
     }
         
-    private ChangeType TagCustomizationEditor(ref string name, TagCustomization tc, bool canChange = true, bool showHideInDuty = false) {
+    private ChangeType TagCustomizationEditor(ref string name, TagCustomization tc, bool canChange = true) {
         ImGui.TableNextColumn();
 
         var changeType = ChangeType.None;
@@ -368,7 +364,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
             }
                 
         } else {
-            ImGui.SetNextItemWidth((showHideInDuty ? -290 : -180) * ImGui.GetIO().FontGlobalScale);
+            ImGui.SetNextItemWidth(-180 * ImGui.GetIO().FontGlobalScale);
             
             if (tc.Enabled) {
                 ImGui.InputTextWithHint($"##fcList#{GetType().Name}_replacement_{name}", "Hidden", ref tc.Replacement, 200);
@@ -423,12 +419,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                 var s = string.Empty;
                 ImGui.InputTextWithHint($"##fcList#{GetType().Name}_replacement_{name}", "Unchanged", ref s, 50, ImGuiInputTextFlags.ReadOnly);
             }
-            
-            if (showHideInDuty) {
-                ImGui.SameLine();
-                ImGui.Checkbox($"Hide in Duty##{GetType().Name}_hideInDuty_{name}", ref tc.HideInDuty);
-            }
-            
+
             ImGui.SameLine();
             ImGui.SetCursorPosX((ImGui.GetWindowContentRegionMax().X - 180 * ImGui.GetIO().FontGlobalScale) + ImGui.GetStyle().ItemSpacing.X);
             ImGui.Checkbox($"Own Line##{GetType().Name}_ownLine_{name}", ref tc.OwnLine);
