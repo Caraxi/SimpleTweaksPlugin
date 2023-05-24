@@ -110,20 +110,20 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
     }
 
     private static byte GetCurrentSettingValue(DutyFinderSetting dutyFinderSetting) {
-        var contentsFinder = UIState.Instance()->ContentsFinder;
+        var contentsFinder = ContentsFinder.Instance();
         return dutyFinderSetting switch {
             DutyFinderSetting.Ja => (byte)GameConfig.UiConfig.GetUInt("ContentsFinderUseLangTypeJA"),
             DutyFinderSetting.En => (byte)GameConfig.UiConfig.GetUInt("ContentsFinderUseLangTypeEN"),
             DutyFinderSetting.De => (byte)GameConfig.UiConfig.GetUInt("ContentsFinderUseLangTypeDE"),
             DutyFinderSetting.Fr => (byte)GameConfig.UiConfig.GetUInt("ContentsFinderUseLangTypeFR"),
-            DutyFinderSetting.LootRule => (byte)contentsFinder.LootRules,
+            DutyFinderSetting.LootRule => (byte)contentsFinder->LootRules,
             DutyFinderSetting.JoinPartyInProgress => (byte)GameConfig.UiConfig.GetUInt("ContentsFinderSupplyEnable"),
-            DutyFinderSetting.UnrestrictedParty => *(byte*)&contentsFinder.IsUnrestrictedParty,
-            DutyFinderSetting.LevelSync => *(byte*)&contentsFinder.IsLevelSync,
-            DutyFinderSetting.MinimumIl => *(byte*)&contentsFinder.IsMinimalIL,
-            DutyFinderSetting.SilenceEcho => *(byte*)&contentsFinder.IsSilenceEcho,
-            DutyFinderSetting.ExplorerMode => *(byte*)&contentsFinder.IsExplorerMode,
-            DutyFinderSetting.LimitedLevelingRoulette => *(byte*)&contentsFinder.IsLimitedLevelingRoulette,
+            DutyFinderSetting.UnrestrictedParty => *(byte*)&contentsFinder->IsUnrestrictedParty,
+            DutyFinderSetting.LevelSync => *(byte*)&contentsFinder->IsLevelSync,
+            DutyFinderSetting.MinimumIl => *(byte*)&contentsFinder->IsMinimalIL,
+            DutyFinderSetting.SilenceEcho => *(byte*)&contentsFinder->IsSilenceEcho,
+            DutyFinderSetting.ExplorerMode => *(byte*)&contentsFinder->IsExplorerMode,
+            DutyFinderSetting.LimitedLevelingRoulette => *(byte*)&contentsFinder->IsLimitedLevelingRoulette,
             _ => 0,
         };
     }
