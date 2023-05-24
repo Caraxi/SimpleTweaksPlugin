@@ -220,8 +220,8 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
         TryFreeTextNode(AddonFocusTargetInfo, CastbarTextNodeId);
     }
 
-    private void TryFreeTextNode(AtkUnitBase* addon, uint nodeId)
-    {
+    private void TryFreeTextNode(AtkUnitBase* addon, uint nodeId) {
+        if (addon == null) return;
         var textNode = Common.GetNodeByID<AtkTextNode>(&addon->UldManager, nodeId);
         if (textNode is not null)
         {

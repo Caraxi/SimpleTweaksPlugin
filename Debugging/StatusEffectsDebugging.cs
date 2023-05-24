@@ -47,7 +47,7 @@ public unsafe class StatusEffectsDebugging : DebugHelper {
 
             var sheet = Service.Data.Excel.GetSheet<Lumina.Excel.GeneratedSheets.Status>();
 
-            for (var i = 0; i < 40; i++) {
+            for (var i = 0; i < 30; i++) {
                 var s = sheet?.GetRow(status->StatusID);
                 ImGui.TableNextColumn();
                 ImGui.Text($"{i}");
