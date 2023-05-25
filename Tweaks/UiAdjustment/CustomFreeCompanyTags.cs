@@ -44,7 +44,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
 
     public override void Setup() {
         AddChangelog("1.8.7.0", "Added option to display FC tags on a separate line to character name.");
-        AddChangelog(Changelog.UnreleasedVersion, "Removed 'Hide in Duty' option from Wanderer. This is now a vanilla game option.");
+        AddChangelog("1.8.7.2", "Removed 'Hide in Duty' option from Wanderer. This is now a vanilla game option.");
         base.Setup();
     }
 

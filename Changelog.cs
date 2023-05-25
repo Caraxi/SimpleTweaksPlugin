@@ -140,7 +140,7 @@ public class Changelog : Window {
                 var versionStringBuilder = new StringBuilder();
 
                 if (!string.IsNullOrWhiteSpace(GenerateChangelogMarkdown(version, versionStringBuilder))) {
-                    stringBuilder.AppendLine($"## [{versionLabel}]");
+                    stringBuilder.AppendLine($"## {versionLabel}");
                     stringBuilder.Append(versionStringBuilder);
                     stringBuilder.AppendLine();
                 }
@@ -163,7 +163,7 @@ public class Changelog : Window {
                 }
 
                 foreach (var c in generalChanges) {
-                    stringBuilder.Append($"> {c.Change}");
+                    stringBuilder.Append($"- {c.Change}");
                     if (!string.IsNullOrEmpty(c.ChangeAuthor)) {
                         stringBuilder.Append($" *({c.ChangeAuthor})*");
                     }
@@ -179,7 +179,7 @@ public class Changelog : Window {
                 stringBuilder.AppendLine("***New Tweaks***");
 
                 foreach (var c in newTweaks) {
-                    stringBuilder.Append($"> **`{c.Tweak.Name}`** - {c.Tweak.Description.Split('\n')[0]}");
+                    stringBuilder.Append($"- **`{c.Tweak.Name}`** - {c.Tweak.Description.Split('\n')[0]}");
                     if (!string.IsNullOrEmpty(c.ChangeAuthor)) {
                         stringBuilder.Append($" *({c.ChangeAuthor})*");
                     }
@@ -200,11 +200,11 @@ public class Changelog : Window {
                     if (!g.Any()) continue; // Who knows
                     if (g.Count() >= 2) {
                         
-                        stringBuilder.AppendLine($"> **`{g.Key.Name}`**");
+                        stringBuilder.AppendLine($"- **`{g.Key.Name}`**");
 
                         foreach (var c in g) {
                             if (c.Tweak != g.Key) continue;
-                            stringBuilder.Append($"> - {c.Change}");
+                            stringBuilder.Append($"  - {c.Change}");
                             if (!string.IsNullOrEmpty(c.ChangeAuthor)) {
                                 stringBuilder.Append($" *({c.ChangeAuthor})*");
                             }
@@ -216,7 +216,7 @@ public class Changelog : Window {
                     } else {
                         var c = g.First();
                         if (c.Tweak == null) continue;
-                        stringBuilder.Append($"> **`{c.Tweak.Name}`** - {c.Change}");
+                        stringBuilder.Append($"- **`{c.Tweak.Name}`** - {c.Change}");
                         if (!string.IsNullOrEmpty(c.ChangeAuthor)) {
                             stringBuilder.Append($" *({c.ChangeAuthor})*");
                         }
