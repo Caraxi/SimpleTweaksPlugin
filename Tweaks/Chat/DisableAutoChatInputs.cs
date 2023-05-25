@@ -36,21 +36,23 @@ public unsafe class DisableAutoChatInputs : ChatTweaks.SubTweak {
 
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        insertTextCommandParamHook ??= Common.Hook<InsertTextCommandParam>("E8 ?? ?? ?? ?? 40 88 6E 08 EB 04", InsertTextCommandParamDetour);
+        insertTextCommandParamHook ??= Common.Hook<InsertTextCommandParam>("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 49 8D 8E", InsertTextCommandParamDetour);
         insertTextCommandParamHook?.Enable();
         base.Enable();
     }
 
     private byte InsertTextCommandParamDetour(AgentInterface* agentChatLog, uint textCommandParam, byte a3) {
         var param = Service.Data.Excel.GetSheet<TextCommandParam>()?.GetRow(textCommandParam);
-        if (param == null) return insertTextCommandParamHook.Original(agentChatLog, textCommandParam, a3);
+        if (param == null) return 0; // Sanity Check
         var text = param.Param.RawString;
-        if (Config.DisableItem && text == "<item>") return 0;
-        if (Config.DisableFlag && text == "<flag>") return 0;
-        if (Config.DisableQuest && text == "<quest>") return 0;
-        if (Config.DisablePartyFinder && text == "<pfinder>") return 0;
-        if (Config.DisableStatus && text == "<status>") return 0;
-        return insertTextCommandParamHook.Original(agentChatLog, textCommandParam, a3);
+        return text switch {
+            "<item>"    when Config.DisableItem        => 0,
+            "<flag>"    when Config.DisableFlag        => 0,
+            "<quest>"   when Config.DisableQuest       => 0,
+            "<pfinder>" when Config.DisablePartyFinder => 0,
+            "<status>"  when Config.DisableStatus      => 0,
+            _ => insertTextCommandParamHook.Original(agentChatLog, textCommandParam, a3)
+        };
     }
 
     public override void Disable() {
