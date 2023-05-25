@@ -21,6 +21,7 @@ public unsafe class EstateListCommand : CommandTweak {
     
     public override void Setup() {
         AddChangelog("1.8.1.1", "Now allows partial matching of friend names.");
+        AddChangelog("1.8.7.2", "Fixed tweak not working in 6.4");
         base.Setup();
     }
 

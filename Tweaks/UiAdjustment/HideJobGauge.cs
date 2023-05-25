@@ -38,6 +38,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override bool UseAutoConfig => true;
         private readonly Stopwatch outOfCombatTimer = new Stopwatch();
         
+        public override void Setup() {
+            base.Setup();
+            AddChangelog("1.8.7.2", "Fixed 'Show while weapon is drawn' option not working.");
+        }
+
         public override void Enable() {
             outOfCombatTimer.Restart();
             Config = LoadConfig<Configs>() ?? new Configs();

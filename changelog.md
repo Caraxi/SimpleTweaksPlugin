@@ -4,6 +4,14 @@
 ***Tweak Changes***
 - **`Custom Free Company Tags`** - Removed 'Hide in Duty' option from Wanderer. This is now a vanilla game option.
 
+- **`Disable Auto Chat Inputs`** - Fixed game crash in 6.4
+
+- **`Estate List Command`** - Fixed tweak not working in 6.4
+
+- **`Hide Job Gauge`** - Fixed 'Show while weapon is drawn' option not working.
+
+- **`Improved Duty Finder Settings`** - Fixed tweak not working in 6.4
+
 
 ## 1.8.7.1
 ***General Changes***

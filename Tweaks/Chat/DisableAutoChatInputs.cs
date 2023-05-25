@@ -34,6 +34,11 @@ public unsafe class DisableAutoChatInputs : ChatTweaks.SubTweak {
 
     public override bool UseAutoConfig => true;
 
+    public override void Setup() {
+        AddChangelog("1.8.7.2", "Fixed game crash in 6.4");
+        base.Setup();
+    }
+
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         insertTextCommandParamHook ??= Common.Hook<InsertTextCommandParam>("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 49 8D 8E", InsertTextCommandParamDetour);
