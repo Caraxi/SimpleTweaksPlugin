@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Game.ClientState.Objects.Enums;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -68,6 +68,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             #if DEBUG
             PerformanceMonitor.Begin();
             #endif
+            var character = (Character*)(Service.ClientState.LocalPlayer?.Address ?? nint.Zero);
             for (var i = 0; i < loadedUnitsList->Count; i++) {
                 var addon = addonList[i];
                 var name = Marshal.PtrToStringAnsi(new IntPtr(addon->Name));
@@ -80,7 +81,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                         if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
                     } else if (Config.ShowInCombat && outOfCombatTimer.ElapsedMilliseconds < Config.CombatBuffer * 1000) {
                         if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
-                    } else if (Config.ShowWhileWeaponDrawn && Service.ClientState.LocalPlayer != null && Service.ClientState.LocalPlayer.StatusFlags.HasFlag(StatusFlags.WeaponOut)) {
+                    } else if (Config.ShowWhileWeaponDrawn && character != null && character->IsWeaponDrawn) {
                         if (addon->UldManager.NodeListCount == 0) addon->UldManager.UpdateDrawNodeList();
                     } else {
                         addon->UldManager.NodeListCount = 0;
