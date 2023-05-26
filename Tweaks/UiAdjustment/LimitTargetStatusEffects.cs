@@ -172,7 +172,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                     if (localPlayer == null) {
                         localPlayer = GameObjectManager.GetGameObjectByIndex(0);
-                        if (localPlayer == null || (Config.FilterOnlyInCombat && (((Character*)localPlayer)->StatusFlags & (byte) StatusFlags.InCombat) == 0)) {
+                        if (localPlayer == null || (Config.FilterOnlyInCombat && !((Character*)localPlayer)->InCombat)) {
                             break;
                         }
                     }
