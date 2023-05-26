@@ -20,6 +20,7 @@ public abstract class CommandTweak : Tweak {
     private List<string> registeredCommands = new();
     
     public override void Enable() {
+        base.Enable();
         var c = Command.StartsWith("/") ? Command : $"/{Command}";
         if (Service.Commands.Commands.ContainsKey(c)) {
             Plugin.Error(this, new Exception($"Command '{c}' is already registered."));
@@ -42,8 +43,6 @@ public abstract class CommandTweak : Tweak {
                 registeredCommands.Add(alias);
             }
         }
-        
-        base.Enable();
     }
 
     public override void Disable() {
