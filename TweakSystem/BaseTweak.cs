@@ -9,6 +9,7 @@ using Dalamud.Interface.Colors;
 using Dalamud.Plugin;
 using ImGuiNET;
 using Newtonsoft.Json;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.TweakSystem; 
@@ -361,10 +362,12 @@ public abstract class BaseTweak {
     }
 
     public virtual void Enable() {
+        EventController.RegisterEvents(this);
         Enabled = true;
     }
 
     public virtual void Disable() {
+        EventController.UnregisterEvents(this);
         Enabled = false;
     }
 
