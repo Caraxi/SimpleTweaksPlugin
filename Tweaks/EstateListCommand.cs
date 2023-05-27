@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Client.UI.Info;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
 using SimpleTweaksPlugin.Utility;
@@ -16,7 +17,7 @@ public unsafe class EstateListCommand : CommandTweak {
     protected override string Command => "estatelist";
     protected override string HelpMessage => "Opens the estate list for one of your friends.";
 
-    private delegate IntPtr ShowEstateTeleportationDelegate(AgentInterface* friendListAgent, ulong contentId);
+    private delegate IntPtr ShowEstateTeleportationDelegate(AgentFriendList* friendListAgent, ulong contentId);
     private ShowEstateTeleportationDelegate showEstateTeleportation;
     
     public override void Setup() {
@@ -48,21 +49,28 @@ public unsafe class EstateListCommand : CommandTweak {
         }
 
         var useContentId = ulong.TryParse(arguments, out var contentId);
-        var friends = FriendList.List
-            .Where(friend => {
-                if (friend.HomeWorld != Service.ClientState.LocalPlayer?.CurrentWorld.Id) return false;
-                if (useContentId && contentId > 0 && friend.ContentId == contentId) return true;
-                return friend.Name.TextValue.StartsWith(arguments, StringComparison.InvariantCultureIgnoreCase);
-            }).ToList();
-        
-        var friend = friends.FirstOrDefault(friend => friend.Name.TextValue.StartsWith(arguments, StringComparison.InvariantCultureIgnoreCase));
-        if (friend.ContentId == 0) friend = friends.FirstOrDefault();
-        if (friend.ContentId == 0) {
-            Service.Chat.PrintError($"No friend with name \"{arguments}\" on your current world.");
-            return;
+
+        var agent = AgentFriendList.Instance();
+
+        InfoProxyCommonList.CharacterData* friend = null;
+        for (var i = 0U; i < agent->Count; i++) {
+            var f = agent->GetFriend(i);
+            if (f == null) continue;
+            if (f->HomeWorld != Service.ClientState.LocalPlayer?.CurrentWorld.Id) continue;
+            if (f->ContentId == 0) continue;
+            if (f->Name[0] == 0) continue;
+            if (useContentId && contentId == (ulong)f->ContentId) {
+                this.showEstateTeleportation(agent, (ulong)f->ContentId);
+                return;
+            }
+
+            var name = MemoryHelper.ReadString(new nint(f->Name), 32);
+            if (name.StartsWith(arguments, StringComparison.InvariantCultureIgnoreCase)) {
+                this.showEstateTeleportation(agent, (ulong)f->ContentId);
+                return;
+            }
         }
         
-        var friendListAgent = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(AgentId.SocialFriendList);
-        if (friendListAgent != null) this.showEstateTeleportation(friendListAgent, friend.ContentId);
+        Service.Chat.PrintError($"No friend with name \"{arguments}\" on your current world.");
     }
 }
