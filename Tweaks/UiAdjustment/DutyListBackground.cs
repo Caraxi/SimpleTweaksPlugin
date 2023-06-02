@@ -49,7 +49,8 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak
         if (Ready) return;
 
         AddChangelogNewTweak("1.8.7.0");
-        AddChangelog("1.8.7.1", "Improved tweak stability");
+        AddChangelog("1.8.7.1", "Improved tweak stability.");
+        AddChangelog(Changelog.UnreleasedVersion, "Automatically disables in Inn Rooms.");
         
         Ready = true;
     }
