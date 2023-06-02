@@ -1,7 +1,7 @@
-﻿using System.Numerics;
+﻿using System.Linq;
+using System.Numerics;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -50,7 +50,7 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak
 
         AddChangelogNewTweak("1.8.7.0");
         AddChangelog("1.8.7.1", "Improved tweak stability.");
-        AddChangelog(Changelog.UnreleasedVersion, "Automatically disables in Inn Rooms.");
+        AddChangelog(Changelog.UnreleasedVersion, "Prevent crash when using Aestetician.");
         
         Ready = true;
     }
@@ -79,14 +79,18 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak
     {
         if (!UiHelper.IsAddonReady(AddonToDoList)) return;
 
-        // If the current area is an inn, remove the node
-        if (Service.Data.GetExcelSheet<TerritoryType>()!.GetRow(Service.ClientState.TerritoryType)?.TerritoryIntendedUse is 2)
-        {
-            TryRemoveNode();
-            return;
-        }
-
         var imageNode = Common.GetNodeByID<AtkImageNode>(&AddonToDoList->UldManager, ImageNodeId);
+        
+        if (Service.ClientState.LocalPlayer is { Position: var playerPosition })
+        {
+            var gameObject = Service.Objects.FirstOrDefault(obj => obj.DataId is 2004358)?.Position;
+
+            if (gameObject is not null && Vector3.Distance(playerPosition, gameObject.Value) < 5.0f)
+            {
+                TryRemoveNode();
+                return;
+            }
+        }
         
         if(imageNode is null)
         {
