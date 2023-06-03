@@ -37,9 +37,31 @@ class ClickableLinks : ChatTweaks.SubTweak {
 
 
     private DalamudLinkPayload urlLinkPayload;
+    
+    private static bool IsBattleType(XivChatType type) {
+        var channel = ((int)type & 0x7F);
+        switch (channel) {
+            case 41: // Damage
+            case 42: // Miss
+            case 43: // Action
+            case 44: // Item
+            case 45: // Healing
+            case 46: // GainBeneficialStatus
+            case 48: // LoseBeneficialStatus
+            case 47: // GainDetrimentalStatus
+            case 49: // LoseDetrimentalStatus
+            case 58: // BattleSystem
+                return true;
+            default:
+                return false;
+        }
+    }
 
-    // TODO: Ignore messages that realistically will never have links (Battle) 
     private void OnChatMessage(XivChatType type, uint senderid, ref SeString sender, ref SeString message, ref bool ishandled) {
+        if (IsBattleType(type)) {
+            return;   
+        }
+        
         var isModified = false;
         var payloads = new List<Payload>();
         var cLinkDepth = 0;
