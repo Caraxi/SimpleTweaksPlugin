@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Dalamud;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
@@ -27,28 +28,66 @@ public static unsafe class EventController {
     private static readonly Dictionary<string, List<Subscriber<AddonUpdateDelegate>>> AddonPreUpdateSubscribers = new();
     private static readonly Dictionary<string, List<Subscriber<AddonUpdateDelegate>>> AddonPostUpdateSubscribers = new();
     private static readonly List<Subscriber<Action>> FrameworkUpdateSubscribers = new();
-
-
-    private static HookWrapper<UpdateAddonByID> updateAddonByIdHook;
+    
+    private static HookWrapper<UpdateAddonByID> _updateAddonByIdHook;
     
     static EventController() {
         Common.AddonSetup += HandleAddonSetup;
         Common.AddonFinalize += HandleAddonFinalize;
         Common.FrameworkUpdate += HandleFrameworkUpdate;
-        updateAddonByIdHook = Common.Hook<UpdateAddonByID>(AtkStage.GetSingleton()->RaptureAtkUnitManager->VTable->UpdateAddonByID, UpdateAddonByIdDetour);
+        SetupUpdateAddon();
+    }
+
+    private static void SetupUpdateAddon() {
+        var updateAddonByIdAddress = (nint) AtkStage.GetSingleton()->RaptureAtkUnitManager->VTable->UpdateAddonByID;
+        
+        var expectedBytes = new byte[] { 0xFF, 0x90, 0x90, 0x01, 0x00, 0x00 }; // call    qword ptr [rax+190h]
+        
+        if (!SafeMemory.ReadBytes(updateAddonByIdAddress + 0x94, expectedBytes.Length, out var bytes)) {
+            SimpleTweaksPlugin.Plugin.Error(new Exception("Failed to initalize UpdateAddon event handling. Some tweaks will not function correctly."));
+            SimpleLog.Fatal("Failed to initalize UpdateAddon event handling.");
+            return;
+        }
+
+        SimpleLog.Debug("Verifying UpdateAddonByID");
+        SimpleLog.Debug($"  Expecting: {BitConverter.ToString(expectedBytes)}");
+        SimpleLog.Debug($"     Actual: {BitConverter.ToString(bytes)}");
+        
+        if (expectedBytes.Length != bytes.Length) {
+            SimpleTweaksPlugin.Plugin.Error(new Exception("Failed to initalize UpdateAddon event handling. Some tweaks will not function correctly."));
+            SimpleLog.Fatal("Failed to initalize UpdateAddon event handling - Read the incorrect number of bytes");
+            return;
+        }
+        
+        for (var i = 0; i < expectedBytes.Length; i++) {
+            if (expectedBytes[i] != bytes[i]) {
+                SimpleTweaksPlugin.Plugin.Error(new Exception("Failed to initalize UpdateAddon event handling. Some tweaks will not function correctly."));
+                SimpleLog.Fatal("Failed to initalize UpdateAddon event handling - Safety check failed. Expected bytes do not match read bytes.");
+                return;
+            }
+        }
+
+        _updateAddonByIdHook = Common.Hook<UpdateAddonByID>(updateAddonByIdAddress, UpdateAddonByIdDetour);
     }
 
     private static void UpdateAddonByIdDetour(RaptureAtkUnitManager* atkUnitManager, ushort addonId, NumberArrayData** numberArrays, StringArrayData** stringArrays, byte forceB) {
         // Fully replace the function
-        
-        if (addonId == 0) return;
-        AtkUnitBase* addon = atkUnitManager->GetAddonById(addonId);
-        if (addon == null) return;
-        var name = Common.ReadString(addon->Name, 0x20);
-        if (forceB != 0 || ((*(uint*) (addon + 0x180) >> 20) & 0xF) != 5 || (*(byte*) (addon + 0x18A) & 0x10) != 0) {
-            HandleAddonPreUpdate(name, addon, numberArrays, stringArrays);
-            addon->OnUpdate(numberArrays, stringArrays);
-            HandleAddonPostUpdate(name, addon, numberArrays, stringArrays);
+        var didForward = false;
+        try {
+            if (addonId == 0) return;
+            var addon = atkUnitManager->GetAddonById(addonId);
+            if (addon == null) return;
+            var name = Common.ReadString(addon->Name, 0x20);
+            if (forceB != 0 || ((*(uint*)(addon + 0x180) >> 0x14) & 0xF) != 5 || (*(byte*)(addon + 0x18A) & 0x10) != 0) {
+                var updateFunction = (delegate* unmanaged[Stdcall] <AtkUnitBase*, NumberArrayData**, StringArrayData**, void>)((void**)addon->VTable)[50];
+                HandleAddonPreUpdate(name, addon, numberArrays, stringArrays);
+                updateFunction(addon, numberArrays, stringArrays);
+                didForward = true;
+                HandleAddonPostUpdate(name, addon, numberArrays, stringArrays);
+            }
+        } catch (Exception ex) {
+            SimpleLog.Error(ex);
+            if (!didForward) _updateAddonByIdHook.Original(atkUnitManager, addonId, numberArrays, stringArrays, forceB);
         }
     }
 
@@ -120,7 +159,7 @@ public static unsafe class EventController {
                 try {
                     var updateDelegate = method.CreateDelegate<AddonUpdateDelegate>(tweak);
                     RegisterAddonPreUpdate(tweak, updateDelegate, addonPreUpdateAttribute.AddonNames);
-                    updateAddonByIdHook?.Enable();
+                    _updateAddonByIdHook?.Enable();
                 } catch (Exception ex) {
                     SimpleLog.Error($"Failed to bind AddonPreUpdate to {tweak.GetType().Name}.{method.Name}");
                     SimpleLog.Error(ex);
@@ -130,8 +169,8 @@ public static unsafe class EventController {
             if (method.TryGetCustomAttribute<AddonPostUpdateAttribute>(out var addonPostUpdateAttribute)) {
                 try {
                     var updateDelegate = method.CreateDelegate<AddonUpdateDelegate>(tweak);
-                    RegisterAddonPreUpdate(tweak, updateDelegate, addonPostUpdateAttribute.AddonNames);
-                    updateAddonByIdHook?.Enable();
+                    RegisterAddonPostUpdate(tweak, updateDelegate, addonPostUpdateAttribute.AddonNames);
+                    _updateAddonByIdHook?.Enable();
                 } catch (Exception ex) {
                     SimpleLog.Error($"Failed to bind AddonPostUpdate to {tweak.GetType().Name}.{method.Name}");
                     SimpleLog.Error(ex);
@@ -212,7 +251,7 @@ public static unsafe class EventController {
         }
         
         if (AddonPostUpdateSubscribers.Count == 0 && AddonPreUpdateSubscribers.Count == 0) 
-            updateAddonByIdHook?.Disable();
+            _updateAddonByIdHook?.Disable();
     }
     
     private static void UnregisterAddonPostUpdate(BaseTweak tweak) {
@@ -221,7 +260,7 @@ public static unsafe class EventController {
         }
 
         if (AddonPostUpdateSubscribers.Count == 0 && AddonPreUpdateSubscribers.Count == 0) 
-            updateAddonByIdHook?.Disable();
+            _updateAddonByIdHook?.Disable();
     }
 
     private static void UnregisterFrameworkUpdate(BaseTweak tweak) {
