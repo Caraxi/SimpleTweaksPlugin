@@ -21,7 +21,7 @@ public unsafe class TrackGachaItems : TooltipTweaks.SubTweak {
         /* Mythril Triad Card  */ [13380] = new uint[]{ 9843, 14193, 13368, 9810, 9823, 9841, 13372, 9844, 13367 },
         /* Imperial Triad Card */ [17702] = new uint[]{ 17686, 16775, 17681, 17682, 16774, 13378 },
         /* Dream Triad Card    */ [28652] = new uint[]{ 28661, 26767, 28657, 28653, 28655, 26772, 28658, 28660, 26765, 26768, 26766 },
-        
+        /* Platinum Triad Card */ [10077] = new uint[] { 9830, 9842, 9840, 14208, 15872, 9828, 9851, 9831, 9834, 9826, 9822, 9848 },
         
         /* Materiel Container 3.0 */ [36635] = new uint[] { 9350, 12051, 6187, 15441, 6175, 7564, 6186, 6203, 6177, 14099, 17525, 15440, 14098, 6003, 12055, 6199, 6205,
                                                             16570, 16568, 6189, 15447, 8193, 9347, 14103, 12054, 8194, 12061, 6191, 12069, 13279, 6179, 12058, 13283,
@@ -44,6 +44,7 @@ public unsafe class TrackGachaItems : TooltipTweaks.SubTweak {
 
     public override void Setup() {
         AddChangelogNewTweak("1.8.3.0");
+        AddChangelog(Changelog.UnreleasedVersion, "Added 'Platinum Triad Card'");
         base.Setup();
     }
 
