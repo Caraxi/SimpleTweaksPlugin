@@ -447,13 +447,31 @@ namespace SimpleTweaksPlugin {
 
         internal readonly List<CaughtError> ErrorList = new List<CaughtError>();
 #if DEBUG
+        public void Error(Exception ex, string message = "", [CallerFilePath] string callerFilePath = "", [CallerLineNumber] int callerLineNumber = 0, [CallerMemberName] string callerMemberName = "") {
+            Error(null, ex, true, message, callerFilePath, callerLineNumber, callerMemberName);
+        }
+        
         public void Error(BaseTweak tweak, Exception exception, bool allowContinue = false, string message = "", [CallerFilePath] string callerFilePath = "", [CallerLineNumber] int callerLineNumber = 0, [CallerMemberName] string callerMemberName = "" ) {
-
-            SimpleLog.Error($"Exception in '{tweak.Name}'" + (string.IsNullOrEmpty(message) ? "" : ($": {message}")), callerFilePath, callerMemberName, callerLineNumber);
+            if (tweak == null) {
+                SimpleLog.Error($"Exception in '{tweak.Name}'" + (string.IsNullOrEmpty(message) ? "" : ($": {message}")), callerFilePath, callerMemberName, callerLineNumber);
+            } else {
+                SimpleLog.Error("Exception in SimpleTweaks framework. "+ (string.IsNullOrEmpty(message) ? "" : ($": {message}")), callerFilePath, callerMemberName, callerLineNumber);
+            }
             SimpleLog.Error($"{exception}", callerFilePath, callerMemberName, callerLineNumber);
 #else
+
+        public void Error(Exception ex, string message = "") {
+            Error(null, ex, true, message);
+        }
+
         public void Error(BaseTweak tweak, Exception exception, bool allowContinue = false, string message="") {
-            SimpleLog.Error($"Exception in '{tweak.Name}'" + (string.IsNullOrEmpty(message) ? "" : ($": {message}")));
+            if (tweak == null) {
+                SimpleLog.Error($"Exception in SimpleTweaks framework. " + (string.IsNullOrEmpty(message) ? "" : ($": {message}")));
+            } else {
+                SimpleLog.Error($"Exception in '{tweak.Name}'" + (string.IsNullOrEmpty(message) ? "" : ($": {message}")));
+            }
+            
+            
             SimpleLog.Error($"{exception}");
 #endif
             var err = new CaughtError {
