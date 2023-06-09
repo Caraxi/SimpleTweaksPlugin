@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.8.7.3
+***Tweak Changes***
+- **`Duty List Background`** - Prevent crash when using Aestetician.
+
+- **`Track Gacha Items`** - Added 'Platinum Triad Card'
+
+
 ## 1.8.7.2
 ***Tweak Changes***
 - **`Custom Free Company Tags`** - Removed 'Hide in Duty' option from Wanderer. This is now a vanilla game option.

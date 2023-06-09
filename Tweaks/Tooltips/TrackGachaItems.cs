@@ -44,7 +44,7 @@ public unsafe class TrackGachaItems : TooltipTweaks.SubTweak {
 
     public override void Setup() {
         AddChangelogNewTweak("1.8.3.0");
-        AddChangelog(Changelog.UnreleasedVersion, "Added 'Platinum Triad Card'");
+        AddChangelog("1.8.7.3", "Added 'Platinum Triad Card'");
         base.Setup();
     }
 

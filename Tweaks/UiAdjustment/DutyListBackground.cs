@@ -50,7 +50,7 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak
 
         AddChangelogNewTweak("1.8.7.0");
         AddChangelog("1.8.7.1", "Improved tweak stability.");
-        AddChangelog(Changelog.UnreleasedVersion, "Prevent crash when using Aestetician.");
+        AddChangelog("1.8.7.3", "Prevent crash when using Aestetician.");
         
         Ready = true;
     }
