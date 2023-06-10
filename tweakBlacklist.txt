@@ -2,3 +2,4 @@ StopCraftingButton
 FixedShadowDistance
 RefreshMarketPrices
 TooltipTweaks
+DutyListBackground
