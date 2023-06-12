@@ -28,6 +28,10 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     {
         public Direction DisplayDirection = Direction.Up;
         public List<CurrencyEntry> Currencies = new();
+        public bool Grid;
+        public int GridSize = 2;
+        public float[] GridSpacing = Array.Empty<float>();
+        public Direction GridGrowth = Direction.Left;
     }
     
     public class CurrencyEntry
@@ -54,6 +58,8 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     {
         DrawDirectionComboBox();
         
+        DrawGridConfig();
+
         ImGuiHelpers.ScaledDummy(5.0f);
         DrawAddCurrency();
         
@@ -75,12 +81,17 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         AddChangelog("1.8.3.1", "Use configured format culture for number display, should fix French issue");
         AddChangelog("1.8.4.0", "Added support for Collectibles");
         AddChangelog(Changelog.UnreleasedVersion, "Added option for adjustable spacing in horizontal layouts.");
+        AddChangelog(Changelog.UnreleasedVersion, "Added option to display in a grid.");
         base.Setup();
     }
 
     public override void Enable()
     {
         TweakConfig = LoadConfig<Config>() ?? new Config();
+        
+        if (TweakConfig.DisplayDirection is Direction.Up or Direction.Down && TweakConfig.GridGrowth is Direction.Up or Direction.Down) TweakConfig.GridGrowth = Direction.Left;
+        if (TweakConfig.DisplayDirection is Direction.Left or Direction.Right && TweakConfig.GridGrowth is Direction.Left or Direction.Right) TweakConfig.GridGrowth = Direction.Up;
+        
         Common.FrameworkUpdate += OnFrameworkUpdate;
         base.Enable();
     }
@@ -93,6 +104,62 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         base.Disable();
     }
 
+    private void UpdatePosition(AtkResNode* baseNode, Vector2 resNodeSize, uint index, CurrencyEntry currencyInfo, ref Vector2 position) {
+        if (TweakConfig.Grid) {
+            // sanity check
+            if (TweakConfig.GridSize < 2) TweakConfig.GridSize = 2;
+            TweakConfig.GridGrowth = TweakConfig.DisplayDirection switch {
+                Direction.Left or Direction.Right when TweakConfig.GridGrowth is Direction.Left or Direction.Right => Direction.Up,
+                Direction.Up or Direction.Down when TweakConfig.GridGrowth is Direction.Up or Direction.Down => Direction.Left,
+                _ => TweakConfig.GridGrowth
+            };
+            
+            var columnIndex = TweakConfig.DisplayDirection switch {
+                Direction.Up or Direction.Down => (index + 1) / TweakConfig.GridSize,
+                Direction.Left or Direction.Right => (index + 1) % TweakConfig.GridSize,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            
+            var columnSpacing = columnIndex == 0 || TweakConfig.GridSpacing.Length < columnIndex ? 0 : TweakConfig.GridSpacing[(int)columnIndex - 1];
+            
+            if ((index + 1) % TweakConfig.GridSize == 0) {
+
+                position.X = TweakConfig.DisplayDirection switch {
+                    Direction.Up => position.X + (TweakConfig.GridGrowth == Direction.Left ? -resNodeSize.X - columnSpacing : resNodeSize.X + columnSpacing),
+                    Direction.Down => position.X + (TweakConfig.GridGrowth == Direction.Left ? -resNodeSize.X - columnSpacing : resNodeSize.X + columnSpacing),
+                    Direction.Left => baseNode->X,
+                    Direction.Right => baseNode->X,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+                
+                position.Y = TweakConfig.DisplayDirection switch {
+                    Direction.Up => baseNode->Y,
+                    Direction.Down => baseNode->Y,
+                    Direction.Left => position.Y + (TweakConfig.GridGrowth == Direction.Up ? -resNodeSize.Y : resNodeSize.Y),
+                    Direction.Right => position.Y + (TweakConfig.GridGrowth == Direction.Up ? -resNodeSize.Y : resNodeSize.Y),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+                
+            } else {
+                position +=  TweakConfig.DisplayDirection switch {
+                    Direction.Left => new Vector2(-resNodeSize.X - columnSpacing, 0),
+                    Direction.Right => new Vector2(resNodeSize.X + columnSpacing, 0),
+                    Direction.Up => new Vector2(0, -resNodeSize.Y),
+                    Direction.Down => new Vector2(0, resNodeSize.Y),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+            }
+        } else {
+            position += TweakConfig.DisplayDirection switch {
+                Direction.Left => new Vector2(-resNodeSize.X - currencyInfo.HorizontalSpacing, 0),
+                Direction.Right => new Vector2(resNodeSize.X + currencyInfo.HorizontalSpacing, 0),
+                Direction.Up => new Vector2(0, -resNodeSize.Y),
+                Direction.Down => new Vector2(0, resNodeSize.Y),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+    }
+    
     private void OnFrameworkUpdate()
     {
         if (!UiHelper.IsAddonReady(AddonMoney)) return;
@@ -110,20 +177,12 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         var counterPositionNode= Common.GetNodeByID<AtkCounterNode>(&AddonMoney->UldManager, 2, NodeType.Counter);
         if (counterPositionNode == null) return;
         var counterPosition = new Vector2(counterPositionNode->AtkResNode.X, counterPositionNode->AtkResNode.Y);
-
+        
         // Make all counter nodes first, because if a icon node overlaps it even slightly it'll hide itself.
         foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
         {
             var currencyInfo = TweakConfig.Currencies[(int) index];
-
-            counterPosition += TweakConfig.DisplayDirection switch {
-                Direction.Left => new Vector2(-resNodeSize.X - currencyInfo.HorizontalSpacing, 0),
-                Direction.Right => new Vector2(resNodeSize.X + currencyInfo.HorizontalSpacing, 0),
-                Direction.Up => new Vector2(0, -resNodeSize.Y),
-                Direction.Down => new Vector2(0, resNodeSize.Y),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-
+            UpdatePosition(&counterPositionNode->AtkResNode, resNodeSize, index, currencyInfo, ref counterPosition);
             TryMakeCounterNode(CounterBaseId + index, counterPosition, counterPositionNode->PartsList);
             var count = currencyInfo.CollectibleItem 
                 ? InventoryManager.Instance()->GetInventoryItemCount(currencyInfo.ItemId, minCollectability: 1)
@@ -134,15 +193,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
         {
             var currencyInfo = TweakConfig.Currencies[(int) index];
-
-            iconPosition +=  TweakConfig.DisplayDirection switch {
-                Direction.Left => new Vector2(-resNodeSize.X - currencyInfo.HorizontalSpacing, 0),
-                Direction.Right => new Vector2(resNodeSize.X + currencyInfo.HorizontalSpacing, 0),
-                Direction.Up => new Vector2(0, -resNodeSize.Y),
-                Direction.Down => new Vector2(0, resNodeSize.Y),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-            
+            UpdatePosition(currencyPositionNode, resNodeSize, index, currencyInfo, ref iconPosition);
             TryMakeIconNode(ImageBaseId + index, iconPosition, currencyInfo.IconId, currencyInfo.HqItem);
         }
     }
@@ -160,12 +211,82 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
                 if (ImGui.Selectable(direction.ToString(), TweakConfig.DisplayDirection == direction))
                 {
                     TweakConfig.DisplayDirection = direction;
+                    TweakConfig.GridGrowth = direction switch {
+                        Direction.Up when TweakConfig.GridGrowth is not Direction.Right => Direction.Left,
+                        Direction.Down when TweakConfig.GridGrowth is not Direction.Right => Direction.Left,
+                        Direction.Left when TweakConfig.GridGrowth is not Direction.Down => Direction.Up,
+                        Direction.Right when TweakConfig.GridGrowth is not Direction.Down => Direction.Up,
+                        _ => TweakConfig.GridGrowth
+                    };
+                    
                     SaveConfig(TweakConfig);
                     FreeAllNodes();
                 }
             }
             
             ImGui.EndCombo();
+        }
+    }
+
+    private void DrawGridConfig() {
+
+        ImGui.Checkbox("Use Grid Layout", ref TweakConfig.Grid);
+
+        if (TweakConfig.Grid) {
+            ImGui.Indent();
+            var regionSize = ImGui.GetContentRegionAvail();
+            
+            ImGui.SetNextItemWidth(regionSize.X * 2.0f / 3.0f);
+            if (ImGui.InputInt("Currencies Per Line", ref TweakConfig.GridSize)) {
+                if (TweakConfig.GridSize < 2) TweakConfig.GridSize = 2;
+                SaveConfig(TweakConfig);
+            }
+            if (TweakConfig.GridSize < 2) TweakConfig.GridSize = 2;
+            
+            ImGui.SetNextItemWidth(regionSize.X * 2.0f / 3.0f);
+            if (ImGui.BeginCombo("Grid Growth Direction", TweakConfig.GridGrowth.ToString()))
+            {
+                foreach (var direction in Enum.GetValues<Direction>())
+                {
+                    if (TweakConfig.DisplayDirection is Direction.Up or Direction.Down && direction is Direction.Up or Direction.Down) continue;
+                    if (TweakConfig.DisplayDirection is Direction.Left or Direction.Right && direction is Direction.Left or Direction.Right) continue;
+                    
+                    if (ImGui.Selectable(direction.ToString(), TweakConfig.DisplayDirection == direction))
+                    {
+                        TweakConfig.GridGrowth = direction;
+                        SaveConfig(TweakConfig);
+                    }
+                }
+            
+                ImGui.EndCombo();
+            }
+
+            ImGui.Text("Grid Spacing: ");
+            ImGui.Indent();
+
+            for (var spacingIndex = 0; spacingIndex < TweakConfig.GridSpacing.Length; spacingIndex++) {
+
+                if (ImGui.SmallButton($"x##removeColumnSpacing{spacingIndex}")) {
+                    var l = TweakConfig.GridSpacing.ToList();
+                    l.RemoveAt(spacingIndex);
+                    TweakConfig.GridSpacing = l.ToArray();
+                    spacingIndex--;
+                    continue;
+                }
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X * 2.0f / 3.0f);
+                if (ImGui.DragFloat($"Column#{spacingIndex + 1}", ref TweakConfig.GridSpacing[spacingIndex], 0.5f)) {
+                    SaveConfig(TweakConfig);
+                }
+                
+                
+            }
+
+            if (ImGui.SmallButton("+##addColumnSpacing")) {
+                Array.Resize(ref TweakConfig.GridSpacing, TweakConfig.GridSpacing.Length + 1);
+            }
+            ImGui.Unindent();
+            ImGui.Unindent();
         }
     }
 
@@ -300,7 +421,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
             }
             ImGui.SameLine();
             
-            if (TweakConfig.DisplayDirection is Direction.Left or Direction.Right)
+            if (TweakConfig.DisplayDirection is Direction.Left or Direction.Right && TweakConfig.Grid == false)
             {
                 ImGui.SetNextItemWidth(120 * ImGuiHelpers.GlobalScale);
                 ImGui.DragFloat($"##spacing_{index}", ref currency.HorizontalSpacing, 0.5f, currency.HorizontalSpacing - 100, currency.HorizontalSpacing + 100, "Spacing: %.0f");
