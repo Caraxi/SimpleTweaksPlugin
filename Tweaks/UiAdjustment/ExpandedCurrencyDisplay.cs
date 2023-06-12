@@ -36,6 +36,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     
     public class CurrencyEntry
     {
+        public bool Enabled = true;
         public uint ItemId;
         public int IconId;
         public bool HqItem;
@@ -189,6 +190,8 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
         {
             var currencyInfo = TweakConfig.Currencies[(int) index];
+            if (currencyInfo.Enabled == false) continue;
+            
             if (currencyInfo.UseCustomPosition) {
                 TryMakeCounterNode(CounterBaseId + index, baseCounterPosition + currencyInfo.CustomPosition, counterPositionNode->PartsList);
             } else {
@@ -206,6 +209,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
         {
             var currencyInfo = TweakConfig.Currencies[(int) index];
+            if (currencyInfo.Enabled == false) continue;   
             if (currencyInfo.UseCustomPosition) {
                 TryMakeIconNode(ImageBaseId + index, baseIconPosition + currencyInfo.CustomPosition, currencyInfo.IconId, currencyInfo.HqItem);
             } else {
@@ -401,6 +405,10 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         foreach (var index in Enumerable.Range(0, TweakConfig.Currencies.Count))
         {
             var currency = TweakConfig.Currencies[index];
+            if (ImGui.Checkbox($"##enableCurrency{index}", ref currency.Enabled)) {
+                FreeAllNodes();
+            }
+            ImGui.SameLine();
             
             if (ImGuiComponents.IconButton($"RemoveCurrencyButton{index}", FontAwesomeIcon.Trash))
             {
@@ -439,6 +447,8 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
                 ImGui.Dummy(iconButtonSize);
             }
             ImGui.SameLine();
+            
+            ImGui.BeginDisabled(!currency.Enabled);
             
             if (ImGuiExt.IconButton($"CurrencyPositionButton{index}", currency.UseCustomPosition ? FontAwesomeIcon.CompressArrowsAlt : FontAwesomeIcon.ExpandArrowsAlt)) {
                 if (currency.UseCustomPosition) {
@@ -480,6 +490,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
             }
             
             ImGui.TextUnformatted(currency.Name);
+            ImGui.EndDisabled();
         }
     }
     
