@@ -12,6 +12,7 @@ using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -36,6 +37,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         public bool HqItem;
         public bool CollectibleItem;
         public string Name = string.Empty;
+        public float HorizontalSpacing;
     }
 
     public enum Direction 
@@ -72,6 +74,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         AddChangelogNewTweak("1.8.3.0");
         AddChangelog("1.8.3.1", "Use configured format culture for number display, should fix French issue");
         AddChangelog("1.8.4.0", "Added support for Collectibles");
+        AddChangelog(Changelog.UnreleasedVersion, "Added option for adjustable spacing in horizontal layouts.");
         base.Setup();
     }
 
@@ -93,6 +96,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     private void OnFrameworkUpdate()
     {
         if (!UiHelper.IsAddonReady(AddonMoney)) return;
+        using var _ = PerformanceMonitor.Run();
 
         // Size of one currency
         var resNodeSize = new Vector2(AddonMoney->RootNode->Width, AddonMoney->RootNode->Height);
@@ -100,24 +104,23 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         // Button Component Node
         var currencyPositionNode = Common.GetNodeByID(&AddonMoney->UldManager, 3);
         if (currencyPositionNode == null) return;
-        var currencyBasePosition = new Vector2(currencyPositionNode->X, currencyPositionNode->Y);
+        var iconPosition = new Vector2(currencyPositionNode->X, currencyPositionNode->Y);
         
         // Counter Node
         var counterPositionNode= Common.GetNodeByID<AtkCounterNode>(&AddonMoney->UldManager, 2, NodeType.Counter);
         if (counterPositionNode == null) return;
-        var counterBasePosition = new Vector2(counterPositionNode->AtkResNode.X, counterPositionNode->AtkResNode.Y);
+        var counterPosition = new Vector2(counterPositionNode->AtkResNode.X, counterPositionNode->AtkResNode.Y);
 
         // Make all counter nodes first, because if a icon node overlaps it even slightly it'll hide itself.
         foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
         {
             var currencyInfo = TweakConfig.Currencies[(int) index];
 
-            var counterPosition = TweakConfig.DisplayDirection switch
-            {
-                Direction.Left => counterBasePosition + new Vector2(-resNodeSize.X * (index + 1), 0),
-                Direction.Right => counterBasePosition + new Vector2(resNodeSize.X * (index + 1), 0),
-                Direction.Up => counterBasePosition + new Vector2(0, -resNodeSize.Y * (index + 1)),
-                Direction.Down => counterBasePosition + new Vector2(0, resNodeSize.Y * (index + 1)),
+            counterPosition += TweakConfig.DisplayDirection switch {
+                Direction.Left => new Vector2(-resNodeSize.X - currencyInfo.HorizontalSpacing, 0),
+                Direction.Right => new Vector2(resNodeSize.X + currencyInfo.HorizontalSpacing, 0),
+                Direction.Up => new Vector2(0, -resNodeSize.Y),
+                Direction.Down => new Vector2(0, resNodeSize.Y),
                 _ => throw new ArgumentOutOfRangeException()
             };
 
@@ -132,12 +135,11 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         {
             var currencyInfo = TweakConfig.Currencies[(int) index];
 
-            var iconPosition = TweakConfig.DisplayDirection switch
-            {
-                Direction.Left => currencyBasePosition + new Vector2(-resNodeSize.X * (index + 1), 0),
-                Direction.Right => currencyBasePosition + new Vector2(resNodeSize.X * (index + 1), 0),
-                Direction.Up => currencyBasePosition + new Vector2(0, -resNodeSize.Y * (index + 1)),
-                Direction.Down => currencyBasePosition + new Vector2(0, resNodeSize.Y * (index + 1)),
+            iconPosition +=  TweakConfig.DisplayDirection switch {
+                Direction.Left => new Vector2(-resNodeSize.X - currencyInfo.HorizontalSpacing, 0),
+                Direction.Right => new Vector2(resNodeSize.X + currencyInfo.HorizontalSpacing, 0),
+                Direction.Up => new Vector2(0, -resNodeSize.Y),
+                Direction.Down => new Vector2(0, resNodeSize.Y),
                 _ => throw new ArgumentOutOfRangeException()
             };
             
@@ -298,6 +300,13 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
             }
             ImGui.SameLine();
             
+            if (TweakConfig.DisplayDirection is Direction.Left or Direction.Right)
+            {
+                ImGui.SetNextItemWidth(120 * ImGuiHelpers.GlobalScale);
+                ImGui.DragFloat($"##spacing_{index}", ref currency.HorizontalSpacing, 0.5f, currency.HorizontalSpacing - 100, currency.HorizontalSpacing + 100, "Spacing: %.0f");
+                ImGui.SameLine();
+            }
+
             var icon = Plugin.IconManager.GetIconTexture(currency.IconId, currency.HqItem);
             if (icon is not null)
             {
@@ -346,6 +355,10 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         {
             MakeIconNode(nodeId, position, icon, hqIcon);
         }
+        else
+        {
+            iconNode->SetPositionFloat(position.X, position.Y);
+        }
     }
 
     private void TryMakeCounterNode(uint nodeId, Vector2 position, AtkUldPartsList* partsList)
@@ -354,6 +367,10 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         if (counterNode is null)
         {
             MakeCounterNode(nodeId, position, partsList);
+        }
+        else
+        {
+            counterNode->SetPositionFloat(position.X, position.Y);
         }
     }
     
