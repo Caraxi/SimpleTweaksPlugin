@@ -42,6 +42,8 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         public bool CollectibleItem;
         public string Name = string.Empty;
         public float HorizontalSpacing;
+        public bool UseCustomPosition;
+        public Vector2 CustomPosition;
     }
 
     public enum Direction 
@@ -82,6 +84,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         AddChangelog("1.8.4.0", "Added support for Collectibles");
         AddChangelog(Changelog.UnreleasedVersion, "Added option for adjustable spacing in horizontal layouts.");
         AddChangelog(Changelog.UnreleasedVersion, "Added option to display in a grid.");
+        AddChangelog(Changelog.UnreleasedVersion, "Added option to set the position of a currency individually.");
         base.Setup();
     }
 
@@ -171,30 +174,44 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         // Button Component Node
         var currencyPositionNode = Common.GetNodeByID(&AddonMoney->UldManager, 3);
         if (currencyPositionNode == null) return;
-        var iconPosition = new Vector2(currencyPositionNode->X, currencyPositionNode->Y);
+        Vector2 baseIconPosition;
+        var iconPosition = baseIconPosition = new Vector2(currencyPositionNode->X, currencyPositionNode->Y);
         
         // Counter Node
         var counterPositionNode= Common.GetNodeByID<AtkCounterNode>(&AddonMoney->UldManager, 2, NodeType.Counter);
         if (counterPositionNode == null) return;
-        var counterPosition = new Vector2(counterPositionNode->AtkResNode.X, counterPositionNode->AtkResNode.Y);
+        Vector2 baseCounterPosition;
+        var counterPosition = baseCounterPosition = new Vector2(counterPositionNode->AtkResNode.X, counterPositionNode->AtkResNode.Y);
+
+        var gridIndex = 0U;
         
         // Make all counter nodes first, because if a icon node overlaps it even slightly it'll hide itself.
         foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
         {
             var currencyInfo = TweakConfig.Currencies[(int) index];
-            UpdatePosition(&counterPositionNode->AtkResNode, resNodeSize, index, currencyInfo, ref counterPosition);
-            TryMakeCounterNode(CounterBaseId + index, counterPosition, counterPositionNode->PartsList);
+            if (currencyInfo.UseCustomPosition) {
+                TryMakeCounterNode(CounterBaseId + index, baseCounterPosition + currencyInfo.CustomPosition, counterPositionNode->PartsList);
+            } else {
+                UpdatePosition(&counterPositionNode->AtkResNode, resNodeSize, gridIndex++, currencyInfo, ref counterPosition);
+                TryMakeCounterNode(CounterBaseId + index, counterPosition, counterPositionNode->PartsList);
+            }
+
             var count = currencyInfo.CollectibleItem 
                 ? InventoryManager.Instance()->GetInventoryItemCount(currencyInfo.ItemId, minCollectability: 1)
                 : InventoryManager.Instance()->GetInventoryItemCount(currencyInfo.ItemId);
             TryUpdateCounterNode(CounterBaseId + index, count);
         }
         
+        gridIndex = 0;
         foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
         {
             var currencyInfo = TweakConfig.Currencies[(int) index];
-            UpdatePosition(currencyPositionNode, resNodeSize, index, currencyInfo, ref iconPosition);
-            TryMakeIconNode(ImageBaseId + index, iconPosition, currencyInfo.IconId, currencyInfo.HqItem);
+            if (currencyInfo.UseCustomPosition) {
+                TryMakeIconNode(ImageBaseId + index, baseIconPosition + currencyInfo.CustomPosition, currencyInfo.IconId, currencyInfo.HqItem);
+            } else {
+                UpdatePosition(currencyPositionNode, resNodeSize, gridIndex++, currencyInfo, ref iconPosition);
+                TryMakeIconNode(ImageBaseId + index, iconPosition, currencyInfo.IconId, currencyInfo.HqItem);
+            }
         }
     }
 
@@ -423,6 +440,22 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
             }
             ImGui.SameLine();
             
+            if (ImGuiExt.IconButton($"CurrencyPositionButton{index}", currency.UseCustomPosition ? FontAwesomeIcon.CompressArrowsAlt : FontAwesomeIcon.ExpandArrowsAlt)) {
+                if (currency.UseCustomPosition) {
+                    currency.UseCustomPosition = false;
+                } else {
+                    currency.UseCustomPosition = true;
+                }
+                SaveConfig(TweakConfig);
+            }
+
+            if (ImGui.IsItemHovered()) {
+                ImGui.SetTooltip(currency.UseCustomPosition ? "Return to main layout" : "Set a custom position");
+            }
+            
+            
+            ImGui.SameLine();
+            
             if (TweakConfig.DisplayDirection is Direction.Left or Direction.Right && TweakConfig.Grid == false)
             {
                 ImGui.SetNextItemWidth(120 * ImGuiHelpers.GlobalScale);
@@ -434,6 +467,15 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
             if (icon is not null)
             {
                 ImGui.Image(icon.ImGuiHandle, new Vector2(23.0f, 23.0f));
+                ImGui.SameLine();
+            }
+            if (currency.UseCustomPosition) {
+                
+                var p = currency.CustomPosition;
+                ImGui.SetNextItemWidth(200 * ImGuiHelpers.GlobalScale);
+                if (ImGui.DragFloat2($"##position_{index}", ref p)) {
+                    currency.CustomPosition = p;
+                }
                 ImGui.SameLine();
             }
             
