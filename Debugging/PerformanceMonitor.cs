@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using ImGuiNET;
@@ -6,12 +7,63 @@ using ImGuiNET;
 namespace SimpleTweaksPlugin.Debugging; 
 
 public class PerformanceMonitor : DebugHelper {
+
+    public class PerformanceLogger : IDisposable {
+        private string? runKey;
+        public PerformanceLogger(string key = null, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFileName = null) {
+            var k = key;
+            if (k == null && (callerFileName == null || callerMemberName == null)) return;
+            k ??= $"{callerFileName}::{callerMemberName}";
+            if (!Logs.ContainsKey(k)) Logs.Add(k, new PerformanceLog());
+            Logs[k].Begin();
+            runKey = k;
+        }
+        
+        public void Dispose() {
+            if (runKey == null) return;
+            if (!Logs.ContainsKey(runKey)) return;
+            Logs[runKey].End();
+        }
+    }
+
+    public static PerformanceLogger Run(string key = null, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFileName = null) {
+        var k = key;
+        if (k == null && (callerFileName == null || callerMemberName == null)) return new PerformanceLogger();
+        k ??= $"{callerFileName}::{callerMemberName}";
+        return new PerformanceLogger(k);
+    }
     
     public static bool DoFrameworkMonitor = false;
 
+    private enum DisplayType {
+        Ticks,
+        Milliseconds,
+    }
+
+    private static DisplayType _displayType = DisplayType.Ticks;
+
+    private void DisplayValue(long ticks) {
+        var text = _displayType switch {
+            DisplayType.Ticks => $"{ticks}",
+            DisplayType.Milliseconds => $"{ticks / (float)TimeSpan.TicksPerMillisecond : 0.000}ms",
+            _ => $"{ticks}"
+        };
+        
+        ImGui.Text($"{text}");
+    }
+    
     public override void Draw() {
         ImGui.Separator();
         ImGui.Checkbox("Log Framework Events", ref DoFrameworkMonitor);
+        ImGui.SameLine();
+
+        if (ImGui.BeginCombo("Display Type", $"{_displayType}")) {
+            foreach (var e in Enum.GetValues<DisplayType>()) {
+                if (ImGui.Selectable($"{e}", _displayType == e)) _displayType = e;
+            }
+            ImGui.EndCombo();
+        }
+
         Begin("PerformanceMonitor.Draw");
 
         if (ImGui.SmallButton("Reset All")) {
@@ -35,11 +87,11 @@ public class PerformanceMonitor : DebugHelper {
                 ImGui.TableNextColumn();
                 ImGui.Text($"{log.Key}");
                 ImGui.TableNextColumn();
-                ImGui.Text($"{log.Value.Last}");
+                DisplayValue(log.Value.Last);
                 ImGui.TableNextColumn();
-                ImGui.Text($"{log.Value.Average}");
+                DisplayValue(log.Value.Average);
                 ImGui.TableNextColumn();
-                ImGui.Text($"{log.Value.Max}");
+                DisplayValue(log.Value.Max);
                 ImGui.TableNextColumn();
                 ImGui.TableNextColumn();
                 ImGui.Text($"{log.Value.AveragePerSecond}");
