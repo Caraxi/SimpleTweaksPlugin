@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Dalamud;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -77,17 +78,26 @@ public static unsafe class EventController {
             if (addonId == 0) return;
             var addon = atkUnitManager->GetAddonById(addonId);
             if (addon == null) return;
+            if (addon->ID != addonId) {
+                throw new Exception("Addon with the incorrect ID was received");
+            }
             if (addon->Name == null) {
-                _updateAddonByIdHook.Original(atkUnitManager, addonId, numberArrays, stringArrays, forceB);
-                return;
+                throw new Exception("Addon with a null name was received");
             }
             var name = Common.ReadString(addon->Name, 0x20);
-            if (forceB != 0 || ((*(uint*)(addon + 0x180) >> 0x14) & 0xF) != 5 || (*(byte*)(addon + 0x18A) & 0x10) != 0) {
+
+            if (AddonPostUpdateSubscribers.ContainsKey(name) || AddonPreUpdateSubscribers.ContainsKey(name)) {
+                if (!(forceB != 0 ||
+                      ((*(uint*)(addon + 0x180) >> 0x14) & 0xF) != 5 ||
+                      (*(byte*)(addon + 0x18A) & 0x10) != 0
+                    )) return;
                 var updateFunction = (delegate* unmanaged[Stdcall] <AtkUnitBase*, NumberArrayData**, StringArrayData**, void>)((void**)addon->VTable)[50];
                 HandleAddonPreUpdate(name, addon, numberArrays, stringArrays);
                 updateFunction(addon, numberArrays, stringArrays);
                 didForward = true;
                 HandleAddonPostUpdate(name, addon, numberArrays, stringArrays);
+            } else {
+                _updateAddonByIdHook.Original(atkUnitManager, addonId, numberArrays, stringArrays, forceB);
             }
         } catch (Exception ex) {
             SimpleLog.Error(ex);
@@ -250,8 +260,11 @@ public static unsafe class EventController {
     }
 
     private static void UnregisterAddonPreUpdate(BaseTweak tweak) {
-        foreach (var subscribers in AddonPreUpdateSubscribers.Values) {
+        foreach (var (addon, subscribers) in AddonPreUpdateSubscribers.ToArray()) {
             subscribers.RemoveAll(s => s.Tweak.Key == tweak.Key);
+            if (subscribers.Count == 0) {
+                AddonPreUpdateSubscribers.Remove(addon);
+            }
         }
         
         if (AddonPostUpdateSubscribers.Count == 0 && AddonPreUpdateSubscribers.Count == 0) 
@@ -259,8 +272,11 @@ public static unsafe class EventController {
     }
     
     private static void UnregisterAddonPostUpdate(BaseTweak tweak) {
-        foreach (var subscribers in AddonPostUpdateSubscribers.Values) {
+        foreach (var (addon, subscribers) in AddonPostUpdateSubscribers.ToArray()) {
             subscribers.RemoveAll(s => s.Tweak.Key == tweak.Key);
+            if (subscribers.Count == 0) {
+                AddonPostUpdateSubscribers.Remove(addon);
+            }
         }
 
         if (AddonPostUpdateSubscribers.Count == 0 && AddonPreUpdateSubscribers.Count == 0) 
