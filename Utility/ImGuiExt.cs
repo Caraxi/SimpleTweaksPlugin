@@ -222,4 +222,13 @@ public static class ImGuiExt {
         return ImGui.GetWindowContentRegionMax() - ImGui.GetWindowContentRegionMin();
     }
 
+    public static bool IconButton(string id, FontAwesomeIcon icon) {
+        try {
+            ImGui.PushFont(UiBuilder.IconFont);
+            return ImGui.Button($"{(char)icon}##{id}", new Vector2(ImGui.GetTextLineHeight()) + ImGui.GetStyle().FramePadding * 2);
+        } finally {
+            ImGui.PopFont();
+        }
+    }
+
 }

@@ -266,13 +266,14 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
 
             for (var spacingIndex = 0; spacingIndex < TweakConfig.GridSpacing.Length; spacingIndex++) {
 
-                if (ImGui.SmallButton($"x##removeColumnSpacing{spacingIndex}")) {
+                if (ImGuiExt.IconButton($"removeColumnSpacing{spacingIndex}", FontAwesomeIcon.Minus)) {
                     var l = TweakConfig.GridSpacing.ToList();
                     l.RemoveAt(spacingIndex);
                     TweakConfig.GridSpacing = l.ToArray();
                     spacingIndex--;
                     continue;
                 }
+                if (ImGui.IsItemHovered()) ImGui.SetTooltip("Remove Column");
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X * 2.0f / 3.0f);
                 if (ImGui.DragFloat($"Column#{spacingIndex + 1}", ref TweakConfig.GridSpacing[spacingIndex], 0.5f)) {
@@ -282,9 +283,10 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
                 
             }
 
-            if (ImGui.SmallButton("+##addColumnSpacing")) {
+            if (ImGuiExt.IconButton("addGridSpacing", FontAwesomeIcon.Plus)) {
                 Array.Resize(ref TweakConfig.GridSpacing, TweakConfig.GridSpacing.Length + 1);
             }
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Add Column");
             ImGui.Unindent();
             ImGui.Unindent();
         }
