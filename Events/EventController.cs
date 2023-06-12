@@ -77,6 +77,10 @@ public static unsafe class EventController {
             if (addonId == 0) return;
             var addon = atkUnitManager->GetAddonById(addonId);
             if (addon == null) return;
+            if (addon->Name == null) {
+                _updateAddonByIdHook.Original(atkUnitManager, addonId, numberArrays, stringArrays, forceB);
+                return;
+            }
             var name = Common.ReadString(addon->Name, 0x20);
             if (forceB != 0 || ((*(uint*)(addon + 0x180) >> 0x14) & 0xF) != 5 || (*(byte*)(addon + 0x18A) & 0x10) != 0) {
                 var updateFunction = (delegate* unmanaged[Stdcall] <AtkUnitBase*, NumberArrayData**, StringArrayData**, void>)((void**)addon->VTable)[50];
