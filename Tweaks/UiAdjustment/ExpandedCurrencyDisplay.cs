@@ -78,6 +78,8 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     private List<Item> searchedItems = new();
     private bool hqItemSearch;
     private bool collectibleItemSearch;
+    private readonly Dictionary<uint, string> tooltipStrings = new();
+    private SimpleEvent? simpleEvent;
 
     public override void Setup() {
         AddChangelogNewTweak("1.8.3.0");
@@ -86,11 +88,13 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         AddChangelog(Changelog.UnreleasedVersion, "Added option for adjustable spacing in horizontal layouts.");
         AddChangelog(Changelog.UnreleasedVersion, "Added option to display in a grid.");
         AddChangelog(Changelog.UnreleasedVersion, "Added option to set the position of a currency individually.");
+        AddChangelog(Changelog.UnreleasedVersion, "Added tooltips when mouse is over the currency icons.");
         base.Setup();
     }
 
     public override void Enable()
     {
+        simpleEvent ??= new SimpleEvent(HandleEvent);
         TweakConfig = LoadConfig<Config>() ?? new Config();
         
         if (TweakConfig.DisplayDirection is Direction.Up or Direction.Down && TweakConfig.GridGrowth is Direction.Up or Direction.Down) TweakConfig.GridGrowth = Direction.Left;
@@ -100,8 +104,23 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         base.Enable();
     }
 
+    private void HandleEvent(AtkEventType eventType, AtkUnitBase* atkUnitBase, AtkResNode* node) {
+        if (tooltipStrings.TryGetValue(node->NodeID, out var tooltipString)) {
+            switch (eventType) {
+                case AtkEventType.MouseOver: {
+                    AtkStage.GetSingleton()->TooltipManager.ShowTooltip(AddonMoney->ID, node, tooltipString);
+                    break;
+                }
+                case AtkEventType.MouseOut:
+                    AtkStage.GetSingleton()->TooltipManager.HideTooltip(AddonMoney->ID);
+                    break;
+            }
+        }
+    }
+
     public override void Disable()
     {
+        simpleEvent?.Dispose();
         SaveConfig(TweakConfig);
         Common.FrameworkUpdate -= OnFrameworkUpdate;
         FreeAllNodes();
@@ -169,8 +188,6 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         if (!UiHelper.IsAddonReady(AddonMoney)) return;
         using var _ = PerformanceMonitor.Run();
 
-        // Size of one currency
-        var resNodeSize = new Vector2(AddonMoney->RootNode->Width, AddonMoney->RootNode->Height);
         
         // Button Component Node
         var currencyPositionNode = Common.GetNodeByID(&AddonMoney->UldManager, 3);
@@ -183,6 +200,17 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         if (counterPositionNode == null) return;
         Vector2 baseCounterPosition;
         var counterPosition = baseCounterPosition = new Vector2(counterPositionNode->AtkResNode.X, counterPositionNode->AtkResNode.Y);
+        
+        // Size of one currency
+        var resNodeSize = new Vector2(156, 36); // Hardcode it so we can change things
+        
+        // Resize Addon for Events
+        AddonMoney->RootNode->SetHeight(1000);
+        AddonMoney->RootNode->SetWidth(1000);
+        AddonMoney->RootNode->SetPositionFloat(AddonMoney->X - 500, AddonMoney->Y - 500);
+        
+        currencyPositionNode->SetPositionFloat(620, 500);
+        counterPositionNode->AtkResNode.SetPositionFloat(500, 508);
 
         var gridIndex = 0U;
         
@@ -211,10 +239,10 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
             var currencyInfo = TweakConfig.Currencies[(int) index];
             if (currencyInfo.Enabled == false) continue;   
             if (currencyInfo.UseCustomPosition) {
-                TryMakeIconNode(ImageBaseId + index, baseIconPosition + currencyInfo.CustomPosition, currencyInfo.IconId, currencyInfo.HqItem);
+                TryMakeIconNode(ImageBaseId + index, baseIconPosition + currencyInfo.CustomPosition, currencyInfo.IconId, currencyInfo.HqItem, currencyInfo.Name);
             } else {
                 UpdatePosition(currencyPositionNode, resNodeSize, gridIndex++, currencyInfo, ref iconPosition);
-                TryMakeIconNode(ImageBaseId + index, iconPosition, currencyInfo.IconId, currencyInfo.HqItem);
+                TryMakeIconNode(ImageBaseId + index, iconPosition, currencyInfo.IconId, currencyInfo.HqItem, currencyInfo.Name);
             }
         }
     }
@@ -451,11 +479,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
             ImGui.BeginDisabled(!currency.Enabled);
             
             if (ImGuiExt.IconButton($"CurrencyPositionButton{index}", currency.UseCustomPosition ? FontAwesomeIcon.CompressArrowsAlt : FontAwesomeIcon.ExpandArrowsAlt)) {
-                if (currency.UseCustomPosition) {
-                    currency.UseCustomPosition = false;
-                } else {
-                    currency.UseCustomPosition = true;
-                }
+                currency.UseCustomPosition = !currency.UseCustomPosition;
                 SaveConfig(TweakConfig);
             }
 
@@ -498,11 +522,14 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     {
         if (UiHelper.IsAddonReady(AddonMoney))
         {
+            AtkStage.GetSingleton()->TooltipManager.HideTooltip(AddonMoney->ID);
             foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
             {
                 var iconNode = Common.GetNodeByID<AtkImageNode>(&AddonMoney->UldManager, ImageBaseId + index);
                 if (iconNode is not null)
                 {
+                    simpleEvent?.Remove(AddonMoney, &iconNode->AtkResNode, AtkEventType.MouseOver);
+                    simpleEvent?.Remove(AddonMoney, &iconNode->AtkResNode, AtkEventType.MouseOut);
                     UiHelper.UnlinkAndFreeImageNode(iconNode, AddonMoney);
                 }
                 
@@ -512,7 +539,19 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
                     FreeCounterNode(counterNode);
                 }
             }
+            AddonMoney->UpdateCollisionNodeList(false);
+            
+            var currencyPositionNode = Common.GetNodeByID(&AddonMoney->UldManager, 3);
+            var counterPositionNode= Common.GetNodeByID<AtkCounterNode>(&AddonMoney->UldManager, 2, NodeType.Counter);
+            
+            AddonMoney->RootNode->SetHeight(36);
+            AddonMoney->RootNode->SetWidth(156);
+            AddonMoney->RootNode->SetPositionFloat(AddonMoney->X, AddonMoney->Y);
+        
+            if (currencyPositionNode != null) currencyPositionNode->SetPositionFloat(120, 0);
+            if (counterPositionNode != null) counterPositionNode->AtkResNode.SetPositionFloat(0, 8);
         }
+        tooltipStrings.Clear();
     }
 
     private void TryUpdateCounterNode(uint nodeId, int newCount)
@@ -524,12 +563,12 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         }
     }
     
-    private void TryMakeIconNode(uint nodeId, Vector2 position, int icon, bool hqIcon)
+    private void TryMakeIconNode(uint nodeId, Vector2 position, int icon, bool hqIcon, string? tooltipText = null)
     {
         var iconNode = Common.GetNodeByID(&AddonMoney->UldManager, nodeId);
         if (iconNode is null)
         {
-            MakeIconNode(nodeId, position, icon, hqIcon);
+            MakeIconNode(nodeId, position, icon, hqIcon, tooltipText);
         }
         else
         {
@@ -550,10 +589,10 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         }
     }
     
-    private void MakeIconNode(uint nodeId, Vector2 position, int icon, bool hqIcon)
+    private void MakeIconNode(uint nodeId, Vector2 position, int icon, bool hqIcon, string? tooltipText = null)
     {
         var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(0, 0, 36, 36));
-        imageNode->AtkResNode.Flags = 8243;
+        imageNode->AtkResNode.NodeFlags = NodeFlags.AnchorTop | NodeFlags.AnchorLeft | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents;
         imageNode->WrapMode = 1;
         imageNode->Flags = (byte) ImageNodeFlags.AutoFit;
 
@@ -565,6 +604,14 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         imageNode->AtkResNode.SetPositionShort((short)position.X, (short)position.Y);
         
         UiHelper.LinkNodeAtEnd((AtkResNode*) imageNode, AddonMoney);
+
+        if (tooltipText != null && simpleEvent != null) {
+            imageNode->AtkResNode.NodeFlags |= NodeFlags.RespondToMouse | NodeFlags.EmitsEvents | NodeFlags.HasCollision;
+            AddonMoney->UpdateCollisionNodeList(false);
+            simpleEvent?.Add(AddonMoney, &imageNode->AtkResNode, AtkEventType.MouseOver);
+            simpleEvent?.Add(AddonMoney, &imageNode->AtkResNode, AtkEventType.MouseOut);
+            tooltipStrings.TryAdd(nodeId, tooltipText);
+        }
     }
 
     private void MakeCounterNode(uint nodeId, Vector2 position, AtkUldPartsList* partsList)
@@ -572,7 +619,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         var counterNode = IMemorySpace.GetUISpace()->Create<AtkCounterNode>();
         counterNode->AtkResNode.Type = NodeType.Counter;
         counterNode->AtkResNode.NodeID = nodeId;
-        counterNode->AtkResNode.Flags = 8243;
+        counterNode->AtkResNode.NodeFlags = NodeFlags.AnchorTop | NodeFlags.AnchorLeft | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents;
         counterNode->AtkResNode.DrawFlags = 0;
         counterNode->NumberWidth = 10;
         counterNode->CommaWidth = 8;
