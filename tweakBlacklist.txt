@@ -2,4 +2,4 @@ StopCraftingButton
 FixedShadowDistance
 RefreshMarketPrices
 TooltipTweaks
-DutyListBackground
+UiAdjustments@DutyListBackground
