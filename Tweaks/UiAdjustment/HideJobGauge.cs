@@ -21,17 +21,17 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public class Configs : TweakConfig {
 
             [TweakConfigOption("Show In Duty", 1)]
-            public bool ShowInDuty;
+            public bool ShowInDuty = true;
 
             [TweakConfigOption("Show In Combat", 2)]
-            public bool ShowInCombat;
+            public bool ShowInCombat = true;
 
             public bool ShouldShowCombatBuffer() => ShowInCombat;
             [TweakConfigOption("Out of Combat Time (Seconds)", 3, EditorSize = 100, IntMin = 0, IntMax = 300, ConditionalDisplay = true)]
             public int CombatBuffer;
 
             [TweakConfigOption("Show While Weapon Is Drawn", 4)]
-            public bool ShowWhileWeaponDrawn;
+            public bool ShowWhileWeaponDrawn = true;
         }
 
         public Configs Config { get; private set; }
@@ -41,6 +41,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override void Setup() {
             base.Setup();
             AddChangelog("1.8.7.2", "Fixed 'Show while weapon is drawn' option not working.");
+            AddChangelog(Changelog.UnreleasedVersion, "Fixed 'Show In Duty' option not working in some duties.");
         }
 
         public override void Enable() {
@@ -63,7 +64,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             1055, // Island Sanctuary
         };
 
-        private bool InCombatDuty => Service.Condition[ConditionFlag.BoundByDuty] && !nonCombatTerritory.Contains(Service.ClientState.TerritoryType);
+        private bool InCombatDuty => Service.Condition.Duty() && !nonCombatTerritory.Contains(Service.ClientState.TerritoryType);
         
         private void Update(bool reset = false) {
             if (Common.GetUnitBase("JobHudNotice") != null) reset = true;
