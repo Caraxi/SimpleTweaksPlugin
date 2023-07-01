@@ -7,7 +7,9 @@ using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Game;
+using Dalamud.Game.Config;
 using Dalamud.Interface;
+using Dalamud.Interface.Colors;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
@@ -26,11 +28,6 @@ namespace SimpleTweaksPlugin {
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public class CustomTimeFormat : UiAdjustments.SubTweak {
         public class Config : TweakConfig {
-
-            public bool ShowET = true;
-            public bool ShowLT = true;
-            public bool ShowST = true;
-            
             public string CustomFormatET = "HH:mm:ss";
             public string CustomFormatLT = "HH:mm:ss";
             public string CustomFormatST = "HH:mm:ss";
@@ -108,16 +105,31 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private unsafe bool DrawClockConfig(int id, int index, string[] icons, ref bool hasChanged, ref MoveAction moveAction) {
             switch (id) {
                 case 0: {
-                    var et = DateTimeOffset.FromUnixTimeSeconds(FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->EorzeaTime);
-                    DrawClockConfig(index, LocString("Eorzea Time"), icons[0], ref hasChanged, ref TweakConfig.ShowET, ref TweakConfig.CustomFormatET, ref moveAction, et);
+                    if (Service.GameConfig.TryGet(UiConfigOption.TimeEorzea, out bool showET)) {
+                        var et = DateTimeOffset.FromUnixTimeSeconds(FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->EorzeaTime);
+                        DrawClockConfig(index, LocString("Eorzea Time"), icons[0], ref hasChanged, ref showET, ref TweakConfig.CustomFormatET, ref moveAction, et);
+                        if (hasChanged) Service.GameConfig.Set(UiConfigOption.TimeEorzea, showET);
+                    } else {
+                        ImGui.TextColored(ImGuiColors.DalamudRed, "Error: Failed to get ET config.");
+                    }
                     break;
                 }
                 case 1: {
-                    DrawClockConfig(index, LocString("Local Time"), icons[1], ref hasChanged, ref TweakConfig.ShowLT, ref TweakConfig.CustomFormatLT, ref moveAction, DateTimeOffset.Now);
+                    if (Service.GameConfig.TryGet(UiConfigOption.TimeLocal, out bool showLT)) {
+                        DrawClockConfig(index, LocString("Local Time"), icons[1], ref hasChanged, ref showLT, ref TweakConfig.CustomFormatLT, ref moveAction, DateTimeOffset.Now);
+                        if (hasChanged) Service.GameConfig.Set(UiConfigOption.TimeLocal, showLT);
+                    } else {
+                        ImGui.TextColored(ImGuiColors.DalamudRed, "Error: Failed to get LT config.");
+                    }
                     break;
                 }
                 case 2: {
-                    DrawClockConfig(index, LocString("Server Time"), icons[2], ref hasChanged, ref TweakConfig.ShowST, ref TweakConfig.CustomFormatST, ref moveAction, DateTimeOffset.Now.UtcDateTime);
+                    if (Service.GameConfig.TryGet(UiConfigOption.TimeServer, out bool showST)) {
+                        DrawClockConfig(index, LocString("Server Time"), icons[2], ref hasChanged, ref showST, ref TweakConfig.CustomFormatST, ref moveAction, DateTimeOffset.UtcNow);
+                        if (hasChanged) Service.GameConfig.Set(UiConfigOption.TimeServer, showST);
+                    } else {
+                        ImGui.TextColored(ImGuiColors.DalamudRed, "Error: Failed to get ST config.");
+                    }
                     break;
                 }
                 default: {
@@ -187,6 +199,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private HookWrapper<SetText> setTextHook;
         private nint setTextAddress = nint.Zero;
 
+        public override void Setup() {
+            base.Setup();
+            AddChangelog(Changelog.UnreleasedVersion, "Fixed tooltip when hovering clocks");
+            AddChangelog(Changelog.UnreleasedVersion, "Returned 'click to change clock' feature from base game.");
+        }
+
         public override unsafe void Enable() {
             TweakConfig = LoadConfig<Config>() ?? PluginConfig.UiAdjustments.CustomTimeFormats ?? new Config(); 
             if (setTextAddress == nint.Zero) {
@@ -228,6 +246,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         };
 
         private unsafe void UpdateTimeString(Utf8String xivString) {
+            if (!(Service.GameConfig.TryGet(UiConfigOption.TimeEorzea, out bool showET) && 
+                  Service.GameConfig.TryGet(UiConfigOption.TimeLocal, out bool showLT) && 
+                  Service.GameConfig.TryGet(UiConfigOption.TimeServer, out bool showST))) return;
+            
             var icons = GetClockIcons();
             var et = DateTimeOffset.FromUnixTimeSeconds(FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->EorzeaTime);
             var lt = DateTimeOffset.Now;
@@ -237,17 +259,17 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 foreach (var c in TweakConfig.Order) {
                     switch (c) {
                         case 0: {
-                            if (TweakConfig.ShowET)
+                            if (showET)
                                 timeSeString.Payloads.Add(new TextPayload($"{icons[0]} {et.DateTime.ToString(TweakConfig.CustomFormatET)} "));
                             break;
                         }
                         case 1: {
-                            if (TweakConfig.ShowLT)
+                            if (showLT)
                                 timeSeString.Payloads.Add(new TextPayload($"{icons[1]} {lt.DateTime.ToString(TweakConfig.CustomFormatLT)} "));
                             break;
                         }
                         case 2: {
-                            if (TweakConfig.ShowST)
+                            if (showST)
                                 timeSeString.Payloads.Add(new TextPayload($"{icons[2]} {lt.UtcDateTime.ToString(TweakConfig.CustomFormatST)} "));
                             break;
                         }
