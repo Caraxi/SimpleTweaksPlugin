@@ -41,7 +41,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public override void Setup() {
             base.Setup();
             AddChangelog("1.8.7.2", "Fixed 'Show while weapon is drawn' option not working.");
-            AddChangelog(Changelog.UnreleasedVersion, "Fixed 'Show In Duty' option not working in some duties.");
+            AddChangelog("1.8.8.0", "Fixed 'Show In Duty' option not working in some duties.");
         }
 
         public override void Enable() {

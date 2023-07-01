@@ -201,8 +201,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Setup() {
             base.Setup();
-            AddChangelog(Changelog.UnreleasedVersion, "Fixed tooltip when hovering clocks");
-            AddChangelog(Changelog.UnreleasedVersion, "Returned 'click to change clock' feature from base game.");
+            AddChangelog("1.8.8.0", "Fixed tooltip when hovering clocks");
+            AddChangelog("1.8.8.0", "Returned 'click to change clock' feature from base game.");
         }
 
         public override unsafe void Enable() {

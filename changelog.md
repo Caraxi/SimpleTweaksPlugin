@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.8.8.0
+***Tweak Changes***
+- **`Chat Name Colours`**
+  - Fixed colour display when in party.
+  - Extended range of possible colours.
+
+- **`Custom Time Formats`**
+  - Fixed tooltip when hovering clocks
+  - Returned 'click to change clock' feature from base game.
+
+- **`Expanded Currency Display`**
+  - Added option for adjustable spacing in horizontal layouts.
+  - Added option to display in a grid.
+  - Added option to set the position of a currency individually.
+  - Added tooltips when mouse is over the currency icons.
+
+- **`Hide Job Gauge`** - Fixed 'Show In Duty' option not working in some duties.
+
 ## 1.8.7.3
 ***Tweak Changes***
 - **`Duty List Background`** - Prevent crash when using Aestetician.

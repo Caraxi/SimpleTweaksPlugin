@@ -92,8 +92,8 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
     private ExcelSheet<World> worldSheet;
 
     public override void Setup() {
-        AddChangelog(Changelog.UnreleasedVersion, "Fixed colour display when in party.");
-        AddChangelog(Changelog.UnreleasedVersion, "Extended range of possible colours.");
+        AddChangelog("1.8.8.0", "Fixed colour display when in party.");
+        AddChangelog("1.8.8.0", "Extended range of possible colours.");
 
         this.uiColorSheet = Service.Data.Excel.GetSheet<UIColor>();
         this.worldSheet = Service.Data.Excel.GetSheet<World>();
