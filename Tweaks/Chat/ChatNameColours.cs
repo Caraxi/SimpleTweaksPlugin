@@ -1,12 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using ImGuiNET;
 using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.ExtraPayloads;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using static Dalamud.Game.Text.XivChatType;
@@ -18,7 +21,9 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
     public override string Description => "Gives players a random colour in chat, or set the name manually.";
 
     public class ForcedColour {
-        public ushort ColourKey;
+        public ushort ColourKey; // Legacy
+        public Vector3? Color;
+        public Vector3? Glow;
         public string PlayerName = string.Empty;
         public string WorldName = string.Empty;
     }
@@ -26,6 +31,7 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
     public class Configs : TweakConfig {
         public List<ForcedColour> ForcedColours = new();
         public bool RandomColours = true;
+        public bool LegacyColours;
     }
 
     public Configs Config { get; private set; }
@@ -55,11 +61,39 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
         return defaultColourKey;
     }
 
+    private Vector3? GetColor(string playerName, string worldName, bool forceRandom = false) {
+        var forced = Config.ForcedColours.FirstOrDefault(f => f.PlayerName == playerName && f.WorldName == worldName);
+        if (forced != null) return forced.Color;
+        if (!forceRandom && !Config.RandomColours) return null;
+        var key = $"{playerName}@{worldName}".GetStableHashCode();
+        var hue = new Random(key).NextSingle();
+        ImGui.ColorConvertHSVtoRGB(hue, 1, 1, out var r, out var g, out var b);
+        return new Vector3(r, g, b);
+    }
+    
+    private Vector3? GetGlow(string playerName, string worldName) {
+        var forced = Config.ForcedColours.FirstOrDefault(f => f.PlayerName == playerName && f.WorldName == worldName);
+        return forced?.Glow;
+    }
+
+    private Vector3 LegacyToNew(ushort legacyColourId) {
+        var xivCol = Service.Data.Excel.GetSheet<UIColor>()?.GetRow(legacyColourId)?.UIForeground;
+        if (xivCol != null) {
+            var fb = (xivCol.Value >> 8) & 255;
+            var fg = (xivCol.Value >> 16) & 255;
+            var fr = (xivCol.Value >> 24) & 255;
+            return new Vector3(fr / 255f, fg / 255f, fb / 255f);
+        }
+        return Vector3.One;
+    }
+    
+
     private ExcelSheet<UIColor> uiColorSheet;
     private ExcelSheet<World> worldSheet;
 
     public override void Setup() {
         AddChangelog(Changelog.UnreleasedVersion, "Fixed colour display when in party.");
+        AddChangelog(Changelog.UnreleasedVersion, "Extended range of possible colours.");
 
         this.uiColorSheet = Service.Data.Excel.GetSheet<UIColor>();
         this.worldSheet = Service.Data.Excel.GetSheet<World>();
@@ -104,9 +138,8 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
     private bool comboOpen = false;
     
     protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
-
         var buttonSize = new Vector2(22, 22) * ImGui.GetIO().FontGlobalScale;
-
+        ImGui.Checkbox(LocString("LegacyColours", "Use old colour limits."), ref Config.LegacyColours);
         ImGui.Checkbox(LocString("RandomColours", "Use random colours for unlisted players"), ref Config.RandomColours);
 
         if (ImGui.BeginTable("forcedPlayerNames", 4)) {
@@ -127,18 +160,22 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
 
                 ImGui.TableNextColumn();
 
-                var xivCol = Service.Data.Excel.GetSheet<UIColor>()?.GetRow(fc.ColourKey)?.UIForeground;
-
                 Vector4 fColor;
-                if (xivCol != null) {
-                    var fa = xivCol.Value & 255;
-                    var fb = (xivCol.Value >> 8) & 255;
-                    var fg = (xivCol.Value >> 16) & 255;
-                    var fr = (xivCol.Value >> 24) & 255;
-
-                    fColor = new Vector4(fr / 255f, fg / 255f, fb / 255f, fa / 255f);
+                if (!Config.LegacyColours) {
+                    fc.Color ??= LegacyToNew(fc.ColourKey);
+                    fColor = new Vector4(fc.Color ?? Vector3.One, 1);
                 } else {
-                    fColor = new Vector4(1);
+                    var xivCol = Service.Data.Excel.GetSheet<UIColor>()?.GetRow(fc.ColourKey)?.UIForeground;
+                    if (xivCol != null) {
+                        var fa = xivCol.Value & 255;
+                        var fb = (xivCol.Value >> 8) & 255;
+                        var fg = (xivCol.Value >> 16) & 255;
+                        var fr = (xivCol.Value >> 24) & 255;
+
+                        fColor = new Vector4(fr / 255f, fg / 255f, fb / 255f, fa / 255f);
+                    } else {
+                        fColor = new Vector4(1);
+                    }
                 }
                 
                 ImGui.PushStyleColor(ImGuiCol.Text, fColor);
@@ -147,31 +184,69 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
                 ImGui.TableNextColumn();
                 ImGui.Text($"{fc.WorldName}");
                 ImGui.TableNextColumn();
-                ImGuiExt.UiColorPicker($"##picker_{fc.PlayerName}@{fc.WorldName}", ref fc.ColourKey);
+                if (!Config.LegacyColours) {
+                    if (fc.Color == null) {
+                        var xivCol = Service.Data.Excel.GetSheet<UIColor>()?.GetRow(fc.ColourKey)?.UIForeground;
+                        if (xivCol != null) {
+                            var fb = (xivCol.Value >> 8) & 255;
+                            var fg = (xivCol.Value >> 16) & 255;
+                            var fr = (xivCol.Value >> 24) & 255;
+                            fc.Color = new Vector3(fr / 255f, fg / 255f, fb / 255f);
+                        } else {
+                            fc.Color = Vector3.One;
+                        }
+                    }
+                    var v = fc.Color.Value;
+                    if (ImGui.ColorEdit3($"##picker_{fc.PlayerName}@{fc.WorldName}", ref v, ImGuiColorEditFlags.NoInputs)) {
+                        fc.Color = v;
+                    }
+                    ImGui.SameLine();
+                    if (fc.Glow == null) {
+                        if (ImGui.SmallButton("add glow")) {
+                            fc.Glow = Vector3.One;
+                        }
+                    } else {
+                        
+                        var g = fc.Glow.Value;
+                        if (ImGui.ColorEdit3($"##picker_glow_{fc.PlayerName}@{fc.WorldName}", ref g, ImGuiColorEditFlags.NoInputs)) {
+                            fc.Glow = g;
+                        }
+                        
+                        ImGui.SameLine();
+                        if (ImGui.SmallButton("remove glow")) {
+                            fc.Glow = null;
+                        }
+                    }
+                    
+                } else {
+                    ImGuiExt.UiColorPicker($"##picker_{fc.PlayerName}@{fc.WorldName}", ref fc.ColourKey);
+                }
             }
 
             if (del != null) {
                 Config.ForcedColours.Remove(del);
             }
             
-            ImGui.TableNextColumn();
-            if (ImGui.Button("+##newPlayerName", buttonSize)) {
-                addError = string.Empty;
-                if (Config.ForcedColours.Any(f => f.PlayerName == inputNewPlayerName && f.WorldName == inputServerName)) {
-                    addError = LocString("NameAlreadyAddedError", "Name is already in list.");
-                } else {
-                    Config.ForcedColours.Add(new ForcedColour() {
-                        PlayerName = inputNewPlayerName,
-                        WorldName = inputServerName,
-                        ColourKey = GetColourKey(inputNewPlayerName, inputServerName, true) ?? 0
-                    });
-                    SaveConfig(Config);
-                    inputNewPlayerName = string.Empty;
-                }
-            }
-            ImGui.TableNextColumn();
-
             if (Service.ClientState?.LocalPlayer != null) {
+                ImGui.TableNextColumn();
+                if (ImGui.Button("+##newPlayerName", buttonSize)) {
+                    addError = string.Empty;
+                    if (Config.ForcedColours.Any(f => f.PlayerName == inputNewPlayerName && f.WorldName == inputServerName)) {
+                        addError = LocString("NameAlreadyAddedError", "Name is already in list.");
+                    } else {
+                        var colourKey = GetColourKey(inputNewPlayerName, inputServerName, true) ?? 0;
+                        Config.ForcedColours.Add(new ForcedColour() {
+                            PlayerName = inputNewPlayerName,
+                            WorldName = inputServerName,
+                            ColourKey = colourKey,
+                            Color = Config.LegacyColours || ImGui.GetIO().KeyShift ? LegacyToNew(colourKey) : GetColor(inputNewPlayerName, inputServerName, true) ?? Vector3.One,
+                        });
+                        SaveConfig(Config);
+                        inputNewPlayerName = string.Empty;
+                    }
+                }
+                ImGui.TableNextColumn();
+                
                 
                 var currentWorld = Service.ClientState.LocalPlayer.CurrentWorld.GameData?.Name.RawString;
                 var currentRegion = Regions.Find(r => r.DataCentres.Any(dc => dc.Worlds.Contains(currentWorld)));
@@ -224,6 +299,24 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
                 ImGui.PopStyleVar();
                 ImGui.TableNextColumn();
                 ImGui.TextColored(new Vector4(1, 0, 0, 1), addError);
+
+                var target = Service.Targets.SoftTarget ?? Service.Targets.Target;
+                if (target != null && target is PlayerCharacter pc && !Config.ForcedColours.Any(f => f.PlayerName == pc.Name.TextValue && f.WorldName == pc.HomeWorld.GameData?.Name.RawString)) {
+                    ImGui.TableNextColumn();
+                    ImGui.TableNextColumn();
+                    if (ImGui.Button($"Add {pc.Name.TextValue}")) {
+                        var colourKey = GetColourKey(pc.Name.TextValue, pc.HomeWorld.GameData.Name.RawString, true) ?? 0;
+                        Config.ForcedColours.Add(new ForcedColour() {
+                            PlayerName = pc.Name.TextValue,
+                            WorldName = pc.HomeWorld.GameData.Name.RawString,
+                            ColourKey = colourKey,
+                            Color = Config.LegacyColours || ImGui.GetIO().KeyShift ? LegacyToNew(colourKey) : GetColor(pc.Name.TextValue, pc.HomeWorld.GameData.Name.RawString, true) ?? Vector3.One,
+                        });
+                        SaveConfig(Config);
+                    }
+                }
+                
+
             }
 
             ImGui.EndTable();
@@ -263,14 +356,32 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
             }
 
             if (payload is TextPayload tp && waitingBegin != null && tp.Text != null && tp.Text.Trim().Contains(' ')) {
-                var colourKey = GetColourKey(waitingBegin.PlayerName, waitingBegin.World.Name);
-                if (colourKey != null) {
-                    hasName = true;
-                    newPayloads.Add(new UIForegroundPayload(colourKey.Value));
-                }
 
-                newPayloads.Add(tp);
-                newPayloads.Add(new UIForegroundPayload(0));
+                if (!Config.LegacyColours) {
+                    var colour = GetColor(waitingBegin.PlayerName, waitingBegin.World.Name);
+                    var glow = GetGlow(waitingBegin.PlayerName, waitingBegin.World.Name);
+                    if (colour != null) {
+                        hasName = true;
+                        newPayloads.Add(new ColorPayload(colour.Value));
+                        if (glow != null) newPayloads.Add(new GlowPayload(glow.Value));
+                        newPayloads.Add(tp);
+                        if (glow != null) newPayloads.Add(new GlowEndPayload());
+                        newPayloads.Add(new ColorEndPayload());
+                    } else {
+                        newPayloads.Add(tp);
+                    }
+                } else {
+                    var colourKey = GetColourKey(waitingBegin.PlayerName, waitingBegin.World.Name);
+                    if (colourKey != null) {
+                        hasName = true;
+                        newPayloads.Add(new UIForegroundPayload(colourKey.Value));
+                        newPayloads.Add(tp);
+                        newPayloads.Add(new UIForegroundPayload(0));
+                    } else {
+                        newPayloads.Add(tp);
+                    }
+                }
+                
                 waitingBegin = null;
                 continue;
             }
