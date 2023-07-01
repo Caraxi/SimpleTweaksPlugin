@@ -59,6 +59,7 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
     private ExcelSheet<World> worldSheet;
 
     public override void Setup() {
+        AddChangelog(Changelog.UnreleasedVersion, "Fixed colour display when in party.");
 
         this.uiColorSheet = Service.Data.Excel.GetSheet<UIColor>();
         this.worldSheet = Service.Data.Excel.GetSheet<World>();
@@ -252,31 +253,31 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
     private bool Parse(ref SeString seString) {
         var hasName = false;
         var newPayloads = new List<Payload>();
-        var waitingEnd = false;
+        PlayerPayload? waitingBegin = null;
         
         foreach (var payload in seString.Payloads) {
             if (payload is PlayerPayload p) {
                 newPayloads.Add(p);
-                var colourKey = GetColourKey(p.PlayerName, p.World.Name);
+                waitingBegin = p;
+                continue;
+            }
+
+            if (payload is TextPayload tp && waitingBegin != null && tp.Text != null && tp.Text.Trim().Contains(' ')) {
+                var colourKey = GetColourKey(waitingBegin.PlayerName, waitingBegin.World.Name);
                 if (colourKey != null) {
                     hasName = true;
-                    waitingEnd = true;
                     newPayloads.Add(new UIForegroundPayload(colourKey.Value));
                 }
+
+                newPayloads.Add(tp);
+                newPayloads.Add(new UIForegroundPayload(0));
+                waitingBegin = null;
                 continue;
             }
             newPayloads.Add(payload);
-            if (waitingEnd) {
-                newPayloads.Add(new UIForegroundPayload(0));
-                waitingEnd = false;
-            }
         }
 
         if (hasName) {
-            if (waitingEnd) {
-                newPayloads.Add(new UIForegroundPayload(0));
-            }
-
             seString =  new SeString(newPayloads);
             return true;
         }
