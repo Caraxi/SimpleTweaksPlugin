@@ -26,8 +26,7 @@ public unsafe class SmartNameplates : UiAdjustments.SubTweak {
     }
 
     public Configs Config { get; private set; }
-
-    private const int statusFlagsOffset = 0x19A0;
+    
     private IntPtr targetManager = IntPtr.Zero;
     private delegate byte ShouldDisplayNameplateDelegate(IntPtr raptureAtkModule, GameObject* actor, GameObject* localPlayer, float distance);
     private HookWrapper<ShouldDisplayNameplateDelegate> shouldDisplayNameplateHook;
@@ -57,13 +56,13 @@ public unsafe class SmartNameplates : UiAdjustments.SubTweak {
         var targets = TargetSystem.Instance();
 
         if (actor == localPlayer // Ignore localplayer
-            || (pc->Character.StatusFlags & (byte) StatusFlags.InCombat) == 0 // Alternate in combat flag
+            || pc->Character.InCombat == false
             || GetTargetType(actor) == 3
 
-            || (Config.IgnoreParty && (pc->Character.StatusFlags & 32) != 0) // Ignore party members
-            || (Config.IgnoreAlliance && (pc->Character.StatusFlags & 64) != 0) // Ignore alliance members
-            || (Config.IgnoreFriends && (pc->Character.StatusFlags & 128) != 0) // Ignore friends
-            || (Config.IgnoreDead && pc->Character.Health == 0) // Ignore dead players
+            || (Config.IgnoreParty && pc->Character.IsPartyMember)
+            || (Config.IgnoreAlliance && pc->Character.IsAllianceMember)
+            || (Config.IgnoreFriends && pc->Character.IsFriend)
+            || (Config.IgnoreDead && pc->Character.CharacterData.Health == 0)
 
             // Ignore targets
             || (Config.IgnoreTargets && targets->Target == actor
