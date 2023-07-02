@@ -92,6 +92,7 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
     private ExcelSheet<World> worldSheet;
 
     public override void Setup() {
+        AddChangelog("1.8.8.1", "Fixed Chat2 exploding with new colour system. Tweak will still not work in Chat2, but it will not explode.");
         AddChangelog("1.8.8.0", "Fixed colour display when in party.");
         AddChangelog("1.8.8.0", "Extended range of possible colours.");
 
