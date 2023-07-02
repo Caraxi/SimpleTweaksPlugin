@@ -2,9 +2,18 @@ using System;
 using System.IO;
 using Dalamud.Game.Text.SeStringHandling;
 using System.Numerics;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
+
 namespace SimpleTweaksPlugin.ExtraPayloads;
 
-public abstract class AbstractColorPayload : Payload {
+
+public abstract class CustomPayload : Payload {
+    public RawPayload AsRaw() {
+        return new RawPayload(Encode());
+    }
+}
+
+public abstract class AbstractColorPayload : CustomPayload {
     public byte Red { get; set; }
     public byte Green { get; set; }
     public byte Blue { get; set; }
@@ -22,7 +31,7 @@ public abstract class AbstractColorPayload : Payload {
 
 }
 
-public abstract class AbstractColorEndPayload : Payload {
+public abstract class AbstractColorEndPayload : CustomPayload {
     protected override byte[] EncodeImpl() {
         return new byte[] { START_BYTE, ChunkType, 0x02, 0xEC, END_BYTE };
     }

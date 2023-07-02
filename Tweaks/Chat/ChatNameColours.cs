@@ -362,11 +362,11 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
                     var glow = GetGlow(waitingBegin.PlayerName, waitingBegin.World.Name);
                     if (colour != null) {
                         hasName = true;
-                        newPayloads.Add(new ColorPayload(colour.Value));
-                        if (glow != null) newPayloads.Add(new GlowPayload(glow.Value));
+                        newPayloads.Add(new ColorPayload(colour.Value).AsRaw());
+                        if (glow != null) newPayloads.Add(new GlowPayload(glow.Value).AsRaw());
                         newPayloads.Add(tp);
-                        if (glow != null) newPayloads.Add(new GlowEndPayload());
-                        newPayloads.Add(new ColorEndPayload());
+                        if (glow != null) newPayloads.Add(new GlowEndPayload().AsRaw());
+                        newPayloads.Add(new ColorEndPayload().AsRaw());
                     } else {
                         newPayloads.Add(tp);
                     }
