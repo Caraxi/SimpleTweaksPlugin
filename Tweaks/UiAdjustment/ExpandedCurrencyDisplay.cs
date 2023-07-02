@@ -98,6 +98,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         AddChangelog("1.8.8.0", "Added option to display in a grid.");
         AddChangelog("1.8.8.0", "Added option to set the position of a currency individually.");
         AddChangelog("1.8.8.0", "Added tooltips when mouse is over the currency icons.");
+        AddChangelog("1.8.8.1", "Attempting to avoid gil addon getting thrown around when layout changes.");
         base.Setup();
     }
 

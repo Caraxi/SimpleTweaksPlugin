@@ -4,6 +4,7 @@
 ***Tweak Changes***
 - **`Chat Name Colours`** - Fixed Chat2 exploding with new colour system. Tweak will still not work in Chat2, but it will not explode.
 
+- **`Expanded Currency Display`** - Attempting to avoid gil addon getting thrown around when layout changes.
 
 ## 1.8.8.0
 ***Tweak Changes***
