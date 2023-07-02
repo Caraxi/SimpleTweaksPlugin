@@ -99,6 +99,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         AddChangelog("1.8.8.0", "Added option to set the position of a currency individually.");
         AddChangelog("1.8.8.0", "Added tooltips when mouse is over the currency icons.");
         AddChangelog("1.8.8.1", "Attempting to avoid gil addon getting thrown around when layout changes.");
+        AddChangelog("1.8.8.2", "Fixed positioning of gil display moving when scale is anything other than 100%");
         base.Setup();
     }
 
@@ -258,7 +259,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         // Resize Addon for Events
         AddonMoney->RootNode->SetHeight(1000);
         AddonMoney->RootNode->SetWidth(1000);
-        AddonMoney->RootNode->SetPositionFloat(AddonMoney->X - 500, AddonMoney->Y - 500);
+        AddonMoney->RootNode->SetPositionFloat(AddonMoney->X - 500 * AddonMoney->GetScale() * AddonMoney->RootNode->ScaleX, AddonMoney->Y - 500 * AddonMoney->GetScale() * AddonMoney->RootNode->ScaleY);
         
         currencyPositionNode->SetPositionFloat(620, 500);
         counterPositionNode->AtkResNode.SetPositionFloat(500, 508);

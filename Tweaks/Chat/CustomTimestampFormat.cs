@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Numerics;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface;
@@ -105,3 +105,4 @@ public unsafe class CustomTimestampFormat : ChatTweaks.SubTweak {
         base.Dispose();
     }
 }
+*/

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.8.2
+***Tweak Changes***
+- **`Expanded Currency Display`** - Fixed positioning of gil display moving when scale is anything other than 100%
+
 ## 1.8.8.1
 ***Tweak Changes***
 - **`Chat Name Colours`** - Fixed Chat2 exploding with new colour system. Tweak will still not work in Chat2, but it will not explode.
