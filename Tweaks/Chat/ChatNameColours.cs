@@ -32,6 +32,9 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
         public List<ForcedColour> ForcedColours = new();
         public bool RandomColours = true;
         public bool LegacyColours;
+        public bool ApplyDefaultColour = false;
+        public ushort DefaultColourKey = 1;
+        public Vector3 DefaultColour = Vector3.One;
     }
 
     public Configs Config { get; private set; }
@@ -55,7 +58,7 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
     private ushort? GetColourKey(string playerName, string worldName, bool forceRandom = false) {
         var forced = Config.ForcedColours.FirstOrDefault(f => f.PlayerName == playerName && f.WorldName == worldName);
         if (forced != null) return forced.ColourKey;
-        if (!forceRandom && !Config.RandomColours) return null;
+        if (!forceRandom && !Config.RandomColours) return Config.ApplyDefaultColour ? Config.DefaultColourKey : null;
         var key = (uint) $"{playerName}@{worldName}".GetStableHashCode();
         var defaultColourKey = nameColours[key % nameColours.Length];
         return defaultColourKey;
@@ -64,7 +67,7 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
     private Vector3? GetColor(string playerName, string worldName, bool forceRandom = false) {
         var forced = Config.ForcedColours.FirstOrDefault(f => f.PlayerName == playerName && f.WorldName == worldName);
         if (forced != null) return forced.Color;
-        if (!forceRandom && !Config.RandomColours) return null;
+        if (!forceRandom && !Config.RandomColours) return Config.ApplyDefaultColour ? Config.DefaultColour : null;
         var key = $"{playerName}@{worldName}".GetStableHashCode();
         var hue = new Random(key).NextSingle();
         ImGui.ColorConvertHSVtoRGB(hue, 1, 1, out var r, out var g, out var b);
@@ -95,6 +98,7 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
         AddChangelog("1.8.8.1", "Fixed Chat2 exploding with new colour system. Tweak will still not work in Chat2, but it will not explode.");
         AddChangelog("1.8.8.0", "Fixed colour display when in party.");
         AddChangelog("1.8.8.0", "Extended range of possible colours.");
+        AddChangelog(Changelog.UnreleasedVersion, "Added option to give all undefined characters the same colour.");
 
         this.uiColorSheet = Service.Data.Excel.GetSheet<UIColor>();
         this.worldSheet = Service.Data.Excel.GetSheet<World>();
@@ -141,8 +145,22 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
     protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
         var buttonSize = new Vector2(22, 22) * ImGui.GetIO().FontGlobalScale;
         ImGui.Checkbox(LocString("LegacyColours", "Use old colour limits."), ref Config.LegacyColours);
-        ImGui.Checkbox(LocString("RandomColours", "Use random colours for unlisted players"), ref Config.RandomColours);
+        if (ImGui.Checkbox(LocString("RandomColours", "Use random colours for unlisted players"), ref Config.RandomColours)) {
+            Config.ApplyDefaultColour = false;
+        }
 
+        if (ImGui.Checkbox(LocString("ApplyDefaultColour", "Use a specific colour for unlisted players"), ref Config.ApplyDefaultColour)) {
+            Config.RandomColours = false;
+        }
+        
+        ImGui.SameLine();
+        
+        if (Config.LegacyColours) {
+            ImGuiExt.UiColorPicker($"##picker_default", ref Config.DefaultColourKey);
+        } else {
+            ImGui.ColorEdit3($"##picker_default", ref Config.DefaultColour, ImGuiColorEditFlags.NoInputs);
+        }
+        
         if (ImGui.BeginTable("forcedPlayerNames", 4)) {
             ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed, buttonSize.X);
             ImGui.TableSetupColumn(LocString("Player Name"), ImGuiTableColumnFlags.WidthFixed, 180 * ImGui.GetIO().FontGlobalScale);
