@@ -221,7 +221,7 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
                     }
                     ImGui.SameLine();
                     if (fc.Glow == null) {
-                        if (ImGui.SmallButton("add glow")) {
+                        if (ImGui.SmallButton($"add glow##addGlow_{fc.PlayerName}@{fc.WorldName}")) {
                             fc.Glow = Vector3.One;
                         }
                     } else {
@@ -232,7 +232,7 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
                         }
                         
                         ImGui.SameLine();
-                        if (ImGui.SmallButton("remove glow")) {
+                        if (ImGui.SmallButton($"remove glow##removeGlow_{fc.PlayerName}@{fc.WorldName}")) {
                             fc.Glow = null;
                         }
                     }
