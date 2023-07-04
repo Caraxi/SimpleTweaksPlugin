@@ -64,6 +64,7 @@ public unsafe class SubmarineDestinationLetters : UiAdjustments.SubTweak {
                     return cached + destinationOffset;
                 }
 
+                if (data == nint.Zero) return data;
                 var raw = new byte[1024];
                 Marshal.Copy(data - destinationOffset, raw, 0, raw.Length);
                 var nameBytes = Encoding.UTF8.GetBytes(name);
