@@ -57,6 +57,9 @@ public unsafe class RefreshMarketPrices : Tweak
         base.Enable();
     }
 
+    private int failCount = 0;
+    private int maxFailCount = 0;
+
     private long HandlePricesDetour(void* unk1, void* unk2, void* unk3, void* unk4, void* unk5, void* unk6, void* unk7)
     {
         cancelSource?.Cancel();
@@ -65,15 +68,19 @@ public unsafe class RefreshMarketPrices : Tweak
 
         var result = handlePricesHook.Original.Invoke(unk1, unk2, unk3, unk4, unk5, unk6, unk7);
 
-        if (result != 1)
+        if (result != 1) {
+            maxFailCount = Math.Max(++failCount, maxFailCount);
             Service.Framework.RunOnTick(() =>
             {
                 if (Common.GetUnitBase<AddonItemSearchResult>(out var addonItemSearchResult)
                     && AddonItemSearchResultThrottled(addonItemSearchResult))
                 {
-                    Service.Framework.RunOnTick(RefreshPrices, TimeSpan.FromSeconds(1f), 0, cancelSource.Token);
+                    Service.Framework.RunOnTick(RefreshPrices, TimeSpan.FromSeconds(2f + (0.5f * maxFailCount - 1)), 0, cancelSource.Token);
                 }
             });
+        } else {
+            failCount = Math.Max(0, maxFailCount - 1);
+        }
 
         return result;
     }
