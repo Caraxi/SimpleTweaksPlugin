@@ -2,6 +2,7 @@
 using System;
 using System.Numerics;
 using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
@@ -30,7 +31,8 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
 
     private class Config : TweakConfig
     {
-        public bool FocusTargetEnabled;
+        public bool PrimaryTargetEnabled = true;
+        public bool FocusTargetEnabled = false;
         public NodePosition FocusTargetPosition = NodePosition.Left;
         public NodePosition CastbarPosition = NodePosition.BottomLeft;
     }
@@ -44,22 +46,39 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
         BottomLeft,
         BottomRight
     }
-    
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool _) =>
+
+    protected override void ConfigChanged()
     {
-        ImGui.Checkbox("Enable Focus Target", ref TweakConfig.FocusTargetEnabled);
+        SaveConfig(TweakConfig);
+        FreeAllNodes();
+    }
+
+    protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) =>
+    {
+        if (ImGui.Checkbox("Enable Primary Target", ref TweakConfig.PrimaryTargetEnabled)) hasChanged = true;
+
+        if (ImGui.Checkbox("Enable Focus Target", ref TweakConfig.FocusTargetEnabled)) hasChanged = true;
 
         ImGui.TextUnformatted("Select which direction relative to Cast Bar to show countdown");
-
-        if (TweakConfig.FocusTargetEnabled)
+        if (TweakConfig is { PrimaryTargetEnabled: false, FocusTargetEnabled: false })
         {
-            DrawCombo(ref TweakConfig.FocusTargetPosition, "Focus Target");
+            ImGuiHelpers.ScaledIndent(20.0f);
+            ImGui.TextUnformatted("No Castbars Selected");
+            ImGuiHelpers.ScaledIndent(-20.0f);
         }
         
-        DrawCombo(ref TweakConfig.CastbarPosition, "Target");
+        if (TweakConfig.FocusTargetEnabled)
+        {
+            if (DrawCombo(ref TweakConfig.FocusTargetPosition, "Focus Target")) hasChanged = true;
+        }
+
+        if (TweakConfig.PrimaryTargetEnabled)
+        {
+            if (DrawCombo(ref TweakConfig.CastbarPosition, "Primary Target")) hasChanged = true;
+        }
     };
 
-    private void DrawCombo(ref NodePosition setting, string label)
+    private bool DrawCombo(ref NodePosition setting, string label)
     {
         var regionSize = ImGui.GetContentRegionAvail();
         ImGui.SetNextItemWidth(regionSize.X * 1.0f / 3.0f);
@@ -70,19 +89,21 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
                 if (ImGui.Selectable(direction.ToString(), setting == direction))
                 {
                     setting = direction;
-                    SaveConfig(TweakConfig);
-                    FreeAllNodes();
+                    return true;
                 }
             }
             
             ImGui.EndCombo();
         }
+
+        return false;
     }
     
     public override void Setup()
     {
         AddChangelogNewTweak("1.8.3.0");
         AddChangelog("1.8.3.1", "Add TopRight option for displaying countdown");
+        AddChangelog(Changelog.UnreleasedVersion, "Add option to disable on primary target");
         base.Setup();
     }
 
@@ -132,10 +153,10 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
         }
         
         // Castbar is split from target info
-        if (AddonTargetInfoCastBar is not null && AddonTargetInfoCastBar->IsVisible) UpdateAddon(AddonTargetInfoCastBar, 7, 2, Service.Targets.Target);
+        if (AddonTargetInfoCastBar is not null && AddonTargetInfoCastBar->IsVisible && TweakConfig.PrimaryTargetEnabled) UpdateAddon(AddonTargetInfoCastBar, 7, 2, Service.Targets.Target);
 
         // Castbar is combined with target info
-        if (AddonTargetInfo is not null && AddonTargetInfo->IsVisible) UpdateAddon(AddonTargetInfo, 15, 10, Service.Targets.Target);
+        if (AddonTargetInfo is not null && AddonTargetInfo->IsVisible && TweakConfig.PrimaryTargetEnabled) UpdateAddon(AddonTargetInfo, 15, 10, Service.Targets.Target);
 
         // Focus target castbar
         if (AddonFocusTargetInfo is not null && AddonFocusTargetInfo->IsVisible && TweakConfig.FocusTargetEnabled) UpdateAddon(AddonFocusTargetInfo, 8, 3, Service.Targets.FocusTarget, true);
@@ -181,7 +202,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
     {
         var textNode = UiHelper.MakeTextNode(nodeId);
         
-        textNode->AtkResNode.Flags = 8243;
+        textNode->AtkResNode.NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.AnchorTop | NodeFlags.AnchorLeft;
         textNode->AtkResNode.Flags_2 = 2;
         textNode->AtkResNode.DrawFlags = 2;
         textNode->AtkResNode.Alpha_2 = 255;
@@ -192,7 +213,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
         textNode->LineSpacing = 20;
         textNode->AlignmentFontType = 37;
         textNode->FontSize = 20;
-        textNode->TextFlags = 8;
+        textNode->TextFlags = (byte) (TextFlags.Edge);
         
         textNode->AtkResNode.SetWidth(80);
         textNode->AtkResNode.SetHeight(22);
