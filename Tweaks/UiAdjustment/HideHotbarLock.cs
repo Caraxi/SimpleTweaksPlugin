@@ -8,7 +8,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 public unsafe class HideHotbarLock : Tweak {
     public override string Name => "Hide Hotbar Lock";
-    public override string Description => "Hides the hotbar lock button, with an option to make it visible whole holding SHIFT.";
+    public override string Description => "Hides the hotbar lock button, with an option to make it visible while holding SHIFT.";
 
     public class Configs : TweakConfig {
         [TweakConfigOption("Show while holding shift")]
