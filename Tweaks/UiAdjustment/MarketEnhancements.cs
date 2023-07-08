@@ -12,15 +12,9 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
 
-public unsafe class MarketEnhancements : UiAdjustments.SubTweak, IDisabledTweak {
+public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
         
     public class MarketEnhancementsConfig : TweakConfig {
-        [TweakConfigOption("Include tax in total price.")]
-        public bool IncludeTaxInTotalPrice;
-            
-        [TweakConfigOption("Include tax in single price.")]
-        public bool IncludeTaxInSinglePrice;
-
         [TweakConfigOption("##ResellProfit", 1)]
         public bool HighlightNpcSellProfit;
 
@@ -37,10 +31,9 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak, IDisabledTweak 
     public MarketEnhancementsConfig Config { get; private set; }
         
     public override string Name => "Market Enhancements";
-    public override string Description => "UI Enhancements for market board such as including tax and highlighting lazy tax.";
+    public override string Description => "Highlight items that could be bought from, or sold to, an NPC for a better price.";
     public override bool UseAutoConfig => true;
-    public string DisabledMessage => "Disabled due to additions in 6.4 - Some features have been added to the vanilla game, while others will return when they have been confirmed working again.";
-        
+    
     private delegate void UpdateResultDelegate(AtkUnitBase* addonItemSearchResult, uint a2, ulong* a3, void* a4);
     private UpdateResultDelegate updateResult;
 
@@ -50,7 +43,12 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak, IDisabledTweak 
     private HookWrapper<AddonSetupDelegate> addonSetupHook;
 
     private UpdateResultDelegate replacementUpdateResultDelegate;
-        
+
+    public override void Setup() {
+        AddChangelog(Changelog.UnreleasedVersion, "Return of the Lazy Tax/Profitable highlighting");
+        base.Setup();
+    }
+
     public override void Enable() {
         Config = LoadConfig<MarketEnhancementsConfig>() ?? new MarketEnhancementsConfig();
         replacementUpdateResultDelegate = SetItemDetour;
@@ -84,16 +82,14 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak, IDisabledTweak 
             if (itemSearchResult == null) itemSearchResult = Common.GetUnitBase("ItemSearchResult");
             if (itemSearchResult == null) return;
             if (Encoding.UTF8.GetString(itemSearchResult->Name, 16) != "ItemSearchResult") return;
-            var isMarketOpen = Common.GetUnitBase("ItemSearch") != null;
-                
-            if (itemSearchResult->UldManager.NodeListCount < 5) return;
-                    
-            var listNode = (AtkComponentNode*) itemSearchResult->UldManager.NodeList[4];
+
+            var listNode = (AtkComponentNode*)itemSearchResult->UldManager.SearchNodeById(26);
+            if (listNode == null) return;
             var component = (AtkComponentList*) listNode->Component;
 
             var agent = AgentItemSearch.Instance();
             if (agent == null) return;
-
+            
             if (npcPriceId != agent->ResultItemID) {
                 var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(agent->ResultItemID);
                 if (item == null) return;
@@ -108,13 +104,11 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak, IDisabledTweak 
                 var listItem = component->ItemRendererList[i].AtkComponentListItemRenderer;
 
                 var uldManager = listItem->AtkComponentButton.AtkComponentBase.UldManager;
-                if (uldManager.NodeListCount < 14) continue;
-                    
-                var singlePriceNode = (AtkTextNode*) uldManager.NodeList[10];
-                var qtyTextNode = (AtkTextNode*) uldManager.NodeList[9];
-                var totalTextNode = (AtkTextNode*) uldManager.NodeList[7];
-                var hqImageNode = (AtkImageNode*) uldManager.NodeList[13];
-                    
+
+                var singlePriceNode = (AtkTextNode*)uldManager.SearchNodeById(5);
+                var qtyTextNode = (AtkTextNode*)uldManager.SearchNodeById(6);
+                var totalTextNode = (AtkTextNode*) uldManager.SearchNodeById(8);
+                var hqImageNode = (AtkImageNode*)uldManager.SearchNodeById(3);
                 if (hqImageNode == null || totalTextNode == null || qtyTextNode == null || singlePriceNode == null) {
                     continue;
                 }
@@ -135,13 +129,7 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak, IDisabledTweak 
 
                 var totalWithTax = total * 105 / 100;
                 var realCostPerItem = totalWithTax / (float)qtyValue; 
-                if (Config.IncludeTaxInTotalPrice && isMarketOpen) {
-                    Common.WriteSeString(totalTextNode->NodeText, $" {totalWithTax:N0}{(char) SeIconChar.Gil}");
-                }
-
-                if (Config.IncludeTaxInSinglePrice && isMarketOpen) {
-                    Common.WriteSeString(singlePriceNode->NodeText, $" {realCostPerItem:N2}".Trim('0').Trim('.').Trim(',') + (char) SeIconChar.Gil);
-                }
+                
 
                 var sellValue = Math.Ceiling(npcSellPrice * (hqImageNode->AtkResNode.IsVisible ? 1.1 : 1.0));
                 if (Config.HighlightLazyTax && npcBuyPrice > 0 && realCostPerItem > npcBuyPrice && !hqImageNode->AtkResNode.IsVisible) {
