@@ -6,6 +6,8 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using Dalamud.Interface;
+using Dalamud.Interface.Components;
 using ImGuiNET;
 using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
@@ -28,6 +30,11 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
         public string WorldName = string.Empty;
     }
 
+    public class ChannelConfig {
+        public bool Sender = true;
+        public bool Message = true;
+    }
+
     public class Configs : TweakConfig {
         public List<ForcedColour> ForcedColours = new();
         public bool RandomColours = true;
@@ -35,6 +42,9 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
         public bool ApplyDefaultColour = false;
         public ushort DefaultColourKey = 1;
         public Vector3 DefaultColour = Vector3.One;
+
+        public ChannelConfig DefaultChannelConfig = new();
+        public Dictionary<XivChatType, ChannelConfig> ChannelConfigs = new();
     }
 
     public Configs Config { get; private set; }
@@ -99,7 +109,7 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
         AddChangelog("1.8.8.0", "Fixed colour display when in party.");
         AddChangelog("1.8.8.0", "Extended range of possible colours.");
         AddChangelog(Changelog.UnreleasedVersion, "Added option to give all undefined characters the same colour.");
-
+        AddChangelog(Changelog.UnreleasedVersion, "Added per channel configuration for colouring sender name and/or names in messages.");
         this.uiColorSheet = Service.Data.Excel.GetSheet<UIColor>();
         this.worldSheet = Service.Data.Excel.GetSheet<World>();
 
@@ -340,7 +350,67 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
 
             ImGui.EndTable();
         }
+        
+        if (ImGui.CollapsingHeader("Chat Channel Config")) {
+            if (ImGui.BeginTable("chatChannelConfig", 3)) {
+                ImGui.TableSetupColumn("Channel");
+                ImGui.TableSetupColumn("Colour Sender Name");
+                ImGui.TableSetupColumn("Colour Names in Message");
+                ImGui.TableHeadersRow();
+
+                foreach (var channel in Config.ChannelConfigs.Keys) {
+                    var v = Config.ChannelConfigs[channel];
+                    DrawChannelConfig(channel, ref v);
+                    if (v == null) {
+                        Config.ChannelConfigs.Remove(channel);
+                    }
+                }
+                
+                ImGui.TableNextRow();
+                ImGui.TableNextColumn();
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                if (ImGui.BeginCombo("##selectChannel", "Add Channel...")) {
+                    var eValues = Enum.GetValues<XivChatType>();
+                    
+                    foreach (var v in eValues) {
+                        if (Config.ChannelConfigs.ContainsKey(v)) continue;
+                        if (v is None or Debug) continue;
+
+                        if (ImGui.Selectable($"{v.GetDetails()?.FancyName ?? $"{v}"}")) {
+                            Config.ChannelConfigs.TryAdd(v, new ChannelConfig {
+                                Message = Config.DefaultChannelConfig.Message,
+                                Sender = Config.DefaultChannelConfig.Sender
+                            });
+                        }
+                    }
+                    
+                    ImGui.EndCombo();
+                }
+                
+                DrawChannelConfig(None, ref Config.DefaultChannelConfig);
+                ImGui.EndTable();
+            }
+        }
     };
+
+    public void DrawChannelConfig(XivChatType type, ref ChannelConfig config) {
+        ImGui.TableNextRow();
+        ImGui.TableNextColumn();
+        if (type == None) {
+            ImGui.TextDisabled("All Other Channels");
+        } else {
+            if (ImGuiComponents.IconButton($"##{type}_delete", FontAwesomeIcon.Trash)) {
+                config = null;
+                return;
+            }
+            ImGui.SameLine();
+            ImGui.Text(type.GetDetails()?.FancyName ?? $"{type}");
+        }
+        ImGui.TableNextColumn();
+        ImGui.Checkbox($"##{type}_sender", ref config.Sender);
+        ImGui.TableNextColumn();
+        ImGui.Checkbox($"##{type}_message", ref config.Message);
+    }
 
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
@@ -416,9 +486,14 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
     }
 
     private void HandleChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
-        if (chatTypes.Contains(type)) {
-            Parse(ref sender);
-            Parse(ref message);
+        if (Config.ChannelConfigs.TryGetValue(type, out var channelConfig) && channelConfig != null) {
+            if (chatTypes.Contains(type)) {
+                if (channelConfig.Sender) Parse(ref sender);
+                if (channelConfig.Message) Parse(ref message);
+            }
+        } else if (chatTypes.Contains(type)) {
+            if (Config.DefaultChannelConfig.Sender) Parse(ref sender);
+            if (Config.DefaultChannelConfig.Message) Parse(ref message);
         }
     }
 
