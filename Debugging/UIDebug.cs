@@ -347,7 +347,7 @@ public unsafe class UIDebug : DebugHelper {
         ImGui.End();
     }
 
-    private List<AddonResult> GetAtkUnitBaseAtPosition(Vector2 position) {
+    private IEnumerable<AddonResult> GetAtkUnitBaseAtPosition(Vector2 position) {
         var list = new List<AddonResult>();
         var stage = AtkStage.GetSingleton();
         var unitManagers = &stage->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
@@ -369,7 +369,8 @@ public unsafe class UIDebug : DebugHelper {
                 list.Add(addonResult);
             }
         }
-        return list;
+
+        return list.OrderBy(w => w.UnitBase->GetScaledWidth(true) * w.UnitBase->GetScaledHeight(true));
     }
 
     private class AddonResult {
