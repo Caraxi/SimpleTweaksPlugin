@@ -11,6 +11,7 @@ public unsafe class HideQualityWhenNoHQ : UiAdjustments.SubTweak {
 
     public override void Setup() {
         AddChangelogNewTweak("1.8.4.0");
+        AddChangelog(Changelog.UnreleasedVersion, "Show quality bar for expert recipes.");
         base.Setup();
     }
     
