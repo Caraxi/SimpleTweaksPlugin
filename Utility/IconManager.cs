@@ -6,8 +6,8 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Dalamud;
+using Dalamud.Game.Config;
 using Dalamud.Logging;
-using Dalamud.Plugin;
 using Dalamud.Utility;
 using ImGuiNET;
 using ImGuiScene;
@@ -32,7 +32,13 @@ public class IconManager : IDisposable {
         public GraphicFontIcon[] Icons = Array.Empty<GraphicFontIcon>();
         
         private static TextureWrap? _textureWrap;
-        private static string _texturePath = "common/font/fonticon_xinput.tex";
+        private static uint _padIconMode;
+        private static string[] _texturePath = {
+            "common/font/fonticon_xinput.tex",
+            "common/font/fonticon_ps3.tex",
+            "common/font/fonticon_ps4.tex",
+            "common/font/fonticon_ps5.tex"
+        };
         
         public class GraphicFontIcon {
             public ushort ID;
@@ -64,7 +70,9 @@ public class IconManager : IDisposable {
                 var scale = new Vector2(highQuality ? 2 : 1);
                 var size = Size * scale;
                 if (_textureWrap == null) {
-                    _textureWrap = Service.Data.GetImGuiTexture(_texturePath);
+                    if (Service.GameConfig.TryGet(SystemConfigOption.PadSelectButtonIcon, out _padIconMode) && _padIconMode < _texturePath.Length) {
+                        _textureWrap = Service.Data.GetImGuiTexture(_texturePath[_padIconMode]);
+                    }
                     ImGui.Dummy(drawSize ?? size);
                     return;
                 }
