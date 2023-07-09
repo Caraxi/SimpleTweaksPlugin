@@ -1,16 +1,10 @@
 ﻿using System;
 using Dalamud.Game;
+using Dalamud.Game.Config;
+using Dalamud.Interface.Colors;
 using ImGuiNET;
-using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
-
-namespace SimpleTweaksPlugin {
-    public partial class UiAdjustmentsConfig {
-        public bool ShouldSerializeHideAchievementsNotifications() => HideAchievementsNotifications != null;
-        public HideAchievementsNotifications.Configs HideAchievementsNotifications = null;
-    }
-}
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public class HideAchievementsNotifications : UiAdjustments.SubTweak {
@@ -23,6 +17,21 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             hasChanged |= ImGui.Checkbox(LocString("HideLogIn", "Hide the login notification."), ref this.Config.HideLogIn);
+            
+            if (Service.GameConfig.TryGet(UiConfigOption.AchievementAppealLoginDisp, out bool achievementLoginDisplay) && achievementLoginDisplay == false) {
+                ImGui.Indent();
+                ImGui.Indent();
+                ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudOrange);
+                
+                ImGui.TextWrapped("The game option 'Display achievements nearing completion as login notification' should be enabled to completely hide the on-login achievement reccomendations. It is currently disabled.");
+                ImGui.PopStyleColor();
+                if (ImGui.Button("Enable It")) {
+                    Service.GameConfig.Set(UiConfigOption.AchievementAppealLoginDisp, true);
+                }
+                ImGui.Unindent();
+                ImGui.Unindent();
+            }
+            
             hasChanged |= ImGui.Checkbox(LocString("HideZoneIn", "Hide the zone-in notification."), ref this.Config.HideZoneIn);
         };
 
@@ -31,19 +40,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         protected override string Author => "Anna";
 
         public override void Enable() {
-            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.HideAchievementsNotifications ?? new Configs();
+            Config = LoadConfig<Configs>() ?? new Configs();
             Service.Framework.Update += this.HideNotifications;
             base.Enable();
         }
 
         public override void Disable() {
             SaveConfig(Config);
-            PluginConfig.UiAdjustments.HideAchievementsNotifications = null;
             Service.Framework.Update -= this.HideNotifications;
             base.Disable();
         }
-
-        private const int VisibilityFlag = 1 << 5;
 
         private void HideNotifications(Framework framework) {
             if (this.Config.HideLogIn) {
@@ -58,8 +64,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private unsafe void HideNotification(string name) {
             try {
                 var atkUnitBase = Common.GetUnitBase(name);
-                if (atkUnitBase == null) return;
-                atkUnitBase->Flags = (byte) (atkUnitBase->Flags & ~VisibilityFlag);
+                if (atkUnitBase == null || atkUnitBase->IsVisible == false) return;
+                atkUnitBase->Hide(false);
             } catch (Exception) {
                 // ignore
             }
