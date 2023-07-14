@@ -23,6 +23,22 @@
     "message": "Open loot window when items are added.",
     "description": "[AutoOpenLootWindow] Tweak Name"
   },
+  "BaitCommand / Description": {
+    "message": "Adds /bait to switch fishing baits.",
+    "description": "[BaitCommand] Tweak Description"
+  },
+  "BaitCommand / Name": {
+    "message": "Bait Command",
+    "description": "[BaitCommand] Tweak Name"
+  },
+  "CharaCardCommand / Description": {
+    "message": "Adds a command to open adventurer plates.",
+    "description": "[CharaCardCommand] Tweak Description"
+  },
+  "CharaCardCommand / Name": {
+    "message": "Open Adventurer Plate Command",
+    "description": "[CharaCardCommand] Tweak Name"
+  },
   "CharacterClassSwitcher / Description": {
     "message": "Allow clicking on classes to switch to gearsets. [Note: does not work on crafters]",
     "description": "[CharacterClassSwitcher] Tweak Description"
@@ -75,6 +91,22 @@
     "message": "Clickable Links in Chat",
     "description": "[ClickableLinks] Tweak Name"
   },
+  "ChatTweaks@CustomTimestampFormat / Description": {
+    "message": "Customize the timestamps displayed on chat messages.",
+    "description": "[CustomTimestampFormat] Tweak Description"
+  },
+  "ChatTweaks@CustomTimestampFormat / Name": {
+    "message": "Custom Timestamp Format",
+    "description": "[CustomTimestampFormat] Tweak Name"
+  },
+  "ChatTweaks@DisableAutoChatInputs / Description": {
+    "message": "Prevent the game from inserting <flag> or other parameters into chat box.",
+    "description": "[DisableAutoChatInputs] Tweak Description"
+  },
+  "ChatTweaks@DisableAutoChatInputs / Name": {
+    "message": "Disable Auto Chat Inputs",
+    "description": "[DisableAutoChatInputs] Tweak Name"
+  },
   "ChatTweaks@DisableChatAutoscroll / AllowAutoscrollLabel": {
     "message": "Always allow autoscrolling in:",
     "description": "[DisableChatAutoscroll] Smart AutoScroll - Always allow autoscrolling in:"
@@ -107,6 +139,54 @@
     "message": "Disable Chat Resize",
     "description": "[DisableChatResize] Tweak Name"
   },
+  "ChatTweaks@EchoPartyFinder / Description": {
+    "message": "Prints Party Finder description to chat upon joining a group.",
+    "description": "[EchoPartyFinder] Tweak Description"
+  },
+  "ChatTweaks@EchoPartyFinder / Name": {
+    "message": "Echo Party Finder",
+    "description": "[EchoPartyFinder] Tweak Name"
+  },
+  "ChatTweaks@EchoStorySelection / Description": {
+    "message": "When given multiple choices during quests, print the selected option to chat.",
+    "description": "[EchoStorySelection] Tweak Description"
+  },
+  "ChatTweaks@EchoStorySelection / Name": {
+    "message": "Echo Story Selection",
+    "description": "[EchoStorySelection] Tweak Name"
+  },
+  "ChatTweaks@HideChat / Description": {
+    "message": "Provides commands to hide the chat. (/chatvis show|hide|toggle)",
+    "description": "[HideChat] Tweak Description"
+  },
+  "ChatTweaks@HideChat / Name": {
+    "message": "Hide Chat",
+    "description": "[HideChat] Tweak Name"
+  },
+  "ChatTweaks@HideChatAuto / Description": {
+    "message": "Hides chat automatically except when typing.",
+    "description": "[HideChatAuto] Tweak Description"
+  },
+  "ChatTweaks@HideChatAuto / Name": {
+    "message": "Hide Chat Automatically",
+    "description": "[HideChatAuto] Tweak Name"
+  },
+  "ChatTweaks@HideChatPanelButtons / Description": {
+    "message": "Hide the chat log name and close button on panels that have been split from the main window.",
+    "description": "[HideChatPanelButtons] Tweak Description"
+  },
+  "ChatTweaks@HideChatPanelButtons / Name": {
+    "message": "Hide Chat Panel Buttons",
+    "description": "[HideChatPanelButtons] Tweak Name"
+  },
+  "ChatTweaks@ImprovedFontSizes / Description": {
+    "message": "Allows you to change the font size for the chat windows beyond the default limits, and allows docked chat tabs to keep their font size separate from the main tab.",
+    "description": "[ImprovedFontSizes] Tweak Description"
+  },
+  "ChatTweaks@ImprovedFontSizes / Name": {
+    "message": "Improved Font Sizes",
+    "description": "[ImprovedFontSizes] Tweak Name"
+  },
   "ChatTweaks@RenameChatTabs / Description": {
     "message": "Allows renaming the General and Battle tabs in the chat window.",
     "description": "[RenameChatTabs] Tweak Description"
@@ -127,6 +207,14 @@
     "message": "Reply Channel Switch",
     "description": "[ReplyChannelSwitch] Tweak Name"
   },
+  "ChatTweaks@StickyChat / Description": {
+    "message": "Sets chat channel when you use temporary chat messages.\nExample: \"/p hello!\" will set the chat channel to Party",
+    "description": "[StickyChat] Tweak Description"
+  },
+  "ChatTweaks@StickyChat / Name": {
+    "message": "Sticky Chat",
+    "description": "[StickyChat] Tweak Name"
+  },
   "ChrDirCommand / Description": {
     "message": "Adds a command to open the directory when client side character data is stored.",
     "description": "[ChrDirCommand] Tweak Description"
@@ -134,6 +222,14 @@
   "ChrDirCommand / Name": {
     "message": "Character Directory Command",
     "description": "[ChrDirCommand] Tweak Name"
+  },
+  "CombatMovementControl / Description": {
+    "message": "Set movement type between Standard and Legacy when in/out of combat or when weapon is drawn/sheathed.",
+    "description": "[CombatMovementControl] Tweak Description"
+  },
+  "CombatMovementControl / Name": {
+    "message": "Combat Movement Type Control",
+    "description": "[CombatMovementControl] Tweak Name"
   },
   "CommandAlias / Description": {
     "message": "Allows replacing commands typed into chat box with other commands.",
@@ -178,6 +274,14 @@
   "CommandAlias / ProtectedCommandError": {
     "message": "'/{0}' is a protected command.",
     "description": "[CommandAlias] Command Alias - '/{0}' is a protected command."
+  },
+  "ContentsFinderConfirmClassSwitch / Description": {
+    "message": "Click 'Previous' class icon in Duty Ready window to switch class.",
+    "description": "[ContentsFinderConfirmClassSwitch] Tweak Description"
+  },
+  "ContentsFinderConfirmClassSwitch / Name": {
+    "message": "Duty Ready Class Switching",
+    "description": "[ContentsFinderConfirmClassSwitch] Tweak Name"
   },
   "DataCentreOnTitleScreen / Description": {
     "message": "Shows the current Data Centre on the Title Screen",
@@ -263,6 +367,14 @@
     "message": "Disable Mount Music Volume Change",
     "description": "[DisableMountVolumeChange] Tweak Name"
   },
+  "DisableMouseCameraControl / Description": {
+    "message": "Disable all control of the camera using the mouse.",
+    "description": "[DisableMouseCameraControl] Tweak Description"
+  },
+  "DisableMouseCameraControl / Name": {
+    "message": "Disable Mouse Camera Control",
+    "description": "[DisableMouseCameraControl] Tweak Name"
+  },
   "DisableTitleScreenMovie / Description": {
     "message": "Prevents the title screen from playing the introduction movie after 60 seconds.",
     "description": "[DisableTitleScreenMovie] Tweak Description"
@@ -270,6 +382,30 @@
   "DisableTitleScreenMovie / Name": {
     "message": "Disable Title Screen Movie",
     "description": "[DisableTitleScreenMovie] Tweak Name"
+  },
+  "EmoteLogSubcommand / Description": {
+    "message": "Adds a 'text' subcommand for emotes when emotelog is disabled.  /yes text",
+    "description": "[EmoteLogSubcommand] Tweak Description"
+  },
+  "EmoteLogSubcommand / Name": {
+    "message": "Emote Log Subcommand",
+    "description": "[EmoteLogSubcommand] Tweak Name"
+  },
+  "EstateListCommand / Description": {
+    "message": "Adds a command to open the estate list of one of your friends. (/estatelist)",
+    "description": "[EstateListCommand] Tweak Description"
+  },
+  "EstateListCommand / Name": {
+    "message": "Estate List Command",
+    "description": "[EstateListCommand] Tweak Name"
+  },
+  "ExtendedMacroIcon / Description": {
+    "message": "Allow using specific Icon IDs when using '/macroicon # id' inside of a macro.",
+    "description": "[ExtendedMacroIcon] Tweak Description"
+  },
+  "ExtendedMacroIcon / Name": {
+    "message": "Extended Macro Icons",
+    "description": "[ExtendedMacroIcon] Tweak Name"
   },
   "FixedShadowDistance / Description": {
     "message": "Sets a fixed value for the shadow rendering, preventing it from changing when flying.",
@@ -290,6 +426,14 @@
   "FixTarget / Name": {
     "message": "Fix '/target' command",
     "description": "[FixTarget] Tweak Name"
+  },
+  "General Options / Auto Open Changelog": {
+    "message": "Open New Changelogs Automatically",
+    "description": "General Options / Auto Open Changelog - Open New Changelogs Automatically"
+  },
+  "General Options / Disable Changelog Notice": {
+    "message": "Disable Changelog Notifications",
+    "description": "General Options / Disable Changelog Notice - Disable Changelog Notifications"
   },
   "General Options / Formatting Culture": {
     "message": "Formatting Culture",
@@ -327,6 +471,14 @@
     "message": "Hide Tweak",
     "description": "Hide Tweak - Hide Tweak"
   },
+  "HideHotbarLock / Description": {
+    "message": "Hides the hotbar lock button, with an option to make it visible while holding SHIFT.",
+    "description": "[HideHotbarLock] Tweak Description"
+  },
+  "HideHotbarLock / Name": {
+    "message": "Hide Hotbar Lock",
+    "description": "[HideHotbarLock] Tweak Name"
+  },
   "HideMouseAfterInactivity / Description": {
     "message": "Hides the mouse cursor after a period of inactivity like video players do.",
     "description": "[HideMouseAfterInactivity] Tweak Description"
@@ -334,6 +486,50 @@
   "HideMouseAfterInactivity / Name": {
     "message": "Hide Mouse Cursor After Inactivity",
     "description": "[HideMouseAfterInactivity] Tweak Name"
+  },
+  "HighResScreenshots / Description": {
+    "message": "Allows taking higher resolution screenshots, Hiding Dalamud & Game UIs and removing the copyright notice from screenshots.",
+    "description": "[HighResScreenshots] Tweak Description"
+  },
+  "HighResScreenshots / Name": {
+    "message": "Screenshot Improvements",
+    "description": "[HighResScreenshots] Tweak Name"
+  },
+  "HouseLightCommand / Description": {
+    "message": "Adds a command to control lighting in your own housing areas.",
+    "description": "[HouseLightCommand] Tweak Description"
+  },
+  "HouseLightCommand / Name": {
+    "message": "House Lights Command",
+    "description": "[HouseLightCommand] Tweak Name"
+  },
+  "JokeTweaks / Name": {
+    "message": "Joke Tweaks",
+    "description": "[JokeTweaks] Tweak Name"
+  },
+  "JokeTweaks@Fools2023 / Description": {
+    "message": "Re-enable the April Fools 2023 Features",
+    "description": "[Fools2023] Tweak Description"
+  },
+  "JokeTweaks@Fools2023 / Name": {
+    "message": "April Fools 2023",
+    "description": "[Fools2023] Tweak Name"
+  },
+  "KeepOpen / Description": {
+    "message": "Prevents certain windows from hiding under specific circumstances.",
+    "description": "[KeepOpen] Tweak Description"
+  },
+  "KeepOpen / Name": {
+    "message": "Keep Windows Open",
+    "description": "[KeepOpen] Tweak Name"
+  },
+  "KeyInterrupt / Description": {
+    "message": "Block Alt-Tab and other keys to keep you in the game.",
+    "description": "[KeyInterrupt] Tweak Description"
+  },
+  "KeyInterrupt / Name": {
+    "message": "Keyboard Gaming Mode",
+    "description": "[KeyInterrupt] Tweak Name"
   },
   "LegacyCameraLock / Description": {
     "message": "Prevents camera rotation when using Legacy movement type.",
@@ -358,6 +554,14 @@
   "MainCommandCommand / Name": {
     "message": "Main Command Command",
     "description": "[MainCommandCommand] Tweak Name"
+  },
+  "MinionAway / Description": {
+    "message": "Adds a command to dismiss your current minion. /minionaway",
+    "description": "[MinionAway] Tweak Description"
+  },
+  "MinionAway / Name": {
+    "message": "Dismiss Minion Command",
+    "description": "[MinionAway] Tweak Name"
   },
   "MoreGearSets / Description": {
     "message": "Increases maximum gear sets to 100.",
@@ -391,6 +595,22 @@
     "message": "Quick Sell Items at Vendors",
     "description": "[QuickSellItems] Tweak Name"
   },
+  "RecommendEquipCommand / Description": {
+    "message": "Adds /equiprecommended to equip recommended gear.",
+    "description": "[RecommendEquipCommand] Tweak Description"
+  },
+  "RecommendEquipCommand / Name": {
+    "message": "Equip Recommended Command",
+    "description": "[RecommendEquipCommand] Tweak Name"
+  },
+  "RefreshMarketPrices / Description": {
+    "message": "Retries to get prices upon receiving the 'Please wait and try your search again' message",
+    "description": "[RefreshMarketPrices] Tweak Description"
+  },
+  "RefreshMarketPrices / Name": {
+    "message": "Refresh Market Prices",
+    "description": "[RefreshMarketPrices] Tweak Name"
+  },
   "RememberQuickGathering / Description": {
     "message": "Remembers quick gathering status even after gathering at unspoiled nodes.",
     "description": "[RememberQuickGathering] Tweak Description"
@@ -398,6 +618,14 @@
   "RememberQuickGathering / Name": {
     "message": "Remember Quick Gathering",
     "description": "[RememberQuickGathering] Tweak Name"
+  },
+  "SanctuarySprintReplacer / Description": {
+    "message": "Replaces the normal Sprint action with Isle Sprint while in the Island Sanctuary.",
+    "description": "[SanctuarySprintReplacer] Tweak Description"
+  },
+  "SanctuarySprintReplacer / Name": {
+    "message": "Island Sanctuary Sprint Replacer",
+    "description": "[SanctuarySprintReplacer] Tweak Name"
   },
   "ScreenshotFileName / Description": {
     "message": "Change the file name format for screenshots.",
@@ -455,9 +683,33 @@
     "message": "Sync Gatherer Bars",
     "description": "[SyncGathererBars] Tweak Name"
   },
+  "SystemConfigInGroupPose / Description": {
+    "message": "Allows the use of the /systemconfig command while in gpose.",
+    "description": "[SystemConfigInGroupPose] Tweak Description"
+  },
+  "SystemConfigInGroupPose / Name": {
+    "message": "SystemConfig in Group Pose",
+    "description": "[SystemConfigInGroupPose] Tweak Name"
+  },
   "TooltipTweaks / Name": {
     "message": "Tooltip Tweaks",
     "description": "[TooltipTweaks] Tweak Name"
+  },
+  "TooltipTweaks@AdditionalItemInfo / Description": {
+    "message": "Adds extra information to item tooltips",
+    "description": "[AdditionalItemInfo] Tweak Description"
+  },
+  "TooltipTweaks@AdditionalItemInfo / Name": {
+    "message": "Extra Information for Tooltips",
+    "description": "[AdditionalItemInfo] Tweak Name"
+  },
+  "TooltipTweaks@BlueActionInfo / Description": {
+    "message": "Adds Damage Type, Aspect and Rank to blue mage actions.",
+    "description": "[BlueActionInfo] Tweak Description"
+  },
+  "TooltipTweaks@BlueActionInfo / Name": {
+    "message": "Improved Blue Mage Action Tooltips",
+    "description": "[BlueActionInfo] Tweak Name"
   },
   "TooltipTweaks@CopyHotkey / Browser Only": {
     "message": "Browser Only",
@@ -507,6 +759,18 @@
     "message": "View on Teamcraft",
     "description": "[CopyHotkey] Item Hotkeys - View on Teamcraft"
   },
+  "TooltipTweaks@CraftingActionInfo / Description": {
+    "message": "Adds calculated efficiency of crafting actions to tooltips.",
+    "description": "[CraftingActionInfo] Tweak Description"
+  },
+  "TooltipTweaks@CraftingActionInfo / Name": {
+    "message": "Improved Crafting Action Tooltips",
+    "description": "[CraftingActionInfo] Tweak Name"
+  },
+  "TooltipTweaks@DesynthesisSkill / Colour Value": {
+    "message": "Colour Value",
+    "description": "[DesynthesisSkill] Show Desynthesis Skill - Colour Value"
+  },
   "TooltipTweaks@DesynthesisSkill / Description": {
     "message": "Shows your current desynthesis level when viewing a desynthesizable item.",
     "description": "[DesynthesisSkill] Tweak Description"
@@ -514,10 +778,6 @@
   "TooltipTweaks@DesynthesisSkill / Desynthesis Delta": {
     "message": "Desynthesis Delta",
     "description": "[DesynthesisSkill] Show Desynthesis Skill - Desynthesis Delta"
-  },
-    "TooltipTweaks@DesynthesisSkill / Colour Value": {
-    "message": "Colour Value",
-    "description": "[DesynthesisSkill] Show Desynthesis Skill - Colour Value"
   },
   "TooltipTweaks@DesynthesisSkill / Name": {
     "message": "Show Desynthesis Skill",
@@ -534,6 +794,22 @@
   "TooltipTweaks@FoodStats / Name": {
     "message": "Show expected food and potion stats",
     "description": "[FoodStats] Tweak Name"
+  },
+  "TooltipTweaks@HideTooltipsInCombat / Description": {
+    "message": "Allows hiding Action and/or Item tooltips while in combat.",
+    "description": "[HideTooltipsInCombat] Tweak Description"
+  },
+  "TooltipTweaks@HideTooltipsInCombat / Name": {
+    "message": "Hide Tooltips in Combat",
+    "description": "[HideTooltipsInCombat] Tweak Name"
+  },
+  "TooltipTweaks@ItemHotkeys / Description": {
+    "message": "Adds hotkeys for various actions when the item detail window is visible.",
+    "description": "[ItemHotkeys] Tweak Description"
+  },
+  "TooltipTweaks@ItemHotkeys / Name": {
+    "message": "Item Hotkeys",
+    "description": "[ItemHotkeys] Tweak Name"
   },
   "TooltipTweaks@MateriaStats / Colour Value": {
     "message": "Colour Value",
@@ -607,6 +883,38 @@
     "message": "Use Hexadecimal ID",
     "description": "[ShowItemID] [Config] Use Hexadecimal ID"
   },
+  "TooltipTweaks@SimplifiedClassJobDisplay / Description": {
+    "message": "Hides classes from equipment tooltips when their jobs are unlocked.",
+    "description": "[SimplifiedClassJobDisplay] Tweak Description"
+  },
+  "TooltipTweaks@SimplifiedClassJobDisplay / Name": {
+    "message": "Simplified Equipment Job Display",
+    "description": "[SimplifiedClassJobDisplay] Tweak Name"
+  },
+  "TooltipTweaks@TrackFadedRolls / Description": {
+    "message": "Adds the collected checkmark to Faded Orchestrion Rolls.",
+    "description": "[TrackFadedRolls] Tweak Description"
+  },
+  "TooltipTweaks@TrackFadedRolls / Name": {
+    "message": "Track Faded Orchestrion Rolls",
+    "description": "[TrackFadedRolls] Tweak Name"
+  },
+  "TooltipTweaks@TrackGachaItems / Description": {
+    "message": "Adds the collectable checkmark to gacha items, such as Triple Triad card packs, when all potential items have been obtained.",
+    "description": "[TrackGachaItems] Tweak Description"
+  },
+  "TooltipTweaks@TrackGachaItems / Name": {
+    "message": "Track Gacha Items",
+    "description": "[TrackGachaItems] Tweak Name"
+  },
+  "TreasureHuntTargets / Description": {
+    "message": "Disable targeting for enemies that are part of another players Treasure Hunt duty.",
+    "description": "[TreasureHuntTargets] Tweak Description"
+  },
+  "TreasureHuntTargets / Name": {
+    "message": "Block Targeting Treasure Hunt Enemies",
+    "description": "[TreasureHuntTargets] Tweak Name"
+  },
   "TryOnCorrectItem / Description": {
     "message": "Show the correct item when trying on a glamoured item.",
     "description": "[TryOnCorrectItem] Tweak Description"
@@ -630,6 +938,14 @@
   "UiAdjustments@AccurateVentureTimes / Simple Display": {
     "message": "Simple Display",
     "description": "[AccurateVentureTimes] [Config] Simple Display"
+  },
+  "UiAdjustments@ActionPressMirroring / Description": {
+    "message": "Will show the action press pulse on all hotbar slots with the same ability when you use it.",
+    "description": "[ActionPressMirroring] Tweak Description"
+  },
+  "UiAdjustments@ActionPressMirroring / Name": {
+    "message": "Duplicate Action Presses Between Hotbars",
+    "description": "[ActionPressMirroring] Tweak Name"
   },
   "UiAdjustments@AlwaysYes / Description": {
     "message": "Default cursor to yes when using confirm (num 0).",
@@ -718,6 +1034,22 @@
   "UiAdjustments@CastBarAdjustments / SlideCast Ready Colour": {
     "message": "SlideCast Ready Colour",
     "description": "[CastBarAdjustments] Cast Bar Adjustments - SlideCast Ready Colour"
+  },
+  "UiAdjustments@ChangeMapAreaColors / Description": {
+    "message": "Allows players to change the color of map areas like quest targets and FATEs.",
+    "description": "[ChangeMapAreaColors] Tweak Description"
+  },
+  "UiAdjustments@ChangeMapAreaColors / Name": {
+    "message": "Change Map Area Colors",
+    "description": "[ChangeMapAreaColors] Tweak Name"
+  },
+  "UiAdjustments@ColoredDutyRoulette / Description": {
+    "message": "Colors Duty Roulette names to indicate their completion status",
+    "description": "[ColoredDutyRoulette] Tweak Description"
+  },
+  "UiAdjustments@ColoredDutyRoulette / Name": {
+    "message": "Color Duty Roulette Names",
+    "description": "[ColoredDutyRoulette] Tweak Name"
   },
   "UiAdjustments@ComboTimer / Always Visible": {
     "message": "Always Visible",
@@ -823,6 +1155,10 @@
     "message": "Server Time",
     "description": "[CustomTimeFormat] Custom Time Formats - Server Time"
   },
+  "UiAdjustments@DutyListBackground / Name": {
+    "message": "Duty List Background",
+    "description": "[BlacklistedTweak] Tweak Name"
+  },
   "UiAdjustments@ExamineItemLevel / Description": {
     "message": "Calculates the item level of other players when examining them.\nRed value means the player is wearing an item that scales to their level and it is showing the max level.",
     "description": "[ExamineItemLevel] Tweak Description"
@@ -834,6 +1170,14 @@
   "UiAdjustments@ExamineItemLevel / Name": {
     "message": "Item Level in Examine",
     "description": "[ExamineItemLevel] Tweak Name"
+  },
+  "UiAdjustments@ExpandedCurrencyDisplay / Description": {
+    "message": "Allows you to display extra currencies.",
+    "description": "[ExpandedCurrencyDisplay] Tweak Description"
+  },
+  "UiAdjustments@ExpandedCurrencyDisplay / Name": {
+    "message": "Expanded Currency Display",
+    "description": "[ExpandedCurrencyDisplay] Tweak Name"
   },
   "UiAdjustments@ExpPercentage / Decimals": {
     "message": "Decimals",
@@ -907,6 +1251,14 @@
     "message": "Party Member List (Social window)",
     "description": "[ExtraEstateTeleportation] Extra Estate Teleportation - Party Member List (Social window)"
   },
+  "UiAdjustments@FadeUnavailableActions / Description": {
+    "message": "Instead of darkening icons, makes them transparent when unavailable",
+    "description": "[FadeUnavailableActions] Tweak Description"
+  },
+  "UiAdjustments@FadeUnavailableActions / Name": {
+    "message": "Fade Unavailable Actions",
+    "description": "[FadeUnavailableActions] Tweak Name"
+  },
   "UiAdjustments@GearPositions / Description": {
     "message": "Repositions equipment positions in character menu and inspect to give a less gross layout.",
     "description": "[GearPositions] Tweak Description"
@@ -954,6 +1306,46 @@
   "UiAdjustments@HideJobGauge / Show In Duty": {
     "message": "Show In Duty",
     "description": "[HideJobGauge] [Config] Show In Duty"
+  },
+  "UiAdjustments@HideQualityWhenNoHQ / Description": {
+    "message": "Hides the quality bar in the Synthesis window while crafting an item that can not be HQ or Collectable.",
+    "description": "[HideQualityWhenNoHQ] Tweak Description"
+  },
+  "UiAdjustments@HideQualityWhenNoHQ / Name": {
+    "message": "Hide quality bar while crafting NO-HQ item.",
+    "description": "[HideQualityWhenNoHQ] Tweak Name"
+  },
+  "UiAdjustments@HideTargetCircle / Description": {
+    "message": "Allow hiding the target circle while not in combat or dungeons.",
+    "description": "[HideTargetCircle] Tweak Description"
+  },
+  "UiAdjustments@HideTargetCircle / Name": {
+    "message": "Hide Target Circle",
+    "description": "[HideTargetCircle] Tweak Name"
+  },
+  "UiAdjustments@HideUnwantedBanner / Description": {
+    "message": "Hide information banners such as 'Venture Complete', or 'Levequest Accepted'",
+    "description": "[HideUnwantedBanner] Tweak Description"
+  },
+  "UiAdjustments@HideUnwantedBanner / Name": {
+    "message": "Hide Unwanted Banners",
+    "description": "[HideUnwantedBanner] Tweak Name"
+  },
+  "UiAdjustments@ImprovedDutyFinderSettings / Description": {
+    "message": "Turn the duty finder settings into buttons.",
+    "description": "[ImprovedDutyFinderSettings] Tweak Description"
+  },
+  "UiAdjustments@ImprovedDutyFinderSettings / Name": {
+    "message": "Improved Duty Finder Settings",
+    "description": "[ImprovedDutyFinderSettings] Tweak Name"
+  },
+  "UiAdjustments@ImprovedInterruptableCastbars / Description": {
+    "message": "Displays an icon next to interruptable castbars",
+    "description": "[ImprovedInterruptableCastbars] Tweak Description"
+  },
+  "UiAdjustments@ImprovedInterruptableCastbars / Name": {
+    "message": "Improved Interruptable Castbars",
+    "description": "[ImprovedInterruptableCastbars] Tweak Name"
   },
   "UiAdjustments@ImprovedWorldVisit / Description": {
     "message": "Cleans up the world visit menu and shows your current location in order on the list.",
@@ -1011,6 +1403,14 @@
     "message": "Text Colour",
     "description": "[LargeCooldownCounter] Large Cooldown Counter - Text Colour"
   },
+  "UiAdjustments@LimitBreakAdjustments / Description": {
+    "message": "Simple customization of the limit break bars",
+    "description": "[LimitBreakAdjustments] Tweak Description"
+  },
+  "UiAdjustments@LimitBreakAdjustments / Name": {
+    "message": "Limit Break Adjustments",
+    "description": "[LimitBreakAdjustments] Tweak Name"
+  },
   "UiAdjustments@LimitTargetStatusEffects / Description": {
     "message": "Sets a limit on the number of status effects displayed on your target.",
     "description": "[LimitTargetStatusEffects] Tweak Description"
@@ -1051,6 +1451,14 @@
     "message": "Unlock Window Position",
     "description": "[LockWindowPosition] Lock Window Positions - Unlock Window Position"
   },
+  "UiAdjustments@LootWindowDuplicateUniqueItemIndicator / Description": {
+    "message": "Marks unobtainable and already unlocked items in the loot window.",
+    "description": "[LootWindowDuplicateUniqueItemIndicator] Tweak Description"
+  },
+  "UiAdjustments@LootWindowDuplicateUniqueItemIndicator / Name": {
+    "message": "Enhanced Loot Window",
+    "description": "[LootWindowDuplicateUniqueItemIndicator] Tweak Name"
+  },
   "UiAdjustments@MarketEnhancements / Description": {
     "message": "UI Enhancements for market board such as including tax and highlighting laxy tax.",
     "description": "[MarketEnhancements] Tweak Description"
@@ -1082,6 +1490,14 @@
   "UiAdjustments@MinimapAdjustments / Name": {
     "message": "Minimap Adjustments",
     "description": "[MinimapAdjustments] Tweak Name"
+  },
+  "UiAdjustments@NamePlateIconSpacing / Description": {
+    "message": "Increases the distance between status icons and character names on name plates.",
+    "description": "[NamePlateIconSpacing] Tweak Description"
+  },
+  "UiAdjustments@NamePlateIconSpacing / Name": {
+    "message": "Name Plate Icon Spacing",
+    "description": "[NamePlateIconSpacing] Tweak Name"
   },
   "UiAdjustments@NotificationToastAdjustments / Description": {
     "message": "Allows moving or hiding of the notifications that appears in the middle of the screen at various times.",
@@ -1203,6 +1619,14 @@
     "message": "Remove Quest Marker Limit",
     "description": "[RemoveQuestMarkerLimit] Tweak Name"
   },
+  "UiAdjustments@ResizeExperienceBar / Description": {
+    "message": "Changes the horizontal scale of the experience bar without affecting the text scale.",
+    "description": "[ResizeExperienceBar] Tweak Description"
+  },
+  "UiAdjustments@ResizeExperienceBar / Name": {
+    "message": "Change Size Experience Bar",
+    "description": "[ResizeExperienceBar] Tweak Name"
+  },
   "UiAdjustments@SellMaxTripleTriadCards / Description": {
     "message": "Set the default number of cards to sell at the Triple Triad Trader to the number of cards you have.",
     "description": "[SellMaxTripleTriadCards] Tweak Description"
@@ -1262,6 +1686,30 @@
   "UiAdjustments@SmartNameplates / Show HP": {
     "message": "Show HP",
     "description": "[SmartNameplates] Smart Nameplates - Show HP"
+  },
+  "UiAdjustments@StopCraftingButton / Description": {
+    "message": "Modifies the Synthesize button in the Crafting Log to switch job or stand up from the crafting position, allowing you to stop crafting without closing the crafting log.",
+    "description": "[StopCraftingButton] Tweak Description"
+  },
+  "UiAdjustments@StopCraftingButton / Name": {
+    "message": "Improved Crafting Log",
+    "description": "[StopCraftingButton] Tweak Name"
+  },
+  "UiAdjustments@SubmarineDestinationLetters / Description": {
+    "message": "Uses the standard A-Z lettering to identify submarine destinations for easier use with other tools.",
+    "description": "[SubmarineDestinationLetters] Tweak Description"
+  },
+  "UiAdjustments@SubmarineDestinationLetters / Name": {
+    "message": "Label Submarine Destinations with Letters",
+    "description": "[SubmarineDestinationLetters] Tweak Name"
+  },
+  "UiAdjustments@TargetCastbarCountdown / Description": {
+    "message": "Displays time remaining on targets ability cast.",
+    "description": "[TargetCastbarCountdown] Tweak Description"
+  },
+  "UiAdjustments@TargetCastbarCountdown / Name": {
+    "message": "Target Castbar Countdown",
+    "description": "[TargetCastbarCountdown] Tweak Name"
   },
   "UiAdjustments@TargetHP / Description": {
     "message": "Displays the exact (or optionally rounded) value of target's hitpoints.",
