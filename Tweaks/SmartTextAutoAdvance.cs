@@ -18,6 +18,7 @@ using System.Text.RegularExpressions;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
+// Converted to a tweak from https://github.com/anti-matt-er/ZQOLSmartAutoAdvance
 public unsafe class SmartTextAutoAdvance : Tweak
 {
     public override string Name => "Smart Text Auto-Advance";
