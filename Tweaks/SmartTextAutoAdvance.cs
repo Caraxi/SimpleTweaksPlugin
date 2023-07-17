@@ -338,6 +338,8 @@ public unsafe class SmartTextAutoAdvance : Tweak
     {
         if (this.Ready) return;
 
+        AddChangelogNewTweak(Changelog.UnreleasedVersion);
+
         this.InNewCutscene = false;
 
         base.Setup();
