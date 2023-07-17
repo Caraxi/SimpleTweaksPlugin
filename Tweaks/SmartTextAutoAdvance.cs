@@ -3,6 +3,7 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Hooking;
 using Dalamud.Logging;
 using Dalamud.Utility.Signatures;
+using FFXIVClientStructs.FFXIV.Client.Game.Group;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.System.Resource.Handle;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -17,7 +18,7 @@ using System.Text.RegularExpressions;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
-public class SmartTextAutoAdvance : Tweak
+public unsafe class SmartTextAutoAdvance : Tweak
 {
     public override string Name => "Smart Text Auto-Advance";
 
@@ -382,7 +383,7 @@ public class SmartTextAutoAdvance : Tweak
         PluginLog.Information($"Client Auto-Advance is currently: {this.TweakClientFunctions.AutoAdvanceEnabled}");
     }
 
-    private static bool IsInPartyWithOthers => Service.PartyList is { Length: > 1 };
+    private static bool IsInPartyWithOthers => GroupManager.Instance() is not null && GroupManager.Instance()->MemberCount is > 1;
 
     private void OnConditionChanged(ConditionFlag flag, bool value)
     {
