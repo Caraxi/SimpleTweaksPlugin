@@ -169,12 +169,27 @@ public unsafe class SmartTextAutoAdvance : Tweak
 
             this.pCutsceneAgent = new IntPtr(Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(AgentId.Cutscene));
 
+            this.Enable();
+        }
+
+        public void Enable()
+        {
             this.enableCutsceneInputModeHook?.Enable();
             this.disableCutsceneInputModeHook?.Enable();
             this.playSpecificSoundHook?.Enable();
             this.loadSoundFileHook?.Enable();
             this.getResourceSyncHook?.Enable();
             this.getResourceAsyncHook?.Enable();
+        }
+
+        public void Disable()
+        {
+            this.enableCutsceneInputModeHook?.Disable();
+            this.disableCutsceneInputModeHook?.Disable();
+            this.playSpecificSoundHook?.Disable();
+            this.loadSoundFileHook?.Disable();
+            this.getResourceSyncHook?.Disable();
+            this.getResourceAsyncHook?.Disable();
         }
 
         public void Dispose()
@@ -185,16 +200,6 @@ public unsafe class SmartTextAutoAdvance : Tweak
             this.loadSoundFileHook?.Dispose();
             this.getResourceSyncHook?.Dispose();
             this.getResourceAsyncHook?.Dispose();
-        }
-
-        internal void Disable()
-        {
-            this.enableCutsceneInputModeHook?.Disable();
-            this.disableCutsceneInputModeHook?.Disable();
-            this.playSpecificSoundHook?.Disable();
-            this.loadSoundFileHook?.Disable();
-            this.getResourceSyncHook?.Disable();
-            this.getResourceAsyncHook?.Disable();
         }
 
         private bool GetAutoAdvance()
@@ -371,12 +376,18 @@ public unsafe class SmartTextAutoAdvance : Tweak
         this.TweakClientFunctions.OnCutsceneChanged += this.OnCutsceneChanged;
         this.TweakClientFunctions.OnPlaySpecificSound += this.OnPlaySpecificSound;
 
+        this.TweakClientFunctions.Enable();
+
         base.Enable();
     }
 
     public override void Disable()
     {
         this.SaveConfig(this.TweakConfig);
+
+        Service.Condition.ConditionChange -= this.OnConditionChanged;
+        this.TweakClientFunctions.OnCutsceneChanged -= this.OnCutsceneChanged;
+        this.TweakClientFunctions.OnPlaySpecificSound -= this.OnPlaySpecificSound;
 
         this.TweakClientFunctions.Disable();
 
