@@ -94,6 +94,8 @@ public unsafe class SmartTextAutoAdvance : Tweak
 
         private delegate nint EnableCutsceneInputModeDelegate(IntPtr pUIModule, nint a2);
 
+        private delegate nint DisableCutsceneInputModeDelegate(IntPtr pUIModule);
+
         private delegate void* PlaySpecificSoundDelegate(long a1, int idx);
 
         private delegate void* GetResourceSyncPrototype(IntPtr pFileManager, uint* pCategoryId, char* pResourceType, uint* pResourceHash, char* pPath, void* pUnknown);
@@ -111,6 +113,9 @@ public unsafe class SmartTextAutoAdvance : Tweak
         [Signature("48 89 5C 24 ?? 57 48 83 EC 20 48 8D 99 ?? ?? ?? ?? 48 8B F9 80 7B 25 00", DetourName = nameof(EnableCutsceneInputModeDetour))]
         private readonly Hook<EnableCutsceneInputModeDelegate>? enableCutsceneInputModeHook = null;
 
+        [Signature("48 89 5C 24 ?? 57 48 83 EC 20 48 8B F9 48 81 C1 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 07", DetourName = nameof(DisableCutsceneInputModeDetour))]
+        private readonly Hook<DisableCutsceneInputModeDelegate>? disableCutsceneInputModeHook = null;
+
         [Signature("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 33 F6 8B DA 48 8B F9 0F BA E2 0F", DetourName = nameof(PlaySpecificSoundDetour))]
         private readonly Hook<PlaySpecificSoundDelegate>? playSpecificSoundHook = null;
 
@@ -127,7 +132,7 @@ public unsafe class SmartTextAutoAdvance : Tweak
 
         public event Action<PlaySpecificSoundEventArgs> OnPlaySpecificSound = null!;
 
-        public event Action OnCutsceneStarted = null!;
+        public event Action OnCutsceneChanged = null!;
 
         private bool autoAdvanceEnabled = false;
         public bool AutoAdvanceEnabled
@@ -165,6 +170,7 @@ public unsafe class SmartTextAutoAdvance : Tweak
             this.pCutsceneAgent = new IntPtr(Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(AgentId.Cutscene));
 
             this.enableCutsceneInputModeHook?.Enable();
+            this.disableCutsceneInputModeHook?.Enable();
             this.playSpecificSoundHook?.Enable();
             this.loadSoundFileHook?.Enable();
             this.getResourceSyncHook?.Enable();
@@ -174,6 +180,7 @@ public unsafe class SmartTextAutoAdvance : Tweak
         public void Dispose()
         {
             this.enableCutsceneInputModeHook?.Dispose();
+            this.disableCutsceneInputModeHook?.Dispose();
             this.playSpecificSoundHook?.Dispose();
             this.loadSoundFileHook?.Dispose();
             this.getResourceSyncHook?.Dispose();
@@ -183,6 +190,7 @@ public unsafe class SmartTextAutoAdvance : Tweak
         internal void Disable()
         {
             this.enableCutsceneInputModeHook?.Disable();
+            this.disableCutsceneInputModeHook?.Disable();
             this.playSpecificSoundHook?.Disable();
             this.loadSoundFileHook?.Disable();
             this.getResourceSyncHook?.Disable();
@@ -220,9 +228,19 @@ public unsafe class SmartTextAutoAdvance : Tweak
 #if DEBUG
             PluginLog.Verbose($"Client: EnableCutsceneInputMode(a1: {pUIModule}, a2: {a2})", pUIModule, a2);
 #endif
-            this.OnCutsceneStarted?.Invoke();
+            this.OnCutsceneChanged?.Invoke();
 
             return this.enableCutsceneInputModeHook!.Original(pUIModule, a2);
+        }
+
+        private nint DisableCutsceneInputModeDetour(IntPtr pUIModule)
+        {
+#if DEBUG
+            PluginLog.Verbose($"Client: DisableCutsceneInputMode(a1: {pUIModule})", pUIModule);
+#endif
+            this.OnCutsceneChanged?.Invoke();
+
+            return this.disableCutsceneInputModeHook!.Original(pUIModule);
         }
 
         private void* PlaySpecificSoundDetour(long a1, int idx)
@@ -350,7 +368,7 @@ public unsafe class SmartTextAutoAdvance : Tweak
         this.TweakConfig = this.LoadConfig<Config>() ?? new Config();
 
         Service.Condition.ConditionChange += this.OnConditionChanged;
-        this.TweakClientFunctions.OnCutsceneStarted += this.OnCutsceneStarted;
+        this.TweakClientFunctions.OnCutsceneChanged += this.OnCutsceneChanged;
         this.TweakClientFunctions.OnPlaySpecificSound += this.OnPlaySpecificSound;
 
         base.Enable();
@@ -368,7 +386,7 @@ public unsafe class SmartTextAutoAdvance : Tweak
     public override void Dispose()
     {
         Service.Condition.ConditionChange -= this.OnConditionChanged;
-        this.TweakClientFunctions.OnCutsceneStarted -= this.OnCutsceneStarted;
+        this.TweakClientFunctions.OnCutsceneChanged -= this.OnCutsceneChanged;
         this.TweakClientFunctions.OnPlaySpecificSound -= this.OnPlaySpecificSound;
 
         this.TweakClientFunctions.Dispose();
@@ -401,7 +419,7 @@ public unsafe class SmartTextAutoAdvance : Tweak
         {
             if (value)
             {
-                this.OnCutsceneStarted();
+                this.OnCutsceneChanged();
             }
             else
             {
@@ -410,7 +428,7 @@ public unsafe class SmartTextAutoAdvance : Tweak
         }
     }
 
-    private void OnCutsceneStarted()
+    private void OnCutsceneChanged()
     {
         if (this.InNewCutscene)
         {
@@ -419,13 +437,13 @@ public unsafe class SmartTextAutoAdvance : Tweak
 
         if (this.TweakConfig.ForceEnableInParty && IsInPartyWithOthers)
         {
-            PluginLog.Information("Cutscene started in a party, enabling auto-advance!");
+            PluginLog.Information("Cutscene started/ended in a party, enabling auto-advance!");
 
             this.TweakClientFunctions.AutoAdvanceEnabled = true;
         }
         else
         {
-            PluginLog.Information("Cutscene started, disabling auto-advance!");
+            PluginLog.Information("Cutscene started/ended, disabling auto-advance!");
 
             this.TweakClientFunctions.AutoAdvanceEnabled = false;
         }
