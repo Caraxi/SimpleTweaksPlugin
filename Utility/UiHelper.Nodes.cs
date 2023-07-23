@@ -132,6 +132,26 @@ public static unsafe partial class UiHelper
 
         parent->Component->UldManager.UpdateDrawNodeList();
     }
+
+    public static void UnlinkNode<T>(T* atkNode, AtkComponentNode* componentNode) where T : unmanaged {
+
+        var node = (AtkResNode*)atkNode;
+        if (node == null) return;
+        
+        if (node->ParentNode->ChildNode == node) {
+            node->ParentNode->ChildNode = node->NextSiblingNode;
+        }
+
+        if (node->NextSiblingNode != null && node->NextSiblingNode->PrevSiblingNode == node) {
+            node->NextSiblingNode->PrevSiblingNode = node->PrevSiblingNode;
+        }
+
+        if (node->PrevSiblingNode != null && node->PrevSiblingNode->NextSiblingNode == node) {
+            node->PrevSiblingNode->NextSiblingNode = node->NextSiblingNode;
+        }
+        
+        componentNode->Component->UldManager.UpdateDrawNodeList();
+    }
     
     public static void UnlinkAndFreeImageNode(AtkImageNode* node, AtkUnitBase* parent)
     {
