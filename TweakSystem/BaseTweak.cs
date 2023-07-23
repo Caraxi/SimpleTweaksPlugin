@@ -360,7 +360,7 @@ public abstract class BaseTweak {
     public virtual void Setup() {
 
         foreach (var c in GetType().GetCustomAttributes<ChangelogAttribute>()) {
-            if (c is TweakReleaseVersion) {
+            if (c is TweakReleaseVersionAttribute) {
                 AddChangelogNewTweak(c.Version);
             }
 
