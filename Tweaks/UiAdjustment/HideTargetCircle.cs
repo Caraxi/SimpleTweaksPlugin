@@ -76,7 +76,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             PerformanceMonitor.Begin();
 #endif
 
-            var targetCircleShown = GameConfig.UiControl.GetBool("TargetCircleType");
+            var targetCircleShown = Service.GameConfig.UiControl.GetBool("TargetCircleType");
             bool requestToBeShown = false;
             bool requestToHide = false;
 
@@ -104,11 +104,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 
             if (!targetCircleShown && requestToBeShown)
             {
-                GameConfig.UiControl.Set("TargetCircleType", 1);
+                Service.GameConfig.UiControl.Set("TargetCircleType", 1);
             }
             else if (targetCircleShown && requestToHide)
             {
-                GameConfig.UiControl.Set("TargetCircleType", 0);
+                Service.GameConfig.UiControl.Set("TargetCircleType", 0);
             }
 #if DEBUG
             PerformanceMonitor.End();

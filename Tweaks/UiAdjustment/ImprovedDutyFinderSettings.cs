@@ -113,12 +113,12 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
     private static byte GetCurrentSettingValue(DutyFinderSetting dutyFinderSetting) {
         var contentsFinder = ContentsFinder.Instance();
         return dutyFinderSetting switch {
-            DutyFinderSetting.Ja => (byte)GameConfig.UiConfig.GetUInt("ContentsFinderUseLangTypeJA"),
-            DutyFinderSetting.En => (byte)GameConfig.UiConfig.GetUInt("ContentsFinderUseLangTypeEN"),
-            DutyFinderSetting.De => (byte)GameConfig.UiConfig.GetUInt("ContentsFinderUseLangTypeDE"),
-            DutyFinderSetting.Fr => (byte)GameConfig.UiConfig.GetUInt("ContentsFinderUseLangTypeFR"),
+            DutyFinderSetting.Ja => (byte)Service.GameConfig.UiConfig.GetUInt("ContentsFinderUseLangTypeJA"),
+            DutyFinderSetting.En => (byte)Service.GameConfig.UiConfig.GetUInt("ContentsFinderUseLangTypeEN"),
+            DutyFinderSetting.De => (byte)Service.GameConfig.UiConfig.GetUInt("ContentsFinderUseLangTypeDE"),
+            DutyFinderSetting.Fr => (byte)Service.GameConfig.UiConfig.GetUInt("ContentsFinderUseLangTypeFR"),
             DutyFinderSetting.LootRule => (byte)contentsFinder->LootRules,
-            DutyFinderSetting.JoinPartyInProgress => (byte)GameConfig.UiConfig.GetUInt("ContentsFinderSupplyEnable"),
+            DutyFinderSetting.JoinPartyInProgress => (byte)Service.GameConfig.UiConfig.GetUInt("ContentsFinderSupplyEnable"),
             DutyFinderSetting.UnrestrictedParty => *(byte*)&contentsFinder->IsUnrestrictedParty,
             DutyFinderSetting.LevelSync => *(byte*)&contentsFinder->IsLevelSync,
             DutyFinderSetting.MinimumIl => *(byte*)&contentsFinder->IsMinimalIL,

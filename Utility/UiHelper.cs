@@ -41,7 +41,7 @@ public static unsafe partial class UiHelper {
         n = n->PrevSiblingNode;
         SetSize(n, width, height); // Focused Border
         n = n->PrevSiblingNode;
-        if (GameConfig.System.GetUInt("ColorThemeType") == 3) {
+        if (Service.GameConfig.System.GetUInt("ColorThemeType") == 3) {
             SetSize(n, width - 8, height - 16); // Gradient
         } else {
             SetSize(n, width, height); // Gradient

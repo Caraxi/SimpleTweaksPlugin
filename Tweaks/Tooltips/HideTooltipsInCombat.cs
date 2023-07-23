@@ -65,10 +65,10 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
     }
 
     private void OnLogin(object sender = null, EventArgs e = null) {
-        OriginalAction = GameConfig.UiControl.GetBool("ActionDetailDisp");
-        OriginalItem = GameConfig.UiControl.GetBool("ItemDetailDisp");
-        OriginalPopUp = GameConfig.UiControl.GetBool("ToolTipDisp");
-        OriginalCrossbarHints = GameConfig.UiConfig.GetBool("HotbarCrossHelpDisp");
+        OriginalAction = Service.GameConfig.UiControl.GetBool("ActionDetailDisp");
+        OriginalItem = Service.GameConfig.UiControl.GetBool("ItemDetailDisp");
+        OriginalPopUp = Service.GameConfig.UiControl.GetBool("ToolTipDisp");
+        OriginalCrossbarHints = Service.GameConfig.UiConfig.GetBool("HotbarCrossHelpDisp");
         Service.Condition.ConditionChange += OnConditionChange;
         OnConditionChange(ConditionFlag.InCombat, Service.Condition[ConditionFlag.InCombat]);
     }
@@ -86,9 +86,9 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
     }
 
     private void SetVisible(string name, bool visible, bool uiConfig = false) {
-        if ((uiConfig ? GameConfig.UiConfig : GameConfig.UiControl).TryGetBool(name, out var isVisible)) {
+        if ((uiConfig ? Service.GameConfig.UiConfig : Service.GameConfig.UiControl).TryGetBool(name, out var isVisible)) {
             if (isVisible != visible) {
-                (uiConfig ? GameConfig.UiConfig : GameConfig.UiControl).Set(name, visible);
+                (uiConfig ? Service.GameConfig.UiConfig : Service.GameConfig.UiControl).Set(name, visible);
             }
         }
     }

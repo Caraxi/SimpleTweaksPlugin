@@ -24,8 +24,8 @@ public unsafe class EmoteLogSubcommand : Tweak {
     }
     
     private bool EmoteTextType {
-        get => GameConfig.UiConfig.GetBool("EmoteTextType");
-        set => GameConfig.UiConfig.Set("EmoteTextType", value);
+        get => Service.GameConfig.UiConfig.GetBool("EmoteTextType");
+        set => Service.GameConfig.UiConfig.Set("EmoteTextType", value);
     }
     
     private void* ExecuteDetour(void* a1, EmoteCommandStruct* command, void* a3) {

@@ -63,7 +63,7 @@ public unsafe class CombatMovementControl : Tweak {
             previousUnsheathedState = unsheathedState;
             var v = unsheathedState ? Config.WeaponDrawn : Config.WeaponSheathed;
             if (v == MoveModeType.Ignore) return;
-            GameConfig.UiControl.Set("MoveMode", (uint) v);
+            Service.GameConfig.UiControl.Set("MoveMode", (uint) v);
         }
     }
 
@@ -71,7 +71,7 @@ public unsafe class CombatMovementControl : Tweak {
         if (flag == ConditionFlag.InCombat) {
             var v = value ? Config.InCombat : Config.OutOfCombat;
             if (v == MoveModeType.Ignore) return;
-            GameConfig.UiControl.Set("MoveMode", (uint) v);
+            Service.GameConfig.UiControl.Set("MoveMode", (uint) v);
         }
     }
 
