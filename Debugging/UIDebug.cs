@@ -994,7 +994,9 @@ public unsafe class UIDebug : DebugHelper {
                 case ComponentType.TextNineGrid: DebugManager.PrintOutObject((AtkComponentTextNineGrid*)compNode->Component); break;
                 case ComponentType.JournalCanvas: DebugManager.PrintOutObject((AtkComponentJournalCanvas*)compNode->Component); break;
                 case ComponentType.HoldButton: DebugManager.PrintOutObject((AtkComponentHoldButton*)compNode->Component); break;
+                #if DEBUG
                 case ComponentType.Portrait: DebugManager.PrintOutObject((AtkComponentPortrait*)compNode->Component); break;
+                #endif
                 default: DebugManager.PrintOutObject(*compNode->Component, (ulong) compNode->Component, new List<string>()); break;
             }
             
@@ -1030,7 +1032,9 @@ public unsafe class UIDebug : DebugHelper {
                     case ComponentType.Map: DebugManager.PrintOutObject((AtkUldComponentDataMap*)componentData); break;
                     case ComponentType.Preview: DebugManager.PrintOutObject((AtkUldComponentDataPreview*)componentData); break;
                     case ComponentType.HoldButton: DebugManager.PrintOutObject((AtkUldComponentDataHoldButton*)componentData); break;
+                    #if DEBUG
                     case ComponentType.Portrait: DebugManager.PrintOutObject((AtkUldComponentDataPortrait*)componentData); break;
+                    #endif
                     default: DebugManager.PrintOutObject(componentData); break;
                 }
             }
