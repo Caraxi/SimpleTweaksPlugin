@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Keys;
-using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.System.String;
+using FFXIVClientStructs.Interop;
 
 namespace SimpleTweaksPlugin.Utility; 
 
@@ -108,4 +107,29 @@ public static class Extensions {
         }
         return false;
     }
+    
+    public unsafe ref struct PointerSpanUnboxer<T> where T : unmanaged {
+        private int currentIndex;
+        private readonly Span<Pointer<T>> items;
+        public PointerSpanUnboxer(Span<Pointer<T>> span) {
+            items = span;
+            currentIndex = 0;
+        }
+
+        public bool MoveNext() {
+            currentIndex++;
+            if (currentIndex >= items.Length) return false;
+            if (items[currentIndex].Value == null) return MoveNext();
+            return true;
+        }
+
+        public readonly T* Current => items[currentIndex].Value;
+        public PointerSpanUnboxer<T> GetEnumerator() => new(items);
+    }
+    
+    public static PointerSpanUnboxer<T> Unbox<T>(this Span<Pointer<T>> span) where T : unmanaged {
+        return new PointerSpanUnboxer<T>(span);
+    }
+    
+    
 }
