@@ -1,3 +1,7 @@
+#if DEBUG
+global using static SimpleTweaksPlugin.Changelog;
+#endif
+
 using System;
 using System.Collections.Generic;
 using System.Linq;

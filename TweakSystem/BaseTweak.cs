@@ -26,14 +26,14 @@ public abstract class BaseTweak {
 
     public virtual string Key => GetType().Name;
 
-    public abstract string Name { get; }
+    public virtual string Name => TweakNameAttribute?.Name ?? GetType().Name;
 
     public virtual uint Version => 1;
 
     public string LocalizedName => LocString("Name", Name, "Tweak Name");
 
-    public virtual string Description => null;
-    protected virtual string Author => null;
+    public virtual string Description => TweakDescriptionAttribute?.Description;
+    protected virtual string Author => TweakAuthorAttribute?.Author;
     public virtual bool Experimental => false;
     public virtual IEnumerable<string> Tags { get; } = new string[0];
     internal bool ForceOpenConfig { private get; set; }
@@ -358,6 +358,18 @@ public abstract class BaseTweak {
     protected virtual DrawConfigDelegate DrawConfigTree => null;
         
     public virtual void Setup() {
+
+        foreach (var c in GetType().GetCustomAttributes<ChangelogAttribute>()) {
+            if (c is TweakReleaseVersion) {
+                AddChangelogNewTweak(c.Version);
+            }
+
+            foreach (var change in c.Changes) {
+                AddChangelog(c.Version, change).Author(c.Author);
+            }
+        }
+        
+        
         Ready = true;
     }
 
@@ -383,5 +395,38 @@ public abstract class BaseTweak {
     protected ChangelogEntry AddChangelog(string version, string log) => Changelog.Add(this, version, log);
     protected ChangelogEntry AddChangelogNewTweak(string version) => Changelog.AddNewTweak(this, version).Author(Author);
 
+
+    #region Attribute Handles
+
+    private TweakNameAttribute tweakNameAttribute;
+    protected TweakNameAttribute TweakNameAttribute {
+        get {
+            if (tweakNameAttribute != null) return tweakNameAttribute;
+            tweakNameAttribute = GetType().GetCustomAttribute<TweakNameAttribute>() ?? new TweakNameAttribute($"{GetType().Name}");
+            return tweakNameAttribute;
+        }
+    }
+    
+    private TweakDescriptionAttribute tweakDescriptionAttribute;
+    protected TweakDescriptionAttribute TweakDescriptionAttribute {
+        get {
+            if (tweakDescriptionAttribute != null) return tweakDescriptionAttribute;
+            tweakDescriptionAttribute = GetType().GetCustomAttribute<TweakDescriptionAttribute>() ?? TweakDescriptionAttribute.Default;
+            return tweakDescriptionAttribute;
+        }
+    }
+    
+    private TweakAuthorAttribute tweakAuthorAttribute;
+    protected TweakAuthorAttribute TweakAuthorAttribute {
+        get {
+            if (tweakAuthorAttribute != null) return tweakAuthorAttribute;
+            tweakAuthorAttribute = GetType().GetCustomAttribute<TweakAuthorAttribute>() ?? TweakAuthorAttribute.Default;
+            return tweakAuthorAttribute;
+        }
+    }
+
+
+    #endregion
+    
 
 }
