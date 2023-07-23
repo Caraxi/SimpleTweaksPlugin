@@ -93,10 +93,16 @@ public unsafe class HighResScreenshots : Tweak {
             hasChanged |= ImGui.Checkbox("Remove copyright text", ref Config.RemoveCopyright);
         }
 
-        if (ImGui.Checkbox("[Experimental] Use ReShade to take screenshot", ref Config.UseReShade)) {
-            hasChanged = true;
-            DisableReShade();
-            if (Config.UseReShade) TryEnableReShade();
+        if (Config.UseReShade || PluginConfig.ShowExperimentalTweaks) {
+            ImGui.PushStyleColor(ImGuiCol.Text, ImGuiColors.DalamudRed);
+            if (ImGui.Checkbox("[Experimental]##Use ReShade to take screenshot", ref Config.UseReShade)) {
+                hasChanged = true;
+                DisableReShade();
+                if (Config.UseReShade) TryEnableReShade();
+            }
+            ImGui.PopStyleColor();
+            ImGui.SameLine();
+            ImGui.Text($"Use ReShade to take screenshot");
         }
 
         if (Config.UseReShade) {
@@ -104,6 +110,7 @@ public unsafe class HighResScreenshots : Tweak {
             ImGui.Indent();
             if (reShadeKeyTestHook == null) {
                 ImGui.TextColored(ImGuiColors.DalamudRed, "Failed to hook ReShade.");
+                ImGui.TextDisabled("\tThere is no way to fix this. If it doesn't work it doesn't work.");
             } else {
                 ImGui.TextWrapped("Take a screenshot using your FFXIV screenshot keybind.\nReShade will be used to take the screenshot instead.");
                 ImGui.Spacing();
