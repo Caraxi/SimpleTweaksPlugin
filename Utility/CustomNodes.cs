@@ -1,6 +1,30 @@
-﻿namespace SimpleTweaksPlugin.Utility; 
+﻿using System.Collections.Generic;
+
+namespace SimpleTweaksPlugin.Utility; 
 
 public static class CustomNodes {
+
+    private static readonly Dictionary<string, uint> NodeIds = new();
+    private static readonly Dictionary<uint, string> NodeNames = new();
+    private static uint _nextId = 0x53541000;
+    
+    public static uint Get(string name, int index = 0) {
+        if (TryGet(name, index, out var id)) return id;
+        lock (NodeIds) {
+            lock (NodeNames) {
+                id = _nextId;
+                _nextId += 16;
+                NodeIds.Add($"{name}#{index}", id);
+                NodeNames.Add(id, $"{name}#{index}");
+                return id;
+            }
+        }
+    }
+
+    public static bool TryGet(string name, out uint id) => TryGet(name, 0, out id);
+    public static bool TryGet(string name, int index, out uint id) => NodeIds.TryGetValue($"{name}#{index}", out id);
+    public static bool TryGet(uint id, out string name) => NodeNames.TryGetValue(id, out name);
+    
     public const int
         TargetHP =             SimpleTweaksNodeBase + 1,
         SlideCastMarker =      SimpleTweaksNodeBase + 2,
