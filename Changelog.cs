@@ -52,6 +52,7 @@ public class Changelog : Window {
         Add("1.8.5.3", "Removed April Fools joke due to potential crash.");
         Add("1.8.6.0", "General fixes for 6.38");
         Add("1.8.7.1", "General fixes for 6.4");
+        Add(UnreleasedVersion, "Added an option to opt out of analytics\n\tNote:\n\t\tNo analytics are currently being collected.\n\t\tThis is a preemptive opt out for the future.");
     }
 
 #if DEBUG

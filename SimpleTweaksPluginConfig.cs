@@ -33,6 +33,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     public bool ShowInDevMenu;
     public bool NoFools;
     public bool NotBaby;
+    public bool AnalyticsOptOut;
 
     public bool ShowTweakDescriptions = true;
     public bool ShowTweakIDs;
@@ -284,6 +285,13 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                 if (ImGui.BeginTabItem(Loc.Localize("General Options / TabHeader", "General Options") + $"###generalOptionsTab")) {
                     ImGui.BeginChild($"generalOptions-scroll", new Vector2(-1, -1));
 
+                    if (ImGui.Checkbox(Loc.Localize("General Options / Analytics Opt Out", "Opt out of analytics"), ref AnalyticsOptOut)) Save();
+                    ImGui.Indent();
+                    ImGui.PushStyleColor(ImGuiCol.Text, ImGui.GetColorU32(ImGuiCol.TextDisabled));
+                    ImGui.TextWrapped("Note: The current version of simple tweaks does not collect any analytics regardless of this setting. This is here to preemptively opt out of any future analytics that may or may not be added to the plugin. All information that may be collected will be anonymous, but may include information such as the list of enabled tweaks and a subset of configured options within those tweaks.");
+                    ImGui.PopStyleColor();
+                    ImGui.Unindent();
+                    ImGui.Separator();
                     if (ImGui.Checkbox(Loc.Localize("General Options / Show Experimental Tweaks", "Show Experimental Tweaks."), ref ShowExperimentalTweaks)) Save();
                     ImGui.Separator();
                     if (ImGui.Checkbox(Loc.Localize("General Options / Show Tweak Descriptions","Show tweak descriptions."), ref ShowTweakDescriptions)) Save();
