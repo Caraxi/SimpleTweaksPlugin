@@ -5,7 +5,6 @@ using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ImGuiNET;
-using SimpleTweaksPlugin;
 using SimpleTweaksPlugin.ExtraPayloads;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -64,31 +63,41 @@ public unsafe class CustomTimestampFormat : ChatTweaks.SubTweak {
         base.Setup();
     }
 
+    private Utf8String* str;
+    
     public override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         applyTextFormatHook ??= Common.Hook<ApplyTextFormatDelegate>("E8 ?? ?? ?? ?? 41 B0 07", FormatTextDetour);
         applyTextFormatHook?.Enable();
         
+        if (str == null)
+            str = Utf8String.FromString(string.Empty);
         base.Enable();
     }
 
     private byte* FormatTextDetour(RaptureTextModule* raptureTextModule, uint addonTextId, int value) {
         if (addonTextId is 7840 or 7841) {
-            var time =  DateTimeOffset.FromUnixTimeSeconds(value);
-            var str = (Utf8String*) (raptureTextModule + 0x9C0);
+            var time = DateTimeOffset.FromUnixTimeSeconds(value);
             
-            if (Config.DoColor) {
-                var seStr = new SeString();
-                seStr.Append(new ColorPayload(Config.Color));
-                seStr.Append((Config.UseServerTime ? time.DateTime : time.LocalDateTime).ToString(Config.Format));
-                seStr.Append(new ColorEndPayload());
-                str->SetString(seStr.Encode());
-            } else {
-                str->SetString((Config.UseServerTime ? time.DateTime : time.LocalDateTime).ToString(Config.Format));
+            if (str != null) {
+                if (Config.DoColor) {
+                    var seStr = new SeString();
+                    seStr.Append(new ColorPayload(Config.Color));
+                    seStr.Append((Config.UseServerTime ? time.DateTime : time.LocalDateTime).ToString(Config.Format));
+                    seStr.Append(new ColorEndPayload());
+                    var bytes = seStr.Encode();
+                    if (bytes.Length == 0 || bytes[0] == 0) {
+                        str->SetString(string.Empty);
+                    } else {
+                        str->SetString(bytes);
+                    }
+                } else {
+                    var text = (Config.UseServerTime ? time.DateTime : time.LocalDateTime).ToString(Config.Format);
+                    str->SetString(string.IsNullOrEmpty(text) ? string.Empty : text);
+                }
+
+                return str->StringPtr;
             }
-            
-            
-            return str->StringPtr;
         }
 
         return applyTextFormatHook!.Original(raptureTextModule, addonTextId, value);
