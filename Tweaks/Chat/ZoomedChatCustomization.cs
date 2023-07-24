@@ -24,40 +24,32 @@ public unsafe class ZoomedChatCustomization : ChatTweaks.SubTweak {
     public class Configs : TweakConfig {
         public Vector2 Size = new(70f, 90f);
         public Vector2 Position = new(50f, 50f);
+        public int InputSpacing = 35;
     }
 
     public Configs Config { get; private set; }
 
     protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-        hasChanged |= ImGui.SliderFloat2("Size", ref Config.Size, 10, 100f, "%.0f%%");
-        hasChanged |= ImGui.SliderFloat2("Position", ref Config.Position, 10f, 100f, "%.0f%%");
-
-        if (Config.Size.X < 10f) Config.Size.X = 10f;
-        if (Config.Size.Y < 10f) Config.Size.Y = 10f;
-        if (Config.Size.X > 100f) Config.Size.X = 100f;
-        if (Config.Size.Y > 100f) Config.Size.Y = 100f;
-        
-        
-        if (Config.Position.X < 0f) Config.Position.X = 0f;
-        if (Config.Position.Y < 0f) Config.Position.Y = 0f;
-        if (Config.Position.X > 100f) Config.Position.X = 100f;
-        if (Config.Position.Y > 100f) Config.Position.Y = 100f;
-        
-        if (hasChanged) {
-            var addon = Common.GetUnitBase("ChatLog");
-            if (addon != null && isChatZoomed(addon) != 0) {
-                Service.Framework.RunOnTick(ApplyCustomization);
-                Service.Framework.RunOnTick(ApplyCustomization, delayTicks: 1);
-            }
-        }
-
+        hasChanged |= ImGui.SliderFloat2("Size", ref Config.Size, 10, 100, "%.0f%%", ImGuiSliderFlags.AlwaysClamp);
+        hasChanged |= ImGui.SliderFloat2("Position", ref Config.Position, 10, 100, "%.0f%%", ImGuiSliderFlags.AlwaysClamp);
+        hasChanged |= ImGui.SliderInt("Position", ref Config.InputSpacing, 10, 100, "%d", ImGuiSliderFlags.AlwaysClamp);
+        if (hasChanged) TryApply();
     };
 
     public override void Enable() {
         SignatureHelper.Initialise(this);
         Config = LoadConfig<Configs>() ?? new Configs();
         chatZoomedHook?.Enable();
+        TryApply();
         base.Enable();
+    }
+
+    private void TryApply() {
+        var addon = Common.GetUnitBase("ChatLog");
+        if (addon != null && isChatZoomed(addon) != 0) {
+            Service.Framework.RunOnTick(ApplyCustomization);
+            Service.Framework.RunOnTick(ApplyCustomization, delayTicks: 1);
+        }
     }
 
     private void ChatZoomedDetour(AtkUnitBase* atkUnitBase) {
@@ -70,24 +62,11 @@ public unsafe class ZoomedChatCustomization : ChatTweaks.SubTweak {
     }
     
     private void ApplyCustomization() {
-        if (Config.Size.X < 10f) Config.Size.X = 10f;
-        if (Config.Size.Y < 10f) Config.Size.Y = 10f;
-        if (Config.Size.X > 100f) Config.Size.X = 100f;
-        if (Config.Size.Y > 100f) Config.Size.Y = 100f;
-        
-        
-        if (Config.Position.X < 0f) Config.Position.X = 0f;
-        if (Config.Position.Y < 0f) Config.Position.Y = 0f;
-        if (Config.Position.X > 100f) Config.Position.X = 100f;
-        if (Config.Position.Y > 100f) Config.Position.Y = 100f;
-
-        
         var chatLog = Common.GetUnitBase("ChatLog");
         if (chatLog == null) return;
         var screenSize = ImGui.GetMainViewport().Size;
-        var size = screenSize * Vector2.Clamp(Config.Size / 100f, Vector2.Zero, Vector2.One);
-
-        var centerScreen = screenSize * (Config.Position / 100f);
+        var size = screenSize * Vector2.Clamp(Config.Size / 100f, new Vector2(0.1f), Vector2.One);
+        var centerScreen = screenSize * Vector2.Clamp(Config.Position / 100f, Vector2.Zero, Vector2.One);
         var halfSize = size / 2;
         var position = centerScreen - halfSize;
         
@@ -97,14 +76,13 @@ public unsafe class ZoomedChatCustomization : ChatTweaks.SubTweak {
         foreach (var c in new[] { "ChatLogPanel_0", "ChatLogPanel_1", "ChatLogPanel_2", "ChatLogPanel_3" }) {
             var addon = Common.GetUnitBase(c);
             if (addon == null) continue;
-            addon->SetSize((ushort)size.X, (ushort) (size.Y - 35));
+            addon->SetSize((ushort)size.X, (ushort) (size.Y - Config.InputSpacing));
             addon->SetPosition((short) position.X, (short) position.Y);
         }
         
         var inputBox = chatLog->GetNodeById(5);
         if (inputBox == null) return;
-        
-        inputBox->SetWidth((ushort)(size.X - 23));
+        inputBox->SetWidth((ushort)(chatLog->RootNode->Width - 23));
     }
 
     public override void Disable() {
@@ -118,4 +96,3 @@ public unsafe class ZoomedChatCustomization : ChatTweaks.SubTweak {
         base.Dispose();
     }
 }
-
