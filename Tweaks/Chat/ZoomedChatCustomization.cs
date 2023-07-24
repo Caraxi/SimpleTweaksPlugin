@@ -32,7 +32,7 @@ public unsafe class ZoomedChatCustomization : ChatTweaks.SubTweak {
     protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
         hasChanged |= ImGui.SliderFloat2("Size", ref Config.Size, 10, 100, "%.0f%%", ImGuiSliderFlags.AlwaysClamp);
         hasChanged |= ImGui.SliderFloat2("Position", ref Config.Position, 10, 100, "%.0f%%", ImGuiSliderFlags.AlwaysClamp);
-        hasChanged |= ImGui.SliderInt("Position", ref Config.InputSpacing, 10, 100, "%d", ImGuiSliderFlags.AlwaysClamp);
+        hasChanged |= ImGui.SliderInt("Input Spacing", ref Config.InputSpacing, 10, 100, "%d", ImGuiSliderFlags.AlwaysClamp);
         if (hasChanged) TryApply();
     };
 
