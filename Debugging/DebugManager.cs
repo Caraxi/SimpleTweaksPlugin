@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud;
+using Dalamud.Game.ClientState;
 using Dalamud.Memory;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.String;
@@ -631,9 +632,10 @@ namespace SimpleTweaksPlugin.Debugging {
                                     offsetAddress = (ulong)o.Value;
                                 }
                             }
-                        
                             ImGui.PushStyleColor(ImGuiCol.Text, 0xFF888888);
-                            ClickToCopyText($"[0x{offsetAddress:X}]", $"{(addr + offsetAddress):X}");
+
+                            var addressText = GetAddressString((void*) (addr + offsetAddress), ImGui.GetIO().KeyShift);
+                            ClickToCopyText($"[0x{offsetAddress:X}]", addressText);
                             ImGui.PopStyleColor();
                             ImGui.SameLine();
                         }
@@ -733,8 +735,10 @@ namespace SimpleTweaksPlugin.Debugging {
 
         }
 
-        public static unsafe void PrintAddress(void* address) {
+        public static unsafe string GetAddressString(void* address, out bool isRelative, bool absoluteOnly = false) {
             var ulongAddress = (ulong)address;
+            isRelative = false;
+            if (absoluteOnly) return $"{ulongAddress:X}";
             
             try {
                 if (endModule == 0 && beginModule == 0) {
@@ -745,17 +749,31 @@ namespace SimpleTweaksPlugin.Debugging {
                         endModule = 1;
                     }
                 }
-            } catch { }
-            
-            ClickToCopy(address);
-            
+            } catch {
+                
+            }
+
             if (beginModule > 0 && ulongAddress >= beginModule && ulongAddress <= endModule) {
+                isRelative = true;
+                return $"ffxiv_dx11.exe+{(ulongAddress - beginModule):X}";
+            }
+            return $"{ulongAddress:X}";
+        }
+
+        public static unsafe string GetAddressString(void* address, bool absoluteOnly = false) => GetAddressString(address, out _, absoluteOnly);
+
+        public static unsafe void PrintAddress(void* address) {
+            var addressString = GetAddressString(address, out var isRelative);
+            if (isRelative) {
+                var absoluteString = GetAddressString(address, true);
+                ClickToCopyText(absoluteString);
                 ImGui.SameLine();
                 ImGui.PushStyleColor(ImGuiCol.Text, 0xffcbc0ff);
-                ClickToCopyText($"ffxiv_dx11.exe+{(ulongAddress - beginModule):X}");
+                ClickToCopyText(addressString);
                 ImGui.PopStyleColor();
+            } else {
+                ClickToCopyText(addressString);
             }
         }
-        
     }
 }
