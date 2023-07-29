@@ -63,35 +63,6 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
                 
                 Service.GameConfig.Set(configOption, v);
             }
-            
-            /*
-            for (var i = 0; i < 4; i++) {
-                var configOption = i switch {
-                    1 => ConfigOption.LogFontSizeLog2,
-                    2 => ConfigOption.LogFontSizeLog3,
-                    3 => ConfigOption.LogFontSizeLog4,
-                    _ => ConfigOption.LogFontSize,
-                };
-                
-                var optionIndex = c->GetIndex(configOption);
-                if (optionIndex != null) {
-                    // Force game to refresh the fonts
-                    int v;
-                    if (restoreOriginal) {
-                        v = originalFontSize[i];
-                    } else {
-                        v = c->GetIntValue(configOption);
-                        v++;
-                        if (v > 36) v = 12;
-                    }
-
-                    Common.SendEvent(a, 0, 18, optionIndex, v, 0);
-                }
-            }
-            
-
-            Common.SendEvent(a, 0, 0);
-            */
         } finally {
             showLogMessageHook?.Disable();
         }
