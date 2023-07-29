@@ -42,7 +42,7 @@ public unsafe class ActionPressMirroring : UiAdjustments.SubTweak
         "_ActionBarEx",
     };
 
-    public override void Enable()
+    protected override void Enable()
     {
         pulseActionBarSlotHook ??= Common.Hook<PulseActionBarSlot>(PulseActionBarSlotSig, PulseActionBarSlotDetour);
         pulseActionBarSlotHook?.Enable();
@@ -148,7 +148,7 @@ public unsafe class ActionPressMirroring : UiAdjustments.SubTweak
 
     }
 
-    public override void Disable()
+    protected override void Disable()
     {
         pulseActionBarSlotHook?.Disable();
         base.Disable();

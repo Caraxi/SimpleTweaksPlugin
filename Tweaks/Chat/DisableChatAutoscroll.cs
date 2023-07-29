@@ -41,8 +41,8 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
         private delegate void* ScrollToBottomDelegate(void* a1);
 
         private HookWrapper<ScrollToBottomDelegate> scrollToBottomHook;
-        
-        public override void Enable() {
+
+        protected override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.ChatTweaks.DisableChatAutoscroll ?? new Configs();
             scrollToBottomHook = Common.Hook<ScrollToBottomDelegate>("E8 ?? ?? ?? ?? 48 85 FF 75 0D", ScrollToBottomDetour);
             scrollToBottomHook?.Enable();
@@ -73,7 +73,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
             }
         }
 
-        public override void Disable() {
+        protected override void Disable() {
             SaveConfig(Config);
             PluginConfig.ChatTweaks.DisableChatAutoscroll = null;
             scrollToBottomHook?.Disable();

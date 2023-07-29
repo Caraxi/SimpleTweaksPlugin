@@ -51,7 +51,7 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
     private string[][] recordedControlHints = new string[allActionBars.Length][];
     private HotbarSlotCommand[][] recordedCommands = new HotbarSlotCommand[allActionBars.Length][];
 
-    public override void Enable()
+    protected override void Enable()
     {
         UpdateAll();
         actionBarBaseUpdateHook ??= Common.Hook<ActionBarBaseUpdate>("E8 ?? ?? ?? ?? 83 BB ?? ?? ?? ?? ?? 75 09", ActionBarBaseUpdateDetour);
@@ -287,7 +287,7 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
         }
     }
 
-    public override void Disable()
+    protected override void Disable()
     {
         actionBarBaseUpdateHook?.Disable();
         Reset();

@@ -205,7 +205,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             AddChangelog("1.8.8.0", "Returned 'click to change clock' feature from base game.");
         }
 
-        public override unsafe void Enable() {
+        protected override unsafe void Enable() {
             TweakConfig = LoadConfig<Config>() ?? PluginConfig.UiAdjustments.CustomTimeFormats ?? new Config(); 
             if (setTextAddress == nint.Zero) {
                 setTextAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 41 BC ?? ?? ?? ?? 48 8D BD") + 9;
@@ -223,7 +223,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             setTextHook.Original(self, strPtr);
         }
 
-        public override void Disable() {
+        protected override void Disable() {
             setTextHook?.Disable();
             SaveConfig(TweakConfig);
             PluginConfig.UiAdjustments.CustomTimeFormats = null;

@@ -22,7 +22,7 @@ internal unsafe class SanctuarySprintReplacer : Tweak {
     private delegate byte UseActionDelegate(ActionManager* mgr, ActionType actionType, uint actionID, long targetID, int a4, int a5, int a6, void* a7);
     private HookWrapper<UseActionDelegate>? _useActionHook;
 
-    public override void Enable() {
+    protected override void Enable() {
         this._useActionHook ??= Common.Hook<UseActionDelegate>(ActionManager.Addresses.UseAction.Value, this.UseActionDetour);
         this._useActionHook?.Enable();
 
@@ -33,8 +33,8 @@ internal unsafe class SanctuarySprintReplacer : Tweak {
 
         base.Enable();
     }
-        
-    public override void Disable() {
+
+    protected override void Disable() {
         this._useActionHook?.Disable();
         
         base.Disable();

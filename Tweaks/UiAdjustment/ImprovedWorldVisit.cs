@@ -13,12 +13,12 @@ public unsafe class ImprovedWorldVisit : UiAdjustments.SubTweak {
     public override string Name => "Cleaner World Visit Menu";
     public override string Description => "Cleans up the world visit menu and shows your current location in order on the list.";
 
-    public override void Enable() {
+    protected override void Enable() {
         Service.Framework.Update += FrameworkOnOnUpdateEvent;
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Service.Framework.Update -= FrameworkOnOnUpdateEvent;
         base.Disable();
     }

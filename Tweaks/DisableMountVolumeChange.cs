@@ -11,7 +11,7 @@ public unsafe class DisableMountVolumeChange : Tweak {
     private delegate int GetSpecialMode(void* unused, byte specialModeType);
     private HookWrapper<GetSpecialMode> getSpecialModeHook;
 
-    public override void Enable() {
+    protected override void Enable() {
         getSpecialModeHook ??= Common.Hook<GetSpecialMode>("48 89 5C 24 ?? 57 48 83 EC 20 8B 41 10 33 DB", GetSpecialModeDetour);
         getSpecialModeHook?.Enable();
         base.Enable();
@@ -22,7 +22,7 @@ public unsafe class DisableMountVolumeChange : Tweak {
         return specialModeType == 2 ? 4 : getSpecialModeHook.Original(unused, specialModeType);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         getSpecialModeHook?.Disable();
         base.Disable();
     }

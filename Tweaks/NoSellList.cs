@@ -208,7 +208,7 @@ public unsafe class NoSellList : Tweak {
 
     private HookWrapper<SellItem> sellItemHook;
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         sellItemHook = Common.Hook<SellItem>("48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 80 B9 ?? ?? ?? ?? ?? 41 8B F0", SellItemDetour);
         sellItemHook?.Enable();
@@ -257,7 +257,7 @@ public unsafe class NoSellList : Tweak {
         sellItemHook.Original(a1, slotIndex, inventory);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         sellItemHook?.Disable();
         SaveConfig(Config);
         base.Disable();

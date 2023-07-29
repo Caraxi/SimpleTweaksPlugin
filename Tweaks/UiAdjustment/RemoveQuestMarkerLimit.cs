@@ -12,7 +12,7 @@ public unsafe class RemoveQuestMarkerLimit : UiAdjustments.SubTweak {
     private delegate void* SetQuestMarkerInfoDelegate(Map* map, uint index, ushort questId, Utf8String* name, ushort recommendedLevel);
     private HookWrapper<SetQuestMarkerInfoDelegate> setQuestMarkerInfoHook;
 
-    public override void Enable() {
+    protected override void Enable() {
         this.setQuestMarkerInfoHook ??= Common.Hook<SetQuestMarkerInfoDelegate>(
             "E8 ?? ?? ?? ?? 0F B6 5B 0A",
             this.SetQuestMarkerInfoDetour
@@ -22,7 +22,7 @@ public unsafe class RemoveQuestMarkerLimit : UiAdjustments.SubTweak {
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         this.setQuestMarkerInfoHook?.Disable();
         base.Disable();
     }

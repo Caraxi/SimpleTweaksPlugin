@@ -111,13 +111,13 @@ public unsafe class Fools2023 : JokeTweaks.SubTweak {
         }
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         Common.FrameworkUpdate += FrameworkUpdate;
         Config = LoadConfig<Configs>() ?? new Configs();
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Common.FrameworkUpdate -= FrameworkUpdate;
         SaveConfig(Config);
 

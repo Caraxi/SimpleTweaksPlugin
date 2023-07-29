@@ -77,7 +77,7 @@ public class SyncCrafterBars : Tweak {
         }
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         classJobSheet = Service.Data.Excel.GetSheet<ClassJob>();
         if (classJobSheet == null) {
             SimpleLog.Error("ClassJob sheet is null");
@@ -113,7 +113,7 @@ public class SyncCrafterBars : Tweak {
         currentClassJob = cj;
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Service.Framework.Update -= FrameworkOnUpdate;
         SaveConfig(Config);
         base.Disable();

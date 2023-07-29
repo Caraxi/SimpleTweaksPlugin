@@ -14,8 +14,8 @@ public unsafe class HideQualityWhenNoHQ : UiAdjustments.SubTweak {
         AddChangelog(Changelog.UnreleasedVersion, "Show quality bar for expert recipes.");
         base.Setup();
     }
-    
-    public override void Enable() {
+
+    protected override void Enable() {
         Common.AddonSetup += CommonOnAddonSetup;
         base.Enable();
     }
@@ -31,7 +31,7 @@ public unsafe class HideQualityWhenNoHQ : UiAdjustments.SubTweak {
         qualityNode->ToggleVisibility(false);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Common.AddonSetup -= CommonOnAddonSetup;
 
         // Immediately reshow

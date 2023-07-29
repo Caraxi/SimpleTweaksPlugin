@@ -48,7 +48,7 @@ public unsafe class TrackGachaItems : TooltipTweaks.SubTweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         this._isItemActionUnlockedHookWrapper ??=
             Common.Hook<IsItemActionUnlocked>(UIState.Addresses.IsItemActionUnlocked.Value, this.IsItemActionUnlockedDetour);
         this._isItemActionUnlockedHookWrapper?.Enable();
@@ -138,7 +138,7 @@ public unsafe class TrackGachaItems : TooltipTweaks.SubTweak {
         return _isItemActionUnlockedHookWrapper.Original(uiState, item);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         _isItemActionUnlockedHookWrapper?.Disable();
         PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.TrackGachaItemsIdentifier);
         base.Disable();

@@ -42,7 +42,7 @@ public class DisableChatMovement : ChatTweaks.SubTweak {
         }
     }
 
-    public override unsafe void Enable() {
+    protected override unsafe void Enable() {
         if (!Ready) return;
         setUiPositionHook ??= Common.Hook(setUiPositionAddress, new SetUiPositionDelegate(SetUiPositionDetour));
         chatPanelDragControlHook ??= Common.Hook(chatPanelControlAddress, new ChatPanelDragControlDelegate(ChatPanelControlDetour));
@@ -67,7 +67,7 @@ public class DisableChatMovement : ChatTweaks.SubTweak {
         return setUiPositionHook.Original(_this, uiObject, a3);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         setUiPositionHook?.Disable();
         chatPanelDragControlHook?.Disable();
         Enabled = false;

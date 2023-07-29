@@ -15,12 +15,12 @@ public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
     public override string Description => "Removes the redundant infos from the deep dungeon character info.";
     protected override string Author => "Aireil";
 
-    public override void Enable() {
+    protected override void Enable() {
         Service.Framework.Update += OnFrameworkUpdate;
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Service.Framework.Update -= OnFrameworkUpdate;
         base.Disable();
         UpdateDeepDungeonStatus(true);

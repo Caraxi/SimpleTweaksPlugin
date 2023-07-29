@@ -31,14 +31,14 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         setContentsFinderSettings = (delegate* unmanaged<byte*, nint, void>) Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 8B 07 33 F6");
         this.LoadIcons();
         Service.PluginInterface.UiBuilder.Draw += this.OnDraw;
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Service.PluginInterface.UiBuilder.Draw -= this.OnDraw;
         this.DisposeIcons();
         var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName("ContentsFinder");

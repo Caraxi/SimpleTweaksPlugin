@@ -73,7 +73,7 @@ public class MateriaStats : TooltipTweaks.SubTweak {
     private ExcelSheet<ExtendedBaseParam> bpSheet;
     private ExcelSheet<Materia> materiaSheet;
 
-    public override void Enable() {
+    protected override void Enable() {
         itemSheet = Service.Data.Excel.GetSheet<ExtendedItem>();
         itemLevelSheet = Service.Data.Excel.GetSheet<ExtendedItemLevel>();
         bpSheet = Service.Data.Excel.GetSheet<ExtendedBaseParam>();
@@ -83,7 +83,7 @@ public class MateriaStats : TooltipTweaks.SubTweak {
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         SaveConfig(Config);
         base.Disable();
     }

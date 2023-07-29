@@ -108,8 +108,8 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
             ImGui.EndTable();
         }
     };
-    
-    public override void Enable() {
+
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
 
         for (var i = 0; i < 4; i++) {
@@ -202,7 +202,7 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
         setFontSizeHook.Original(chatLogPanelWithOffset, fontSize);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         setFontSizeHook?.Disable();
         showLogMessageHook?.Disable();
         Common.AddonSetup -= OnAddonSetup;

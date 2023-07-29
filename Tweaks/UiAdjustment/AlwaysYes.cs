@@ -104,7 +104,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         Common.AddonSetup += OnAddonSetup;
         base.Enable();
@@ -203,7 +203,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         return text != string.Empty && Config.ExceptionsYesNo.Any(val => text.Contains(val));
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Common.AddonSetup -= OnAddonSetup;
         base.Disable();
     }

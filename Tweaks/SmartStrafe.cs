@@ -78,7 +78,7 @@ namespace SimpleTweaksPlugin.Tweaks
 
         private HookWrapper<CheckStrafeKeybindDelegate> Hook;
 
-        public override void Enable() {
+        protected override void Enable() {
             TweakConfig = LoadConfig<Config>() ?? new Config();
 
             // There are about twenty different copies of this function that all
@@ -94,7 +94,7 @@ namespace SimpleTweaksPlugin.Tweaks
             base.Enable();
         }
 
-        public override void Disable()
+        protected override void Disable()
         {
             SaveConfig(TweakConfig);
 

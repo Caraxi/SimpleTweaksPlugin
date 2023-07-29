@@ -41,13 +41,13 @@ public unsafe partial class StickyChat : ChatTweaks.SubTweak
         Ready = true;
     }
 
-    public override void Enable()
+    protected override void Enable()
     {
         processChatInputHook?.Enable();
         base.Enable();
     }
 
-    public override void Disable()
+    protected override void Disable()
     {
         processChatInputHook?.Disable();
         base.Disable();

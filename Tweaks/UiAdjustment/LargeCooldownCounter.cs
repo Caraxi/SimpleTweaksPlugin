@@ -15,7 +15,7 @@ public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
     private delegate void UpdateHotbarSlotCooldownText(AddonActionBarBase* addon, ulong a2, ulong a3, void* a4, uint a5, int a6);
     private HookWrapper<UpdateHotbarSlotCooldownText> updateHotbarSlotCooldownTextHook;
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         updateHotbarSlotCooldownTextHook ??= Common.Hook<UpdateHotbarSlotCooldownText>("E8 ?? ?? ?? ?? 4D 8B CD 89 7C 24 28", UpdateHotbarSlotCooldownTextDetour);
         updateHotbarSlotCooldownTextHook?.Enable();
@@ -115,7 +115,7 @@ public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
         }
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         updateHotbarSlotCooldownTextHook?.Disable();
         SaveConfig(Config);
         base.Disable();

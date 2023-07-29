@@ -12,7 +12,8 @@ public unsafe class HideExperienceBar : UiAdjustments.SubTweak {
 
     private delegate void* AddonExpOnUpdateDelegate(AtkUnitBase* addonExp, NumberArrayData** numberArrayData, StringArrayData** stringArrayData, void* a4);
     private HookWrapper<AddonExpOnUpdateDelegate> addonExpOnUpdateHook;
-    public override void Enable() {
+
+    protected override void Enable() {
         addonExpOnUpdateHook ??= Common.Hook<AddonExpOnUpdateDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 83 EC 30 48 8B 72 18", AddonExpOnUpdateDetour);
         addonExpOnUpdateHook?.Enable();
         base.Enable();
@@ -46,7 +47,7 @@ public unsafe class HideExperienceBar : UiAdjustments.SubTweak {
         addon->IsVisible = visible;
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         SetExperienceBarVisible(true);
         addonExpOnUpdateHook?.Disable();
         base.Disable();

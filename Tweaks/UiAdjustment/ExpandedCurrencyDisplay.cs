@@ -103,7 +103,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         base.Setup();
     }
 
-    public override void Enable()
+    protected override void Enable()
     {
         simpleEvent ??= new SimpleEvent(HandleEvent);
         TweakConfig = LoadConfig<Config>() ?? new Config();
@@ -160,7 +160,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         }
     }
 
-    public override void Disable()
+    protected override void Disable()
     {
         openHudLayoutHook?.Disable();
         closeHudLayoutHook?.Disable();

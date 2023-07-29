@@ -97,8 +97,8 @@ public unsafe class QuickSellItems : Tweak {
 
     private string sellText = "Sell";
     private string retainerSellText = "Have Retainer Sell Items";
-    
-    public override void Enable() {
+
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
 
         var sellRow = Service.Data.Excel.GetSheet<Addon>()?.GetRow(93);
@@ -162,7 +162,7 @@ public unsafe class QuickSellItems : Tweak {
         return retVal;
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         openInventoryContextHook?.Disable();
         SaveConfig(Config);
         base.Disable();

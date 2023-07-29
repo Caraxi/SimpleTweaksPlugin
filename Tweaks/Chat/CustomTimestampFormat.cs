@@ -64,8 +64,8 @@ public unsafe class CustomTimestampFormat : ChatTweaks.SubTweak {
     }
 
     private Utf8String* str;
-    
-    public override void Enable() {
+
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         applyTextFormatHook ??= Common.Hook<ApplyTextFormatDelegate>("E8 ?? ?? ?? ?? 41 B0 07", FormatTextDetour);
         applyTextFormatHook?.Enable();
@@ -103,7 +103,7 @@ public unsafe class CustomTimestampFormat : ChatTweaks.SubTweak {
         return applyTextFormatHook!.Original(raptureTextModule, addonTextId, value);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         applyTextFormatHook?.Disable();
         SaveConfig(Config);
         base.Disable();

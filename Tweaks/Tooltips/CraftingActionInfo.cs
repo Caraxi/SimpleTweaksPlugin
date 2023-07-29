@@ -34,7 +34,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         progressString ??= Service.Data.Excel.GetSheet<Addon>()?.GetRow(213)?.Text?.RawString ?? "Progress";
         qualityString ??= Service.Data.Excel.GetSheet<Addon>()?.GetRow(216)?.Text?.RawString ?? "Quality";
@@ -54,7 +54,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
         }
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         SaveConfig(Config);
         Common.FrameworkUpdate -= FrameworkUpdate;
         PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.CraftingActionInfoIdentifier);

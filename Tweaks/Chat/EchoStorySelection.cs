@@ -38,7 +38,7 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak
         base.Setup();
     }
 
-    public override void Enable()
+    protected override void Enable()
     {
         TweakConfig = LoadConfig<Config>() ?? new Config();
         
@@ -46,8 +46,8 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak
         Common.AddonFinalize += OnAddonFinalize;
         base.Enable();
     }
-    
-    public override void Disable()
+
+    protected override void Disable()
     {
         SaveConfig(TweakConfig);
         

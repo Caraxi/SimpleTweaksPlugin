@@ -16,12 +16,12 @@ public class PrecisionDurability : TooltipTweaks.SubTweak {
         
     public Configs Config { get; private set; }
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         SaveConfig(Config);
         base.Disable();
     }

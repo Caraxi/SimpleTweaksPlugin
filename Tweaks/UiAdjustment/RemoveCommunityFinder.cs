@@ -21,12 +21,12 @@ public class RemoveCommunityFinder : UiAdjustments.SubTweak {
         "PvPTeam"
     };
 
-    public override void Enable() {
+    protected override void Enable() {
         Service.Framework.Update += OnFrameworkUpdate;
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Service.Framework.Update -= OnFrameworkUpdate;
         foreach(var w in windowsWithCommunityFinder) UpdateCommunityFinderButton(Service.Framework, w, true);
         base.Disable();

@@ -22,7 +22,7 @@ public unsafe class CharacterClassSwitcher : Tweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         eventHook ??= Common.Hook<EventHandle>("48 89 5C 24 ?? 57 48 83 EC 20 48 8B D9 4D 8B D1", EventDetour);
         eventHook.Enable();
         setupHook ??= Common.Hook<SetupHandle>("48 8B C4 48 89 58 10 48 89 70 18 48 89 78 20 55 41 54 41 55 41 56 41 57 48 8D 68 A1 48 81 EC ?? ?? ?? ?? 0F 29 70 C8 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 17 F3 0F 10 35 ?? ?? ?? ?? 45 33 C9 45 33 C0 F3 0F 11 74 24 ?? 0F 57 C9 48 8B F9", SetupDetour);
@@ -182,7 +182,7 @@ public unsafe class CharacterClassSwitcher : Tweak {
         return backup;
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         eventHook?.Disable();
         setupHook?.Disable();
 

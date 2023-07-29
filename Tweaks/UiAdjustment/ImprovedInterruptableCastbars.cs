@@ -63,14 +63,14 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak
         base.Setup();
     }
 
-    public override void Enable()
+    protected override void Enable()
     {
         TweakConfig = LoadConfig<Config>() ?? new Config();
         Common.FrameworkUpdate += OnFrameworkUpdate;
         base.Enable();
     }
 
-    public override void Disable()
+    protected override void Disable()
     {
         SaveConfig(TweakConfig);
         Common.FrameworkUpdate -= OnFrameworkUpdate;

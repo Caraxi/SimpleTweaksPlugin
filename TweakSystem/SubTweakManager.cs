@@ -64,7 +64,7 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
         }
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         if (!Ready) return;
         foreach (var t in SubTweaks) {
             if (t is IDisabledTweak) continue;
@@ -80,7 +80,7 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
         Enabled = true;
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         foreach (var t in SubTweaks.Where(t => t.Enabled)) {
             try {
                 SimpleLog.Log($"Disable: {t.Name} @ {Name}");

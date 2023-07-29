@@ -38,7 +38,7 @@ public unsafe class LimitBreakAdjustments : UiAdjustments.SubTweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         Common.FrameworkUpdate += OnFrameworkUpdate;
         base.Enable();
@@ -80,9 +80,8 @@ public unsafe class LimitBreakAdjustments : UiAdjustments.SubTweak {
             p += config.BarSpacing;
         }
     }
-    
 
-    public override void Disable() {
+    protected override void Disable() {
         Common.FrameworkUpdate -= OnFrameworkUpdate;
         Update(Configs.Default);
         SaveConfig(Config);

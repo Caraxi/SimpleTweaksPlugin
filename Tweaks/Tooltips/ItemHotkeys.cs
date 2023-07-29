@@ -211,7 +211,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         foreach (var h in Hotkeys) {
             h.Enable(true);
@@ -286,7 +286,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
         
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         foreach (var h in Hotkeys) {
             h.Disable(true);
         }

@@ -20,7 +20,7 @@ public class DisableMouseCameraControl : Tweak {
     public Configs Config { get; private set; }
     public override bool UseAutoConfig => true;
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         getCameraControlTypeHook ??= Common.Hook<GetCameraControlType>("E8 ?? ?? ?? ?? 83 F8 01 74 55", GetCameraControlTypeDetour);
         getCameraControlTypeHook?.Enable();
@@ -33,7 +33,7 @@ public class DisableMouseCameraControl : Tweak {
         return cameraControlType == CameraControlType.Mouse ? CameraControlType.None : cameraControlType;
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         getCameraControlTypeHook?.Disable();
         SaveConfig(Config);
         base.Disable();

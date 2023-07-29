@@ -18,8 +18,8 @@ public abstract class CommandTweak : Tweak {
     private void OnCommandInternal(string _, string args) => OnCommand(args);
 
     private List<string> registeredCommands = new();
-    
-    public override void Enable() {
+
+    protected override void Enable() {
         base.Enable();
         var c = Command.StartsWith("/") ? Command : $"/{Command}";
         if (Service.Commands.Commands.ContainsKey(c)) {
@@ -45,7 +45,7 @@ public abstract class CommandTweak : Tweak {
         }
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         foreach(var c in registeredCommands) {
             Service.Commands.RemoveHandler(c);
         }

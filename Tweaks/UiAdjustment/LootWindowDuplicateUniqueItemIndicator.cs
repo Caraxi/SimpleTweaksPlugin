@@ -72,7 +72,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         Ready = true;
     }
 
-    public override void Enable()
+    protected override void Enable()
     {
         TweakConfig = LoadConfig<Config>() ?? new Config();
         
@@ -82,7 +82,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         base.Enable();
     }
 
-    public override void Disable()
+    protected override void Disable()
     {
         SaveConfig(TweakConfig);
         

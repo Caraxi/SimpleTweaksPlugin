@@ -12,7 +12,7 @@ public unsafe class AutoOpenCommendWindow : Tweak {
 
     public override string Description => "Open the commendation window upon completion of a duty.";
 
-    public override void Enable() {
+    protected override void Enable() {
         Service.Framework.Update += FrameworkOnUpdate;
         base.Enable();
     }
@@ -61,7 +61,7 @@ public unsafe class AutoOpenCommendWindow : Tweak {
         Common.GenerateCallback(notification, 0, 11);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Service.Framework.Update -= FrameworkOnUpdate;
         base.Disable();
     }

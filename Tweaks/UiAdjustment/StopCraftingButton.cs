@@ -78,7 +78,7 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         craftingLogUpdateHook ??= Common.HookAfterAddonUpdate("40 55 57 41 54 41 55 41 57 48 8D AC 24", CraftingLogUpdated);
         craftingLogUpdateHook?.Enable();
 
@@ -250,9 +250,8 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
         if (rl == null) return;
         rl->Hide(true);
     }
-    
-    
-    public override void Disable() {
+
+    protected override void Disable() {
         Service.Commands.RemoveHandler("/stopcrafting");
         craftingLogUpdateHook?.Disable();
         clickSysnthesisButtonHook?.Disable();

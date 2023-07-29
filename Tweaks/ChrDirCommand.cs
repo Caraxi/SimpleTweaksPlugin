@@ -18,7 +18,7 @@ public class ChrDirCommand : CommandTweak {
 
     private DalamudLinkPayload linkPayload;
 
-    public override void Enable() {
+    protected override void Enable() {
         if (Enabled) return;
         linkPayload = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.OpenFolderLink, OpenFolder);
         base.Enable();
@@ -53,7 +53,7 @@ public class ChrDirCommand : CommandTweak {
         ImGui.TextDisabled($"/{Command} open");
     };
 
-    public override void Disable() {
+    protected override void Disable() {
         PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.OpenFolderLink);
         base.Disable();
     }

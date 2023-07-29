@@ -23,7 +23,7 @@ public unsafe class HideChat : ChatTweaks.SubTweak
     private readonly uint TextInputCursorID = 2;
     private readonly string[] ChatLogNodeNames = { "ChatLog", "ChatLogPanel_0", "ChatLogPanel_1", "ChatLogPanel_2", "ChatLogPanel_3" };
 
-    public override void Enable()
+    protected override void Enable()
     {
         Service.Commands.AddHandler(Command, new CommandInfo(OnCommand)
         {
@@ -35,7 +35,7 @@ public unsafe class HideChat : ChatTweaks.SubTweak
         base.Enable();
     }
 
-    public override void Disable()
+    protected override void Disable()
     {
         Service.Commands.RemoveHandler(Command);
         Service.Framework.Update -= FrameworkUpdate;

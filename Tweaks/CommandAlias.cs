@@ -149,7 +149,7 @@ public class CommandAlias : Tweak {
         }
     }
 
-    public override unsafe void Enable() {
+    protected override unsafe void Enable() {
         if (!Ready) return;
         TweakConfig = LoadConfig<Config>() ?? new Config();
 
@@ -222,8 +222,8 @@ public class CommandAlias : Tweak {
             
         return processChatInputHook.Original(uiModule, message, a3);
     }
-        
-    public override void Disable() {
+
+    protected override void Disable() {
         SaveConfig(TweakConfig);
         processChatInputHook?.Disable();
         Enabled = false;

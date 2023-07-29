@@ -59,15 +59,15 @@ public unsafe class BattleTalkAdjustments : UiAdjustments.SubTweak {
         Service.Framework.Update += FrameworkOnUpdate;
     };
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configuration>() ?? new Configuration();
         Service.ClientState.Login += OnLogin;
         Service.ClientState.Logout += OnLogout;
         if(Service.ClientState.LocalPlayer is not null) OnLogin(null!,null!);
         base.Enable();
     }
-        
-    public override void Disable() {
+
+    protected override void Disable() {
         Service.ClientState.Login -= OnLogin;
         Service.ClientState.Logout -= OnLogout;
         OnLogout(null!,null!);

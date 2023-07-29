@@ -31,7 +31,7 @@ public unsafe class BaitCommand : CommandTweak {
         AddChangelog("1.8.7.0", "Fixed tweak not enabling when starting the game.");
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         currentBaitAddress =
             Service.SigScanner.GetStaticAddressFromSig("48 83 C4 30 5B C3 49 8B C8 E8 ?? ?? ?? ?? 3B 05");
         if (executeCommand is null) {

@@ -58,7 +58,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
         private SeString hpPotionEffectString;
         private SeString hpPotionCappedEffectString;
 
-        public override void Enable() {
+        protected override void Enable() {
             itemSheet = Service.Data.Excel.GetSheet<ExtendedItem>();
             foodSheet = Service.Data.Excel.GetSheet<ItemFood>();
             bpSheet = Service.Data.Excel.GetSheet<BaseParam>();
@@ -124,7 +124,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
             }
         }
 
-        public override void Disable() {
+        protected override void Disable() {
             SaveConfig(Config);
             base.Disable();
         }

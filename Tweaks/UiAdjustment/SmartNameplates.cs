@@ -76,7 +76,7 @@ public unsafe class SmartNameplates : UiAdjustments.SubTweak {
         return shouldDisplayNameplateHook.Original(raptureAtkModule, actor, localPlayer, distance);
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         targetManager = targetManager != IntPtr.Zero ? targetManager : Service.SigScanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? FF 50 ?? 48 85 DB", 3); // Taken from Dalamud
         GetTargetType ??= Marshal.GetDelegateForFunctionPointer<GetTargetTypeDelegate>(Service.SigScanner.ScanText("48 89 5C 24 ?? 57 48 83 EC 20 48 8B 01 48 8B F9 8B 1D"));
@@ -85,7 +85,7 @@ public unsafe class SmartNameplates : UiAdjustments.SubTweak {
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         SaveConfig(Config);
         shouldDisplayNameplateHook?.Disable();
         base.Disable();

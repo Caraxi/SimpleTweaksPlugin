@@ -8,12 +8,12 @@ internal unsafe class DisableTitleScreenMovie : Tweak {
     public override string Name => "Disable Title Screen Movie";
     public override string Description => "Prevents the title screen from playing the introduction movie after 60 seconds.";
 
-    public override void Enable() {
+    protected override void Enable() {
         Service.Framework.Update += FrameworkUpdate;
         base.Enable();
     }
-        
-    public override void Disable() {
+
+    protected override void Disable() {
         Service.Framework.Update -= FrameworkUpdate;
         base.Disable();
     }

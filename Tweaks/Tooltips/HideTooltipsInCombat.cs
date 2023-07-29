@@ -53,7 +53,7 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         Common.AddonSetup += OnAddonSetup;
         Service.ClientState.Login += OnLogin;
@@ -73,7 +73,7 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
         OnConditionChange(ConditionFlag.InCombat, Service.Condition[ConditionFlag.InCombat]);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         SaveConfig(Config);
         Service.Condition.ConditionChange -= OnConditionChange;
         if (Service.ClientState.LocalContentId != 0) OnConditionChange(ConditionFlag.InCombat, false);

@@ -60,7 +60,7 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         var nbJobs = Service.Data.Excel.GetSheet<ClassJob>()?.ColumnCount ?? 0;
         var classJobCategoriesSheet = Service.Data.Excel.GetSheet<ClassJobCategory>();
         var doLParser = classJobCategoriesSheet?.GetRowParser(32);
@@ -82,7 +82,7 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Service.Framework.Update -= OnFrameworkUpdate;
         Service.ClientState.TerritoryChanged -= OnTerritoryChanged;
         UpdateParameterBar(true);

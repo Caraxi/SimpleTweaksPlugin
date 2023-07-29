@@ -250,7 +250,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
         }
 
-        public override void Enable() {
+        protected override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
 
             if (Config.ShowAllSorting == null) DefaultSorting();
@@ -473,7 +473,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             return ret;
         }
 
-        public override void Disable() {
+        protected override void Disable() {
             Common.FrameworkUpdate -= RebuildListUntilSuccess;
             SaveConfig(Config);
             updateItemHook?.Disable();

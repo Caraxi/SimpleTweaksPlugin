@@ -8,8 +8,8 @@ public unsafe class HideChatPanelButtons : ChatTweaks.SubTweak {
     public override string Description => "Hide the chat log name and close button on panels that have been split from the main window.";
 
     private readonly string[] panels = { "ChatLogPanel_1", "ChatLogPanel_2", "ChatLogPanel_3" };
-    
-    public override void Enable() {
+
+    protected override void Enable() {
         Service.ClientState.TerritoryChanged += TerritoryChange;
         ToggleButtons(false);
         base.Enable();
@@ -32,7 +32,7 @@ public unsafe class HideChatPanelButtons : ChatTweaks.SubTweak {
         }
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Service.ClientState.TerritoryChanged -= TerritoryChange;
         ToggleButtons(true);
         base.Disable();

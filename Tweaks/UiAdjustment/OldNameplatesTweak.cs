@@ -13,13 +13,13 @@ public unsafe class OldNameplatesTweak : UiAdjustments.SubTweak {
         StringArrayData** stringData);
     private HookWrapper<AddonNameplateOnUpdateDelegate> addonNameplateOnUpdateHook;
 
-    public override void Enable() {
+    protected override void Enable() {
         addonNameplateOnUpdateHook ??= Common.Hook(Service.SigScanner.ScanText("48 8B C4 41 56 48 81 EC ?? ?? ?? ?? 48 89 58 F0"), new AddonNameplateOnUpdateDelegate(AddonNameplateOnUpdateDetour));
         addonNameplateOnUpdateHook?.Enable();
         base.Enable();
     }
-        
-    public override void Disable() {
+
+    protected override void Disable() {
         addonNameplateOnUpdateHook?.Disable();
         base.Disable();
     }

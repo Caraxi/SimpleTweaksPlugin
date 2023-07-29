@@ -18,7 +18,7 @@ public unsafe class RememberTitleSorting : UiAdjustments.SubTweak {
 
     public Configs Config { get; private set; }
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
 
         changeSortOptionHook ??= Common.Hook<ChangeSortOption>("E8 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 83 7B 44 01", ChangeSortOptionDetour);
@@ -46,7 +46,7 @@ public unsafe class RememberTitleSorting : UiAdjustments.SubTweak {
         return changeSortOptionHook.Original(agent, sortOption);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         changeSortOptionHook?.Disable();
         SaveConfig(Config);
         base.Disable();

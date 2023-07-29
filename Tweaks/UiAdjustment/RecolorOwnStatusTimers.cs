@@ -39,7 +39,7 @@ public unsafe class RecolorOwnStatusTimers : UiAdjustments.SubTweak {
         ImGui.PopFont();
     };
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
 
         getUiColorHook ??= Common.Hook<GetUiColor>("83 F9 0A 73 26", GetUiColorDetour);
@@ -70,7 +70,7 @@ public unsafe class RecolorOwnStatusTimers : UiAdjustments.SubTweak {
         return getUiColorHook.Original(colorIndex, color, edgeColor);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         getUiColorHook?.Disable();
         SaveConfig(Config);
         base.Disable();

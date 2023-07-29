@@ -82,8 +82,8 @@ public unsafe class LockWindowPosition : UiAdjustments.SubTweak {
         lockText = new SeStringBuilder().AddUiForeground($"{(char)SeIconChar.ServerTimeEn} ", 500).AddText(LocString("Lock Window Position")).BuiltString;
         unlockText = new SeStringBuilder().AddUiForeground($"{(char)SeIconChar.ServerTimeEn} ", 500).AddText(LocString("Unlock Window Position")).BuiltString;
     }
-    
-    public override void Enable() {
+
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         
         moveAddonHook ??= Common.Hook<MoveAddon>("40 53 48 83 EC 20 80 A2 ?? ?? ?? ?? ??", MoveAddonDetour);
@@ -173,7 +173,7 @@ public unsafe class LockWindowPosition : UiAdjustments.SubTweak {
     private SeString lockText = SeString.Empty;
     private SeString unlockText = SeString.Empty;
 
-    public override void Disable() {
+    protected override void Disable() {
         moveAddonHook?.Disable();
         addMenuItemHook?.Disable();
         windowClickedHook?.Disable();

@@ -26,7 +26,8 @@ public unsafe class HideHotbarLock : Tweak {
     }
 
     private HookWrapper<Common.AddonOnUpdate> onAddonUpdate;
-    public override void Enable() {
+
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         onAddonUpdate ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 48 8B DA 48 8B F1 E8 ?? ?? ?? ?? 48 8B 7B 30", AfterAddonUpdate);
         onAddonUpdate?.Enable();
@@ -61,9 +62,8 @@ public unsafe class HideHotbarLock : Tweak {
         if (lockComponentNode == null) return;
         lockComponentNode->AtkResNode.ToggleVisibility(visible ?? LockVisible);
     }
-    
 
-    public override void Disable() {
+    protected override void Disable() {
         onAddonUpdate?.Disable();
         Common.FrameworkUpdate -= OnFrameworkUpdate;
         SetLockVisible(true);

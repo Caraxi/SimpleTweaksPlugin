@@ -30,7 +30,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 
         private bool InCombatDuty => Service.Condition[ConditionFlag.BoundByDuty] && !nonCombatTerritory.Contains(Service.ClientState.TerritoryType);
 
-        public override void Disable()
+        protected override void Disable()
         {
             Service.Framework.Update -= FrameworkUpdate;
             try
@@ -45,7 +45,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             base.Disable();
         }
 
-        public override void Enable()
+        protected override void Enable()
         {
             outOfCombatTimer.Restart();
             Config = LoadConfig<Configs>() ?? new Configs();

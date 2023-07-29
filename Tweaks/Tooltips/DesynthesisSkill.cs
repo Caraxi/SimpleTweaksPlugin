@@ -27,14 +27,14 @@ public class DesynthesisSkill : TooltipTweaks.SubTweak {
 
     private ExcelSheet<ExtendedItem> itemSheet;
 
-    public override void Enable() {
+    protected override void Enable() {
         itemSheet = Service.Data.Excel.GetSheet<ExtendedItem>();
         if (itemSheet == null) return;
         Config = LoadConfig<Configs>() ?? new Configs();
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         SaveConfig(Config);
         base.Disable();
     }

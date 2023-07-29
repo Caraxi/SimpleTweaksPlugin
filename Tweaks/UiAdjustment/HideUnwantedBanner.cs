@@ -81,14 +81,14 @@ public unsafe class HideUnwantedBanner : UiAdjustments.SubTweak
         base.Setup();
     }
 
-    public override void Enable()
+    protected override void Enable()
     {
         TweakConfig = LoadConfig<Config>() ?? new Config();
         setImageTextureHook?.Enable();
         base.Enable();
     }
 
-    public override void Disable()
+    protected override void Disable()
     {
         SaveConfig(TweakConfig);
         setImageTextureHook?.Disable();

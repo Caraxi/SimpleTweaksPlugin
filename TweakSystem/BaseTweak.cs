@@ -387,7 +387,8 @@ public abstract class BaseTweak {
         
         Enabled = true;
     }
-    public virtual void Enable() {
+
+    protected virtual void Enable() {
         
     }
 
@@ -403,8 +404,8 @@ public abstract class BaseTweak {
         }
         Enabled = false;
     }
-    
-    public virtual void Disable() {
+
+    protected virtual void Disable() {
         
     }
 

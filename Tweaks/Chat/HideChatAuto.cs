@@ -45,14 +45,14 @@ public unsafe class HideChatAuto : ChatTweaks.SubTweak
         }
     };
 
-    public override void Enable()
+    protected override void Enable()
     {
         Config = LoadConfig<HideChatAutoConfig>() ?? new HideChatAutoConfig();
         Service.Framework.Update += FrameworkUpdate;
         base.Enable();
     }
 
-    public override void Disable()
+    protected override void Disable()
     {
         SaveConfig(Config);
         Service.Framework.Update -= FrameworkUpdate;

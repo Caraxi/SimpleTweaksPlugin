@@ -62,7 +62,7 @@ public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
     public override string Name => "Minimap Adjustments";
     public override string Description => "Allows hiding elements of the minimap display.";
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         Service.ClientState.Login += OnLogin;
         Service.ClientState.TerritoryChanged += OnTerritoryChanged;
@@ -76,7 +76,7 @@ public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
         Service.Framework.Update += WaitForUpdate;
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         SaveConfig(Config);
         Service.Framework.Update -= WaitForUpdate;
         Service.ClientState.Login -= OnLogin;

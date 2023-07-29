@@ -12,7 +12,7 @@ class ClickableLinks : ChatTweaks.SubTweak {
     public override string Name => "Clickable Links in Chat";
     public override string Description => "Parses links posted in chat and allows them to be clicked.";
 
-    public override void Enable() {
+    protected override void Enable() {
         urlLinkPayload = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.OpenUrlLink, UrlLinkHandle);
         Service.Chat.ChatMessage += OnChatMessage;
         base.Enable();
@@ -24,7 +24,7 @@ class ClickableLinks : ChatTweaks.SubTweak {
         Common.OpenBrowser(url);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         if (!Enabled) return;
         Service.Chat.ChatMessage -= OnChatMessage;
         PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.OpenUrlLink);

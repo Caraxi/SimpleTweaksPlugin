@@ -19,7 +19,7 @@ public unsafe class TreasureHuntTargets : Tweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         isTargetableHook ??= Common.Hook<GetIsTargetable>("40 53 48 83 EC 20 F3 0F 10 89 ?? ?? ?? ?? 0F 57 C0 0F 2E C8 48 8B D9 7A 0A", IsTargetableDetour);
         isTargetableHook?.Enable();
         
@@ -36,7 +36,7 @@ public unsafe class TreasureHuntTargets : Tweak {
         return potentialTarget->NamePlateIconId is 60094 or 60096 ? isTargetable : byte.MinValue;
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         isTargetableHook?.Disable();
         base.Disable();
     }

@@ -10,9 +10,9 @@ public class ReplyChannelSwitch : ChatTweaks.SubTweak {
     public override string Name => "Reply Channel Switch";
     public override string Description => "Allow typing /r to set active chat channel to Tell.";
 
-    private string searchString = string.Empty; 
+    private string searchString = string.Empty;
 
-    public override void Enable() {
+    protected override void Enable() {
         searchString = Service.ClientState.ClientLanguage switch {
             ClientLanguage.Japanese => @"1番目に文字列の指定がありません。： /r",
             ClientLanguage.English => @"“/r” requires a valid string.",
@@ -33,7 +33,7 @@ public class ReplyChannelSwitch : ChatTweaks.SubTweak {
         }
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Service.Chat.CheckMessageHandled -= CheckMesssage;
         base.Disable();
     }

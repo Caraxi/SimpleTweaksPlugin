@@ -15,7 +15,7 @@ public unsafe class AutoOpenLootWindow : Tweak {
 
     public override string Description => "Open the loot rolling window when new items are added to be rolled on.";
 
-    public override void Enable() {
+    protected override void Enable() {
         Service.Chat.CheckMessageHandled += HandleChat;
         base.Enable();
     }
@@ -82,7 +82,7 @@ public unsafe class AutoOpenLootWindow : Tweak {
         Common.GenerateCallback(notification, 0, 2);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Service.Chat.CheckMessageHandled -= HandleChat;
         Service.Framework.Update -= TryOpenAfterCutsceneFrameworkUpdate;
         base.Disable();

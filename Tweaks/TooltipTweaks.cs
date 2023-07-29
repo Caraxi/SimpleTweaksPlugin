@@ -91,7 +91,7 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         base.Setup();
     }
 
-    public override unsafe void Enable() {
+    protected override unsafe void Enable() {
         if (!Ready) return;
 
         itemHoveredHook ??= Common.Hook<ItemHoveredDelegate>("E8 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? 48 89 B4 24 ?? ?? ?? ?? 48 89 BC 24 ?? ?? ?? ?? 48 8B 7C 24", ItemHoveredDetour);
@@ -162,7 +162,7 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         return returnValue;
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         itemHoveredHook?.Disable();
         actionTooltipHook?.Disable();
         actionHoveredHook?.Disable();

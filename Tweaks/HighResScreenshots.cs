@@ -142,7 +142,7 @@ public unsafe class HighResScreenshots : Tweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
 
         if (!Service.SigScanner.TryScanText("49 8B 57 30 45 33 C9", out copyrightShaderAddress)) {
@@ -309,8 +309,8 @@ public unsafe class HighResScreenshots : Tweak {
         MemoryHelper.ChangePermission(address, data.Length, oldProtection);
         return originalBytes;
     }
-    
-    public override void Disable() {
+
+    protected override void Disable() {
         UIDebug.FreeExclusiveDraw();
         SaveConfig(Config);
         isInputIDClickedHook?.Disable();

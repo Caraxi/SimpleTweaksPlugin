@@ -23,7 +23,7 @@ public unsafe class DataCentreOnTitleScreen : Tweak {
 
     public override bool UseAutoConfig => true;
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         Service.Framework.Update += FrameworkOnUpdate;
         base.Enable();
@@ -70,7 +70,7 @@ public unsafe class DataCentreOnTitleScreen : Tweak {
         text->SetText(displayText);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         SaveConfig(Config);
         Service.Framework.Update -= FrameworkOnUpdate;
         base.Disable();

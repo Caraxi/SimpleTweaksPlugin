@@ -11,7 +11,7 @@ public unsafe class CharaViewIncreasedZoom : Tweak {
     private delegate void CharaViewZoom(CharaView* charaView, float delta);
     private HookWrapper<CharaViewZoom> charaViewZoomHook;
 
-    public override void Enable() {
+    protected override void Enable() {
         charaViewZoomHook ??= Common.Hook<CharaViewZoom>("48 8B 41 20 48 85 C0 74 4C", ZoomDetour);
         charaViewZoomHook?.Enable();
         base.Enable();
@@ -41,7 +41,7 @@ public unsafe class CharaViewIncreasedZoom : Tweak {
         }
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         charaViewZoomHook?.Disable();
         base.Disable();
     }

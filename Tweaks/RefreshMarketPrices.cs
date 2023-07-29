@@ -29,7 +29,7 @@ public unsafe class RefreshMarketPrices : Tweak
 
     private CancellationTokenSource cancelSource = null;
 
-    public override void Enable()
+    protected override void Enable()
     {
         if (Enabled) return;
 
@@ -98,7 +98,7 @@ public unsafe class RefreshMarketPrices : Tweak
         && addon->HitsMessage != null
         && !addon->HitsMessage->AtkResNode.IsVisible;
 
-    public override void Disable()
+    protected override void Disable()
     {
         if (!Enabled) return;
         if (!waitMessageCodeErrored && !SafeMemory.WriteBytes(waitMessageCodeChangeAddress, waitMessageCodeOriginalBytes))

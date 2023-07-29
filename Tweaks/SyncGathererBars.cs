@@ -66,7 +66,7 @@ public unsafe class SyncGathererBars : Tweak {
     private int checkBar = -1;
     private bool onGatherer;
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         Service.Framework.Update += FrameworkOnUpdate;
         base.Enable();
@@ -118,7 +118,7 @@ public unsafe class SyncGathererBars : Tweak {
         }
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Service.Framework.Update -= FrameworkOnUpdate;
         SaveConfig(Config);
         base.Disable();

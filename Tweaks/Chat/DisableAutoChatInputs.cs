@@ -39,7 +39,7 @@ public unsafe class DisableAutoChatInputs : ChatTweaks.SubTweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         insertTextCommandParamHook ??= Common.Hook<InsertTextCommandParam>("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 49 8D 8E", InsertTextCommandParamDetour);
         insertTextCommandParamHook?.Enable();
@@ -60,7 +60,7 @@ public unsafe class DisableAutoChatInputs : ChatTweaks.SubTweak {
         };
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         insertTextCommandParamHook?.Disable();
         SaveConfig(Config);
         base.Disable();

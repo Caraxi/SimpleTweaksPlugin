@@ -31,7 +31,7 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         itemTooltipOnUpdateHook ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 54 41 55 41 56 41 57 48 83 EC 20 4C 8B AA", AfterItemDetailUpdate);
         itemTooltipOnUpdateHook?.Enable();        
         base.Enable();
@@ -144,8 +144,8 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
         atkUnitBase->WindowNode->Component->UldManager.SearchNodeById(2)->SetHeight(atkUnitBase->WindowNode->AtkResNode.Height);
         insertNode->SetPositionFloat(insertNode->X, atkUnitBase->WindowNode->AtkResNode.GetHeight() - 20);
     }
-    
-    public override void Disable() {
+
+    protected override void Disable() {
         itemTooltipOnUpdateHook?.Disable();
         lastImage = 0;
         var unitBase = Common.GetUnitBase("ItemDetail");

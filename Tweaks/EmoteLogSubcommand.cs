@@ -16,8 +16,8 @@ public unsafe class EmoteLogSubcommand : Tweak {
 
     private delegate void* ExecuteEmoteCommand(void* a1, EmoteCommandStruct* command, void* a3);
     private HookWrapper<ExecuteEmoteCommand> executeEmoteCommandHook;
-    
-    public override void Enable() {
+
+    protected override void Enable() {
         executeEmoteCommandHook ??= Common.Hook<ExecuteEmoteCommand>("4C 8B DC 53 55 57 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? 48 8B 2D", ExecuteDetour);
         executeEmoteCommandHook?.Enable();
         base.Enable();
@@ -45,7 +45,7 @@ public unsafe class EmoteLogSubcommand : Tweak {
         }
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         executeEmoteCommandHook?.Disable();
         base.Disable();
     }

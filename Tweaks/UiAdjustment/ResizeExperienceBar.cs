@@ -24,7 +24,8 @@ public unsafe class ResizeExperienceBar : UiAdjustments.SubTweak
     public override bool UseAutoConfig => true;
 
     private HookWrapper<Common.AddonOnUpdate> onAddonUpdate;
-    public override void Enable()
+
+    protected override void Enable()
     {
         Config = LoadConfig<Configs>() ?? new Configs();
         onAddonUpdate ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 83 EC 30 48 8B 72 18", AfterAddonUpdate);
@@ -103,7 +104,7 @@ public unsafe class ResizeExperienceBar : UiAdjustments.SubTweak
         }
     }
 
-    public override void Disable()
+    protected override void Disable()
     {
         onAddonUpdate?.Disable();
         ResizeExpBar(100);

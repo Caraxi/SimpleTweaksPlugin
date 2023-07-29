@@ -21,7 +21,7 @@ public unsafe class AutoLockHotbar : Tweak {
 
     public override bool UseAutoConfig => true;
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         Service.ClientState.TerritoryChanged += OnTerritoryChanged;
         Service.Condition.ConditionChange += OnConditionChange;
@@ -36,7 +36,7 @@ public unsafe class AutoLockHotbar : Tweak {
         if (Config.ZoneChange) SetLock(true);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Service.ClientState.TerritoryChanged -= OnTerritoryChanged;
         Service.Condition.ConditionChange -= OnConditionChange;
         SaveConfig(Config);

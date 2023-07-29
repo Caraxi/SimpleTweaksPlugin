@@ -119,7 +119,7 @@ public unsafe class ChangeMapAreaColors : UiAdjustments.SubTweak {
         this._typeNames = GetConfigurableAreaTypes();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         this.Config = this.LoadConfig<MapColorConfig>() ?? new MapColorConfig();
 
         this._setCircleMapColorHook ??=
@@ -129,7 +129,7 @@ public unsafe class ChangeMapAreaColors : UiAdjustments.SubTweak {
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         this._setCircleMapColorHook?.Disable();
 
         this.SaveConfig(this.Config);

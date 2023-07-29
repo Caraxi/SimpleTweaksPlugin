@@ -44,8 +44,8 @@ public class NamePlateIconSpacing : UiAdjustments.SubTweak {
         
         SafeMemory.WriteBytes(address, new byte[] { 0x8D, 0x53, spacingByte });
     }
-    
-    public override void Enable() {
+
+    protected override void Enable() {
         address = Service.SigScanner.ScanText("8D 53 06 E8 ?? ?? ?? ?? 0F B6 54 24");
         if (address == IntPtr.Zero) throw new Exception("Failed to locate correct address.");
 
@@ -54,7 +54,7 @@ public class NamePlateIconSpacing : UiAdjustments.SubTweak {
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         SaveConfig(Config);
         SetSpacing(0);
         base.Disable();

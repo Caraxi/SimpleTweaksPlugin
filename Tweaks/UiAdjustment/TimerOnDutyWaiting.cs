@@ -11,7 +11,7 @@ public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
     public override string Name => "Timer on Duty Waiting";
     public override string Description => "Shows the 45 second countdown after readying for a duty.";
 
-    public override void Enable() {
+    protected override void Enable() {
         Service.Framework.Update += UpdateFramework;
         prefix = Service.Data.Excel.GetSheet<Addon>()?.GetRow(2780)?.Text?.RawString ?? "Checking member status...";
         base.Enable();
@@ -59,7 +59,7 @@ public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
         }
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Service.Framework.Update -= UpdateFramework;
         sw.Stop();
         base.Disable();

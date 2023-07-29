@@ -38,7 +38,7 @@ public unsafe class SystemConfigInGroupPose : Tweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         Service.Chat.CheckMessageHandled += OnChatMessage;
         base.Enable();
     }
@@ -53,7 +53,7 @@ public unsafe class SystemConfigInGroupPose : Tweak {
         }
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Service.Chat.CheckMessageHandled -= OnChatMessage;
         base.Disable();
     }

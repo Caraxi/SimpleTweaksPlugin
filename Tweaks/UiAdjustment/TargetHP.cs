@@ -96,14 +96,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             AddChangelog("1.8.1.1", "Added option to align text to the left.");
             base.Setup();
         }
-        
-        public override void Enable() {
+
+        protected override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
             Service.Framework.Update += FrameworkUpdate;
             base.Enable();
         }
 
-        public override void Disable() {
+        protected override void Disable() {
             SaveConfig(Config);
             Service.Framework.Update -= FrameworkUpdate;
             Update(true);

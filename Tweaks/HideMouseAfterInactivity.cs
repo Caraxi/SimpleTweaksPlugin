@@ -41,7 +41,7 @@ public unsafe class HideMouseAfterInactivity : Tweak {
     private Vector2 lastPosition = Vector2.Zero;
     private readonly Stopwatch lastMoved = new();
 
-    public override void Enable() {
+    protected override void Enable() {
         this.TweakConfig = LoadConfig<Config>() ?? new Config();
 
         if (mouseButtonHoldState == IntPtr.Zero) {
@@ -53,7 +53,7 @@ public unsafe class HideMouseAfterInactivity : Tweak {
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Service.Framework.Update -= HideMouse;
         SaveConfig(TweakConfig);
 

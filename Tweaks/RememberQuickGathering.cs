@@ -32,7 +32,7 @@ public unsafe class RememberQuickGathering : Tweak {
         }
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         Service.Framework.Update += FrameworkUpdate;
         base.Enable();
     }
@@ -97,7 +97,7 @@ public unsafe class RememberQuickGathering : Tweak {
                 || addon->GatheredItemId8 != 0;
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         targetQuickGatheringStatus = null;
         Service.Framework.Update -= FrameworkUpdate;
         base.Disable();

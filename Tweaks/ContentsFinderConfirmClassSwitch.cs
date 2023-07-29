@@ -12,7 +12,7 @@ public unsafe class ContentsFinderConfirmClassSwitch : Tweak {
 
     private SimpleEvent simpleEvent;
 
-    public override void Enable() {
+    protected override void Enable() {
         simpleEvent = new SimpleEvent(OnIconClicked);
         
         if (Common.GetUnitBase("ContentsFinderConfirm", out var unitBase)) {
@@ -66,7 +66,7 @@ public unsafe class ContentsFinderConfirmClassSwitch : Tweak {
         simpleEvent.Add(obj.Addon, classIconNode, AtkEventType.MouseOut);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Common.AddonSetup -= OnAddonSetup;
 
         if (Common.GetUnitBase("ContentsFinderConfirm", out var unitBase)) {

@@ -35,7 +35,7 @@ public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
     private delegate byte CharacterInspectOnRefresh(AtkUnitBase* atkUnitBase, int a2, AtkValue* a3);
     private HookWrapper<CharacterInspectOnRefresh> onExamineRefresh;
 
-    public override void Enable() {
+    protected override void Enable() {
         if (!Ready) return;
         TweakConfig = LoadConfig<Config>() ?? new Config();
 
@@ -161,7 +161,7 @@ public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
         }
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         SaveConfig(TweakConfig);
         onExamineRefresh?.Disable();
         ShowItemLevel(true);

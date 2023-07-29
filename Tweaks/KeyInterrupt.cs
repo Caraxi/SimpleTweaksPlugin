@@ -109,7 +109,7 @@ public partial class KeyInterrupt : Tweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         this._config = this.LoadConfig<KeyInterruptConfig>() ?? new KeyInterruptConfig();
 
         this._delegate = this.OnKeystroke;
@@ -141,7 +141,7 @@ public partial class KeyInterrupt : Tweak {
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         if (this._keyboardHookId != nint.Zero) {
             UnhookWindowsHookEx(this._keyboardHookId);
             this._keyboardHookId = nint.Zero;

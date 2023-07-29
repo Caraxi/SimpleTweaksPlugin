@@ -412,7 +412,7 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
         ImGui.Checkbox($"##{type}_message", ref config.Message);
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         
         Service.Chat.ChatMessage += HandleChatMessage;
@@ -497,7 +497,7 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
         }
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         SaveConfig(Config);
         Service.Chat.ChatMessage -= HandleChatMessage;
         base.Disable();

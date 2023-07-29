@@ -49,7 +49,7 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<MarketEnhancementsConfig>() ?? new MarketEnhancementsConfig();
         replacementUpdateResultDelegate = SetItemDetour;
         updateResultPointer = (void*) Service.SigScanner.ScanText("40 57 48 83 EC 30 8B FA");
@@ -161,8 +161,8 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
         var isr = Common.GetUnitBase("ItemSearchResult");
         if (isr != null) UiHelper.Close(isr, true);
     }
-        
-    public override void Disable() {
+
+    protected override void Disable() {
         SaveConfig(Config);
         CloseMarketResults();
         addonSetupHook?.Disable();

@@ -36,7 +36,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
 
         public Config TweakConfig { get; private set; }
 
-        public override void Enable() {
+        protected override void Enable() {
             if (Enabled) return;
             TweakConfig = LoadConfig<Config>() ?? Plugin.PluginConfig.ChatTweaks.RenameChatTabs ?? new Config();
 
@@ -47,7 +47,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
             base.Enable();
         }
 
-        public override void Disable() {
+        protected override void Disable() {
             SaveConfig(TweakConfig);
             PluginConfig.ChatTweaks.RenameChatTabs = null;
             Service.ClientState.Login -= OnLogin;

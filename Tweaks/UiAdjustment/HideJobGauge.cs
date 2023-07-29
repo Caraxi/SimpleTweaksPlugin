@@ -44,7 +44,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             AddChangelog("1.8.8.0", "Fixed 'Show In Duty' option not working in some duties.");
         }
 
-        public override void Enable() {
+        protected override void Enable() {
             outOfCombatTimer.Restart();
             Config = LoadConfig<Configs>() ?? new Configs();
             Service.Framework.Update += FrameworkUpdate;
@@ -100,7 +100,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             #endif
         }
 
-        public override void Disable() {
+        protected override void Disable() {
             Service.Framework.Update -= FrameworkUpdate;
             try {
                 Update(true);

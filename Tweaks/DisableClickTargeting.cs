@@ -143,8 +143,8 @@ namespace SimpleTweaksPlugin.Tweaks {
         private delegate void* ClickTarget(void** a1, byte* a2, bool a3);
         private HookWrapper<ClickTarget> rightClickTargetHook;
         private HookWrapper<ClickTarget> leftClickTargetHook;
-        
-        public override void Enable() {
+
+        protected override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.DisableClickTargeting ?? new Configs();
             
             rightClickTargetHook ??= Common.Hook(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 48 85 C0 74 1B"), new ClickTarget(RightClickTargetDetour));
@@ -153,8 +153,8 @@ namespace SimpleTweaksPlugin.Tweaks {
             if (Config.DisableLeftClick || Config.UseNameFilter) leftClickTargetHook?.Enable();
             base.Enable();
         }
-        
-        public override void Disable() {
+
+        protected override void Disable() {
             SaveConfig(Config);
             PluginConfig.DisableClickTargeting = null;
             rightClickTargetHook?.Disable();

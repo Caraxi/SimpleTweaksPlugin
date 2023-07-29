@@ -24,7 +24,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         bagWidgetUpdate ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 55 56 57 41 54 41 55 41 56 41 57 48 83 EC 20 4C 8B 62 38", BagWidgetUpdate);
         bagWidgetUpdate?.Enable();
         
@@ -432,7 +432,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
         node->SetPositionFloat(x, y);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         var bagWidget = Common.GetUnitBase("_BagWidget");
         if (bagWidget != null) ResetBagWidget(bagWidget);
         bagWidgetUpdate?.Disable();

@@ -60,14 +60,14 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
         base.Setup();
     }
 
-    public override void Enable()
+    protected override void Enable()
     {
         TweakConfig = LoadConfig<Config>() ?? new Config();
         onHotBarSlotUpdateHook?.Enable();
         base.Enable();
     }
 
-    public override void Disable()
+    protected override void Disable()
     {
         SaveConfig(TweakConfig);
         onHotBarSlotUpdateHook?.Disable();

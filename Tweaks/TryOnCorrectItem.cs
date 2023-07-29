@@ -109,7 +109,7 @@ public class TryOnCorrectItem : Tweak {
 
     };
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         
         
@@ -174,7 +174,7 @@ public class TryOnCorrectItem : Tweak {
         return tryOnHook.Original(unknownCanEquip, itemGlamourId != 0 ? itemGlamourId : itemBaseId, stainColor, 0, unknownByte);
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         SaveConfig(Config);
         tryOnHook?.Disable();
         base.Disable();

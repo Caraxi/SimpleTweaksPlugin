@@ -51,7 +51,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         if (Enabled) return;
         Config = LoadConfig<Configs>() ?? new Configs();
         Config.TravellerCustomization ??= new TagCustomization() { Enabled = Config.WandererCustomization.Enabled, Replacement = Config.WandererCustomization.Replacement };
@@ -60,7 +60,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         SaveConfig(Config);
         updateNameplateHook?.Disable();
         base.Disable();

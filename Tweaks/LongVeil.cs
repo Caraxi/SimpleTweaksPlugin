@@ -19,7 +19,7 @@ public unsafe class LongVeil : Tweak {
     public override string Name => "Long Veil";
     public override string Description => "Replaces the wedding veils with their long variants that are usually only shown in the sanctum of the twelve.";
 
-    public override void Enable() {
+    protected override void Enable() {
         flagSlotUpdateHook ??= Common.Hook(
             Service.SigScanner.ScanText("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 8B DA 49 8B F0 48 8B F9 83 FA 0A"), 
             new FlagSlotUpdateDelegate(FlagSlotUpdateDetour));
@@ -27,7 +27,7 @@ public unsafe class LongVeil : Tweak {
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         flagSlotUpdateHook?.Disable();
         base.Disable();
     }

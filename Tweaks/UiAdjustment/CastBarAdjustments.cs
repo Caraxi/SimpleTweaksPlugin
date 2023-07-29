@@ -111,7 +111,7 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
         }
     };
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         
         // TODO: Remove
@@ -125,7 +125,7 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         castBarOnUpdateHook.Disable();
         UpdateCastBar(null, true);
         SaveConfig(Config);

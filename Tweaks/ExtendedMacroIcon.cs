@@ -31,7 +31,7 @@ public unsafe class ExtendedMacroIcon : Tweak {
         [FieldOffset(0x0C)] public int Category;
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         setupMacroIconHook ??= Common.Hook<SetupMacroIconDelegate>("E8 ?? ?? ?? ?? 0F B6 BE ?? ?? ?? ?? 48 8B CD", SetupMacroIconDetour);
         setupMacroIconHook?.Enable();
 
@@ -61,7 +61,7 @@ public unsafe class ExtendedMacroIcon : Tweak {
     
     private ulong GetIconIdDetour(void* a1, ulong category, ulong id) => category == IconCategory ? id : getIconIdHook.Original(a1, category, id);
 
-    public override void Disable() {
+    protected override void Disable() {
         setupMacroIconHook?.Disable();
         getIconIdHook?.Disable();
         base.Disable();

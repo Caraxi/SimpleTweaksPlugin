@@ -84,7 +84,7 @@ public class ScreenshotFileName : Tweak {
         }
     };
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
 
         if(dateFormatStringPtr == IntPtr.Zero) {
@@ -111,7 +111,7 @@ public class ScreenshotFileName : Tweak {
         base.Enable();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         SaveConfig(Config);
         screenshotDateFormatHook?.Disable();
         base.Disable();

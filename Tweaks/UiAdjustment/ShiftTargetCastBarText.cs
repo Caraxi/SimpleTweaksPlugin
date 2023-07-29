@@ -123,14 +123,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             
         }
 
-        public override void Enable() {
+        protected override void Enable() {
             if (Enabled) return;
             LoadedConfig = LoadConfig<Config>() ?? PluginConfig.UiAdjustments.ShiftTargetCastBarText ?? new Config();
             Service.Framework.Update += OnFrameworkUpdate;
             Enabled = true;
         }
 
-        public override void Disable() {
+        protected override void Disable() {
             if (!Enabled) return;
             SaveConfig(LoadedConfig);
             PluginConfig.UiAdjustments.ShiftTargetCastBarText = null;

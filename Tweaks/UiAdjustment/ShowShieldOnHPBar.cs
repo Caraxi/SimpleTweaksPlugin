@@ -29,15 +29,15 @@ public unsafe class ShowShieldOnHPBar: UiAdjustments.SubTweak
 
     public Configs Config { get; private set; }
     public override bool UseAutoConfig => true;
-    
-    public override void Enable()
+
+    protected override void Enable()
     {
         Config = LoadConfig<Configs>() ?? new Configs();
         Service.Framework.Update += FrameworkUpdate;
         base.Enable();
     }
-        
-    public override void Disable()
+
+    protected override void Disable()
     {
         SaveConfig(Config);
         Service.Framework.Update -= FrameworkUpdate;

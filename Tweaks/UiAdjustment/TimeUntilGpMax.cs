@@ -50,7 +50,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
         base.Setup();
     }
 
-    public override void Enable() {
+    protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         lastUpdate.Restart();
         updateParamHook ??= Common.Hook<UpdateParamDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 83 3D ?? ?? ?? ?? ?? 41 0F B6 E8 48 8B DA 8B F1 0F 84 ?? ?? ?? ?? 48 89 7C 24", UpdateParamDetour);
@@ -85,7 +85,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
         }
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         SaveConfig(Config);
         lastUpdate.Stop();
         updateParamHook?.Disable();

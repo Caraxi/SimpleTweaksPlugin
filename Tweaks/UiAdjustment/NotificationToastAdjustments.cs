@@ -93,14 +93,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             ImGui.PopFont();
         };
 
-        public override void Enable() {
+        protected override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.NotificationToastAdjustments ?? new Configs();
             Service.Framework.Update += FrameworkOnUpdate;
             Service.Toasts.Toast += OnToast;
             base.Enable();
         }
 
-        public override void Disable() {
+        protected override void Disable() {
             SaveConfig(Config);
             PluginConfig.UiAdjustments.NotificationToastAdjustments = null;
             Service.Framework.Update -= FrameworkOnUpdate;
