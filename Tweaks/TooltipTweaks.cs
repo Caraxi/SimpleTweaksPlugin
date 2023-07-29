@@ -39,25 +39,17 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         }
 
         protected static unsafe void SetTooltipString(StringArrayData* stringArrayData, TooltipTweaks.ItemTooltipField field, SeString seString) {
-            try {
-                seString ??= new SeString();
-                var bytes = seString.Encode().ToList();
-                bytes.Add(0);
-                stringArrayData->SetValue((int)field, bytes.ToArray(), false, true, false);
-            } catch (Exception ex) {
-                throw;
-            }
+            seString ??= new SeString();
+            var bytes = seString.Encode().ToList();
+            bytes.Add(0);
+            stringArrayData->SetValue((int)field, bytes.ToArray(), false, true, false);
         }
         
         protected static unsafe void SetTooltipString(StringArrayData* stringArrayData, TooltipTweaks.ActionTooltipField field, SeString seString) {
-            try {
-                seString ??= new SeString();
-                var bytes = seString.Encode().ToList();
-                bytes.Add(0);
-                stringArrayData->SetValue((int)field, bytes.ToArray(), false, true, false);
-            } catch {
-                throw;
-            }
+            seString ??= new SeString();
+            var bytes = seString.Encode().ToList();
+            bytes.Add(0);
+            stringArrayData->SetValue((int)field, bytes.ToArray(), false, true, false);
         }
 
         protected static InventoryItem Item => HoveredItem;

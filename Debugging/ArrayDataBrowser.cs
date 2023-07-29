@@ -53,7 +53,7 @@ public unsafe class ArrayDataBrowser : DebugHelper {
                 try {
                     var str = MemoryHelper.ReadSeStringNullTerminated(new IntPtr(strPtr));
                     if (str.TextValue.ToLower().Contains(value.ToLower())) return true;
-                } catch (Exception ex) {
+                } catch {
                     //
                 }
             }

@@ -238,7 +238,7 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
             textNode->AtkResNode.NodeID = CustomNodes.AdditionalInfo;
             
             
-            textNode->AtkResNode.Flags = (short)(NodeFlags.AnchorLeft | NodeFlags.AnchorTop);
+            textNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorTop;
             textNode->AtkResNode.DrawFlags = 0;
             textNode->AtkResNode.SetWidth(50);
             textNode->AtkResNode.SetHeight(20);

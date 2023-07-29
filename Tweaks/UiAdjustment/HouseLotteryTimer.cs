@@ -1,9 +1,6 @@
 using System;
-using System.Diagnostics;
-using Dalamud.Hooking;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;

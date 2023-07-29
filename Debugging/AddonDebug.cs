@@ -304,21 +304,16 @@ public unsafe class AddonDebug : DebugHelper {
             ImGui.EndTabBar();
         }
     }
-
-    private class CaughtAddonTextFormatting {
-        private uint AddonTextId;
-        private SeString FormattedString;
-    }
-
-    private byte* FormatAddonTextDetour(RaptureTextModule* rapturetextmodule, uint addontextid, int a3, void* a4, void** a5, void** a6) {
-        var retVal = formatAddonTextHook.Original(rapturetextmodule, addontextid, a3, a4, a5, a6);
+    
+    private byte* FormatAddonTextDetour(RaptureTextModule* raptureTextModule, uint addonTextId, int a3, void* a4, void** a5, void** a6) {
+        var retVal = formatAddonTextHook.Original(raptureTextModule, addonTextId, a3, a4, a5, a6);
 
         try {
             if (retVal != null) {
                 var str = MemoryHelper.ReadSeStringNullTerminated(new IntPtr(retVal));
-                SimpleLog.Log($"Format Addon Text: {addontextid} -> {str.TextValue}");
+                SimpleLog.Log($"Format Addon Text: {addonTextId} -> {str.TextValue}");
             } else {
-                SimpleLog.Log($"Format Addon Text: {addontextid} -> Returning NULL");
+                SimpleLog.Log($"Format Addon Text: {addonTextId} -> Returning NULL");
             }
 
 

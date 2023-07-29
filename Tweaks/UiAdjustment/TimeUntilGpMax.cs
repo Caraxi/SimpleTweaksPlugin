@@ -148,7 +148,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
                 textNode = newTextNode;
 
                 newTextNode->AtkResNode.Type = NodeType.Text;
-                newTextNode->AtkResNode.Flags = (short)(NodeFlags.AnchorLeft | NodeFlags.AnchorTop);
+                newTextNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorTop;
                 newTextNode->AtkResNode.DrawFlags = 0;
                 textNode->AtkResNode.SetPositionFloat(210 + Config.PositionOffset.X, 1 + Config.PositionOffset.Y);
                 newTextNode->AtkResNode.SetWidth(200);

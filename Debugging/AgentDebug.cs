@@ -75,7 +75,7 @@ public unsafe class AgentDebug : DebugHelper {
                 EventCalls.Add(call);
 
                 return hook.Original(agent, a2, values, atkValueCount, eventType);
-            } catch (Exception ex) {
+            } catch {
                 //
             }
             

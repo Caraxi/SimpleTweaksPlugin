@@ -7,6 +7,7 @@ using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
@@ -197,8 +198,8 @@ public unsafe class HighResScreenshots : Tweak {
                 UIDebug.FreeExclusiveDraw();
                 if (Config.HideGameUi) {
                     var raptureAtkModule = Framework.Instance()->GetUiModule()->GetRaptureAtkModule();
-                    if (originalUiVisibility && !raptureAtkModule->IsUiVisible) {
-                        raptureAtkModule->IsUiVisible = true;
+                    if (originalUiVisibility && raptureAtkModule->RaptureAtkUnitManager.Flags.HasFlag(RaptureAtkModuleFlags.UiHidden)) {
+                        raptureAtkModule->SetUiVisibility(true);
                     }
                 }
 
@@ -246,9 +247,9 @@ public unsafe class HighResScreenshots : Tweak {
 
             if (Config.HideGameUi) {
                 var raptureAtkModule = Framework.Instance()->GetUiModule()->GetRaptureAtkModule();
-                originalUiVisibility = raptureAtkModule->IsUiVisible;
+                originalUiVisibility = !raptureAtkModule->RaptureAtkUnitManager.Flags.HasFlag(RaptureAtkModuleFlags.UiHidden);
                 if (originalUiVisibility) {
-                    raptureAtkModule->IsUiVisible = false;
+                    raptureAtkModule->SetUiVisibility(false);
                 }
             }
             
@@ -272,8 +273,8 @@ public unsafe class HighResScreenshots : Tweak {
                 UIDebug.FreeExclusiveDraw();
                 if (Config.HideGameUi) {
                     var raptureAtkModule = Framework.Instance()->GetUiModule()->GetRaptureAtkModule();
-                    if (originalUiVisibility && !raptureAtkModule->IsUiVisible) {
-                        raptureAtkModule->IsUiVisible = true;
+                    if (originalUiVisibility && raptureAtkModule->RaptureAtkUnitManager.Flags.HasFlag(RaptureAtkModuleFlags.UiHidden)) {
+                        raptureAtkModule->SetUiVisibility(true);
                     }
                 }
 

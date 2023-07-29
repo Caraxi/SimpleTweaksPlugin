@@ -81,7 +81,7 @@ public unsafe class RememberQuickGathering : Tweak {
             shouldUpdateCheckmark = false;
         } else {
             checkmarkNode->Color.A = (byte)(targetQuickGatheringStatus.Value ? 0xFF : 0x7F);
-            checkmarkNode->Flags ^= 0x10;
+            checkmarkNode->NodeFlags ^= NodeFlags.Visible;
         }
     }
 

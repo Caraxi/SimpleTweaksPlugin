@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Keys;
 using ImGuiNET;
@@ -32,21 +34,18 @@ public class ViewOnTeamcraft : ItemHotkey {
             Common.OpenBrowser($"https://ffxivteamcraft.com/db/en/item/{item.RowId}");
             return;
         }
-        Task.Run(() => {
+        Task.Run(async () => {
+            using var timeoutSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
             try {
-                var wr = WebRequest.CreateHttp($"http://localhost:14500/db/en/item/{item.RowId}");
-                wr.Timeout = 500;
-                wr.Method = "GET";
-                wr.GetResponse().Close();
+                await Common.HttpClient.GetAsync($"http://localhost:14500/db/en/item/{item.RowId}", timeoutSource.Token);
+                SimpleLog.Log("Teamcraft API Open worked");
             } catch {
-                try {
-                    if (System.IO.Directory.Exists(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ffxiv-teamcraft"))) {
-                        Common.OpenBrowser($"teamcraft:///db/en/item/{item.RowId}");
-                    } else {
-                        teamcraftLocalFailed = true;
-                        Common.OpenBrowser($"https://ffxivteamcraft.com/db/en/item/{item.RowId}");
-                    }
-                } catch {
+                SimpleLog.Log("Teamcraft API Open failed");
+                if (System.IO.Directory.Exists(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ffxiv-teamcraft"))) {
+                    SimpleLog.Log("Open Application");
+                    Common.OpenBrowser($"teamcraft:///db/en/item/{item.RowId}");
+                } else {
+                    SimpleLog.Log("Open Browser");
                     teamcraftLocalFailed = true;
                     Common.OpenBrowser($"https://ffxivteamcraft.com/db/en/item/{item.RowId}");
                 }

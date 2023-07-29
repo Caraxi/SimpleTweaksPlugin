@@ -9,11 +9,6 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
     public override string Name => "Adjust Equipment Positions";
     public override string Description => "Repositions equipment positions in character menu and inspect to give a less gross layout.";
 
-    private delegate void* AddonOnSetup(AtkUnitBase* atkUnitBase, int a2, void* a3);
-
-    private HookWrapper<AddonOnSetup> characterOnSetup;
-    private HookWrapper<AddonOnSetup> pvpCharacterOnSetup;
-    private HookWrapper<AddonOnSetup> inspectOnSetup;
     private HookWrapper<Common.AddonOnUpdate> bagWidgetUpdate;
     
     private delegate byte AddonControllerInput(AtkUnitBase* atkUnitBase, Dir a2, byte a3);
@@ -240,7 +235,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
                     bgImageNode = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
                     bgImageNode->AtkResNode.Type = NodeType.Image;
                     bgImageNode->AtkResNode.NodeID = CustomNodes.GearPositionsBg + i;
-                    bgImageNode->AtkResNode.Flags = (short)(NodeFlags.AnchorTop | NodeFlags.AnchorLeft);
+                    bgImageNode->AtkResNode.NodeFlags = NodeFlags.AnchorTop | NodeFlags.AnchorLeft;
                     bgImageNode->AtkResNode.DrawFlags = 0;
                     bgImageNode->WrapMode = 1;
                     bgImageNode->Flags = 0;

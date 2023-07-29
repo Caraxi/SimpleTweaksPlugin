@@ -128,7 +128,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
                 newGhostText->Ctor();
                 
                 newGhostText->AtkResNode.Type = NodeType.Text;
-                newGhostText->AtkResNode.Flags = textNode->AtkResNode.Flags;
+                newGhostText->AtkResNode.NodeFlags = textNode->AtkResNode.NodeFlags;
                 newGhostText->AtkResNode.DrawFlags = 0;
                 newGhostText->AtkResNode.SetPositionFloat(textNode->AtkResNode.X, -4);
                 newGhostText->AtkResNode.SetWidth(textNode->AtkResNode.Width);

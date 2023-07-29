@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin; 
 
@@ -88,23 +91,30 @@ internal static class Loc {
         DownloadError = null;
         var downloadPath = Service.PluginInterface.GetPluginLocDirectory();
         var zipFile = Path.Join(downloadPath, "loc.zip");
-        Task.Run(() => {
+        Task.Run(async () => {
             LoadingTranslations = true;
             try {
-                var webClient = new WebClient();
-                webClient.Headers.Add("Accept: text/html, application/xhtml+xml, */*");
-                webClient.Headers.Add("User-Agent: Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)");
-                webClient.DownloadFile(new Uri("https://crowdin.com/backend/download/project/simpletweaks.zip"), zipFile);
+                var httpClient = Common.HttpClient;
+                using var request = new HttpRequestMessage(HttpMethod.Get, "https://crowdin.com/backend/download/project/simpletweaks.zip");
+                request.Headers.Accept.Clear();
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xhtml+xml"));
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
+                request.Headers.Add("User-Agent", "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)");
+                
+                var response = await httpClient.SendAsync(request);
+                await using (var fs = new FileStream(zipFile, FileMode.Create)) {
+                    await response.Content.CopyToAsync(fs);
+                }
+                
                 ZipFile.ExtractToDirectory(zipFile, downloadPath, true);
-
                 File.Delete(zipFile);
-
                 LoadingTranslations = false;
             } catch (Exception ex) {
+                SimpleLog.Error(ex);
                 LoadingTranslations = false;
                 DownloadError = ex;
             }
-
         });
     }
 

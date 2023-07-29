@@ -702,7 +702,7 @@ public unsafe class UIDebug : DebugHelper {
     private static void PrintSimpleNode(AtkResNode* node, string treePrefix, bool textOnly = false)
     {
         bool popped = false;
-        bool isVisible = (node->Flags & 0x10) == 0x10;
+        bool isVisible = node->IsVisible;
 
         if (isVisible && !textOnly)
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0, 255, 0, 255));
@@ -943,7 +943,7 @@ public unsafe class UIDebug : DebugHelper {
         if (objectInfo == null) return;
 
         bool popped = false;
-        bool isVisible = (node->Flags & 0x10) == 0x10;
+        bool isVisible = node->IsVisible;
 
         if (isVisible && !textOnly)
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0, 255, 0, 255));
@@ -1092,7 +1092,7 @@ public unsafe class UIDebug : DebugHelper {
         ImGui.Text($"NodeID: {NodeID(node->NodeID, false)}   Type: {node->Type}");
         ImGui.SameLine();
         if (ImGui.SmallButton($"T:Visible##{(ulong)node:X}")) {
-            node->Flags ^= 0x10;
+            node->NodeFlags ^= NodeFlags.Visible;
         }
         ImGui.SameLine();
         if (ImGui.SmallButton($"C:Ptr##{(ulong)node:X}")) {
@@ -1107,7 +1107,7 @@ public unsafe class UIDebug : DebugHelper {
             $"Width: {node->Width} Height: {node->Height} " +
             $"OriginX: {node->OriginX} OriginY: {node->OriginY} " +
             $"Priority: {node->Priority}, Depth: {node->Depth}/{node->Depth_2} " +
-            $"Flags: {node->Flags:X} / {node->Flags_2:X} " +
+            $"Flags: {node->NodeFlags} / {node->Flags_2:X} " +
             $"DrawFlags: {node->DrawFlags:X}");
         ImGui.Text(
             $"RGBA: 0x{node->Color.R:X2}{node->Color.G:X2}{node->Color.B:X2}{node->Color.A:X2} " +
@@ -1298,7 +1298,7 @@ public unsafe class UIDebug : DebugHelper {
     private static bool GetNodeVisible(AtkResNode* node) {
         if (node == null) return false;
         while (node != null) {
-            if ((node->Flags & (short)NodeFlags.Visible) != (short)NodeFlags.Visible) return false;
+            if (!node->IsVisible) return false;
             node = node->ParentNode;
         }
         return true;

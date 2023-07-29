@@ -65,7 +65,7 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
             imageNode = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
             imageNode->AtkResNode.Type = NodeType.Image;
             imageNode->AtkResNode.NodeID = CustomNodes.PaintingPreview;
-            imageNode->AtkResNode.Flags = (short)(NodeFlags.AnchorTop | NodeFlags.AnchorLeft);
+            imageNode->AtkResNode.NodeFlags = NodeFlags.AnchorTop | NodeFlags.AnchorLeft;
             imageNode->AtkResNode.DrawFlags = 0;
             imageNode->WrapMode = 1;
             imageNode->Flags = 128;

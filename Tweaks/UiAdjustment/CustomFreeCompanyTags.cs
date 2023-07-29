@@ -138,7 +138,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                                         break;
                                     }
                                     case "<level>": {
-                                        payloads.Add(new TextPayload(battleChara->Character.Level.ToString()));
+                                        payloads.Add(new TextPayload(battleChara->Character.CharacterData.Level.ToString()));
                                         break;
                                     }
                                     case "<fctag>": {

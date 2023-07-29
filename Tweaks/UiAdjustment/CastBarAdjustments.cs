@@ -274,7 +274,7 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
                     classicSlideMarker = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
                     classicSlideMarker->AtkResNode.Type = NodeType.Image;
                     classicSlideMarker->AtkResNode.NodeID = CustomNodes.ClassicSlideCast;
-                    classicSlideMarker->AtkResNode.Flags = (short)(NodeFlags.AnchorTop | NodeFlags.AnchorLeft);
+                    classicSlideMarker->AtkResNode.NodeFlags = NodeFlags.AnchorTop | NodeFlags.AnchorLeft;
                     classicSlideMarker->AtkResNode.DrawFlags = 0;
                     classicSlideMarker->WrapMode = 1;
                     classicSlideMarker->Flags = 0;

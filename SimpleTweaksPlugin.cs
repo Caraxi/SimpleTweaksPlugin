@@ -5,8 +5,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Numerics;
 using System.Reflection;
+using System.Threading.Tasks;
 using Dalamud;
 using Dalamud.Game;
 using Dalamud.Interface.Internal.Notifications;
@@ -16,7 +19,6 @@ using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Utility;
 #if DEBUG
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 #endif
 
 #pragma warning disable CS0659
@@ -88,21 +90,49 @@ namespace SimpleTweaksPlugin {
             Plugin = this;
             pluginInterface.Create<Service>();
             
+            this.PluginConfig = (SimpleTweaksPluginConfig)Service.PluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
+            this.PluginConfig.Init(this);
+            
 #if DEBUG
             SimpleLog.SetupBuildPath();
             Task.Run(() => {
                 FFXIVClientStructs.Interop.Resolver.GetInstance.SetupSearchSpace(Service.SigScanner.SearchBase);
                 FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
+                UpdateBlacklist();
                 Service.Framework.RunOnFrameworkThread(Initalize);
             });
 #else
-            Initalize();
+            Task.Run(() => {
+                UpdateBlacklist();
+                Service.Framework.RunOnFrameworkThread(Initalize);
+            });
 #endif
         }
 
+
+        private void UpdateBlacklist() {
+            try {
+                // Update Tweak Blacklist
+                var httpClient = Common.HttpClient;
+                var response = httpClient.Send(new HttpRequestMessage(HttpMethod.Get, "https://raw.githubusercontent.com/Caraxi/SimpleTweaksPlugin/main/tweakBlacklist.txt"));
+                if (response.StatusCode != HttpStatusCode.OK) return;
+                var asStringTask = response.Content.ReadAsStringAsync();
+                asStringTask.Wait();
+                if (!asStringTask.IsCompletedSuccessfully) return;
+                var blacklistedTweaksString = asStringTask.Result;
+                SimpleLog.Log("Tweak Blacklist:\n" + blacklistedTweaksString);
+                var blacklistedTweaks = new List<string>();
+                foreach (var l in blacklistedTweaksString.Split("\n")) {
+                    if (string.IsNullOrWhiteSpace(l)) continue;
+                    blacklistedTweaks.Add(l.Trim());
+                }
+                PluginConfig.BlacklistedTweaks = blacklistedTweaks;
+            } catch {
+                //
+            }
+        }
+        
         private void Initalize() {
-            this.PluginConfig = (SimpleTweaksPluginConfig)Service.PluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
-            this.PluginConfig.Init(this);
 
             IconManager = new IconManager();
 
@@ -124,21 +154,6 @@ namespace SimpleTweaksPlugin {
 
             SetupCommands();
 
-            try {
-                // Update Tweak Blacklist
-                using var webClient = new System.Net.WebClient();
-                var blacklistedTweaksString = webClient.DownloadString("https://raw.githubusercontent.com/Caraxi/SimpleTweaksPlugin/main/tweakBlacklist.txt");
-                SimpleLog.Log("Tweak Blacklist:\n" + blacklistedTweaksString);
-                var blacklistedTweaks = new List<string>();
-                foreach (var l in blacklistedTweaksString.Split("\n")) {
-                    if (string.IsNullOrWhiteSpace(l)) continue;
-                    blacklistedTweaks.Add(l.Trim());
-                }
-                PluginConfig.BlacklistedTweaks = blacklistedTweaks;
-            } catch {
-                //
-            }
-            
             var simpleTweakProvider = new TweakProvider(Assembly.GetExecutingAssembly());
             simpleTweakProvider.LoadTweaks();
             TweakProviders.Add(simpleTweakProvider);

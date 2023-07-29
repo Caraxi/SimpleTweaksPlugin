@@ -78,7 +78,7 @@ public class FixTarget : Tweak {
 
         if (closestMatch != null) {
             isHandled = true;
-            Service.Targets.SetTarget(closestMatch);
+            Service.Targets.Target = closestMatch;
         }
     }
 }

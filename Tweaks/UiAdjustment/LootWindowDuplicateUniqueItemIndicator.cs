@@ -248,7 +248,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     private void MakeCrossNode(uint nodeId, AtkComponentNode* parent)
     {
         var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(0, 0, 32, 32));
-        imageNode->AtkResNode.Flags = 8243;
+        imageNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorTop | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents; // 8243;
         imageNode->WrapMode = 1;
 
         imageNode->LoadIconTexture(61502, 0);
@@ -267,7 +267,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     private void MakePadlockNode(uint nodeId, AtkComponentNode* parent)
     {
         var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(48, 0, 20, 24));
-        imageNode->AtkResNode.Flags = 8243;
+        imageNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorTop | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents; // 8243;
         imageNode->WrapMode = 1;
 
         imageNode->LoadTexture("ui/uld/ActionBar_hr1.tex");

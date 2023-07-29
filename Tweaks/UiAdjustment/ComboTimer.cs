@@ -122,7 +122,7 @@ public unsafe class ComboTimer : UiAdjustments.SubTweak {
                 textNode = newTextNode;
 
                 newTextNode->AtkResNode.Type = NodeType.Text;
-                newTextNode->AtkResNode.Flags = (short)(NodeFlags.AnchorLeft | NodeFlags.AnchorTop);
+                newTextNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorTop;
                 newTextNode->AtkResNode.DrawFlags = 0;
                 newTextNode->AtkResNode.SetPositionShort(1, 1);
                 newTextNode->AtkResNode.SetWidth(200);

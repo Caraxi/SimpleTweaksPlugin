@@ -114,12 +114,12 @@ public unsafe class CharacterClassSwitcher : Tweak {
 
             var dohIconImage = atkUnitBase->GetImageNodeById(64);
             if (dohIconImage != null) {
-                dohIconImage->AtkResNode.Flags |= (short)(NodeFlags.EmitsEvents | NodeFlags.HasCollision | NodeFlags.RespondToMouse);
+                dohIconImage->AtkResNode.NodeFlags |= NodeFlags.EmitsEvents | NodeFlags.HasCollision | NodeFlags.RespondToMouse;
                 dohIconImage->AtkResNode.AddEvent(AtkEventType.MouseClick, 0x53542000, (AtkEventListener*) atkUnitBase, (AtkResNode*) dohIconImage, false);
             }
             var dohHeaderText = atkUnitBase->GetTextNodeById(65);
             if (dohHeaderText != null) {
-                dohHeaderText->AtkResNode.Flags |= (short)(NodeFlags.EmitsEvents | NodeFlags.HasCollision | NodeFlags.RespondToMouse);
+                dohHeaderText->AtkResNode.NodeFlags |= NodeFlags.EmitsEvents | NodeFlags.HasCollision | NodeFlags.RespondToMouse;
                 dohHeaderText->AtkResNode.AddEvent(AtkEventType.MouseClick, 0x53542000, (AtkEventListener*) atkUnitBase, (AtkResNode*) dohIconImage, false);
             }
             

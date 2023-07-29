@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Dalamud.Game;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
@@ -51,7 +52,7 @@ public class RemoveCommunityFinder : UiAdjustments.SubTweak {
             // Get the last sibling in the tree
             node = node->PrevSiblingNode;
         }
-        if (reset) node->Flags |= 0x10;
-        else node->Flags &= ~0x10;
+        if (reset) node->NodeFlags |= NodeFlags.Visible;
+        else node->NodeFlags &= ~NodeFlags.Visible;
     }
 }

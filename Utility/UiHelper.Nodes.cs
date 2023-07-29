@@ -195,7 +195,7 @@ public static unsafe partial class UiHelper
         return false;
     }
     
-    public static bool TryMakeImageNode(uint id, short resNodeFlags, uint resNodeDrawFlags, byte wrapMode, byte imageNodeFlags, [NotNullWhen(true)] out AtkImageNode* imageNode)
+    public static bool TryMakeImageNode(uint id, NodeFlags resNodeFlags, uint resNodeDrawFlags, byte wrapMode, byte imageNodeFlags, [NotNullWhen(true)] out AtkImageNode* imageNode)
     {
         imageNode = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
 
@@ -203,7 +203,7 @@ public static unsafe partial class UiHelper
         {
             imageNode->AtkResNode.Type = NodeType.Image;
             imageNode->AtkResNode.NodeID = id;
-            imageNode->AtkResNode.Flags = resNodeFlags;
+            imageNode->AtkResNode.NodeFlags = resNodeFlags;
             imageNode->AtkResNode.DrawFlags = resNodeDrawFlags;
             imageNode->WrapMode = wrapMode;
             imageNode->Flags = imageNodeFlags;

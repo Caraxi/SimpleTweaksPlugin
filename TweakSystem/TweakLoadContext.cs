@@ -15,6 +15,7 @@ public class TweakLoadContext : AssemblyLoadContext {
     
     
     public TweakLoadContext(string name, DirectoryInfo directoryInfo) : base(true) {
+        this.name = name;
         directory = directoryInfo;
     }
 
