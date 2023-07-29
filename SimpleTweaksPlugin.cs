@@ -216,13 +216,13 @@ namespace SimpleTweaksPlugin {
                             var tweak = GetTweakById(splitArgString[1]);
                             if (tweak != null) {
                                 if (tweak.Enabled) {
-                                    tweak.Disable();
+                                    tweak.InternalDisable();
                                     if (PluginConfig.EnabledTweaks.Contains(tweak.Key)) {
                                         PluginConfig.EnabledTweaks.Remove(tweak.Key);
                                     }
                                     Service.PluginInterface.UiBuilder.AddNotification($"Disabled {tweak.Name}", "Simple Tweaks", NotificationType.Info);
                                 } else {
-                                    tweak.Enable();
+                                    tweak.InternalEnable();
                                     if (!PluginConfig.EnabledTweaks.Contains(tweak.Key)) {
                                         PluginConfig.EnabledTweaks.Add(tweak.Key);
                                     }
@@ -244,7 +244,7 @@ namespace SimpleTweaksPlugin {
                             var tweak = GetTweakById(splitArgString[1]);
                             if (tweak != null) {
                                 if (!tweak.Enabled) {
-                                    tweak.Enable();
+                                    tweak.InternalEnable();
                                     if (!PluginConfig.EnabledTweaks.Contains(tweak.Key)) {
                                         PluginConfig.EnabledTweaks.Add(tweak.Key);
                                     }
@@ -266,7 +266,7 @@ namespace SimpleTweaksPlugin {
                             var tweak = GetTweakById(splitArgString[1]);
                             if (tweak != null) {
                                 if (tweak.Enabled) {
-                                    tweak.Disable();
+                                    tweak.InternalDisable();
                                     if (PluginConfig.EnabledTweaks.Contains(tweak.Key)) {
                                         PluginConfig.EnabledTweaks.Remove(tweak.Key);
                                     }
@@ -358,7 +358,7 @@ namespace SimpleTweaksPlugin {
             
             foreach (var e in ErrorList.Where(e => e.IsNew && e.Tweak != null)) {
                 e.IsNew = false;
-                e.Tweak.Disable();
+                e.Tweak.InternalDisable();
                 Service.PluginInterface.UiBuilder.AddNotification($"{e.Tweak.Name} has been disabled due to an error.", "Simple Tweaks", NotificationType.Error, 5000);
             }
 

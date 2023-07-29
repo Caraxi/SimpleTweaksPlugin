@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Keys;
@@ -130,6 +131,8 @@ public static class Extensions {
     public static PointerSpanUnboxer<T> Unbox<T>(this Span<Pointer<T>> span) where T : unmanaged {
         return new PointerSpanUnboxer<T>(span);
     }
-    
-    
+
+    internal static IEnumerable<(FieldInfo Field, TAttribute Attribute)> GetFieldsWithAttribute<TAttribute>(this object obj, BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) where TAttribute : Attribute {
+        return obj.GetType().GetFields(flags).Select(f => (f, f.GetCustomAttribute<TAttribute>())).Where(f => f.Item2 != null);
+    }
 }

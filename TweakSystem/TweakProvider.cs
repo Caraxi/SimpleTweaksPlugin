@@ -41,7 +41,7 @@ public class TweakProvider : IDisposable {
                         if (tweak.Ready && (SimpleTweaksPlugin.Plugin.PluginConfig.EnabledTweaks.Contains(t.Name) || tweak is SubTweakManager {AlwaysEnabled: true})) {
                             SimpleLog.Debug($"Enable: {t.Name}");
                             try {
-                                tweak.Enable();
+                                tweak.InternalEnable();
                             } catch (Exception ex) {
                                 SimpleTweaksPlugin.Plugin.Error(tweak, ex, true, $"Error in Enable for '{tweak.Name}");
                             }
@@ -62,7 +62,7 @@ public class TweakProvider : IDisposable {
             if (t.Enabled || t is SubTweakManager { AlwaysEnabled : true}) {
                 SimpleLog.Log($"Disable: {t.Name}");
                 try {
-                    t.Disable();
+                    t.InternalDisable();
                 } catch (Exception ex) {
                     SimpleLog.Error($"Error in Disable for '{t.Name}'");
                     SimpleLog.Error(ex);

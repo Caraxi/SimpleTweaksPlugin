@@ -373,17 +373,48 @@ public abstract class BaseTweak {
         Ready = true;
     }
 
-    public virtual void Enable() {
+    internal void InternalEnable() {
+        Enable();
         EventController.RegisterEvents(this);
+        
+        foreach (var (field, attribute) in this.GetFieldsWithAttribute<TweakHookAttribute>()) {
+            if (!attribute.AutoEnable) continue;
+            SimpleLog.Verbose($"Enable Tweak Hook: [{Name}] {field.Name}");
+            if (field.GetValue(this) is IHookWrapper h) {
+                h.Enable();
+            }
+        }
+        
         Enabled = true;
     }
+    public virtual void Enable() {
+        
+    }
 
-    public virtual void Disable() {
+    internal void InternalDisable() {
+        Disable();
         EventController.UnregisterEvents(this);
+
+        foreach (var (field, _) in this.GetFieldsWithAttribute<TweakHookAttribute>()) {
+            SimpleLog.Verbose($"Disable Tweak Hook: [{Name}] {field.Name}");
+            if (field.GetValue(this) is IHookWrapper h) {
+                h.Disable();
+            }
+        }
         Enabled = false;
+    }
+    
+    public virtual void Disable() {
+        
     }
 
     public virtual void Dispose() {
+        foreach (var (field, _) in this.GetFieldsWithAttribute<TweakHookAttribute>()) {
+            SimpleLog.Verbose($"Dispose Tweak Hook: [{Name}] {field.Name}");
+            if (field.GetValue(this) is IHookWrapper h) {
+                h.Dispose();
+            }
+        }
         Ready = false;
     }
 

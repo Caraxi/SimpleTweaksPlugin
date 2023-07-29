@@ -113,7 +113,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
             if (enabled) {
                 SimpleLog.Debug($"Enable: {t.Name}");
                 try {
-                    t.Enable();
+                    t.InternalEnable();
                     if (t.Enabled) {
                         EnabledTweaks.Add(t.Key);
                     }
@@ -123,7 +123,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
             } else {
                 SimpleLog.Debug($"Disable: {t.Name}");
                 try {
-                    t.Disable();
+                    t.InternalDisable();
                 } catch (Exception ex) {
                     plugin.Error(t, ex, true, $"Error in Disable for '{t.Name}'");
                 }
@@ -426,7 +426,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                             if (enabled) {
                                 SimpleLog.Debug($"Enable: {t.Name}");
                                 try {
-                                    t.Enable();
+                                    t.InternalEnable();
                                     if (t.Enabled) {
                                         EnabledTweaks.Add(t.GetType().Name);
                                     }
@@ -436,7 +436,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                             } else {
                                 SimpleLog.Debug($"Disable: {t.Name}");
                                 try {
-                                    t.Disable();
+                                    t.InternalDisable();
                                 } catch (Exception ex) {
                                     plugin.Error(t, ex, true, $"Error in Disable for '{t.Name}'");
                                 }
