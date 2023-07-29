@@ -209,6 +209,7 @@
 - **Smart Strafe**
 
   Inteligently switches keyboard controls between strafing and turning.
+
   (Legacy type movement only)
 
 
@@ -304,6 +305,7 @@
 - **Sticky Chat**
 
   Sets chat channel when you use temporary chat messages.
+
   Example: "/p hello!" will set the chat channel to Party
 
 
@@ -488,6 +490,7 @@
 - **Extended Desynthesis Window**
 
   Shows your current desynthesis level and the item's optimal level on the desynthesis item selection window.
+
   Also indicates if an item is part of a gear set, optionally preventing selection of gearset items.
 
 
@@ -549,6 +552,7 @@
 - **Item Level in Examine**
 
   Calculates the item level of other players when examining them.
+
   Red value means the player is wearing an item that scales to their level and it is showing the max level.
 
 
@@ -665,5 +669,5 @@
 - **Timer on Duty Waiting**
 
   Shows the 45 second countdown after readying for a duty.
-	
+
 
