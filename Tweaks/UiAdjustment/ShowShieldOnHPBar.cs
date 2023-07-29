@@ -18,7 +18,7 @@ public unsafe class ShowShieldOnHPBar: UiAdjustments.SubTweak
     protected override string Author => "Chivalrik";
 
     public override void Setup() {
-        AddChangelog(Changelog.UnreleasedVersion, "Fixed tweak not working after relogging.");
+        AddChangelog("1.8.9.0", "Fixed tweak not working after relogging.");
         base.Setup();
     }
 

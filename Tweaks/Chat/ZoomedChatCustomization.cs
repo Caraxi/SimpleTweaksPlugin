@@ -10,7 +10,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 
 [TweakName("Zoomed Chat Customization")]
 [TweakDescription("Allows customization of the size and position of the zoomed chat view.")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.8.9.0")]
 public unsafe class ZoomedChatCustomization : ChatTweaks.SubTweak {
 
     private delegate void ZoomChat(AtkUnitBase* atkUnitBase);

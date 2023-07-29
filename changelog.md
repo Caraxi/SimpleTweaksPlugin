@@ -1,5 +1,42 @@
 # Changelog
 
+## 1.8.9.0
+***General Changes***
+- Added an option to opt out of analytics
+    - Note:
+      - No analytics are currently being collected.
+      - This is a preemptive opt out for the future.
+
+***New Tweaks***
+- **`Auto Focus Recipe Search`** - Automatically focus the recipe search when opening the crafting log.
+
+- **`Custom Timestamp Format`** - Customize the timestamps displayed on chat messages.
+
+- **`Housing Lottery Timer`** - Show the time remaining until the current lottery period ends in the timers window.
+
+- **`Zoomed Chat Customization`** - Allows customization of the size and position of the zoomed chat view.
+
+
+***Tweak Changes***
+- **`Chat Name Colours`**
+  - Added option to give all undefined characters the same colour.
+  - Added per channel configuration for colouring sender name and/or names in messages.
+
+- **`Custom Free Company Tags`**
+  - Added support for full RGB colours.
+  - Added an icon viewer for supported icons.
+
+- **`Data Centre on Title Screen`** - Added option to show the selected service account.
+
+- **`Hide quality bar while crafting NO-HQ item.`** - Show quality bar for expert recipes.
+
+- **`Market Enhancements`** - Return of the Lazy Tax/Profitable highlighting
+
+- **`Shield on HP Bar`** - Fixed tweak not working after relogging.
+
+- **`Target Castbar Countdown`** - Add option to disable on primary target
+
+
 ## 1.8.8.2
 ***Tweak Changes***
 - **`Expanded Currency Display`** - Fixed positioning of gil display moving when scale is anything other than 100%

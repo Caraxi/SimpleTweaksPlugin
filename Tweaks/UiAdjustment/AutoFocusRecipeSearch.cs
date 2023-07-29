@@ -6,7 +6,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [TweakName("Auto Focus Recipe Search")]
 [TweakDescription("Automatically focus the recipe search when opening the crafting log.")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.8.9.0")]
 public unsafe class AutoFocusRecipeSearch : UiAdjustments.SubTweak {
     [AddonSetup("RecipeNote")]
     private void AddonSetup(AtkUnitBase* atkUnitBase) {

@@ -9,7 +9,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [TweakName("Housing Lottery Timer")]
 [TweakDescription("Show the time remaining until the current lottery period ends in the timers window.")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.8.9.0")]
 public unsafe class HouseLotteryTimer : UiAdjustments.SubTweak {
     private readonly DateTime scheduleStartTime = new(2022, 05, 26, 15, 0, 0);
     private const bool FirstPeriodEntry = true;

@@ -108,8 +108,8 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
         AddChangelog("1.8.8.1", "Fixed Chat2 exploding with new colour system. Tweak will still not work in Chat2, but it will not explode.");
         AddChangelog("1.8.8.0", "Fixed colour display when in party.");
         AddChangelog("1.8.8.0", "Extended range of possible colours.");
-        AddChangelog(Changelog.UnreleasedVersion, "Added option to give all undefined characters the same colour.");
-        AddChangelog(Changelog.UnreleasedVersion, "Added per channel configuration for colouring sender name and/or names in messages.");
+        AddChangelog("1.8.9.0", "Added option to give all undefined characters the same colour.");
+        AddChangelog("1.8.9.0", "Added per channel configuration for colouring sender name and/or names in messages.");
         this.uiColorSheet = Service.Data.Excel.GetSheet<UIColor>();
         this.worldSheet = Service.Data.Excel.GetSheet<World>();
 

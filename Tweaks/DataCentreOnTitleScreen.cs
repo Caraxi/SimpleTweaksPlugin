@@ -9,7 +9,7 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
-[Changelog(UnreleasedVersion, "Added option to show the selected service account.")]
+[Changelog("1.8.9.0", "Added option to show the selected service account.")]
 public unsafe class DataCentreOnTitleScreen : Tweak {
     public override string Name => "Data Centre on Title Screen";
     public override string Description => "Shows the current Data Centre on the Title Screen";

@@ -59,7 +59,7 @@ public unsafe class CustomTimestampFormat : ChatTweaks.SubTweak {
     };
 
     public override void Setup() {
-        AddChangelogNewTweak(Changelog.UnreleasedVersion);
+        AddChangelogNewTweak("1.8.9.0");
         base.Setup();
     }
 

@@ -103,7 +103,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
     {
         AddChangelogNewTweak("1.8.3.0");
         AddChangelog("1.8.3.1", "Add TopRight option for displaying countdown");
-        AddChangelog(Changelog.UnreleasedVersion, "Add option to disable on primary target");
+        AddChangelog("1.8.9.0", "Add option to disable on primary target");
         base.Setup();
     }
 

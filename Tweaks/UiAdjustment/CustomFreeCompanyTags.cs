@@ -46,8 +46,8 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
     public override void Setup() {
         AddChangelog("1.8.7.0", "Added option to display FC tags on a separate line to character name.");
         AddChangelog("1.8.7.2", "Removed 'Hide in Duty' option from Wanderer. This is now a vanilla game option.");
-        AddChangelog(Changelog.UnreleasedVersion, "Added support for full RGB colours.");
-        AddChangelog(Changelog.UnreleasedVersion, "Added an icon viewer for supported icons.");
+        AddChangelog("1.8.9.0", "Added support for full RGB colours.");
+        AddChangelog("1.8.9.0", "Added an icon viewer for supported icons.");
         base.Setup();
     }
 

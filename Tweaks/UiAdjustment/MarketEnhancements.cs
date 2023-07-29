@@ -45,7 +45,7 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
     private UpdateResultDelegate replacementUpdateResultDelegate;
 
     public override void Setup() {
-        AddChangelog(Changelog.UnreleasedVersion, "Return of the Lazy Tax/Profitable highlighting");
+        AddChangelog("1.8.9.0", "Return of the Lazy Tax/Profitable highlighting");
         base.Setup();
     }
 
