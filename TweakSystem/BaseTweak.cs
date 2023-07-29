@@ -5,9 +5,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Plugin;
 using ImGuiNET;
+using ImGuiScene;
+using JetBrains.Annotations;
 using Newtonsoft.Json;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.Utility;
@@ -21,6 +24,9 @@ public abstract class BaseTweak {
 
     public virtual bool Ready { get; protected set; }
     public virtual bool Enabled { get; protected set; }
+
+    private bool hasPreviewImage;
+    private TextureWrap previewImage;
     
     public bool IsDisposed { get; private set; }
 
@@ -53,6 +59,7 @@ public abstract class BaseTweak {
         this.Plugin = plugin;
         this.TweakProvider = tweakProvider;
         this.TweakManager = tweakManager;
+        
     }
 
     public string LocString(string key, string fallback, string description = null) {
@@ -65,6 +72,24 @@ public abstract class BaseTweak {
     }
 
     private void DrawCommon() {
+        if (hasPreviewImage) {
+            ImGui.SameLine();
+            ImGuiExt.IconButton($"##previewButton", FontAwesomeIcon.Image);
+            if (ImGui.IsItemHovered()) {
+                ImGui.BeginTooltip();
+                if (previewImage == null) {
+                    try {
+                        previewImage = PluginInterface.UiBuilder.LoadImage(Path.Join(PluginInterface.AssemblyLocation.DirectoryName, "TweakPreviews", $"{Key}.png"));
+                    } catch {
+                        hasPreviewImage = false;
+                    }
+                } else {
+                    ImGui.Image(previewImage.ImGuiHandle, new Vector2(previewImage.Width, previewImage.Height));
+                }
+                ImGui.EndTooltip();
+            }
+        }
+        
         if (this.Experimental) {
             ImGui.SameLine();
             ImGui.TextColored(new Vector4(1, 0, 0, 1), "  Experimental");
@@ -358,6 +383,7 @@ public abstract class BaseTweak {
     protected virtual DrawConfigDelegate DrawConfigTree => null;
         
     public virtual void Setup() {
+        hasPreviewImage = File.Exists(Path.Join(PluginInterface.AssemblyLocation.DirectoryName, "TweakPreviews", $"{Key}.png"));
 
         foreach (var c in GetType().GetCustomAttributes<ChangelogAttribute>()) {
             if (c is TweakReleaseVersionAttribute) {
@@ -426,6 +452,7 @@ public abstract class BaseTweak {
     }
 
     internal void InternalDispose() {
+        previewImage?.Dispose();
         Dispose();
         IsDisposed = true;
     }

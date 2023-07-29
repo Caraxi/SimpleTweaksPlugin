@@ -332,6 +332,8 @@
 
   Adds Damage Type, Aspect and Rank to blue mage actions.
 
+  ![Improved Blue Mage Action Tooltips Preview](images/TweakPreviews/TooltipTweaks@BlueActionInfo.jpg)
+
 
 - **Improved Crafting Action Tooltips**
 
