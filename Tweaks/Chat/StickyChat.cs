@@ -36,8 +36,6 @@ public unsafe partial class StickyChat : ChatTweaks.SubTweak
     {
         if (Ready) return;
         AddChangelogNewTweak("1.8.2.0");
-
-        SignatureHelper.Initialise(this);
         Ready = true;
     }
 

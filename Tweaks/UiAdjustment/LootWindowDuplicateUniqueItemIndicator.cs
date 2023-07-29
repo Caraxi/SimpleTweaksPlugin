@@ -68,7 +68,6 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         AddChangelog("1.8.3.0", "Added 'Lock Loot Window' feature.");
         AddChangelog("1.8.6.0", "Removed Window Lock Feature, 'Lock Window Position' tweak has returned.");
         
-        SignatureHelper.Initialise(this);
         Ready = true;
     }
 

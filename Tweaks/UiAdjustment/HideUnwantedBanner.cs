@@ -76,8 +76,6 @@ public unsafe class HideUnwantedBanner : UiAdjustments.SubTweak
     {
         if (Ready) return;
         AddChangelogNewTweak("1.8.3.0");
-
-        SignatureHelper.Initialise(this);
         base.Setup();
     }
 

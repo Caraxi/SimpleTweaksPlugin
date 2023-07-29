@@ -26,7 +26,7 @@ public unsafe class RecommendEquipCommand : CommandTweak {
         Module->EquipRecommendedGear();
     }
 
-    public override void Disable() {
+    protected override void Disable() {
         Common.FrameworkUpdate -= DoEquip;
         base.Disable();
     }

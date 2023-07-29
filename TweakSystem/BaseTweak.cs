@@ -373,7 +373,13 @@ public abstract class BaseTweak {
         Ready = true;
     }
 
+    private bool signatureHelperInitalized = false;
     internal void InternalEnable() {
+        if (!signatureHelperInitalized) {
+            SignatureHelper.Initialise(this);
+            signatureHelperInitalized = true;
+        }
+        
         Enable();
         EventController.RegisterEvents(this);
         

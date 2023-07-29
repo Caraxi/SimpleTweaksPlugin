@@ -37,7 +37,6 @@ public unsafe class ZoomedChatCustomization : ChatTweaks.SubTweak {
     };
 
     protected override void Enable() {
-        SignatureHelper.Initialise(this);
         Config = LoadConfig<Configs>() ?? new Configs();
         chatZoomedHook?.Enable();
         TryApply();
