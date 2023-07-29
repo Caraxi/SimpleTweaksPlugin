@@ -339,6 +339,8 @@
 
   Adds calculated efficiency of crafting actions to tooltips.
 
+  ![Improved Crafting Action Tooltips Preview](TweakPreviews/TooltipTweaks@CraftingActionInfo.png)
+
 
 - **Item Hotkeys**
 
@@ -369,6 +371,8 @@
 
   Calculates the stat results a consumable will have based on your current stats.
 
+  ![Show expected food and potion stats Preview](TweakPreviews/TooltipTweaks@FoodStats.png)
+
 
 - **Show ID**
 
@@ -378,6 +382,8 @@
 - **Show Painting Preview**
 
   Add an image preview for paintings to item tooltips.
+
+  ![Show Painting Preview Preview](TweakPreviews/TooltipTweaks@PaintingPreview.png)
 
 
 - **Simplified Equipment Job Display**
