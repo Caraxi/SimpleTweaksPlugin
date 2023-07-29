@@ -46,7 +46,8 @@ public unsafe class DataCentreOnTitleScreen : Tweak {
         
         var displayText = $"{dc.Name.ToDalamudString().TextValue}";
         if (Config.ShowServiceAccountIndex) {
-            var selectedServiceIndex = AgentLobby.Instance()->ServiceAccountIndex;
+            // var selectedServiceIndex = AgentLobby.Instance()->ServiceAccountIndex;
+            var selectedServiceIndex = *(sbyte*)((ulong)&AgentLobby.Instance()->SelectedCharacterId - 8);
             if (selectedServiceIndex < 0) {
                 if (Service.GameConfig.TryGet(SystemConfigOption.ServiceIndex, out uint lastServiceIndex)) {
                     selectedServiceIndex = (sbyte)lastServiceIndex;
