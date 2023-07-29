@@ -9,7 +9,7 @@ using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Common.Configuration;
 using ImGuiNET;
-using ConfigType = Dalamud.Game.Config.ConfigType;
+using ConfigType = FFXIVClientStructs.FFXIV.Common.Configuration.ConfigType;
 
 namespace SimpleTweaksPlugin.Debugging;
 
