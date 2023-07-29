@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using Dalamud.Game.Config;
 using Dalamud.Memory;
@@ -9,6 +8,7 @@ using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Common.Configuration;
 using ImGuiNET;
+using ConfigType = Dalamud.Game.Config.ConfigType;
 
 namespace SimpleTweaksPlugin.Debugging;
 
@@ -127,8 +127,6 @@ public unsafe class ConfigDebug : DebugHelper {
                         break;
                 }
 
-                // ImGui.Text($"[{i}] {name} => {valueString}        [{configEntry->Type}]");
-
                 Continue:
                 configEntry++;
             }
@@ -136,10 +134,6 @@ public unsafe class ConfigDebug : DebugHelper {
             ImGui.EndTable();
         }
     }
-
-    private string testSetterString = string.Empty;
-    private int testSetterInt = 0;
-    private float testSetterFloat = 0;
 
     public override void Draw() {
         if (ImGui.BeginTabBar("ConfigTabs")) {
@@ -230,7 +224,9 @@ public unsafe class ConfigDebug : DebugHelper {
 
                                     entry.AppendLine($"    /// </summary>");
                                     if (counts[name] > 1) {
-                                        entry.AppendLine($"    [GameConfigOption(\"{name}\", ConfigType.{type}, EntryCount = {counts[name]})]");
+                                        // Ignore counts for now
+                                        entry.AppendLine($"    [GameConfigOption(\"{name}\", ConfigType.{type})]");
+                                        // entry.AppendLine($"    [GameConfigOption(\"{name}\", ConfigType.{type}, EntryCount = {counts[name]})]");
                                     } else {
                                         entry.AppendLine($"    [GameConfigOption(\"{name}\", ConfigType.{type})]");
                                     }
@@ -379,27 +375,9 @@ public enum UiControlOption
 
     private List<string> changes = new();
 
-    private PropertyInfo propertyInfo;
-    private Dictionary<Enum, ConfigType?> typeCache = new();
     private (ConfigType?, string? name) GetConfigDetail(Enum e) {
-        // TODO: Make this sane again when dalamud uses its own config type enum.
         var attr = e.GetAttribute<GameConfigOptionAttribute>();
-        // return (attr?.Type, attr?.Name);
-        
-        if (typeCache.TryGetValue(e, out var v)) return (v, attr?.Name);
-        
-        if (attr != null) {
-            propertyInfo ??= attr.GetType().GetProperty("Type", BindingFlags.Instance | BindingFlags.Public);
-            if (propertyInfo != null) {
-                var typeObj = propertyInfo!.GetValue(attr);
-                if (typeObj != null) {
-                    v = (ConfigType) typeObj;
-                }
-            }
-        }
-
-        typeCache.TryAdd(e, v);
-        return (v, attr?.Name);
+        return (attr?.Type, attr?.Name);
     }
     
     private void OnConfigChange(object sender, ConfigChangeEvent e) {
