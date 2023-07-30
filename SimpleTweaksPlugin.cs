@@ -81,6 +81,7 @@ namespace SimpleTweaksPlugin {
             }
             Common.HookList.Clear();
             Common.Shutdown();
+            TooltipManager.Destroy();
             SimpleEvent.Destroy();
         }
 
