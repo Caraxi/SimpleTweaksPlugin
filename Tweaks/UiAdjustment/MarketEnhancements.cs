@@ -96,6 +96,9 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
                 npcPriceId = agent->ResultItemID;
                 npcBuyPrice = 0;
                 npcSellPrice = item.PriceLow;
+                if (item.ItemUICategory.Row is 58) {
+                    npcSellPrice += (uint)MathF.Ceiling(npcSellPrice * 0.1f);
+                }
                 var gilShopItem = Service.Data.Excel.GetSheet<GilShopItem>()?.Where(a => a.Item.Row == agent->ResultItemID).ToList();
                 if (gilShopItem is { Count: > 0 }) npcBuyPrice = item.PriceMid;
             }
