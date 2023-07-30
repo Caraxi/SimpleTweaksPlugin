@@ -159,6 +159,7 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
             if (tnc == null) continue;
 
             if (toggle) {
+                TooltipManager.RemoveTooltip(unitBase, &tnc->AtkResNode);
                 tnc->SetText(txt.RawData);
             } else {
                 var str = txt.ToDalamudString().Append(new List<Payload>() {
@@ -166,8 +167,10 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
                     new TextPayload(" (Managed by Simple Tweaks)"),
                     new UIForegroundPayload(0)
                 });
+                TooltipManager.AddTooltip(unitBase, &tnc->AtkResNode, $"Setting managed by Simple Tweak:\n  - {LocalizedName}");
                 tnc->SetText(str.Encode());
             }
+            tnc->ResizeNodeForCurrentText();
             
             ddc->SetEnabledState(toggle);
         }

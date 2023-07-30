@@ -121,11 +121,15 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
 
         var seString = text.Text.ToDalamudString();
         if (!allowEditing) {
+            TooltipManager.AddTooltip(addon, &textNode->AtkResNode, $"Setting managed by Simple Tweak:\n  - {LocalizedName}");
             seString.Append(new UIForegroundPayload(500));
             seString.Append(" (Managed by Simple Tweaks)");
             seString.Append(new UIForegroundPayload(0));
+        } else {
+            TooltipManager.RemoveTooltip(addon, &textNode->AtkResNode);
         }
         textNode->NodeText.SetString(seString.Encode());
+        textNode->ResizeNodeForCurrentText();
     }
     
     private unsafe void ToggleXhbConfigLock(AtkUnitBase* addon, bool allowEditing) {
