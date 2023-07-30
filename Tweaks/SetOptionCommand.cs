@@ -28,6 +28,7 @@ public unsafe class SetOptionCommand : CommandTweak {
         AddChangelog("1.8.4.0", "Re-added accidentally remove gamepad mode option");
         AddChangelog("1.8.4.0", "Added 'LimitMouseToGameWindow' and 'CharacterDisplayLimit'");
         AddChangelog("1.8.4.0", "Fixed 'DisplayNameSize' using incorrect values");
+        AddChangelog("1.8.9.1", "Fixed toggle options not working.");
         base.Setup();
     }
 
@@ -220,7 +221,7 @@ public unsafe class SetOptionCommand : CommandTweak {
 
             switch (optionDefinition) {
                 case OptionDefinition<uint> i: {
-                    if (!optionSection.TryGetProperties(optionDefinition.Name, out UIntConfigProperties properties) || properties == null) {
+                    if (!optionSection.TryGetProperties(optionDefinition.ID, out UIntConfigProperties properties) || properties == null) {
                         Plugin.Error(this, new Exception($"Failed to get option detail for {optionDefinition.Name}"), allowContinue: true);
                         return;
                     }
