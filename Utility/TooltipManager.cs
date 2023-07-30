@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace SimpleTweaksPlugin.Utility; 
@@ -28,8 +27,6 @@ public static unsafe class TooltipManager {
         _event.Add(atkUnitBase, node, AtkEventType.MouseOut);
         node->NodeFlags |= NodeFlags.RespondToMouse | NodeFlags.EmitsEvents | NodeFlags.HasCollision;
         atkUnitBase->UpdateCollisionNodeList(false);
-        SimpleLog.Log($"Added Tooltip for {addonName} # {node->NodeID}");
-        
     }
 
     public static void RemoveTooltip(AtkUnitBase* atkUnitBase, AtkResNode* node) {
@@ -45,7 +42,6 @@ public static unsafe class TooltipManager {
         var addonName = Common.ReadString(atkUnitBase->Name, 0x20);
         if (!_tooltips.TryGetValue(addonName, out var addonDict)) return;
         if (!addonDict.TryGetValue(node->NodeID, out string tooltip)) return;
-
         if (eventType == AtkEventType.MouseOver) {
             AtkStage.GetSingleton()->TooltipManager.ShowTooltip(atkUnitBase->ID, node, tooltip);
         } else if (eventType == AtkEventType.MouseOut) {
