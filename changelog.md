@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.8.9.1
+***Tweak Changes***
+- **`Custom Free Company Tags`** - Fix some issues with glow colours.
+
+- **`Set Option Command`** - Fixed toggle options not working.
+
+
 ## 1.8.9.0
 ***General Changes***
 - Added an option to opt out of analytics
