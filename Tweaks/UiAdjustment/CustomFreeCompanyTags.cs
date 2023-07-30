@@ -48,6 +48,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
         AddChangelog("1.8.7.2", "Removed 'Hide in Duty' option from Wanderer. This is now a vanilla game option.");
         AddChangelog("1.8.9.0", "Added support for full RGB colours.");
         AddChangelog("1.8.9.0", "Added an icon viewer for supported icons.");
+        AddChangelog("1.8.9.1", "Fix some issues with glow colours.");
         base.Setup();
     }
 
@@ -113,6 +114,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
 
                     var resetHexForegrond = false;
                     var resetHexGlow = false;
+                    Vector3? hexGlow = null;
 
                     foreach (var t in customization.Replacement) {
                         switch (t) {
@@ -158,7 +160,13 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                                     case "</color>":
                                     case "</colour>": {
                                         if (resetHexForegrond) {
+                                            if (hexGlow != null) {
+                                                payloads.Add(new GlowEndPayload().AsRaw());
+                                            }
                                             payloads.Add(new ColorEndPayload().AsRaw());
+                                            if (hexGlow != null) {
+                                                payloads.Add(new GlowPayload(hexGlow.Value).AsRaw());
+                                            }
                                             resetHexForegrond = false;
                                         }
 
@@ -172,6 +180,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                                         if (resetHexGlow) {
                                             payloads.Add(new GlowEndPayload().AsRaw());
                                             resetHexGlow = false;
+                                            hexGlow = null;
                                         }
 
                                         if (resetGlow) {
@@ -203,10 +212,16 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                                     case { } s when s.StartsWith("<colour:"): {
                                         var k = s.Substring(8, s.Length - 9);
                                         if (TryGetColorFromHex(k, out var hexColor)) {
+                                            if (hexGlow != null) {
+                                                payloads.Add(new GlowEndPayload().AsRaw());
+                                            }
                                             if (resetHexForegrond) {
                                                 payloads.Add(new ColorEndPayload().AsRaw());
                                             }
                                             payloads.Add(new ColorPayload(hexColor).AsRaw());
+                                            if (hexGlow != null) {
+                                                payloads.Add(new GlowPayload(hexGlow.Value).AsRaw());
+                                            }
                                             resetHexForegrond = true;
                                         } else {
                                             if (ushort.TryParse(k, out var colorKey)) {
@@ -223,9 +238,10 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                                         var k = s.Substring(6, s.Length - 7);
                                         if (TryGetColorFromHex(k, out var hexColor)) {
                                             if (resetHexGlow) {
-                                                payloads.Add(new ColorEndPayload().AsRaw());
+                                                payloads.Add(new GlowEndPayload().AsRaw());
                                             }
-                                            payloads.Add(new ColorPayload(hexColor).AsRaw());
+                                            hexGlow = hexColor;
+                                            payloads.Add(new GlowPayload(hexColor).AsRaw());
                                             resetHexGlow = true;
                                         } else {
                                             if (ushort.TryParse(k, out var colorKey)) {
@@ -274,7 +290,14 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                         
                     if (!customization.HideQuoteMarks) 
                         payloads.Add(new TextPayload("»"));
-                    namePlateInfo->FcName.SetSeString(new SeString(payloads));
+
+                    var seString = new SeString(payloads);
+                    if (string.IsNullOrWhiteSpace(seString.TextValue)) {
+                        namePlateInfo->FcName.SetString(string.Empty);
+                    } else {
+                        var bytes = seString.Encode();
+                        namePlateInfo->FcName.SetString(bytes);
+                    }
                 }
             }
         } catch (Exception ex) {
