@@ -2,6 +2,8 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using System;
 using System.Numerics;
+using Dalamud.Game.Config;
+using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -36,9 +38,23 @@ public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
         
 
     protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-        ImGui.Dummy(new Vector2(5));
-        ImGui.TextWrapped("Note: This tweak only works if recast timers are set to Type 2 in game config.");
-        ImGui.Dummy(new Vector2(5));
+        if (Service.GameConfig.TryGet(UiConfigOption.HotbarDispRecastTimeDispType, out uint v) && v != 1) {
+            var warningText = "Your UI is currently configured to use 'Bottom Left' recast timers.\nThis tweak only functions on 'Centered' recast timers.";
+            var textSize = ImGui.CalcTextSize(warningText);
+            ImGui.PushStyleColor(ImGuiCol.Border, 0x880000FF);
+            ImGui.PushStyleVar(ImGuiStyleVar.ChildBorderSize, 3);
+            if (ImGui.BeginChild("setting_warning", new Vector2(ImGui.GetContentRegionAvail().X, textSize.Y + ImGui.GetStyle().WindowPadding.Y * 2), true)) {
+                if (ImGui.Button("Apply Config##largeCooldownFixButton", textSize with { X = 100 * ImGuiHelpers.GlobalScale })) {
+                    Service.GameConfig.Set(UiConfigOption.HotbarDispRecastTimeDispType, 1);
+                }
+                ImGui.SetCursorScreenPos(new Vector2(ImGui.GetCursorScreenPos().X + ImGui.GetItemRectSize().X + ImGui.GetStyle().ItemSpacing.X, ImGui.GetItemRectMin().Y));
+                ImGui.Text(warningText);
+            }
+            ImGui.PopStyleVar();
+            ImGui.PopStyleColor();
+            ImGui.EndChild();
+        }
+        
         ImGui.SetNextItemWidth(160 * ImGui.GetIO().FontGlobalScale);
         if (ImGui.BeginCombo(LocString("Font") + "###st_uiAdjustment_largeCooldownCounter_fontSelect", $"{Config.Font}")) {
             foreach (var f in (FontType[])Enum.GetValues(typeof(FontType))) {
