@@ -46,18 +46,15 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak
         
         try
         {
-            // ButtonType 3 and 0 are for "Loot Recipient" and "Greed Only"
-            if (type is AtkEventType.ButtonClick && buttonType is not 3 and not 0)
+            if (type is not AtkEventType.ButtonClick) return;
+
+            switch (buttonType)
             {
-                var currentSelectedItem = *((byte*) addon + 0x508);
-                var currentItemCount = addon->AtkUnitBase.AtkValues[3].UInt;
-                var nextIndex = currentSelectedItem + 1;
-
-                if (nextIndex == currentItemCount) nextIndex = 0;
-
-                var values = stackalloc int[6];
-                values[4] = nextIndex;
-                OnNeedGreedReceiveEvent(addon, AtkEventType.ListItemToggle, 0, null, (nint)values);
+                case 0: // Need
+                case 1: // Greed
+                case 2 when GetSelectedItem(addon) is { Roll: 0 }: // Pass
+                    SetSelectNextItem(addon);
+                    break;
             }
         }
         catch (Exception exception)
@@ -65,4 +62,22 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak
             PluginLog.Error(exception, "Something went wrong in 'Loot Window Select Next Item', let MidoriKami know.");
         }
     }
+
+    private void SetSelectNextItem(AddonNeedGreed* addon)
+    {
+        var currentItemCount = addon->AtkUnitBase.AtkValues[3].UInt;
+        var nextIndex = GetSelectedItemIndex(addon) + 1;
+        
+        if (nextIndex == currentItemCount) nextIndex = 0;
+        
+        var values = stackalloc int[6];
+        values[4] = nextIndex;
+        OnNeedGreedReceiveEvent(addon, AtkEventType.ListItemToggle, 0, null, (nint)values); 
+    }
+
+    private LootItemInfo GetSelectedItem(AddonNeedGreed* addon) 
+        => addon->ItemsSpan[GetSelectedItemIndex(addon)];
+
+    private int GetSelectedItemIndex(AddonNeedGreed* addon)
+        => *(int*)((byte*) addon + 0x508);
 }
