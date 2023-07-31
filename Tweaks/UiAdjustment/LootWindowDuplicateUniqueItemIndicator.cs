@@ -165,7 +165,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
             if (listComponentNode is null || listComponentNode->Component is null) return result;
             
             // For each possible item slot, get the item info
-            foreach (var index in Enumerable.Range(0, 32))
+            foreach (var index in Enumerable.Range(0, 16))
             {
                 // If this data slot doesn't have an item id, skip.
                 var itemInfo = callingAddon->ItemsSpan[index];
