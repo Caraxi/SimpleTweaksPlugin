@@ -66,7 +66,7 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak
     private void SetSelectNextItem(AddonNeedGreed* addon)
     {
         var currentItemCount = addon->AtkUnitBase.AtkValues[3].UInt;
-        var nextIndex = GetSelectedItemIndex(addon) + 1;
+        var nextIndex = addon->SelectedItemIndex + 1;
         
         if (nextIndex == currentItemCount) nextIndex = 0;
         
@@ -76,8 +76,5 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak
     }
 
     private LootItemInfo GetSelectedItem(AddonNeedGreed* addon) 
-        => addon->ItemsSpan[GetSelectedItemIndex(addon)];
-
-    private int GetSelectedItemIndex(AddonNeedGreed* addon)
-        => *(int*)((byte*) addon + 0x508);
+        => addon->ItemsSpan[addon->SelectedItemIndex];
 }
