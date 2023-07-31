@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Linq;
 using Dalamud.Hooking;
 using Dalamud.Logging;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -26,6 +27,17 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak
         
         needGreedReceiveEventHook ??= Hook<NeedGreedReceiveEventDelegate>.FromAddress((nint) atkUnitBase->AtkEventListener.vfunc[2], OnNeedGreedReceiveEvent);
         needGreedReceiveEventHook?.Enable();
+
+        // Find first item that hasn't been rolled on, and select it.
+        var addonNeedGreed = (AddonNeedGreed*) atkUnitBase;
+        foreach (var index in Enumerable.Range(0, addonNeedGreed->NumItems))
+        {
+            if (addonNeedGreed->ItemsSpan[index] is { Roll: 0, ItemId: not 0 })
+            {
+                SelectItem(addonNeedGreed, index);
+                break;
+            }
+        }
     }
 
     protected override void Disable()
@@ -52,7 +64,7 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak
             {
                 case 0: // Need
                 case 1: // Greed
-                case 2 when GetSelectedItem(addon) is { Roll: 0 }: // Pass
+                case 2 when GetSelectedItem(addon) is { Roll: 0, ItemId: not 0 }: // Pass, don't select next item if we are passing on an item that we already rolled on
                     SetSelectNextItem(addon);
                     break;
             }
@@ -70,8 +82,13 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak
         
         if (nextIndex == currentItemCount) nextIndex = 0;
         
+        SelectItem(addon, nextIndex);
+    }
+
+    private void SelectItem(AddonNeedGreed* addon, int index)
+    {
         var values = stackalloc int[6];
-        values[4] = nextIndex;
+        values[4] = index;
         OnNeedGreedReceiveEvent(addon, AtkEventType.ListItemToggle, 0, null, (nint)values); 
     }
 
