@@ -65,7 +65,11 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak
                 case 0: // Need
                 case 1: // Greed
                 case 2 when GetSelectedItem(addon) is { Roll: 0, ItemId: not 0 }: // Pass, don't select next item if we are passing on an item that we already rolled on
-                    SetSelectNextItem(addon);
+                    var currentItemCount = addon->AtkUnitBase.AtkValues[3].UInt;
+                    var nextIndex = addon->SelectedItemIndex + 1;
+                    if (nextIndex == currentItemCount) nextIndex = 0;
+                    
+                    SelectItem(addon, nextIndex);
                     break;
             }
         }
@@ -73,16 +77,6 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak
         {
             PluginLog.Error(exception, "Something went wrong in 'Loot Window Select Next Item', let MidoriKami know.");
         }
-    }
-
-    private void SetSelectNextItem(AddonNeedGreed* addon)
-    {
-        var currentItemCount = addon->AtkUnitBase.AtkValues[3].UInt;
-        var nextIndex = addon->SelectedItemIndex + 1;
-        
-        if (nextIndex == currentItemCount) nextIndex = 0;
-        
-        SelectItem(addon, nextIndex);
     }
 
     private void SelectItem(AddonNeedGreed* addon, int index)
