@@ -49,6 +49,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
         AddChangelog("1.8.9.0", "Added support for full RGB colours.");
         AddChangelog("1.8.9.0", "Added an icon viewer for supported icons.");
         AddChangelog("1.8.9.1", "Fix some issues with glow colours.");
+        AddChangelog(UnreleasedVersion, "Fixed icon-only tags not displaying.");
         base.Setup();
     }
 
@@ -292,7 +293,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                         payloads.Add(new TextPayload("»"));
 
                     var seString = new SeString(payloads);
-                    if (string.IsNullOrWhiteSpace(seString.TextValue)) {
+                    if (string.IsNullOrWhiteSpace(seString.TextValue) && !payloads.Any(p => p is IconPayload)) {
                         namePlateInfo->FcName.SetString(string.Empty);
                     } else {
                         var bytes = seString.Encode();
