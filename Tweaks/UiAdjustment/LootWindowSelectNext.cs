@@ -16,7 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakReleaseVersion(UnreleasedVersion)]
 public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak
 {
-    private delegate void NeedGreedReceiveEventDelegate(AddonNeedGreed* addon, AtkEventType type, uint buttonType, AtkEvent* eventInfo, nint data);
+    private delegate void NeedGreedReceiveEventDelegate(AddonNeedGreed* addon, AtkEventType type, ButtonType buttonType, AtkEvent* eventInfo, nint data);
 
     private Hook<NeedGreedReceiveEventDelegate>? needGreedReceiveEventHook;
 
@@ -52,7 +52,15 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak
         base.Dispose();
     }
 
-    private void OnNeedGreedReceiveEvent(AddonNeedGreed* addon, AtkEventType type, uint buttonType, AtkEvent* eventInfo, nint data)
+    // There are other button types such as "Greed Only" and "Loot Recipient"
+    private enum ButtonType : uint
+    {
+        Need = 0,
+        Greed = 1,
+        Pass = 2,
+    }
+
+    private void OnNeedGreedReceiveEvent(AddonNeedGreed* addon, AtkEventType type, ButtonType buttonType, AtkEvent* eventInfo, nint data)
     {
         needGreedReceiveEventHook!.Original(addon, type, buttonType, eventInfo, data);
         
@@ -62,14 +70,13 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak
 
             switch (buttonType)
             {
-                case 0: // Need
-                case 1: // Greed
-                case 2 when GetSelectedItem(addon) is { Roll: 0, ItemId: not 0 }: // Pass, don't select next item if we are passing on an item that we already rolled on
+                case ButtonType.Need:
+                case ButtonType.Greed:
+                case ButtonType.Pass when IsSelectedItemUnrolled(addon): // Don't select next item if we are passing on an item that we already rolled on
                     var currentItemCount = addon->AtkUnitBase.AtkValues[3].UInt;
                     var nextIndex = addon->SelectedItemIndex + 1;
-                    if (nextIndex == currentItemCount) nextIndex = 0;
                     
-                    SelectItem(addon, nextIndex);
+                    if (nextIndex < currentItemCount) SelectItem(addon, nextIndex);
                     break;
             }
         }
@@ -88,4 +95,7 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak
 
     private LootItemInfo GetSelectedItem(AddonNeedGreed* addon) 
         => addon->ItemsSpan[addon->SelectedItemIndex];
+
+    private bool IsSelectedItemUnrolled(AddonNeedGreed* addon)
+        => GetSelectedItem(addon) is { Roll: 0, ItemId: not 0 };
 }
