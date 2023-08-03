@@ -3,3 +3,4 @@ FixedShadowDistance
 RefreshMarketPrices
 TooltipTweaks
 UiAdjustments@DutyListBackground
+UiAdjustments@LootWindowDuplicateUniqueItemIndicator
