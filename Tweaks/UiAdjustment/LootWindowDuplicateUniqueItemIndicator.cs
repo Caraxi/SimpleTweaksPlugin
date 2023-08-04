@@ -1,7 +1,6 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Dalamud.Hooking;
 using Dalamud.Logging;
@@ -165,16 +164,17 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
             if (listComponentNode is null || listComponentNode->Component is null) return result;
             
             // For each possible item slot, get the item info
-            foreach (var (itemInfo, index) in callingAddon->ItemsSpan.WithIndex())
+            foreach (var index in Enumerable.Range(0, callingAddon->ItemsSpan.Length))
             {
                 // If this data slot doesn't have an item id, skip.
+                var itemInfo = callingAddon->ItemsSpan[index];
                 if (itemInfo.ItemId is 0) continue;
 
                 var adjustedItemId = itemInfo.ItemId > 1_000_000 ? itemInfo.ItemId - 1_000_000 : itemInfo.ItemId;
                 
                 // If we can't match the item in lumina, skip.
                 var itemData = Service.Data.GetExcelSheet<Item>()!.GetRow(adjustedItemId);
-                if(itemData is null) continue;
+                if (itemData is null) continue;
 
                 // If we can't get the ui node, skip
                 var listItemNodeId = listItemNodeIdArray[index];
@@ -313,10 +313,4 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
 
         return inventories.Sum(inventory => InventoryManager.Instance()->GetItemCountInContainer(itemId, inventory)) > 0;
     }
-}
-
-internal static class SpanExtensions
-{
-    public static IEnumerable<(T Value, int Index)> WithIndex<T>(this Span<T> span) 
-        => span.ToImmutableArray().Select((x, i) => (x, i));
 }
