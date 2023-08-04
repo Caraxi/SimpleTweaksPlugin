@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Dalamud.Hooking;
 using Dalamud.Logging;
 using Dalamud.Utility.Signatures;
@@ -165,7 +164,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
             if (listComponentNode is null || listComponentNode->Component is null) return result;
             
             // For each possible item slot, get the item info
-            foreach (var index in Enumerable.Range(0, 16))
+            foreach (var index in Enumerable.Range(0, callingAddon->ItemsSpan.Length))
             {
                 // If this data slot doesn't have an item id, skip.
                 var itemInfo = callingAddon->ItemsSpan[index];
@@ -175,8 +174,9 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
                 
                 // If we can't match the item in lumina, skip.
                 var itemData = Service.Data.GetExcelSheet<Item>()!.GetRow(adjustedItemId);
-                if(itemData is null) continue;
+                if (itemData is null) continue;
 
+                // If we can't get the ui node, skip
                 var listItemNodeId = listItemNodeIdArray[index];
                 var listItemNode = Common.GetNodeByID<AtkComponentNode>(&listComponentNode->Component->UldManager, (uint) listItemNodeId);
                 if (listItemNode is null || listItemNode->Component is null) continue;
@@ -193,7 +193,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
                         break;
 
                     // Item can be obtained if unlocked
-                    case { } when IsItemAlreadyUnlocked(itemInfo.ItemId):
+                    case not null when IsItemAlreadyUnlocked(itemInfo.ItemId):
                         UpdateNodeVisibility(listItemNode, listItemNodeId, ItemStatus.AlreadyUnlocked);
                         break;
                     
