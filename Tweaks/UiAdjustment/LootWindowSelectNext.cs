@@ -73,7 +73,7 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak
                 case ButtonType.Need:
                 case ButtonType.Greed:
                 case ButtonType.Pass when IsSelectedItemUnrolled(addon): // Don't select next item if we are passing on an item that we already rolled on
-                    var currentItemCount = addon->AtkUnitBase.AtkValues[3].UInt;
+                    var currentItemCount = addon->NumItems;
                     var nextIndex = addon->SelectedItemIndex + 1;
                     
                     if (nextIndex < currentItemCount) SelectItem(addon, nextIndex);
