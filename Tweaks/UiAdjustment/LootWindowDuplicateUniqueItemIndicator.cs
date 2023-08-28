@@ -21,6 +21,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     public override string Name => "Enhanced Loot Window";
     protected override string Author => "MidoriKami";
     public override string Description => "Marks unobtainable and already unlocked items in the loot window.";
+    public override uint Version => 2;
 
     private delegate nint OnRequestedUpdateDelegate(nint a1, nint a2, nint a3);
     
