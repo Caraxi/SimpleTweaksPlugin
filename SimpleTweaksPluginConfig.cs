@@ -86,13 +86,14 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
 
     private string addCustomProviderInput = string.Empty;
 
+    private Vector2 checkboxSize = new(16);
     private void DrawTweakConfig(BaseTweak t, ref bool hasChange) {
         var enabled = t.Enabled;
         if (t.Experimental && !ShowExperimentalTweaks && !enabled) return;
 
         if (t is IDisabledTweak || (!enabled && ImGui.GetIO().KeyShift) || t.TweakManager is {Enabled: false}) {
             if (HiddenTweaks.Contains(t.Key)) {
-                if (ImGui.Button($"S##unhideTweak_{t.Key}", new Vector2(23) * ImGui.GetIO().FontGlobalScale)) {
+                if (ImGui.Button($"S##unhideTweak_{t.Key}", checkboxSize)) {
                     HiddenTweaks.Remove(t.Key);
                     Save();
                 }
@@ -100,7 +101,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                     ImGui.SetTooltip(Loc.Localize("Unhide Tweak", "Unhide Tweak"));
                 }
             } else {
-                if (ImGui.Button($"H##hideTweak_{t.Key}", new Vector2(23) * ImGui.GetIO().FontGlobalScale)) {
+                if (ImGui.Button($"H##hideTweak_{t.Key}", checkboxSize)) {
                     HiddenTweaks.Add(t.Key);
                     Save();
                 }
@@ -131,6 +132,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
             }
             Save();
         }
+        checkboxSize = ImGui.GetItemRectSize();
         ImGui.SameLine();
         var descriptionX = ImGui.GetCursorPosX();
         if (!t.DrawConfig(ref hasChange)) {
