@@ -134,7 +134,7 @@ public class Changelog : Window {
         return true;
     }
 
-    private static string GenerateChangelogMarkdown(Version changelogVersion = null, StringBuilder stringBuilder = null) {
+    public static string GenerateChangelogMarkdown(Version changelogVersion = null, StringBuilder stringBuilder = null) {
         stringBuilder ??= new StringBuilder();
 
         if (changelogVersion == null) {
