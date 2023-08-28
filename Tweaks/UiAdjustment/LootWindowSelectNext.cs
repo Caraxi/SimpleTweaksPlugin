@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Linq;
 using Dalamud.Hooking;
@@ -13,7 +13,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakName("Loot Window Select Next Item")]
 [TweakDescription("Upon pressing 'Need', 'Greed', or 'Pass' automatically select the next loot item.")]
 [TweakAuthor("MidoriKami")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.8.9.2")]
 public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak
 {
     private delegate void NeedGreedReceiveEventDelegate(AddonNeedGreed* addon, AtkEventType type, ButtonType buttonType, AtkEvent* eventInfo, nint data);

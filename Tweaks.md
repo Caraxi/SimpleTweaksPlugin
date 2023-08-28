@@ -108,7 +108,7 @@
 
 - **Hide Hotbar Lock**
 
-  Hides the hotbar lock button, with an option to make it visible while holding SHIFT.
+  Hides the hotbar lock button, with an option to make it visible while holding a modifier combo.
 
 
 - **Hide Mouse Cursor After Inactivity**
@@ -577,6 +577,11 @@
 - **Lock Window Positions**
 
   Allows locking the position of almost any UI window.
+
+
+- **Loot Window Select Next Item**
+
+  Upon pressing 'Need', 'Greed', or 'Pass' automatically select the next loot item.
 
 
 - **Market Enhancements**

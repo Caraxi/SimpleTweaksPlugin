@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -49,7 +49,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
         AddChangelog("1.8.9.0", "Added support for full RGB colours.");
         AddChangelog("1.8.9.0", "Added an icon viewer for supported icons.");
         AddChangelog("1.8.9.1", "Fix some issues with glow colours.");
-        AddChangelog(UnreleasedVersion, "Fixed icon-only tags not displaying.");
+        AddChangelog("1.8.9.2", "Fixed icon-only tags not displaying.");
         base.Setup();
     }
 

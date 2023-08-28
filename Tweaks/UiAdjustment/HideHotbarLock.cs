@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Numerics;
 using Dalamud.Game.ClientState.Keys;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -8,7 +8,7 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
-[Changelog(UnreleasedVersion, "Added an option to change which keys show the lock")]
+[Changelog("1.8.9.2", "Added an option to change which keys show the lock")]
 public unsafe class HideHotbarLock : Tweak {
     public override string Name => "Hide Hotbar Lock";
     public override string Description => "Hides the hotbar lock button, with an option to make it visible while holding a modifier combo.";

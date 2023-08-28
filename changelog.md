@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.8.9.2
+***General Changes***
+- Added preview images to some tweaks.
+
+***New Tweaks***
+- **`Loot Window Select Next Item`** - Upon pressing 'Need', 'Greed', or 'Pass' automatically select the next loot item. *(MidoriKami)*
+
+
+***Tweak Changes***
+- **`Custom Free Company Tags`** - Fixed icon-only tags not displaying.
+
+- **`Hide Hotbar Lock`** - Added an option to change which keys show the lock
+
+
 ## 1.8.9.1
 ***Tweak Changes***
 - **`Custom Free Company Tags`** - Fix some issues with glow colours.
