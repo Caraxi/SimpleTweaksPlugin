@@ -1,8 +1,10 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using Dalamud;
 using Dalamud.Game.Text;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
@@ -611,7 +613,12 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         var counterNode = (AtkCounterNode*) Common.GetNodeByID(&AddonMoney->UldManager, nodeId);
         if (counterNode is not null)
         {
-            counterNode->SetText(newCount.ToString("n0", Plugin.Culture));
+            var numString = newCount.ToString("n0", CultureInfo.InvariantCulture);
+            counterNode->SetText(Service.ClientState.ClientLanguage switch {
+                ClientLanguage.German => numString.Replace(',', '.'),
+                ClientLanguage.French => numString.Replace(',', ' '),
+                _ => numString
+            });
         }
     }
     
