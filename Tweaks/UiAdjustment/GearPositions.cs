@@ -1,10 +1,15 @@
-﻿using FFXIVClientStructs.FFXIV.Component.GUI;
+﻿using System;
+using Dalamud.Memory;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
+using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
 
+[Changelog("1.8.1.1", "Fixed widget display when using standard UI quality.")]
+[Changelog(UnreleasedVersion, "Improved gamepad navigation on Character window.")]
 public unsafe class GearPositions : UiAdjustments.SubTweak {
     public override string Name => "Adjust Equipment Positions";
     public override string Description => "Repositions equipment positions in character menu and inspect to give a less gross layout.";
@@ -13,11 +18,6 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
     
     private delegate byte AddonControllerInput(AtkUnitBase* atkUnitBase, Dir a2, byte a3);
     private HookWrapper<AddonControllerInput> addonControllerInputHook;
-
-    public override void Setup() {
-        AddChangelog("1.8.1.1", "Fixed widget display when using standard UI quality.");
-        base.Setup();
-    }
 
     protected override void Enable() {
         bagWidgetUpdate ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 55 56 57 41 54 41 55 41 56 41 57 48 83 EC 20 4C 8B 62 38", BagWidgetUpdate);
@@ -97,7 +97,23 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
         SoulCrystal = 18,
 
         ResetDisplay = 20
+    }
 
+    private enum CharacterStatusNode {
+        None = -1,
+        Intelligence = 3,
+        Mind = 4,
+        
+        Defense = 8,
+        MagicDefense = 9,
+        
+        AttackMagicPotency = 12,
+        HealingMagicPotency = 13,
+        SpellSpeed = 14,
+        
+        AverageItemLevel = 19,
+        Tenacity = 20,
+        Piety = 21
     }
 
     private int GetCollisionNodeIndex(AtkUnitBase* atkUnitBase) {
@@ -109,30 +125,58 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
         return -1;
     }
     
+
+
+    private byte F(string addonName, int node) {
+        var atkUnitBase = Common.GetUnitBase(addonName);
+        if (atkUnitBase == null) return 1;
+        if (node < 0 || node >= atkUnitBase->CollisionNodeListCount) return 1;
+        atkUnitBase->SetFocusNode(atkUnitBase->CollisionNodeList[node]);
+        atkUnitBase->CursorTarget = atkUnitBase->CollisionNodeList[node];
+        return 1;
+    }
+    private byte F(CharacterInspectNode node) => F("CharacterInspect", (int)node);
+    private byte F(CharacterNode node) => F("Character", (int)node);
+    private byte F(CharacterStatusNode node) => F("CharacterStatus", (int)node);
+
     private byte ControllerInputDetour(AtkUnitBase* atkUnitBase, Dir d, byte a3) {
         try {
+            if (atkUnitBase == Common.GetUnitBase("CharacterStatus")) {
+                var currentSelectedNodeIndex = (CharacterStatusNode)GetCollisionNodeIndex(atkUnitBase);
+                return currentSelectedNodeIndex switch {
+                    CharacterStatusNode.Intelligence when d == Dir.Right => F(CharacterNode.SoulCrystal),
+                    CharacterStatusNode.Mind when d == Dir.Right => F(CharacterNode.MainHand),
+                    CharacterStatusNode.Defense when d == Dir.Right => F(CharacterNode.Head),
+                    CharacterStatusNode.MagicDefense when d == Dir.Right => F(CharacterNode.Body),
+                    CharacterStatusNode.AttackMagicPotency when d == Dir.Right => F(CharacterNode.Hands),
+                    CharacterStatusNode.HealingMagicPotency when d == Dir.Right => F(CharacterNode.Hands),
+                    CharacterStatusNode.SpellSpeed when d == Dir.Right => F(CharacterNode.Legs),
+                    CharacterStatusNode.Tenacity when d == Dir.Right => F(CharacterNode.Feet),
+                    CharacterStatusNode.Piety when d == Dir.Right => F(CharacterNode.Feet),
+                    CharacterStatusNode.AverageItemLevel when d == Dir.Left => F(CharacterNode.FingerLeft),
+                    _ => addonControllerInputHook.Original(atkUnitBase, d, a3)
+                };
+            }
+
             if (atkUnitBase == Common.GetUnitBase("Character")) {
-
                 var currentSelectedNodeIndex = (CharacterNode)GetCollisionNodeIndex(atkUnitBase);
-
-                byte F(CharacterNode node) {
-                    if ((int)node < 0 || (int)node >= atkUnitBase->CollisionNodeListCount) return 1;
-                    atkUnitBase->SetFocusNode(atkUnitBase->CollisionNodeList[(int)node]);
-                    atkUnitBase->CursorTarget = atkUnitBase->CollisionNodeList[(int)node];
-                    return 1;
-                }
-
                 return currentSelectedNodeIndex switch {
                     CharacterNode.SoulCrystal when d == Dir.Right => F(CharacterNode.OffHand),
                     CharacterNode.SoulCrystal when d == Dir.Down => F(CharacterNode.MainHand),
                     CharacterNode.SoulCrystal when d == Dir.Up => F(CharacterNode.GearSetList),
-                    CharacterNode.SoulCrystal when d == Dir.Left => F(CharacterNode.MainHand),
+                    CharacterNode.SoulCrystal when d == Dir.Left => F(CharacterStatusNode.Intelligence),
                     CharacterNode.MainHand when d == Dir.Up => F(CharacterNode.SoulCrystal),
+                    CharacterNode.MainHand when d == Dir.Left => F(CharacterStatusNode.Mind),
                     CharacterNode.Head when d == Dir.Right => F(CharacterNode.Ears),
+                    CharacterNode.Head when d == Dir.Left => F(CharacterStatusNode.Defense),
                     CharacterNode.Body when d == Dir.Right => F(CharacterNode.Neck),
+                    CharacterNode.Body when d == Dir.Left => F(CharacterStatusNode.MagicDefense),
                     CharacterNode.Hands when d == Dir.Right => F(CharacterNode.Wrist),
+                    CharacterNode.Hands when d == Dir.Left => F(CharacterStatusNode.AttackMagicPotency),
                     CharacterNode.Legs when d == Dir.Right => F(CharacterNode.FingerRight),
+                    CharacterNode.Legs when d == Dir.Left => F(CharacterStatusNode.SpellSpeed),
                     CharacterNode.Feet when d == Dir.Right => F(CharacterNode.FingerLeft),
+                    CharacterNode.Feet when d == Dir.Left => F(CharacterStatusNode.Tenacity),
                     CharacterNode.OffHand when d == Dir.Left => F(CharacterNode.MainHand),
                     CharacterNode.Ears when d == Dir.Left => F(CharacterNode.Head),
                     CharacterNode.Neck when d == Dir.Left => F(CharacterNode.Body),
@@ -146,15 +190,10 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
                     _ => addonControllerInputHook.Original(atkUnitBase, d, a3)
                 };
 
-            } else if (atkUnitBase == Common.GetUnitBase("CharacterInspect")) {
-                var currentSelectedNodeIndex = (CharacterInspectNode)GetCollisionNodeIndex(atkUnitBase);
+            }
 
-                byte F(CharacterInspectNode node) {
-                    if ((int)node < 0 || (int)node >= atkUnitBase->CollisionNodeListCount) return 1;
-                    atkUnitBase->SetFocusNode(atkUnitBase->CollisionNodeList[(int)node]);
-                    atkUnitBase->CursorTarget = atkUnitBase->CollisionNodeList[(int)node];
-                    return 1;
-                }
+            if (atkUnitBase == Common.GetUnitBase("CharacterInspect")) {
+                var currentSelectedNodeIndex = (CharacterInspectNode)GetCollisionNodeIndex(atkUnitBase);
                 return currentSelectedNodeIndex switch {
                     CharacterInspectNode.SearchInfo when d == Dir.Down => F(CharacterInspectNode.SoulCrystal),
                     CharacterInspectNode.SoulCrystal when d == Dir.Up => F(CharacterInspectNode.SearchInfo),
@@ -197,10 +236,9 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
                     CharacterInspectNode.ResetDisplay when d == Dir.Up => F(CharacterInspectNode.FingerLeft),
                     _ => addonControllerInputHook.Original(atkUnitBase, d, a3)
                 };
-
-            } else {
-                return addonControllerInputHook.Original(atkUnitBase, d, a3);
             }
+
+            return addonControllerInputHook.Original(atkUnitBase, d, a3);
         } catch {
             return addonControllerInputHook.Original(atkUnitBase, d, a3);
         }
