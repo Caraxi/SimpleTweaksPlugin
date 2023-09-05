@@ -380,8 +380,52 @@ public abstract class BaseTweak {
     }
 
     protected delegate void DrawConfigDelegate(ref bool hasChanged);
-    protected virtual DrawConfigDelegate DrawConfigTree => null;
+    protected virtual DrawConfigDelegate DrawConfigTree { get; private set; }
+
+
+    private void AttemptDrawConfigSetup() {
+        if (DrawConfigTree != null) return;
         
+        var method = GetType().GetMethod("DrawConfig", BindingFlags.NonPublic | BindingFlags.Instance);
+        if (method == null) return;
+
+        if (method.ReturnType != typeof(void)) {
+            Plugin.Error(this, new Exception("Failed to set DrawConfig function. Return type not void."), true);
+            return;
+        }
+        
+        var parameters = method.GetParameters();
+
+        if (parameters.Length == 0) {
+
+            DrawConfigTree = (ref bool changed) => {
+                method.Invoke(this, null);
+            };
+            return;
+
+        }
+        
+        if (parameters.Length == 1) {
+            var param = parameters[0];
+
+            if (param.ParameterType.IsByRef) {
+                var refType = param.ParameterType.GetElementType();
+
+                if (refType == typeof(bool)) {
+                    DrawConfigTree = (ref bool changed) => {
+                        var o = new object[] { changed };
+                        method.Invoke(this, o);
+                        changed = (bool)o[0];
+                    };
+                    return;
+                }
+            }
+
+        } 
+        
+        Plugin.Error(this, new Exception("Failed to set DrawConfig function. Invalid parameters."), true);
+    }
+    
     public virtual void Setup() {
         hasPreviewImage = File.Exists(Path.Join(PluginInterface.AssemblyLocation.DirectoryName, "TweakPreviews", $"{Key}.png"));
 
@@ -394,8 +438,8 @@ public abstract class BaseTweak {
                 AddChangelog(c.Version, change).Author(c.Author);
             }
         }
-        
-        
+
+        AttemptDrawConfigSetup();
         Ready = true;
     }
 
