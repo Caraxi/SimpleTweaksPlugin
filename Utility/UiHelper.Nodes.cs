@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using FFXIVClientStructs.STD;
 
 namespace SimpleTweaksPlugin.Utility;
 
@@ -79,19 +80,6 @@ public static unsafe partial class UiHelper
         return textNode;
     }
 
-    [Obsolete("Use generic LinkNodeAtEnd(AtkResNode* ...) function instead.")]
-    public static void LinkNodeAtEnd(AtkImageNode* imageNode, AtkUnitBase* parent)
-    {
-        var node = parent->RootNode->ChildNode;
-        while (node->PrevSiblingNode != null) node = node->PrevSiblingNode;
-
-        node->PrevSiblingNode = (AtkResNode*) imageNode;
-        imageNode->AtkResNode.NextSiblingNode = node;
-        imageNode->AtkResNode.ParentNode = node->ParentNode;
-        
-        parent->UldManager.UpdateDrawNodeList();
-    }
-    
     public static void LinkNodeAtEnd(AtkResNode* imageNode, AtkUnitBase* parent)
     {
         var node = parent->RootNode->ChildNode;
@@ -103,20 +91,28 @@ public static unsafe partial class UiHelper
         
         parent->UldManager.UpdateDrawNodeList();
     }
-    
-    [Obsolete("Use generic LinkNodeAtEnd(AtkResNode* ...) function instead.")]
-    public static void LinkNodeAfterTargetNode(AtkImageNode* imageNode, AtkComponentNode* parent, AtkResNode* targetNode)
-    {
-        var prev = targetNode->PrevSiblingNode;
-        imageNode->AtkResNode.ParentNode = targetNode->ParentNode;
 
-        targetNode->PrevSiblingNode = (AtkResNode*) imageNode;
-        prev->NextSiblingNode = (AtkResNode*) imageNode;
-
-        imageNode->AtkResNode.PrevSiblingNode = prev;
-        imageNode->AtkResNode.NextSiblingNode = targetNode;
-
-        parent->Component->UldManager.UpdateDrawNodeList();
+    public static void LinkNodeAtEnd<T>(T* atkNode, AtkResNode* parentNode, AtkUnitBase* addon) where T : unmanaged {
+        var node = (AtkResNode*)atkNode;
+        var endNode = parentNode->ChildNode;
+        if (endNode == null) {
+            // Adding to empty res node
+            
+            parentNode->ChildNode = node;
+            node->ParentNode = parentNode;
+            node->PrevSiblingNode = null;
+            node->NextSiblingNode = null;
+        } else {
+            while (endNode->PrevSiblingNode != null) {
+                endNode = endNode->PrevSiblingNode;
+            }
+            node->ParentNode = parentNode;
+            node->NextSiblingNode = endNode;
+            node->PrevSiblingNode = null;
+            endNode->PrevSiblingNode = node;
+        }
+        
+        addon->UldManager.UpdateDrawNodeList();
     }
 
     public static void LinkNodeAfterTargetNode(AtkResNode* node, AtkComponentNode* parent, AtkResNode* targetNode)
@@ -131,6 +127,20 @@ public static unsafe partial class UiHelper
         node->NextSiblingNode = targetNode;
 
         parent->Component->UldManager.UpdateDrawNodeList();
+    }
+    
+    public static void LinkNodeAfterTargetNode<T>(T* atkNode, AtkUnitBase* parent, AtkResNode* targetNode) where T : unmanaged {
+        var node = (AtkResNode*)atkNode;
+        var prev = targetNode->PrevSiblingNode;
+        node->ParentNode = targetNode->ParentNode;
+
+        targetNode->PrevSiblingNode = node;
+        prev->NextSiblingNode = node;
+
+        node->PrevSiblingNode = prev;
+        node->NextSiblingNode = targetNode;
+
+        parent->UldManager.UpdateDrawNodeList();
     }
 
     public static void UnlinkNode<T>(T* atkNode, AtkComponentNode* componentNode) where T : unmanaged {
@@ -152,6 +162,28 @@ public static unsafe partial class UiHelper
         
         componentNode->Component->UldManager.UpdateDrawNodeList();
     }
+    
+    public static void UnlinkNode<T>(T* atkNode, AtkUnitBase* unitBase) where T : unmanaged {
+
+        var node = (AtkResNode*)atkNode;
+        if (node == null) return;
+        
+        if (node->ParentNode->ChildNode == node) {
+            node->ParentNode->ChildNode = node->NextSiblingNode;
+        }
+
+        if (node->NextSiblingNode != null && node->NextSiblingNode->PrevSiblingNode == node) {
+            node->NextSiblingNode->PrevSiblingNode = node->PrevSiblingNode;
+        }
+
+        if (node->PrevSiblingNode != null && node->PrevSiblingNode->NextSiblingNode == node) {
+            node->PrevSiblingNode->NextSiblingNode = node->NextSiblingNode;
+        }
+        
+        unitBase->UldManager.UpdateDrawNodeList();
+    }
+
+    
     
     public static void UnlinkAndFreeImageNode(AtkImageNode* node, AtkUnitBase* parent)
     {
