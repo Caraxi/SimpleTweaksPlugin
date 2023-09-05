@@ -1,81 +1,274 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Interface;
 using Dalamud.Utility;
+using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
-using ImGuiScene;
-using Lumina.Data.Files;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Events;
+using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
-using LootRule = ContentsFinder.LootRule;
-
+[TweakName("Improved Duty Finder Settings")]
+[TweakDescription("Turn the duty finder settings into buttons.")]
+[TweakAuthor("Aireil")]
+[TweakReleaseVersion("1.8.3.0")]
+[Changelog("1.8.4.0", "Fixed UI displaying on wrong monitor in specific circumstances.")]
+[Changelog("1.8.7.2", "Fixed tweak not working in 6.4")]
+[Changelog(UnreleasedVersion, "Rewritten to use native UI")]
 public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
-    public override string Name => "Improved Duty Finder Settings";
-    public override string Description => "Turn the duty finder settings into buttons.";
-    protected override string Author => "Aireil";
+    private static ImprovedDutyFinderSettings _tweak;
 
-    public override void Setup() {
-        AddChangelogNewTweak("1.8.3.0");
-        AddChangelog("1.8.4.0", "Fixed UI displaying on wrong monitor in specific circumstances.").Author("Aireil");
-        AddChangelog("1.8.7.2", "Fixed tweak not working in 6.4");
-        base.Setup();
+    private record DutyFinderSettingDisplay(DutyFinderSetting Setting) {
+        public DutyFinderSettingDisplay(DutyFinderSetting setting, int icon, uint tooltip) : this(setting) {
+            GetIcon = () => icon;
+            GetTooltip = () => tooltip;
+        }
+
+        public Func<int> GetIcon { get; init; }
+        public Func<uint> GetTooltip { get; init; }
+
+        private SimpleEvent eventManager;
+
+        private void HideTooltip(AtkUnitBase* unitBase) {
+            AtkStage.GetSingleton()->TooltipManager.HideTooltip(unitBase->ID);
+        }
+
+        private void ShowTooltip(AtkUnitBase* unitBase, AtkResNode* node) {
+            var tooltipId = GetTooltip();
+            var tooltip = Service.Data.GetExcelSheet<Addon>()?.GetRow(tooltipId)?.Text.ToDalamudString()?.TextValue ?? $"{Setting}";
+            AtkStage.GetSingleton()->TooltipManager.ShowTooltip(unitBase->ID, node, tooltip);
+        }
+
+        public SimpleEvent Event {
+            get {
+                if (eventManager != null) return eventManager;
+                eventManager = new SimpleEvent((type, unitBase, node) => {
+                    if (type == AtkEventType.MouseOver) {
+                        ShowTooltip(unitBase, node);
+                        Common.ForceMouseCursor(AtkCursor.CursorType.Clickable);
+                        return;
+                    }
+
+                    if (type == AtkEventType.MouseOut) {
+                        HideTooltip(unitBase);
+                        Common.UnforceMouseCursor();
+                        return;
+                    }
+
+                    if (Service.Condition[ConditionFlag.BoundToDuty97]) return;
+                    if (type != AtkEventType.MouseClick) return;
+
+                    _tweak.ToggleSetting(Setting);
+
+                    if (Setting == DutyFinderSetting.LootRule) {
+                        HideTooltip(unitBase);
+                        ShowTooltip(unitBase, node);
+                    }
+                });
+                return eventManager;
+            }
+        }
+    };
+
+    private readonly List<DutyFinderSettingDisplay> dutyFinderSettingIcons = new() {
+        new DutyFinderSettingDisplay(DutyFinderSetting.JoinPartyInProgress, 60644, 2519),
+        new DutyFinderSettingDisplay(DutyFinderSetting.UnrestrictedParty, 60641, 10008),
+        new DutyFinderSettingDisplay(DutyFinderSetting.LevelSync, 60649, 12696),
+        new DutyFinderSettingDisplay(DutyFinderSetting.MinimumIl, 60642, 10010),
+        new DutyFinderSettingDisplay(DutyFinderSetting.SilenceEcho, 60647, 12691),
+        new DutyFinderSettingDisplay(DutyFinderSetting.ExplorerMode, 60648, 13038),
+        new DutyFinderSettingDisplay(DutyFinderSetting.LimitedLevelingRoulette, 60640, 13030),
+        new DutyFinderSettingDisplay(DutyFinderSetting.LootRule) {
+            GetIcon = () => {
+                return GetCurrentSettingValue(DutyFinderSetting.LootRule) switch {
+                    0 => 60645,
+                    1 => 60645,
+                    2 => 60646,
+                    _ => 0,
+                };
+            },
+            GetTooltip = () => {
+                return GetCurrentSettingValue(DutyFinderSetting.LootRule) switch {
+                    0 => 10022,
+                    1 => 10023,
+                    2 => 10024,
+                    _ => 0,
+                };
+            }
+        },
+    };
+
+    private readonly List<DutyFinderSettingDisplay> languageButtons = new() {
+        new DutyFinderSettingDisplay(DutyFinderSetting.Ja, 0, 10),
+        new DutyFinderSettingDisplay(DutyFinderSetting.En, 0, 11),
+        new DutyFinderSettingDisplay(DutyFinderSetting.De, 0, 12),
+        new DutyFinderSettingDisplay(DutyFinderSetting.Fr, 0, 13),
+    };
+
+    [AddonSetup("ContentsFinder")]
+    protected void ContentsFinderSetup(AtkUnitBase* addonContentsFinder) {
+        SetupAddon(addonContentsFinder);
+    }
+
+    [AddonFinalize("ContentsFinder")]
+    protected void ContentsFinderFinalize(AtkUnitBase* addonContentsFinder) {
+        Common.FrameworkUpdate -= UpdateIcons;
+        ResetAddon(addonContentsFinder);
+    }
+
+    private void SetupAddon(AtkUnitBase* unitBase) {
+        var defaultContainer = unitBase->GetNodeById(6);
+        if (defaultContainer == null) return;
+        defaultContainer->ToggleVisibility(false);
+
+        var container = IMemorySpace.GetUISpace()->Create<AtkResNode>();
+        container->SetWidth(defaultContainer->GetWidth());
+        container->SetHeight(defaultContainer->GetHeight());
+        container->SetPositionFloat(defaultContainer->GetX(), defaultContainer->GetY());
+        container->SetScale(1, 1);
+        container->NodeID = CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Container");
+        container->Type = NodeType.Res;
+        container->ToggleVisibility(true);
+        UiHelper.LinkNodeAfterTargetNode(container, unitBase, defaultContainer);
+
+        for (var i = 0; i < dutyFinderSettingIcons.Count; i++) {
+            var settingDetail = dutyFinderSettingIcons[i];
+
+            var basedOn = unitBase->GetNodeById(7 + (uint)i);
+            if (basedOn == null) continue;
+
+            var imgNode = UiHelper.MakeImageNode(CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Icon_{settingDetail.Setting}"), new UiHelper.PartInfo(0, 0, 24, 24));
+            UiHelper.LinkNodeAtEnd(imgNode, container, unitBase);
+
+            imgNode->AtkResNode.ToggleVisibility(true);
+
+            imgNode->AtkResNode.SetPositionFloat(basedOn->GetX(), basedOn->GetY());
+            imgNode->AtkResNode.SetWidth(basedOn->GetWidth());
+            imgNode->AtkResNode.SetHeight(basedOn->GetHeight());
+
+            imgNode->AtkResNode.NodeFlags |= NodeFlags.RespondToMouse | NodeFlags.EmitsEvents | NodeFlags.HasCollision;
+
+            settingDetail.Event.Add(unitBase, &imgNode->AtkResNode, AtkEventType.MouseClick);
+            settingDetail.Event.Add(unitBase, &imgNode->AtkResNode, AtkEventType.MouseOver);
+            settingDetail.Event.Add(unitBase, &imgNode->AtkResNode, AtkEventType.MouseOut);
+        }
+
+        for (var i = 0; i < languageButtons.Count; i++) {
+            var settingDetail = languageButtons[i];
+
+            var node = unitBase->GetNodeById(17 + (uint)i);
+            if (node == null) continue;
+
+            node->NodeFlags |= NodeFlags.RespondToMouse | NodeFlags.EmitsEvents | NodeFlags.HasCollision;
+            settingDetail.Event.Add(unitBase, node, AtkEventType.MouseClick);
+            settingDetail.Event.Add(unitBase, node, AtkEventType.MouseOver);
+            settingDetail.Event.Add(unitBase, node, AtkEventType.MouseOut);
+        }
+
+        unitBase->UpdateCollisionNodeList(false);
+
+        Common.FrameworkUpdate += UpdateIcons;
+        UpdateIcons();
+    }
+
+    private void UpdateIcons() {
+        var unitBase = Common.GetUnitBase("ContentsFinder");
+        if (unitBase == null) {
+            Common.FrameworkUpdate -= UpdateIcons;
+            return;
+        }
+
+        for (var i = 0; i < dutyFinderSettingIcons.Count; i++) {
+            var settingDetail = dutyFinderSettingIcons[i];
+            var nodeId = CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Icon_{settingDetail.Setting}");
+            var imgNode = Common.GetNodeByID<AtkImageNode>(&unitBase->UldManager, nodeId, NodeType.Image);
+            if (imgNode == null) continue;
+            
+            var icon = settingDetail.GetIcon();
+            // Game gets weird sometimes loading Icons using the specific icon function...
+            imgNode->LoadTexture($"ui/icon/{icon / 5000 * 5000:000000}/{icon:000000}.tex");
+            var value = GetCurrentSettingValue(settingDetail.Setting);
+
+            var isSettingDisabled = (settingDetail.Setting == DutyFinderSetting.LevelSync && GetCurrentSettingValue(DutyFinderSetting.UnrestrictedParty) == 0);
+
+            if (isSettingDisabled) {
+                imgNode->AtkResNode.Color.A = (byte)(value != 0 ? 255 : 180);
+                imgNode->AtkResNode.Alpha_2 = (byte)(value != 0 ? 255 : 180);
+
+                imgNode->AtkResNode.MultiplyRed = 5;
+                imgNode->AtkResNode.MultiplyGreen = 5;
+                imgNode->AtkResNode.MultiplyBlue = 5;
+                imgNode->AtkResNode.AddRed = 120;
+                imgNode->AtkResNode.AddGreen = 120;
+                imgNode->AtkResNode.AddBlue = 120;
+            } else {
+                imgNode->AtkResNode.Color.A = (byte)(value != 0 ? 255 : 127);
+                imgNode->AtkResNode.Alpha_2 = (byte)(value != 0 ? 255 : 127);
+
+                imgNode->AtkResNode.AddBlue = 0;
+                imgNode->AtkResNode.AddGreen = 0;
+                imgNode->AtkResNode.AddRed = 0;
+                imgNode->AtkResNode.MultiplyRed = 100;
+                imgNode->AtkResNode.MultiplyGreen = 100;
+                imgNode->AtkResNode.MultiplyBlue = 100;
+            }
+        }
+    }
+
+    private void ResetAddon(AtkUnitBase* unitBase) {
+        var vanillaIconContainer = unitBase->GetNodeById(6);
+        if (vanillaIconContainer == null) return;
+        vanillaIconContainer->ToggleVisibility(true);
+        var container = Common.GetNodeByID(&unitBase->UldManager, CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Container"));
+
+        for (var i = 0; i < dutyFinderSettingIcons.Count; i++) {
+            var settingDetail = dutyFinderSettingIcons[i];
+            var imgNode = Common.GetNodeByID<AtkImageNode>(&unitBase->UldManager, CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Icon_{settingDetail.Setting}"), NodeType.Image);
+            if (imgNode == null) continue;
+
+            UiHelper.UnlinkAndFreeImageNode(imgNode, unitBase);
+        }
+
+        for (var i = 0; i < languageButtons.Count; i++) {
+            var settingDetail = languageButtons[i];
+
+            var node = unitBase->GetNodeById(17 + (uint)i);
+            if (node == null) continue;
+
+            settingDetail.Event.Remove(unitBase, node, AtkEventType.MouseClick);
+            settingDetail.Event.Remove(unitBase, node, AtkEventType.MouseOver);
+            settingDetail.Event.Remove(unitBase, node, AtkEventType.MouseOut);
+        }
+
+        if (container == null) return;
+        UiHelper.UnlinkNode(container, unitBase);
+        container->Destroy(true);
+
+        unitBase->UldManager.UpdateDrawNodeList();
+        unitBase->UpdateCollisionNodeList(false);
     }
 
     protected override void Enable() {
-        setContentsFinderSettings = (delegate* unmanaged<byte*, nint, void>) Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 8B 07 33 F6");
-        this.LoadIcons();
-        Service.PluginInterface.UiBuilder.Draw += this.OnDraw;
-        base.Enable();
+        _tweak = this;
+        if (Common.GetUnitBase("ContentsFinder", out var unitBase)) {
+            SetupAddon(unitBase);
+        }
     }
 
     protected override void Disable() {
-        Service.PluginInterface.UiBuilder.Draw -= this.OnDraw;
-        this.DisposeIcons();
-        var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName("ContentsFinder");
-        if (addon == null) {
-            addon = (AtkUnitBase*)Service.GameGui.GetAddonByName("RaidFinder");
+        if (Common.GetUnitBase("ContentsFinder", out var unitBase)) {
+            ResetAddon(unitBase);
         }
 
-        if (addon != null) {
-            var buttons = addon->UldManager.SearchNodeById(6);
-            if (buttons != null) {
-                buttons->ToggleVisibility(true);
-            }
-        }
-
-        base.Disable();
+        Common.FrameworkUpdate -= UpdateIcons;
     }
 
-    private delegate* unmanaged<byte*, nint, void> setContentsFinderSettings;
-    private volatile bool iconsReady;
-    private Dictionary<uint, TextureWrap> icons;
-    private Dictionary<uint, TextureWrap> iconsGrayscale;
-    private readonly List<DutyFinderSetting> dutyFinderSettingOrder = new() {
-        DutyFinderSetting.JoinPartyInProgress,
-        DutyFinderSetting.UnrestrictedParty,
-        DutyFinderSetting.LevelSync,
-        DutyFinderSetting.MinimumIl,
-        DutyFinderSetting.SilenceEcho,
-        DutyFinderSetting.ExplorerMode,
-        DutyFinderSetting.LimitedLevelingRoulette,
-        DutyFinderSetting.LootRule,
-        DutyFinderSetting.Ja,
-        DutyFinderSetting.En,
-        DutyFinderSetting.De,
-        DutyFinderSetting.Fr,
-    };
-
-    // values are matching the index in the array passed to setContentsFinderSettings
     private enum DutyFinderSetting {
         Ja = 0,
         En = 1,
@@ -90,25 +283,9 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         ExplorerMode = 10,
         LimitedLevelingRoulette = 11,
     }
-
-    private static uint GetIconId(DutyFinderSetting dutyFinderSetting, LootRule lootRule = LootRule.Normal) {
-        return dutyFinderSetting switch {
-            DutyFinderSetting.LootRule => lootRule switch {
-                LootRule.Normal => 60003,
-                LootRule.GreedOnly => 60645,
-                LootRule.Lootmaster => 60646,
-                _ => 0,
-            },
-            DutyFinderSetting.JoinPartyInProgress => 60644,
-            DutyFinderSetting.UnrestrictedParty => 60641,
-            DutyFinderSetting.LevelSync => 60649,
-            DutyFinderSetting.MinimumIl => 60642,
-            DutyFinderSetting.SilenceEcho => 60647,
-            DutyFinderSetting.ExplorerMode => 60648,
-            DutyFinderSetting.LimitedLevelingRoulette => 60640,
-            _ => 0,
-        };
-    }
+    
+    [Signature("E8 ?? ?? ?? ?? 48 8B 07 33 F6")]
+    private static delegate* unmanaged<byte*, nint, void> _setContentsFinderSettings;
 
     private static byte GetCurrentSettingValue(DutyFinderSetting dutyFinderSetting) {
         var contentsFinder = ContentsFinder.Instance();
@@ -129,244 +306,6 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         };
     }
 
-    private static string GetTooltip(DutyFinderSetting dutyFinderSetting, LootRule lootRule = LootRule.Normal) {
-        var addonSheet = Service.Data.Excel.GetSheet<Addon>();
-        return dutyFinderSetting switch {
-            DutyFinderSetting.Ja => addonSheet?.GetRow(10)?.Text.ToDalamudString().ToString() ?? "Japanese",
-            DutyFinderSetting.En => addonSheet?.GetRow(11)?.Text?.ToDalamudString().ToString() ?? "English",
-            DutyFinderSetting.De => addonSheet?.GetRow(12)?.Text?.ToDalamudString().ToString() ?? "German",
-            DutyFinderSetting.Fr => addonSheet?.GetRow(13)?.Text?.ToDalamudString().ToString() ?? "French",
-            DutyFinderSetting.LootRule => lootRule switch
-            {
-                LootRule.Normal => addonSheet?.GetRow(10022)?.Text?.ToDalamudString().ToString() ?? "Loot Rule: Normal",
-                LootRule.GreedOnly => addonSheet?.GetRow(10023)?.Text?.ToDalamudString().ToString() ?? "Loot Rule: Greed Only",
-                LootRule.Lootmaster => addonSheet?.GetRow(10024)?.Text?.ToDalamudString().ToString() ?? "Loot Rule: Lootmaster",
-                _ => "Unknown Loot Rule",
-            },
-            DutyFinderSetting.JoinPartyInProgress => addonSheet?.GetRow(2519)?.Text?.ToDalamudString().ToString() ?? "Join Party in Progress",
-            DutyFinderSetting.UnrestrictedParty => addonSheet?.GetRow(10008)?.Text?.ToDalamudString().ToString() ?? "Unrestricted Party",
-            DutyFinderSetting.LevelSync => addonSheet?.GetRow(12696)?.Text?.ToDalamudString().ToString() ?? "Level Sync",
-            DutyFinderSetting.MinimumIl => addonSheet?.GetRow(10010)?.Text?.ToDalamudString().ToString() ?? "Minimum IL",
-            DutyFinderSetting.SilenceEcho => addonSheet?.GetRow(12691)?.Text?.ToDalamudString().ToString() ?? "Silence Echo",
-            DutyFinderSetting.ExplorerMode => addonSheet?.GetRow(13038)?.Text?.ToDalamudString().ToString() ?? "Explorer Mode",
-            DutyFinderSetting.LimitedLevelingRoulette => addonSheet?.GetRow(13030)?.Text?.ToDalamudString().ToString() ?? "Limited Leveling Roulette",
-            _ => "Unknown tooltip",
-        };
-    }
-
-    private void LoadIcons() {
-        this.icons = new Dictionary<uint, TextureWrap>();
-        this.iconsGrayscale = new Dictionary<uint, TextureWrap>();
-        var iconIdsToLoad = new List<uint>();
-
-        foreach (var setting in Enum.GetValues<DutyFinderSetting>()) {
-            if (setting == DutyFinderSetting.LootRule) {
-                iconIdsToLoad.AddRange(Enum.GetValues<LootRule>().Select(lootRule => GetIconId(setting, lootRule)));
-            } else {
-                iconIdsToLoad.Add(GetIconId(setting));
-            }
-        }
-
-        iconIdsToLoad.RemoveAll(id => id == 0);
-
-        Task.Run(() => {
-            foreach (var id in iconIdsToLoad) {
-                var (icon, iconGrayscale) = GetIconTextureWraps(id);
-                if (icon != null && this.iconsGrayscale != null) {
-                    this.icons[id] = icon;
-                    this.iconsGrayscale[id] = iconGrayscale;
-                } else {
-                    this.DisposeIcons();
-                    SimpleLog.Error("Failed to load icons.");
-                    break;
-                }
-            }
-
-            this.iconsReady = true;
-        });
-    }
-
-    private static (TextureWrap icon, TextureWrap iconGrayscale) GetIconTextureWraps(uint id) {
-        try {
-            var iconPath = $"ui/icon/060000/0{id}_hr1.tex";
-            var iconTex = Service.Data.GetFile<TexFile>(iconPath);
-            if (iconTex != null) {
-                var tex = Service.PluginInterface.UiBuilder.LoadImageRaw(iconTex.GetRgbaImageData(), iconTex.Header.Width, iconTex.Header.Height, 4);
-                var textGrayscale = Service.PluginInterface.UiBuilder.LoadImageRaw(GetGrayscaleImageData(iconTex), iconTex.Header.Width, iconTex.Header.Height, 4);
-                if (tex.ImGuiHandle != nint.Zero && textGrayscale.ImGuiHandle != nint.Zero) {
-                    return (tex, textGrayscale);
-                }
-            }
-        }
-        catch (Exception ex) {
-            SimpleLog.Error(ex);
-        }
-
-        return (null, null);
-    }
-
-    private static byte[] GetGrayscaleImageData(TexFile tex) {
-        var rgba = tex.GetRgbaImageData();
-        var pixels = rgba.Length / 4;
-        var newData = new byte[rgba.Length];
-        for (var i = 0; i < pixels; i++) {
-            var pixel = i * 4;
-            var alpha = rgba[pixel + 3];
-
-            if (alpha > 0) {
-                var avg = (byte)(0.2125f * rgba[pixel] + 0.7154f * rgba[pixel + 1] + 0.0721f * rgba[pixel + 2]);
-                newData[pixel] = avg;
-                newData[pixel + 1] = avg;
-                newData[pixel + 2] = avg;
-            }
-
-            newData[pixel + 3] = alpha;
-        }
-        return newData;
-    }
-
-    private void DisposeIcons() {
-        if (this.icons != null) {
-            foreach (var (_, icon) in this.icons) {
-                icon.Dispose();
-            }
-
-            this.icons.Clear();
-        }
-
-        if (this.iconsGrayscale != null) {
-            foreach (var (_, icon) in this.iconsGrayscale) {
-                icon.Dispose();
-            }
-
-            this.iconsGrayscale.Clear();
-        }
-    }
-
-    private TextureWrap GetIcon(DutyFinderSetting dutyFinderSetting, bool grayscale, LootRule lootRule = LootRule.Normal) {
-        if (!this.iconsReady) {
-            return null;
-        }
-
-        if (!grayscale && this.icons.TryGetValue(GetIconId(dutyFinderSetting, lootRule), out var iconTex)) {
-            return iconTex;
-        }
-
-        if (grayscale && this.iconsGrayscale.TryGetValue(GetIconId(dutyFinderSetting, lootRule), out var iconTexGrayscale)) {
-            return iconTexGrayscale;
-        }
-
-        return null;
-    }
-
-    private void OnDraw() {
-        var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName("ContentsFinder");
-        if (addon == null) {
-            addon = (AtkUnitBase*)Service.GameGui.GetAddonByName("RaidFinder");
-        }
-
-        if (addon == null || !this.iconsReady || !this.Enabled) {
-            return;
-        }
-
-        var root = addon->RootNode;
-        var header = addon->UldManager.SearchNodeById(4);
-        var buttonsHeader = addon->UldManager.SearchNodeById(6);
-        var firstButton = addon->UldManager.SearchNodeById(7);
-        var languageHeader = addon->UldManager.SearchNodeById(15);
-        var japaneseLetter = addon->UldManager.SearchNodeById(17);
-        if (root == null || header == null || buttonsHeader == null || firstButton == null || languageHeader == null || japaneseLetter == null) {
-            return;
-        }
-
-        buttonsHeader->ToggleVisibility(false); // hide the game buttons
-
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
-        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 0));
-
-        try {
-            var windowScale = root->ScaleX;
-            ImGuiHelpers.ForceNextWindowMainViewport();
-            ImGuiHelpers.SetNextWindowPosRelativeMainViewport(
-                new Vector2(
-                    root->X + ((header->X + buttonsHeader->X) * windowScale),
-                    root->Y + (buttonsHeader->Y * windowScale)
-                    ),
-                ImGuiCond.Always
-                );
-            if (ImGui.Begin(
-                    "ImprovedDutyFinderSettings",
-                    ImGuiWindowFlags.NoTitleBar
-                    | ImGuiWindowFlags.NoResize
-                    | ImGuiWindowFlags.NoScrollbar
-                    | ImGuiWindowFlags.NoScrollWithMouse
-                    | ImGuiWindowFlags.NoBackground
-                    | ImGuiWindowFlags.NoSavedSettings
-                    | ImGuiWindowFlags.NoFocusOnAppearing
-                    | ImGuiWindowFlags.NoBringToFrontOnFocus
-                    | ImGuiWindowFlags.AlwaysAutoResize)) {
-                var iconSize = firstButton->Width * windowScale;
-                var nextButton = firstButton;
-                const int nbButtons = 8;
-                var isQueuedForDuty = Service.Condition[ConditionFlag.BoundToDuty97];
-                for (var i = 0; i < nbButtons && nextButton != null; i++) {
-                    var setting = this.dutyFinderSettingOrder[i];
-                    var isSettingDisabled = isQueuedForDuty || (setting == DutyFinderSetting.LevelSync && GetCurrentSettingValue(DutyFinderSetting.UnrestrictedParty) == 0);
-
-                    ImGui.SameLine(nextButton->X * windowScale);
-                    var lootRule = (LootRule)GetCurrentSettingValue(DutyFinderSetting.LootRule);
-                    var icon = this.GetIcon(setting, isSettingDisabled, lootRule);
-                    if (icon != null) {
-                        if (ImGui.Selectable($"##DutyFinderSettingButtons{i}", false, ImGuiSelectableFlags.None, new Vector2(iconSize, (header->Height - 5) * windowScale))) {
-                            ToggleSetting(setting);
-                        }
-
-                        ImGui.SameLine();
-                        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (header->Y * windowScale));
-                        ImGui.SetCursorPosX(ImGui.GetCursorPosX() - iconSize);
-                        var tint = GetCurrentSettingValue(setting) == 0 ? new Vector4(0.5f) : new Vector4(1.0f);
-                        ImGui.Image(icon.ImGuiHandle, new Vector2(iconSize), new Vector2(0), new Vector2(1), tint);
-
-                        if (ImGui.IsItemHovered()) {
-                            var tooltip = GetTooltip(setting, lootRule);
-                            if (setting == DutyFinderSetting.LevelSync) {
-                                tooltip += $"\n\nThis setting is only applicable when \"{GetTooltip(DutyFinderSetting.UnrestrictedParty)}\" is enabled.";
-                            }
-
-                            ImGui.SetTooltip(tooltip);
-                        }
-                    } else {
-                        ImGui.Text("(?)");
-                        if (ImGui.IsItemHovered()) {
-                            ImGui.SetTooltip("Failed to load icons." +
-                                             "\nThis can happen if your game was corrupted by TexTools. Use the repair function in the launcher to fix this." +
-                                             "\nIf it still does not work after a repair, please report this issue.");
-                        }
-                    }
-
-                    nextButton = nextButton->NextSiblingNode;
-                }
-
-                var nextLetter = japaneseLetter;
-                const int nbLanguages = 4;
-                for (var i = nbButtons; i < nbButtons + nbLanguages; i++) {
-                    var setting = this.dutyFinderSettingOrder[i];
-                    ImGui.SameLine((languageHeader->X + nextLetter->X - buttonsHeader->X) * windowScale);
-                    if (ImGui.Selectable($"##DutyFinderSettingLanguages{i}", false, ImGuiSelectableFlags.None, new Vector2((nextLetter->Width - 2) * windowScale, (header->Height - 5) * windowScale))) {
-                        ToggleSetting(setting);
-                    }
-
-                    nextLetter = nextLetter->NextSiblingNode;
-                }
-
-                ImGui.End();
-            }
-        }
-        finally {
-            ImGui.PopStyleVar(2);
-        }
-    }
-
     private void ToggleSetting(DutyFinderSetting setting) {
         // block setting change if queued for a duty
         if (Service.Condition[ConditionFlag.BoundToDuty97]) {
@@ -375,10 +314,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
 
         // always need at least one language enabled
         if (setting is DutyFinderSetting.Ja or DutyFinderSetting.En or DutyFinderSetting.De or DutyFinderSetting.Fr) {
-            var nbEnabledLanguages = GetCurrentSettingValue(DutyFinderSetting.Ja)
-                                        + GetCurrentSettingValue(DutyFinderSetting.En)
-                                        + GetCurrentSettingValue(DutyFinderSetting.De)
-                                        + GetCurrentSettingValue(DutyFinderSetting.Fr);
+            var nbEnabledLanguages = GetCurrentSettingValue(DutyFinderSetting.Ja) + GetCurrentSettingValue(DutyFinderSetting.En) + GetCurrentSettingValue(DutyFinderSetting.De) + GetCurrentSettingValue(DutyFinderSetting.Fr);
             if (nbEnabledLanguages == 1 && GetCurrentSettingValue(setting) == 1) {
                 return;
             }
@@ -399,13 +335,12 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         array[(int)setting] = newValue;
 
         if (!IsSettingArrayValid(array)) {
-            SimpleLog.Error("Tweak appears to be broken, disabling it.");
-            Disable();
+            SimpleLog.Error("Tweak appears to be broken.");
             return;
         }
 
         fixed (byte* arrayPtr = array) {
-            setContentsFinderSettings(arrayPtr, (nint)Framework.Instance()->GetUiModule());
+            _setContentsFinderSettings(arrayPtr, (nint)Framework.Instance()->GetUiModule());
         }
     }
 
@@ -427,18 +362,14 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         var isArrayValid = true;
         var nbSettings = Enum.GetValues<DutyFinderSetting>().Length; // % for previous values
         for (var index = 0; index < array.Count; index++) {
-            if ((index % nbSettings != (int)DutyFinderSetting.LootRule && array[index] != 0 && array[index] != 1)
-                    || (array[index] != 0 && array[index] != 1 && array[index] != 2)) {
+            if ((index % nbSettings != (int)DutyFinderSetting.LootRule && array[index] != 0 && array[index] != 1) || (array[index] != 0 && array[index] != 1 && array[index] != 2)) {
                 isArrayValid = false;
                 SimpleLog.Error($"Invalid setting value ({array[index]}) for: {(DutyFinderSetting)(index % nbSettings)}");
             }
         }
 
         // duty server would reject any request without language set
-        if (array[(int)DutyFinderSetting.Ja] == 0
-                && array[(int)DutyFinderSetting.En] == 0
-                && array[(int)DutyFinderSetting.De] == 0
-                && array[(int)DutyFinderSetting.Fr] == 0) {
+        if (array[(int)DutyFinderSetting.Ja] == 0 && array[(int)DutyFinderSetting.En] == 0 && array[(int)DutyFinderSetting.De] == 0 && array[(int)DutyFinderSetting.Fr] == 0) {
             isArrayValid = false;
             SimpleLog.Error("No language selected, this is impossible.");
         }
