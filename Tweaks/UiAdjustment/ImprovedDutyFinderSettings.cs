@@ -111,14 +111,13 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         new DutyFinderSettingDisplay(DutyFinderSetting.Fr, 0, 13),
     };
 
-    [AddonSetup("ContentsFinder")]
+    [AddonSetup("ContentsFinder", "RaidFinder")]
     protected void ContentsFinderSetup(AtkUnitBase* addonContentsFinder) {
         SetupAddon(addonContentsFinder);
     }
 
-    [AddonFinalize("ContentsFinder")]
+    [AddonFinalize("ContentsFinder", "RaidFinder")]
     protected void ContentsFinderFinalize(AtkUnitBase* addonContentsFinder) {
-        Common.FrameworkUpdate -= UpdateIcons;
         ResetAddon(addonContentsFinder);
     }
 
@@ -146,8 +145,6 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
             var imgNode = UiHelper.MakeImageNode(CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Icon_{settingDetail.Setting}"), new UiHelper.PartInfo(0, 0, 24, 24));
             UiHelper.LinkNodeAtEnd(imgNode, container, unitBase);
 
-            imgNode->AtkResNode.ToggleVisibility(true);
-
             imgNode->AtkResNode.SetPositionFloat(basedOn->GetX(), basedOn->GetY());
             imgNode->AtkResNode.SetWidth(basedOn->GetWidth());
             imgNode->AtkResNode.SetHeight(basedOn->GetHeight());
@@ -172,18 +169,23 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         }
 
         unitBase->UpdateCollisionNodeList(false);
-
+        frameworkTicksSinceUpdate = 0;
+        Common.FrameworkUpdate -= UpdateIcons;
         Common.FrameworkUpdate += UpdateIcons;
-        UpdateIcons();
+        UpdateIcons(unitBase);
     }
 
+    private int frameworkTicksSinceUpdate = 0;
+    
     private void UpdateIcons() {
-        var unitBase = Common.GetUnitBase("ContentsFinder");
-        if (unitBase == null) {
-            Common.FrameworkUpdate -= UpdateIcons;
-            return;
-        }
-
+        if (Common.GetUnitBase("ContentsFinder", out var unitBase)) UpdateIcons(unitBase); 
+        if (Common.GetUnitBase("RaidFinder", out var raidFinder)) UpdateIcons(raidFinder);
+        if (frameworkTicksSinceUpdate++ > 5) Common.FrameworkUpdate -= UpdateIcons;
+    }
+    
+    private void UpdateIcons(AtkUnitBase* unitBase) {
+        if (unitBase == null) return;
+        frameworkTicksSinceUpdate = 0;
         for (var i = 0; i < dutyFinderSettingIcons.Count; i++) {
             var settingDetail = dutyFinderSettingIcons[i];
             var nodeId = CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Icon_{settingDetail.Setting}");
@@ -193,6 +195,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
             var icon = settingDetail.GetIcon();
             // Game gets weird sometimes loading Icons using the specific icon function...
             imgNode->LoadTexture($"ui/icon/{icon / 5000 * 5000:000000}/{icon:000000}.tex");
+            imgNode->AtkResNode.ToggleVisibility(true);
             var value = GetCurrentSettingValue(settingDetail.Setting);
 
             var isSettingDisabled = (settingDetail.Setting == DutyFinderSetting.LevelSync && GetCurrentSettingValue(DutyFinderSetting.UnrestrictedParty) == 0);
@@ -258,12 +261,16 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         _tweak = this;
         if (Common.GetUnitBase("ContentsFinder", out var unitBase)) {
             SetupAddon(unitBase);
+        } else if (Common.GetUnitBase("RaidFinder", out var raidFinder)) {
+            SetupAddon(raidFinder);
         }
     }
 
     protected override void Disable() {
         if (Common.GetUnitBase("ContentsFinder", out var unitBase)) {
             ResetAddon(unitBase);
+        } else if (Common.GetUnitBase("RaidFinder", out var raidFinder)) {
+            ResetAddon(raidFinder);
         }
 
         Common.FrameworkUpdate -= UpdateIcons;
