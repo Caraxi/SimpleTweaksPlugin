@@ -60,8 +60,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
                         Common.UnforceMouseCursor();
                         return;
                     }
-
-                    if (Service.Condition[ConditionFlag.BoundToDuty97]) return;
+                    
                     if (type != AtkEventType.MouseClick) return;
 
                     _tweak.ToggleSetting(Setting);
@@ -316,6 +315,8 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
     private void ToggleSetting(DutyFinderSetting setting) {
         // block setting change if queued for a duty
         if (Service.Condition[ConditionFlag.BoundToDuty97]) {
+            var condition = Service.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Condition>()?.GetRow((uint)ConditionFlag.BoundToDuty97)?.LogMessage?.Value?.Text?.ToDalamudString();
+            Service.Toasts.ShowError(condition ?? "Unable to execute command while bound by duty.");
             return;
         }
 
