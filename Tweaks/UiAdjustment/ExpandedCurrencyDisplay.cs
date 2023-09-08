@@ -35,6 +35,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         public int GridSize = 2;
         public float[] GridSpacing = Array.Empty<float>();
         public Direction GridGrowth = Direction.Left;
+        public bool DisableEvents;
     }
     
     public class CurrencyEntry
@@ -102,6 +103,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         AddChangelog("1.8.8.0", "Added tooltips when mouse is over the currency icons.");
         AddChangelog("1.8.8.1", "Attempting to avoid gil addon getting thrown around when layout changes.");
         AddChangelog("1.8.8.2", "Fixed positioning of gil display moving when scale is anything other than 100%");
+        AddChangelog(UnreleasedVersion, "Added an option to disable tooltips.");
         base.Setup();
     }
 
@@ -259,13 +261,15 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         var resNodeSize = new Vector2(156, 36); // Hardcode it so we can change things
         
         // Resize Addon for Events
-        AddonMoney->RootNode->SetHeight(1000);
-        AddonMoney->RootNode->SetWidth(1000);
-        AddonMoney->RootNode->SetPositionFloat(AddonMoney->X - 500 * AddonMoney->GetScale() * AddonMoney->RootNode->ScaleX, AddonMoney->Y - 500 * AddonMoney->GetScale() * AddonMoney->RootNode->ScaleY);
+        if (!TweakConfig.DisableEvents) {
+            AddonMoney->RootNode->SetHeight(1000);
+            AddonMoney->RootNode->SetWidth(1000);
+            AddonMoney->RootNode->SetPositionFloat(AddonMoney->X - 500 * AddonMoney->GetScale() * AddonMoney->RootNode->ScaleX, AddonMoney->Y - 500 * AddonMoney->GetScale() * AddonMoney->RootNode->ScaleY);
         
-        currencyPositionNode->SetPositionFloat(620, 500);
-        counterPositionNode->AtkResNode.SetPositionFloat(500, 508);
-
+            currencyPositionNode->SetPositionFloat(620, 500);
+            counterPositionNode->AtkResNode.SetPositionFloat(500, 508);
+        }
+        
         var gridIndex = 0U;
         
         // Make all counter nodes first, because if a icon node overlaps it even slightly it'll hide itself.
@@ -332,6 +336,13 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     }
 
     private void DrawGridConfig() {
+
+        if (ImGui.Checkbox("Disable Interaction", ref TweakConfig.DisableEvents)) {
+            SaveConfig(TweakConfig);
+            FreeAllNodes();
+        }
+        ImGui.SameLine();
+        ImGuiComponents.HelpMarker("Disables tooltips for currency icons. \n - Should also help if you have issues with the UI moving unexpectedly.");
 
         ImGui.Checkbox("Use Grid Layout", ref TweakConfig.Grid);
 
@@ -664,7 +675,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         
         UiHelper.LinkNodeAtEnd((AtkResNode*) imageNode, AddonMoney);
 
-        if (tooltipText != null && simpleEvent != null) {
+        if (!TweakConfig.DisableEvents && tooltipText != null && simpleEvent != null) {
             imageNode->AtkResNode.NodeFlags |= NodeFlags.RespondToMouse | NodeFlags.EmitsEvents | NodeFlags.HasCollision;
             AddonMoney->UpdateCollisionNodeList(false);
             simpleEvent?.Add(AddonMoney, &imageNode->AtkResNode, AtkEventType.MouseOver);
