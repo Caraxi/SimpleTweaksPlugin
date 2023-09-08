@@ -92,6 +92,8 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     private delegate void* HudLayoutChangeDelegate(void* a1, uint a2, byte a3, byte a4);
     private HookWrapper<HudLayoutChangeDelegate>? hudLayoutChangeHook;
 
+    private delegate void* UnitBaseUpdatePosition(AtkUnitBase* unitBase);
+    private HookWrapper<UnitBaseUpdatePosition>? updatePositionHook;
 
     public override void Setup() {
         AddChangelogNewTweak("1.8.3.0");
@@ -104,6 +106,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         AddChangelog("1.8.8.1", "Attempting to avoid gil addon getting thrown around when layout changes.");
         AddChangelog("1.8.8.2", "Fixed positioning of gil display moving when scale is anything other than 100%");
         AddChangelog(UnreleasedVersion, "Added an option to disable tooltips.");
+        AddChangelog(UnreleasedVersion, "Fixed currency window positioning breaking when resizing game window.");
         base.Setup();
     }
 
@@ -124,12 +127,29 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         hudLayoutChangeHook ??= Common.Hook<HudLayoutChangeDelegate>("E8 ?? ?? ?? ?? 33 C0 EB 15 ", OnHudLayoutChange);
         hudLayoutChangeHook?.Enable();
 
+        updatePositionHook ??= Common.Hook<UnitBaseUpdatePosition>("E8 ?? ?? ?? ?? 48 8B 03 41 B9 ?? ?? ?? ?? 45 33 C0 41 0F B6 D1 48 8B CB FF 50 30 48 8B CB", UpdatePositionDetour);
+        updatePositionHook?.Enable();
+
         var agent = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentHudLayout();
         if (!agent->AgentInterface.IsAgentActive()) {
             Common.FrameworkUpdate += OnFrameworkUpdate;
         }
         
         base.Enable();
+    }
+
+    private void* UpdatePositionDetour(AtkUnitBase* unitBase) {
+        try {
+            if (unitBase->Name[0] == '_') {
+                var name = Common.ReadString(unitBase->Name, 0x20);
+                if (name == "_Money") FreeAllNodes();
+            }
+        } catch (Exception ex) {
+            SimpleLog.Error(ex);
+        }
+        
+
+        return updatePositionHook!.Original(unitBase);
     }
 
     private void* OnOpenHudLayout(AgentHudLayout* agent) {
@@ -169,6 +189,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         openHudLayoutHook?.Disable();
         closeHudLayoutHook?.Disable();
         hudLayoutChangeHook?.Disable();
+        updatePositionHook?.Disable();
         simpleEvent?.Dispose();
         SaveConfig(TweakConfig);
         Common.FrameworkUpdate -= OnFrameworkUpdate;
@@ -180,6 +201,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         openHudLayoutHook?.Dispose();
         closeHudLayoutHook?.Dispose();
         hudLayoutChangeHook?.Dispose();
+        updatePositionHook?.Dispose();
         base.Dispose();
     }
 
