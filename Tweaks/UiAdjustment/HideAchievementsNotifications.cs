@@ -2,6 +2,7 @@
 using Dalamud.Game;
 using Dalamud.Game.Config;
 using Dalamud.Interface.Colors;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -65,7 +66,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             try {
                 var atkUnitBase = Common.GetUnitBase(name);
                 if (atkUnitBase == null || atkUnitBase->IsVisible == false) return;
-                atkUnitBase->Hide(false);
+                // vfunc for hide is currently incorrect, this PR fixes it: https://github.com/aers/FFXIVClientStructs/pull/567/files 
+                ((delegate*unmanaged<AtkUnitBase*, bool, bool, bool, void>)atkUnitBase->VTable->Hide)(atkUnitBase, false, false, true);
             } catch (Exception) {
                 // ignore
             }
