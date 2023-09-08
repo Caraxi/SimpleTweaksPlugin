@@ -468,8 +468,8 @@ namespace SimpleTweaksPlugin {
         }
         
         public void Error(BaseTweak tweak, Exception exception, bool allowContinue = false, string message = "", [CallerFilePath] string callerFilePath = "", [CallerLineNumber] int callerLineNumber = 0, [CallerMemberName] string callerMemberName = "" ) {
-            if (tweak == null) {
-                SimpleLog.Error($"Exception in '{tweak?.Name ?? "NonTweakSource"}'" + (string.IsNullOrEmpty(message) ? "" : ($": {message}")), callerFilePath, callerMemberName, callerLineNumber);
+            if (tweak != null) {
+                SimpleLog.Error($"Exception in '{tweak}'" + (string.IsNullOrEmpty(message) ? "" : ($": {message}")), callerFilePath, callerMemberName, callerLineNumber);
             } else {
                 SimpleLog.Error("Exception in SimpleTweaks framework. "+ (string.IsNullOrEmpty(message) ? "" : ($": {message}")), callerFilePath, callerMemberName, callerLineNumber);
             }
