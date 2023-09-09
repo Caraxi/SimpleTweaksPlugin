@@ -34,7 +34,7 @@ public abstract class BaseTweak {
 
     public virtual string Name => TweakNameAttribute?.Name ?? GetType().Name;
 
-    public virtual uint Version => 1;
+    public virtual uint Version => TweakVersionAttribute?.Version ?? 1;
 
     public string LocalizedName => LocString("Name", Name, "Tweak Name");
 
@@ -534,6 +534,14 @@ public abstract class BaseTweak {
         }
     }
 
+    private TweakVersionAttribute tweakVersionAttribute;
+    protected TweakVersionAttribute TweakVersionAttribute {
+        get {
+            if (tweakVersionAttribute != null) return tweakVersionAttribute;
+            tweakVersionAttribute = GetType().GetCustomAttribute<TweakVersionAttribute>() ?? new TweakVersionAttribute(1);
+            return tweakVersionAttribute;
+        }
+    }
 
     #endregion
     
