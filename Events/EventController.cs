@@ -142,6 +142,8 @@ public static unsafe class EventController {
         }
     }
     
+    private static AddonUpdateDelegate WrapAddonUpdate(AddonDelegate wrap) => (addon, _, _) => wrap(addon);
+
     public static void RegisterEvents(BaseTweak tweak) {
         if (tweak == null) return;
         if (tweak.IsDisposed) return;
@@ -171,8 +173,16 @@ public static unsafe class EventController {
             
             if (method.TryGetCustomAttribute<AddonPreUpdateAttribute>(out var addonPreUpdateAttribute)) {
                 try {
-                    var updateDelegate = method.CreateDelegate<AddonUpdateDelegate>(tweak);
-                    RegisterAddonPreUpdate(tweak, updateDelegate, addonPreUpdateAttribute.AddonNames);
+
+                    try {
+                        var updateDelegate = method.CreateDelegate<AddonUpdateDelegate>(tweak);
+                        RegisterAddonPreUpdate(tweak, updateDelegate, addonPreUpdateAttribute.AddonNames);
+                    } catch (ArgumentException) {
+                        var updateDelegate = method.CreateDelegate<AddonDelegate>(tweak);
+                        var wrapped = WrapAddonUpdate(updateDelegate);
+                        RegisterAddonPreUpdate(tweak, wrapped, addonPreUpdateAttribute.AddonNames);
+                    }
+                    
                     _updateAddonByIdHook?.Enable();
                 } catch (Exception ex) {
                     SimpleLog.Error($"Failed to bind AddonPreUpdate to {tweak.GetType().Name}.{method.Name}");
@@ -182,8 +192,14 @@ public static unsafe class EventController {
             
             if (method.TryGetCustomAttribute<AddonPostUpdateAttribute>(out var addonPostUpdateAttribute)) {
                 try {
-                    var updateDelegate = method.CreateDelegate<AddonUpdateDelegate>(tweak);
-                    RegisterAddonPostUpdate(tweak, updateDelegate, addonPostUpdateAttribute.AddonNames);
+                    try {
+                        var updateDelegate = method.CreateDelegate<AddonUpdateDelegate>(tweak);
+                        RegisterAddonPostUpdate(tweak, updateDelegate, addonPostUpdateAttribute.AddonNames);
+                    } catch (ArgumentException) {
+                        var updateDelegate = method.CreateDelegate<AddonDelegate>(tweak);
+                        var wrapped = WrapAddonUpdate(updateDelegate);
+                        RegisterAddonPostUpdate(tweak, wrapped, addonPostUpdateAttribute.AddonNames);
+                    }
                     _updateAddonByIdHook?.Enable();
                 } catch (Exception ex) {
                     SimpleLog.Error($"Failed to bind AddonPostUpdate to {tweak.GetType().Name}.{method.Name}");
