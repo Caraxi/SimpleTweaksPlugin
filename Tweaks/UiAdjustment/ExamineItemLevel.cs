@@ -49,6 +49,9 @@ public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
         if (loadingStage != null && a2 > 0) {
             if (loadingStage->UInt == 4) {
                 ShowItemLevel();
+                Service.Framework.RunOnTick(() => {
+                    ShowItemLevel();
+                }, TimeSpan.FromMilliseconds(250));
             }
         }
         return retVal;
