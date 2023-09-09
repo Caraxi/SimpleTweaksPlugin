@@ -54,7 +54,6 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak {
         return Common.GetNodeByID<AtkImageNode>(&unitBase->UldManager, CustomNodes.Get(nameof(DutyListBackground)), NodeType.Image);
     }
 
-    [AddonPostUpdate("_ToDoList")]
     private void OnAddonUpdate(AtkUnitBase* unitBase) {
         if (Common.GetUnitBase("NamePlate", out var namePlate)) {
             var imageNode = GetImageNode(namePlate);
@@ -64,7 +63,7 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak {
                     return;
                 }
 
-                imageNode->AtkResNode.ToggleVisibility(unitBase->IsVisible && (unitBase->VisibilityFlags & 1) == 0);
+                imageNode->AtkResNode.ToggleVisibility(unitBase->IsVisible && unitBase->RootNode->IsVisible && (unitBase->VisibilityFlags & 1) == 0);
                 imageNode->AtkResNode.SetWidth(unitBase->RootNode->GetWidth());
                 imageNode->AtkResNode.SetHeight(unitBase->RootNode->GetHeight());
                 imageNode->AtkResNode.SetPositionFloat(unitBase->X, unitBase->Y);
