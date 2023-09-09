@@ -27,6 +27,9 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     public List<string> CustomProviders = new List<string>();
     public List<string> BlacklistedTweaks = new List<string>();
 
+    public Dictionary<string, string> CustomizedCommands = new();
+    public Dictionary<string, List<string>> DisabledCommandAlias = new();
+
     public bool HideKofi;
     public bool ShowExperimentalTweaks;
     public bool DisableAutoOpen;

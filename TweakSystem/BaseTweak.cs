@@ -13,6 +13,7 @@ using ImGuiScene;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using SimpleTweaksPlugin.Events;
+using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.TweakSystem; 
@@ -174,7 +175,7 @@ public abstract class BaseTweak {
         var shouldForceOpenConfig = ForceOpenConfig;
         ForceOpenConfig = false;
         var configTreeOpen = false;
-        if ((UseAutoConfig || DrawConfigTree != null) && Enabled) {
+        if ((this is CommandTweak || UseAutoConfig || DrawConfigTree != null) && Enabled) {
             var x = ImGui.GetCursorPosX();
             if (shouldForceOpenConfig) ImGui.SetNextItemOpen(true);
             if (ImGui.TreeNode($"{LocalizedName}##treeConfig_{GetType().Name}")) {
@@ -182,10 +183,22 @@ public abstract class BaseTweak {
                 DrawCommon();
                 ImGui.SetCursorPosX(x);
                 ImGui.BeginGroup();
-                if (UseAutoConfig)
+                if (UseAutoConfig) {
                     DrawAutoConfig();
-                else 
+                    if (this is CommandTweak ct) {
+                        ct.DrawCommandEditor();
+                    }
+                }
+                else if (DrawConfigTree != null) {
                     DrawConfigTree(ref hasChanged);
+                    if (this is CommandTweak ct) {
+                        ct.DrawCommandEditor();
+                    }
+                }
+                else if (this is CommandTweak ct) {
+                    ct.DrawCommandEditor(false);
+                }
+
                 ImGui.EndGroup();
                 ImGui.TreePop();
             } else {
