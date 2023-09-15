@@ -50,7 +50,7 @@ public abstract class BaseTweak {
 
     public virtual bool CanLoad => true;
 
-    public virtual bool UseAutoConfig => false;
+    public virtual bool UseAutoConfig => TweakAutoConfigAttribute is not NoAutoConfig;
 
     protected CultureInfo Culture => Plugin.Culture;
 
@@ -136,9 +136,49 @@ public abstract class BaseTweak {
             return default;
         }
     }
+    
+    private object LoadConfig(Type T, string key) {
+        if (!T.IsSubclassOf(typeof(TweakConfig))) throw new Exception($"{T} is not a TweakConfig class.");
+        try {
+            var configDirectory = PluginInterface.GetPluginConfigDirectory();
+            var configFile = Path.Combine(configDirectory, key + ".json");
+            if (!File.Exists(configFile)) return default;
+            var jsonString = File.ReadAllText(configFile);
+            return JsonConvert.DeserializeObject(jsonString, T);
+        } catch (Exception ex) {
+            SimpleLog.Error($"Failed to load config for tweak: {Name}");
+            SimpleLog.Error(ex);
+            return null;
+        }
+    }
+    
 
     protected void SaveConfig<T>(T config) where T : TweakConfig {
         try {
+#if DEBUG
+            SimpleLog.Verbose($"Save Config: {Name}");
+#endif
+            var configDirectory = PluginInterface.GetPluginConfigDirectory();
+            var configFile = Path.Combine(configDirectory, this.Key + ".json");
+            var jsonString = JsonConvert.SerializeObject(config, Formatting.Indented);
+#if DEBUG
+            foreach (var l in jsonString.Split('\n')) {
+                SimpleLog.Verbose($"    [{Name} Config] {l}");
+            }
+#endif
+            File.WriteAllText(configFile, jsonString);
+        } catch (Exception ex) {
+            SimpleLog.Error($"Failed to write config for tweak: {this.Name}");
+            SimpleLog.Error(ex);
+        }
+    }
+    
+    private void SaveConfig(object config) {
+        try {
+            if (!config.GetType().IsSubclassOf(typeof(TweakConfig))) {
+                SimpleLog.Error($"Failed to save Config: {config.GetType().Name} is not a subclass of TweakConfig.");
+                return;
+            }
 #if DEBUG
             SimpleLog.Verbose($"Save Config: {Name}");
 #endif
@@ -224,9 +264,17 @@ public abstract class BaseTweak {
     private void DrawAutoConfig() {
         var configChanged = false;
         try {
-            // ReSharper disable once PossibleNullReferenceException
-            var configObj = this.GetType().GetProperties().FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(TweakConfig))).GetValue(this);
+            var configProperty = this.GetType().GetProperties().FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(TweakConfig)));
+            if (configProperty == null) {
+                ImGui.Text("No Config Property Found");
+                return;
+            }
+            var configObj = configProperty.GetValue(this);
 
+            if (configObj == null) {
+                configObj = Activator.CreateInstance(configProperty.PropertyType);
+                configProperty.SetValue(this, configObj);
+            }
 
             var fields = configObj.GetType().GetFields()
                 .Where(f => f.GetCustomAttribute(typeof(TweakConfigOptionAttribute)) != null)
@@ -457,12 +505,48 @@ public abstract class BaseTweak {
     }
 
     private bool signatureHelperInitalized = false;
+
+    private void AutoLoadConfig() {
+        SimpleLog.Verbose($"[{Key}] AutoLoading Config");
+        var configProperty = GetType().GetProperties().FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(TweakConfig)));
+        if (configProperty == null) {
+            SimpleLog.Error("Failed to AutoLoad config. No TweakConfig property found.");
+            return;
+        }
+
+        var config = LoadConfig(configProperty.PropertyType, TweakAutoConfigAttribute.ConfigKey ?? Key);
+        if (config == null) {
+            config = Activator.CreateInstance(configProperty.PropertyType);
+            configProperty.SetValue(this, config);
+        } else {
+            configProperty.SetValue(this, config);
+        }
+    }
+
+    private void AutoSaveConfig() {
+        SimpleLog.Verbose($"[{Key}] AutoSaving Config");
+        var configProperty = GetType().GetProperties().FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(TweakConfig)));
+        if (configProperty == null) {
+            SimpleLog.Error("Failed to AutoSave config. No TweakConfig property found.");
+            return;
+        }
+        var config = configProperty.GetValue(this);
+        if (config == null) return;
+        SaveConfig(config);
+    }
+    
+    
     internal void InternalEnable() {
         if (!signatureHelperInitalized) {
             SignatureHelper.Initialise(this);
             signatureHelperInitalized = true;
         }
         
+        // Auto Load Config
+        if (UseAutoConfig && TweakAutoConfigAttribute is not NoAutoConfig && TweakAutoConfigAttribute.AutoSaveLoad) {
+           AutoLoadConfig(); 
+        }
+
         Enable();
         EventController.RegisterEvents(this);
         
@@ -490,6 +574,11 @@ public abstract class BaseTweak {
             if (field.GetValue(this) is IHookWrapper h) {
                 h.Disable();
             }
+        }
+
+        // Auto Save Config
+        if (UseAutoConfig && TweakAutoConfigAttribute is not NoAutoConfig && TweakAutoConfigAttribute.AutoSaveLoad) {
+            AutoSaveConfig(); 
         }
         Enabled = false;
     }
@@ -556,6 +645,15 @@ public abstract class BaseTweak {
         }
     }
 
+    private TweakAutoConfigAttribute tweakAutoConfigAttribute;
+
+    protected TweakAutoConfigAttribute TweakAutoConfigAttribute {
+        get {
+            if (tweakAutoConfigAttribute != null) return tweakAutoConfigAttribute;
+            tweakAutoConfigAttribute = GetType().GetCustomAttribute<TweakAutoConfigAttribute>() ?? NoAutoConfig.Singleton;
+            return tweakAutoConfigAttribute;
+        }
+    }
     #endregion
     
 
