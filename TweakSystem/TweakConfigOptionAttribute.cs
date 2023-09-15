@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Reflection;
+using JetBrains.Annotations;
 
 namespace SimpleTweaksPlugin.TweakSystem; 
 
+[UsedImplicitly(ImplicitUseKindFlags.Access | ImplicitUseKindFlags.Assign)]
+[AttributeUsage(AttributeTargets.Field)]
 public class TweakConfigOptionAttribute : Attribute {
         
     public string Name { get; }
