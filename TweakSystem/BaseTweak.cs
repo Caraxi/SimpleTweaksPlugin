@@ -224,18 +224,11 @@ public abstract class BaseTweak {
                 ImGui.SetCursorPosX(x);
                 ImGui.BeginGroup();
                 if (UseAutoConfig) {
-                    DrawAutoConfig();
-                    if (this is CommandTweak ct) {
-                        ct.DrawCommandEditor();
-                    }
+                    DrawAutoConfig(ref hasChanged);
                 }
-                else if (DrawConfigTree != null) {
-                    DrawConfigTree(ref hasChanged);
-                    if (this is CommandTweak ct) {
-                        ct.DrawCommandEditor();
-                    }
-                }
-                else if (this is CommandTweak ct) {
+
+                DrawConfigTree?.Invoke(ref hasChanged);
+                if (this is CommandTweak ct) {
                     ct.DrawCommandEditor(false);
                 }
 
@@ -261,8 +254,7 @@ public abstract class BaseTweak {
 
     public virtual void LanguageChanged() { }
 
-    private void DrawAutoConfig() {
-        var configChanged = false;
+    private void DrawAutoConfig(ref bool hasChanged) {
         try {
             var configProperty = this.GetType().GetProperties().FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(TweakConfig)));
             if (configProperty == null) {
@@ -300,13 +292,13 @@ public abstract class BaseTweak {
                     var arr = new [] {$"{localizedName}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", v};
                     var o = (bool) attr.Editor.Invoke(null, arr);
                     if (o) {
-                        configChanged = true;
+                        hasChanged = true;
                         f.SetValue(configObj, arr[1]);
                     }
                 } else if (f.FieldType == typeof(bool)) {
                     var v = (bool) f.GetValue(configObj);
                     if (ImGui.Checkbox($"{localizedName}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", ref v)) {
-                        configChanged = true;
+                        hasChanged = true;
                         f.SetValue(configObj, v);
                     }
                 } else if (f.FieldType == typeof(int)) {
@@ -330,7 +322,7 @@ public abstract class BaseTweak {
                         
                     if (e) {
                         f.SetValue(configObj, v);
-                        configChanged = true;
+                        hasChanged = true;
                     }
                 }
                 else {
@@ -342,10 +334,6 @@ public abstract class BaseTweak {
         } catch (Exception ex) {
             ImGui.Text($"Error with AutoConfig: {ex.Message}");
             ImGui.TextWrapped($"{ex.StackTrace}");
-        }
-
-        if (configChanged && Enabled) {
-            ConfigChanged();
         }
     }
 
