@@ -116,7 +116,7 @@ public abstract class CommandTweak : Tweak {
             }
             foreach (var a in Alias) {
                 var isEnabled = !disabledCommandAlias.Contains(a);
-                if (ImGui.Checkbox(a.StartsWith('/') ? a : $"/{a}", ref isEnabled)) {
+                if (ImGui.Checkbox(a.StartsWith('/') ? a : $"/{a}##commandAliasToggle_{a}_{Key}", ref isEnabled)) {
                     if (isEnabled) {
                         disabledCommandAlias.Remove(a);
                     } else {
