@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Dalamud;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
@@ -21,8 +22,10 @@ public static unsafe class EventController {
     public delegate void AddonUpdateDelegate(AtkUnitBase* addon, NumberArrayData** numberArrays, StringArrayData** stringArrays);
 
     private delegate void UpdateAddonByID(RaptureAtkUnitManager* atkUnitManager, ushort addonId, NumberArrayData** numberArrays, StringArrayData** stringArrays, byte force);
-    
-    private record Subscriber<T>(BaseTweak Tweak, T Handler) where T : Delegate;
+
+    private record Subscriber<T>(BaseTweak Tweak, T Handler) where T : Delegate {
+        public uint NthTick { get; init; } = 0;
+    };
     
     private static readonly Dictionary<string, List<Subscriber<AddonDelegate>>> AddonSetupSubscribers = new();
     private static readonly Dictionary<string, List<Subscriber<AddonDelegate>>> AddonFinalizeSubscribers = new();
@@ -131,11 +134,11 @@ public static unsafe class EventController {
         } catch (Exception ex) {
             SimpleLog.Error(ex);
         }
-        
     }
     
     private static void HandleFrameworkUpdate() {
         foreach (var subscriber in FrameworkUpdateSubscribers) {
+            if (subscriber.NthTick != 0 && Framework.Instance()->FrameCounter % subscriber.NthTick != 0) continue;
             if (subscriber.Tweak.IsDisposed) continue;
             if (!subscriber.Tweak.Enabled) continue;
             subscriber.Handler();
@@ -207,10 +210,10 @@ public static unsafe class EventController {
                 }
             }
             
-            if (method.TryGetCustomAttribute<FrameworkUpdateAttribute>(out _)) {
+            if (method.TryGetCustomAttribute<FrameworkUpdateAttribute>(out var frameworkUpdateAttribute)) {
                 try {
                     var finalizeDelegate = method.CreateDelegate<Action>(tweak);
-                    RegisterFrameworkUpdate(tweak, finalizeDelegate);
+                    RegisterFrameworkUpdate(tweak, finalizeDelegate, frameworkUpdateAttribute.NthTick);
                 } catch (Exception ex) {
                     SimpleLog.Error($"Failed to bind FrameworkUpdate to {tweak.GetType().Name}.{method.Name}");
                     SimpleLog.Error(ex);
@@ -259,8 +262,10 @@ public static unsafe class EventController {
         }
     }
 
-    private static void RegisterFrameworkUpdate(BaseTweak tweak, Action handler) {
-        FrameworkUpdateSubscribers.Add(new Subscriber<Action>(tweak, handler));
+    private static void RegisterFrameworkUpdate(BaseTweak tweak, Action handler, uint nthTick = 0) {
+        FrameworkUpdateSubscribers.Add(new Subscriber<Action>(tweak, handler) {
+            NthTick = nthTick
+        });
     }
 
     private static void UnregisterAddonSetup(BaseTweak tweak) {

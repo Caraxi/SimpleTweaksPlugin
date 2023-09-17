@@ -1,5 +1,7 @@
 using System;
 
-namespace SimpleTweaksPlugin.Events; 
+namespace SimpleTweaksPlugin.Events;
 
-public class FrameworkUpdateAttribute : EventAttribute { }
+public class FrameworkUpdateAttribute : EventAttribute {
+    public uint NthTick { get; init; } = 0;
+}
