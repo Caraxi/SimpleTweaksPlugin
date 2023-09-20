@@ -12,7 +12,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
     public override string Name => "Reduced Deep Dungeon Info";
-    public override string Description => "Removes the redundant infos from the deep dungeon character info.";
+    public override string Description => "Removes redundant information from the deep dungeon character info.";
     protected override string Author => "Aireil";
 
     protected override void Enable() {

@@ -12,7 +12,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 public class ChrDirCommand : CommandTweak {
     public override string Name => "Character Directory Command";
-    public override string Description => "Adds a command to open the directory when client side character data is stored.";
+    public override string Description => "Adds a command to open the directory where client side character data is stored.";
     protected override string Command => "chrdir";
     protected override string HelpMessage => "Print your character save directory to chat. '/chrdir open' to open the directory in explorer.";
 
