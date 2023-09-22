@@ -11,7 +11,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 public unsafe class AlwaysYes : UiAdjustments.SubTweak {
     public override string Name => "Always Yes";
-    public override string Description => "Default cursor to yes when using confirm (num 0).";
+    public override string Description => "Sets the default action in dialog boxes to yes when using confirm (num 0).";
     protected override string Author => "Aireil";
 
     public class Configs : TweakConfig {

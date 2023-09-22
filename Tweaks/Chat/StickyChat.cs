@@ -12,7 +12,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 public unsafe partial class StickyChat : ChatTweaks.SubTweak
 {
     public override string Name => "Sticky Chat";
-    public override string Description => "Sets chat channel when you use temporary chat messages.\nExample: \"/p hello!\" will set the chat channel to Party";
+    public override string Description => "Sets the chat channel when you use temporary chat messages.\nExample: \"/p hello!\" will set the chat channel to Party";
     protected override string Author => "MidoriKami";
 
     private delegate byte ProcessChatInputDelegate(nint uiModule, byte** message, nint a3);

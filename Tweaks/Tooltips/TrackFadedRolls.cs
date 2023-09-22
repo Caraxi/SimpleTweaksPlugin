@@ -17,7 +17,7 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
     
     public override string Name => "Track Faded Orchestrion Rolls";
     protected override string Author => "KazWolfe";
-    public override string Description => "Adds the collected checkmark to Faded Orchestrion Rolls.";
+    public override string Description => "Adds the collectable checkmark to Faded Orchestrion Rolls.";
     
     private delegate byte IsItemActionUnlocked(UIState* uiState, IntPtr item);
     private HookWrapper<IsItemActionUnlocked>? _isItemActionUnlockedHookWrapper;

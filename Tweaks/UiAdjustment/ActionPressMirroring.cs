@@ -22,7 +22,7 @@ public unsafe class ActionPressMirroring : UiAdjustments.SubTweak
     private bool tweakIsPulsing = false;
 
     public override string Name => "Duplicate Action Presses Between Hotbars";
-    public override string Description => "Will show the action press pulse on all hotbar slots with the same ability when you use it.";
+    public override string Description => "Shows the pulse effect when activating actions, even if they are duplicated between hotbars.";
     protected override string Author => "BoredDan";
 
     private static readonly string[] allActionBars = {
