@@ -8,7 +8,6 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility;
-using Dalamud.Logging;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
@@ -191,7 +190,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     ((Status*)(statusManager.Status + (0xc * removedStatus[i])))->StatusID = removedStatus[i + 1];
                 }
             } catch (Exception ex) {
-                PluginLog.Error(ex, "Exception in UpdateTargetStatusDetour");
+                SimpleLog.Error(ex, "Exception in UpdateTargetStatusDetour");
             }
 
             return ret;

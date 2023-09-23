@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using Dalamud.Hooking;
-using Dalamud.Logging;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Events;
@@ -82,7 +81,7 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak
         }
         catch (Exception exception)
         {
-            PluginLog.Error(exception, "Something went wrong in 'Loot Window Select Next Item', let MidoriKami know.");
+            SimpleLog.Error(exception, "Something went wrong in 'Loot Window Select Next Item', let MidoriKami know.");
         }
     }
 

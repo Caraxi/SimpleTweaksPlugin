@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Dalamud;
 using Dalamud.Game.Config;
-using Dalamud.Logging;
 using Dalamud.Utility;
 using ImGuiNET;
 using ImGuiScene;
@@ -137,13 +136,13 @@ public class IconManager : IDisposable {
     public void Dispose() {
         disposed = true;
         var c = 0;
-        PluginLog.Log("Disposing icon textures");
+        SimpleLog.Log("Disposing icon textures");
         foreach (var texture in iconTextures.Values.Where(texture => texture != null)) {
             c++;
             texture.Dispose();
         }
 
-        PluginLog.Log($"Disposed {c} icon textures.");
+        SimpleLog.Log($"Disposed {c} icon textures.");
         iconTextures.Clear();
         
         FontIcons?.Dispose();
@@ -163,7 +162,7 @@ public class IconManager : IDisposable {
                     tex.Dispose();
                 }
             } catch (Exception ex) {
-                PluginLog.LogError($"Failed loading texture for icon {iconId} - {ex.Message}");
+                SimpleLog.Error($"Failed loading texture for icon {iconId} - {ex.Message}");
             }
         });
     }

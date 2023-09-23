@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Keys;
-using Dalamud.Logging;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -146,7 +145,7 @@ public partial class KeyInterrupt : Tweak {
             UnhookWindowsHookEx(this._keyboardHookId);
             this._keyboardHookId = nint.Zero;
         } else {
-            PluginLog.Warning("Got disable with hook set to zero!");
+            SimpleLog.Warning("Got disable with hook set to zero!");
         }
 
         this._cts?.Cancel();

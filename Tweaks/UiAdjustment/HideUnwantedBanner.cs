@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using Dalamud.Hooking;
-using Dalamud.Logging;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
@@ -109,7 +108,7 @@ public unsafe class HideUnwantedBanner : UiAdjustments.SubTweak
         }
         catch (Exception e)
         {
-            PluginLog.Error(e, "Something went wrong in HideUnwantedBanners, let MidoriKami know!");
+            SimpleLog.Error(e, "Something went wrong in HideUnwantedBanners, let MidoriKami know!");
         }
 
         setImageTextureHook!.Original(addon, skipOriginal ? 0 : bannerId, a3, skipOriginal ? 0 : soundEffectId);

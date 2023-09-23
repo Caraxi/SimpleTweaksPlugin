@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Dalamud.Hooking;
-using Dalamud.Logging;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -102,13 +101,12 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak
     
     private void OnHotBarSlotUpdate(AddonActionBarBase* addon, SlotData* hotBarSlotData, NumberArrayData* numberArray, StringArrayData* stringArray, int numberArrayIndex, int stringArrayIndex)
     {
-        try
-        {
+        try {
             ProcessHotBarSlot(hotBarSlotData, numberArray, numberArrayIndex);
         }
         catch (Exception e)
         {
-            PluginLog.Error(e, "Something went wrong in FadeUnavailableActions, let MidoriKami know!");
+            SimpleLog.Error(e, "Something went wrong in FadeUnavailableActions, let MidoriKami know!");
         }
         
         onHotBarSlotUpdateHook!.Original(addon, hotBarSlotData, numberArray, stringArray, numberArrayIndex, stringArrayIndex);

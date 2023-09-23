@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using Dalamud.Logging;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using SimpleTweaksPlugin.TweakSystem;
@@ -59,7 +58,7 @@ internal unsafe class SanctuarySprintReplacer : Tweak {
                 id = 31314;
                 type = ActionType.Spell;
             } else {
-                PluginLog.Debug("Got a sprint in Island Sanctuary, but the Sprint DutyAction is not ready.");
+                SimpleLog.Debug("Got a sprint in Island Sanctuary, but the Sprint DutyAction is not ready.");
             }
         }
 

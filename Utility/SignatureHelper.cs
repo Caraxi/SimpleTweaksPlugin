@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Dalamud.Hooking;
-using Dalamud.Logging;
 using Dalamud.Utility.Signatures;
 
 namespace SimpleTweaksPlugin.Utility;
@@ -120,7 +119,7 @@ public static class SignatureHelper {
             void Invalid(string message, bool prepend = true) {
                 var errorMsg = prepend ? $"Invalid Signature attribute for {selfType.FullName}.{info.Name}: {message}" : message;
                 if (fallible) {
-                    PluginLog.Warning(errorMsg);
+                    SimpleLog.Warning(errorMsg);
                 } else {
                     throw new Exception(errorMsg);
                 }

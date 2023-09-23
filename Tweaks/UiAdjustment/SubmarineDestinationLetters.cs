@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game.Text;
-using Dalamud.Logging;
 using Dalamud.Utility;
 using Lumina.Data;
 using Lumina.Excel.GeneratedSheets;
@@ -48,7 +47,7 @@ public unsafe class SubmarineDestinationLetters : UiAdjustments.SubTweak {
         try {
             return this.GetStatusSheetDetourInner(statusId, data);
         } catch (Exception ex) {
-            PluginLog.LogError(ex, "Exception in GetStatusSheetDetour");
+            SimpleLog.Error(ex, "Exception in GetStatusSheetDetour");
         }
 
         return data;

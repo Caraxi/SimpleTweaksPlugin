@@ -222,7 +222,7 @@ public unsafe class ChangeMapAreaColors : UiAdjustments.SubTweak {
             return;
         }
         
-        // PluginLog.Debug($"Called for AreaType: {(int) areaType}");
+        // SimpleLog.Debug($"Called for AreaType: {(int) areaType}");
 
         if (this.Config.RaveMode && !Service.ClientState.IsPvP) {
             ImGui.ColorConvertHSVtoRGB(this._raveHue / 255f, 1f, 1f, out var r, out var g, out var b);

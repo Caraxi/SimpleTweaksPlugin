@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Dalamud.Logging;
 
 namespace SimpleTweaksPlugin.TweakSystem; 
 
@@ -51,7 +50,7 @@ public class TweakProvider : IDisposable {
                     Tweaks.Add(tweak);
                 }
             } catch (Exception ex) {
-                PluginLog.Error(ex, $"Failed loading tweak '{t.Name}'.");
+                SimpleLog.Error(ex, $"Failed loading tweak '{t.Name}'.");
             }
         }
         SimpleTweaksPlugin.Plugin.PluginConfig.RefreshSearch();

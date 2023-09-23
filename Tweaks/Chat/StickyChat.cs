@@ -3,7 +3,6 @@ using System;
 using System.Text;
 using System.Text.RegularExpressions;
 using Dalamud.Hooking;
-using Dalamud.Logging;
 using Dalamud.Utility.Signatures;
 using SimpleTweaksPlugin.Utility;
 
@@ -117,7 +116,7 @@ public unsafe partial class StickyChat : ChatTweaks.SubTweak
         }
         catch (Exception e)
         {
-            PluginLog.Error(e, "Something went wrong in StickyChat, let MidoriKami know!");
+            SimpleLog.Error(e, "Something went wrong in StickyChat, let MidoriKami know!");
         }
 
         return result;

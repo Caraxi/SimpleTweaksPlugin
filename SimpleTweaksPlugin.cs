@@ -92,6 +92,7 @@ namespace SimpleTweaksPlugin {
         public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface) {
             Plugin = this;
             pluginInterface.Create<Service>();
+            pluginInterface.Create<SimpleLog>();
             
             this.PluginConfig = (SimpleTweaksPluginConfig)Service.PluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
             this.PluginConfig.Init(this);

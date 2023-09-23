@@ -1,14 +1,17 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Dalamud.Logging;
+using Dalamud.IoC;
+using Dalamud.Plugin.Services;
 
 namespace SimpleTweaksPlugin; 
 
-public static class SimpleLog {
+public sealed class SimpleLog {
+    [PluginService] private static IPluginLog PluginLog { get; set; } = null;
 
 #if DEBUG
     private static int _subStrIndex;
@@ -32,51 +35,68 @@ public static class SimpleLog {
     }
     
     public static void Verbose(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
-        foreach (var m in SplitMessage(message)) PluginLog.LogVerbose($"{CleanCallerPath(callerPath, callerName, lineNumber)}{m}");
+        foreach (var m in SplitMessage(message)) PluginLog.Verbose($"{CleanCallerPath(callerPath, callerName, lineNumber)}{m}");
     }
 
     public static void Debug(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
-        foreach (var m in SplitMessage(message)) PluginLog.LogDebug($"{CleanCallerPath(callerPath, callerName, lineNumber)}{m}");
+        foreach (var m in SplitMessage(message)) PluginLog.Debug($"{CleanCallerPath(callerPath, callerName, lineNumber)}{m}");
     }
 
     public static void Information(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
-        foreach (var m in SplitMessage(message)) PluginLog.LogInformation($"{CleanCallerPath(callerPath, callerName, lineNumber)}{message}");
+        foreach (var m in SplitMessage(message)) PluginLog.Information($"{CleanCallerPath(callerPath, callerName, lineNumber)}{message}");
     }
 
     public static void Fatal(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
-        foreach (var m in SplitMessage(message)) PluginLog.LogFatal($"{CleanCallerPath(callerPath, callerName, lineNumber)}{m}");
+        foreach (var m in SplitMessage(message)) PluginLog.Fatal($"{CleanCallerPath(callerPath, callerName, lineNumber)}{m}");
     }
 
     public static void Log(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
-        foreach (var m in SplitMessage(message)) PluginLog.Log($"{CleanCallerPath(callerPath, callerName, lineNumber)}{m}");
+        foreach (var m in SplitMessage(message)) PluginLog.Information($"{CleanCallerPath(callerPath, callerName, lineNumber)}{m}");
+    }
+    
+    public static void Warning(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
+        foreach (var m in SplitMessage(message)) PluginLog.Warning($"{CleanCallerPath(callerPath, callerName, lineNumber)}{m}");
     }
 
     public static void Error(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
         foreach (var m in SplitMessage(message)) PluginLog.Error($"{CleanCallerPath(callerPath, callerName, lineNumber)}{m}");
     }
+
+    public static void Error(Exception ex, string message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
+        foreach (var m in SplitMessage($"{message}\n{ex}")) PluginLog.Error($"{CleanCallerPath(callerPath, callerName, lineNumber)}{m}");
+    }
+    
 #else
         public static void Verbose(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
-            foreach(var m in SplitMessage(message)) PluginLog.LogVerbose($"{m}");
+            foreach(var m in SplitMessage(message)) PluginLog.Verbose($"{m}");
         }
 
         public static void Debug(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
-            foreach (var m in SplitMessage(message)) PluginLog.LogDebug($"{m}");
+            foreach (var m in SplitMessage(message)) PluginLog.Debug($"{m}");
         }
 
         public static void Information(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
-            foreach (var m in SplitMessage(message)) PluginLog.LogInformation($"{m}");
+            foreach (var m in SplitMessage(message)) PluginLog.Information($"{m}");
         }
 
         public static void Fatal(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
-            foreach (var m in SplitMessage(message)) PluginLog.LogFatal($"{m}");
+            foreach (var m in SplitMessage(message)) PluginLog.Fatal($"{m}");
         }
 
         public static void Log(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
-            foreach (var m in SplitMessage(message)) PluginLog.Log($"{m}");
+            foreach (var m in SplitMessage(message)) PluginLog.Information($"{m}");
+        }
+
+        public static void Warning(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
+            foreach (var m in SplitMessage(message)) PluginLog.Warning($"{m}");
         }
 
         public static void Error(object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
             foreach (var m in SplitMessage(message)) PluginLog.Error($"{m}");
+        }
+
+        public static void Error(Exception ex, object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
+            foreach (var m in SplitMessage($"{message}\n{ex}")) PluginLog.Error($"{m}");
         }
 #endif
 
