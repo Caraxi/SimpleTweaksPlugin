@@ -189,7 +189,7 @@ public static class SignatureHelper {
                         hookType = actualType.GetField("wrappedHook", BindingFlags.Instance | BindingFlags.NonPublic).FieldType;
                     }
 
-                    var createMethod = hookType.GetMethod("FromAddress", BindingFlags.Static | BindingFlags.Public);
+                    var createMethod = hookType.GetMethod("FromAddress", BindingFlags.Static | BindingFlags.NonPublic);
                     if (createMethod == null) {
                         SimpleTweaksPlugin.Plugin.Error(new Exception($"Error in SignatureHelper for {self.GetType().Name}: could not find Hook<{hookDelegateType.Name}>.FromAddress"));
                         continue;
