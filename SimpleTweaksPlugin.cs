@@ -93,6 +93,7 @@ namespace SimpleTweaksPlugin {
             Plugin = this;
             pluginInterface.Create<Service>();
             pluginInterface.Create<SimpleLog>();
+            pluginInterface.Create<Common>();
             
             this.PluginConfig = (SimpleTweaksPluginConfig)Service.PluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
             this.PluginConfig.Init(this);

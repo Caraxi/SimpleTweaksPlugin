@@ -10,8 +10,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Hooking;
+using Dalamud.IoC;
 using Dalamud.Memory;
 using Dalamud.Networking.Http;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.System.String;
@@ -23,7 +25,8 @@ using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace SimpleTweaksPlugin.Utility; 
 
-public static unsafe class Common {
+public unsafe class Common {
+    [PluginService] private static IGameInteropProvider ImNotGonnaCallItThat { get; set; } = null!;
 
     // Common Delegates
     public delegate void* AddonOnUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** nums, StringArrayData** strings);
@@ -203,28 +206,28 @@ public static unsafe class Common {
 
     public static HookWrapper<T> Hook<T>(string signature, T detour, int addressOffset = 0) where T : Delegate {
         var addr = Service.SigScanner.ScanText(signature);
-        var h = Dalamud.Hooking.Hook<T>.FromAddress(addr + addressOffset, detour);
+        var h = ImNotGonnaCallItThat.HookFromAddress(addr + addressOffset, detour);
         var wh = new HookWrapper<T>(h);
         HookList.Add(wh);
         return wh;
     }
 
     public static HookWrapper<T> Hook<T>(void* address, T detour) where T : Delegate {
-        var h =  Dalamud.Hooking.Hook<T>.FromAddress(new nint(address), detour);
+        var h =  ImNotGonnaCallItThat.HookFromAddress(new nint(address), detour);
         var wh = new HookWrapper<T>(h);
         HookList.Add(wh);
         return wh;
     }
 
     public static HookWrapper<T> Hook<T>(nuint address, T detour) where T : Delegate {
-        var h = Dalamud.Hooking.Hook<T>.FromAddress((nint)address, detour);
+        var h = ImNotGonnaCallItThat.HookFromAddress((nint)address, detour);
         var wh = new HookWrapper<T>(h);
         HookList.Add(wh);
         return wh;
     }
 
     public static HookWrapper<T> Hook<T>(nint address, T detour) where T : Delegate {
-        var h = Dalamud.Hooking.Hook<T>.FromAddress(address, detour);
+        var h = ImNotGonnaCallItThat.HookFromAddress(address, detour);
         var wh = new HookWrapper<T>(h);
         HookList.Add(wh);
         return wh;
@@ -232,7 +235,7 @@ public static unsafe class Common {
 
     public static HookWrapper<AddonOnUpdate> HookAfterAddonUpdate(IntPtr address, NoReturnAddonOnUpdate after) {
         Hook<AddonOnUpdate> hook = null;
-        hook = Dalamud.Hooking.Hook<AddonOnUpdate>.FromAddress(address, (atkUnitBase, nums, strings) => {
+        hook = ImNotGonnaCallItThat.HookFromAddress<AddonOnUpdate>(address, (atkUnitBase, nums, strings) => {
             var retVal = hook.Original(atkUnitBase, nums, strings);
             try {
                 after(atkUnitBase, nums, strings);
