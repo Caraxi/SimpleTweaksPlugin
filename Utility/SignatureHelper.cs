@@ -190,23 +190,23 @@ public static class SignatureHelper {
                         hookType = actualType.GetField("wrappedHook", BindingFlags.Instance | BindingFlags.NonPublic).FieldType;
                     }
 
-                    var ctor = hookType.GetConstructor(new[] { typeof(IntPtr), hookDelegateType });
-                    if (ctor == null) {
-                        SimpleLog.Error("Error in SignatureHelper: could not find Hook constructor");
+                    var createMethod = hookType.GetMethod("FromAddressa", BindingFlags.Static | BindingFlags.Public);
+                    if (createMethod == null) {
+                        SimpleTweaksPlugin.Plugin.Error(new Exception($"Error in SignatureHelper for {self.GetType().Name}: could not find Hook<{hookDelegateType.Name}>.FromAddress"));
                         continue;
                     }
 
-                    var hook = ctor.Invoke(new object?[] { ptr, detour });
+                    var hook = createMethod.Invoke(null, new object[] { ptr, detour, false });
 
                     if (isHookWrapper) {
                         var wrapperCtor = actualType.GetConstructor(new[] { hookType });
                         if (wrapperCtor == null) {
-                            SimpleLog.Error("Error in SignatureHelper: could not find HookWrapper constructor");
+                            SimpleTweaksPlugin.Plugin.Error(new Exception($"Error in SignatureHelper for {self.GetType().Name}: could not find could not find HookWrapper<{hookDelegateType.Name}> constructor"));
                             continue;
                         }
 
                         var wrapper = wrapperCtor.Invoke(new[] { hook });
-                        SimpleLog.Log($"Created Hook Wrapper");
+                        SimpleLog.Verbose($"Created Hook Wrapper");
                         info.SetValue(self, wrapper);
                     } else {
                         info.SetValue(self, hook);
