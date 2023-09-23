@@ -7,9 +7,9 @@ using System.Linq;
 using System.Reflection;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
+using Dalamud.Interface.Internal;
 using Dalamud.Plugin;
 using ImGuiNET;
-using ImGuiScene;
 using Newtonsoft.Json;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
@@ -26,7 +26,7 @@ public abstract class BaseTweak {
     public virtual bool Enabled { get; protected set; }
 
     private bool hasPreviewImage;
-    private TextureWrap previewImage;
+    private IDalamudTextureWrap previewImage;
     
     public bool IsDisposed { get; private set; }
 

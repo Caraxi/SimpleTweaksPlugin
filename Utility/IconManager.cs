@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Dalamud;
 using Dalamud.Game.Config;
+using Dalamud.Interface.Internal;
 using Dalamud.Utility;
 using ImGuiNET;
 using ImGuiScene;
@@ -17,7 +18,7 @@ namespace SimpleTweaksPlugin.Utility;
 
 public class IconManager : IDisposable {
     private bool disposed;
-    private readonly Dictionary<(int, bool), TextureWrap> iconTextures = new();
+    private readonly Dictionary<(int, bool), IDalamudTextureWrap> iconTextures = new();
     private readonly Dictionary<uint, ushort> actionCustomIcons = new() {
             
     };
@@ -30,7 +31,7 @@ public class IconManager : IDisposable {
         public string Version = "0100";
         public GraphicFontIcon[] Icons = Array.Empty<GraphicFontIcon>();
         
-        private static TextureWrap? _textureWrap;
+        private static IDalamudTextureWrap? _textureWrap;
         private static uint _padIconMode;
         private static string[] _texturePath = {
             "common/font/fonticon_xinput.tex",
@@ -211,7 +212,7 @@ public class IconManager : IDisposable {
     }
         
 
-    public TextureWrap GetActionIcon(Action action) {
+    public IDalamudTextureWrap GetActionIcon(Action action) {
         return GetIconTexture(actionCustomIcons.ContainsKey(action.RowId) ? actionCustomIcons[action.RowId] : action.Icon);
     }
 
@@ -219,7 +220,7 @@ public class IconManager : IDisposable {
         return actionCustomIcons.ContainsKey(action.RowId) ? actionCustomIcons[action.RowId] : action.Icon;
     }
 
-    public TextureWrap GetIconTexture(int iconId, bool hq = false) {
+    public IDalamudTextureWrap GetIconTexture(int iconId, bool hq = false) {
         if (this.disposed) return null;
         if (this.iconTextures.ContainsKey((iconId, hq))) return this.iconTextures[(iconId, hq)];
         this.iconTextures.Add((iconId, hq), null);
