@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Keys;
@@ -9,7 +10,9 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.System.String;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
+using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace SimpleTweaksPlugin.Utility; 
 
@@ -135,5 +138,19 @@ public static class Extensions {
 
     internal static IEnumerable<(FieldInfo Field, TAttribute Attribute)> GetFieldsWithAttribute<TAttribute>(this object obj, BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) where TAttribute : Attribute {
         return obj.GetType().GetFields(flags).Select(f => (f, f.GetCustomAttribute<TAttribute>())).Where(f => f.Item2 != null);
+    }
+    
+    public static unsafe string ValueString(this AtkValue v) {
+        return v.Type switch {
+            ValueType.Int => $"{v.Int}",
+            ValueType.String => Marshal.PtrToStringUTF8(new IntPtr(v.String)),
+            ValueType.UInt => $"{v.UInt}",
+            ValueType.Bool => $"{v.Byte != 0}",
+            ValueType.Float => $"{v.Float}",
+            ValueType.Vector => "[Vector]",
+            ValueType.AllocatedString => Marshal.PtrToStringUTF8(new IntPtr(v.String))?.TrimEnd('\0') ?? string.Empty,
+            ValueType.AllocatedVector => "[Allocated Vector]",
+            _ => $"Unknown Type: {v.Type}"
+        };
     }
 }
