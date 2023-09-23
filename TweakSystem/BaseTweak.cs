@@ -641,6 +641,32 @@ public abstract class BaseTweak {
             return tweakAutoConfigAttribute;
         }
     }
+
+    private HashSet<string> categories;
+    public HashSet<string> Categories {
+        get {
+            if (categories != null) return categories;
+
+            void HandleAttributes(IEnumerable<TweakCategoryAttribute> attributes) {
+                categories = new HashSet<string>();
+                foreach (var attr in attributes) {
+                    foreach (var v in attr.Categories) {
+                        categories.Add(v);
+                    }
+                }
+            }
+            
+            HandleAttributes(GetType().GetCustomAttributes<TweakCategoryAttribute>(true));
+            foreach (var i in GetType().GetInterfaces()) {
+                HandleAttributes(i.GetCustomAttributes<TweakCategoryAttribute>(true));
+            }
+
+            if (Experimental) categories.Add($"{TweakCategory.Experimental}");
+            
+            if (categories.Count == 0) categories.Add($"{TweakCategory.Other}");
+            return categories;
+        }
+    }
     #endregion
     
 

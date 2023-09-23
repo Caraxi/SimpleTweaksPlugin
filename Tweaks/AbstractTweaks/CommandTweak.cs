@@ -9,6 +9,7 @@ using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks.AbstractTweaks; 
 
+[TweakCategory(TweakCategory.Command)]
 public abstract class CommandTweak : Tweak {
     protected abstract string Command { get; }
     protected virtual string[] Alias => Array.Empty<string>();

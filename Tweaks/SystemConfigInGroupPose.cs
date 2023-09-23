@@ -6,6 +6,7 @@ using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
+[TweakCategory(TweakCategory.Command)]
 public unsafe class SystemConfigInGroupPose : Tweak {
     public override string Name => "SystemConfig in Group Pose";
     public override string Description => "Allows the use of the /systemconfig command while in gpose.";

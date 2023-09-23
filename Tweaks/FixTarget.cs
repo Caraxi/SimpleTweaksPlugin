@@ -11,6 +11,7 @@ using GameObjectStruct = FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
+[TweakCategory(TweakCategory.Command)]
 public class FixTarget : Tweak {
     public override string Name => "Fix '/target' command";
     public override string Description => "Allows using the default '/target' command for targeting players or NPCs by their names.";

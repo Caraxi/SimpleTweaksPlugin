@@ -5,6 +5,7 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
+[TweakCategory(TweakCategory.Command)]
 public unsafe class EmoteLogSubcommand : Tweak {
     public override string Name => "Emote Log Subcommand";
     public override string Description => "Adds a 'text' subcommand for emotes when emotelog is disabled.  /yes text";

@@ -9,6 +9,7 @@ using SimpleTweaksPlugin.Utility;
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [Changelog("1.8.9.2", "Added an option to change which keys show the lock")]
+[TweakCategory(TweakCategory.UI)]
 public unsafe class HideHotbarLock : Tweak {
     public override string Name => "Hide Hotbar Lock";
     public override string Description => "Hides the hotbar lock button, with an option to make it visible while holding a modifier combo.";

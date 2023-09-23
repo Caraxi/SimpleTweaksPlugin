@@ -54,6 +54,7 @@ public class TweakProvider : IDisposable {
             }
         }
         SimpleTweaksPlugin.Plugin.PluginConfig.RefreshSearch();
+        SimpleTweaksPluginConfig.RebuildTweakList();
     }
 
     public void UnloadTweaks() {
@@ -77,6 +78,7 @@ public class TweakProvider : IDisposable {
         }
         Tweaks.Clear();
         SimpleTweaksPlugin.Plugin.PluginConfig.RefreshSearch();
+        SimpleTweaksPluginConfig.RebuildTweakList();
     }
 
 

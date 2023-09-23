@@ -10,6 +10,7 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
+[TweakCategory(TweakCategory.Command)]
 public class CommandAlias : Tweak {
     #region Config
     public class Config : TweakConfig {

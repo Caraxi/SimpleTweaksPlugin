@@ -36,6 +36,8 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     public bool NoFools;
     public bool NotBaby;
     public bool AnalyticsOptOut;
+    public bool ShowAllTweaksTab = true;
+    public bool ShowEnabledTweaksTab = true;
 
     public bool ShowTweakDescriptions = true;
     public bool ShowTweakIDs;
@@ -86,9 +88,19 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
         searchResults.Clear();
     }
 
-    private string addCustomProviderInput = string.Empty;
+    [NonSerialized] private string addCustomProviderInput = string.Empty;
 
-    private Vector2 checkboxSize = new(16);
+    [NonSerialized] private Vector2 checkboxSize = new(16);
+
+    private record TweakCategoryContainer(string categoryName) {
+        public string LocalizedName => Loc.Localize($"Category / {categoryName}", categoryName, "Tweak Category");
+        public List<BaseTweak> Tweaks = new();
+    }
+
+    [NonSerialized] private static List<TweakCategoryContainer> _tweakCategories = null;
+    [NonSerialized] private static List<BaseTweak> _allTweaks = null;
+    [NonSerialized] private static List<BaseTweak> _enabledTweaks = null;
+
     private void DrawTweakConfig(BaseTweak t, ref bool hasChange) {
         var enabled = t.Enabled;
         if (t.Experimental && !ShowExperimentalTweaks && !enabled) return;
@@ -168,8 +180,70 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
         }
         ImGui.Separator();
     }
-        
+
+    public static void RebuildTweakList() {
+        _tweakCategories = null;
+        _allTweaks = null;
+    }
+
+    private bool IsTweakVisible(BaseTweak tweak) {
+        if (tweak.TweakManager is { Enabled: false }) return false;
+        if (HiddenTweaks.Contains(tweak.Key) && !tweak.Enabled) return false;
+        if (tweak.Experimental && !ShowExperimentalTweaks && !tweak.Enabled) return false;
+        return true;
+    }
+    
+    private void MixColour(Vector4 mix, params ImGuiCol[] cols) {
+        foreach (var col in cols) {
+            var current = ImGui.GetColorU32(col);
+            var currentFloat = ImGui.ColorConvertU32ToFloat4(current);
+
+            var newCol = Vector4.Zero + currentFloat;
+            for (var i = 0; i < 4; i++) {
+                if (mix[i] < 0) continue;
+                newCol[i] += mix[i];
+                newCol[i] /= 2;
+            }
+
+            ImGui.PushStyleColor(col, newCol);
+        }
+    }
+    
     public void DrawConfigUI() {
+
+        if (_allTweaks == null || _tweakCategories == null) {
+            var allTweaksList = new List<BaseTweak>();
+            var tweakCategoryList = new Dictionary<string, TweakCategoryContainer>();
+
+            void ParseTweaks(IEnumerable<BaseTweak> tweaks) {
+                foreach (var tweak in tweaks) {
+                    if (tweak is SubTweakManager stm) {
+                        ParseTweaks(stm.GetTweakList());
+                        continue;
+                    }
+                    
+                    if (!allTweaksList.Contains(tweak)) allTweaksList.Add(tweak);
+
+                    foreach (var category in tweak.Categories) {
+                        if (!tweakCategoryList.TryGetValue(category, out var categoryContainer)) {
+                            categoryContainer = new TweakCategoryContainer(category);
+                            tweakCategoryList.Add(category, categoryContainer);
+                        }
+
+                        if (!categoryContainer.Tweaks.Contains(tweak)) categoryContainer.Tweaks.Add(tweak);
+                    }
+                }
+            }
+            
+            ParseTweaks(plugin.Tweaks);
+            _allTweaks = allTweaksList.OrderBy(t => t.LocalizedName).ToList();
+            _tweakCategories = tweakCategoryList.Values.OrderBy(c => c.LocalizedName).ToList();
+        }
+        
+        var allTweaks = _allTweaks;
+        var tweakCategories = _tweakCategories;
+        var enabledTweaks = _enabledTweaks ?? new List<BaseTweak>();
+        
         var changed = false;
 
         var showbutton = plugin.ErrorList.Count != 0 || Changelog.HasNewChangelog || !HideKofi;
@@ -241,44 +315,52 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
         } else {
             var flags = settingTab ? ImGuiTabBarFlags.AutoSelectNewTabs : ImGuiTabBarFlags.None;
             if (ImGui.BeginTabBar("tweakCategoryTabBar", flags)) {
-                if (settingTab && setTab == null) {
-                    settingTab = false;
-                } else {
-                    if (ImGui.BeginTabItem(Loc.Localize("General Tweaks", "General Tweaks", "General Tweaks Tab Header") + "###generalTweaksTab")) {
-                        ImGui.BeginChild("generalTweaks", new Vector2(-1, -1), false);
 
-                        // ImGui.Separator();
-                        foreach (var t in plugin.Tweaks) {
-                            if (t is SubTweakManager) continue;
-                            if (HiddenTweaks.Contains(t.Key) && !t.Enabled) continue;
-                            DrawTweakConfig(t, ref changed);
+                if (ShowEnabledTweaksTab) {
+                    MixColour(new Vector4(0.35f, 0.8f, 0.35f, -1), ImGuiCol.Tab, ImGuiCol.TabActive, ImGuiCol.TabHovered, ImGuiCol.TabUnfocused);
+
+                    if (ImGui.BeginTabItem(Loc.Localize("Enabled Tweaks", "Enabled Tweaks", "Enabled Tweaks Tab Header") + "###enabledTweaksTab")) {
+                        if (ImGui.BeginChild("enabledTweaks", new Vector2(-1, -1), false)) {
+                            foreach (var tweak in enabledTweaks) {
+                                if (!IsTweakVisible(tweak)) continue;
+                                DrawTweakConfig(tweak, ref changed);
+                            }
                         }
-
+                        ImGui.EndChild();
+                        ImGui.EndTabItem();
+                    } else {
+                        _enabledTweaks = _allTweaks.FindAll(t => t.Enabled);
+                    }
+                    ImGui.PopStyleColor(4);
+                } else {
+                    _enabledTweaks = _allTweaks.FindAll(t => t.Enabled);
+                }
+                
+                if (ShowAllTweaksTab) {
+                    if (ImGui.BeginTabItem(Loc.Localize("All Tweaks", "All Tweaks", "All Tweaks Tab Header") + "###allTweaksTab")) {
+                        if (ImGui.BeginChild("allTweaks", new Vector2(-1, -1), false)) {
+                            foreach (var tweak in allTweaks) {
+                                if (!IsTweakVisible(tweak)) continue;
+                                DrawTweakConfig(tweak, ref changed);
+                            }
+                        }
                         ImGui.EndChild();
                         ImGui.EndTabItem();
                     }
                 }
 
-                foreach (var stm in plugin.Tweaks.Where(t => t is SubTweakManager stm && (t.Enabled || stm.AlwaysEnabled)).Cast<SubTweakManager>()) {
+                foreach (var category in tweakCategories) {
+                    if (!category.Tweaks.Any(IsTweakVisible)) continue;
+                    if (ImGui.BeginTabItem($"{category.LocalizedName}###tweakCategoryTab_{category}")) {
+                        ImGui.BeginChild($"{category}-scroll", new Vector2(-1, -1));
 
-                    var subTweakList = stm.GetTweakList().Where(t => t.Enabled || !HiddenTweaks.Contains(t.Key)).ToList();
-                    if (subTweakList.Count <= 0) {
-                        continue;
-                    }
-                    if (settingTab == false && setTab == stm) {
-                        settingTab = true;
-                        continue;
-                    }
-
-                    if (settingTab && setTab == stm) {
-                        settingTab = false;
-                        setTab = null;
-                    }
-
-                    if (ImGui.BeginTabItem($"{stm.LocalizedName}###tweakCategoryTab_{stm.Key}")) {
-                        ImGui.BeginChild($"{stm.Key}-scroll", new Vector2(-1, -1));
-                        foreach (var tweak in subTweakList) {
-                            if (!tweak.Enabled && HiddenTweaks.Contains(tweak.Key)) continue;
+                        if (TweakCategoryAttribute.CategoryDescriptions.TryGetValue(category.categoryName, out var description)) {
+                            ImGui.TextDisabled($"{description}");
+                            ImGui.Separator();
+                        }
+                        
+                        foreach (var tweak in category.Tweaks) {
+                            if (!IsTweakVisible(tweak)) continue;
                             DrawTweakConfig(tweak, ref changed);
                         }
                         ImGui.EndChild();
@@ -295,6 +377,10 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                     ImGui.TextWrapped("Note: The current version of simple tweaks does not collect any analytics regardless of this setting. This is here to preemptively opt out of any future analytics that may or may not be added to the plugin. All information that may be collected will be anonymous, but may include information such as the list of enabled tweaks and a subset of configured options within those tweaks.");
                     ImGui.PopStyleColor();
                     ImGui.Unindent();
+                    ImGui.Separator();
+                    if (ImGui.Checkbox(Loc.Localize("General Options / Show All Tweaks Tab", "Show All Tweaks Tab."), ref ShowAllTweaksTab)) Save();
+                    ImGui.Separator();
+                    if (ImGui.Checkbox(Loc.Localize("General Options / Show Enabled Tweaks Tab", "Show Enabled Tweaks Tab."), ref ShowEnabledTweaksTab)) Save();
                     ImGui.Separator();
                     if (ImGui.Checkbox(Loc.Localize("General Options / Show Experimental Tweaks", "Show Experimental Tweaks."), ref ShowExperimentalTweaks)) Save();
                     ImGui.Separator();
