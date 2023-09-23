@@ -16,17 +16,17 @@ public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
     protected override string Author => "Aireil";
 
     protected override void Enable() {
-        Service.Framework.Update += OnFrameworkUpdate;
+        Common.FrameworkUpdate += OnFrameworkUpdate;
         base.Enable();
     }
 
     protected override void Disable() {
-        Service.Framework.Update -= OnFrameworkUpdate;
+        Common.FrameworkUpdate -= OnFrameworkUpdate;
         base.Disable();
         UpdateDeepDungeonStatus(true);
     }
 
-    private void OnFrameworkUpdate(Framework framework) {
+    private void OnFrameworkUpdate() {
         try {
             UpdateDeepDungeonStatus();
         }

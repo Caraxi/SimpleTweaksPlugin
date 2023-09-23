@@ -171,7 +171,7 @@ public unsafe class CharacterClassSwitcher : Tweak {
         byte? backup = null;
         var gearsetModule = RaptureGearsetModule.Instance();
         for (var i = 0; i < 100; i++) {
-            var gearset = gearsetModule->Gearset[i];
+            var gearset = gearsetModule->GetGearset(i);
             if (gearset == null) continue;
             if (!gearset->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists)) continue;
             if (gearset->ID != i) continue;

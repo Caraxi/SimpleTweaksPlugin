@@ -13,7 +13,7 @@ public unsafe partial class UiHelper {
         
     public static bool Ready;
 
-    public static void Setup(SigScanner scanner) {
+    public static void Setup(ISigScanner scanner) {
         _atkUnitBaseClose = Marshal.GetDelegateForFunctionPointer<AtkUnitBaseClose>(scanner.ScanText("40 53 48 83 EC 50 81 A1"));
         Ready = true;
     }

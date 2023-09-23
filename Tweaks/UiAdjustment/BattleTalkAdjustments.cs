@@ -2,6 +2,7 @@
 using System.Numerics;
 using Dalamud.Game;
 using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
@@ -55,58 +56,58 @@ public unsafe class BattleTalkAdjustments : UiAdjustments.SubTweak {
         ImGui.Text(LocString("PositionPreviewText", "NEW BATTLE TALK DIALOGUE BOX POSITION"));
         ImGui.End();
         if (!changed) return;
-        Service.Framework.Update -= FrameworkOnUpdate;
-        Service.Framework.Update += FrameworkOnUpdate;
+        Common.FrameworkUpdate -= FrameworkOnUpdate;
+        Common.FrameworkUpdate += FrameworkOnUpdate;
     };
 
     protected override void Enable() {
         Config = LoadConfig<Configuration>() ?? new Configuration();
         Service.ClientState.Login += OnLogin;
         Service.ClientState.Logout += OnLogout;
-        if(Service.ClientState.LocalPlayer is not null) OnLogin(null!,null!);
+        if(Service.ClientState.LocalPlayer is not null) OnLogin();
         base.Enable();
     }
 
     protected override void Disable() {
         Service.ClientState.Login -= OnLogin;
         Service.ClientState.Logout -= OnLogout;
-        OnLogout(null!,null!);
+        OnLogout();
         SaveConfig(Config);
         base.Disable();
     }
 
-    private void OnLogin(object sender, EventArgs e)
+    private void OnLogin()
     {
-        Service.Framework.Update += FrameworkOnUpdateSetup;
+        Common.FrameworkUpdate += FrameworkOnUpdateSetup;
     }
         
-    private void OnLogout(object sender, EventArgs e)
+    private void OnLogout()
     {
-        Service.Framework.Update -= FrameworkOnUpdate;
-        Service.Framework.Update -= FrameworkOnUpdateSetup;
+        Common.FrameworkUpdate -= FrameworkOnUpdate;
+        Common.FrameworkUpdate -= FrameworkOnUpdateSetup;
         ResetBattleTalk();
     }
         
-    private void FrameworkOnUpdateSetup(Framework framework)
+    private void FrameworkOnUpdateSetup()
     {
         try {
             var battleTalkNode = GetBattleTalkNode();
             if (battleTalkNode == null) return;
             originalPositionX = battleTalkNode->X;
             originalPositionY = battleTalkNode->Y;
-            Service.Framework.Update -= FrameworkOnUpdateSetup;
-            Service.Framework.Update += FrameworkOnUpdate;
+            Common.FrameworkUpdate -= FrameworkOnUpdateSetup;
+            Common.FrameworkUpdate += FrameworkOnUpdate;
         } catch (Exception ex) {
             SimpleLog.Error(ex);
         }
     }
-    private void FrameworkOnUpdate(Framework framework) {
+    private void FrameworkOnUpdate() {
         try {
             var battleTalkNode = GetBattleTalkNode();
             if (battleTalkNode == null) return;
             UiHelper.SetPosition(battleTalkNode, originalPositionX + Config.OffsetX, originalPositionY + Config.OffsetY);
             battleTalkNode->SetScale(Config.Scale, Config.Scale);
-            Service.Framework.Update -= FrameworkOnUpdate;
+            Common.FrameworkUpdate -= FrameworkOnUpdate;
         } catch (Exception ex) {
             SimpleLog.Error(ex);
         }

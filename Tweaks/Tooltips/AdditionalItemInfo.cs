@@ -60,12 +60,12 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
 
         var l = new List<(int gearsetId, string name)>();
         for (var gs = 0; gs < 101; gs++) {
-            var gearSet = gearSetModule->Gearset[gs];
+            var gearSet = gearSetModule->GetGearset(gs);
+            if (gearSet == null) continue;
             if (gearSet->ID != gs) break;
             if (!gearSet->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists)) continue;
-            var gearSetItems = (RaptureGearsetModule.GearsetItem*)gearSet->ItemsData;
-            for (var j = 0; j < 14; j++) {
-                if (gearSetItems[j].ItemID == itemId) {
+            foreach (var item in gearSet->ItemsSpan) {
+                if (item.ItemID == itemId) {
                     var name = Marshal.PtrToStringUTF8(new IntPtr(gearSet->Name));
                     l.Add((gs, name));
                     break;

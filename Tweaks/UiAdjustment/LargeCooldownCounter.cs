@@ -4,6 +4,7 @@ using System;
 using System.Numerics;
 using Dalamud.Game.Config;
 using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;

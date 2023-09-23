@@ -97,10 +97,10 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
                 if (addon != null) {
                     GetCraftReadyState(out var selectedRecipeId);
                     if (selectedRecipeId > 0 && localPlayer->EventState == 5) {
-                        addon->Hide(true);
+                        addon->Hide(true, false, 0);
                         AgentRecipeNote.Instance()->OpenRecipeByRecipeIdInternal((uint)(0x10000 + selectedRecipeId));
                         standingUp = true;
-                        Service.Framework.Update += ForceUpdateFramework;
+                        Common.FrameworkUpdate += ForceUpdateFramework;
                         return;
                     }
                 }
@@ -133,7 +133,7 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
     private byte? GetGearsetForClassJob(uint cjId) {
         var gearsetModule = RaptureGearsetModule.Instance();
         for (var i = 0; i < 100; i++) {
-            var gearset = gearsetModule->Gearset[i];
+            var gearset = gearsetModule->GetGearset(i);
             if (gearset == null) continue;
             if (!gearset->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists)) continue;
             if (gearset->ID != i) continue;
@@ -153,11 +153,11 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
                     if (Service.ClientState.LocalPlayer != null && !standingUp) {
                         var addon = Common.GetUnitBase("RecipeNote");
                         if (addon != null) {
-                            addon->Hide(true);
+                            addon->Hide(true, false, 0);
                             AgentRecipeNote.Instance()->OpenRecipeByRecipeIdInternal((uint) (0x10000 + selectedRecipeId));
                             removeFrameworkUpdateEventStopwatch.Restart();
                             standingUp = true;
-                            Service.Framework.Update += ForceUpdateFramework;
+                            Common.FrameworkUpdate += ForceUpdateFramework;
                             return null;
                         }
                     } else {
@@ -185,8 +185,8 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
         return clickSysnthesisButtonHook.Original(a1, a2);
     }
 
-    private void ForceUpdateFramework(Dalamud.Game.Framework framework) {
-        if (removeFrameworkUpdateEventStopwatch.ElapsedMilliseconds > 5000) framework.Update -= ForceUpdateFramework;
+    private void ForceUpdateFramework() {
+        if (removeFrameworkUpdateEventStopwatch.ElapsedMilliseconds > 5000) Common.FrameworkUpdate -= ForceUpdateFramework;
         ForceUpdate();
         if (standingUp == false || Service.ClientState.LocalPlayer == null) return;
         var localPlayer = (Character*) Service.ClientState.LocalPlayer.Address;
@@ -248,7 +248,7 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
     private void CloseCraftingLog() {
         var rl = Common.GetUnitBase("RecipeNote");
         if (rl == null) return;
-        rl->Hide(true);
+        rl->Hide(true, false, 0);
     }
 
     protected override void Disable() {

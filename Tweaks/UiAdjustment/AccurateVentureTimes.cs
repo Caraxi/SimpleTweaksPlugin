@@ -42,7 +42,7 @@ public unsafe class AccurateVentureTimes : UiAdjustments.SubTweak {
         updateRetainer = Marshal.GetDelegateForFunctionPointer<UpdateRetainerDelegate>(new IntPtr(updateRetainerPointer));
         addonSetupHook ??= Common.Hook("E8 ?? ?? ?? ?? 41 B1 1E", new AddonSetupDelegate(SetupDetour));
         addonSetupHook?.Enable();
-        Service.Framework.Update += FrameworkOnUpdate;
+        Common.FrameworkUpdate += FrameworkOnUpdate;
         base.Enable();
     }
 
@@ -136,7 +136,7 @@ public unsafe class AccurateVentureTimes : UiAdjustments.SubTweak {
 
     private readonly Stopwatch sw = new();
 
-    private void FrameworkOnUpdate(Framework framework) {
+    private void FrameworkOnUpdate() {
         if (!sw.IsRunning) sw.Restart();
         if (sw.ElapsedMilliseconds >= 1000) {
             if (!UpdateRetainerList()) {
@@ -151,7 +151,7 @@ public unsafe class AccurateVentureTimes : UiAdjustments.SubTweak {
     }
 
     protected override void Disable() {
-        Service.Framework.Update -= FrameworkOnUpdate;
+        Common.FrameworkUpdate -= FrameworkOnUpdate;
         addonSetupHook?.Disable();
         CloseRetainerList();
         SaveConfig(Config);

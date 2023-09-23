@@ -13,13 +13,13 @@ public unsafe class AutoOpenCommendWindow : Tweak {
     public override string Description => "Open the commendation window upon completion of a duty.";
 
     protected override void Enable() {
-        Service.Framework.Update += FrameworkOnUpdate;
+        Common.FrameworkUpdate += FrameworkOnUpdate;
         base.Enable();
     }
 
     private bool hasOpenedMvp;
     private byte throttle;
-    private void FrameworkOnUpdate(Framework framework) {
+    private void FrameworkOnUpdate() {
         throttle++;
 
         if (Service.Condition[ConditionFlag.WatchingCutscene] ||
@@ -62,7 +62,7 @@ public unsafe class AutoOpenCommendWindow : Tweak {
     }
 
     protected override void Disable() {
-        Service.Framework.Update -= FrameworkOnUpdate;
+        Common.FrameworkUpdate -= FrameworkOnUpdate;
         base.Disable();
     }
 }

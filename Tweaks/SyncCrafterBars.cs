@@ -85,7 +85,7 @@ public class SyncCrafterBars : Tweak {
             return;
         }
 
-        Service.Framework.Update += FrameworkOnUpdate;
+        Common.FrameworkUpdate += FrameworkOnUpdate;
 
         Config = LoadConfig<Configs>() ?? new Configs();
         base.Enable();
@@ -93,7 +93,7 @@ public class SyncCrafterBars : Tweak {
 
     private byte t = 0;
 
-    private void FrameworkOnUpdate(Framework framework) {
+    private void FrameworkOnUpdate() {
         if (t++ < 20) return;
         t = 0;
 
@@ -114,7 +114,7 @@ public class SyncCrafterBars : Tweak {
     }
 
     protected override void Disable() {
-        Service.Framework.Update -= FrameworkOnUpdate;
+        Common.FrameworkUpdate -= FrameworkOnUpdate;
         SaveConfig(Config);
         base.Disable();
     }

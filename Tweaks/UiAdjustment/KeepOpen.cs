@@ -91,7 +91,7 @@ public unsafe class KeepOpen : Tweak {
             return hideHook.Original(atkUnitBase, a2, a3, a4);
         } finally {
             if (doReopen) {
-                atkUnitBase->Show(0);
+                atkUnitBase->Show(false, 0);
             }
         }
     }

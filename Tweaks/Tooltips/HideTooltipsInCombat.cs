@@ -64,7 +64,7 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
         base.Enable();
     }
 
-    private void OnLogin(object sender = null, EventArgs e = null) {
+    private void OnLogin() {
         OriginalAction = Service.GameConfig.UiControl.GetBool("ActionDetailDisp");
         OriginalItem = Service.GameConfig.UiControl.GetBool("ItemDetailDisp");
         OriginalPopUp = Service.GameConfig.UiControl.GetBool("ToolTipDisp");

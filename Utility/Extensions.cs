@@ -7,6 +7,7 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.Interop;
 
@@ -72,8 +73,8 @@ public static class Extensions {
         { VirtualKey.MENU, "Alt"},
         { VirtualKey.SHIFT, "Shift"},
     };
-    public static bool Cutscene(this Condition condition) => condition[ConditionFlag.WatchingCutscene] || condition[ConditionFlag.WatchingCutscene78] || condition[ConditionFlag.OccupiedInCutSceneEvent];
-    public static bool Duty(this Condition condition) => condition[ConditionFlag.BoundByDuty] || condition[ConditionFlag.BoundByDuty56] || condition[ConditionFlag.BoundToDuty97];
+    public static bool Cutscene(this ICondition condition) => condition[ConditionFlag.WatchingCutscene] || condition[ConditionFlag.WatchingCutscene78] || condition[ConditionFlag.OccupiedInCutSceneEvent];
+    public static bool Duty(this ICondition condition) => condition[ConditionFlag.BoundByDuty] || condition[ConditionFlag.BoundByDuty56] || condition[ConditionFlag.BoundToDuty97];
     public static string GetKeyName(this VirtualKey k) => NamedKeys.ContainsKey(k) ? NamedKeys[k] : k.ToString();
     
     public static void Replace(this List<byte> byteList, IEnumerable<byte> search, IEnumerable<byte> replace) {
@@ -101,7 +102,7 @@ public static class Extensions {
         str.Append(NewLinePayload.Payload);
     }
     
-    public static bool AnyExcept(this Condition condition, params ConditionFlag[] exceptFlags) {
+    public static bool AnyExcept(this ICondition condition, params ConditionFlag[] exceptFlags) {
         for (int flag = 0; flag < 100; ++flag) {
             if (exceptFlags.Contains((ConditionFlag)flag)) continue;
             if (condition[flag]) return true;

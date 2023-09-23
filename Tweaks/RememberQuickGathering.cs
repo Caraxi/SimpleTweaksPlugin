@@ -33,11 +33,11 @@ public unsafe class RememberQuickGathering : Tweak {
     }
 
     protected override void Enable() {
-        Service.Framework.Update += FrameworkUpdate;
+        Common.FrameworkUpdate += FrameworkUpdate;
         base.Enable();
     }
 
-    private void FrameworkUpdate(Dalamud.Game.Framework framework) {
+    private void FrameworkUpdate() {
         var addon = Common.GetUnitBase<AddonGathering>("Gathering");
         if (addon is not null && IsGatheringPointLoaded(addon)) {
             if (CanQuickGather(addon)) {
@@ -99,7 +99,7 @@ public unsafe class RememberQuickGathering : Tweak {
 
     protected override void Disable() {
         targetQuickGatheringStatus = null;
-        Service.Framework.Update -= FrameworkUpdate;
+        Common.FrameworkUpdate -= FrameworkUpdate;
         base.Disable();
     }
 }

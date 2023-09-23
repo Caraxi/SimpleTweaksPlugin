@@ -321,7 +321,11 @@ public unsafe class ActionBarDebug : DebugHelper {
 
                 case HotbarSlotType.GearSet: {
                     var gearsetModule = RaptureGearsetModule.Instance();
-                    var gearset = gearsetModule->Gearset[(int)slot->CommandId];
+                    var gearset = gearsetModule->GetGearset((int)slot->CommandId);
+                    if (gearset == null) {
+                        ImGui.Text($"InvalidGearset#{slot->CommandId}");
+                        break;
+                    }
                     ImGui.Text($"{Encoding.UTF8.GetString(gearset->Name, 0x2F)}");
                     break;
                 }

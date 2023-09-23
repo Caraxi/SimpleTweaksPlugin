@@ -46,8 +46,8 @@ public unsafe class ContentsFinderConfirmClassSwitch : Tweak {
         var classJob = Service.Data.Excel.GetSheet<ClassJob>()?.GetRow(classJobId);
         if (classJob == null) return;
         for (var i = 0; i < 101; i++) {
-            var gs = RaptureGearsetModule.Instance()->Gearset[i];
-            if (gs->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists) && gs->ClassJob == classJobId) {
+            var gs = RaptureGearsetModule.Instance()->GetGearset(i);
+            if (gs != null && gs->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists) && gs->ClassJob == classJobId) {
                 ChatHelper.SendMessage($"/gearset change {gs->ID + 1}");
                 return;
             }

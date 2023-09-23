@@ -15,7 +15,7 @@ public unsafe class HideChatPanelButtons : ChatTweaks.SubTweak {
         base.Enable();
     }
 
-    private void TerritoryChange(object _, ushort territory) => ToggleButtons(false);
+    private void TerritoryChange(ushort territory) => ToggleButtons(false);
 
     private void ToggleButtons(AtkUnitBase* atkUnitBase, bool visible) {
         if (atkUnitBase == null) return;

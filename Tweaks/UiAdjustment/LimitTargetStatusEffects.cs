@@ -9,6 +9,7 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
+using Dalamud.Interface.Utility;
 using Dalamud.Logging;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
@@ -138,7 +139,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         protected override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.LimitTargetStatusEffects ?? new Configs();
             UpdateFilteredStatus();
-            Service.Framework.Update += FrameworkOnUpdate;
+            Common.FrameworkUpdate += FrameworkOnUpdate;
             Service.ClientState.EnterPvP += OnEnterPvP;
             Service.ClientState.LeavePvP += OnLeavePvP;
 
@@ -204,12 +205,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             updateTargetStatusHook?.Disable();
             Service.ClientState.LeavePvP -= OnLeavePvP;
             Service.ClientState.EnterPvP -= OnEnterPvP;
-            Service.Framework.Update -= FrameworkOnUpdate;
+            Common.FrameworkUpdate -= FrameworkOnUpdate;
             UpdateTargetStatus(true);
             base.Disable();
         }
 
-        private void FrameworkOnUpdate(Framework framework) {
+        private void FrameworkOnUpdate() {
             try {
                 UpdateTargetStatus();
             } catch (Exception ex) {

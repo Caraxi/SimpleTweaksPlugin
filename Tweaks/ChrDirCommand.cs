@@ -36,7 +36,7 @@ public class ChrDirCommand : CommandTweak {
             return;
         }
 
-        Service.Chat.PrintChat(new XivChatEntry() {
+        Service.Chat.Print(new XivChatEntry() {
             Message= new SeString(new List<Payload>() {
                 new TextPayload("Character Directory:\n"),
                 new UIForegroundPayload(22),

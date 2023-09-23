@@ -10,6 +10,7 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
+using Dalamud.Interface.Utility;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
@@ -130,11 +131,8 @@ public unsafe class UIDebug : DebugHelper {
         
         for (var i = 0; i < UnitListCount; i++) {
             var unitManager = &unitManagers[i];
-            var unitBaseArray = &(unitManager->AtkUnitEntries);
-            for (var j = 0; j < unitManager->Count; j++) {
-                
-                var unitBase = unitBaseArray[j];
-
+            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->EntriesSpan.Length))) {
+                var unitBase = unitManager->EntriesSpan[j].Value;
                 if ((ulong)unitBase == address || FindByAddress(unitBase, address)) {
                     selectedUnitBase = unitBase;
                     Plugin.PluginConfig.Debugging.SelectedAtkUnitBase = address;
@@ -354,18 +352,15 @@ public unsafe class UIDebug : DebugHelper {
         var unitManagers = &stage->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
         for (var i = 0; i < UnitListCount; i++) {
             var unitManager = &unitManagers[i];
-            var unitBaseArray = &(unitManager->AtkUnitEntries);
-
-            for (var j = 0; j < unitManager->Count; j++) {
-                var unitBase = unitBaseArray[j];
-                if (unitBase->RootNode == null) continue;
+            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->EntriesSpan.Length))) {
+                var unitBase = unitManager->EntriesSpan[j].Value;
+                if (unitBase == null || unitBase->RootNode == null) continue;
                 if (!(unitBase->IsVisible && unitBase->RootNode->IsVisible)) continue;
                 var addonResult = new AddonResult() {UnitBase = unitBase};
                 if (list.Contains(addonResult)) continue;
                 if (unitBase->X > position.X || unitBase->Y > position.Y) continue;
                 if (unitBase->X + unitBase->RootNode->Width < position.X) continue;
                 if (unitBase->Y + unitBase->RootNode->Height < position.Y) continue;
-
                 addonResult.Nodes = GetAtkResNodeAtPosition(unitBase->UldManager, position);
                 list.Add(addonResult);
             }
@@ -449,7 +444,7 @@ public unsafe class UIDebug : DebugHelper {
             if (atkUnitBase->IsVisible) {
                 atkUnitBase->Flags ^= 0x20;
             } else {
-                atkUnitBase->Show(0);
+                atkUnitBase->Show(false, 0);
             }
         }
             
@@ -1200,8 +1195,6 @@ public unsafe class UIDebug : DebugHelper {
             selectedInList[i] = false;
             var unitManager = &unitManagers[i];
 
-            var unitBaseArray = &(unitManager->AtkUnitEntries);
-
             var headerOpen = true;
                 
             if (!searching) {
@@ -1209,9 +1202,9 @@ public unsafe class UIDebug : DebugHelper {
                 headerDrawn = true;
                 noResults = false;
             }
-                
-            for (var j = 0; j < unitManager->Count && headerOpen; j++) {
-                var unitBase = unitBaseArray[j];
+            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->EntriesSpan.Length))) {
+                var unitBase = unitManager->EntriesSpan[j].Value;
+                if (unitBase == null) continue;
                 if (selectedUnitBase != null && unitBase == selectedUnitBase) {
                     selectedInList[i] = true;
                     foundSelected = true;
@@ -1247,8 +1240,9 @@ public unsafe class UIDebug : DebugHelper {
             }
                 
             if (selectedInList[i] == false && selectedUnitBase != null) {
-                for (var j = 0; j < unitManager->Count; j++) {
-                    if (selectedUnitBase == null || unitBaseArray[j] != selectedUnitBase) continue;
+                foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->EntriesSpan.Length))) {
+                    var unitBase = unitManager->EntriesSpan[j].Value;
+                    if (selectedUnitBase == null || unitBase != selectedUnitBase) continue;
                     selectedInList[i] = true;
                     foundSelected = true;
                 }

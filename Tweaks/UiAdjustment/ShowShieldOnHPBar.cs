@@ -33,14 +33,14 @@ public unsafe class ShowShieldOnHPBar: UiAdjustments.SubTweak
     protected override void Enable()
     {
         Config = LoadConfig<Configs>() ?? new Configs();
-        Service.Framework.Update += FrameworkUpdate;
+        Common.FrameworkUpdate += FrameworkUpdate;
         base.Enable();
     }
 
     protected override void Disable()
     {
         SaveConfig(Config);
-        Service.Framework.Update -= FrameworkUpdate;
+        Common.FrameworkUpdate -= FrameworkUpdate;
         Finalize(Common.GetUnitBase("_ParameterWidget"));
         base.Disable();
     }
@@ -72,7 +72,7 @@ public unsafe class ShowShieldOnHPBar: UiAdjustments.SubTweak
     }
     
     
-    private void FrameworkUpdate(Framework framework)
+    private void FrameworkUpdate()
     {           
         try
         {

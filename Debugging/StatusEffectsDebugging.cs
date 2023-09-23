@@ -74,7 +74,7 @@ public unsafe class StatusEffectsDebugging : DebugHelper {
                 if (status->SourceID == 0xE0000000 || status->SourceID == 0) {
                     ImGui.Text("None");
                 } else {
-                    var sourceObj = CharacterManager.Instance()->LookupBattleCharaByObjectId((int)status->SourceID);
+                    var sourceObj = CharacterManager.Instance()->LookupBattleCharaByObjectId(status->SourceID);
                     if (sourceObj == null) {
                         DebugManager.ClickToCopyText($"0x{status->SourceID:X}");
                     } else {

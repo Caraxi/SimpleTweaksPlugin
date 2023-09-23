@@ -396,10 +396,9 @@ public static unsafe class Common {
         var unitManagers = &AtkStage.GetSingleton()->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
         for (var i = 0; i < UnitListCount; i++) {
             var unitManager = &unitManagers[i];
-            var unitBaseArray = &(unitManager->AtkUnitEntries);
-            for (var j = 0; j < unitManager->Count; j++) {
-                var unitBase = unitBaseArray[j];
-                if (unitBase->ID == id) {
+            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->EntriesSpan.Length))) {
+                var unitBase = unitManager->EntriesSpan[j].Value;
+                if (unitBase != null && unitBase->ID == id) {
                     return unitBase;
                 }
             }
@@ -422,9 +421,9 @@ public static unsafe class Common {
         };
     }
 
-    public static void CloseAddon(string name, bool unk = true) {
+    public static void CloseAddon(string name, bool unk = true, bool callHideCallback = true, uint setShowHideFlags = 0) {
         var addon = GetUnitBase(name);
-        if (addon != null) addon->Hide(unk);
+        if (addon != null) addon->Hide(unk, callHideCallback, setShowHideFlags);
     }
 
     public static AgentInterface* GetAgent(AgentId agentId) {

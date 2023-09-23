@@ -12,7 +12,7 @@ public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
     public override string Description => "Shows the 45 second countdown after readying for a duty.";
 
     protected override void Enable() {
-        Service.Framework.Update += UpdateFramework;
+        Common.FrameworkUpdate += UpdateFramework;
         prefix = Service.Data.Excel.GetSheet<Addon>()?.GetRow(2780)?.Text?.RawString ?? "Checking member status...";
         base.Enable();
     }
@@ -23,7 +23,7 @@ public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
 
     private readonly Stopwatch sw = new();
 
-    private void UpdateFramework(Framework framework) {
+    private void UpdateFramework() {
         try {
             var confirmWindow = Common.GetUnitBase("ContentsFinderConfirm");
             if (confirmWindow != null && confirmWindow->UldManager.NodeList != null) {
@@ -60,7 +60,7 @@ public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
     }
 
     protected override void Disable() {
-        Service.Framework.Update -= UpdateFramework;
+        Common.FrameworkUpdate -= UpdateFramework;
         sw.Stop();
         base.Disable();
     }

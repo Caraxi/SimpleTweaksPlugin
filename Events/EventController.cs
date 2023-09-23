@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Dalamud;
+using Dalamud.Game.AddonLifecycle;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -39,39 +40,21 @@ public static unsafe class EventController {
         Common.AddonSetup += HandleAddonSetup;
         Common.AddonFinalize += HandleAddonFinalize;
         Common.FrameworkUpdate += HandleFrameworkUpdate;
-        SetupUpdateAddon();
+        
+        Service.AddonLifecycle.RegisterListener(AddonEvent.PreRequestedUpdate, HandlePreRequestedUpdate);
+        Service.AddonLifecycle.RegisterListener(AddonEvent.PostRequestedUpdate, HandlePostRequestedUpdate);
     }
 
-    private static void SetupUpdateAddon() {
-        var updateAddonByIdAddress = (nint) AtkStage.GetSingleton()->RaptureAtkUnitManager->VTable->UpdateAddonByID;
-        
-        var expectedBytes = new byte[] { 0xFF, 0x90, 0x90, 0x01, 0x00, 0x00 }; // call    qword ptr [rax+190h]
-        
-        if (!SafeMemory.ReadBytes(updateAddonByIdAddress + 0x94, expectedBytes.Length, out var bytes)) {
-            SimpleTweaksPlugin.Plugin.Error(new Exception("Failed to initalize UpdateAddon event handling. Some tweaks will not function correctly."));
-            SimpleLog.Fatal("Failed to initalize UpdateAddon event handling.");
-            return;
-        }
-
-        SimpleLog.Debug("Verifying UpdateAddonByID");
-        SimpleLog.Debug($"  Expecting: {BitConverter.ToString(expectedBytes)}");
-        SimpleLog.Debug($"     Actual: {BitConverter.ToString(bytes)}");
-        
-        if (expectedBytes.Length != bytes.Length) {
-            SimpleTweaksPlugin.Plugin.Error(new Exception("Failed to initalize UpdateAddon event handling. Some tweaks will not function correctly."));
-            SimpleLog.Fatal("Failed to initalize UpdateAddon event handling - Read the incorrect number of bytes");
-            return;
-        }
-        
-        for (var i = 0; i < expectedBytes.Length; i++) {
-            if (expectedBytes[i] != bytes[i]) {
-                SimpleTweaksPlugin.Plugin.Error(new Exception("Failed to initalize UpdateAddon event handling. Some tweaks will not function correctly."));
-                SimpleLog.Fatal("Failed to initalize UpdateAddon event handling - Safety check failed. Expected bytes do not match read bytes.");
-                return;
-            }
-        }
-
-        _updateAddonByIdHook = Common.Hook<UpdateAddonByID>(updateAddonByIdAddress, UpdateAddonByIdDetour);
+    private static void HandlePreRequestedUpdate(AddonEvent eventType, AddonArgs addonInfo) {
+        var stringArrays = AtkStage.GetSingleton()->GetStringArrayData();
+        var numberArrays = AtkStage.GetSingleton()->GetNumberArrayData();
+        HandleAddonPreUpdate(addonInfo.AddonName, (AtkUnitBase*) addonInfo.Addon, numberArrays, stringArrays);
+    }
+    
+    private static void HandlePostRequestedUpdate(AddonEvent eventType, AddonArgs addonInfo) {
+        var stringArrays = AtkStage.GetSingleton()->GetStringArrayData();
+        var numberArrays = AtkStage.GetSingleton()->GetNumberArrayData();
+        HandleAddonPostUpdate(addonInfo.AddonName, (AtkUnitBase*) addonInfo.Addon, numberArrays, stringArrays);
     }
 
     private static void UpdateAddonByIdDetour(RaptureAtkUnitManager* atkUnitManager, ushort addonId, NumberArrayData** numberArrays, StringArrayData** stringArrays, byte forceB) {

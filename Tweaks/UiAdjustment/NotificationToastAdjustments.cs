@@ -95,7 +95,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         protected override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.NotificationToastAdjustments ?? new Configs();
-            Service.Framework.Update += FrameworkOnUpdate;
+            Common.FrameworkUpdate += FrameworkOnUpdate;
             Service.Toasts.Toast += OnToast;
             base.Enable();
         }
@@ -103,13 +103,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         protected override void Disable() {
             SaveConfig(Config);
             PluginConfig.UiAdjustments.NotificationToastAdjustments = null;
-            Service.Framework.Update -= FrameworkOnUpdate;
+            Common.FrameworkUpdate -= FrameworkOnUpdate;
             Service.Toasts.Toast -= OnToast;
             UpdateNotificationToast(true);
             base.Disable();
         }
 
-        private void FrameworkOnUpdate(Framework framework) {
+        private void FrameworkOnUpdate() {
             try {
                 UpdateNotificationToast();
             } catch (Exception ex) {

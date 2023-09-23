@@ -5,6 +5,7 @@ using Dalamud.Game;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
+using Dalamud.Interface.Utility;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -161,6 +162,8 @@ public unsafe class HighResScreenshots : Tweak {
     }
 
     public void TryEnableReShade() {
+        /*
+        TODO: Fix?
         if (reShadeKeyTestHook == null) {
             foreach (var m in Process.GetCurrentProcess().Modules) {
                 if (m is not ProcessModule pm) return;
@@ -173,6 +176,7 @@ public unsafe class HighResScreenshots : Tweak {
                 }
             }
         }
+        */
         reShadeKeyTestHook?.Enable();
     }
 

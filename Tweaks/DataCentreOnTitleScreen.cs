@@ -1,5 +1,4 @@
-﻿using Dalamud.Game;
-using Dalamud.Game.Config;
+﻿using Dalamud.Game.Config;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -25,11 +24,11 @@ public unsafe class DataCentreOnTitleScreen : Tweak {
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        Service.Framework.Update += FrameworkOnUpdate;
+        Common.FrameworkUpdate += FrameworkOnUpdate;
         base.Enable();
     }
 
-    private void FrameworkOnUpdate(Framework framework) {
+    private void FrameworkOnUpdate() {
         if (Service.Condition.Any()) return;
         var addon = Common.GetUnitBase("_TitleMenu");
         if (addon == null) return;
@@ -46,8 +45,7 @@ public unsafe class DataCentreOnTitleScreen : Tweak {
         
         var displayText = $"{dc.Name.ToDalamudString().TextValue}";
         if (Config.ShowServiceAccountIndex) {
-            // var selectedServiceIndex = AgentLobby.Instance()->ServiceAccountIndex;
-            var selectedServiceIndex = *(sbyte*)((ulong)&AgentLobby.Instance()->SelectedCharacterId - 8);
+            var selectedServiceIndex = AgentLobby.Instance()->ServiceAccountIndex;
             if (selectedServiceIndex < 0) {
                 if (Service.GameConfig.TryGet(SystemConfigOption.ServiceIndex, out uint lastServiceIndex)) {
                     selectedServiceIndex = (sbyte)lastServiceIndex;
@@ -73,7 +71,7 @@ public unsafe class DataCentreOnTitleScreen : Tweak {
 
     protected override void Disable() {
         SaveConfig(Config);
-        Service.Framework.Update -= FrameworkOnUpdate;
+        Common.FrameworkUpdate -= FrameworkOnUpdate;
         base.Disable();
     }
 }

@@ -74,7 +74,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             changed |= ImGuiExt.HorizontalAlignmentSelector("Ability Name Alignment", ref LoadedConfig.NameAlignment, VerticalAlignment.Bottom);
         };
 
-        public void OnFrameworkUpdate(Framework framework) {
+        public void OnFrameworkUpdate() {
             try {
                 HandleBars();
             } catch (Exception ex) {
@@ -126,7 +126,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         protected override void Enable() {
             if (Enabled) return;
             LoadedConfig = LoadConfig<Config>() ?? PluginConfig.UiAdjustments.ShiftTargetCastBarText ?? new Config();
-            Service.Framework.Update += OnFrameworkUpdate;
+            Common.FrameworkUpdate += OnFrameworkUpdate;
             Enabled = true;
         }
 
@@ -134,14 +134,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (!Enabled) return;
             SaveConfig(LoadedConfig);
             PluginConfig.UiAdjustments.ShiftTargetCastBarText = null;
-            Service.Framework.Update -= OnFrameworkUpdate;
+            Common.FrameworkUpdate -= OnFrameworkUpdate;
             SimpleLog.Debug($"[{GetType().Name}] Reset");
             HandleBars(true);
             Enabled = false;
         }
 
         public override void Dispose() {
-            Service.Framework.Update -= OnFrameworkUpdate;
+            Common.FrameworkUpdate -= OnFrameworkUpdate;
             Enabled = false;
             Ready = false;
         }

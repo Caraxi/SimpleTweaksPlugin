@@ -32,7 +32,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 
         protected override void Disable()
         {
-            Service.Framework.Update -= FrameworkUpdate;
+            Common.FrameworkUpdate -= FrameworkUpdate;
             try
             {
                 Update(true);
@@ -49,11 +49,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         {
             outOfCombatTimer.Restart();
             Config = LoadConfig<Configs>() ?? new Configs();
-            Service.Framework.Update += FrameworkUpdate;
+            Common.FrameworkUpdate += FrameworkUpdate;
             base.Enable();
         }
 
-        private void FrameworkUpdate(Framework framework)
+        private void FrameworkUpdate()
         {
             try
             {

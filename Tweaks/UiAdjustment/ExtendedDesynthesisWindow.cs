@@ -427,12 +427,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             var itemIdWithHQ = slot->ItemID;
             if ((slot->Flags & InventoryItem.ItemFlags.HQ) > 0) itemIdWithHQ += 1000000;
             for (var gs = 0; gs < 101; gs++) {
-                var gearSet = gearSetModule->Gearset[gs];
+                var gearSet = gearSetModule->GetGearset(gs);
+                if (gearSet == null) continue;
                 if (gearSet->ID != gs) break;
                 if (!gearSet->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists)) continue;
-                var gearSetItems = (RaptureGearsetModule.GearsetItem*)gearSet->ItemsData;
-                for (var j = 0; j < 14; j++) {
-                    if (gearSetItems[j].ItemID == itemIdWithHQ) {
+                foreach (var i in gearSet->ItemsSpan) {
+                    if (i.ItemID == itemIdWithHQ) {
                         return gearSet;
                     }
                 }
@@ -515,9 +515,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     return;
                 }
                 
-                var salvageItem = addon->Items[(int)index];
+                
+                var salvageItem = addon->ItemsSpan[(int)index];
                 var item = InventoryManager.Instance()->GetInventoryContainer(salvageItem.Inventory)->GetInventorySlot(salvageItem.Slot);
-                var itemData = Service.Data.Excel.GetSheet<Item>().GetRow(item->ItemID);
+                var itemData = Service.Data.Excel.GetSheet<Item>()?.GetRow(item->ItemID);
+                if (itemData == null) return;
                 var desynthLevel = UIState.Instance()->PlayerState.GetDesynthesisLevel(itemData.ClassJobRepair.Row);
 
                 ByteColor c;
@@ -550,17 +552,17 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 var gearsetModule = RaptureGearsetModule.Instance();
                 var itemInGearset = false;
                 for (var i = 0; i < 101; i++) {
-                    var gearset = gearsetModule->Gearset[i];
+                    var gearset = gearsetModule->GetGearset(i);
+                    if (gearset == null) continue;
                     if (gearset->ID != i) break;
                     if (!gearset->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists)) continue;
-                    var items = (RaptureGearsetModule.GearsetItem*)gearset->ItemsData;
-                    for (var j = 0; j < 14; j++) {
-                        if (items[j].ItemID == itemIdWithHQ) {
+                    foreach (var gsItem in gearset->ItemsSpan) {
+                        if (gsItem.ItemID == itemIdWithHQ) {
                             itemInGearset = true;
                             break;
                         }
                     }
-
+                    
                     if (itemInGearset) break;
                 }
                 desynthRow.CollisionNode->AtkResNode.ToggleVisibility(true);

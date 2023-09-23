@@ -31,19 +31,19 @@ public unsafe class HideChat : ChatTweaks.SubTweak
             ShowInHelp = ShowInHelp
         });
 
-        Service.Framework.Update += FrameworkUpdate;
+        Common.FrameworkUpdate += FrameworkUpdate;
         base.Enable();
     }
 
     protected override void Disable()
     {
         Service.Commands.RemoveHandler(Command);
-        Service.Framework.Update -= FrameworkUpdate;
+        Common.FrameworkUpdate -= FrameworkUpdate;
         SetVisibility(true);
         base.Disable();
     }
 
-    private void FrameworkUpdate(Framework framework)
+    private void FrameworkUpdate()
     {
         try
         {

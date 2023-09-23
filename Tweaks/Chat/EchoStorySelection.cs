@@ -130,7 +130,7 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak
                 Name = name,
             };
         
-            Service.Chat.PrintChat(entry);
+            Service.Chat.Print(entry);
         }
     }
     

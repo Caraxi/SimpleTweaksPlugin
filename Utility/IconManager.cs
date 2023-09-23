@@ -71,7 +71,7 @@ public class IconManager : IDisposable {
                 var size = Size * scale;
                 if (_textureWrap == null) {
                     if (Service.GameConfig.TryGet(SystemConfigOption.PadSelectButtonIcon, out _padIconMode) && _padIconMode < _texturePath.Length) {
-                        _textureWrap = Service.Data.GetImGuiTexture(_texturePath[_padIconMode]);
+                        _textureWrap = Service.TextureProvider.GetTextureFromGame(_texturePath[_padIconMode]);
                     }
                     ImGui.Dummy(drawSize ?? size);
                     return;

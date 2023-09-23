@@ -16,7 +16,7 @@ public class PidCommand : CommandTweak {
     protected override void OnCommand(string args) {
         var process = Process.GetCurrentProcess();
             
-        Service.Chat.PrintChat(new XivChatEntry() {
+        Service.Chat.Print(new XivChatEntry() {
             Message= new SeString(new List<Payload>() {
                 new TextPayload("current pid: "),
                 new UIForegroundPayload(22),

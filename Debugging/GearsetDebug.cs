@@ -41,8 +41,8 @@ public unsafe class GearsetDebug : DebugHelper {
             
             
         for (var i = 0; i < 101; i++) {
-            var gearset = raptureGearsetModule->Gearset[i];
-            if (gearset->ID != i) break;
+            var gearset = raptureGearsetModule->GetGearset(i);
+            if (gearset == null || gearset->ID != i) break;
             if (!gearset->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists)) continue;
                 
             ImGui.Text($"{gearset->ID:00}");

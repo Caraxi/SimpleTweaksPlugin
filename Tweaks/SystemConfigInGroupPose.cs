@@ -45,7 +45,7 @@ public unsafe class SystemConfigInGroupPose : Tweak {
 
     private void OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
         if (type != XivChatType.ErrorMessage) return;
-        if (!Service.PluginInterface.UiBuilder.GposeActive) return;
+        if (!Service.ClientState.IsGPosing) return;
         if (commands.Contains(message.TextValue)) {
             var agent = AgentModule.Instance()->GetAgentByInternalId(AgentId.Config);
             agent->Show();

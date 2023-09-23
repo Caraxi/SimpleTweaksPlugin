@@ -76,21 +76,21 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
         }
 
         Config = LoadConfig<Configs>() ?? new Configs();
-        Service.Framework.Update += OnFrameworkUpdate;
+        Common.FrameworkUpdate += OnFrameworkUpdate;
         Service.ClientState.TerritoryChanged += OnTerritoryChanged;
-        OnTerritoryChanged(null, Service.ClientState.TerritoryType);
+        OnTerritoryChanged(Service.ClientState.TerritoryType);
         base.Enable();
     }
 
     protected override void Disable() {
-        Service.Framework.Update -= OnFrameworkUpdate;
+        Common.FrameworkUpdate -= OnFrameworkUpdate;
         Service.ClientState.TerritoryChanged -= OnTerritoryChanged;
         UpdateParameterBar(true);
         SaveConfig(Config);
         base.Disable();
     }
 
-    private void OnFrameworkUpdate(Framework framework) {
+    private void OnFrameworkUpdate() {
         try {
             UpdateParameterBar();
         }
@@ -99,7 +99,7 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
         }
     }
     
-    private void OnTerritoryChanged(object? sender, ushort territoryType) {
+    private void OnTerritoryChanged(ushort territoryType) {
         var territory = Service.Data.Excel.GetSheet<TerritoryType>()?.GetRow(territoryType);
         if (territory == null) return;
         inPVP = territory.IsPvpZone;

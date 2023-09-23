@@ -68,11 +68,11 @@ public unsafe class SyncGathererBars : Tweak {
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        Service.Framework.Update += FrameworkOnUpdate;
+        Common.FrameworkUpdate += FrameworkOnUpdate;
         base.Enable();
     }
 
-    private void FrameworkOnUpdate(Framework framework) {
+    private void FrameworkOnUpdate() {
         if (++checkBar >= 18) checkBar = 0;
         if (checkBar < 10 && !Config.StandardBars[checkBar]) return;
         if (checkBar >= 10 && !Config.CrossBars[checkBar - 10]) return;
@@ -90,8 +90,8 @@ public unsafe class SyncGathererBars : Tweak {
         }
 
         var hotbarModule = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUiModule()->GetRaptureHotbarModule();
-
-        var currentId = (int)Service.ClientState.LocalPlayer?.ClassJob.Id;
+        if (Service.ClientState.LocalPlayer == null) return;
+        var currentId = (int)Service.ClientState.LocalPlayer.ClassJob.Id;
         if (currentId is not (16 or 17)) return;
         var otherId = currentId is 16 ? 17 : 16;
 
@@ -119,7 +119,7 @@ public unsafe class SyncGathererBars : Tweak {
     }
 
     protected override void Disable() {
-        Service.Framework.Update -= FrameworkOnUpdate;
+        Common.FrameworkUpdate -= FrameworkOnUpdate;
         SaveConfig(Config);
         base.Disable();
     }

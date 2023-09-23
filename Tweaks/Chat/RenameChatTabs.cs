@@ -42,7 +42,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
 
             Service.ClientState.Login += OnLogin;
             if (Service.ClientState.LocalPlayer != null) {
-                OnLogin(null, null);
+                OnLogin();
             }
             base.Enable();
         }
@@ -77,7 +77,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
             hasChanged |= ImGui.InputTextWithHint(LocString("TabLabel", "Tab {0}").Format(2) + "###nameTab1", DefaultName1, ref TweakConfig.ChatTab1Name, 16);
         };
 
-        private void OnLogin(object sender, EventArgs e) {
+        private void OnLogin() {
             DoRename();
         }
 

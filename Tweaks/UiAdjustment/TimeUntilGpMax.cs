@@ -55,7 +55,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
         lastUpdate.Restart();
         updateParamHook ??= Common.Hook<UpdateParamDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 83 3D ?? ?? ?? ?? ?? 41 0F B6 E8 48 8B DA 8B F1 0F 84 ?? ?? ?? ?? 48 89 7C 24", UpdateParamDetour);
         updateParamHook.Enable();
-        Service.Framework.Update += FrameworkUpdate;
+        Common.FrameworkUpdate += FrameworkUpdate;
         base.Enable();
     }
 
@@ -89,7 +89,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
         SaveConfig(Config);
         lastUpdate.Stop();
         updateParamHook?.Disable();
-        Service.Framework.Update -= FrameworkUpdate;
+        Common.FrameworkUpdate -= FrameworkUpdate;
         Update(true);
         base.Disable();
     }
@@ -100,7 +100,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
         base.Dispose();
     }
 
-    private void FrameworkUpdate(Framework framework) {
+    private void FrameworkUpdate() {
         try {
             if (Service.ClientState.LocalContentId == 0) return;
             if (!lastUpdate.IsRunning) lastUpdate.Restart();

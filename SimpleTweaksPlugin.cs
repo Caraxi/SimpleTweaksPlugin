@@ -14,6 +14,7 @@ using Dalamud;
 using Dalamud.Game;
 using Dalamud.Interface.Internal.Notifications;
 using Dalamud.Interface.Windowing;
+using Dalamud.Plugin.Services;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Utility;
@@ -177,7 +178,7 @@ namespace SimpleTweaksPlugin {
         }
         
 
-        private void FrameworkOnUpdate(Framework framework) => Common.InvokeFrameworkUpdate();
+        private void FrameworkOnUpdate(IFramework framework) => Common.InvokeFrameworkUpdate();
 
         public void SetupLocalization() {
             this.PluginConfig.Language ??= Service.ClientState.ClientLanguage switch {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Utility;
 
@@ -23,25 +22,25 @@ public class RemoveCommunityFinder : UiAdjustments.SubTweak {
     };
 
     protected override void Enable() {
-        Service.Framework.Update += OnFrameworkUpdate;
+        Common.FrameworkUpdate += OnFrameworkUpdate;
         base.Enable();
     }
 
     protected override void Disable() {
-        Service.Framework.Update -= OnFrameworkUpdate;
-        foreach(var w in windowsWithCommunityFinder) UpdateCommunityFinderButton(Service.Framework, w, true);
+        Common.FrameworkUpdate -= OnFrameworkUpdate;
+        foreach(var w in windowsWithCommunityFinder) UpdateCommunityFinderButton(w, true);
         base.Disable();
     }
 
-    private void OnFrameworkUpdate(Framework framework) {
+    private void OnFrameworkUpdate() {
         try {
-            foreach (var w in windowsWithCommunityFinder) UpdateCommunityFinderButton(Service.Framework, w);
+            foreach (var w in windowsWithCommunityFinder) UpdateCommunityFinderButton(w);
         } catch (Exception ex) {
             SimpleLog.Error(ex);
         }
     }
 
-    private unsafe void UpdateCommunityFinderButton(Framework framework, string name, bool reset = false) {
+    private unsafe void UpdateCommunityFinderButton(string name, bool reset = false) {
         var socialWindow = Common.GetUnitBase(name);
         if (socialWindow == null) return;
         var node = socialWindow->RootNode;
