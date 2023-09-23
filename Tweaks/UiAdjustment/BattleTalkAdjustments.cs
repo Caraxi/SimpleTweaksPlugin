@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Numerics;
-using Dalamud.Game;
-using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;

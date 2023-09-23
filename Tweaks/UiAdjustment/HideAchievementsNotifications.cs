@@ -1,8 +1,6 @@
 ﻿using System;
-using Dalamud.Game;
 using Dalamud.Game.Config;
 using Dalamud.Interface.Colors;
-using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;

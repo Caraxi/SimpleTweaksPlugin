@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Dalamud.Game;
 using ImGuiNET;
 using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;

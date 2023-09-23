@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Utility;

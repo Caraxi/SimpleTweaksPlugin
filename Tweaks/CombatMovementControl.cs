@@ -1,5 +1,4 @@
-﻿using System;
-using Dalamud.Game.ClientState.Conditions;
+﻿using Dalamud.Game.ClientState.Conditions;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;

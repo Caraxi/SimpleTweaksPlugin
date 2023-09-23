@@ -1,5 +1,4 @@
-﻿using Dalamud.Game;
-using Dalamud.Game.Command;
+﻿using Dalamud.Game.Command;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Utility;
 using System;

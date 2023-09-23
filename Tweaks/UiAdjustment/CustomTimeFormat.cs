@@ -6,7 +6,6 @@ using Dalamud;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Game;
 using Dalamud.Game.Config;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;

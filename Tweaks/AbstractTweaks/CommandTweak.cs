@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Dalamud.Game.Command;
-using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;

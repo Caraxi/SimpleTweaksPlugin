@@ -11,12 +11,12 @@ using System.Numerics;
 using System.Reflection;
 using System.Threading.Tasks;
 using Dalamud;
-using Dalamud.Game;
 using Dalamud.Interface.Internal.Notifications;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Debugging;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.Utility;
 #if DEBUG
 using System.Runtime.CompilerServices;
@@ -84,6 +84,7 @@ namespace SimpleTweaksPlugin {
             Common.Shutdown();
             TooltipManager.Destroy();
             SimpleEvent.Destroy();
+            EventController.Destroy();
         }
 
         public int UpdateFrom = -1;

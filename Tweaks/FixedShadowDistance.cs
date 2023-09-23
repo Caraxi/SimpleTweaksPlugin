@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using Dalamud.Game;
 using ImGuiNET;
 using SimpleTweaksPlugin.Tweaks;
 using SimpleTweaksPlugin.TweakSystem;

@@ -1,6 +1,5 @@
 ﻿using System;
 using Dalamud;
-using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;

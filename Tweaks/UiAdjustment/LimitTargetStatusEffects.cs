@@ -1,12 +1,10 @@
-﻿using Dalamud.Game;
-using ImGuiNET;
+﻿using ImGuiNET;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility;

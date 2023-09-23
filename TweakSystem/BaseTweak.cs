@@ -10,7 +10,6 @@ using Dalamud.Interface.Colors;
 using Dalamud.Plugin;
 using ImGuiNET;
 using ImGuiScene;
-using JetBrains.Annotations;
 using Newtonsoft.Json;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Numerics;
-using Dalamud.Game;
-using Dalamud.Hooking;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;

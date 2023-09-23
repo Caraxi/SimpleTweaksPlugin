@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Dalamud;
 using Dalamud.Game.AddonLifecycle;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -43,6 +42,15 @@ public static unsafe class EventController {
         
         Service.AddonLifecycle.RegisterListener(AddonEvent.PreRequestedUpdate, HandlePreRequestedUpdate);
         Service.AddonLifecycle.RegisterListener(AddonEvent.PostRequestedUpdate, HandlePostRequestedUpdate);
+    }
+
+    internal static void Destroy() {
+        Common.AddonSetup -= HandleAddonSetup;
+        Common.AddonFinalize -= HandleAddonFinalize;
+        Common.FrameworkUpdate -= HandleFrameworkUpdate;
+
+        Service.AddonLifecycle.UnregisterListener(AddonEvent.PreRequestedUpdate, HandlePreRequestedUpdate);
+        Service.AddonLifecycle.UnregisterListener(AddonEvent.PostRequestedUpdate, HandlePostRequestedUpdate);
     }
 
     private static void HandlePreRequestedUpdate(AddonEvent eventType, AddonArgs addonInfo) {

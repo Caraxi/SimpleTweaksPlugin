@@ -1,6 +1,4 @@
-﻿using System;
-using Dalamud;
-using SimpleTweaksPlugin.TweakSystem;
+﻿using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
