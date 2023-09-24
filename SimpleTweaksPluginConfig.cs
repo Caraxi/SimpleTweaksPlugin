@@ -242,7 +242,6 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
         
         var allTweaks = _allTweaks;
         var tweakCategories = _tweakCategories;
-        var enabledTweaks = _enabledTweaks ?? new List<BaseTweak>();
         
         var changed = false;
 
@@ -317,6 +316,8 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
             if (ImGui.BeginTabBar("tweakCategoryTabBar", flags)) {
 
                 if (ShowEnabledTweaksTab) {
+                    if (_enabledTweaks == null || _enabledTweaks.Count == 0) _enabledTweaks = _allTweaks.FindAll(t => t.Enabled);
+                    var enabledTweaks = _enabledTweaks ?? new List<BaseTweak>();
                     MixColour(new Vector4(0.35f, 0.8f, 0.35f, -1), ImGuiCol.Tab, ImGuiCol.TabActive, ImGuiCol.TabHovered, ImGuiCol.TabUnfocused);
 
                     if (ImGui.BeginTabItem(Loc.Localize("Enabled Tweaks", "Enabled Tweaks", "Enabled Tweaks Tab Header") + "###enabledTweaksTab")) {
@@ -329,11 +330,11 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                         ImGui.EndChild();
                         ImGui.EndTabItem();
                     } else {
-                        _enabledTweaks = _allTweaks.FindAll(t => t.Enabled);
+                        _enabledTweaks = null;
                     }
                     ImGui.PopStyleColor(4);
                 } else {
-                    _enabledTweaks = _allTweaks.FindAll(t => t.Enabled);
+                    _enabledTweaks = null;
                 }
                 
                 if (ShowAllTweaksTab) {
