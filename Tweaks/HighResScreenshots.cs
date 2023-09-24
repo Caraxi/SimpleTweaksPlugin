@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Dalamud.Game;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility;
@@ -157,23 +159,19 @@ public unsafe class HighResScreenshots : Tweak {
 
         base.Enable();
     }
-
     public void TryEnableReShade() {
-        /*
-        TODO: Fix?
         if (reShadeKeyTestHook == null) {
             foreach (var m in Process.GetCurrentProcess().Modules) {
                 if (m is not ProcessModule pm) return;
                 if (pm.FileVersionInfo?.FileDescription?.Contains("ReShade") ?? false) {
                     var scanner = new SigScanner(pm);
                     try {
-                        var a = scanner.ScanText("E8 ?? ?? ?? ?? 84 C0 74 10 40 38 BE 90");
+                        var a = scanner.ScanText("E8 ?? ?? ?? ?? 84 C0 74 10 40 38 BE");
                         reShadeKeyTestHook = Common.Hook<ReShadeKeyTest>((nuint)a, ReShadeKeyTestDetour);
                     } catch { }
                 }
             }
         }
-        */
         reShadeKeyTestHook?.Enable();
     }
 
