@@ -324,7 +324,10 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                         if (ImGui.BeginChild("enabledTweaks", new Vector2(-1, -1), false)) {
                             foreach (var tweak in enabledTweaks) {
                                 if (!IsTweakVisible(tweak)) continue;
+                                var enabled = tweak.Enabled;
+                                if (!enabled) ImGui.PushStyleColor(ImGuiCol.Text, ImGui.ColorConvertU32ToFloat4(ImGui.GetColorU32(ImGuiCol.Text)) * new Vector4(1, 1, 1, 0.5f));
                                 DrawTweakConfig(tweak, ref changed);
+                                if (!enabled) ImGui.PopStyleColor();
                             }
                         }
                         ImGui.EndChild();
