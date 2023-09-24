@@ -6,6 +6,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
+using FFXIVClientStructs.Interop;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
@@ -198,7 +199,7 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
         var hotbarModule = Framework.Instance()->GetUiModule()->GetRaptureHotbarModule();
         var name = Marshal.PtrToStringUTF8(new IntPtr(ab->AtkUnitBase.Name));
         if (name == null) return false;
-        var hotbar = hotbarModule->HotBar[ab->RaptureHotbarId];
+        var hotbar = hotbarModule->HotBarsSpan.GetPointer(ab->RaptureHotbarId);
         if (hotbar == null) return false;
 
         var numSlots = ab->SlotCount;
@@ -214,7 +215,7 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
         for (int i = 0; i < numSlots; i++)
         {
             var command = new HotbarSlotCommand();
-            var slotStruct = hotbar->Slot[i];
+            var slotStruct = hotbar->SlotsSpan.GetPointer(i);
             if (slotStruct != null)
             {
                 command.Type = slotStruct->CommandType;
@@ -262,7 +263,7 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak
         var hotbarModule = Framework.Instance()->GetUiModule()->GetRaptureHotbarModule();
         var name = Marshal.PtrToStringUTF8(new IntPtr(ab->AtkUnitBase.Name));
         if (name == null) return;
-        var hotbar = hotbarModule->HotBar[ab->RaptureHotbarId];
+        var hotbar = hotbarModule->HotBarsSpan.GetPointer(ab->RaptureHotbarId);
         if (hotbar == null) return;
 
         for (int i = 0; i < ab->SlotCount; i++)

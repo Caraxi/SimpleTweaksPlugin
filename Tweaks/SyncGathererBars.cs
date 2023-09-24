@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
+using FFXIVClientStructs.Interop;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -95,24 +96,24 @@ public unsafe class SyncGathererBars : Tweak {
         var otherId = currentId is 16 ? 17 : 16;
 
         var swapDict = actionSwaps[currentId is 16 ? 0 : 1];
-        var current = hotbarModule->SavedClassJob[currentId];
-        var other = hotbarModule->SavedClassJob[otherId];
+        var current = hotbarModule->SavedHotBarsSpan.GetPointer(currentId);
+        var other = hotbarModule->SavedHotBarsSpan.GetPointer(otherId);
 
-        var cBar = current->Bar[checkBar];
-        var oBar = other->Bar[checkBar];
+        var cBar = current->HotBarsSpan.GetPointer(checkBar);
+        var oBar = other->HotBarsSpan.GetPointer(checkBar);
 
         for (var i = 0; i < 16; i++) {
-            var cSlot = cBar->Slot[i];
-            var oSlot = oBar->Slot[i];
-            oSlot->Type = cSlot->Type;
-            if (cSlot->Type == HotbarSlotType.Action) {
-                if (swapDict.ContainsKey(cSlot->ID)) {
-                    oSlot->ID = swapDict[cSlot->ID];
+            var cSlot = cBar->SlotsSpan.GetPointer(i);
+            var oSlot = oBar->SlotsSpan.GetPointer(i);
+            oSlot->CommandType = cSlot->CommandType;
+            if (cSlot->CommandType == HotbarSlotType.Action) {
+                if (swapDict.ContainsKey(cSlot->CommandId)) {
+                    oSlot->CommandId = swapDict[cSlot->CommandId];
                 } else {
-                    oSlot->ID = cSlot->ID;
+                    oSlot->CommandId = cSlot->CommandId;
                 }
             } else {
-                oSlot->ID = cSlot->ID;
+                oSlot->CommandId = cSlot->CommandId;
             }
         }
     }

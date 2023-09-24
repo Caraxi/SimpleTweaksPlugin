@@ -5,6 +5,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using SimpleTweaksPlugin.Utility;
 using System;
 using System.Runtime.InteropServices;
+using FFXIVClientStructs.Interop;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
@@ -62,14 +63,14 @@ public unsafe class ActionPressMirroring : UiAdjustments.SubTweak
         var hotbarModule = Framework.Instance()->GetUiModule()->GetRaptureHotbarModule();
         var name = Marshal.PtrToStringUTF8(new IntPtr(ab->AtkUnitBase.Name));
         if (name == null) goto PulseSlot;
-        var hotbar = hotbarModule->HotBar[ab->RaptureHotbarId];
+        var hotbar = hotbarModule->HotBarsSpan.GetPointer(ab->RaptureHotbarId);
         if (hotbar == null) goto PulseSlot;
         var numSlots = ab->SlotCount;
         if (numSlots <= slotIndex) goto PulseSlot;
 
         tweakIsPulsing = true;
 
-        var slot = hotbar->Slot[slotIndex];
+        var slot = hotbar->SlotsSpan.GetPointer(slotIndex);
         var commandType = slot->CommandType;
         var commandId = slot->CommandType == HotbarSlotType.Action ? actionManager->GetAdjustedActionId(slot->CommandId) : slot->CommandId;
 
@@ -101,7 +102,7 @@ public unsafe class ActionPressMirroring : UiAdjustments.SubTweak
                     currentHotbarId = doubleCrossBar->BarTarget;
                 }
 
-                var currentHotbar = hotbarModule->HotBar[currentHotbarId];
+                var currentHotbar = hotbarModule->HotBarsSpan.GetPointer(currentHotbarId);
 
                 if (currentHotbar != null)
                 {
@@ -123,9 +124,8 @@ public unsafe class ActionPressMirroring : UiAdjustments.SubTweak
                         offset = 8;
                     }
 
-                    for (int i = from; i < to; i++)
-                    {
-                        slot = currentHotbar->Slot[i + offset];
+                    for (int i = from; i < to; i++) {
+                        slot = currentHotbar->SlotsSpan.GetPointer(i + offset);
                         var currentCommandType = slot->CommandType;
                         var currentCommandId = slot->CommandType == HotbarSlotType.Action ? actionManager->GetAdjustedActionId(slot->CommandId) : slot->CommandId;
                         if (currentCommandType == commandType && currentCommandId == commandId)

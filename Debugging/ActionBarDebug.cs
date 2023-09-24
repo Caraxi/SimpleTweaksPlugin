@@ -5,6 +5,7 @@ using System.Text;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
+using FFXIVClientStructs.Interop;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using Lumina.Text;
@@ -74,13 +75,13 @@ public unsafe class ActionBarDebug : DebugHelper {
                 ImGui.EndChild();
                 ImGui.SameLine();
                 ImGui.BeginGroup();
-                var savedBarClassJob = raptureHotbarModule->SavedClassJob[selectedSavedIndex];
+                var savedBarClassJob = raptureHotbarModule->SavedHotBarsSpan.GetPointer(selectedSavedIndex);
                 if (savedBarClassJob != null && ImGui.BeginTabBar("savedClassJobBarSelectType")) {
 
 
                     void ShowBar(int b) {
 
-                        var savedBar = savedBarClassJob->Bar[b];
+                        var savedBar = savedBarClassJob->HotBarsSpan.GetPointer(b);
                         if (savedBar == null) {
                             ImGui.Text("Bar is Null");
                             return;
@@ -98,14 +99,14 @@ public unsafe class ActionBarDebug : DebugHelper {
                                 ImGui.TableNextColumn();
                                 ImGui.Text($"{i:00}");
                                 ImGui.TableNextColumn();
-                                var slot = savedBar->Slot[i];
+                                var slot = savedBar->SlotsSpan.GetPointer(i);
                                 if (slot == null) {
                                     ImGui.TableNextRow();
                                     continue;
                                 }
-                                ImGui.Text($"{slot->Type}");
+                                ImGui.Text($"{slot->CommandType}");
                                 ImGui.TableNextColumn();
-                                ImGui.Text($"{slot->ID}");
+                                ImGui.Text($"{slot->CommandId}");
                             }
 
                             ImGui.EndTable();
@@ -179,7 +180,7 @@ public unsafe class ActionBarDebug : DebugHelper {
             for (var i = 0; i < type.Count; i++) {
                 var tabName = names.Length > i ? names[i] : $"{i+1:00}";
                 if (ImGui.BeginTabItem($"{tabName}##hotbar{i}")) {
-                    var hotbar = hotbarModule->HotBar[type.FirstIndex + i];
+                    var hotbar = hotbarModule->HotBarsSpan.GetPointer(type.FirstIndex + i);
                     if (hotbar != null) {
                         DrawHotbar(hotbarModule, hotbar);
                     }
@@ -214,7 +215,7 @@ public unsafe class ActionBarDebug : DebugHelper {
             
             
         for (var i = 0; i < 16; i++) {
-            var slot = hotbar->Slot[i];
+            var slot = hotbar->SlotsSpan.GetPointer(i);
             if (slot == null) break;
             if (slot->CommandType == HotbarSlotType.Empty) {
                 ImGui.PushStyleColor(ImGuiCol.Text, slot->CommandType == HotbarSlotType.Empty ? 0x99999999 : 0xFFFFFFFF);
