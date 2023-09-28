@@ -27,8 +27,6 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     [Signature("40 53 48 83 EC 20 48 8B 42 58", DetourName = nameof(OnNeedGreedRequestedUpdate))]
     private readonly Hook<OnRequestedUpdateDelegate>? needGreedOnRequestedUpdateHook = null!;
 
-    private static AtkUnitBase* AddonNeedGreed => (AtkUnitBase*) Service.GameGui.GetAddonByName("NeedGreed");
-
     private readonly int[] listItemNodeIdArray = Enumerable.Range(21001, 31).Prepend(2).ToArray();
 
     private const uint CrossBaseId = 1000U;
@@ -137,17 +135,19 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
                     
             var lootItemNode = Common.GetNodeByID<AtkComponentNode>(componentUldManager, index);
             if (lootItemNode is null) continue;
-            
-            var crossNode = Common.GetNodeByID<AtkImageNode>(componentUldManager, CrossBaseId + index);
+
+            var lootItemUldManager = &lootItemNode->Component->UldManager;
+
+            var crossNode = Common.GetNodeByID<AtkImageNode>(lootItemUldManager, CrossBaseId + index);
             if (crossNode is not null)
             {
-                UiHelper.UnlinkAndFreeImageNode(crossNode, AddonNeedGreed);
+                UiHelper.UnlinkAndFreeImageNode(crossNode, obj.Addon);
             }
                         
-            var padlockNode = Common.GetNodeByID<AtkImageNode>(componentUldManager, PadlockBaseId + index);
+            var padlockNode = Common.GetNodeByID<AtkImageNode>(lootItemUldManager, PadlockBaseId + index);
             if (padlockNode is not null)
             {
-                UiHelper.UnlinkAndFreeImageNode(padlockNode, AddonNeedGreed);
+                UiHelper.UnlinkAndFreeImageNode(padlockNode, obj.Addon);
             }
         }
     }
