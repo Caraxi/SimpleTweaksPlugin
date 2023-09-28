@@ -663,7 +663,6 @@ public abstract class BaseTweak {
 
             if (Experimental) categories.Add($"{TweakCategory.Experimental}");
             
-            if (categories.Count == 0) categories.Add($"{TweakCategory.Other}");
             return categories;
         }
     }

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface.Colors;
+using Dalamud.Interface.Components;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -25,6 +26,8 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     public List<string> HiddenTweaks = new List<string>();
     public List<string> CustomProviders = new List<string>();
     public List<string> BlacklistedTweaks = new List<string>();
+    public List<string> HiddenCategories = new List<string>();
+    
 
     public Dictionary<string, string> CustomizedCommands = new();
     public Dictionary<string, List<string>> DisabledCommandAlias = new();
@@ -38,6 +41,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     public bool AnalyticsOptOut;
     public bool ShowAllTweaksTab = true;
     public bool ShowEnabledTweaksTab = true;
+    public bool ShowOtherTweaksTab = true;
 
     public bool ShowTweakDescriptions = true;
     public bool ShowTweakIDs;
@@ -92,9 +96,12 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
 
     [NonSerialized] private Vector2 checkboxSize = new(16);
 
+    
     private record TweakCategoryContainer(string categoryName) {
         public string LocalizedName => Loc.Localize($"Category / {categoryName}", categoryName, "Tweak Category");
         public List<BaseTweak> Tweaks = new();
+        public virtual bool Equals(TweakCategoryContainer other) => categoryName == other?.categoryName;
+        public override int GetHashCode() => categoryName.GetHashCode();
     }
 
     [NonSerialized] private static List<TweakCategoryContainer> _tweakCategories = null;
@@ -208,38 +215,61 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
             ImGui.PushStyleColor(col, newCol);
         }
     }
-    
-    public void DrawConfigUI() {
 
-        if (_allTweaks == null || _tweakCategories == null) {
-            var allTweaksList = new List<BaseTweak>();
-            var tweakCategoryList = new Dictionary<string, TweakCategoryContainer>();
+    private void BuildTweakList() {
+        var allTweaksList = new List<BaseTweak>();
+        var uncategorizedTweaks = new List<BaseTweak>();
+        var tweakCategoryList = new Dictionary<string, TweakCategoryContainer>();
 
-            void ParseTweaks(IEnumerable<BaseTweak> tweaks) {
-                foreach (var tweak in tweaks) {
-                    if (tweak is SubTweakManager stm) {
-                        ParseTweaks(stm.GetTweakList());
-                        continue;
-                    }
-                    
-                    if (!allTweaksList.Contains(tweak)) allTweaksList.Add(tweak);
-
-                    foreach (var category in tweak.Categories) {
-                        if (!tweakCategoryList.TryGetValue(category, out var categoryContainer)) {
-                            categoryContainer = new TweakCategoryContainer(category);
-                            tweakCategoryList.Add(category, categoryContainer);
-                        }
-
-                        if (!categoryContainer.Tweaks.Contains(tweak)) categoryContainer.Tweaks.Add(tweak);
-                    }
+        void ParseTweaks(IEnumerable<BaseTweak> tweaks) {
+            foreach (var tweak in tweaks) {
+                if (tweak is SubTweakManager stm) {
+                    ParseTweaks(stm.GetTweakList());
+                    continue;
                 }
+                
+                if (!allTweaksList.Contains(tweak)) allTweaksList.Add(tweak);
+                if (!uncategorizedTweaks.Contains(tweak)) uncategorizedTweaks.Add(tweak);
+            }
+        }
+        ParseTweaks(plugin.Tweaks);
+        _allTweaks = allTweaksList.OrderBy(t => t.LocalizedName).ToList();
+        
+        uncategorizedTweaks.RemoveAll(tweak => {
+            var hasCategory = false;
+            foreach (var category in tweak.Categories) {
+                if (HiddenCategories.Contains(category)) continue;
+                
+                if (!tweakCategoryList.TryGetValue(category, out var categoryContainer)) {
+                    categoryContainer = new TweakCategoryContainer(category);
+                    tweakCategoryList.Add(category, categoryContainer);
+                }
+
+                if (!categoryContainer.Tweaks.Contains(tweak)) categoryContainer.Tweaks.Add(tweak);
+                hasCategory = true;
+            }
+
+            
+            if (!hasCategory && ShowOtherTweaksTab) {
+                var other = $"{TweakCategory.Other}";
+                if (!tweakCategoryList.TryGetValue(other, out var categoryContainer)) {
+                    categoryContainer = new TweakCategoryContainer(other);
+                    tweakCategoryList.Add(other, categoryContainer);
+                }
+
+                if (!categoryContainer.Tweaks.Contains(tweak)) categoryContainer.Tweaks.Add(tweak);
             }
             
-            ParseTweaks(plugin.Tweaks);
-            _allTweaks = allTweaksList.OrderBy(t => t.LocalizedName).ToList();
-            _tweakCategories = tweakCategoryList.Values.OrderBy(c => c.LocalizedName).ToList();
-        }
+            
+            
+            return hasCategory;
+        });
         
+        _tweakCategories = tweakCategoryList.Values.OrderBy(c => c.LocalizedName).ToList();
+    }
+    
+    public void DrawConfigUI() {
+        if (_allTweaks == null || _tweakCategories == null) BuildTweakList();
         var allTweaks = _allTweaks;
         var tweakCategories = _tweakCategories;
         
@@ -385,6 +415,44 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                     if (ImGui.Checkbox(Loc.Localize("General Options / Show All Tweaks Tab", "Show All Tweaks Tab."), ref ShowAllTweaksTab)) Save();
                     ImGui.Separator();
                     if (ImGui.Checkbox(Loc.Localize("General Options / Show Enabled Tweaks Tab", "Show Enabled Tweaks Tab."), ref ShowEnabledTweaksTab)) Save();
+                    ImGui.Separator();
+                    if (ImGui.CollapsingHeader(Loc.Localize("General Options / Visible Category Tabs", "Visible Category Tabs") + $" ({tweakCategories.Count})###visibleCategoryTabs") ) {
+                        ImGui.Indent();
+
+                        string categoryDescription;
+                        foreach (var c in HiddenCategories.Select(s => new TweakCategoryContainer(s)).Union(tweakCategories).OrderBy(c => c.LocalizedName)) {
+                            if (c.categoryName == $"{TweakCategory.Other}") continue;
+                            var isNotHidden = !HiddenCategories.Contains(c.categoryName);
+                            if (ImGui.Checkbox($"{c.LocalizedName}###tweakCategoryNotHidden_{c.categoryName}", ref isNotHidden)) {
+                                if (isNotHidden) {
+                                    HiddenCategories.Remove(c.categoryName);
+                                } else {
+                                    HiddenCategories.Add(c.categoryName);
+                                }
+                                Save();
+                                RebuildTweakList();
+                            }
+
+                            if (TweakCategoryAttribute.CategoryDescriptions.TryGetValue(c.categoryName, out categoryDescription)) {
+                                ImGui.SameLine();
+                                ImGuiComponents.HelpMarker(categoryDescription);
+                            }
+                            
+                            
+                        }
+
+                        if (ImGui.Checkbox($"{new TweakCategoryContainer($"{TweakCategory.Other}").LocalizedName}###tweakCategoryNotHidden_{TweakCategory.Other}", ref ShowOtherTweaksTab)) {
+                            Save();
+                            RebuildTweakList();
+                        }
+                        
+                        if (TweakCategoryAttribute.CategoryDescriptions.TryGetValue($"{TweakCategory.Other}", out categoryDescription)) {
+                            ImGui.SameLine();
+                            ImGuiComponents.HelpMarker(categoryDescription);
+                        }
+                        
+                        ImGui.Unindent();
+                    }
                     ImGui.Separator();
                     if (ImGui.Checkbox(Loc.Localize("General Options / Show Experimental Tweaks", "Show Experimental Tweaks."), ref ShowExperimentalTweaks)) Save();
                     ImGui.Separator();
