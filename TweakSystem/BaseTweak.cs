@@ -491,7 +491,7 @@ public abstract class BaseTweak {
         Ready = true;
     }
 
-    private bool signatureHelperInitalized = false;
+    private bool signatureHelperInitialized = false;
 
     private void AutoLoadConfig() {
         SimpleLog.Verbose($"[{Key}] AutoLoading Config");
@@ -524,9 +524,9 @@ public abstract class BaseTweak {
     
     
     internal void InternalEnable() {
-        if (!signatureHelperInitalized) {
+        if (!signatureHelperInitialized) {
             SignatureHelper.Initialise(this);
-            signatureHelperInitalized = true;
+            signatureHelperInitialized = true;
         }
         
         // Auto Load Config

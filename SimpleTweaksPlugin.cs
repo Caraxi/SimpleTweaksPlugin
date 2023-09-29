@@ -104,12 +104,12 @@ namespace SimpleTweaksPlugin {
                 FFXIVClientStructs.Interop.Resolver.GetInstance.SetupSearchSpace(Service.SigScanner.SearchBase);
                 FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
                 UpdateBlacklist();
-                Service.Framework.RunOnFrameworkThread(Initalize);
+                Service.Framework.RunOnFrameworkThread(Initialize);
             });
 #else
             Task.Run(() => {
                 UpdateBlacklist();
-                Service.Framework.RunOnFrameworkThread(Initalize);
+                Service.Framework.RunOnFrameworkThread(Initialize);
             });
 #endif
         }
@@ -137,7 +137,7 @@ namespace SimpleTweaksPlugin {
             }
         }
         
-        private void Initalize() {
+        private void Initialize() {
 
             IconManager = new IconManager();
 
