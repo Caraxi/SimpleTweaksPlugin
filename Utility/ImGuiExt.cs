@@ -231,4 +231,13 @@ public static class ImGuiExt {
         }
     }
 
+    public static void TextWrappedDisabled(string text) {
+        try {
+            ImGui.PushStyleColor(ImGuiCol.Text, ImGui.GetColorU32(ImGuiCol.TextDisabled));
+            ImGui.TextWrapped(text);
+        } finally {
+            ImGui.PopStyleColor();
+        }
+    }
+
 }
