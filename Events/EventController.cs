@@ -12,6 +12,18 @@ using SimpleTweaksPlugin.TweakSystem;
 namespace SimpleTweaksPlugin.Events;
 
 public static unsafe class EventController {
+    
+    private static bool IsPointer<T>(this ParameterInfo p, int levels = 1) {
+        var ptrType = p.ParameterType;
+        for (var i = 0; i < levels; i++) {
+            if (ptrType == null) return false;
+            if (!ptrType.IsPointer) return false;
+            if (!ptrType.HasElementType) return false;
+            ptrType = ptrType.GetElementType();
+        }
+        return ptrType == typeof(T);
+    }
+    
     public class EventSubscriber {
         public BaseTweak Tweak { get; init; }
         public MethodInfo Method { get; init; }
@@ -48,12 +60,6 @@ public static unsafe class EventController {
             AddonRefreshArgs,
         }
 
-        private bool IsPointer<T>(ParameterInfo p) {
-            if (!p.ParameterType.IsPointer) return false;
-            if (p.ParameterType.GetElementType() != typeof(T)) return false;
-            return true;
-        }
-
         private bool IsAddonPointer(ParameterInfo p) {
             if (!p.ParameterType.IsPointer) return false;
             var elementType = p.ParameterType.GetElementType();
@@ -79,7 +85,7 @@ public static unsafe class EventController {
                         return true;
                     }
                     
-                    if (IsPointer<AtkUnitBase>(p[0])) {
+                    if (p[0].IsPointer<AtkUnitBase>()) {
                         Kind = SubscriberKind.AtkUnitBase;
                         return true;
                     }
@@ -120,7 +126,18 @@ public static unsafe class EventController {
                     }
 
                 } else if (p.Length == 3) {
-                    
+                    if (p[1].IsPointer<NumberArrayData>(2) && p[2].IsPointer<StringArrayData>(2)) {
+                        if (IsAddonPointer(p[0])) {
+                            Kind = SubscriberKind.AddonPointer;
+                            addonPointerType = p[0].ParameterType;
+                            return true;
+                        }
+                        
+                        if (p[0].IsPointer<AtkUnitBase>()) {
+                            Kind = SubscriberKind.AtkUnitBase;
+                            return true;
+                        }
+                    }
                 }
             } catch (Exception ex) {
                 SimpleLog.Error(ex);
