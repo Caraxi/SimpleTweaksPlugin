@@ -9,7 +9,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Sets the job selection dropdown to your current job when opening the Glamour Dresser.")]
 [TweakReleaseVersion(UnreleasedVersion)]
 public unsafe class OpenGlamourDresserToCurrentJob : UiAdjustments.SubTweak {
-    [AddonSetup("MiragePrismPrismBox")]
+    [AddonPreSetup("MiragePrismPrismBox")]
     private void OnMiragePrismBoxOpen(AtkUnitBase* atkUnitBase) {
         if (Service.ClientState is { LocalPlayer.ClassJob.Id: var playerJob }) {
             *((byte*) atkUnitBase + 400) = (byte)playerJob;
