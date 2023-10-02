@@ -19,7 +19,7 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak
 
     private HookWrapper<NeedGreedReceiveEventDelegate>? needGreedReceiveEventHook;
 
-    [AddonSetup("NeedGreed")]
+    [AddonPostSetup("NeedGreed")]
     private void AddonSetup(AtkUnitBase* atkUnitBase)
     {
         if (atkUnitBase is null) return;

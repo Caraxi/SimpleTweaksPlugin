@@ -28,7 +28,7 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak {
         if (Common.GetUnitBase("NamePlate", out var unitBase)) OnAddonFinalize(unitBase);
     }
 
-    [AddonSetup("NamePlate")]
+    [AddonPostSetup("NamePlate")]
     private void OnAddonSetup(AtkUnitBase* unitBase) {
         if (unitBase == null || unitBase->RootNode == null) return;
         var imageNode = UiHelper.MakeImageNode(CustomNodes.Get(nameof(DutyListBackground)), new UiHelper.PartInfo(0, 0, 0, 0));

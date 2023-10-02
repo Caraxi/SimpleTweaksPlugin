@@ -9,7 +9,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Hides the experience bar when at max level.")]
 [TweakAuthor("Anna")]
 public unsafe class HideExperienceBar : UiAdjustments.SubTweak {
-    [AddonPostUpdate("_Exp")]
+    [AddonPostRequestedUpdate("_Exp")]
     private void UpdateExp(AtkUnitBase* addonExp) {
         if (addonExp == null) return;
         var node = addonExp->GetTextNodeById(4);

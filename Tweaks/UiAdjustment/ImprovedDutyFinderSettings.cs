@@ -110,7 +110,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         new DutyFinderSettingDisplay(DutyFinderSetting.Fr, 0, 13),
     };
 
-    [AddonSetup("ContentsFinder", "RaidFinder")]
+    [AddonPostSetup("ContentsFinder", "RaidFinder")]
     protected void ContentsFinderSetup(AtkUnitBase* addonContentsFinder) {
         SetupAddon(addonContentsFinder);
     }
