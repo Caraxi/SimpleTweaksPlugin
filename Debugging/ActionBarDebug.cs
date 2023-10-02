@@ -362,7 +362,7 @@ public unsafe class ActionBarDebug : DebugHelper {
                     break;
                 }
 
-                case HotbarSlotType.Minion: {
+                case HotbarSlotType.Companion: {
                     var m = Service.Data.Excel.GetSheet<Companion>().GetRow(slot->CommandId);
                     if (m == null) {
                         ImGui.TextDisabled("Not Found");
