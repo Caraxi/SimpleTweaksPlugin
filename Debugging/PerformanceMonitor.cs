@@ -40,7 +40,7 @@ public class PerformanceMonitor : DebugHelper {
         Milliseconds,
     }
 
-    private static DisplayType _displayType = DisplayType.Ticks;
+    private static DisplayType _displayType = DisplayType.Milliseconds;
 
     private void DisplayValue(long ticks) {
         var text = _displayType switch {
@@ -70,19 +70,20 @@ public class PerformanceMonitor : DebugHelper {
             ClearAll();
         }
 
-        if (ImGui.BeginTable("performanceTable", 7, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollX)) {
+        if (ImGui.BeginTable("performanceTable", 8, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollX)) {
             ImGui.TableSetupColumn("Reset");
             ImGui.TableSetupColumn("Key");
             ImGui.TableSetupColumn("Last Check");
             ImGui.TableSetupColumn("Average");
             ImGui.TableSetupColumn("Maximum");
-            ImGui.TableSetupColumn("");
-            ImGui.TableSetupColumn("Average/Sec");
-                
+            ImGui.TableSetupColumn("Per Second");
+            ImGui.TableSetupColumn("Count");
+            ImGui.TableSetupColumn("Hits per Second");
+
             ImGui.TableHeadersRow();
-            ImGui.TableNextColumn();
 
             foreach (var log in Logs) {
+                ImGui.TableNextColumn();
                 if (ImGui.SmallButton($"Reset##{log.Key}")) log.Value.Clear();
                 ImGui.TableNextColumn();
                 ImGui.Text($"{log.Key}");
@@ -93,10 +94,11 @@ public class PerformanceMonitor : DebugHelper {
                 ImGui.TableNextColumn();
                 DisplayValue(log.Value.Max);
                 ImGui.TableNextColumn();
+                DisplayValue((long)log.Value.AveragePerSecond);
                 ImGui.TableNextColumn();
-                ImGui.Text($"{log.Value.AveragePerSecond}");
-                    
+                ImGui.Text($"{log.Value.Count}");
                 ImGui.TableNextColumn();
+                ImGui.Text($"{log.Value.HitsPerSecond:F2}");
             }
                 
                 
@@ -120,8 +122,9 @@ public class PerformanceMonitor : DebugHelper {
         public long Average { get; private set; } = -1;
 
         public long Count { get; private set; } = 0;
+        public double HitsPerSecond => Count / started.Elapsed.TotalSeconds;
 
-        public float AveragePerSecond { get; private set; } = -1;
+        public double AveragePerSecond => HitsPerSecond * Average;
             
         public void Begin() {
             if (!started.IsRunning) started.Start();
@@ -136,11 +139,7 @@ public class PerformanceMonitor : DebugHelper {
             if (!stopwatch.IsRunning) return;
             stopwatch.Stop();
             total.Stop();
-            Last = stopwatch.ElapsedTicks;
-
-            AveragePerSecond = total.ElapsedTicks / (float)started.ElapsedTicks;
-                
-                
+            Last = stopwatch.Elapsed.Ticks;
             if (Last > Max) Max = Last;
             if (Count > 0) {
                 Average -= Average / Count;
