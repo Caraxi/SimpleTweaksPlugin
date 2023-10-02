@@ -28,6 +28,7 @@ public static unsafe class EventController {
         public uint NthTick { get; init; } = 0;
     };
     
+    private static readonly Dictionary<string, List<Subscriber<AddonDelegate>>> AddonPreSetupSubscribers = new();
     private static readonly Dictionary<string, List<Subscriber<AddonDelegate>>> AddonSetupSubscribers = new();
     private static readonly Dictionary<string, List<Subscriber<AddonDelegate>>> AddonFinalizeSubscribers = new();
     private static readonly Dictionary<string, List<Subscriber<AddonUpdateDelegate>>> AddonPreUpdateSubscribers = new();
@@ -43,6 +44,7 @@ public static unsafe class EventController {
         
         Service.AddonLifecycle.RegisterListener(AddonEvent.PreRequestedUpdate, HandlePreRequestedUpdate);
         Service.AddonLifecycle.RegisterListener(AddonEvent.PostRequestedUpdate, HandlePostRequestedUpdate);
+        Service.AddonLifecycle.RegisterListener(AddonEvent.PreSetup, HandlePreSetup);
     }
 
     internal static void Destroy() {
@@ -65,6 +67,8 @@ public static unsafe class EventController {
         var numberArrays = AtkStage.GetSingleton()->GetNumberArrayData();
         HandleAddonPostUpdate(addonInfo.AddonName, (AtkUnitBase*) addonInfo.Addon, numberArrays, stringArrays);
     }
+
+    private static void HandlePreSetup(AddonEvent eventType, AddonArgs addonInfo) => HandleAddonEvent(AddonPreSetupSubscribers, addonInfo.AddonName, (AtkUnitBase*) addonInfo.Addon);
 
     private static void UpdateAddonByIdDetour(RaptureAtkUnitManager* atkUnitManager, ushort addonId, NumberArrayData** numberArrays, StringArrayData** stringArrays, byte forceB) {
         // Fully replace the function
@@ -156,6 +160,16 @@ public static unsafe class EventController {
                 }
             }
             
+            if (method.TryGetCustomAttribute<AddonPreSetupAttribute>(out var addonPreSetupAttribute)) {
+                try {
+                    var setupDelegate = method.CreateDelegate<AddonDelegate>(tweak);
+                    RegisterAddonPreSetup(tweak, setupDelegate, addonPreSetupAttribute.AddonNames);
+                } catch (Exception ex) {
+                    SimpleLog.Error($"Failed to bind AddonPreSetup to {tweak.GetType().Name}.{method.Name}");
+                    SimpleLog.Error(ex);
+                }
+            }
+            
             if (method.TryGetCustomAttribute<AddonFinalizeAttribute>(out var addonFinalizeAttribute)) {
                 try {
                     var finalizeDelegate = method.CreateDelegate<AddonDelegate>(tweak);
@@ -216,6 +230,7 @@ public static unsafe class EventController {
 
     public static void UnregisterEvents(BaseTweak tweak) {
         UnregisterAddonSetup(tweak);
+        UnregisterAddonPreSetup(tweak);
         UnregisterAddonFinalize(tweak);
         UnregisterAddonPreUpdate(tweak);
         UnregisterAddonPostUpdate(tweak);
@@ -226,6 +241,14 @@ public static unsafe class EventController {
         foreach (var addonName in addonNames) {
             if (!AddonSetupSubscribers.ContainsKey(addonName)) AddonSetupSubscribers.Add(addonName, new List<Subscriber<AddonDelegate>>());
             if (!AddonSetupSubscribers.TryGetValue(addonName, out var subscribers)) continue;
+            subscribers.Add(new Subscriber<AddonDelegate>(tweak, handler));
+        }
+    }
+    
+    private static void RegisterAddonPreSetup(BaseTweak tweak, AddonDelegate handler, params string[] addonNames) {
+        foreach (var addonName in addonNames) {
+            if (!AddonPreSetupSubscribers.ContainsKey(addonName)) AddonPreSetupSubscribers.Add(addonName, new List<Subscriber<AddonDelegate>>());
+            if (!AddonPreSetupSubscribers.TryGetValue(addonName, out var subscribers)) continue;
             subscribers.Add(new Subscriber<AddonDelegate>(tweak, handler));
         }
     }
@@ -262,6 +285,12 @@ public static unsafe class EventController {
 
     private static void UnregisterAddonSetup(BaseTweak tweak) {
         foreach (var subscribers in AddonSetupSubscribers.Values) {
+            subscribers.RemoveAll(s => s.Tweak.Key == tweak.Key);
+        }
+    }
+    
+    private static void UnregisterAddonPreSetup(BaseTweak tweak) {
+        foreach (var subscribers in AddonPreSetupSubscribers.Values) {
             subscribers.RemoveAll(s => s.Tweak.Key == tweak.Key);
         }
     }
