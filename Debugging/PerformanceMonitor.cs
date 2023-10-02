@@ -83,6 +83,7 @@ public class PerformanceMonitor : DebugHelper {
             ImGui.TableHeadersRow();
 
             foreach (var log in Logs) {
+                if (log.Value.Count == 0) continue;
                 ImGui.TableNextColumn();
                 if (ImGui.SmallButton($"Reset##{log.Key}")) log.Value.Clear();
                 ImGui.TableNextColumn();
@@ -122,7 +123,7 @@ public class PerformanceMonitor : DebugHelper {
         public long Average { get; private set; } = -1;
 
         public long Count { get; private set; } = 0;
-        public double HitsPerSecond => Count / started.Elapsed.TotalSeconds;
+        public double HitsPerSecond => started.ElapsedTicks == 0 ? 0 : Count / started.Elapsed.TotalSeconds;
 
         public double AveragePerSecond => HitsPerSecond * Average;
             
