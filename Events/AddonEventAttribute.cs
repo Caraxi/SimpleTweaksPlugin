@@ -10,7 +10,7 @@ public class AddonEventAttribute : EventAttribute {
 
     public AddonEventAttribute(AddonEvent @event, params string[] addonNames) {
         Event = @event;
-        AddonNames = addonNames;
+        AddonNames = addonNames.Length == 0 ? new []{ "ALL_ADDONS" } : addonNames;
     }
 }
 

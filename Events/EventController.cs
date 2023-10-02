@@ -30,8 +30,6 @@ public static unsafe class EventController {
             return s;
         }
 
-
-
         public enum SubscriberKind {
             Unknown,
             Invalid,
@@ -152,14 +150,6 @@ public static unsafe class EventController {
                 if (!DetermineInvokeKind()) return;
             }
 
-            if (args == null) {
-                SimpleLog.Warning($"[EventController] Invoking '{Tweak.Key}.{Method.Name}' as [{Kind}]");
-
-            } else {
-                SimpleLog.Warning($"[EventController] Invoking '{Tweak.Key}.{Method.Name}' as [{Kind}] for '{args.AddonName}'");
-
-            }
-            
             using var perfMon = PerformanceMonitor.Run($"[Event] {Tweak.Key} :: {Method.Name}");
 
             var _ = Kind switch {
@@ -221,7 +211,7 @@ public static unsafe class EventController {
                 foreach (var addon in attr.AddonNames) {
                     SimpleLog.Verbose($"[EventController] {tweak.Name} requesting event '{attr.Event}' on method '{method.Name}' for addon '{addon}'");
                     
-                    var subscriber = new EventSubscriber() { Tweak = tweak, Method = method };
+                    var subscriber = new EventSubscriber { Tweak = tweak, Method = method };
 
                     if (!AddonEventSubscribers.TryGetValue(attr.Event, out var addonSubscriberDict)) {
                         addonSubscriberDict = new Dictionary<string, List<EventSubscriber>>();
@@ -248,11 +238,21 @@ public static unsafe class EventController {
 
     private static void HandleEvent(AddonEvent type, AddonArgs args) {
         if (!AddonEventSubscribers.TryGetValue(type, out var addonSubscriberDict)) return;
-        if (!addonSubscriberDict.TryGetValue(args.AddonName, out var addonSubscriberList)) return;
-        foreach (var subscriber in addonSubscriberList) {
-            if (subscriber.Tweak.IsDisposed) continue;
-            if (!subscriber.Tweak.Enabled) continue;
-            subscriber.Invoke(args);
+
+        if (addonSubscriberDict.TryGetValue(args.AddonName, out var addonSubscriberList)) {
+            foreach (var subscriber in addonSubscriberList) {
+                if (subscriber.Tweak.IsDisposed) continue;
+                if (!subscriber.Tweak.Enabled) continue;
+                subscriber.Invoke(args);
+            }
+        }
+        
+        if (addonSubscriberDict.TryGetValue("ALL_ADDONS", out var allAddonSubscriberList)) {
+            foreach (var subscriber in allAddonSubscriberList) {
+                if (subscriber.Tweak.IsDisposed) continue;
+                if (!subscriber.Tweak.Enabled) continue;
+                subscriber.Invoke(args);
+            }
         }
     }
 
