@@ -1,8 +1,10 @@
-﻿using Dalamud.Game.ClientState.Conditions;
+﻿using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -54,13 +56,10 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        Common.AddonSetup += OnAddonSetup;
         Service.ClientState.Login += OnLogin;
         if (Service.ClientState.LocalContentId != 0) OnLogin();
         if (Common.GetUnitBase("ConfigCharacterHudGeneral", out var addon)) ToggleConfigLock(addon, false);
         if (Common.GetUnitBase("ConfigCharaHotbarXHB", out var xhbAddon)) ToggleXhbConfigLock(xhbAddon, false);
-
-        base.Enable();
     }
 
     private void OnLogin() {
@@ -76,12 +75,8 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
         SaveConfig(Config);
         Service.Condition.ConditionChange -= OnConditionChange;
         if (Service.ClientState.LocalContentId != 0) OnConditionChange(ConditionFlag.InCombat, false);
-        Common.AddonSetup -= OnAddonSetup;
-        
         if (Common.GetUnitBase("ConfigCharacterHudGeneral", out var addon)) ToggleConfigLock(addon, true);
         if (Common.GetUnitBase("ConfigCharaHotbarXHB", out var xhbAddon)) ToggleXhbConfigLock(xhbAddon, true);
-        
-        base.Disable();
     }
 
     private void SetVisible(string name, bool visible, bool uiConfig = false) {
@@ -92,13 +87,14 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
         }
     }
     
-    private void OnAddonSetup(SetupAddonArgs obj) {
+    [AddonPostSetup("ConfigCharacterHudGeneral", "ConfigCharaHotbarXHB")]
+    private void OnAddonSetup(AddonSetupArgs obj) {
         switch (obj.AddonName) {
             case "ConfigCharacterHudGeneral":
-                ToggleConfigLock(obj.Addon, false);
+                ToggleConfigLock((AtkUnitBase*)obj.Addon, false);
                 break;
             case "ConfigCharaHotbarXHB":
-                ToggleXhbConfigLock(obj.Addon, false);
+                ToggleXhbConfigLock((AtkUnitBase*)obj.Addon, false);
                 break;
         }
     }

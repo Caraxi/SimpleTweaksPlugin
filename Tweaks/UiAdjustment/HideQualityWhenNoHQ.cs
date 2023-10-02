@@ -1,5 +1,7 @@
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
@@ -13,26 +15,19 @@ public unsafe class HideQualityWhenNoHQ : UiAdjustments.SubTweak {
         AddChangelog("1.8.9.0", "Show quality bar for expert recipes.");
         base.Setup();
     }
-
-    protected override void Enable() {
-        Common.AddonSetup += CommonOnAddonSetup;
-        base.Enable();
-    }
-
-    private void CommonOnAddonSetup(SetupAddonArgs obj) {
-        if (obj.AddonName != "Synthesis") return;
+    
+    [AddonPostSetup("Synthesis")]
+    private void CommonOnAddonSetup(AtkUnitBase* addon) {
         var agent = AgentRecipeNote.Instance();
         var recipe = Service.Data.GetExcelSheet<Recipe>()?.GetRow(agent->ActiveCraftRecipeId);
         if (recipe == null) return;
         if (recipe.CanHq || recipe.IsExpert) return;
-        var qualityNode = obj.Addon->GetNodeById(58);
+        var qualityNode = addon->GetNodeById(58);
         if (qualityNode == null) return;
         qualityNode->ToggleVisibility(false);
     }
 
     protected override void Disable() {
-        Common.AddonSetup -= CommonOnAddonSetup;
-
         // Immediately reshow
         var addon = Common.GetUnitBase("Synthesis");
         if (addon != null) {

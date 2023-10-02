@@ -4,6 +4,7 @@ using Lumina;
 using Lumina.Data;
 using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips; 
@@ -23,23 +24,16 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
     
     public override string Name => "Show Painting Preview";
     public override string Description => "Add an image preview for paintings to item tooltips.";
-
-    private HookWrapper<Common.AddonOnUpdate> itemTooltipOnUpdateHook;
-
+    
     public override void Setup() {
         AddChangelog("1.8.7.0", "Fixed extra spacing being added above the preview image.");
         base.Setup();
     }
 
-    protected override void Enable() {
-        itemTooltipOnUpdateHook ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 54 41 55 41 56 41 57 48 83 EC 20 4C 8B AA", AfterItemDetailUpdate);
-        itemTooltipOnUpdateHook?.Enable();        
-        base.Enable();
-    }
-
     private int lastImage;
     
-    private void AfterItemDetailUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
+    [AddonPostRequestedUpdate("ItemDetail")]
+    private void AfterItemDetailUpdate(AtkUnitBase* atkUnitBase) {
         if (atkUnitBase == null) return;
         var imageNode = (AtkImageNode*) Common.GetNodeByID(&atkUnitBase->UldManager, CustomNodes.PaintingPreview, NodeType.Image);
         if (imageNode != null) imageNode->AtkResNode.ToggleVisibility(false);
@@ -146,7 +140,6 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
     }
 
     protected override void Disable() {
-        itemTooltipOnUpdateHook?.Disable();
         lastImage = 0;
         var unitBase = Common.GetUnitBase("ItemDetail");
         if (unitBase != null) {
@@ -166,10 +159,5 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
         }
         
         base.Disable();
-    }
-
-    public override void Dispose() {
-        itemTooltipOnUpdateHook?.Dispose();
-        base.Dispose();
     }
 }

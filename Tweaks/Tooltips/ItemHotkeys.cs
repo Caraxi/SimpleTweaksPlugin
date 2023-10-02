@@ -10,6 +10,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.Tweaks.Tooltips.Hotkeys;
 using SimpleTweaksPlugin.TweakSystem;
@@ -29,9 +30,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
     public List<ItemHotkey> Hotkeys = new();
 
     private readonly string weirdTabChar = Encoding.UTF8.GetString(new byte[] {0xE3, 0x80, 0x80});
-    
-    private HookWrapper<Common.AddonOnUpdate> itemDetailOnUpdateHook;
-    
+
     public override void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         if (Config.HideHotkeysOnTooltip) return;
 
@@ -218,12 +217,11 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
         }
         
         Common.FrameworkUpdate += OnFrameworkUpdate;
-        itemDetailOnUpdateHook ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 54 41 55 41 56 41 57 48 83 EC 20 4C 8B AA", AddonItemDetailOnUpdate);
-        itemDetailOnUpdateHook?.Enable();
         base.Enable();
     }
 
-    private void AddonItemDetailOnUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** nums, StringArrayData** strings) {
+    [AddonPostRequestedUpdate("ItemDetail")]
+    private void AddonItemDetailOnUpdate(AtkUnitBase* atkUnitBase) {
         if (Config.HideHotkeysOnTooltip) return;
         var textNineGridComponentNode = (AtkComponentNode*) atkUnitBase->GetNodeById(3);
         if (textNineGridComponentNode == null) return;
@@ -292,13 +290,10 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
         }
         
         SaveConfig(Config);
-        itemDetailOnUpdateHook?.Disable();
         base.Disable();
     }
 
     public override void Dispose() {
-        itemDetailOnUpdateHook?.Dispose();
-
         foreach (var h in Hotkeys) {
             h.Dispose();
         }

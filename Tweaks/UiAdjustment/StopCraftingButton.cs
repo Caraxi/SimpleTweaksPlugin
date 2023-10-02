@@ -5,11 +5,11 @@ using Dalamud.Game.Command;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
@@ -71,17 +71,12 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
 
     }
 
-    private HookWrapper<Common.AddonOnUpdate> craftingLogUpdateHook;
-    
     public override void Setup() {
         AddChangelog("1.8.2.1", "Fixed a potential crash in specific circumstances.");
         base.Setup();
     }
 
     protected override void Enable() {
-        craftingLogUpdateHook ??= Common.HookAfterAddonUpdate("40 55 57 41 54 41 55 41 57 48 8D AC 24", CraftingLogUpdated);
-        craftingLogUpdateHook?.Enable();
-
         clickSysnthesisButtonHook ??= Common.Hook<ClickSynthesisButton>("E9 ?? ?? ?? ?? 4C 8B 44 24 ?? 49 8B D2 48 8B CB 48 83 C4 30 5B E9 ?? ?? ?? ?? 4C 8B 44 24 ?? 49 8B D2 48 8B CB 48 83 C4 30 5B E9 ?? ?? ?? ?? 33 D2", ClickSynthesisButtonDetour);
         clickSysnthesisButtonHook?.Enable();
 
@@ -123,8 +118,7 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
     private void ForceUpdate() {
         try {
             var addon = Common.GetUnitBase("RecipeNote");
-            var atkArrayDataHolder = Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder;
-            if (addon != null) CraftingLogUpdated(addon, atkArrayDataHolder.NumberArrays, atkArrayDataHolder.StringArrays);
+            if (addon != null) CraftingLogUpdated(addon);
         } catch (Exception ex) {
             SimpleLog.Error(ex);
         }
@@ -224,8 +218,8 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
         return localPlayer->EventState == 5 ? CraftReadyState.AlreadyCrafting : CraftReadyState.WrongClass;
     }
     
-
-    private void CraftingLogUpdated(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
+    [AddonPostRequestedUpdate("RecipeNote")]
+    private void CraftingLogUpdated(AtkUnitBase* atkUnitBase) {
         var ready = GetCraftReadyState(out _);
         if (ready == CraftReadyState.NotReady) return;
         var craftButton = (AtkComponentNode*) atkUnitBase->GetNodeById(104);
@@ -253,7 +247,6 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
 
     protected override void Disable() {
         Service.Commands.RemoveHandler("/stopcrafting");
-        craftingLogUpdateHook?.Disable();
         clickSysnthesisButtonHook?.Disable();
         CloseCraftingLog();
         cancelCraftingHook?.Disable();
@@ -261,7 +254,6 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
     }
 
     public override void Dispose() {
-        craftingLogUpdateHook?.Dispose();
         clickSysnthesisButtonHook?.Dispose();
         cancelCraftingHook?.Dispose();
         base.Dispose();

@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -41,44 +43,40 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak
     protected override void Enable()
     {
         TweakConfig = LoadConfig<Config>() ?? new Config();
-        
-        Common.AddonSetup += OnAddonSetup;
-        Common.AddonFinalize += OnAddonFinalize;
         base.Enable();
     }
 
     protected override void Disable()
     {
         SaveConfig(TweakConfig);
-        
-        Common.AddonSetup -= OnAddonSetup;
-        Common.AddonFinalize -= OnAddonFinalize;
         base.Disable();
     }
     
-    private void OnAddonSetup(SetupAddonArgs obj)
+    [AddonPostSetup("CutSceneSelectString", "SelectString")]
+    private void OnAddonSetup(AddonSetupArgs obj)
     {
         switch (obj)
         {
-            case { AddonName: "CutSceneSelectString", Addon: not null}:
+            case { AddonName: "CutSceneSelectString", Addon: not 0 }:
                 GetAddonStrings(((AddonCutSceneSelectString*) obj.Addon)->OptionList);
                 break;
             
-            case { AddonName: "SelectString", Addon: not null } when Service.Condition[ConditionFlag.OccupiedInQuestEvent]:
+            case { AddonName: "SelectString", Addon: not 0 } when Service.Condition[ConditionFlag.OccupiedInQuestEvent]:
                 GetAddonStrings(((AddonSelectString*) obj.Addon)->PopupMenu.PopupMenu.List);
                 break;
         }
     }
     
-    private void OnAddonFinalize(SetupAddonArgs obj)
+    [AddonFinalize("CutSceneSelectString", "SelectString")]
+    private void OnAddonFinalize(AddonFinalizeArgs obj)
     {
         switch (obj)
         {
-            case { AddonName: "CutSceneSelectString", Addon: not null}:
+            case { AddonName: "CutSceneSelectString", Addon: not 0 }:
                 PrintSelectedString(((AddonCutSceneSelectString*) obj.Addon)->OptionList);
                 break;
             
-            case { AddonName: "SelectString", Addon: not null } when Service.Condition[ConditionFlag.OccupiedInQuestEvent]:
+            case { AddonName: "SelectString", Addon: not 0 } when Service.Condition[ConditionFlag.OccupiedInQuestEvent]:
                 PrintSelectedString(((AddonSelectString*) obj.Addon)->PopupMenu.PopupMenu.List);
                 break;
         }

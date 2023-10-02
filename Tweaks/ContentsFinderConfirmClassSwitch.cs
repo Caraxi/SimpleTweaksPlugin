@@ -1,6 +1,7 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -24,8 +25,7 @@ public unsafe class ContentsFinderConfirmClassSwitch : Tweak {
                 simpleEvent.Add(unitBase, node, AtkEventType.MouseOut);
             }
         }
-
-        Common.AddonSetup += OnAddonSetup;
+        
         base.Enable();
     }
 
@@ -55,20 +55,18 @@ public unsafe class ContentsFinderConfirmClassSwitch : Tweak {
         Service.Chat.PrintError($"You have no gearset for {classJob.Name.RawString}");
     }
 
-    private void OnAddonSetup(SetupAddonArgs obj) {
-        if (obj.AddonName != "ContentsFinderConfirm") return;
-        var classIconNode = obj.Addon->GetNodeById(40);
+    [AddonPostSetup("ContentsFinderConfirm")]
+    private void OnAddonSetup(AtkUnitBase* addon) {
+        var classIconNode = addon->GetNodeById(40);
         if (classIconNode == null) return;
         classIconNode->NodeFlags |= NodeFlags.RespondToMouse | NodeFlags.EmitsEvents | NodeFlags.HasCollision;
-        obj.Addon->UpdateCollisionNodeList(false);
-        simpleEvent.Add(obj.Addon, classIconNode, AtkEventType.MouseClick);
-        simpleEvent.Add(obj.Addon, classIconNode, AtkEventType.MouseOver);
-        simpleEvent.Add(obj.Addon, classIconNode, AtkEventType.MouseOut);
+        addon->UpdateCollisionNodeList(false);
+        simpleEvent.Add(addon, classIconNode, AtkEventType.MouseClick);
+        simpleEvent.Add(addon, classIconNode, AtkEventType.MouseOver);
+        simpleEvent.Add(addon, classIconNode, AtkEventType.MouseOut);
     }
 
     protected override void Disable() {
-        Common.AddonSetup -= OnAddonSetup;
-
         if (Common.GetUnitBase("ContentsFinderConfirm", out var unitBase)) {
             var node = unitBase->GetNodeById(40);
             if (node != null) {

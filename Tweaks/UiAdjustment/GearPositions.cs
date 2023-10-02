@@ -1,5 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -11,31 +12,17 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
     public override string Name => "Adjust Equipment Positions";
     public override string Description => "Repositions equipment positions in character menu and inspect to give a less gross layout.";
 
-    private HookWrapper<Common.AddonOnUpdate> bagWidgetUpdate;
-    
     private delegate byte AddonControllerInput(AtkUnitBase* atkUnitBase, Dir a2, byte a3);
     private HookWrapper<AddonControllerInput> addonControllerInputHook;
 
     protected override void Enable() {
-        bagWidgetUpdate ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 55 56 57 41 54 41 55 41 56 41 57 48 83 EC 20 4C 8B 62 38", BagWidgetUpdate);
-        bagWidgetUpdate?.Enable();
-        
-        Common.AddonSetup += OnAddonSetup;
         addonControllerInputHook ??= Common.Hook<AddonControllerInput>("E8 ?? ?? ?? ?? EB B0 CC", ControllerInputDetour);
         addonControllerInputHook?.Enable();
 
         var bagWidget = Common.GetUnitBase("_BagWidget");
-        if (bagWidget != null) BagWidgetUpdate(bagWidget, null, null);
+        if (bagWidget != null) BagWidgetUpdate(bagWidget);
 
         base.Enable();
-    }
-
-    private void OnAddonSetup(SetupAddonArgs obj) {
-        switch (obj.AddonName) {
-            case "Character": CharacterOnSetup(obj.Addon); break;
-            case "PvPCharacter": PvpCharacterOnSetup(obj.Addon); break;
-            case "CharacterInspect": InspectOnSetup(obj.Addon); break;
-        }
     }
 
     private enum Dir : uint {
@@ -241,7 +228,8 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
         }
     }
 
-    private void BagWidgetUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
+    [AddonPostRequestedUpdate("_BagWidget")]
+    private void BagWidgetUpdate(AtkUnitBase* atkUnitBase) {
         var equipmentComponentNode = atkUnitBase->GetNodeById(6);
         if (equipmentComponentNode == null) return;
         if ((ushort)equipmentComponentNode->Type < 1000) return;
@@ -371,6 +359,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
         }
     }
 
+    [AddonPostSetup("CharacterInspect")]
     private void InspectOnSetup(AtkUnitBase* atkUnitBase) {
         // Slots
         MoveNode(atkUnitBase, 47, 0, -120); // Job Stone
@@ -391,6 +380,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
         MoveNode(atkUnitBase, 54, 0, 46 * 5); // Feet
     }
 
+    [AddonPostSetup("Character")]
     private void CharacterOnSetup(AtkUnitBase* atkUnitBase) {
         // Slots
         MoveNode(atkUnitBase, 60, 0, -1); // Job Stone
@@ -419,6 +409,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
         MoveNode(atkUnitBase, 26, 18, 321); // Feet
     }
     
+    [AddonPostSetup("PvPCharacter")]
     private void PvpCharacterOnSetup(AtkUnitBase* atkUnitBase) {
         
         // Slots
@@ -465,14 +456,11 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
     protected override void Disable() {
         var bagWidget = Common.GetUnitBase("_BagWidget");
         if (bagWidget != null) ResetBagWidget(bagWidget);
-        bagWidgetUpdate?.Disable();
         addonControllerInputHook?.Disable();
-        Common.AddonSetup -= OnAddonSetup;
         base.Disable();
     }
 
     public override void Dispose() {
-        bagWidgetUpdate?.Dispose();
         addonControllerInputHook?.Dispose();
         base.Dispose();
     }

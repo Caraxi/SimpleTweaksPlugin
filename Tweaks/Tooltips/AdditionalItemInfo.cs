@@ -10,6 +10,7 @@ using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -36,21 +37,10 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
     public Configs Config { get; private set; }
 
     public override bool UseAutoConfig => true;
-
-    private HookWrapper<Common.AddonOnUpdate> itemTooltipOnUpdateHook;
+    
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        itemTooltipOnUpdateHook ??= Common.Hook<Common.AddonOnUpdate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 54 41 55 41 56 41 57 48 83 EC 20 4C 8B AA", ItemTooltipUpdate);
-        itemTooltipOnUpdateHook?.Enable();        
-        base.Enable();
-    }
-
-    private void* ItemTooltipUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** nums, StringArrayData** strings) {
-        BeforeItemDetailUpdate(atkUnitBase);
-        var ret = itemTooltipOnUpdateHook.Original(atkUnitBase, nums, strings);
-        AfterItemDetailUpdate(atkUnitBase, nums, strings);
-        return ret;
     }
 
     private static List<(int gearsetId, string name)> GetGearSetsWithItem(uint itemId, bool hq) {
@@ -201,6 +191,7 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         return str;
     }
 
+    [AddonPreRequestedUpdate("ItemDetail")]
     private void BeforeItemDetailUpdate(AtkUnitBase* atkUnitBase) {
         var textNode = Common.GetNodeByID<AtkTextNode>(&atkUnitBase->UldManager, CustomNodes.AdditionalInfo, NodeType.Text);
         if (textNode != null) {
@@ -214,7 +205,8 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         }
     }
     
-    private void AfterItemDetailUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
+    [AddonPostRequestedUpdate("ItemDetail")]
+    private void AfterItemDetailUpdate(AtkUnitBase* atkUnitBase) {
         if (!atkUnitBase->IsVisible) return;
         var textNode = Common.GetNodeByID<AtkTextNode>(&atkUnitBase->UldManager, CustomNodes.AdditionalInfo, NodeType.Text);
         if (textNode != null) textNode->AtkResNode.ToggleVisibility(false);
@@ -291,7 +283,6 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
 
     protected override void Disable() {
         SaveConfig(Config);
-        itemTooltipOnUpdateHook?.Disable();
         
         var unitBase = Common.GetUnitBase("ItemDetail");
         if (unitBase != null) {
@@ -308,11 +299,6 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         
         
         base.Disable();
-    }
-
-    public override void Dispose() {
-        itemTooltipOnUpdateHook?.Dispose();
-        base.Dispose();
     }
 }
 

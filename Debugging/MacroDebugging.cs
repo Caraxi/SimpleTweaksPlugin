@@ -3,7 +3,6 @@ using System.Numerics;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.Interop;
 using ImGuiNET;
-using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Debugging;
 

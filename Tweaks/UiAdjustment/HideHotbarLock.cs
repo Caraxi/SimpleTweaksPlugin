@@ -3,6 +3,7 @@ using System.Numerics;
 using Dalamud.Game.ClientState.Keys;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -22,8 +23,7 @@ public unsafe class HideHotbarLock : Tweak {
     }
 
     public Configs Config { get; private set; }
-
-
+    
     private Vector2 boxSize = Vector2.Zero;
     protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
         ImGui.BeginGroup();
@@ -52,19 +52,17 @@ public unsafe class HideHotbarLock : Tweak {
         if (Config.ShowWhileHoldingShift) Common.FrameworkUpdate += OnFrameworkUpdate;
         base.ConfigChanged();
     }
-
-    private HookWrapper<Common.AddonOnUpdate> onAddonUpdate;
+    
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        onAddonUpdate ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 48 8B DA 48 8B F1 E8 ?? ?? ?? ?? 48 8B 7B 30", AfterAddonUpdate);
-        onAddonUpdate?.Enable();
         SetLockVisible();
         ConfigChanged();
         base.Enable();
     }
 
-    private void AfterAddonUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
+    [AddonPostRequestedUpdate("_ActionBar")]
+    private void AfterAddonUpdate(AtkUnitBase* atkUnitBase) {
         try {
             var lockNode = atkUnitBase->GetNodeById(21)->GetAsAtkComponentNode();
             if (lockNode == null) return;
@@ -74,11 +72,9 @@ public unsafe class HideHotbarLock : Tweak {
         }
     }
 
-    private void OnFrameworkUpdate() {
-        SetLockVisible();
-    }
+    [FrameworkUpdate]
+    private void OnFrameworkUpdate() => SetLockVisible();
     
-
     private bool LockVisible => Config.ShowWhileHoldingShift && (Service.KeyState[VirtualKey.SHIFT] || !Config.Shift) && (Service.KeyState[VirtualKey.CONTROL] || !Config.Ctrl) && (Service.KeyState[VirtualKey.MENU] || !Config.Alt);
     
     private void SetLockVisible(bool? visible = null) {
@@ -92,15 +88,9 @@ public unsafe class HideHotbarLock : Tweak {
     }
 
     protected override void Disable() {
-        onAddonUpdate?.Disable();
         Common.FrameworkUpdate -= OnFrameworkUpdate;
         SetLockVisible(true);
         SaveConfig(Config);
         base.Disable();
-    }
-
-    public override void Dispose() {
-        onAddonUpdate?.Dispose();
-        base.Dispose();
     }
 }

@@ -10,6 +10,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -125,8 +126,6 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
         showLogMessageHook = Common.Hook<ShowLogMessageDelegate>("E8 ?? ?? ?? ?? 44 03 FB", ShowLogMessageDetour);
 
         if (Common.GetUnitBase("ConfigCharaChatLogDetail", out var unitBase)) ToggleFontSizeConfigDropDowns(unitBase, false);
-        
-        Common.AddonSetup += OnAddonSetup;
         RefreshFontSizes();
         base.Enable();
     }
@@ -175,9 +174,9 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
         }
     }
     
-    private void OnAddonSetup(SetupAddonArgs obj) {
-        if (obj.AddonName != "ConfigCharaChatLogDetail") return;
-        ToggleFontSizeConfigDropDowns(obj.Addon, false);
+    [AddonPostSetup("ConfigCharaChatLogDetail")]
+    private void OnAddonSetup(AtkUnitBase* addon) {
+        ToggleFontSizeConfigDropDowns(addon, false);
     }
 
     private void SetFontSizeDetour(byte* chatLogPanelWithOffset, byte fontSize) {
@@ -204,7 +203,6 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
     protected override void Disable() {
         setFontSizeHook?.Disable();
         showLogMessageHook?.Disable();
-        Common.AddonSetup -= OnAddonSetup;
         if (Common.GetUnitBase("ConfigCharaChatLogDetail", out var unitBase)) ToggleFontSizeConfigDropDowns(unitBase, true);
         SaveConfig(Config);
         RefreshFontSizes(true);

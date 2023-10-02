@@ -16,7 +16,6 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Debugging;
-using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.Utility;
 #if DEBUG
 using System.Runtime.CompilerServices;

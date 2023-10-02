@@ -10,7 +10,6 @@ using Dalamud.Game.Config;
 using Dalamud.Interface.Internal;
 using Dalamud.Utility;
 using ImGuiNET;
-using ImGuiScene;
 using Lumina.Data.Files;
 using Action = Lumina.Excel.GeneratedSheets.Action;
 

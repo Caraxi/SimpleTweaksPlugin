@@ -9,9 +9,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Hooking;
 using Dalamud.IoC;
-using Dalamud.Memory;
 using Dalamud.Networking.Http;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.Attributes;
@@ -27,19 +25,9 @@ namespace SimpleTweaksPlugin.Utility;
 
 public unsafe class Common {
     [PluginService] private static IGameInteropProvider ImNotGonnaCallItThat { get; set; } = null!;
-
-    // Common Delegates
-    public delegate void* AddonOnUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** nums, StringArrayData** strings);
-    public delegate void NoReturnAddonOnUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData);
-
-    private delegate void* AddonSetupDelegate(AtkUnitBase* addon);
-    private static HookWrapper<AddonSetupDelegate> addonSetupHook;
     
-    private delegate void FinalizeAddonDelegate(AtkUnitManager* unitManager, AtkUnitBase** atkUnitBase);
-    private static HookWrapper<FinalizeAddonDelegate> finalizeAddonHook;
-
     private static IntPtr LastCommandAddress;
-        
+    
     public static Utf8String* LastCommand { get; private set; }
     
     public static event Action FrameworkUpdate;
@@ -59,53 +47,12 @@ public unsafe class Common {
     }
     public static void* ThrowawayOut { get; private set; } = (void*) Marshal.AllocHGlobal(1024);
 
-    public static event Action<SetupAddonArgs> AddonSetup; 
-    public static event Action<SetupAddonArgs> AddonPreSetup; 
-    public static event Action<SetupAddonArgs> AddonFinalize;
-    
     public static void Setup() {
         LastCommandAddress = Service.SigScanner.GetStaticAddressFromSig("4C 8D 05 ?? ?? ?? ?? 41 B1 01 49 8B D4 E8 ?? ?? ?? ?? 83 EB 06");
         LastCommand = (Utf8String*) (LastCommandAddress);
-        
-        addonSetupHook = Hook<AddonSetupDelegate>("E8 ?? ?? ?? ?? 8B 83 ?? ?? ?? ?? C1 E8 14", AddonSetupDetour);
-        addonSetupHook?.Enable();
-
-        finalizeAddonHook = Hook<FinalizeAddonDelegate>("E8 ?? ?? ?? ?? 48 8B 7C 24 ?? 41 8B C6", FinalizeAddonDetour);
-        finalizeAddonHook?.Enable();
 
         updateCursorHook = Hook<AtkModuleUpdateCursor>("48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 20 4C 8B F1 E8 ?? ?? ?? ?? 49 8B CE", UpdateCursorDetour);
         updateCursorHook?.Enable();
-    }
-
-    private static void* AddonSetupDetour(AtkUnitBase* addon) {
-        try {
-            AddonPreSetup?.Invoke(new SetupAddonArgs() {
-                Addon = addon
-            });
-        } catch (Exception ex) {
-            SimpleLog.Error(ex);
-        }
-        var retVal = addonSetupHook.Original(addon);
-        try {
-            AddonSetup?.Invoke(new SetupAddonArgs() {
-                Addon = addon
-            });
-        } catch (Exception ex) {
-            SimpleLog.Error(ex);
-        }
-
-        return retVal;
-    }
-
-    private static void FinalizeAddonDetour(AtkUnitManager* unitManager, AtkUnitBase** atkUnitBase) {
-        try {
-            AddonFinalize?.Invoke(new SetupAddonArgs() {
-                Addon = atkUnitBase[0]
-            });
-        } catch (Exception ex) {
-            SimpleLog.Error(ex);
-        }
-        finalizeAddonHook?.Original(unitManager, atkUnitBase);
     }
 
     public static UIModule* UIModule => Framework.Instance()->GetUiModule();
@@ -232,27 +179,7 @@ public unsafe class Common {
         HookList.Add(wh);
         return wh;
     }
-
-    public static HookWrapper<AddonOnUpdate> HookAfterAddonUpdate(IntPtr address, NoReturnAddonOnUpdate after) {
-        Hook<AddonOnUpdate> hook = null;
-        hook = ImNotGonnaCallItThat.HookFromAddress<AddonOnUpdate>(address, (atkUnitBase, nums, strings) => {
-            var retVal = hook.Original(atkUnitBase, nums, strings);
-            try {
-                after(atkUnitBase, nums, strings);
-            } catch (Exception ex) {
-                SimpleLog.Error(ex);
-                hook.Disable();
-            }
-            return retVal;
-        });
-        var wh = new HookWrapper<AddonOnUpdate>(hook);
-        return wh;
-    }
-
-    public static HookWrapper<AddonOnUpdate> HookAfterAddonUpdate(void* address, NoReturnAddonOnUpdate after) => HookAfterAddonUpdate(new IntPtr(address), after);
-    public static HookWrapper<AddonOnUpdate> HookAfterAddonUpdate(string signature, NoReturnAddonOnUpdate after, int addressOffset = 0) => HookAfterAddonUpdate(Service.SigScanner.ScanText(signature) + addressOffset, after);
-    public static HookWrapper<AddonOnUpdate> HookAfterAddonUpdate(AtkUnitBase* atkUnitBase, NoReturnAddonOnUpdate after) => HookAfterAddonUpdate(atkUnitBase->AtkEventListener.vfunc[46], after);
-
+    
     public static List<IHookWrapper> HookList = new();
 
     public static void OpenBrowser(string url) {
@@ -381,16 +308,9 @@ public unsafe class Common {
             Marshal.FreeHGlobal(new IntPtr(ThrowawayOut));
             ThrowawayOut = null;
         }
-        
-        addonSetupHook?.Disable();
-        addonSetupHook?.Dispose();
-        
+
         updateCursorHook?.Disable();
         updateCursorHook?.Dispose();
-        
-        finalizeAddonHook?.Disable();
-        finalizeAddonHook?.Dispose();
-        
         httpClient?.Dispose();
     }
 
@@ -499,10 +419,4 @@ public unsafe class Common {
     }
 
 
-}
-
-public unsafe class SetupAddonArgs {
-    public AtkUnitBase* Addon { get; init; }
-    private string addonName;
-    public string AddonName => addonName ??= MemoryHelper.ReadString(new IntPtr(Addon->Name), 0x20).Split('\0')[0];
 }

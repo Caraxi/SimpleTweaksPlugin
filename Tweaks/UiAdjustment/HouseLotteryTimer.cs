@@ -1,6 +1,6 @@
 using System;
-using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
@@ -36,9 +36,8 @@ public unsafe class HouseLotteryTimer : UiAdjustments.SubTweak {
         return new LotteryTimeInfo(currentPeriodStarted, nextPeriodBegins, isEntryPeriod);
     }
     
-    [TweakHook, Signature("40 56 57 48 83 EC 28 48 83 B9", DetourName = nameof(AddonRefresh))] 
-    private readonly HookWrapper<Common.AddonOnUpdate> contentsTimerRefreshHook = null!;
-    private void* AddonRefresh(AtkUnitBase* contentsInfo, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
+    [AddonPostRefresh("ContentsInfo")]
+    private void AddonRefresh(AtkUnitBase* contentsInfo) {
         try {
             var atkValue = contentsInfo->AtkValues;
             for (var i = 0; i < contentsInfo->AtkValuesCount; i++, atkValue++) {
@@ -55,11 +54,10 @@ public unsafe class HouseLotteryTimer : UiAdjustments.SubTweak {
                 atkValue->SetString(displayString);
                 break;
             }
-        } catch {
+        } catch (Exception ex) {
+            SimpleLog.Error(ex);
             //
         }
-        
-        return contentsTimerRefreshHook.Original(contentsInfo, numberArrayData, stringArrayData);
     }
 }
 

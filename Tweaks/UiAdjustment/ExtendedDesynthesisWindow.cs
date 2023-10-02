@@ -16,6 +16,7 @@ using FFXIVClientStructs.FFXIV.Component.Exd;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
@@ -268,9 +269,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             populateHook?.Enable();
             callbackHook ??= Common.Hook<Callback>("E8 ?? ?? ?? ?? 8B 4C 24 20 0F B6 D8", CallbackDetour);
             callbackHook?.Enable();
-            
-            Common.AddonSetup += CommonOnAddonPreSetup;
-
             base.Enable();
         }
 
@@ -292,8 +290,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             return callbackHook.Original(atkUnitBase, count, values, a4);
         }
 
-        private void CommonOnAddonPreSetup(SetupAddonArgs obj) {
-            if (obj.AddonName == "SalvageItemSelector") Common.GenerateCallback(obj.Addon, 11, 0);
+        [AddonPostSetup("SalvageItemSelector")]
+        private void CommonOnAddonPreSetup(AtkUnitBase* addon) {
+            Common.GenerateCallback(addon, 11, 0);
         }
 
         private class ItemEntry {

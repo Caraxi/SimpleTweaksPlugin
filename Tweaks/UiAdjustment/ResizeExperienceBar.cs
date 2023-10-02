@@ -1,7 +1,7 @@
-﻿using FFXIVClientStructs.FFXIV.Component.GUI;
-using SimpleTweaksPlugin.TweakSystem;
+﻿using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using System;
+using SimpleTweaksPlugin.Events;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
@@ -22,18 +22,17 @@ public unsafe class ResizeExperienceBar : UiAdjustments.SubTweak
 
     public Configs Config { get; private set; }
     public override bool UseAutoConfig => true;
-
-    private HookWrapper<Common.AddonOnUpdate> onAddonUpdate;
+    
 
     protected override void Enable()
     {
         Config = LoadConfig<Configs>() ?? new Configs();
-        onAddonUpdate ??= Common.HookAfterAddonUpdate("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 83 EC 30 48 8B 72 18", AfterAddonUpdate);
-        onAddonUpdate?.Enable();
         Common.FrameworkUpdate += OnFrameworkUpdate;
         base.Enable();
     }
-    private void AfterAddonUpdate(AtkUnitBase* atkUnitBase, NumberArrayData** numberArrayData, StringArrayData** stringArrayData)
+    
+    [AddonPostRequestedUpdate("_Exp")]
+    private void AfterAddonUpdate()
     {
         try
         {
@@ -106,17 +105,10 @@ public unsafe class ResizeExperienceBar : UiAdjustments.SubTweak
 
     protected override void Disable()
     {
-        onAddonUpdate?.Disable();
         ResizeExpBar(100);
         AlignImageNodes(false);
         SaveConfig(Config);
         Common.FrameworkUpdate -= OnFrameworkUpdate;
         base.Disable();
-    }
-
-    public override void Dispose()
-    {
-        onAddonUpdate?.Dispose();
-        base.Dispose();
     }
 }

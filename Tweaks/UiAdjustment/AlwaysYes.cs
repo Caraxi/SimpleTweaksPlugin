@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Interface;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -106,11 +108,10 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        Common.AddonSetup += OnAddonSetup;
-        base.Enable();
     }
 
-    private void OnAddonSetup(SetupAddonArgs args) {
+    [AddonPostSetup]
+    private void OnAddonSetup(AddonSetupArgs args) {
         switch (args.AddonName) {
             case "SelectYesno":
                 if (Config.YesNo && !IsYesnoAnException(args.Addon)) SetFocusYes(args.Addon, 8, 9, 4);
@@ -159,8 +160,8 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 return;
         }
     }
-
-    private void SetFocusYes(AtkUnitBase* unitBase, uint yesButtonId, uint? yesHoldButtonId = null, uint? checkBoxId = null) {
+    private void SetFocusYes(nint unitBaseAddress, uint yesButtonId, uint? yesHoldButtonId = null, uint? checkBoxId = null) {
+        var unitBase = (AtkUnitBase*)unitBaseAddress;
         if (unitBase == null) return;
 
         var yesButton = unitBase->UldManager.SearchNodeById(yesButtonId);
@@ -191,8 +192,9 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         unitBase->SetFocusNode(yesCollision);
         unitBase->CursorTarget = yesCollision;
     }
-
-    private bool IsYesnoAnException(AtkUnitBase* unitBase) {
+    
+    private bool IsYesnoAnException(nint unitBaseAddress) {
+        var unitBase = (AtkUnitBase*)unitBaseAddress;
         if (Config.ExceptionsYesNo.Count == 0 || unitBase == null) return false;
 
         var textNode = (AtkTextNode *)unitBase->UldManager.SearchNodeById(2);
@@ -201,10 +203,5 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         var text = Common.ReadSeString(textNode->NodeText).TextValue.ReplaceLineEndings(string.Empty);
 
         return text != string.Empty && Config.ExceptionsYesNo.Any(val => text.Contains(val));
-    }
-
-    protected override void Disable() {
-        Common.AddonSetup -= OnAddonSetup;
-        base.Disable();
     }
 }
