@@ -1,9 +1,7 @@
+using Dalamud.Game.Addon.Lifecycle;
+
 namespace SimpleTweaksPlugin.Events; 
 
-public class AddonPreUpdateAttribute : EventAttribute {
-    public string[] AddonNames { get; }
-    
-    public AddonPreUpdateAttribute(params string[] addonNames) {
-        AddonNames = addonNames;
-    }
+public class AddonPreUpdateAttribute : AddonEventAttribute {
+    public AddonPreUpdateAttribute(params string[] addonNames) : base(AddonEvent.PreRequestedUpdate, addonNames) { }
 }

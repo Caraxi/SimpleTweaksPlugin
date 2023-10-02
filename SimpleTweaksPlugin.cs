@@ -84,7 +84,6 @@ namespace SimpleTweaksPlugin {
             Common.Shutdown();
             TooltipManager.Destroy();
             SimpleEvent.Destroy();
-            EventController.Destroy();
         }
 
         public int UpdateFrom = -1;

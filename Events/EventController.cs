@@ -1,331 +1,271 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using FFXIVClientStructs.FFXIV.Client.UI;
+using Dalamud.Plugin.Services;
+using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
-using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Events; 
+namespace SimpleTweaksPlugin.Events;
 
 public static unsafe class EventController {
+    public class EventSubscriber {
+        public BaseTweak Tweak { get; init; }
+        public MethodInfo Method { get; init; }
+        public SubscriberKind Kind { get; private set; } = SubscriberKind.Unknown;
+        private Type addonPointerType;
+        public uint NthTick { get; init; } = 0;
+        private uint tick = 0;
+
+        public static EventSubscriber CreateFrameworkSubscriber(BaseTweak tweak, MethodInfo method, uint nthTick) {
+            var s = new EventSubscriber {
+                Tweak = tweak, 
+                Method = method, 
+                Kind = SubscriberKind.Framework,
+                NthTick = nthTick,
+            };
+            return s;
+        }
+
+
+
+        public enum SubscriberKind {
+            Unknown,
+            Invalid,
+            Framework,
+            NoParameter,
+            AtkUnitBase, // (AtkUnitBase*)
+            AtkUnitBaseWithArrays, // (AtkUnitBase*, NumberArrayData**, StringArrayData**)
+            AddonPointer,  // (AddonX*)
+            AddonPointerWithArrays, // (AddonX*, NumberArrayData**. StringArrayData**) 
+            AddonArgs,
+            AddonSetupArgs,
+            AddonUpdateArgs,
+            AddonDrawArgs,
+            AddonFinalizeArgs,
+            AddonRequestedUpdateArgs,
+            AddonRefreshArgs,
+        }
+
+        private bool IsPointer<T>(ParameterInfo p) {
+            if (!p.ParameterType.IsPointer) return false;
+            if (p.ParameterType.GetElementType() != typeof(T)) return false;
+            return true;
+        }
+
+        private bool IsAddonPointer(ParameterInfo p) {
+            if (!p.ParameterType.IsPointer) return false;
+            var elementType = p.ParameterType.GetElementType();
+            if (elementType == null || elementType.IsPointer) return false;
+            var addonAttribute = elementType.GetCustomAttribute<Addon>();
+            if (addonAttribute == null) return false;
+            return true;
+        }
+        
+        private bool DetermineInvokeKind() {
+            using var perf = PerformanceMonitor.Run("EventController::DetermineInvokeKind");
+            var p = Method.GetParameters();
+
+            try {
+                if (p.Length == 0) {
+                    Kind = SubscriberKind.NoParameter;
+                    return true;
+                } else if (p.Length == 1) {
+
+                    if (IsAddonPointer(p[0])) {
+                        Kind = SubscriberKind.AddonPointer;
+                        addonPointerType = p[0].ParameterType;
+                        return true;
+                    }
+                    
+                    if (IsPointer<AtkUnitBase>(p[0])) {
+                        Kind = SubscriberKind.AtkUnitBase;
+                        return true;
+                    }
+
+                    if (p[0].ParameterType == typeof(AddonArgs)) {
+                        Kind = SubscriberKind.AddonArgs;
+                        return true;
+                    }
+                    
+                    if (p[0].ParameterType == typeof(AddonSetupArgs)) {
+                        Kind = SubscriberKind.AddonSetupArgs;
+                        return true;
+                    }
+                    
+                    if (p[0].ParameterType == typeof(AddonUpdateArgs)) {
+                        Kind = SubscriberKind.AddonUpdateArgs;
+                        return true;
+                    }
+                    
+                    if (p[0].ParameterType == typeof(AddonDrawArgs)) {
+                        Kind = SubscriberKind.AddonDrawArgs;
+                        return true;
+                    }
+                    
+                    if (p[0].ParameterType == typeof(AddonFinalizeArgs)) {
+                        Kind = SubscriberKind.AddonFinalizeArgs;
+                        return true;
+                    }
+                    
+                    if (p[0].ParameterType == typeof(AddonRequestedUpdateArgs)) {
+                        Kind = SubscriberKind.AddonRequestedUpdateArgs;
+                        return true;
+                    }
+                    
+                    if (p[0].ParameterType == typeof(AddonRefreshArgs)) { 
+                        Kind = SubscriberKind.AddonRefreshArgs;
+                        return true;
+                    }
+
+                } else if (p.Length == 3) {
+                    
+                }
+            } catch (Exception ex) {
+                SimpleLog.Error(ex);
+            }
+            
+            SimpleLog.Error($"[EventController] Failed to determine a valid delegate type for '{Tweak.GetType().Name}.{Method.Name}'");
+
+            foreach (var param in p) {
+                SimpleLog.Error($"[EventController] \t - {param.ParameterType} {param.Name}");
+            }
+            
+            Kind = SubscriberKind.Invalid;
+            return false;
+        }
+        
+        public void Invoke(AddonArgs args) {
+            if (NthTick > 1) {
+                if (++tick < NthTick) return;
+                tick = 0;
+            }
+
+            if (Kind == SubscriberKind.Invalid) return;
+            if (Tweak.IsDisposed) return;
+            if (!Tweak.Enabled) return;
+
+            if (Kind == SubscriberKind.Unknown) {
+                if (!DetermineInvokeKind()) return;
+            }
+
+            if (args == null) {
+                SimpleLog.Warning($"[EventController] Invoking '{Tweak.Key}.{Method.Name}' as [{Kind}]");
+
+            } else {
+                SimpleLog.Warning($"[EventController] Invoking '{Tweak.Key}.{Method.Name}' as [{Kind}] for '{args.AddonName}'");
+
+            }
+            
+            using var perfMon = PerformanceMonitor.Run($"[Event] {Tweak.Key} :: {Method.Name}");
+
+            var _ = Kind switch {
+                SubscriberKind.Invalid => null,
+                SubscriberKind.Unknown => null,
+                SubscriberKind.Framework => Method.Invoke(Tweak, Array.Empty<object>()),
+                SubscriberKind.NoParameter => Method.Invoke(Tweak, Array.Empty<object>()),
+                SubscriberKind.AtkUnitBase => Method.Invoke(Tweak, new[] { Pointer.Box((void*) args.Addon, typeof(AtkUnitBase*)) }),
+                SubscriberKind.AtkUnitBaseWithArrays => Method.Invoke(Tweak, new[] {
+                    Pointer.Box((void*) args.Addon, typeof(AtkUnitBase*)),
+                    Pointer.Box(AtkStage.GetSingleton()->GetNumberArrayData(), typeof(NumberArrayData**)),
+                    Pointer.Box(AtkStage.GetSingleton()->GetStringArrayData(), typeof(StringArrayData**)),
+                }),
+                SubscriberKind.AddonPointer => Method.Invoke(Tweak, new [] { Pointer.Box((void*) args.Addon, addonPointerType)}),
+                SubscriberKind.AddonPointerWithArrays => Method.Invoke(Tweak, new[] {
+                    Pointer.Box((void*) args.Addon, addonPointerType),
+                    Pointer.Box(AtkStage.GetSingleton()->GetNumberArrayData(), typeof(NumberArrayData**)),
+                    Pointer.Box(AtkStage.GetSingleton()->GetStringArrayData(), typeof(StringArrayData**)),
+                }),
+                SubscriberKind.AddonArgs => Method.Invoke(Tweak, new object[] { args }),
+                SubscriberKind.AddonSetupArgs when args is AddonSetupArgs addonSetupArgs => Method.Invoke(Tweak, new object[] { addonSetupArgs }),
+                SubscriberKind.AddonUpdateArgs when args is AddonUpdateArgs addonUpdateArgs => Method.Invoke(Tweak, new object[] { addonUpdateArgs }),
+                SubscriberKind.AddonDrawArgs when args is AddonDrawArgs addonDrawArgs => Method.Invoke(Tweak, new object[] { addonDrawArgs }),
+                SubscriberKind.AddonFinalizeArgs when args is AddonFinalizeArgs addonFinalizeArgs => Method.Invoke(Tweak, new object[] { addonFinalizeArgs }),
+                SubscriberKind.AddonRequestedUpdateArgs when args is AddonRequestedUpdateArgs addonRequestedUpdateArgs => Method.Invoke(Tweak, new object[] { addonRequestedUpdateArgs }),
+                SubscriberKind.AddonRefreshArgs when args is AddonRefreshArgs addonRefreshArgs => Method.Invoke(Tweak, new object[] { addonRefreshArgs }),
+                _ => null,
+            };
+        }
+    }
+    
+    private static Dictionary<AddonEvent, Dictionary<string, List<EventSubscriber>>> AddonEventSubscribers { get; } = new();
+    private static List<EventSubscriber> FrameworkUpdateSubscribers { get; } = new();
 
     private static bool TryGetCustomAttribute<T>(this MemberInfo element, out T attribute) where T : Attribute {
         attribute = element.GetCustomAttribute<T>();
         return attribute != null;
     }
-
-    public delegate void AddonDelegate(AtkUnitBase* addon);
-    public delegate void AddonUpdateDelegate(AtkUnitBase* addon, NumberArrayData** numberArrays, StringArrayData** stringArrays);
-
-    private delegate void UpdateAddonByID(RaptureAtkUnitManager* atkUnitManager, ushort addonId, NumberArrayData** numberArrays, StringArrayData** stringArrays, byte force);
-
-    private record Subscriber<T>(BaseTweak Tweak, T Handler) where T : Delegate {
-        public uint NthTick { get; init; } = 0;
-    };
     
-    private static readonly Dictionary<string, List<Subscriber<AddonDelegate>>> AddonPreSetupSubscribers = new();
-    private static readonly Dictionary<string, List<Subscriber<AddonDelegate>>> AddonSetupSubscribers = new();
-    private static readonly Dictionary<string, List<Subscriber<AddonDelegate>>> AddonFinalizeSubscribers = new();
-    private static readonly Dictionary<string, List<Subscriber<AddonUpdateDelegate>>> AddonPreUpdateSubscribers = new();
-    private static readonly Dictionary<string, List<Subscriber<AddonUpdateDelegate>>> AddonPostUpdateSubscribers = new();
-    private static readonly List<Subscriber<Action>> FrameworkUpdateSubscribers = new();
-    
-    private static HookWrapper<UpdateAddonByID> _updateAddonByIdHook;
-    
-    static EventController() {
-        Common.AddonSetup += HandleAddonSetup;
-        Common.AddonFinalize += HandleAddonFinalize;
-        Common.FrameworkUpdate += HandleFrameworkUpdate;
-        
-        Service.AddonLifecycle.RegisterListener(AddonEvent.PreRequestedUpdate, HandlePreRequestedUpdate);
-        Service.AddonLifecycle.RegisterListener(AddonEvent.PostRequestedUpdate, HandlePostRequestedUpdate);
-        Service.AddonLifecycle.RegisterListener(AddonEvent.PreSetup, HandlePreSetup);
-    }
-
-    internal static void Destroy() {
-        Common.AddonSetup -= HandleAddonSetup;
-        Common.AddonFinalize -= HandleAddonFinalize;
-        Common.FrameworkUpdate -= HandleFrameworkUpdate;
-
-        Service.AddonLifecycle.UnregisterListener(AddonEvent.PreRequestedUpdate, HandlePreRequestedUpdate);
-        Service.AddonLifecycle.UnregisterListener(AddonEvent.PostRequestedUpdate, HandlePostRequestedUpdate);
-    }
-
-    private static void HandlePreRequestedUpdate(AddonEvent eventType, AddonArgs addonInfo) {
-        var stringArrays = AtkStage.GetSingleton()->GetStringArrayData();
-        var numberArrays = AtkStage.GetSingleton()->GetNumberArrayData();
-        HandleAddonPreUpdate(addonInfo.AddonName, (AtkUnitBase*) addonInfo.Addon, numberArrays, stringArrays);
-    }
-    
-    private static void HandlePostRequestedUpdate(AddonEvent eventType, AddonArgs addonInfo) {
-        var stringArrays = AtkStage.GetSingleton()->GetStringArrayData();
-        var numberArrays = AtkStage.GetSingleton()->GetNumberArrayData();
-        HandleAddonPostUpdate(addonInfo.AddonName, (AtkUnitBase*) addonInfo.Addon, numberArrays, stringArrays);
-    }
-
-    private static void HandlePreSetup(AddonEvent eventType, AddonArgs addonInfo) => HandleAddonEvent(AddonPreSetupSubscribers, addonInfo.AddonName, (AtkUnitBase*) addonInfo.Addon);
-
-    private static void UpdateAddonByIdDetour(RaptureAtkUnitManager* atkUnitManager, ushort addonId, NumberArrayData** numberArrays, StringArrayData** stringArrays, byte forceB) {
-        // Fully replace the function
-        var didForward = false;
-        try {
-            if (addonId == 0) return;
-            var addon = atkUnitManager->GetAddonById(addonId);
-            if (addon == null) return;
-            if (addon->ID != addonId) {
-                throw new Exception("Addon with the incorrect ID was received");
-            }
-            if (addon->Name == null) {
-                throw new Exception("Addon with a null name was received");
-            }
-            var name = Common.ReadString(addon->Name, 0x20);
-
-            if (AddonPostUpdateSubscribers.ContainsKey(name) || AddonPreUpdateSubscribers.ContainsKey(name)) {
-                if (!(forceB != 0 ||
-                      ((*(uint*)(addon + 0x180) >> 0x14) & 0xF) != 5 ||
-                      (*(byte*)(addon + 0x18A) & 0x10) != 0
-                    )) return;
-                var updateFunction = (delegate* unmanaged[Stdcall] <AtkUnitBase*, NumberArrayData**, StringArrayData**, void>)((void**)addon->VTable)[50];
-                HandleAddonPreUpdate(name, addon, numberArrays, stringArrays);
-                updateFunction(addon, numberArrays, stringArrays);
-                didForward = true;
-                HandleAddonPostUpdate(name, addon, numberArrays, stringArrays);
-            } else {
-                _updateAddonByIdHook.Original(atkUnitManager, addonId, numberArrays, stringArrays, forceB);
-            }
-        } catch (Exception ex) {
-            SimpleLog.Error(ex);
-            if (!didForward) _updateAddonByIdHook.Original(atkUnitManager, addonId, numberArrays, stringArrays, forceB);
-        }
-    }
-
-    private static void HandleAddonSetup(SetupAddonArgs obj) => HandleAddonEvent(AddonSetupSubscribers, obj.AddonName, obj.Addon);
-    private static void HandleAddonFinalize(SetupAddonArgs obj) => HandleAddonEvent(AddonFinalizeSubscribers, obj.AddonName, obj.Addon);
-
-    private static void HandleAddonEvent(Dictionary<string, List<Subscriber<AddonDelegate>>> addonSubscriberDictionary, string addonName, AtkUnitBase* addon) {
-        if (!addonSubscriberDictionary.TryGetValue(addonName, out var subscribers)) return;
-        foreach (var subscriber in subscribers) {
-            if (subscriber.Tweak.IsDisposed) continue;
-            if (!subscriber.Tweak.Enabled) continue;
-            subscriber.Handler(addon);
-        }
-    }
-
-    private static void HandleAddonPreUpdate(string addonName, AtkUnitBase* addon, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) => HandleAddonUpdate(AddonPreUpdateSubscribers, addonName, addon, numberArrayData, stringArrayData);
-    private static void HandleAddonPostUpdate(string addonName, AtkUnitBase* addon, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) => HandleAddonUpdate(AddonPostUpdateSubscribers, addonName, addon, numberArrayData, stringArrayData);
-    
-    private static void HandleAddonUpdate(Dictionary<string, List<Subscriber<AddonUpdateDelegate>>> addonSubscriberDictionary, string addonName, AtkUnitBase* addon, NumberArrayData** numberArrayData, StringArrayData** stringArrayData) {
-        try {
-            if (!addonSubscriberDictionary.TryGetValue(addonName, out var subscribers)) return;
-            foreach (var subscriber in subscribers) {
-                if (subscriber.Tweak.IsDisposed) continue;
-                if (!subscriber.Tweak.Enabled) continue;
-                subscriber.Handler(addon, numberArrayData, stringArrayData);
-            }
-        } catch (Exception ex) {
-            SimpleLog.Error(ex);
-        }
-    }
-    
-    private static void HandleFrameworkUpdate() {
-        foreach (var subscriber in FrameworkUpdateSubscribers) {
-            if (subscriber.NthTick != 0 && Framework.Instance()->FrameCounter % subscriber.NthTick != 0) continue;
-            if (subscriber.Tweak.IsDisposed) continue;
-            if (!subscriber.Tweak.Enabled) continue;
-            subscriber.Handler();
-        }
-    }
-    
-    private static AddonUpdateDelegate WrapAddonUpdate(AddonDelegate wrap) => (addon, _, _) => wrap(addon);
-
     public static void RegisterEvents(BaseTweak tweak) {
         if (tweak == null) return;
         if (tweak.IsDisposed) return;
 
         var methods = tweak.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
         foreach (var method in methods) {
-            if (method.TryGetCustomAttribute<AddonSetupAttribute>(out var addonSetupAttribute)) {
-                try {
-                    var setupDelegate = method.CreateDelegate<AddonDelegate>(tweak);
-                    RegisterAddonSetup(tweak, setupDelegate, addonSetupAttribute.AddonNames);
-                } catch (Exception ex) {
-                    SimpleLog.Error($"Failed to bind AddonSetup to {tweak.GetType().Name}.{method.Name}");
-                    SimpleLog.Error(ex);
-                }
-            }
-            
-            if (method.TryGetCustomAttribute<AddonPreSetupAttribute>(out var addonPreSetupAttribute)) {
-                try {
-                    var setupDelegate = method.CreateDelegate<AddonDelegate>(tweak);
-                    RegisterAddonPreSetup(tweak, setupDelegate, addonPreSetupAttribute.AddonNames);
-                } catch (Exception ex) {
-                    SimpleLog.Error($"Failed to bind AddonPreSetup to {tweak.GetType().Name}.{method.Name}");
-                    SimpleLog.Error(ex);
-                }
-            }
-            
-            if (method.TryGetCustomAttribute<AddonFinalizeAttribute>(out var addonFinalizeAttribute)) {
-                try {
-                    var finalizeDelegate = method.CreateDelegate<AddonDelegate>(tweak);
-                    RegisterAddonFinalize(tweak, finalizeDelegate, addonFinalizeAttribute.AddonNames);
-                } catch (Exception ex) {
-                    SimpleLog.Error($"Failed to bind AddonFinalize to {tweak.GetType().Name}.{method.Name}");
-                    SimpleLog.Error(ex);
-                }
-            }
-            
-            if (method.TryGetCustomAttribute<AddonPreUpdateAttribute>(out var addonPreUpdateAttribute)) {
-                try {
 
-                    try {
-                        var updateDelegate = method.CreateDelegate<AddonUpdateDelegate>(tweak);
-                        RegisterAddonPreUpdate(tweak, updateDelegate, addonPreUpdateAttribute.AddonNames);
-                    } catch (ArgumentException) {
-                        var updateDelegate = method.CreateDelegate<AddonDelegate>(tweak);
-                        var wrapped = WrapAddonUpdate(updateDelegate);
-                        RegisterAddonPreUpdate(tweak, wrapped, addonPreUpdateAttribute.AddonNames);
+            if (method.TryGetCustomAttribute<FrameworkUpdateAttribute>(out var fwUpdateAttribute)) {
+                var subscriber = EventSubscriber.CreateFrameworkSubscriber(tweak, method, fwUpdateAttribute.NthTick);
+
+                if (FrameworkUpdateSubscribers.Count == 0) {
+                    Service.Framework.Update -= HandleFrameworkUpdate;
+                    Service.Framework.Update += HandleFrameworkUpdate;
+                }
+                
+                FrameworkUpdateSubscribers.Add(subscriber);
+            }
+            
+            foreach (var attr in method.GetCustomAttributes<AddonEventAttribute>()) {
+                foreach (var addon in attr.AddonNames) {
+                    SimpleLog.Verbose($"[EventController] {tweak.Name} requesting event '{attr.Event}' on method '{method.Name}' for addon '{addon}'");
+                    
+                    var subscriber = new EventSubscriber() { Tweak = tweak, Method = method };
+
+                    if (!AddonEventSubscribers.TryGetValue(attr.Event, out var addonSubscriberDict)) {
+                        addonSubscriberDict = new Dictionary<string, List<EventSubscriber>>();
+                        AddonEventSubscribers.Add(attr.Event, addonSubscriberDict);
+                        Service.AddonLifecycle.RegisterListener(attr.Event, HandleEvent);
+                    }
+
+                    if (!addonSubscriberDict.TryGetValue(addon, out var addonSubscriberList)) {
+                        addonSubscriberList = new List<EventSubscriber>();
+                        addonSubscriberDict.Add(addon, addonSubscriberList);
                     }
                     
-                    _updateAddonByIdHook?.Enable();
-                } catch (Exception ex) {
-                    SimpleLog.Error($"Failed to bind AddonPreUpdate to {tweak.GetType().Name}.{method.Name}");
-                    SimpleLog.Error(ex);
+                    addonSubscriberList.Add(subscriber);
                 }
             }
-            
-            if (method.TryGetCustomAttribute<AddonPostUpdateAttribute>(out var addonPostUpdateAttribute)) {
-                try {
-                    try {
-                        var updateDelegate = method.CreateDelegate<AddonUpdateDelegate>(tweak);
-                        RegisterAddonPostUpdate(tweak, updateDelegate, addonPostUpdateAttribute.AddonNames);
-                    } catch (ArgumentException) {
-                        var updateDelegate = method.CreateDelegate<AddonDelegate>(tweak);
-                        var wrapped = WrapAddonUpdate(updateDelegate);
-                        RegisterAddonPostUpdate(tweak, wrapped, addonPostUpdateAttribute.AddonNames);
-                    }
-                    _updateAddonByIdHook?.Enable();
-                } catch (Exception ex) {
-                    SimpleLog.Error($"Failed to bind AddonPostUpdate to {tweak.GetType().Name}.{method.Name}");
-                    SimpleLog.Error(ex);
-                }
-            }
-            
-            if (method.TryGetCustomAttribute<FrameworkUpdateAttribute>(out var frameworkUpdateAttribute)) {
-                try {
-                    var finalizeDelegate = method.CreateDelegate<Action>(tweak);
-                    RegisterFrameworkUpdate(tweak, finalizeDelegate, frameworkUpdateAttribute.NthTick);
-                } catch (Exception ex) {
-                    SimpleLog.Error($"Failed to bind FrameworkUpdate to {tweak.GetType().Name}.{method.Name}");
-                    SimpleLog.Error(ex);
-                }
-            }
+        }
+    }
+
+    private static void HandleFrameworkUpdate(IFramework framework) {
+        foreach (var fwSubscriber in FrameworkUpdateSubscribers) {
+            fwSubscriber.Invoke(null);
+        }
+    }
+
+    private static void HandleEvent(AddonEvent type, AddonArgs args) {
+        if (!AddonEventSubscribers.TryGetValue(type, out var addonSubscriberDict)) return;
+        if (!addonSubscriberDict.TryGetValue(args.AddonName, out var addonSubscriberList)) return;
+        foreach (var subscriber in addonSubscriberList) {
+            if (subscriber.Tweak.IsDisposed) continue;
+            if (!subscriber.Tweak.Enabled) continue;
+            subscriber.Invoke(args);
         }
     }
 
     public static void UnregisterEvents(BaseTweak tweak) {
-        UnregisterAddonSetup(tweak);
-        UnregisterAddonPreSetup(tweak);
-        UnregisterAddonFinalize(tweak);
-        UnregisterAddonPreUpdate(tweak);
-        UnregisterAddonPostUpdate(tweak);
-        UnregisterFrameworkUpdate(tweak);
-    }
-    
-    private static void RegisterAddonSetup(BaseTweak tweak, AddonDelegate handler, params string[] addonNames) {
-        foreach (var addonName in addonNames) {
-            if (!AddonSetupSubscribers.ContainsKey(addonName)) AddonSetupSubscribers.Add(addonName, new List<Subscriber<AddonDelegate>>());
-            if (!AddonSetupSubscribers.TryGetValue(addonName, out var subscribers)) continue;
-            subscribers.Add(new Subscriber<AddonDelegate>(tweak, handler));
-        }
-    }
-    
-    private static void RegisterAddonPreSetup(BaseTweak tweak, AddonDelegate handler, params string[] addonNames) {
-        foreach (var addonName in addonNames) {
-            if (!AddonPreSetupSubscribers.ContainsKey(addonName)) AddonPreSetupSubscribers.Add(addonName, new List<Subscriber<AddonDelegate>>());
-            if (!AddonPreSetupSubscribers.TryGetValue(addonName, out var subscribers)) continue;
-            subscribers.Add(new Subscriber<AddonDelegate>(tweak, handler));
-        }
-    }
-    
-    private static void RegisterAddonFinalize(BaseTweak tweak, AddonDelegate handler, params string[] addonNames) {
-        foreach (var addonName in addonNames) {
-            if (!AddonFinalizeSubscribers.ContainsKey(addonName)) AddonFinalizeSubscribers.Add(addonName, new List<Subscriber<AddonDelegate>>());
-            if (!AddonFinalizeSubscribers.TryGetValue(addonName, out var subscribers)) continue;
-            subscribers.Add(new Subscriber<AddonDelegate>(tweak, handler));
-        }
-    }
-
-    private static void RegisterAddonPreUpdate(BaseTweak tweak, AddonUpdateDelegate handler, params string[] addonNames) {
-        foreach (var addonName in addonNames) {
-            if (!AddonPreUpdateSubscribers.ContainsKey(addonName)) AddonPreUpdateSubscribers.Add(addonName, new List<Subscriber<AddonUpdateDelegate>>());
-            if (!AddonPreUpdateSubscribers.TryGetValue(addonName, out var subscribers)) continue;
-            subscribers.Add(new Subscriber<AddonUpdateDelegate>(tweak, handler));
-        }
-    }
-    
-    private static void RegisterAddonPostUpdate(BaseTweak tweak, AddonUpdateDelegate handler, params string[] addonNames) {
-        foreach (var addonName in addonNames) {
-            if (!AddonPostUpdateSubscribers.ContainsKey(addonName)) AddonPostUpdateSubscribers.Add(addonName, new List<Subscriber<AddonUpdateDelegate>>());
-            if (!AddonPostUpdateSubscribers.TryGetValue(addonName, out var subscribers)) continue;
-            subscribers.Add(new Subscriber<AddonUpdateDelegate>(tweak, handler));
-        }
-    }
-
-    private static void RegisterFrameworkUpdate(BaseTweak tweak, Action handler, uint nthTick = 0) {
-        FrameworkUpdateSubscribers.Add(new Subscriber<Action>(tweak, handler) {
-            NthTick = nthTick
-        });
-    }
-
-    private static void UnregisterAddonSetup(BaseTweak tweak) {
-        foreach (var subscribers in AddonSetupSubscribers.Values) {
-            subscribers.RemoveAll(s => s.Tweak.Key == tweak.Key);
-        }
-    }
-    
-    private static void UnregisterAddonPreSetup(BaseTweak tweak) {
-        foreach (var subscribers in AddonPreSetupSubscribers.Values) {
-            subscribers.RemoveAll(s => s.Tweak.Key == tweak.Key);
-        }
-    }
-    
-    private static void UnregisterAddonFinalize(BaseTweak tweak) {
-        foreach (var subscribers in AddonFinalizeSubscribers.Values) {
-            subscribers.RemoveAll(s => s.Tweak.Key == tweak.Key);
-        }
-    }
-
-    private static void UnregisterAddonPreUpdate(BaseTweak tweak) {
-        foreach (var (addon, subscribers) in AddonPreUpdateSubscribers.ToArray()) {
-            subscribers.RemoveAll(s => s.Tweak.Key == tweak.Key);
-            if (subscribers.Count == 0) {
-                AddonPreUpdateSubscribers.Remove(addon);
-            }
+        FrameworkUpdateSubscribers.RemoveAll(f => f.Tweak == tweak);
+        if (FrameworkUpdateSubscribers.Count == 0) {
+            Service.Framework.Update -= HandleFrameworkUpdate;
         }
         
-        if (AddonPostUpdateSubscribers.Count == 0 && AddonPreUpdateSubscribers.Count == 0) 
-            _updateAddonByIdHook?.Disable();
-    }
-    
-    private static void UnregisterAddonPostUpdate(BaseTweak tweak) {
-        foreach (var (addon, subscribers) in AddonPostUpdateSubscribers.ToArray()) {
-            subscribers.RemoveAll(s => s.Tweak.Key == tweak.Key);
-            if (subscribers.Count == 0) {
-                AddonPostUpdateSubscribers.Remove(addon);
+        foreach (var (_, addonSubscribers) in AddonEventSubscribers) {
+            foreach (var (_, subscribers) in addonSubscribers) {
+                subscribers.RemoveAll(subscriber => subscriber.Tweak == tweak);
             }
         }
-
-        if (AddonPostUpdateSubscribers.Count == 0 && AddonPreUpdateSubscribers.Count == 0) 
-            _updateAddonByIdHook?.Disable();
-    }
-
-    private static void UnregisterFrameworkUpdate(BaseTweak tweak) {
-        FrameworkUpdateSubscribers.RemoveAll(s => s.Tweak.Key == tweak.Key);
     }
 }
