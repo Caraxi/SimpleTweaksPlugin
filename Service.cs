@@ -19,7 +19,6 @@ public class Service {
     [PluginService] public static IFramework Framework { get; private set; }
     [PluginService] public static IGameGui GameGui { get; private set; }
     [PluginService] public static IKeyState KeyState { get; private set; }
-    [PluginService] public static ILibcFunction LibcFunction { get; private set; }
     [PluginService] public static IObjectTable Objects { get; private set; }
     [PluginService] public static ISigScanner SigScanner { get; private set; }
     [PluginService] public static ITargetManager Targets { get; private set; }
