@@ -45,6 +45,7 @@ public static unsafe class EventController {
         public enum SubscriberKind {
             Unknown,
             Invalid,
+            Error,
             Framework,
             NoParameter,
             AtkUnitBase, // (AtkUnitBase*)
@@ -159,7 +160,7 @@ public static unsafe class EventController {
                 tick = 0;
             }
 
-            if (Kind == SubscriberKind.Invalid) return;
+            if (Kind is SubscriberKind.Invalid or SubscriberKind.Error) return;
             if (Tweak.IsDisposed) return;
             if (!Tweak.Enabled) return;
 
@@ -169,32 +170,31 @@ public static unsafe class EventController {
 
             using var perfMon = PerformanceMonitor.Run($"[Event] {Tweak.Key} :: {Method.Name}");
 
-            var _ = Kind switch {
-                SubscriberKind.Invalid => null,
-                SubscriberKind.Unknown => null,
-                SubscriberKind.Framework => Method.Invoke(Tweak, Array.Empty<object>()),
-                SubscriberKind.NoParameter => Method.Invoke(Tweak, Array.Empty<object>()),
-                SubscriberKind.AtkUnitBase => Method.Invoke(Tweak, new[] { Pointer.Box((void*) args.Addon, typeof(AtkUnitBase*)) }),
-                SubscriberKind.AtkUnitBaseWithArrays => Method.Invoke(Tweak, new[] {
-                    Pointer.Box((void*) args.Addon, typeof(AtkUnitBase*)),
-                    Pointer.Box(AtkStage.GetSingleton()->GetNumberArrayData(), typeof(NumberArrayData**)),
-                    Pointer.Box(AtkStage.GetSingleton()->GetStringArrayData(), typeof(StringArrayData**)),
-                }),
-                SubscriberKind.AddonPointer => Method.Invoke(Tweak, new [] { Pointer.Box((void*) args.Addon, addonPointerType)}),
-                SubscriberKind.AddonPointerWithArrays => Method.Invoke(Tweak, new[] {
-                    Pointer.Box((void*) args.Addon, addonPointerType),
-                    Pointer.Box(AtkStage.GetSingleton()->GetNumberArrayData(), typeof(NumberArrayData**)),
-                    Pointer.Box(AtkStage.GetSingleton()->GetStringArrayData(), typeof(StringArrayData**)),
-                }),
-                SubscriberKind.AddonArgs => Method.Invoke(Tweak, new object[] { args }),
-                SubscriberKind.AddonSetupArgs when args is AddonSetupArgs addonSetupArgs => Method.Invoke(Tweak, new object[] { addonSetupArgs }),
-                SubscriberKind.AddonUpdateArgs when args is AddonUpdateArgs addonUpdateArgs => Method.Invoke(Tweak, new object[] { addonUpdateArgs }),
-                SubscriberKind.AddonDrawArgs when args is AddonDrawArgs addonDrawArgs => Method.Invoke(Tweak, new object[] { addonDrawArgs }),
-                SubscriberKind.AddonFinalizeArgs when args is AddonFinalizeArgs addonFinalizeArgs => Method.Invoke(Tweak, new object[] { addonFinalizeArgs }),
-                SubscriberKind.AddonRequestedUpdateArgs when args is AddonRequestedUpdateArgs addonRequestedUpdateArgs => Method.Invoke(Tweak, new object[] { addonRequestedUpdateArgs }),
-                SubscriberKind.AddonRefreshArgs when args is AddonRefreshArgs addonRefreshArgs => Method.Invoke(Tweak, new object[] { addonRefreshArgs }),
-                _ => null,
-            };
+            try {
+                var _ = Kind switch {
+                    SubscriberKind.Invalid => null,
+                    SubscriberKind.Unknown => null,
+                    SubscriberKind.Framework => Method.Invoke(Tweak, Array.Empty<object>()),
+                    SubscriberKind.NoParameter => Method.Invoke(Tweak, Array.Empty<object>()),
+                    SubscriberKind.AtkUnitBase => Method.Invoke(Tweak, new[] { Pointer.Box((void*)args.Addon, typeof(AtkUnitBase*)) }),
+                    SubscriberKind.AtkUnitBaseWithArrays => Method.Invoke(Tweak, new[] { Pointer.Box((void*)args.Addon, typeof(AtkUnitBase*)), Pointer.Box(AtkStage.GetSingleton()->GetNumberArrayData(), typeof(NumberArrayData**)), Pointer.Box(AtkStage.GetSingleton()->GetStringArrayData(), typeof(StringArrayData**)), }),
+                    SubscriberKind.AddonPointer => Method.Invoke(Tweak, new[] { Pointer.Box((void*)args.Addon, addonPointerType) }),
+                    SubscriberKind.AddonPointerWithArrays => Method.Invoke(Tweak, new[] { Pointer.Box((void*)args.Addon, addonPointerType), Pointer.Box(AtkStage.GetSingleton()->GetNumberArrayData(), typeof(NumberArrayData**)), Pointer.Box(AtkStage.GetSingleton()->GetStringArrayData(), typeof(StringArrayData**)), }),
+                    SubscriberKind.AddonArgs => Method.Invoke(Tweak, new object[] { args }),
+                    SubscriberKind.AddonSetupArgs when args is AddonSetupArgs addonSetupArgs => Method.Invoke(Tweak, new object[] { addonSetupArgs }),
+                    SubscriberKind.AddonUpdateArgs when args is AddonUpdateArgs addonUpdateArgs => Method.Invoke(Tweak, new object[] { addonUpdateArgs }),
+                    SubscriberKind.AddonDrawArgs when args is AddonDrawArgs addonDrawArgs => Method.Invoke(Tweak, new object[] { addonDrawArgs }),
+                    SubscriberKind.AddonFinalizeArgs when args is AddonFinalizeArgs addonFinalizeArgs => Method.Invoke(Tweak, new object[] { addonFinalizeArgs }),
+                    SubscriberKind.AddonRequestedUpdateArgs when args is AddonRequestedUpdateArgs addonRequestedUpdateArgs => Method.Invoke(Tweak, new object[] { addonRequestedUpdateArgs }),
+                    SubscriberKind.AddonRefreshArgs when args is AddonRefreshArgs addonRefreshArgs => Method.Invoke(Tweak, new object[] { addonRefreshArgs }),
+                    _ => null,
+                };
+            } catch (Exception ex) {
+                SimpleLog.Error($"Error invoking {Tweak.Key} :: {Method.Name}. Event has been disabled.");
+                Kind = SubscriberKind.Error;
+                SimpleTweaksPlugin.Plugin.Error(Tweak, ex, true);
+            }
+            
         }
     }
     
