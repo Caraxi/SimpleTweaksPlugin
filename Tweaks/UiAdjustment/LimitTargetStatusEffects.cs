@@ -44,7 +44,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private readonly HashSet<ushort> filteredStatus = new();
         private static Dictionary<ushort, Lumina.Excel.GeneratedSheets.Status> statusSheet;
 
-        private delegate long UpdateTargetStatusDelegate(void* agentHud, void* numberArray, void* stringArray, StatusManager statusManager, void* target, void* isLocalPlayerAndRollPlaying);
+        private delegate long UpdateTargetStatusDelegate(void* agentHud, void* numberArray, void* stringArray, StatusManager* statusManager, void* target, void* isLocalPlayerAndRollPlaying);
         private HookWrapper<UpdateTargetStatusDelegate> updateTargetStatusHook;
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
@@ -156,13 +156,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             updateTargetStatusHook?.Enable();
         }
 
-        private long UpdateTargetStatusDetour(void* agentHud, void* numberArray, void* stringArray, StatusManager statusManager, void* target, void* isLocalPlayerAndRollPlaying) {
+        private long UpdateTargetStatusDetour(void* agentHud, void* numberArray, void* stringArray, StatusManager* statusManager, void* target, void* isLocalPlayerAndRollPlaying) {
             long ret = 0;
             try {
                 GameObject* localPlayer = null;
                 var filteredIndex = 0;
                 for (ushort i = 0; i < 30; i++) {
-                    var status = (Status*)(statusManager.Status + (0xc * i));
+                    var status = (Status*)(statusManager->Status + (0xc * i));
                     var statusId = status->StatusID;
                     if (statusId == 0 || !filteredStatus.Contains(statusId)) {
                         continue;
@@ -187,7 +187,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 ret = updateTargetStatusHook.Original(agentHud, numberArray, stringArray, statusManager, target, isLocalPlayerAndRollPlaying);
 
                 for (var i = 0; i < filteredIndex; i += 2) {
-                    ((Status*)(statusManager.Status + (0xc * removedStatus[i])))->StatusID = removedStatus[i + 1];
+                    ((Status*)(statusManager->Status + (0xc * removedStatus[i])))->StatusID = removedStatus[i + 1];
                 }
             } catch (Exception ex) {
                 SimpleLog.Error(ex, "Exception in UpdateTargetStatusDetour");
