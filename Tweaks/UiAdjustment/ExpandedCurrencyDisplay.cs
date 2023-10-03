@@ -710,7 +710,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
 
     private void MakeCounterNode(uint nodeId, Vector2 position, AtkUldPartsList* partsList)
     {
-        var counterNode = IMemorySpace.GetUISpace()->Create<AtkCounterNode>();
+        var counterNode = AtkUldManager.CreateAtkCounterNode();
         counterNode->AtkResNode.Type = NodeType.Counter;
         counterNode->AtkResNode.NodeID = nodeId;
         counterNode->AtkResNode.NodeFlags = NodeFlags.AnchorTop | NodeFlags.AnchorLeft | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents;

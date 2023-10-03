@@ -207,11 +207,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private const ushort NewWidth = OriginalWidth + AddedWidth;
 
         private delegate IntPtr UpdateItemDelegate(IntPtr a1, ulong index, IntPtr a3, ulong a4);
-        private delegate byte UpdateListDelegate(IntPtr a1, IntPtr a2, IntPtr a3);
-
         private HookWrapper<UpdateItemDelegate> updateItemHook;
-        private HookWrapper<UpdateListDelegate> updateListHook;
-        
+
         private delegate void* SetupDropDownList(AtkComponentList* a1, ushort a2, byte** a3, byte a4);
         private HookWrapper<SetupDropDownList> setupDropDownList;
         
@@ -259,9 +256,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             Common.CloseAddon("SalvageItemSelector");
             updateItemHook ??= Common.Hook<UpdateItemDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 30 49 8B 38", UpdateItemDetour);
             updateItemHook?.Enable();
-            updateListHook ??= Common.Hook<UpdateListDelegate>("40 53 56 57 48 83 EC 20 48 8B D9 49 8B F0", UpdateListDetour);
-            updateListHook?.Enable();
-            
+
             setupDropDownList ??= Common.Hook<SetupDropDownList>("E8 ?? ?? ?? ?? 8D 4F 55", SetupDropDownListDetour);
             setupDropDownList?.Enable();
             
@@ -461,22 +456,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             Original:
             return setupDropDownList.Original(atkComponentList, itemCount, itemLabels, unknownBool);
         }
-        
-        private byte UpdateListDetour(IntPtr a1, IntPtr a2, IntPtr a3) {
-            var ret = updateListHook.Original(a1, a2, a3);
-            try {
-                Update();
-            } catch (Exception ex) {
-                SimpleLog.Error(ex);
-            }
-            return ret;
-        }
 
         protected override void Disable() {
             Common.FrameworkUpdate -= RebuildListUntilSuccess;
             SaveConfig(Config);
             updateItemHook?.Disable();
-            updateListHook?.Disable();
             setupDropDownList?.Disable();
             populateHook?.Disable();
             callbackHook?.Disable();
@@ -486,7 +470,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         public override void Dispose() {
             updateItemHook?.Dispose();
-            updateListHook?.Dispose();
             setupDropDownList?.Dispose();
             populateHook?.Dispose();
             callbackHook?.Dispose();
@@ -588,6 +571,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private Dictionary<ulong, DesynthRow> desynthRows = new Dictionary<ulong, DesynthRow>();
 
+        
+        [AddonPostRefresh("SalvageItemSelector")]
         private void Update() {
 
             var atkUnitBase = (AtkUnitBase*)Service.GameGui.GetAddonByName("SalvageItemSelector", 1);

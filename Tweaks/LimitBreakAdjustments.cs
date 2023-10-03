@@ -75,7 +75,7 @@ public unsafe class LimitBreakAdjustments : UiAdjustments.SubTweak {
             b->AtkResNode.Rotation = config.BarRotation * MathF.PI / 180f;
             b->AtkResNode.SetPositionFloat(p.X, p.Y);
             b->AtkResNode.SetScale(1, 1);
-            b->AtkResNode.Flags_2 |= 1;
+            b->AtkResNode.DrawFlags |= 1;
             
             p += config.BarSpacing;
         }

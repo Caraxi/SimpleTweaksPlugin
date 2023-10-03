@@ -133,7 +133,7 @@ public unsafe class ImprovedWorldVisit : UiAdjustments.SubTweak {
 
                 if (!inserted) continue;
                 nodes[i]->AtkResNode.Y += 24;
-                nodes[i]->AtkResNode.Flags_2 |= 0x1;
+                nodes[i]->AtkResNode.DrawFlags |= 0x1;
             }
 
             if (!inserted) {

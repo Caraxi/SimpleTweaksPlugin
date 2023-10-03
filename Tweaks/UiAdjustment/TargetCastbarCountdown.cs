@@ -203,7 +203,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak
         var textNode = UiHelper.MakeTextNode(nodeId);
         
         textNode->AtkResNode.NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.AnchorTop | NodeFlags.AnchorLeft;
-        textNode->AtkResNode.Flags_2 = 2;
+        textNode->AtkResNode.DrawFlags = 2;
         textNode->AtkResNode.DrawFlags = 2;
         textNode->AtkResNode.Alpha_2 = 255;
         

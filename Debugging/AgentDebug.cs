@@ -375,7 +375,7 @@ public unsafe class AgentDebug : DebugHelper {
 
     private void SetupLogging() {
         agentGetLog = new List<(AgentId, ulong, ulong)>();
-        getAgentByInternalIdHook ??= Common.Hook("E8 ?? ?? ?? ?? 83 FE 0D", new GetAgentByInternalIDDelegate(GetAgentByInternalIDDetour));
+        getAgentByInternalIdHook ??= Common.Hook(AgentModule.Addresses.GetAgentByInternalID.Value, new GetAgentByInternalIDDelegate(GetAgentByInternalIDDetour));
         getAgentByInternalId2Hook ??= Common.Hook("E8 ?? ?? ?? ?? 48 85 C0 74 12 0F BF 80", new GetAgentByInternalIDDelegate(GetAgentByInternalIDDetour));
         getAgentByInternalIdHook?.Enable();
         getAgentByInternalId2Hook?.Enable();

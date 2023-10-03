@@ -122,7 +122,7 @@ public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
             textNode->AtkResNode.NodeFlags |= NodeFlags.Visible;
             textNode->AtkResNode.Y = 0;
             textNode->AtkResNode.X = 92;
-            textNode->AtkResNode.Flags_2 |= 0x1;
+            textNode->AtkResNode.DrawFlags |= 0x1;
 
             var a = UiAdjustments.CopyNodeList(examineWindow->PreviewComponent->UldManager.NodeList, examineWindow->PreviewComponent->UldManager.NodeListCount, (ushort) (examineWindow->PreviewComponent->UldManager.NodeListCount + 5));
             examineWindow->PreviewComponent->UldManager.NodeList = a;
@@ -143,7 +143,7 @@ public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
                 iconNode->AtkResNode.X = textNode->AtkResNode.X + 2;
                 iconNode->AtkResNode.Y = textNode->AtkResNode.Y + 3;
                 iconNode->AtkResNode.NodeFlags |= NodeFlags.Visible;
-                iconNode->AtkResNode.Flags_2 |= 0x1; // Update
+                iconNode->AtkResNode.DrawFlags |= 0x1; // Update
 
                 iconNode->AtkResNode.ParentNode = textNode->AtkResNode.ParentNode;
                 iconNode->AtkResNode.PrevSiblingNode = textNode->AtkResNode.PrevSiblingNode;

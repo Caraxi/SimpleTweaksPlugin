@@ -150,7 +150,7 @@ public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
         n = n->PrevSiblingNode;
         UiHelper.SetSize(n, width - 2, height - 2); // Focused Border
 
-        windowNode->AtkResNode.Flags_2 |= 0x1;
+        windowNode->AtkResNode.DrawFlags |= 0x1;
     }
 
     private IEnumerable<Payload> GetAetherpoolPayloads(SeString aetherpoolSeStr)

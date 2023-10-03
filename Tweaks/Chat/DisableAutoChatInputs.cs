@@ -41,7 +41,7 @@ public unsafe class DisableAutoChatInputs : ChatTweaks.SubTweak {
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        insertTextCommandParamHook ??= Common.Hook<InsertTextCommandParam>("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 49 8D 8E", InsertTextCommandParamDetour);
+        insertTextCommandParamHook ??= Common.Hook<InsertTextCommandParam>("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 81 FF ?? ?? ?? ?? 75 20", InsertTextCommandParamDetour);
         insertTextCommandParamHook?.Enable();
         base.Enable();
     }

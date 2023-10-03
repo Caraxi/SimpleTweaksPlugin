@@ -36,7 +36,7 @@ public unsafe class SubmarineDestinationLetters : UiAdjustments.SubTweak {
             destinationNames.Add(e.RowId, $"{ToBoxedLetters(jpRow.Location.RawString)} {e.Destination.ToDalamudString().TextValue}");
         }
             
-        this.getSubmarineExplorationRowHook ??= Common.Hook<GetSubmarineExplorationRowDelegate>("E8 ?? ?? ?? ?? 80 78 16 6E", this.GetExplorationRowDetour);
+        this.getSubmarineExplorationRowHook ??= Common.Hook<GetSubmarineExplorationRowDelegate>("E8 ?? ?? ?? ?? 80 78 16 ?? 75 04", this.GetExplorationRowDetour);
         this.getSubmarineExplorationRowHook?.Enable();
         base.Enable();
     }

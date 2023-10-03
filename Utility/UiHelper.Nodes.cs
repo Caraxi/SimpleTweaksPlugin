@@ -214,7 +214,7 @@ public static unsafe partial class UiHelper
 
     public static bool TryMakeTextNode(uint id, [NotNullWhen(true)] out AtkTextNode* textNode)
     {
-        textNode = IMemorySpace.GetUISpace()->Create<AtkTextNode>();
+        textNode = AtkUldManager.CreateAtkTextNode();
 
         if (textNode is not null)
         {
@@ -228,7 +228,7 @@ public static unsafe partial class UiHelper
     
     public static bool TryMakeImageNode(uint id, NodeFlags resNodeFlags, uint resNodeDrawFlags, byte wrapMode, byte imageNodeFlags, [NotNullWhen(true)] out AtkImageNode* imageNode)
     {
-        imageNode = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
+        imageNode = AtkUldManager.CreateAtkImageNode();
 
         if (imageNode is not null)
         {

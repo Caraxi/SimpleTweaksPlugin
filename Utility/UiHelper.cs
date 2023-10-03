@@ -8,13 +8,13 @@ public static unsafe partial class UiHelper {
     public static void SetSize(AtkResNode* node, int? width, int? height) {
         if (width != null && width >= ushort.MinValue && width <= ushort.MaxValue) node->Width = (ushort) width.Value;
         if (height != null && height >= ushort.MinValue && height <= ushort.MaxValue) node->Height = (ushort) height.Value;
-        node->Flags_2 |= 0x1;
+        node->DrawFlags |= 0x1;
     }
 
     public static void SetPosition(AtkResNode* node, float? x, float? y) {
         if (x != null) node->X = x.Value;
         if (y != null) node->Y = y.Value;
-        node->Flags_2 |= 0x1;
+        node->DrawFlags |= 0x1;
     }
         
     public static void SetPosition(AtkUnitBase* atkUnitBase, float? x, float? y) {
@@ -57,7 +57,7 @@ public static unsafe partial class UiHelper {
         n = n->PrevSiblingNode;
         SetPosition(n, width - 61, 8); // Help Button
 
-        windowNode->AtkResNode.Flags_2 |= 0x1;
+        windowNode->AtkResNode.DrawFlags |= 0x1;
     }
 
     public static void ExpandNodeList(AtkComponentNode* componentNode, ushort addSize) {

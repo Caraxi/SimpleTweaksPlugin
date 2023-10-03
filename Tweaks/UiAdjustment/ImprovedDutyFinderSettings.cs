@@ -125,7 +125,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         if (defaultContainer == null) return;
         defaultContainer->ToggleVisibility(false);
 
-        var container = IMemorySpace.GetUISpace()->Create<AtkResNode>();
+        var container = AtkUldManager.CreateAtkResNode();
         container->SetWidth(defaultContainer->GetWidth());
         container->SetHeight(defaultContainer->GetHeight());
         container->SetPositionFloat(defaultContainer->GetX(), defaultContainer->GetY());

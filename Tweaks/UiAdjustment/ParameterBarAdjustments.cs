@@ -187,9 +187,9 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
         textureNode->Color.A = hideMp || barConfig.Hide ? Byte00 : ByteFF;
         textureNode2->Color.A = hideMp || barConfig.Hide ? Byte00 : ByteFF;
 
-        gridNode3->AddRed = (ushort)(barColor.X * ColorMultiplier);
-        gridNode3->AddGreen = (ushort)(barColor.Y * ColorMultiplier);
-        gridNode3->AddBlue = (ushort)(barColor.Z * ColorMultiplier);
+        gridNode3->AddRed = (short)(barColor.X * ColorMultiplier);
+        gridNode3->AddGreen = (short)(barColor.Y * ColorMultiplier);
+        gridNode3->AddBlue = (short)(barColor.Z * ColorMultiplier);
     }
 
     private void UpdateParameterBar(bool reset = false) {

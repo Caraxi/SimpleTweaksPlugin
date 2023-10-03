@@ -255,7 +255,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
                 if (bgImageNode == null) {
                     SimpleLog.Log($"Create Custom BG Image Node#{i}");
 
-                    bgImageNode = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
+                    bgImageNode = AtkUldManager.CreateAtkImageNode();
                     bgImageNode->AtkResNode.Type = NodeType.Image;
                     bgImageNode->AtkResNode.NodeID = CustomNodes.GearPositionsBg + i;
                     bgImageNode->AtkResNode.NodeFlags = NodeFlags.AnchorTop | NodeFlags.AnchorLeft;

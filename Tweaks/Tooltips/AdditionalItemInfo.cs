@@ -224,7 +224,7 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         if (textNode == null) {
             
 
-            textNode = IMemorySpace.GetUISpace()->Create<AtkTextNode>();
+            textNode = AtkUldManager.CreateAtkTextNode();
             if (textNode == null) return;
             textNode->AtkResNode.Type = NodeType.Text;
             textNode->AtkResNode.NodeID = CustomNodes.AdditionalInfo;

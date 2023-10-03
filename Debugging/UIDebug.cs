@@ -791,7 +791,7 @@ public unsafe class UIDebug : DebugHelper {
                         while (b > byte.MaxValue) b -= byte.MaxValue;
                         while (b < byte.MinValue) b += byte.MaxValue;
                         textNode->AlignmentFontType = (byte) b;
-                        textNode->AtkResNode.Flags_2 |= 0x1;
+                        textNode->AtkResNode.DrawFlags |= 0x1;
                     }
                         
                     ImGui.Text($"Color: #{textNode->TextColor.R:X2}{textNode->TextColor.G:X2}{textNode->TextColor.B:X2}{textNode->TextColor.A:X2}");
@@ -1102,7 +1102,7 @@ public unsafe class UIDebug : DebugHelper {
             $"Width: {node->Width} Height: {node->Height} " +
             $"OriginX: {node->OriginX} OriginY: {node->OriginY} " +
             $"Priority: {node->Priority}, Depth: {node->Depth}/{node->Depth_2} " +
-            $"Flags: {node->NodeFlags} / {node->Flags_2:X} " +
+            $"Flags: {node->NodeFlags} / {node->DrawFlags:X} " +
             $"DrawFlags: {node->DrawFlags:X}");
         ImGui.Text(
             $"RGBA: 0x{node->Color.R:X2}{node->Color.G:X2}{node->Color.B:X2}{node->Color.A:X2} " +

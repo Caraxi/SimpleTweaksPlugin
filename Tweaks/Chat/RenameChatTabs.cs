@@ -140,7 +140,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
                 var t = unitBase->UldManager.NodeList[i];
                 if (!t->NodeFlags.HasFlag(NodeFlags.Visible)) continue;
                 t->X = x;
-                t->Flags_2 |= 0x1;
+                t->DrawFlags |= 0x1;
                 x += (ushort) (t->Width * t->ScaleX);
             }
         }
@@ -162,15 +162,15 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
             textNode->AlignmentFontType = (byte) AlignmentType.Left; // Auto resizing doesn't work on Center aligned text.
             textNode->SetText(name);
             textNode->AtkResNode.Width += 5;
-            textNode->AtkResNode.Flags_2 |= 0x1;
+            textNode->AtkResNode.DrawFlags |= 0x1;
 
             baseComponent->Component->UldManager.NodeList[0]->Width = (ushort)(textNode->AtkResNode.Width + 6);
-            baseComponent->Component->UldManager.NodeList[0]->Flags_2 |= 0x1;
+            baseComponent->Component->UldManager.NodeList[0]->DrawFlags |= 0x1;
             baseComponent->AtkResNode.Width = (ushort) (textNode->AtkResNode.Width + 6);
-            baseComponent->AtkResNode.Flags_2 |= 0x1;
+            baseComponent->AtkResNode.DrawFlags |= 0x1;
 
             panel->UldManager.NodeList[4]->X = 29 + textNode->AtkResNode.Width;
-            panel->UldManager.NodeList[4]->Flags_2 |= 0x1;
+            panel->UldManager.NodeList[4]->DrawFlags |= 0x1;
             
             if (baseComponent->Component->UldManager.NodeListCount < 3) return;
             baseComponent->Component->UldManager.NodeList[0]->Width = baseComponent->AtkResNode.Width;
@@ -190,22 +190,22 @@ namespace SimpleTweaksPlugin.Tweaks.Chat {
             textNode->SetText(name);
             textNode->AtkResNode.Width += 10;
             if (textNode->AtkResNode.Width > 1000) textNode->AtkResNode.Width = 180;
-            textNode->AtkResNode.Flags_2 |= 0x1;
+            textNode->AtkResNode.DrawFlags |= 0x1;
 
             var tabWidth = (ushort) (textNode->AtkResNode.Width + 16);
 
 
             tab->Component->UldManager.NodeList[0]->Width = tabWidth;
-            tab->Component->UldManager.NodeList[0]->Flags_2 |= 0x1;
+            tab->Component->UldManager.NodeList[0]->DrawFlags |= 0x1;
 
             tab->Component->UldManager.NodeList[1]->Width = tabWidth;
-            tab->Component->UldManager.NodeList[1]->Flags_2 |= 0x1;
+            tab->Component->UldManager.NodeList[1]->DrawFlags |= 0x1;
 
             tab->Component->UldManager.NodeList[2]->Width = textNode->AtkResNode.Width;
-            tab->Component->UldManager.NodeList[2]->Flags_2 |= 0x1;
+            tab->Component->UldManager.NodeList[2]->DrawFlags |= 0x1;
 
             tab->AtkResNode.Width = tabWidth;
-            tab->AtkResNode.Flags_2 |= 0x1;
+            tab->AtkResNode.DrawFlags |= 0x1;
         }
 
     }
