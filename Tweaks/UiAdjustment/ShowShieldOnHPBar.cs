@@ -92,7 +92,7 @@ public unsafe class ShowShieldOnHPBar: UiAdjustments.SubTweak
             if (hpNineGrid == null) return;
 
             void CreateBar(uint id) {
-                var bar = AtkUldManager.CreateAtkNineGridNode();
+                var bar = IMemorySpace.GetUISpace()->Create<AtkNineGridNode>();
                 bar->AtkResNode.Type = NodeType.NineGrid;
                 bar->AtkResNode.NodeID = id;
                 bar->PartsList = hpNineGrid->PartsList;

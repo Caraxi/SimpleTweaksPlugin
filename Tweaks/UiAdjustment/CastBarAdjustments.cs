@@ -271,7 +271,7 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
                 if (progressBar == null) return;
                 
                 // Create Node
-                    classicSlideMarker = AtkUldManager.CreateAtkImageNode();
+                    classicSlideMarker = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
                     classicSlideMarker->AtkResNode.Type = NodeType.Image;
                     classicSlideMarker->AtkResNode.NodeID = CustomNodes.ClassicSlideCast;
                     classicSlideMarker->AtkResNode.NodeFlags = NodeFlags.AnchorTop | NodeFlags.AnchorLeft;

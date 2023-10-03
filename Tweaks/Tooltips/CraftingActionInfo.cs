@@ -76,10 +76,12 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
         var ghostText = Common.GetNodeByID<AtkTextNode>(&gauge->Component->UldManager, CustomNodes.CraftingGhostText);
 
         if (ghostBar == null && addValue > 0) {
-
-            var newGhostBar = AtkUldManager.CreateAtkNineGridNode();
+            
+            var newGhostBar = (AtkNineGridNode*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkNineGridNode), 8);
             
             if (newGhostBar != null) {
+                IMemorySpace.Memset(newGhostBar, 0, (ulong)sizeof(AtkNineGridNode));
+                newGhostBar->Ctor();
 
                 newGhostBar->AtkResNode.Type = NodeType.NineGrid;
                 newGhostBar->PartsList = mainBar->PartsList;
@@ -119,9 +121,12 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
         }
 
         if (ghostText == null && addValue > 0) {
-            var newGhostText = AtkUldManager.CreateAtkTextNode();
+            var newGhostText = (AtkTextNode*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkTextNode), 8);
             if (newGhostText != null) {
 
+                IMemorySpace.Memset(newGhostText, 0, (ulong)sizeof(AtkTextNode));
+                newGhostText->Ctor();
+                
                 newGhostText->AtkResNode.Type = NodeType.Text;
                 newGhostText->AtkResNode.NodeFlags = textNode->AtkResNode.NodeFlags;
                 newGhostText->AtkResNode.DrawFlags = 0;

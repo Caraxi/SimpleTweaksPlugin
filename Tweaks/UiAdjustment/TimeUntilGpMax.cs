@@ -135,7 +135,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
 
         if (textNode == null) {
 
-            var newTextNode = AtkUldManager.CreateAtkTextNode();
+            var newTextNode = IMemorySpace.GetUISpace()->Create<AtkTextNode>();
             if (newTextNode != null) {
 
                 var lastNode = paramWidget->RootNode;

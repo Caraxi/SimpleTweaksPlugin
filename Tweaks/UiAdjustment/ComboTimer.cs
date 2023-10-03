@@ -109,12 +109,14 @@ public unsafe class ComboTimer : UiAdjustments.SubTweak {
 
         if (textNode == null) {
 
-            var newTextNode = AtkUldManager.CreateAtkTextNode();
+            var newTextNode = (AtkTextNode*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkTextNode), 8);
             if (newTextNode != null) {
 
                 var lastNode = paramWidget->RootNode;
                 if (lastNode == null) return;
-                
+
+                IMemorySpace.Memset(newTextNode, 0, (ulong)sizeof(AtkTextNode));
+                newTextNode->Ctor();
                 textNode = newTextNode;
 
                 newTextNode->AtkResNode.Type = NodeType.Text;
