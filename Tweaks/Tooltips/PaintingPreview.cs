@@ -56,7 +56,7 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
         if (imageNode == null) {
             SimpleLog.Log($"Create Image Node");
 
-            imageNode = AtkUldManager.CreateAtkImageNode();
+            imageNode = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
             imageNode->AtkResNode.Type = NodeType.Image;
             imageNode->AtkResNode.NodeID = CustomNodes.PaintingPreview;
             imageNode->AtkResNode.NodeFlags = NodeFlags.AnchorTop | NodeFlags.AnchorLeft;
