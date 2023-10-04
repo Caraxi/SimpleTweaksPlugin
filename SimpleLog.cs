@@ -98,6 +98,10 @@ public sealed class SimpleLog {
         public static void Error(Exception ex, object message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
             foreach (var m in SplitMessage($"{message}\n{ex}")) PluginLog.Error($"{m}");
         }
+        
+        public static void Error(Exception ex, string message, [CallerFilePath] string callerPath = "", [CallerMemberName] string callerName = "", [CallerLineNumber] int lineNumber = -1) {
+            foreach (var m in SplitMessage($"{message}\n{ex}")) PluginLog.Error($"{m}");
+        }
 #endif
 
     private static IEnumerable<string> SplitMessage(object message) {
