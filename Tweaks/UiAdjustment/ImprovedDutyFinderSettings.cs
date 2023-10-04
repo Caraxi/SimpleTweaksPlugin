@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Utility;
@@ -20,7 +20,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakReleaseVersion("1.8.3.0")]
 [Changelog("1.8.4.0", "Fixed UI displaying on wrong monitor in specific circumstances.")]
 [Changelog("1.8.7.2", "Fixed tweak not working in 6.4")]
-[Changelog(UnreleasedVersion, "Rewritten to use native UI")]
+[Changelog("1.9.0.0", "Rewritten to use native UI")]
 public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
     private static ImprovedDutyFinderSettings _tweak;
 

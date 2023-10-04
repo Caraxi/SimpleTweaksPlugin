@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Events;
@@ -14,7 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakReleaseVersion("1.8.7.0")]
 [Changelog("1.8.7.1", "Improved tweak stability.")]
 [Changelog("1.8.7.3", "Prevent crash when using Aestetician.")]
-[Changelog(UnreleasedVersion, "Reimplemented with a new method to avoid crashes.")]
+[Changelog("1.9.0.0", "Reimplemented with a new method to avoid crashes.")]
 public unsafe class DutyListBackground : UiAdjustments.SubTweak {
     public Config TweakConfig { get; private set; } = null!;
 

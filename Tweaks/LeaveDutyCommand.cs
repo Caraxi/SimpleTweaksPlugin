@@ -8,7 +8,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("Leave Duty Command")]
 [TweakDescription("Adds a command to leave the currenty duty. /leaveduty")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.9.0.0")]
 public unsafe class LeaveDutyCommand : CommandTweak {
     protected override string Command => "/leaveduty";
     protected override string HelpMessage => "Leave the current duty";

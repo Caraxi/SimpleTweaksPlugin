@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Dalamud.Utility.Signatures;
@@ -15,7 +15,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakName("Scenario Progression Display")]
 [TweakDescription("Shows the percentage of completion of the main scenario.")]
 [TweakAutoConfig]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.9.0.0")]
 public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
     // TODO: Remove this when ClientStructs is updated.
     [StructLayout(LayoutKind.Explicit, Size = 0x30)]

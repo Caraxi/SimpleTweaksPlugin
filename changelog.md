@@ -1,5 +1,34 @@
 # Changelog
 
+## 1.9.0.0
+***General Changes***
+- Tweaks that add commands can now have their commands customized.
+- The tweak list is now split into more categories
+	 - Tweaks can be in multiple categories.
+	 - Categories can be disabled in settings.
+		 - The 'All Tweaks' pseudo-category displays all available tweaks.
+		 - The 'Enabled Tweaks' pesudo-category displays only enabled tweaks.
+
+***New Tweaks***
+- **`Leave Duty Command`** - Adds a command to leave the currenty duty. /leaveduty
+
+- **`Open Glamour Dresser to Current Job`** - Sets the job selection dropdown to your current job when opening the Glamour Dresser. *(MidoriKami)*
+
+- **`Scenario Progression Display`** - Shows the percentage of completion of the main scenario.
+
+
+***Tweak Changes***
+- **`Adjust Equipment Positions`** - Improved gamepad navigation on Character window.
+
+- **`Duty List Background`** - Reimplemented with a new method to avoid crashes.
+
+- **`Expanded Currency Display`**
+  - Added an option to disable tooltips.
+  - Fixed currency window positioning breaking when resizing game window.
+
+- **`Improved Duty Finder Settings`** - Rewritten to use native UI
+
+
 ## 1.8.9.2
 ***General Changes***
 - Added preview images to some tweaks.

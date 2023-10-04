@@ -64,8 +64,8 @@ public class Changelog : Window {
         Add("1.8.7.1", "General fixes for 6.4");
         Add("1.8.9.0", "Added an option to opt out of analytics\n\tNote:\n\t\tNo analytics are currently being collected.\n\t\tThis is a preemptive opt out for the future.");
         Add("1.8.9.2", "Added preview images to some tweaks.");
-        Add(UnreleasedVersion, "Tweaks that add commands can now have their commands customized.");
-        Add(UnreleasedVersion, "The tweak list is now split into more categories")
+        Add("1.9.0.0", "Tweaks that add commands can now have their commands customized.");
+        Add("1.9.0.0", "The tweak list is now split into more categories")
             .Sub("Tweaks can be in multiple categories.")
             .Sub("Categories can be disabled in settings.")
             .Sub("The 'All Tweaks' pseudo-category displays all available tweaks.", 2)

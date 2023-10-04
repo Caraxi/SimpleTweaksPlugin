@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -107,8 +107,8 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         AddChangelog("1.8.8.0", "Added tooltips when mouse is over the currency icons.");
         AddChangelog("1.8.8.1", "Attempting to avoid gil addon getting thrown around when layout changes.");
         AddChangelog("1.8.8.2", "Fixed positioning of gil display moving when scale is anything other than 100%");
-        AddChangelog(UnreleasedVersion, "Added an option to disable tooltips.");
-        AddChangelog(UnreleasedVersion, "Fixed currency window positioning breaking when resizing game window.");
+        AddChangelog("1.9.0.0", "Added an option to disable tooltips.");
+        AddChangelog("1.9.0.0", "Fixed currency window positioning breaking when resizing game window.");
         base.Setup();
     }
 
