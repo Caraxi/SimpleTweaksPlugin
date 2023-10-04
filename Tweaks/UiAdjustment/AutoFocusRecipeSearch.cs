@@ -10,6 +10,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 public unsafe class AutoFocusRecipeSearch : UiAdjustments.SubTweak {
     [AddonPostSetup("RecipeNote")]
     private void AddonSetup(AtkUnitBase* atkUnitBase) {
+        if (atkUnitBase == null) return;
+        if (atkUnitBase->CollisionNodeList == null) {
+            // Not sure why this hasn't been initialized yet, but do it ourselves.
+            atkUnitBase->UpdateCollisionNodeList(false);
+        }
+        if (atkUnitBase->CollisionNodeList == null || atkUnitBase->CollisionNodeListCount < 20) return;
         atkUnitBase->SetFocusNode(atkUnitBase->CollisionNodeList[19]);
     }
 }
