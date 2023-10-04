@@ -40,7 +40,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         public Configs Config { get; private set; }
         private bool isDirty;
         private static string statusSearch = string.Empty;
-        private readonly ushort[] removedStatus = new ushort[30 * 2];
+        private readonly ushort[] removedStatus = new ushort[60 * 2];
         private readonly HashSet<ushort> filteredStatus = new();
         private static Dictionary<ushort, Lumina.Excel.GeneratedSheets.Status> statusSheet;
 
@@ -161,7 +161,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             try {
                 GameObject* localPlayer = null;
                 var filteredIndex = 0;
-                for (ushort i = 0; i < 30; i++) {
+                for (ushort i = 0; i < statusManager->NumValidStatuses; i++) {
                     var status = (Status*)(statusManager->Status + (0xc * i));
                     var statusId = status->StatusID;
                     if (statusId == 0 || !filteredStatus.Contains(statusId)) {
