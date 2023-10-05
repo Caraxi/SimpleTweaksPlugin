@@ -264,10 +264,6 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
         }
         
         Config = LoadConfig<Configs>() ?? new Configs();
-        
-#if DEBUG
-        ChatHelper.SendMessage("/ac desynthesis");
-#endif
     }
 
     protected override void Disable() {
