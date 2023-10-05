@@ -1,4 +1,5 @@
 using System;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
@@ -36,11 +37,11 @@ public unsafe class HouseLotteryTimer : UiAdjustments.SubTweak {
         return new LotteryTimeInfo(currentPeriodStarted, nextPeriodBegins, isEntryPeriod);
     }
     
-    [AddonPostRefresh("ContentsInfo")]
-    private void AddonRefresh(AtkUnitBase* contentsInfo) {
+    [AddonPreRefresh("ContentsInfo")]
+    private void AddonRefresh(AddonRefreshArgs refreshArgs) {
         try {
-            var atkValue = contentsInfo->AtkValues;
-            for (var i = 0; i < contentsInfo->AtkValuesCount; i++, atkValue++) {
+            var atkValue = (AtkValue*)refreshArgs.AtkValues;
+            for (var i = 0; i < refreshArgs.AtkValueCount; i++, atkValue++) {
                 if (atkValue->Type != ValueType.Int) continue;
                 if (atkValue->Int != 18) continue;
                 atkValue++;
