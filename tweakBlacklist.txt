@@ -1,6 +1,1 @@
-StopCraftingButton
-FixedShadowDistance
-RefreshMarketPrices
-TooltipTweaks
-UiAdjustments@DutyListBackground
-UiAdjustments@LootWindowDuplicateUniqueItemIndicator
+UiAdjustments@ExtendedDesynthesisWindow

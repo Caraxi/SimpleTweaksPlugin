@@ -288,9 +288,7 @@ public unsafe class ConfigDebug : DebugHelper {
                     }
 
                     if (ImGui.BeginTabItem("System##enum")) {
-                        sb.AppendLine(@"using FFXIVClientStructs.FFXIV.Common.Configuration;
-
-namespace Dalamud.Game.Config;
+                        sb.AppendLine(@"namespace Dalamud.Game.Config;
 
 // ReSharper disable InconsistentNaming
 // ReSharper disable IdentifierTypo
@@ -308,9 +306,7 @@ public enum SystemConfigOption
                     }
 
                     if (ImGui.BeginTabItem("UiConfig##enum")) {
-                        sb.AppendLine(@"using FFXIVClientStructs.FFXIV.Common.Configuration;
-
-namespace Dalamud.Game.Config;
+                        sb.AppendLine(@"namespace Dalamud.Game.Config;
 
 // ReSharper disable InconsistentNaming
 // ReSharper disable IdentifierTypo
@@ -326,9 +322,7 @@ public enum UiConfigOption
                     }
 
                     if (ImGui.BeginTabItem("UiControl##enum")) {
-                        sb.AppendLine(@"using FFXIVClientStructs.FFXIV.Common.Configuration;
-
-namespace Dalamud.Game.Config;
+                        sb.AppendLine(@"namespace Dalamud.Game.Config;
 
 // ReSharper disable InconsistentNaming
 // ReSharper disable IdentifierTypo
