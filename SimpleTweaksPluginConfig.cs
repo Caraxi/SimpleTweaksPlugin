@@ -40,6 +40,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     public bool ShowAllTweaksTab = true;
     public bool ShowEnabledTweaksTab = true;
     public bool ShowOtherTweaksTab = true;
+    public bool NoCallerInLog;
 
     public bool ShowTweakDescriptions = true;
     public bool ShowTweakIDs;
@@ -464,14 +465,19 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                         if (ImGui.Checkbox(Loc.Localize("General Options / Show Tweak IDs", "Show tweak IDs."), ref ShowTweakIDs)) Save();
                         ImGui.Separator();
                         if (ImGui.Checkbox(Loc.Localize("General Options / Hide KoFi", "Hide Ko-fi link."), ref HideKofi)) Save();
-                        ImGui.Separator();
-#if DEBUG
-                        if (ImGui.Checkbox("Disable Auto Open", ref DisableAutoOpen)) Save();
-#endif
                         ImGui.Unindent();
                     }
                     ImGui.Separator();
-                    
+#if DEBUG
+                    if (ImGui.CollapsingHeader("Debug Options")) {
+                        ImGui.Indent();
+                        if (ImGui.Checkbox("Disable Auto Open", ref DisableAutoOpen)) Save();
+                        ImGui.Separator();
+                        if (ImGui.Checkbox("Remove File Info From Logs", ref NoCallerInLog)) Save();
+                        ImGui.Unindent();
+                    }
+                    ImGui.Separator();
+#endif
                     if (ImGui.Button("Open Changelog")) {
                         plugin.ChangelogWindow.IsOpen = true;
                     }

@@ -21,6 +21,7 @@ public sealed class SimpleLog {
     }
 
     private static string CleanCallerPath(string callerPath = "", string callerName = "", int lineNumber = -1) {
+        if (SimpleTweaksPlugin.Plugin.PluginConfig.NoCallerInLog) return string.Empty;
         if (string.IsNullOrEmpty(callerPath) && string.IsNullOrEmpty(callerName) && lineNumber == -1) return string.Empty;
         var sb = new StringBuilder();
         sb.Append('[');
