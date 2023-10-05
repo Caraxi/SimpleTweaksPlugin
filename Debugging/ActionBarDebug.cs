@@ -1,9 +1,10 @@
-﻿
+﻿using System;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.Interop;
 using ImGuiNET;
@@ -165,13 +166,14 @@ public unsafe class ActionBarDebug : DebugHelper {
 
     public class HotBarType {
 
-        public static HotBarType Normal => new HotBarType() { Count = 10, FirstIndex = 0 };
+        public static HotBarType Normal => new HotBarType() { Count = 10, FirstIndex = 0, GetName = (i) => i == 0 ? "_ActionBar" : $"_ActionBar{i:00}" };
         public static HotBarType Cross => new HotBarType() { Count = 8, FirstIndex = 10 };
         public static HotBarType Pet => new HotBarType() { Count = 2, FirstIndex = 18 };
 
 
         public int Count;
         public int FirstIndex;
+        public Func<int, string> GetName { get; init; } = _ => string.Empty;
     }
 
 
@@ -183,6 +185,21 @@ public unsafe class ActionBarDebug : DebugHelper {
                     var hotbar = hotbarModule->HotBarsSpan.GetPointer(type.FirstIndex + i);
                     if (hotbar != null) {
                         DrawHotbar(hotbarModule, hotbar);
+                    }
+
+                    var name = type.GetName(i);
+                    if (!string.IsNullOrEmpty(name)) {
+                        var addon = Common.GetUnitBase<AddonActionBarBase>(name);
+                        if (addon != null) {
+                            ImGui.Dummy(new Vector2(50));
+                            ImGui.Separator();
+                            
+                            ImGui.Text($"Shared: {addon->IsSharedHotbar}");
+                            ImGui.Text($"Slot Count: {addon->SlotCount}");
+                            
+                            ImGui.Dummy(new Vector2(50));
+                            UIDebug.DrawUnitBase(&addon->AtkUnitBase);
+                        }
                     }
                     ImGui.EndTabItem();
                 }
