@@ -147,7 +147,7 @@ public unsafe class StopCraftingButton : UiAdjustments.SubTweak {
                     if (Service.ClientState.LocalPlayer != null && !standingUp) {
                         var addon = Common.GetUnitBase("RecipeNote");
                         if (addon != null) {
-                            addon->Hide(true, false, 0);
+                            addon->Hide(true, true, 0);
                             AgentRecipeNote.Instance()->OpenRecipeByRecipeIdInternal((uint) (0x10000 + selectedRecipeId));
                             removeFrameworkUpdateEventStopwatch.Restart();
                             standingUp = true;
