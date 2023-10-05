@@ -18,6 +18,7 @@ using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using FFXIVClientStructs.Interop;
 using SimpleTweaksPlugin.Debugging;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
@@ -419,4 +420,7 @@ public unsafe class Common {
     }
 
 
+    public static Extensions.PointerReadOnlySpanUnboxer<AtkResNode> GetNodeList(AtkUldManager* uldManager) => new ReadOnlySpan<Pointer<AtkResNode>>(uldManager->NodeList, uldManager->NodeListCount).Unbox();
+    public static Extensions.PointerReadOnlySpanUnboxer<AtkResNode> GetNodeList(AtkUnitBase* unitBase) => GetNodeList(&unitBase->UldManager);
+    public static Extensions.PointerReadOnlySpanUnboxer<AtkResNode> GetNodeList(AtkComponentBase* component) => GetNodeList(&component->UldManager);
 }

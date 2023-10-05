@@ -118,7 +118,7 @@ public static class Extensions {
         private readonly Span<Pointer<T>> items;
         public PointerSpanUnboxer(Span<Pointer<T>> span) {
             items = span;
-            currentIndex = 0;
+            currentIndex = -1;
         }
 
         public bool MoveNext() {
@@ -130,6 +130,29 @@ public static class Extensions {
 
         public readonly T* Current => items[currentIndex].Value;
         public PointerSpanUnboxer<T> GetEnumerator() => new(items);
+    }
+    
+    public static PointerReadOnlySpanUnboxer<T> Unbox<T>(this ReadOnlySpan<Pointer<T>> span) where T : unmanaged {
+        return new PointerReadOnlySpanUnboxer<T>(span);
+    }
+    
+    public unsafe ref struct PointerReadOnlySpanUnboxer<T> where T : unmanaged {
+        private int currentIndex;
+        private readonly ReadOnlySpan<Pointer<T>> items;
+        public PointerReadOnlySpanUnboxer(ReadOnlySpan<Pointer<T>> span) {
+            items = span;
+            currentIndex = -1;
+        }
+
+        public bool MoveNext() {
+            currentIndex++;
+            if (currentIndex >= items.Length) return false;
+            if (items[currentIndex].Value == null) return MoveNext();
+            return true;
+        }
+
+        public readonly T* Current => items[currentIndex].Value;
+        public PointerReadOnlySpanUnboxer<T> GetEnumerator() => new(items);
     }
     
     public static PointerSpanUnboxer<T> Unbox<T>(this Span<Pointer<T>> span) where T : unmanaged {
