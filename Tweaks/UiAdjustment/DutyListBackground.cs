@@ -64,8 +64,8 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak {
                 }
 
                 imageNode->AtkResNode.ToggleVisibility(unitBase->IsVisible && unitBase->RootNode->IsVisible && (unitBase->VisibilityFlags & 1) == 0);
-                imageNode->AtkResNode.SetWidth(unitBase->RootNode->GetWidth());
-                imageNode->AtkResNode.SetHeight(unitBase->RootNode->GetHeight());
+                imageNode->AtkResNode.SetWidth((ushort)unitBase->GetScaledWidth(true));
+                imageNode->AtkResNode.SetHeight((ushort)unitBase->GetScaledHeight(true));
                 imageNode->AtkResNode.SetPositionFloat(unitBase->X, unitBase->Y);
                 imageNode->AtkResNode.Color.A = (byte)(TweakConfig.BackgroundColor.W * 255);
                 imageNode->AtkResNode.AddRed = (byte)(TweakConfig.BackgroundColor.X * 255);
