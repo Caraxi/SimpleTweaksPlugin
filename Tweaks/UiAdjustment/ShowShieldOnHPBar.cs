@@ -106,9 +106,9 @@ public unsafe class ShowShieldOnHPBar: UiAdjustments.SubTweak
                 bar->AtkResNode.MultiplyRed = 255;
                 bar->AtkResNode.MultiplyGreen = 255;
                 bar->AtkResNode.MultiplyBlue = 0;
-                bar->AtkResNode.AddRed = 0;
-                bar->AtkResNode.AddGreen = 0;
-                bar->AtkResNode.AddBlue = 0;
+                bar->AtkResNode.AddRed = -1;
+                bar->AtkResNode.AddGreen = -1;
+                bar->AtkResNode.AddBlue = -1;
                 bar->AtkResNode.Width = 0;
                 bar->AtkResNode.DrawFlags |= 1;
                 bar->AtkResNode.SetHeight(20);
