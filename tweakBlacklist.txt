@@ -1,2 +1,3 @@
 UiAdjustments@ExtendedDesynthesisWindow
 UiAdjustments@ActionPressMirroring
+UiAdjustments@ControlHintMirroring
