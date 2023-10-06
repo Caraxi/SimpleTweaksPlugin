@@ -1,14 +1,16 @@
 ﻿using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
+[TweakName("Direct Chat Command")]
+[TweakAuthor("SayuShira")]
+[TweakDescription("Adds a command to toggle direct chat mode on and off.")]
+// [TweakReleaseVersion(UnreleasedVersion)]
 public class DirectChatCommand : CommandTweak
 {
-    protected override string Author => "SayuShira";
-    public override string Name => "Direct Chat Command";
     protected override string Command => "directchat";
-    public override string Description => "Adds a command to toggle direct chat mode on and off.";
-    protected override string HelpMessage => "Toggles the game setting for direct chat";
+    protected override string HelpMessage => "Toggles the game setting for direct chat.";
 
     protected override void OnCommand(string arguments)
     {
