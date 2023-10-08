@@ -693,7 +693,12 @@ namespace SimpleTweaksPlugin.Debugging {
                                 if (fixedBuffer != null) {
                                     PrintOutValue(addr + offsetAddress, new List<string>(path) { f.Name }, f.FieldType, f.GetValue(obj), f);
                                 } else {
-                                    PrintOutValue(addr + offsetAddress, new List<string>(path) { f.Name }, f.FieldType, f.GetValue(obj), f);
+                                    if (f.FieldType == typeof(bool) && fullFieldName.StartsWith("FFXIVClientStructs.FFXIV")) {
+                                        var b = *(byte*)(addr + offsetAddress);
+                                        PrintOutValue(addr + offsetAddress, new List<string>(path) { f.Name }, f.FieldType, b != 0, f);
+                                    } else {
+                                        PrintOutValue(addr + offsetAddress, new List<string>(path) { f.Name }, f.FieldType, f.GetValue(obj), f);
+                                    }
                                 }
                                 break;
                         }
