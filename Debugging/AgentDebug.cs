@@ -37,7 +37,7 @@ public unsafe class AgentDebug : DebugHelper {
     private Type selectedAgentType;
     private string agentSearch = string.Empty;
 
-    
+    private bool starting = true;
     
     public class AgentEventHandlerHook : IDisposable {
         public AgentId AgentId { get; }
@@ -130,6 +130,17 @@ public unsafe class AgentDebug : DebugHelper {
             
         }
 
+
+        if (starting) {
+            try {
+                var selectedAgent = DebugManager.GetSavedValue($"{nameof(AgentDebug)}:{nameof(selectAgent)}", string.Empty);
+                Enum.TryParse(selectedAgent, false, out selectAgent);
+            } catch {
+                //
+            }
+            starting = false;
+        }
+        
         
         
         if (ImGui.BeginTabBar("agenDebugTabs")) {
@@ -181,6 +192,7 @@ public unsafe class AgentDebug : DebugHelper {
                             if (ImGui.Selectable($"{agent.id}", selectAgent == agent.id)) {
                                 selectAgent = agent.id;
                                 selectedAgentType = null;
+                                DebugManager.SetSavedValue($"{nameof(AgentDebug)}:{nameof(selectAgent)}", $"{agent.id}");
                             }
 
                             var size = ImGui.CalcTextSize($"{agent}").X + ImGui.GetStyle().FramePadding.X * 2 + ImGui.GetStyle().ScrollbarSize * 2;
