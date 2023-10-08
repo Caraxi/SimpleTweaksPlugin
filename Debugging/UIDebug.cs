@@ -1305,7 +1305,7 @@ public unsafe class UIDebug : DebugHelper {
             
         var nodeVisible = GetNodeVisible(node);
         position += ImGui.GetMainViewport().Pos;
-        ImGui.GetForegroundDrawList().AddRect(position, position + size, nodeVisible ? 0xFF00FF00 : 0xFF0000FF);
+        ImGui.GetForegroundDrawList(ImGuiHelpers.MainViewport).AddRect(position, position + size, nodeVisible ? 0xFF00FF00 : 0xFF0000FF);
     }
 
     private class NodeState {
