@@ -2,6 +2,9 @@ name: Build SimpleTweaksPlugin
 on:
   push:
     branches: 'main'
+concurrency:
+  group: build_st
+  cancel-in-progress: true
 jobs:
   build:
     if: "! contains(toJSON(github.event.commits.*.message), '[skip-ci]')"
