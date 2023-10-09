@@ -1,10 +1,9 @@
 using System.Numerics;
-using Dalamud.Interface.Windowing;
 using ImGuiNET;
 
 namespace SimpleTweaksPlugin; 
 
-public class ConfigWindow : Window {
+public class ConfigWindow : SimpleWindow {
     public ConfigWindow() : base("Simple Tweaks Config") {
         Size = new Vector2(600, 400);
         SizeConstraints = new WindowSizeConstraints() {
@@ -15,6 +14,7 @@ public class ConfigWindow : Window {
     }
 
     public override void Draw() {
+        base.Draw();
         SimpleTweaksPlugin.Plugin.PluginConfig.DrawConfigUI();
     }
 

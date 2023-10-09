@@ -203,7 +203,7 @@ namespace SimpleTweaksPlugin {
 
         private void OnOpenConfig() {
             if (ImGui.GetIO().KeyShift && ImGui.GetIO().KeyCtrl) {
-                DebugWindow.IsOpen = true;
+                DebugWindow.UnCollapseOrToggle();
                 return;
             }
             OnConfigCommandHandler(null, null);
@@ -212,7 +212,7 @@ namespace SimpleTweaksPlugin {
         public void OnConfigCommandHandler(object command, object args) {
             if (args is string argString) {
                 if (argString == "Debug") {
-                    DebugWindow.IsOpen = !DebugWindow.IsOpen;
+                    DebugWindow.UnCollapseOrToggle();
                     return;
                 }
 
@@ -328,7 +328,7 @@ namespace SimpleTweaksPlugin {
                 }
             }
 
-            ConfigWindow.IsOpen = !ConfigWindow.IsOpen;
+            ConfigWindow.UnCollapseOrToggle();
         }
 
         public BaseTweak? GetTweakById(string s, IEnumerable<BaseTweak>? tweakList = null) {
@@ -429,9 +429,9 @@ namespace SimpleTweaksPlugin {
                 if (ImGui.BeginMainMenuBar()) {
                     if (ImGui.MenuItem("Simple Tweaks")) {
                         if (ImGui.GetIO().KeyShift) {
-                            DebugWindow.IsOpen = !DebugWindow.IsOpen;
+                            DebugWindow.UnCollapseOrToggle();
                         } else {
-                            ConfigWindow.IsOpen = !ConfigWindow.IsOpen;
+                            ConfigWindow.UnCollapseOrToggle();
                         }
                     }
                     ImGui.EndMainMenuBar();

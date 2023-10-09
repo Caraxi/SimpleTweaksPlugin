@@ -1,12 +1,11 @@
 using System.Reflection;
 using Dalamud.Interface.Utility;
-using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using SimpleTweaksPlugin.Debugging;
 
-namespace SimpleTweaksPlugin; 
+namespace SimpleTweaksPlugin;
 
-public class DebugWindow : Window {
+public class DebugWindow : SimpleWindow {
     public DebugWindow() : base("SimpleTweaksPlugin - Debug") {
         WindowName = $"SimpleTweaksPlugin - Debug [{Assembly.GetExecutingAssembly().GetName().Version}] - Client Structs Version#{FFXIVClientStructs.Interop.Resolver.Version}###stDebugMenu";
         
@@ -22,6 +21,7 @@ public class DebugWindow : Window {
     }
 
     public override void Draw() {
+        base.Draw();
         DebugManager.DrawDebugWindow();
     }
 }
