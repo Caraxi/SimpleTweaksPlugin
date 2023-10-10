@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -12,7 +12,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Shows the pulse effect when activating actions, even if they are duplicated between hotbars.")]
 [TweakAuthor("BoredDan")]
 [TweakVersion(2)]
-[Changelog(UnreleasedVersion, "Fixed crashes and re-enabled tweak.")]
+[Changelog("1.9.1.0", "Fixed crashes and re-enabled tweak.")]
 public unsafe class ActionPressMirroring : UiAdjustments.SubTweak {
     private delegate void PulseActionBarSlot(AddonActionBarBase* addonActionBarBase, uint slotIndex, ulong a3, int a4);
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using Dalamud.Game.Command;
 using Dalamud.Utility;
@@ -20,7 +20,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakName("Improved Crafting Log")]
 [TweakDescription("Modifies the Synthesize button in the Crafting Log to switch job or stand up from the crafting position, allowing you to stop crafting without closing the crafting log.")]
 [Changelog("1.8.2.1", "Fixed a potential crash in specific circumstances.")]
-[Changelog(UnreleasedVersion, "Made attempt to fix some issues", "Tweak has been disabled for everyone and marked as experimental.")]
+[Changelog("1.9.1.0", "Made attempt to fix some issues", "Tweak has been disabled for everyone and marked as experimental.")]
 public unsafe class ImprovedCraftingLog : Tweak {
     public override bool Experimental => true;
 

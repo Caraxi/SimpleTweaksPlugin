@@ -121,6 +121,11 @@
   Adds a command to control lighting in your own housing areas.
 
 
+- **Improved Crafting Log**
+
+  Modifies the Synthesize button in the Crafting Log to switch job or stand up from the crafting position, allowing you to stop crafting without closing the crafting log.
+
+
 - **Increased zoom on character previews.**
 
   Allows zooming in near infinitely on character preview views, such as Try On and Examine.
@@ -189,6 +194,11 @@
 - **Remember Quick Gathering**
 
   Remembers quick gathering status even after gathering at unspoiled nodes.
+
+
+- **Remember Selected World**
+
+  Remembers which world was selected for each datacentre.
 
 
 - **Screenshot File Name**
@@ -550,11 +560,6 @@
 - **Housing Lottery Timer**
 
   Show the time remaining until the current lottery period ends in the timers window.
-
-
-- **Improved Crafting Log**
-
-  Modifies the Synthesize button in the Crafting Log to switch job or stand up from the crafting position, allowing you to stop crafting without closing the crafting log.
 
 
 - **Improved Duty Finder Settings**

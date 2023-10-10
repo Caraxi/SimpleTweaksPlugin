@@ -9,7 +9,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("Remember Selected World")]
 [TweakDescription("Remembers which world was selected for each datacentre.")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.9.1.0")]
 public unsafe class RememberSelectedWorld : Tweak {
     private class Configs : TweakConfig {
         public Dictionary<uint, short> DataCenterWorldSelect = new();

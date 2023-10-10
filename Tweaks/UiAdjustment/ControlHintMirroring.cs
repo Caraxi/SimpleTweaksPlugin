@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
@@ -13,7 +13,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Will display the keybind hint for any hotbar slot onto unbound slots with the same action.")]
 [TweakAuthor("BoredDan")]
 [TweakVersion(2)]
-[Changelog(UnreleasedVersion, "Rewritten & re-enabled")]
+[Changelog("1.9.1.0", "Rewritten & re-enabled")]
 public unsafe class ControlHintMirroring : UiAdjustments.SubTweak {
     private readonly Dictionary<(HotbarSlotType Type, uint Id), string> hints = new();
     private readonly Dictionary<(byte BarID, byte SlotIndex), bool> barSlotHasNoHint = new();

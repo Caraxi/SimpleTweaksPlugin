@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.9.1.0
+***New Tweaks***
+- **`Remember Selected World`** - Remembers which world was selected for each datacentre.
+
+
+***Tweak Changes***
+- **`Duplicate Action Presses Between Hotbars`** - Fixed crashes and re-enabled tweak.
+
+- **`Duplicate Keybind Hints Between Hotbars`** - Rewritten & re-enabled
+
+- **`Improved Crafting Log`**
+  - Made attempt to fix some issues
+  - Tweak has been disabled for everyone and marked as experimental.
+
+
 ## 1.9.0.0
 ***General Changes***
 - Tweaks that add commands can now have their commands customized.
