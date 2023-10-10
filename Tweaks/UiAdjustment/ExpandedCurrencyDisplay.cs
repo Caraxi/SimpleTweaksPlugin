@@ -266,8 +266,6 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     private void OnFrameworkUpdate()
     {
         if (!UiHelper.IsAddonReady(AddonMoney)) return;
-        using var _ = PerformanceMonitor.Run();
-
         
         // Button Component Node
         var currencyPositionNode = Common.GetNodeByID(&AddonMoney->UldManager, 3);
