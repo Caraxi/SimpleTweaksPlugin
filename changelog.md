@@ -6,6 +6,8 @@
 
 
 ***Tweak Changes***
+- **`Adjust Equipment Positions`** - Further improved gamepad navigation on Character window.
+
 - **`Duplicate Action Presses Between Hotbars`** - Fixed crashes and re-enabled tweak.
 
 - **`Duplicate Keybind Hints Between Hotbars`** - Rewritten & re-enabled
