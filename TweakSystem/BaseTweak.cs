@@ -24,6 +24,7 @@ public abstract class BaseTweak {
 
     public virtual bool Ready { get; protected set; }
     public virtual bool Enabled { get; protected set; }
+    protected virtual bool Unloading { get; private set; } = true;
 
     private bool hasPreviewImage;
     private IDalamudTextureWrap previewImage;
@@ -524,6 +525,7 @@ public abstract class BaseTweak {
     
     
     internal void InternalEnable() {
+        Unloading = false;
         if (!signatureHelperInitialized) {
             SignatureHelper.Initialise(this);
             signatureHelperInitialized = true;
@@ -553,6 +555,7 @@ public abstract class BaseTweak {
     }
 
     internal void InternalDisable() {
+        Unloading = true;
         Disable();
         EventController.UnregisterEvents(this);
 
