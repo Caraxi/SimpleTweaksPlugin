@@ -75,6 +75,7 @@ public unsafe class ExpPercentage : UiAdjustments.SubTweak {
             if (textNode == null) goto ReturnOriginal;
 
             var str = MemoryHelper.ReadSeStringNullTerminated(new IntPtr(strPtr));
+            if (Plugin.GetTweak<HideExperienceBar>() is { Ready: true, Enabled: true } && str.TextValue.Contains("-/-")) return ret;
             var percent = 1f;
             if (!str.TextValue.Contains("-/-")) percent = numberArray->IntArray[16] / (float) numberArray->IntArray[18];
             percent *= 100f;
