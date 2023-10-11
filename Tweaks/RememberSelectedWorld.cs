@@ -4,25 +4,27 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
+using Lumina.Excel.GeneratedSheets;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
 [TweakName("Remember Selected World")]
 [TweakDescription("Remembers which world was selected for each datacentre.")]
 [TweakReleaseVersion("1.9.1.0")]
+[Changelog("1.9.1.1", "Now uses a more reliable method for selecting worlds.")]
 public unsafe class RememberSelectedWorld : Tweak {
     private class Configs : TweakConfig {
-        public Dictionary<uint, short> DataCenterWorldSelect = new();
+        public Dictionary<uint, uint> DataCenterWorldSelect = new();
     }
 
     private Configs? Config { get; set; }
-    private short setting = -1;
+    private uint setting = uint.MaxValue;
     private bool isSetting;
     
     [AddonPreSetup("CharaSelect")]
     private void AddonSetup() {
         isSetting = true;
-        setting = -1;
+        setting = uint.MaxValue;
     }
 
     [AddonPostUpdate("CharaSelect")]
@@ -32,25 +34,59 @@ public unsafe class RememberSelectedWorld : Tweak {
         Config ??= LoadConfig<Configs>() ?? new Configs();
 
         if (isSetting) {
-            if (setting == -1) {
+            if (setting == uint.MaxValue) {
                 if (Config.DataCenterWorldSelect.TryGetValue(lobby->DataCenter, out setting)) return;
+                setting = uint.MaxValue;
                 isSetting = false;
                 return;
             }
 
-            if (setting == lobby->WorldIndex) {
+            if (setting == lobby->WorldId) {
                 isSetting = false;
                 return;
             }
-            SimpleLog.Verbose($"Setting selected world to Index#{setting}");
-            Common.GenerateCallback(unitBase, 10, 0, (int) setting);
-            Common.GenerateCallback(unitBase, 6, 0, 0);
-            setting = -1;
+
+            SelectWorld(setting);
             return;
         }
 
-        if (Config.DataCenterWorldSelect.TryGetValue(lobby->DataCenter, out var worldIndex) && worldIndex == lobby->WorldIndex) return;
-        Config.DataCenterWorldSelect[lobby->DataCenter] = lobby->WorldIndex;
+        if (Config.DataCenterWorldSelect.TryGetValue(lobby->DataCenter, out var worldId) && worldId == lobby->WorldId) return;
+        Config.DataCenterWorldSelect[lobby->DataCenter] = lobby->WorldId;
         SaveConfig(Config);
+    }
+    
+    
+    private void SelectWorld(uint worldId) {
+        if (!Common.GetUnitBase("_CharaSelectWorldServer", out var addon)) return;
+        
+        var stringArray = AtkStage.GetSingleton()->GetStringArrayData()[1];
+        if (stringArray == null) return;
+
+        var world = Service.Data.Excel.GetSheet<World>()?.GetRow(worldId);
+        if (world is not { IsPublic: true }) return;
+
+        SimpleLog.Debug($"Attempting to Select World: {world.Name.RawString}");
+        
+        var checkedWorldCount = 0;
+
+        for (var i = 0; i < 16; i++) {
+            var n = stringArray->StringArray[i];
+            if (n == null) continue;
+            var s = Common.ReadString(n);
+            if (s.Trim().Length == 0) continue;
+            checkedWorldCount++;
+            if (s != world.Name.RawString) {
+                SimpleLog.Verbose($"'{s}' != '{world.Name.RawString}'");
+                continue;
+            }
+            Common.GenerateCallback(addon, 10, 0, i);
+            Common.GenerateCallback(addon, 6, 0, 0);
+            return;
+        }
+
+        if (checkedWorldCount > 0) {
+            SimpleLog.Warning($"World '{world.Name.RawString}' not found.");
+            isSetting = false;
+        }
     }
 }

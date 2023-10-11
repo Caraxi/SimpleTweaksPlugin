@@ -4,6 +4,8 @@
 ***Tweak Changes***
 - **`Duplicate Keybind Hints Between Hotbars`** - Fixed flickering while cooldown is active.
 
+- **`Remember Selected World`** - Now uses a more reliable method for selecting worlds.
+
 - **`Remove Quest Marker Limit`** - Fix tweak not working since API 9
 
 
