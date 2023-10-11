@@ -14,7 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakAuthor("BoredDan")]
 [TweakVersion(2)]
 [Changelog("1.9.1.0", "Rewritten & re-enabled")]
-[Changelog(UnreleasedVersion, "Fixed flickering while cooldown is active.")]
+[Changelog("1.9.1.1", "Fixed flickering while cooldown is active.")]
 public unsafe class ControlHintMirroring : UiAdjustments.SubTweak {
     private readonly Dictionary<(HotbarSlotType Type, uint Id), string> hints = new();
     private readonly Dictionary<(byte BarID, byte SlotIndex), bool> barSlotHasNoHint = new();

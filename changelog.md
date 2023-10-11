@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.1.1
+***Tweak Changes***
+- **`Duplicate Keybind Hints Between Hotbars`** - Fixed flickering while cooldown is active.
+
+- **`Remove Quest Marker Limit`** - Fix tweak not working since API 9
+
+
 ## 1.9.1.0
 ***New Tweaks***
 - **`Remember Selected World`** - Remembers which world was selected for each datacentre.
