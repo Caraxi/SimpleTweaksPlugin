@@ -34,13 +34,6 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
         public Alignment AlignName = Alignment.Left;
         public Alignment AlignCounter = Alignment.Right;
 
-
-        public bool ShouldSerializeOffsetNamePosition() => OffsetNamePosition != null;
-        public int? OffsetNamePosition = null; // TODO: Remove
-        
-        public bool ShouldSerializeOffsetCounterPosition() => OffsetCounterPosition != null;
-        public int? OffsetCounterPosition = null; // TODO: Remove
-
         public Vector2 OffsetName = new(0);
         public Vector2 OffsetCounter = new(0);
     }
@@ -113,13 +106,6 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        
-        // TODO: Remove
-        if (Config.OffsetCounterPosition != null) Config.OffsetCounter.X = Config.OffsetCounterPosition.Value;
-        if (Config.OffsetNamePosition != null) Config.OffsetName.X = Config.OffsetNamePosition.Value;
-        Config.OffsetNamePosition = null;
-        Config.OffsetCounterPosition = null;
-
         castBarOnUpdateHook ??= Common.Hook<CastBarOnUpdateDelegate>("48 83 EC 38 48 8B 92", CastBarOnUpdateDetour);
         castBarOnUpdateHook.Enable();
         base.Enable();
