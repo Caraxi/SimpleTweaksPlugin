@@ -29,15 +29,6 @@ public class TryOnCorrectItem : Tweak {
     }
     
     public class Configs : TweakConfig {
-
-        #region Old Settings
-        // Old Settings TODO: Remove
-        public bool ShouldSerializeShiftForUnglamoured => ShiftForUnglamoured != null;
-        public bool ShouldSerializeInvertShift => InvertShift != null;
-        public bool? ShiftForUnglamoured = null;
-        public bool? InvertShift = null;
-        #endregion Old Settings
-        
         public TryOnWindowSettings Default = new();
         public Dictionary<string, TryOnWindowSettings> WindowSettings = new();
     }
@@ -111,29 +102,6 @@ public class TryOnCorrectItem : Tweak {
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        
-        
-        // Load from old settings
-        if (Config.ShiftForUnglamoured != null) {
-            if (Config.ShiftForUnglamoured == false) {
-                Config.Default.HoldingShift = TryOnItem.Glamoured;
-                Config.Default.NoModifier = TryOnItem.Glamoured;
-            } else {
-                if (Config.InvertShift != null) {
-                    if (Config.InvertShift.Value) {
-                        Config.Default.HoldingShift = TryOnItem.Glamoured;
-                        Config.Default.NoModifier = TryOnItem.Original;
-                    }
-                }
-            }
-
-            Config.ShiftForUnglamoured = null;
-            Config.InvertShift = null;
-            SaveConfig(Config);
-        }
-        
-        
-        
         tryOnHook ??= Common.Hook<TryOn>("E8 ?? ?? ?? ?? EB 35 BA", TryOnDetour);
         tryOnHook?.Enable();
         base.Enable();
