@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using Dalamud.Game.Config;
 using Dalamud.Memory;
@@ -9,7 +8,7 @@ using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Common.Configuration;
 using ImGuiNET;
-using ConfigType = FFXIVClientStructs.FFXIV.Common.Configuration.ConfigType;
+using ConfigType = Dalamud.Game.Config.ConfigType;
 
 namespace SimpleTweaksPlugin.Debugging;
 
@@ -370,27 +369,9 @@ public enum UiControlOption
 
     private List<string> changes = new();
 
-    private PropertyInfo propertyInfo;
-    private Dictionary<Enum, ConfigType?> typeCache = new();
     private (ConfigType?, string? name) GetConfigDetail(Enum e) {
-        // TODO: Make this sane again when dalamud uses its own config type enum.
         var attr = e.GetAttribute<GameConfigOptionAttribute>();
-        // return (attr?.Type, attr?.Name);
-        
-        if (typeCache.TryGetValue(e, out var v)) return (v, attr?.Name);
-        
-        if (attr != null) {
-            propertyInfo ??= attr.GetType().GetProperty("Type", BindingFlags.Instance | BindingFlags.Public);
-            if (propertyInfo != null) {
-                var typeObj = propertyInfo!.GetValue(attr);
-                if (typeObj != null) {
-                    v = (ConfigType) typeObj;
-                }
-            }
-        }
-
-        typeCache.TryAdd(e, v);
-        return (v, attr?.Name);
+        return (attr?.Type, attr?.Name);
     }
     
     private void OnConfigChange(object sender, ConfigChangeEvent e) {
