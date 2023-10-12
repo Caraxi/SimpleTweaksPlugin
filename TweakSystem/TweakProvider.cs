@@ -23,6 +23,11 @@ public class TweakProvider : IDisposable {
             SimpleLog.Debug($"Initalizing Tweak: {t.Name}");
             try {
                 var tweak = (BaseTweak) Activator.CreateInstance(t)!;
+                if (SimpleTweaksPlugin.Plugin.GetTweakById(tweak.Key) != null) {
+                    SimpleLog.Warning($"Skipped loading tweak from class '{t.Namespace}.{t.Name}'. Tweak with key '{tweak.Key}' already loaded.");
+                    continue;
+                }
+
                 tweak.InterfaceSetup(SimpleTweaksPlugin.Plugin, Service.PluginInterface, SimpleTweaksPlugin.Plugin.PluginConfig, this);
                 if (tweak.CanLoad) {
                     var blacklistKey = tweak.Key;

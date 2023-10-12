@@ -33,6 +33,11 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
             try {
                 var tweak = (T) Activator.CreateInstance(t);
                 if (tweak == null) continue;
+                if (SimpleTweaksPlugin.Plugin.GetTweakById(tweak.Key) != null) {
+                    SimpleLog.Warning($"Skipped loading tweak with from '{t.Namespace}.{t.Name}'. Tweak with key '{tweak.Key}' already loaded.");
+                    continue;
+                }
+                
                 var blacklistKey = tweak.Key;
                 if (tweak.Version > 1) blacklistKey += $"::{tweak.Version}";
                 if (PluginConfig.BlacklistedTweaks.Contains(blacklistKey)) {
