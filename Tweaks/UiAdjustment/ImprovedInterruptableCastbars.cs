@@ -16,8 +16,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakAuthor("MidoriKami")]
 [TweakReleaseVersion("1.8.3.0")]
 public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
-    private const uint InterjectImageNodeId = 1000U;
-    private const uint HeadGrazeImageNodeId = 2000U;
+    private uint InterjectImageNodeId => CustomNodes.Get(this, "Interject");
+    private uint HeadGrazeImageNodeId => CustomNodes.Get(this, "HeadGraze");
 
     private Config TweakConfig { get; set; } = null!;
 
