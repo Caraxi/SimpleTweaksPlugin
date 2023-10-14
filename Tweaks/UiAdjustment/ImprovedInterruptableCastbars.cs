@@ -54,17 +54,15 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
 
     protected override void Enable() {
         TweakConfig = LoadConfig<Config>() ?? new Config();
-        base.Enable();
     }
 
     protected override void Disable() {
         SaveConfig(TweakConfig);
         FreeAllNodes();
-        base.Disable();
     }
 
     [AddonPostRequestedUpdate("_TargetInfoCastBar", "_TargetInfo", "_FocusTargetInfo")]
-    private void OnAddonUpdate(AddonArgs args) {
+    private void OnAddonRequestedUpdate(AddonArgs args) {
         var addon = (AtkUnitBase*) args.Addon;
         
         switch (args.AddonName) {
