@@ -45,29 +45,29 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         BottomRight
     }
 
-    protected override void ConfigChanged() {
-        SaveConfig(TweakConfig);
-        FreeAllNodes();
-    }
+    private void DrawConfig() {
+        var hasChanged = ImGui.Checkbox("Enable Primary Target", ref TweakConfig.PrimaryTargetEnabled);
 
-    private void DrawConfig(ref bool hasChanged) {
-        if (ImGui.Checkbox("Enable Primary Target", ref TweakConfig.PrimaryTargetEnabled)) hasChanged = true;
-
-        if (ImGui.Checkbox("Enable Focus Target", ref TweakConfig.FocusTargetEnabled)) hasChanged = true;
+        hasChanged |= ImGui.Checkbox("Enable Focus Target", ref TweakConfig.FocusTargetEnabled);
 
         ImGui.TextUnformatted("Select which direction relative to Cast Bar to show countdown");
         if (TweakConfig is { PrimaryTargetEnabled: false, FocusTargetEnabled: false }) {
             ImGuiHelpers.ScaledIndent(20.0f);
-            ImGui.TextUnformatted("No Castbars Selected");
+            ImGui.TextUnformatted("No CastBars Selected");
             ImGuiHelpers.ScaledIndent(-20.0f);
         }
         
         if (TweakConfig.FocusTargetEnabled) {
-            if (DrawCombo(ref TweakConfig.FocusTargetPosition, "Focus Target")) hasChanged = true;
+            hasChanged |= DrawCombo(ref TweakConfig.FocusTargetPosition, "Focus Target");
         }
 
         if (TweakConfig.PrimaryTargetEnabled) {
-            if (DrawCombo(ref TweakConfig.CastbarPosition, "Primary Target")) hasChanged = true;
+            hasChanged |= DrawCombo(ref TweakConfig.CastbarPosition, "Primary Target");
+        }
+
+        if (hasChanged) {
+            SaveConfig(TweakConfig);
+            FreeAllNodes();
         }
     }
 
