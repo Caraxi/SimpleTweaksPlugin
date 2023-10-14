@@ -8,16 +8,7 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
-public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak
-{
-    public override string Name => "Improved Interruptable Castbars";
-    public override string Description => "Displays an icon next to interruptable castbars";
-    protected override string Author => "MidoriKami";
-
-    private static AtkUnitBase* AddonTargetInfoCastBar => Common.GetUnitBase("_TargetInfoCastBar");
-    private static AtkUnitBase* AddonTargetInfo => Common.GetUnitBase("_TargetInfo");
-    private static AtkUnitBase* AddonFocusTargetInfo => Common.GetUnitBase("_FocusTargetInfo");
-    
+public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
     private const uint InterjectImageNodeId = 1000U;
     private const uint HeadGrazeImageNodeId = 2000U;
 
