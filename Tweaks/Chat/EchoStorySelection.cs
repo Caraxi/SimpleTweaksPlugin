@@ -17,6 +17,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakDescription("When given multiple choices during quests, print the selected option to chat.")]
 [TweakAuthor("MidoriKami")]
 [TweakReleaseVersion("1.8.3.2")]
+[TweakAutoConfig]
 public unsafe class EchoStorySelection : ChatTweaks.SubTweak {
     private readonly List<string> options = new();
     
@@ -26,18 +27,7 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak {
     }
 
     public Config TweakConfig { get; private set; } = null!;
-
-    public override bool UseAutoConfig => true;
     
-    protected override void Enable() {
-        TweakConfig = LoadConfig<Config>() ?? new Config();
-        base.Enable();
-    }
-
-    protected override void Disable() {
-        SaveConfig(TweakConfig);
-        base.Disable();
-    }
     
     [AddonPostSetup("CutSceneSelectString", "SelectString")]
     private void OnAddonSetup(AddonSetupArgs obj) {
