@@ -43,11 +43,11 @@ public unsafe class HideUnwantedBanner : UiAdjustments.SubTweak {
         new BannerSetting(121082, "Tribal Quest Complete"),
     };
     
-    public class Config : TweakConfig {
+    private class Config : TweakConfig {
         public readonly List<int> HiddenBanners = new();
     }
 
-    public Config TweakConfig { get; set; } = null!;
+    private Config TweakConfig { get; set; } = null!;
     
     protected void DrawConfig() {
         foreach (var banner in banners) {
