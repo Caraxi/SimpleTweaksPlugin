@@ -13,7 +13,7 @@ public class TweakConfigOptionAttribute : Attribute {
     public string LocalizeKey { get; }
 
     public int Priority { get; } = 0;
-    public int EditorSize { get; set; } = -1;
+    public int EditorSize { get; set; } = int.MinValue;
 
     public bool SameLine { get; set; } = false;
 

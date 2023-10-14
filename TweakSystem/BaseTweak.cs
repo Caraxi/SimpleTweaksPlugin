@@ -303,7 +303,7 @@ public abstract class BaseTweak {
                     }
                 } else if (f.FieldType == typeof(int)) {
                     var v = (int) f.GetValue(configObj);
-                    ImGui.SetNextItemWidth(attr.EditorSize == -1 ? -1 : attr.EditorSize * ImGui.GetIO().FontGlobalScale);
+                    if (attr.EditorSize != null) ImGui.SetNextItemWidth(attr.EditorSize == -1 ? -1 : attr.EditorSize * ImGui.GetIO().FontGlobalScale);
                     var e = attr.IntType switch {
                         TweakConfigOptionAttribute.IntEditType.Slider => ImGui.SliderInt($"{localizedName}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", ref v, attr.IntMin, attr.IntMax),
                         TweakConfigOptionAttribute.IntEditType.Drag => ImGui.DragInt($"{localizedName}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", ref v, 1f, attr.IntMin, attr.IntMax),
@@ -324,8 +324,25 @@ public abstract class BaseTweak {
                         f.SetValue(configObj, v);
                         hasChanged = true;
                     }
-                }
-                else {
+                } else if (f.FieldType.IsEnum) {
+                    var v = (Enum)f.GetValue(configObj);
+
+                    if (attr.EditorSize != int.MinValue) ImGui.SetNextItemWidth(attr.EditorSize == -1 ? -1 : attr.EditorSize * ImGui.GetIO().FontGlobalScale);
+                    
+                    if (ImGui.BeginCombo($"{localizedName}##{f.Name}_{this.GetType().Namespace}_{configOptionIndex++}", $"{v.GetDescription()}")) {
+                        foreach (var eV in f.FieldType.GetEnumValues()) {
+                            if (eV is not Enum enumValue) {
+                                ImGui.Selectable($"???{eV}");
+                                continue;
+                            }
+                            if (ImGui.Selectable($"{enumValue.GetDescription()}", v.Equals(enumValue))) {
+                                f.SetValue(configObj, enumValue);
+                            }
+                        }
+
+                        ImGui.EndCombo();
+                    }
+                } else {
                     ImGui.Text($"Invalid Auto Field Type: {f.Name}");
                 }
 
