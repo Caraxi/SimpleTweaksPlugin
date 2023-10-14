@@ -256,7 +256,7 @@ public abstract class BaseTweak {
 
     private void DrawAutoConfig(ref bool hasChanged) {
         try {
-            var configProperty = this.GetType().GetProperties().FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(TweakConfig)));
+            var configProperty = this.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(TweakConfig)));
             if (configProperty == null) {
                 ImGui.Text("No Config Property Found");
                 return;
