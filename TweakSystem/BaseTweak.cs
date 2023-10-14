@@ -496,7 +496,7 @@ public abstract class BaseTweak {
 
     private void AutoLoadConfig() {
         SimpleLog.Verbose($"[{Key}] AutoLoading Config");
-        var configProperty = GetType().GetProperties().FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(TweakConfig)));
+        var configProperty = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(TweakConfig)));
         if (configProperty == null) {
             SimpleLog.Error("Failed to AutoLoad config. No TweakConfig property found.");
             return;
@@ -513,7 +513,7 @@ public abstract class BaseTweak {
 
     private void AutoSaveConfig() {
         SimpleLog.Verbose($"[{Key}] AutoSaving Config");
-        var configProperty = GetType().GetProperties().FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(TweakConfig)));
+        var configProperty = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(TweakConfig)));
         if (configProperty == null) {
             SimpleLog.Error("Failed to AutoSave config. No TweakConfig property found.");
             return;
