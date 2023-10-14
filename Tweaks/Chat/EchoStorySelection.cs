@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text;
@@ -14,16 +13,14 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Chat;
 
-public unsafe class EchoStorySelection : ChatTweaks.SubTweak
-{
-    public override string Name => "Echo Story Selection";
-    public override string Description => "When given multiple choices during quests, print the selected option to chat.";
-    protected override string Author => "MidoriKami";
-
+[TweakName("Echo Story Selection")]
+[TweakDescription("When given multiple choices during quests, print the selected option to chat.")]
+[TweakAuthor("MidoriKami")]
+[TweakReleaseVersion("1.8.3.2")]
+public unsafe class EchoStorySelection : ChatTweaks.SubTweak {
     private readonly List<string> options = new();
     
-    public class Config : TweakConfig
-    {
+    public class Config : TweakConfig {
         [TweakConfigOption("Display Character Name")]
         public bool DisplayCharacterName = false;
     }
@@ -32,31 +29,19 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak
 
     public override bool UseAutoConfig => true;
     
-    public override void Setup()
-    {
-        if (Ready) return;
-        AddChangelogNewTweak("1.8.3.2");
-        
-        base.Setup();
-    }
-
-    protected override void Enable()
-    {
+    protected override void Enable() {
         TweakConfig = LoadConfig<Config>() ?? new Config();
         base.Enable();
     }
 
-    protected override void Disable()
-    {
+    protected override void Disable() {
         SaveConfig(TweakConfig);
         base.Disable();
     }
     
     [AddonPostSetup("CutSceneSelectString", "SelectString")]
-    private void OnAddonSetup(AddonSetupArgs obj)
-    {
-        switch (obj)
-        {
+    private void OnAddonSetup(AddonSetupArgs obj) {
+        switch (obj) {
             case { AddonName: "CutSceneSelectString", Addon: not 0 }:
                 GetAddonStrings(((AddonCutSceneSelectString*) obj.Addon)->OptionList);
                 break;
@@ -68,10 +53,8 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak
     }
     
     [AddonFinalize("CutSceneSelectString", "SelectString")]
-    private void OnAddonFinalize(AddonFinalizeArgs obj)
-    {
-        switch (obj)
-        {
+    private void OnAddonFinalize(AddonFinalizeArgs obj) {
+        switch (obj) {
             case { AddonName: "CutSceneSelectString", Addon: not 0 }:
                 PrintSelectedString(((AddonCutSceneSelectString*) obj.Addon)->OptionList);
                 break;
@@ -82,14 +65,12 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak
         }
     }
 
-    private void GetAddonStrings(AtkComponentList* list)
-    {
+    private void GetAddonStrings(AtkComponentList* list) {
         if(list is null) return;
         
         options.Clear();
         
-        foreach (var index in Enumerable.Range(0, list->ListLength))
-        {
+        foreach (var index in Enumerable.Range(0, list->ListLength)) {
             var listItemRenderer = list->ItemRendererList[index].AtkComponentListItemRenderer;
             if (listItemRenderer is null) continue;
 
@@ -102,43 +83,26 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak
         }
     }
 
-    private void PrintSelectedString(AtkComponentList* list)
-    {
+    private void PrintSelectedString(AtkComponentList* list) {
         if (list is null) return;
 
         var selectedItem = list->SelectedItemIndex;
-        if (selectedItem >= 0 && selectedItem < options.Count)
-        {
-            var selectedString = options[selectedItem];
-        
-            var message = new SeStringBuilder()
-                .AddText(selectedString)
-                .Build();
+        if (selectedItem < 0 || selectedItem >= options.Count) return;
 
-            var playerName = Common.ReadString(PlayerState.Instance()->CharacterName);
+        var message = new SeStringBuilder()
+            .AddText(options[selectedItem])
+            .Build();
+
+        var playerName = Common.ReadString(PlayerState.Instance()->CharacterName);
             
-            var name = new SeStringBuilder()
-                .AddUiForeground(TweakConfig.DisplayCharacterName ? playerName : "Story Selection", 62)
-                .Build();
+        var name = new SeStringBuilder()
+            .AddUiForeground(TweakConfig.DisplayCharacterName ? playerName : "Story Selection", 62)
+            .Build();
 
-            var entry = new XivChatEntry
-            {
-                Type = XivChatType.NPCDialogue,
-                Message = message,
-                Name = name,
-            };
-        
-            Service.Chat.Print(entry);
-        }
-    }
-    
-    // Temp until ClientStructs update
-    [StructLayout(LayoutKind.Explicit, Size = 0x248)]
-    public struct AddonCutSceneSelectString
-    {
-        [FieldOffset(0x00)] public AtkUnitBase AtkUnitBase;
-
-        [FieldOffset(0x230)] public AtkComponentList* OptionList;
-        [FieldOffset(0x238)] public AtkComponentTextNineGrid* TextLabel;
+        Service.Chat.Print(new XivChatEntry {
+            Type = XivChatType.NPCDialogue,
+            Message = message,
+            Name = name,
+        });
     }
 }
