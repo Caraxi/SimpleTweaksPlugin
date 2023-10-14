@@ -14,31 +14,30 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
-public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTweak
-{
-    public override string Name => "Enhanced Loot Window";
-    protected override string Author => "MidoriKami";
-    public override string Description => "Marks unobtainable and already unlocked items in the loot window.";
-    public override uint Version => 2;
-    
+[TweakName("Enhanced Loot Window")]
+[TweakDescription("Marks unobtainable and already unlocked items in the loot window.")]
+[TweakAuthor("MidoriKami")]
+[TweakVersion(2)]
+[TweakAutoConfig]
+[TweakReleaseVersion("1.8.2.1")]
+[Changelog("1.8.3.0", "Rebuilt tweak to use images.")]
+[Changelog("1.8.3.0", "Fixed tweak not checking armory and equipped items.")]
+[Changelog("1.8.3.0", "Added 'Lock Loot Window' feature.")]
+[Changelog("1.8.6.0", "Removed Window Lock Feature, 'Lock Window Position' tweak has returned.")]
+public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTweak {
     private readonly int[] listItemNodeIdArray = Enumerable.Range(21001, 31).Prepend(2).ToArray();
-
-    private const uint CrossBaseId = 1000U;
-    private const uint PadlockBaseId = 2000U;
 
     private const int MinionCategory = 81;
     private const int MountCategory = 63;
     private const int MountSubCategory = 175;
 
-    private enum ItemStatus
-    {
+    private enum ItemStatus {
         Unobtainable,
         AlreadyUnlocked,
         Normal
     }
     
-    public class Config : TweakConfig
-    {
+    private class Config : TweakConfig {
         [TweakConfigOption("Mark Un-obtainable Items")]
         public bool MarkUnobtainable = true;
 
@@ -46,100 +45,64 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         public bool MarkAlreadyObtained = true;
     }
 
-    public Config TweakConfig { get; private set; } = null!;
-
-    public override bool UseAutoConfig => true;
-    
-    public override void Setup()
-    {
-        if (Ready) return;
-        AddChangelogNewTweak("1.8.2.1");
-        AddChangelog("1.8.3.0", "Rebuilt tweak to use images.");
-        AddChangelog("1.8.3.0", "Fixed tweak not checking armory and equipped items.");
-        AddChangelog("1.8.3.0", "Added 'Lock Loot Window' feature.");
-        AddChangelog("1.8.6.0", "Removed Window Lock Feature, 'Lock Window Position' tweak has returned.");
-        
-        Ready = true;
-    }
-
-    protected override void Enable()
-    {
-        TweakConfig = LoadConfig<Config>() ?? new Config();
-    }
-
-    protected override void Disable()
-    {
-        SaveConfig(TweakConfig);
-    }
+    private Config TweakConfig { get; set; } = null!;
 
     [AddonPostSetup("NeedGreed")]
-    private void OnAddonSetup(AtkUnitBase* addon)
-    {
-
+    private void OnAddonSetup(AtkUnitBase* addon) {
         var listComponentNode = (AtkComponentNode*) addon->GetNodeById(6);
         if (listComponentNode is null || listComponentNode->Component is null) return;
         
-        foreach (uint index in listItemNodeIdArray)
-        {
+        foreach (var index in listItemNodeIdArray) {
             var componentUldManager = &listComponentNode->Component->UldManager;
                     
-            var lootItemNode = Common.GetNodeByID<AtkComponentNode>(componentUldManager, index);
+            var lootItemNode = Common.GetNodeByID<AtkComponentNode>(componentUldManager, (uint)index);
             if (lootItemNode is null) continue;
                 
-            var crossNode = Common.GetNodeByID(componentUldManager, CrossBaseId + index);
-            if (crossNode is null)
-            {
-                MakeCrossNode(CrossBaseId + index, lootItemNode);
+            var crossNode = Common.GetNodeByID(componentUldManager, CustomNodes.Get(this, "CrossImage", index));
+            if (crossNode is null) {
+                MakeCrossNode(CustomNodes.Get(this, "CrossImage", index), lootItemNode);
             }
                         
-            var padlockNode = Common.GetNodeByID(componentUldManager, PadlockBaseId + index);
-            if (padlockNode is null)
-            {
-                MakePadlockNode(PadlockBaseId + index, lootItemNode);
+            var padlockNode = Common.GetNodeByID(componentUldManager, CustomNodes.Get(this, "PadlockImage", index));
+            if (padlockNode is null) {
+                MakePadlockNode(CustomNodes.Get(this, "PadlockImage", index), lootItemNode);
             }
         }
     }
     
     [AddonFinalize("NeedGreed")]
-    private void OnAddonFinalize(AtkUnitBase* addon)
-    {
+    private void OnAddonFinalize(AtkUnitBase* addon) {
         var listComponentNode = (AtkComponentNode*) addon->GetNodeById(6);
         if (listComponentNode is null || listComponentNode->Component is null) return;
         
-        foreach (uint index in listItemNodeIdArray)
-        {
+        foreach (var index in listItemNodeIdArray) {
             var componentUldManager = &listComponentNode->Component->UldManager;
                     
-            var lootItemNode = Common.GetNodeByID<AtkComponentNode>(componentUldManager, index);
+            var lootItemNode = Common.GetNodeByID<AtkComponentNode>(componentUldManager, (uint)index);
             if (lootItemNode is null) continue;
 
             var lootItemUldManager = &lootItemNode->Component->UldManager;
 
-            var crossNode = Common.GetNodeByID<AtkImageNode>(lootItemUldManager, CrossBaseId + index);
-            if (crossNode is not null)
-            {
+            var crossNode = Common.GetNodeByID<AtkImageNode>(lootItemUldManager, CustomNodes.Get(this, "CrossImage", index));
+            if (crossNode is not null) {
                 UiHelper.UnlinkAndFreeImageNode(crossNode, addon);
             }
                         
-            var padlockNode = Common.GetNodeByID<AtkImageNode>(lootItemUldManager, PadlockBaseId + index);
-            if (padlockNode is not null)
-            {
+            var padlockNode = Common.GetNodeByID<AtkImageNode>(lootItemUldManager, CustomNodes.Get(this, "PadlockImage", index));
+            if (padlockNode is not null) {
                 UiHelper.UnlinkAndFreeImageNode(padlockNode, addon);
             }
         }
     }
 
     [AddonPostRequestedUpdate("NeedGreed")]
-    private void OnNeedGreedRequestedUpdate(AddonNeedGreed* callingAddon)
-    {
-        try
-        {
+    private void OnNeedGreedRequestedUpdate(AddonNeedGreed* callingAddon) {
+        try {
             var listComponentNode = (AtkComponentNode*) callingAddon->AtkUnitBase.GetNodeById(6);
             if (listComponentNode is null || listComponentNode->Component is null) return;
             
             // For each possible item slot, get the item info
-            foreach (var index in Enumerable.Range(0, callingAddon->ItemsSpan.Length))
-            {
+            foreach (var index in Enumerable.Range(0, callingAddon->ItemsSpan.Length)) {
                 // If this data slot doesn't have an item id, skip.
                 var itemInfo = callingAddon->ItemsSpan[index];
                 if (itemInfo.ItemId is 0) continue;
@@ -155,8 +118,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
                 var listItemNode = Common.GetNodeByID<AtkComponentNode>(&listComponentNode->Component->UldManager, (uint) listItemNodeId);
                 if (listItemNode is null || listItemNode->Component is null) continue;
                 
-                switch (itemData)
-                {
+                switch (itemData) {
                     // Item is unique, and has no unlock action, and is unobtainable if we have any in our inventory
                     case { IsUnique: true, ItemAction.Row: 0 } when PlayerHasItem(itemInfo.ItemId):
                         
@@ -178,22 +140,18 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
                 }
             }
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             SimpleLog.Error(e, "Something went wrong in LootWindowDuplicateUniqueItemIndicator, let MidoriKami know!");
         }
-        
     }
 
-    private void UpdateNodeVisibility(AtkComponentNode* listItemNode, int listItemId, ItemStatus status)
-    {
-        var crossNode = Common.GetNodeByID<AtkImageNode>(&listItemNode->Component->UldManager, CrossBaseId + (uint) listItemId);
-        var padlockNode = Common.GetNodeByID<AtkImageNode>(&listItemNode->Component->UldManager, PadlockBaseId + (uint) listItemId);
+    private void UpdateNodeVisibility(AtkComponentNode* listItemNode, int listItemId, ItemStatus status) {
+        var crossNode = Common.GetNodeByID<AtkImageNode>(&listItemNode->Component->UldManager, CustomNodes.Get(this, "CrossImage", listItemId));
+        var padlockNode = Common.GetNodeByID<AtkImageNode>(&listItemNode->Component->UldManager, CustomNodes.Get(this, "PadlockImage", listItemId));
         
         if (crossNode is null || padlockNode is null) return;
         
-        switch (status)
-        {
+        switch (status) {
             case ItemStatus.AlreadyUnlocked when TweakConfig.MarkAlreadyObtained:
                 crossNode->AtkResNode.ToggleVisibility(false);
                 padlockNode->AtkResNode.ToggleVisibility(true);
@@ -212,14 +170,12 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         }
     }
 
-    private bool IsItemAlreadyUnlocked(uint itemId)
-    {
+    private bool IsItemAlreadyUnlocked(uint itemId) {
         var exdItem = ExdModule.GetItemRowById(itemId);
         return exdItem is null || UIState.Instance()->IsItemActionUnlocked(exdItem) is 1;
     }
     
-    private void MakeCrossNode(uint nodeId, AtkComponentNode* parent)
-    {
+    private void MakeCrossNode(uint nodeId, AtkComponentNode* parent) {
         var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(0, 0, 32, 32));
         imageNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorTop | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents; // 8243;
         imageNode->WrapMode = 1;
@@ -237,8 +193,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         UiHelper.LinkNodeAfterTargetNode((AtkResNode*) imageNode, parent, targetTextNode);
     }
 
-    private void MakePadlockNode(uint nodeId, AtkComponentNode* parent)
-    {
+    private void MakePadlockNode(uint nodeId, AtkComponentNode* parent) {
         var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(48, 0, 20, 24));
         imageNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorTop | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents; // 8243;
         imageNode->WrapMode = 1;
@@ -257,11 +212,9 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         UiHelper.LinkNodeAfterTargetNode((AtkResNode*) imageNode, parent, targetTextNode);
     }
 
-    private bool PlayerHasItem(uint itemId)
-    {
+    private bool PlayerHasItem(uint itemId) {
         // Only check main inventories, don't include any special inventories
-        var inventories = new List<InventoryType>
-        {
+        var inventories = new List<InventoryType> {
             InventoryType.Inventory1,
             InventoryType.Inventory2,
             InventoryType.Inventory3,
