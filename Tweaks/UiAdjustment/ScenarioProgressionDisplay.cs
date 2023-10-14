@@ -25,6 +25,9 @@ public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
         [TweakConfigOption("Show for current expansion", 1)]
         public bool UseCurrentExpansion = false;
 
+        [TweakConfigOption("Show percentage before quest", 2)]
+        public bool ShowBeforeQuest = false;
+
         [TweakConfigOption("Percentage Accuracy", 2, IntMin = 0, IntMax = 3, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EnforcedLimit = true, EditorSize = 100)]
         public int Accuracy = 1;
     }
@@ -115,7 +118,12 @@ public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
         
         if (!Unloading) {
             var percentage = TweakConfig.UseCurrentExpansion ? GetScenarioCompletionForCurrentExpansion() : GetScenarioCompletion();
-            text.Append(string.Format($" ({{0:P{Math.Clamp(TweakConfig.Accuracy, 0, 3)}}})", percentage));
+            if (TweakConfig.ShowBeforeQuest) {
+                text = string.Format($"{{0:P{Math.Clamp(TweakConfig.Accuracy, 0, 3)}}} ", percentage) + " " + text;
+            }
+            else {
+                text.Append(string.Format($" ({{0:P{Math.Clamp(TweakConfig.Accuracy, 0, 3)}}})", percentage));
+            }
         }
 
         var encoded = text.Encode();
