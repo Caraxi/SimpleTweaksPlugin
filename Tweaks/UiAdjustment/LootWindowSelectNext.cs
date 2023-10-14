@@ -16,6 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak {
     private delegate void NeedGreedReceiveEventDelegate(AddonNeedGreed* addon, AtkEventType type, ButtonType buttonType, AtkEvent* eventInfo, nint data);
 
+    [TweakHook(AutoEnable = false)]
     private HookWrapper<NeedGreedReceiveEventDelegate>? needGreedReceiveEventHook;
 
     [AddonPostSetup("NeedGreed")]
@@ -31,16 +32,6 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak {
                 break;
             }
         }
-    }
-
-    protected override void Disable() {
-        needGreedReceiveEventHook?.Disable();
-        base.Disable();
-    }
-
-    public override void Dispose() {
-        needGreedReceiveEventHook?.Dispose();
-        base.Dispose();
     }
 
     // There are other button types such as "Greed Only" and "Loot Recipient"
