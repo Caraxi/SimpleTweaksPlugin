@@ -8,6 +8,7 @@ using System.Reflection;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Internal;
+using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin;
 using ImGuiNET;
 using Newtonsoft.Json;
@@ -215,7 +216,7 @@ public abstract class BaseTweak {
         var shouldForceOpenConfig = ForceOpenConfig;
         ForceOpenConfig = false;
         var configTreeOpen = false;
-        if ((this is CommandTweak || UseAutoConfig || DrawConfigTree != null) && Enabled) {
+        if ((this is CommandTweak || UseAutoConfig || DrawConfigTree != null) && (Enabled || this is CommandTweak)) {
             var x = ImGui.GetCursorPosX();
             if (shouldForceOpenConfig) ImGui.SetNextItemOpen(true);
             if (ImGui.TreeNode($"{LocalizedName}##treeConfig_{GetType().Name}")) {
@@ -223,12 +224,11 @@ public abstract class BaseTweak {
                 DrawCommon();
                 ImGui.SetCursorPosX(x);
                 ImGui.BeginGroup();
-                if (UseAutoConfig) {
-                    DrawAutoConfig(ref hasChanged);
-                }
-
-                DrawConfigTree?.Invoke(ref hasChanged);
+                if (Enabled && UseAutoConfig) DrawAutoConfig(ref hasChanged);
+                if (Enabled) DrawConfigTree?.Invoke(ref hasChanged);
                 if (this is CommandTweak ct) {
+                    if (Enabled && (UseAutoConfig || DrawConfigTree != null)) ImGui.Text("Customize Commands:");
+                    using var _ = ImRaii.PushIndent(condition: Enabled && (UseAutoConfig || DrawConfigTree != null));
                     ct.DrawCommandEditor(false);
                 }
 

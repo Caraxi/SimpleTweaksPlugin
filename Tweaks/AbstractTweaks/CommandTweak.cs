@@ -98,8 +98,10 @@ public abstract class CommandTweak : Tweak {
             PluginConfig.CustomizedCommands.Add(Key, customMainCommandInput);
             PluginConfig.Save();
 
-            Disable();
-            Enable();
+            if (Enabled) {
+                Disable();
+                Enable();
+            }
         }
         ImGui.EndDisabled();
         ImGui.SameLine();
@@ -126,8 +128,10 @@ public abstract class CommandTweak : Tweak {
 
                     PluginConfig.DisabledCommandAlias.Remove(Key);
                     PluginConfig.DisabledCommandAlias.Add(Key, disabledCommandAlias);
-                    Disable();
-                    Enable();
+                    if (Enabled) {
+                        Disable();
+                        Enable();
+                    }
                 }
             }
             ImGui.Unindent();
