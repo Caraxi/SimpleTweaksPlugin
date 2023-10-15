@@ -19,6 +19,12 @@ public unsafe class FriendListDebugging : DebugHelper {
 
         DebugManager.PrintOutObject(agent);
 
+        if (agent->InfoProxy == null) {
+            ImGui.Separator();
+            ImGui.TextDisabled("Friend list is not loaded.");
+            return;
+        }
+
         if (ImGui.BeginTable("friends", 7, ImGuiTableFlags.Resizable)) {
             ImGui.TableSetupColumn("Name");
             ImGui.TableSetupColumn("ContentID");
