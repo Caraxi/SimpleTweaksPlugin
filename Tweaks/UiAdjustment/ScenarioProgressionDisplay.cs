@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -118,11 +119,11 @@ public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
         
         if (!Unloading) {
             var percentage = TweakConfig.UseCurrentExpansion ? GetScenarioCompletionForCurrentExpansion() : GetScenarioCompletion();
+            var percentageString = new TextPayload(string.Format($" ({{0:P{Math.Clamp(TweakConfig.Accuracy, 0, 3)}}}) ", percentage));
             if (TweakConfig.ShowBeforeQuest) {
-                text = string.Format($"{{0:P{Math.Clamp(TweakConfig.Accuracy, 0, 3)}}} ", percentage) + " " + text;
-            }
-            else {
-                text.Append(string.Format($" ({{0:P{Math.Clamp(TweakConfig.Accuracy, 0, 3)}}})", percentage));
+                text.Payloads.Insert(0, percentageString);
+            } else {
+                text.Payloads.Add(percentageString);
             }
         }
 
