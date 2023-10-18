@@ -841,6 +841,7 @@ public unsafe class UIDebug : DebugHelper {
                             if (texType == TextureType.Resource) {
                                 var texFileNamePtr = textureInfo->AtkTexture.Resource->TexFileResourceHandle->ResourceHandle.FileName;
                                 var texString = Marshal.PtrToStringAnsi(new IntPtr(texFileNamePtr.BufferPtr));
+                                var isHighResolution = texString?.Contains("_hr1") ?? false;
                                 ImGui.Text($"texture path: {texString}");
                                 var kernelTexture = textureInfo->AtkTexture.Resource->KernelTextureObject;
 
@@ -855,7 +856,6 @@ public unsafe class UIDebug : DebugHelper {
                                         ImGui.TableSetupColumn("Switch", ImGuiTableColumnFlags.WidthFixed, 45);
                                         ImGui.TableSetupColumn("Part Texture");
                                         ImGui.TableHeadersRow();
-
                                         for (ushort i = 0; i < iNode->PartsList->PartCount; i++) {
                                             ImGui.TableNextColumn();
 
@@ -869,30 +869,18 @@ public unsafe class UIDebug : DebugHelper {
                                             }
 
                                             ImGui.TableNextColumn();
-
-
-
-
                                             var tPart = iNode->PartsList->Parts[i];
+                                            var u = isHighResolution ? tPart.U * 2.0f : tPart.U;
+                                            var v = isHighResolution ? tPart.V * 2.0f : tPart.V;
+                                            var width = isHighResolution ? tPart.Width * 2.0f : tPart.Width;
+                                            var height = isHighResolution ? tPart.Height * 2.0f : tPart.Height;
 
-                                            ImGui.Text($"[U: {tPart.U}  V: {tPart.V}  W: {tPart.Width}  H: {tPart.Height}]");
-
-
-
-
-                                            ImGui.Image(new IntPtr(kernelTexture->D3D11ShaderResourceView), new Vector2(tPart.Width, tPart.Height), new Vector2(tPart.U , tPart.V) / textureSize, new Vector2(tPart.U + tPart.Width, tPart.V + tPart.Height) / textureSize);
-
-
-
+                                            ImGui.Text($"[U: {u}  V: {v}  W: {width}  H: {height}]");
+                                            ImGui.Image(new IntPtr(kernelTexture->D3D11ShaderResourceView), new Vector2(width, height), new Vector2(u , v) / textureSize, new Vector2(u + width, v + height) / textureSize);
                                         }
                                         ImGui.EndTable();
-
-
-
                                         ImGui.TreePop();
                                     }
-
-
                                     ImGui.TreePop();
                                 }
                             } else if (texType == TextureType.KernelTexture) {
