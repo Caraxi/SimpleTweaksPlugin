@@ -4,20 +4,20 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Dalamud.Hooking;
 using Dalamud.Utility.Signatures;
+using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Chat;
 
-public unsafe partial class StickyChat : ChatTweaks.SubTweak
-{
-    public override string Name => "Sticky Chat";
-    public override string Description => "Sets the chat channel when you use temporary chat messages.\nExample: \"/p hello!\" will set the chat channel to Party";
-    protected override string Author => "MidoriKami";
-
+[TweakName("Sticky Chat")]
+[TweakDescription("Sets the chat channel when you use temporary chat messages.\nExample: \"/p hello!\" will set the chat channel to Party")]
+[TweakAuthor("MidoriKami")]
+[TweakReleaseVersion("1.8.2.0")]
+public unsafe partial class StickyChat : ChatTweaks.SubTweak {
     private delegate byte ProcessChatInputDelegate(nint uiModule, byte** message, nint a3);
 
-    [Signature("E8 ?? ?? ?? ?? FE 86 ?? ?? ?? ?? C7 86 ?? ?? ?? ?? ?? ?? ?? ??", DetourName = nameof(ProcessChatInputDetour))]
-    private readonly Hook<ProcessChatInputDelegate>? processChatInputHook = null;
+    [TweakHook, Signature("E8 ?? ?? ?? ?? FE 86 ?? ?? ?? ?? C7 86 ?? ?? ?? ?? ?? ?? ?? ??", DetourName = nameof(ProcessChatInputDetour))]
+    private readonly HookWrapper<ProcessChatInputDelegate>? processChatInputHook = null;
 
     [GeneratedRegex("^\\/cwl[1-8] .+")]
     private static partial Regex CrossWorldLinkshellShort();
@@ -31,42 +31,14 @@ public unsafe partial class StickyChat : ChatTweaks.SubTweak
     [GeneratedRegex("^\\/linkshell[1-8] .+")]
     private static partial Regex LinkshellLong();
     
-    public override void Setup()
-    {
-        if (Ready) return;
-        AddChangelogNewTweak("1.8.2.0");
-        Ready = true;
-    }
-
-    protected override void Enable()
-    {
-        processChatInputHook?.Enable();
-        base.Enable();
-    }
-
-    protected override void Disable()
-    {
-        processChatInputHook?.Disable();
-        base.Disable();
-    }
-
-    public override void Dispose()
-    {
-        processChatInputHook?.Dispose();
-        base.Dispose();
-    }
-
-    private byte ProcessChatInputDetour(nint uiModule, byte** message, nint a3)
-    {
+    private byte ProcessChatInputDetour(nint uiModule, byte** message, nint a3) {
         var result = processChatInputHook!.Original(uiModule, message, a3);
         
-        try
-        {
+        try {
             var stringSize = StringLength(message);
             var inputString = Encoding.UTF8.GetString(*message, stringSize);
 
-            switch (inputString)
-            {
+            switch (inputString) {
                 case not null when inputString.StartsWith("/party "):
                 case not null when inputString.StartsWith("/p "):
                     ChatHelper.SendMessage("/party");
@@ -114,19 +86,16 @@ public unsafe partial class StickyChat : ChatTweaks.SubTweak
                     break;
             }
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             SimpleLog.Error(e, "Something went wrong in StickyChat, let MidoriKami know!");
         }
 
         return result;
     }
 
-    private static int StringLength(byte** message)
-    {
+    private static int StringLength(byte** message) {
         var byteCount = 0;
-        for (var i = 0; i <= 500; i++) 
-        {
+        for (var i = 0; i <= 500; i++) {
             if (*(*message + i) != 0) continue;
             
             byteCount = i;
