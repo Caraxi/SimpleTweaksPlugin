@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -24,6 +25,9 @@ public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
     public class Config : TweakConfig {
         [TweakConfigOption("Show for current expansion", 1)]
         public bool UseCurrentExpansion = false;
+
+        [TweakConfigOption("Show percentage before quest", 2)]
+        public bool ShowBeforeQuest = false;
 
         [TweakConfigOption("Percentage Accuracy", 2, IntMin = 0, IntMax = 3, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EnforcedLimit = true, EditorSize = 100)]
         public int Accuracy = 1;
@@ -115,7 +119,12 @@ public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
         
         if (!Unloading) {
             var percentage = TweakConfig.UseCurrentExpansion ? GetScenarioCompletionForCurrentExpansion() : GetScenarioCompletion();
-            text.Append(string.Format($" ({{0:P{Math.Clamp(TweakConfig.Accuracy, 0, 3)}}})", percentage));
+            var percentageString = new TextPayload(string.Format($" ({{0:P{Math.Clamp(TweakConfig.Accuracy, 0, 3)}}}) ", percentage));
+            if (TweakConfig.ShowBeforeQuest) {
+                text.Payloads.Insert(0, percentageString);
+            } else {
+                text.Payloads.Add(percentageString);
+            }
         }
 
         var encoded = text.Encode();
