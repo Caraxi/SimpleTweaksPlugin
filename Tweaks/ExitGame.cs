@@ -1,5 +1,4 @@
-﻿using Dalamud.Game.ClientState.Keys;
-using FFXIVClientStructs.FFXIV.Client.UI;
+﻿using FFXIVClientStructs.FFXIV.Client.UI;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -11,14 +10,8 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 public unsafe class ExitGame : Tweak {
     [FrameworkUpdate]
     private void FrameworkUpdate() {
-        if (IsKeyDown(VirtualKey.MENU) && IsKeyPressed(VirtualKey.F4)) {
+        if (UIInputData.Instance()->IsKeyDown(UIInputData.VirtualKey.MENU) && UIInputData.Instance()->IsKeyPressed(UIInputData.VirtualKey.F4)) {
             UIModule.Instance()->ExecuteMainCommand(24);
         }
     }
-
-    private bool IsKeyPressed(VirtualKey key)
-        => UIInputData.Instance()->GetKeyState((int) key).HasFlag(KeyStateFlags.Pressed);
-
-    private bool IsKeyDown(VirtualKey key)
-        => UIInputData.Instance()->GetKeyState((int) key).HasFlag(KeyStateFlags.Down);
 }
