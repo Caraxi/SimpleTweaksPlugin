@@ -10,6 +10,8 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 public unsafe class ExitGame : Tweak {
     [FrameworkUpdate]
     private void FrameworkUpdate() {
+        if (!Service.ClientState.IsLoggedIn) return;
+        
         if (UIInputData.Instance()->IsKeyDown(UIInputData.VirtualKey.MENU) && UIInputData.Instance()->IsKeyPressed(UIInputData.VirtualKey.F4)) {
             UIModule.Instance()->ExecuteMainCommand(24);
         }
