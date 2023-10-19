@@ -23,7 +23,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [Changelog("1.8.4.0", "Tweak now only applies to combat actions")]
 [Changelog("1.8.4.0", "Properly resets hotbar state on unload/disable")]
 public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
-    private delegate void UpdateHotBarSlotDelegate(AddonActionBarBase* addon, SlotData* uiData, NumberArrayData* numberArray, StringArrayData* stringArray, int numberArrayIndex, int stringArrayIndex);
+    private delegate void UpdateHotBarSlotDelegate(AddonActionBarBase* addon, ActionBarSlot* uiData, NumberArrayData* numberArray, StringArrayData* stringArray, int numberArrayIndex, int stringArrayIndex);
     
     [TweakHook, Signature("E8 ?? ?? ?? ?? 49 81 C6 ?? ?? ?? ?? 83 C7 10", DetourName = nameof(OnHotBarSlotUpdate))]
     private readonly HookWrapper<UpdateHotBarSlotDelegate>? onHotBarSlotUpdateHook = null!;
@@ -66,7 +66,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         }
     }
     
-    private void OnHotBarSlotUpdate(AddonActionBarBase* addon, SlotData* hotBarSlotData, NumberArrayData* numberArray, StringArrayData* stringArray, int numberArrayIndex, int stringArrayIndex) {
+    private void OnHotBarSlotUpdate(AddonActionBarBase* addon, ActionBarSlot* hotBarSlotData, NumberArrayData* numberArray, StringArrayData* stringArray, int numberArrayIndex, int stringArrayIndex) {
         try {
             ProcessHotBarSlot(hotBarSlotData, numberArray, numberArrayIndex);
         } 
@@ -77,7 +77,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         onHotBarSlotUpdateHook!.Original(addon, hotBarSlotData, numberArray, stringArray, numberArrayIndex, stringArrayIndex);
     }
 
-    private void ProcessHotBarSlot(SlotData* hotBarSlotData, NumberArrayData* numberArray, int numberArrayIndex) {
+    private void ProcessHotBarSlot(ActionBarSlot* hotBarSlotData, NumberArrayData* numberArray, int numberArrayIndex) {
         if (hotBarSlotData->ActionId > ushort.MaxValue) return;
         if (Service.ClientState.LocalPlayer is { IsCasting: true } ) return;
 
@@ -90,7 +90,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         }
 
         if (TweakConfig.ApplyToSyncActions) {
-            var action = GetAction(hotBarSlotData->ActionId);
+            var action = GetAction((uint)hotBarSlotData->ActionId);
             var actionLevel = action.ClassJobLevel;
             var playerLevel = Service.ClientState.LocalPlayer?.Level ?? 0;
 
@@ -121,9 +121,9 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
 
     private bool ShouldFadeAction(NumberArrayStruct* numberArrayData) => !(numberArrayData->ActionAvailable_1 && numberArrayData->ActionAvailable_2);
 
-    private void ApplyTransparency(SlotData* hotBarSlotData, bool fade) {
+    private void ApplyTransparency(ActionBarSlot* hotBarSlotData, bool fade) {
         if (hotBarSlotData is null) return;
-        var iconComponent = (AtkComponentIcon*) hotBarSlotData->IconComponentNode->Component;
+        var iconComponent = (AtkComponentIcon*) hotBarSlotData->Icon->Component;
 
         if (iconComponent is null) return;
         if (iconComponent->IconImage is null) return;
@@ -147,17 +147,5 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         [FieldOffset(0x18)] public bool ActionAvailable_2;
         [FieldOffset(0x20)] public int CooldownPercent;
         [FieldOffset(0x28)] public int ManaCost;
-    }
-    
-    [StructLayout(LayoutKind.Explicit, Size = 0xC8)]
-    private struct SlotData {
-        [FieldOffset(0x04)] public uint ActionId;
-        [FieldOffset(0x88)] public AtkComponentDragDrop* DragDropNode;
-        [FieldOffset(0x90)] public AtkComponentNode* IconComponentNode;
-        [FieldOffset(0x98)] public AtkTextNode* HotkeyTextNode;
-        [FieldOffset(0xA0)] public AtkResNode* FrameNode;
-        [FieldOffset(0xA8)] public AtkImageNode* ChargeIconNode;
-        [FieldOffset(0xB0)] public AtkResNode* RecastNode;
-        [FieldOffset(0xB8)] public byte* TooltipString;
     }
 }
