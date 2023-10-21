@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -30,7 +31,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
 
     private readonly Dictionary<uint, Action> actionCache = new();
 
-    private readonly List<string> addonActionBarNames = new() { "_ActionBar", "_ActionBar01", "_ActionBar02", "_ActionBar03", "_ActionBar04", "_ActionBar05", "_ActionBar06", "_ActionBar07", "_ActionBar08", "_ActionBar09","_ActionCross", "_ActionDoubleCrossR", "_ActionDoubleCrossL" };
+    private readonly List<string> addonActionBarNames = new() { "_ActionBar", "_ActionBar01", "_ActionBar02", "_ActionBar03", "_ActionBar04", "_ActionBar05", "_ActionBar06", "_ActionBar07", "_ActionBar08", "_ActionBar09", "_ActionCross", "_ActionDoubleCrossR", "_ActionDoubleCrossL" };
     
     public class Config : TweakConfig {
         [TweakConfigOption("Fade Percentage", IntMax = 90, IntMin = 0, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EditorSize = 150)]
@@ -78,13 +79,16 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
     }
 
     private void ProcessHotBarSlot(ActionBarSlot* hotBarSlotData, NumberArrayData* numberArray, int numberArrayIndex) {
-        if (hotBarSlotData->ActionId > ushort.MaxValue) return;
         if (Service.ClientState.LocalPlayer is { IsCasting: true } ) return;
 
         var numberArrayData = (NumberArrayStruct*) (&numberArray->IntArray[numberArrayIndex]);
+        var hotBarSlotIndex = ((numberArrayIndex - 15) / 16) % 16;
+        var hotBarIndex = ((numberArrayIndex - 15) / 16) / 15;
+
+        if (hotBarIndex > RaptureHotbarModule.Instance()->HotBarsSpan.Length) return;
+        ref var raptureSlotData = ref RaptureHotbarModule.Instance()->HotBarsSpan[hotBarIndex].SlotsSpan[hotBarSlotIndex];
         
-        // If action type is not combat action, remove transparency and return
-        if (numberArrayData->ActionType != 45) {
+        if (raptureSlotData.CommandType is not (HotbarSlotType.Action or HotbarSlotType.CraftAction)) {
             ApplyTransparency(hotBarSlotData, false);
             return;
         }
