@@ -11,11 +11,17 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud.Utility.Signatures;
+using Dalamud.Game.Addon.Lifecycle;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using FFXIVClientStructs.Interop.Attributes;
+using Dalamud.Memory;
+using Addon = Lumina.Excel.GeneratedSheets.Addon;
+using System.Text;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
-[TweakName("Fast Recipe Search")]
-[TweakDescription("Enable superfast searches for recipes in the crafting log.")]
+[TweakName("Fast Item Search")]
+[TweakDescription("Enable superfast searches for the market board & crafting log.")]
 [TweakAuthor("Asriel")]
 [TweakAutoConfig]
 [TweakReleaseVersion(UnreleasedVersion)]
@@ -72,24 +78,94 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
         [FieldOffset(0x4A0)] public StdDeque<Utf8String> RecipeSearchHistory;
     }
 
+    [Agent(AgentId.ItemSearch)]
+    [StructLayout(LayoutKind.Explicit, Size = 0x37F0)]
+    public partial struct AgentItemSearch2
+    {
+        [StructLayout(LayoutKind.Explicit, Size = 0x98)]
+        public struct StringHolder
+        {
+            [FieldOffset(0x10)] public int Unk90Size;
+            [FieldOffset(0x28)] public Utf8String SearchParam;
+            [FieldOffset(0x90)] public nint Unk90Ptr;
+        }
+
+        [FieldOffset(0x0)] public AgentInterface AgentInterface;
+        [FieldOffset(0x98)] public StringHolder* StringData;
+        [FieldOffset(0x3304)] public uint ResultItemID;
+        [FieldOffset(0x330C)] public uint ResultSelectedIndex;
+        [FieldOffset(0x331C)] public uint ResultHoveredIndex;
+        [FieldOffset(0x3324)] public uint ResultHoveredCount;
+        [FieldOffset(0x332C)] public byte ResultHoveredHQ;
+        [FieldOffset(0x37D0)] public uint* ItemBuffer;
+        [FieldOffset(0x37D8)] public uint ItemCount;
+        [FieldOffset(0x37E4)] public bool IsPartialSearching;
+        [FieldOffset(0x37E5)] public bool IsItemPushPending;
+    }
+
+    [StructLayout(LayoutKind.Explicit, Size = 0x33E0)]
+    public partial struct AddonItemSearch
+    {
+        [FieldOffset(0x0)] public AtkUnitBase Base;
+        [FieldOffset(0x190)] public bool IsPartialSearchEnabled;
+        [FieldOffset(0x238)] public Utf8String String238;
+        [FieldOffset(0x2A0)] public Utf8String String2A0;
+        [FieldOffset(0x308)] public Utf8String String308;
+        [FieldOffset(0x370)] public Utf8String String370;
+        [FieldOffset(0x3D8)] public Utf8String String3D8;
+        [FieldOffset(0x440)] public Utf8String String440;
+        [FixedSizeArray<Utf8String>(96)]
+        [FieldOffset(0x4A8)] public fixed byte StringArray[96 * 0x68]; // 96 * Utf8String
+        [FieldOffset(0x3210)] public AtkComponentCheckBox* PartialSearchCheckBox;
+        [FieldOffset(0x3218)] public AtkTextNode* SearchPanelTitle;
+    }
+
     private delegate void RecipeNoteRecieveDelegate(AgentRecipeNote2* a1, Utf8String* a2, bool a3, bool a4);
     [TweakHook, Signature("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 80 B9", DetourName = nameof(RecipeNoteRecieveDetour))]
-    private HookWrapper<RecipeNoteRecieveDelegate> recipeNoteRecieveHook;
+    private readonly HookWrapper<RecipeNoteRecieveDelegate> recipeNoteRecieveHook;
 
     private delegate void RecipeNoteIterateDelegate(SearchContext* a1);
     [TweakHook, Signature("80 B9 ?? ?? ?? ?? ?? 74 27 8B 81", DetourName = nameof(RecipeNoteIterateDetour))]
-    private HookWrapper<RecipeNoteIterateDelegate> recipeNoteIterateHook;
+    private readonly HookWrapper<RecipeNoteIterateDelegate> recipeNoteIterateHook;
+
+    private delegate void AgentItemSearchUpdate1Delegate(AgentItemSearch2* a1);
+    [TweakHook, Signature("E8 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 80 BB ?? ?? ?? ?? ?? 75 19", DetourName = nameof(AgentItemSearchUpdate1Detour))]
+    private readonly HookWrapper<AgentItemSearchUpdate1Delegate> agentItemSearchUpdate1Hook;
+
+    private delegate void AgentItemSearchUpdateAtkValuesDelegate(AgentItemSearch2* a1, uint a2, byte* a3, bool a4);
+    [TweakHook, Signature("40 55 56 41 56 B8", DetourName = nameof(AgentItemSearchUpdateAtkValuesDetour))]
+    private readonly HookWrapper<AgentItemSearchUpdateAtkValuesDelegate> agentItemSearchUpdateAtkValuesHook;
+
+    private delegate void AgentItemSearchPushFoundItemsDelegate(AgentItemSearch2* a1);
+    [Signature("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 2B F8")]
+    private readonly AgentItemSearchPushFoundItemsDelegate agentItemSearchPushFoundItems;
 
     private delegate void ResizeVectorDelegate(nint vector, int amt);
     [Signature("E8 ?? ?? ?? ?? 48 8B 57 08 48 85 D2 74 2C")]
-    private ResizeVectorDelegate resizeVector;
+    private readonly ResizeVectorDelegate resizeVector;
+
+    protected override void Enable() {
+        Service.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "ItemSearch", SetupItemSearch);
+        base.Enable();
+    }
+
+    protected override void Disable() {
+        Service.AddonLifecycle.UnregisterListener(AddonEvent.PostSetup, "ItemSearch", SetupItemSearch);
+        base.Disable();
+    }
+
+    private void SetupItemSearch(AddonEvent type, AddonArgs args) {
+        var addon = (AddonItemSearch*)args.Addon;
+        var checkbox = addon->PartialSearchCheckBox;
+        var text = checkbox->AtkComponentButton.ButtonTextNode;
+        text->SetText(Config.UseFuzzySearch ? "Fuzzy Item Search" : "Fast Item Search");
+    }
 
     private void RecipeNoteRecieveDetour(AgentRecipeNote2* a1, Utf8String* a2, bool a3, bool a4) {
-        if (!a1->RecipeSearchProcessing)
-        {
+        if (!a1->RecipeSearchProcessing) {
             recipeNoteRecieveHook.Original(a1, a2, a3, a4);
 
-            Search(a2->ToString(), &a1->SearchResults);
+            RecipeSearch(a2->ToString(), &a1->SearchResults);
             a1->SearchContext->IsComplete = true;
         }
     }
@@ -98,10 +174,30 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
 
     }
 
-    private void Search(string input, StdVector<uint>* output) {
-        var sheet = Service.Data.GetExcelSheet<Recipe>().Where(r => r.RecipeLevelTable.Row != 0 && r.ItemResult.Row != 0);
+    private void AgentItemSearchUpdate1Detour(AgentItemSearch2* a1) {
+        if (a1->IsPartialSearching && !a1->IsItemPushPending) {
+            ItemSearch(a1->StringData->SearchParam.ToString(), a1);
+            agentItemSearchPushFoundItems(a1);
+        }
+    }
+
+    private void AgentItemSearchUpdateAtkValuesDetour(AgentItemSearch2* a1, uint a2, byte* a3, bool a4) {
+        var partialString = Service.Data.GetExcelSheet<Addon>().GetRow(3136).Text.ToDalamudString().ToString();
+        var isPartial = MemoryHelper.ReadStringNullTerminated((nint)a3).Equals(partialString, StringComparison.Ordinal);
+        if (isPartial) {
+            var newText = Encoding.UTF8.GetBytes(Config.UseFuzzySearch ? "Fuzzy Item Search" : "Fast Item Search");
+            fixed (byte* t = newText)
+            {
+                a3 = t;
+            }
+        }
+        agentItemSearchUpdateAtkValuesHook.Original(a1, a2, a3, a4);
+    }
+
+    private void RecipeSearch(string input, StdVector<uint>* output) {
         if (string.IsNullOrWhiteSpace(input))
             return;
+        var sheet = Service.Data.GetExcelSheet<Recipe>().Where(r => r.RecipeLevelTable.Row != 0 && r.ItemResult.Row != 0);
         var matcher = new FuzzyMatcher(input.ToLowerInvariant(), Config.UseFuzzySearch ? MatchMode.FuzzyParts : MatchMode.Simple);
         var query = sheet.AsParallel()
             .Select(i => (Item: i, Score: matcher.Matches(i.ItemResult.Value!.Name.ToDalamudString().ToString().ToLowerInvariant())))
@@ -111,6 +207,23 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
 
         foreach (var v in query)
             PushBackVector(output, v);
+    }
+
+    private void ItemSearch(string input, AgentItemSearch2* agent) {
+        if (string.IsNullOrWhiteSpace(input))
+            return;
+        var sheet = Service.Data.GetExcelSheet<Item>().Where(i => i.ItemSearchCategory.Row != 0);
+        var matcher = new FuzzyMatcher(input.ToLowerInvariant(), Config.UseFuzzySearch ? MatchMode.FuzzyParts : MatchMode.Simple);
+        var query = sheet.AsParallel()
+            .Select(i => (Item: i, Score: matcher.Matches(i.Name.ToDalamudString().ToString().ToLowerInvariant())))
+            .Where(t => t.Score > 0)
+            .OrderByDescending(t => t.Score)
+            .Select(t => t.Item.RowId);
+        foreach (var item in query) {
+            agent->ItemBuffer[agent->ItemCount++] = item;
+            if (agent->ItemCount >= 100)
+                break;
+        }
     }
 
     private void PushBackVector<T>(StdVector<T>* self, T value) where T : unmanaged {
