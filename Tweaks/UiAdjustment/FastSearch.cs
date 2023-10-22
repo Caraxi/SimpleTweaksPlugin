@@ -15,8 +15,10 @@ using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using FFXIVClientStructs.Interop.Attributes;
 using Dalamud.Memory;
-using Addon = Lumina.Excel.GeneratedSheets.Addon;
+using LuminaAddon = Lumina.Excel.GeneratedSheets.Addon;
+using Addon = FFXIVClientStructs.Attributes.Addon;
 using System.Text;
+using SimpleTweaksPlugin.Events;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
@@ -103,6 +105,7 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
         [FieldOffset(0x37E5)] public bool IsItemPushPending;
     }
 
+    [Addon("ItemSearch")]
     [StructLayout(LayoutKind.Explicit, Size = 0x33E0)]
     public partial struct AddonItemSearch
     {
@@ -144,18 +147,8 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
     [Signature("E8 ?? ?? ?? ?? 48 8B 57 08 48 85 D2 74 2C")]
     private readonly ResizeVectorDelegate resizeVector;
 
-    protected override void Enable() {
-        Service.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "ItemSearch", SetupItemSearch);
-        base.Enable();
-    }
-
-    protected override void Disable() {
-        Service.AddonLifecycle.UnregisterListener(AddonEvent.PostSetup, "ItemSearch", SetupItemSearch);
-        base.Disable();
-    }
-
-    private void SetupItemSearch(AddonEvent type, AddonArgs args) {
-        var addon = (AddonItemSearch*)args.Addon;
+    [AddonPostSetup("ItemSearch")]
+    private void SetupItemSearch(AddonItemSearch* addon) {
         var checkbox = addon->PartialSearchCheckBox;
         var text = checkbox->AtkComponentButton.ButtonTextNode;
         text->SetText(Config.UseFuzzySearch ? "Fuzzy Item Search" : "Fast Item Search");
@@ -182,7 +175,7 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
     }
 
     private void AgentItemSearchUpdateAtkValuesDetour(AgentItemSearch2* a1, uint a2, byte* a3, bool a4) {
-        var partialString = Service.Data.GetExcelSheet<Addon>().GetRow(3136).Text.ToDalamudString().ToString();
+        var partialString = Service.Data.GetExcelSheet<LuminaAddon>().GetRow(3136).Text.ToDalamudString().ToString();
         var isPartial = MemoryHelper.ReadStringNullTerminated((nint)a3).Equals(partialString, StringComparison.Ordinal);
         if (isPartial) {
             var newText = Encoding.UTF8.GetBytes(Config.UseFuzzySearch ? "Fuzzy Item Search" : "Fast Item Search");
