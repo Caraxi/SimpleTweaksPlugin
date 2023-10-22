@@ -10,6 +10,7 @@ using SimpleTweaksPlugin.Utility;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Dalamud.Utility.Signatures;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
@@ -72,47 +73,16 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
     }
 
     private delegate void RecipeNoteRecieveDelegate(AgentRecipeNote2* a1, Utf8String* a2, bool a3, bool a4);
+    [TweakHook, Signature("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 80 B9", DetourName = nameof(RecipeNoteRecieveDetour))]
     private HookWrapper<RecipeNoteRecieveDelegate> recipeNoteRecieveHook;
 
     private delegate void RecipeNoteIterateDelegate(SearchContext* a1);
+    [TweakHook, Signature("80 B9 ?? ?? ?? ?? ?? 74 27 8B 81", DetourName = nameof(RecipeNoteIterateDetour))]
     private HookWrapper<RecipeNoteIterateDelegate> recipeNoteIterateHook;
 
     private delegate void ResizeVectorDelegate(nint vector, int amt);
+    [Signature("E8 ?? ?? ?? ?? 48 8B 57 08 48 85 D2 74 2C")]
     private ResizeVectorDelegate resizeVector;
-
-    public override void Setup() {
-        AddChangelog("1.9.2", "New Tweak");
-        base.Setup();
-    }
-
-    protected override void Enable() {
-        recipeNoteRecieveHook ??= Common.Hook<RecipeNoteRecieveDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 80 B9", RecipeNoteRecieveDetour);
-        recipeNoteRecieveHook?.Enable();
-
-        recipeNoteIterateHook ??= Common.Hook<RecipeNoteIterateDelegate>("80 B9 ?? ?? ?? ?? ?? 74 27 8B 81", RecipeNoteIterateDetour);
-        recipeNoteIterateHook?.Enable();
-
-        if (resizeVector is null) {
-            var resizeVectorPtr = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 8B 57 08 48 85 D2 74 2C");
-            resizeVector = Marshal.GetDelegateForFunctionPointer<ResizeVectorDelegate>(resizeVectorPtr);
-        }
-
-        Config = LoadConfig<FastSearchConfig>() ?? new();
-        base.Enable();
-    }
-
-    protected override void Disable() {
-        SaveConfig(Config);
-        recipeNoteRecieveHook?.Disable();
-        recipeNoteIterateHook?.Disable();
-        base.Disable();
-    }
-
-    public override void Dispose() {
-        recipeNoteRecieveHook?.Dispose();
-        recipeNoteIterateHook?.Dispose();
-        base.Dispose();
-    }
 
     private void RecipeNoteRecieveDetour(AgentRecipeNote2* a1, Utf8String* a2, bool a3, bool a4) {
         if (!a1->RecipeSearchProcessing)
