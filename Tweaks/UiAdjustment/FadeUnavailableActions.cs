@@ -40,6 +40,12 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         [TweakConfigOption("Apply Transparency to Frame")]
         public bool ApplyToFrame = true;
 
+        [TweakConfigOption("Redden Percentage", IntMax = 100, IntMin = 5, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EditorSize = 150)]
+        public int ReddenPercentage = 50;
+        
+        [TweakConfigOption("Redden skills out of range")]
+        public bool ReddenOutOfRange = true;
+
         [TweakConfigOption("Apply Only to Sync'd Actions")]
         public bool ApplyToSyncActions = false;
     }
@@ -60,6 +66,9 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
                     var iconComponent = (AtkComponentIcon*) slot.Icon->Component;
                     if (iconComponent is not null) {
                         iconComponent->IconImage->AtkResNode.Color.A = 0xFF;
+                        iconComponent->IconImage->AtkResNode.Color.R = 0xFF;
+                        iconComponent->IconImage->AtkResNode.Color.G = 0xFF;
+                        iconComponent->IconImage->AtkResNode.Color.B = 0xFF;
                         iconComponent->Frame->Color.A = 0xFF;
                     }
                 }
@@ -101,15 +110,18 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
             switch (action) {
                 case { IsRoleAction: false } when actionLevel > playerLevel:
                     ApplyTransparency(hotBarSlotData, true);
+                    ApplyReddening(hotBarSlotData, false);
                     break;
                 
                 default:
                     ApplyTransparency(hotBarSlotData, false);
+                    ApplyReddening(hotBarSlotData, false);
                     break;
             }
         }
         else {
             ApplyTransparency(hotBarSlotData, ShouldFadeAction(numberArrayData));
+            ApplyReddening(hotBarSlotData, !numberArrayData->TargetInRange && !ShouldFadeAction(numberArrayData));
         }
     }
 
@@ -124,7 +136,27 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
     }
 
     private bool ShouldFadeAction(NumberArrayStruct* numberArrayData) => !(numberArrayData->ActionAvailable_1 && numberArrayData->ActionAvailable_2);
+    
+    private void ApplyReddening(ActionBarSlot* hotBarSlotData, bool redden) {
+        if (hotBarSlotData is null) return;
+        var iconComponent = (AtkComponentIcon*) hotBarSlotData->Icon->Component;
 
+        if (iconComponent is null) return;
+        if (iconComponent->IconImage is null) return;
+        if (iconComponent->Frame is null) return;
+
+        if (TweakConfig.ReddenOutOfRange && redden) {
+            iconComponent->IconImage->AtkResNode.Color.R = 0xFF;
+            iconComponent->IconImage->AtkResNode.Color.G = (byte)(0xFF * ((100 - TweakConfig.ReddenPercentage) / 100.0f));
+            iconComponent->IconImage->AtkResNode.Color.B = (byte)(0xFF * ((100 - TweakConfig.ReddenPercentage) / 100.0f));
+        }
+        else {
+            iconComponent->IconImage->AtkResNode.Color.R = 0xFF;
+            iconComponent->IconImage->AtkResNode.Color.G = 0xFF;
+            iconComponent->IconImage->AtkResNode.Color.B = 0xFF;
+        }
+    }
+    
     private void ApplyTransparency(ActionBarSlot* hotBarSlotData, bool fade) {
         if (hotBarSlotData is null) return;
         var iconComponent = (AtkComponentIcon*) hotBarSlotData->Icon->Component;
@@ -151,5 +183,6 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         [FieldOffset(0x18)] public bool ActionAvailable_2;
         [FieldOffset(0x20)] public int CooldownPercent;
         [FieldOffset(0x28)] public int ManaCost;
+        [FieldOffset(0x3C)] public bool TargetInRange;
     }
 }
