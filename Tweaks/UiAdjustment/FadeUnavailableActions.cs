@@ -23,6 +23,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [Changelog("1.8.3.2", "Add option to apply to sync'd skills only")]
 [Changelog("1.8.4.0", "Tweak now only applies to combat actions")]
 [Changelog("1.8.4.0", "Properly resets hotbar state on unload/disable")]
+[Changelog(UnreleasedVersion, "Added option to make skills that are out of range red")]
 public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
     private delegate void UpdateHotBarSlotDelegate(AddonActionBarBase* addon, ActionBarSlot* uiData, NumberArrayData* numberArray, StringArrayData* stringArray, int numberArrayIndex, int stringArrayIndex);
     
