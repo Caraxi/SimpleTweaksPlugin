@@ -42,6 +42,15 @@ public static unsafe class EventController {
             return s;
         }
 
+        public static EventSubscriber CreateTerritoryChangedSubscriber(BaseTweak tweak, MethodInfo method) {
+            var s = new EventSubscriber {
+                Tweak = tweak, 
+                Method = method, 
+                Kind = SubscriberKind.TerritoryChanged,
+            };
+            return s;
+        }
+
         public enum SubscriberKind {
             Unknown,
             Invalid,
@@ -59,6 +68,8 @@ public static unsafe class EventController {
             AddonFinalizeArgs,
             AddonRequestedUpdateArgs,
             AddonRefreshArgs,
+            AddonReceiveEventArgs,
+            TerritoryChanged,
         }
 
         private bool IsAddonPointer(ParameterInfo p) {
@@ -125,6 +136,11 @@ public static unsafe class EventController {
                         Kind = SubscriberKind.AddonRefreshArgs;
                         return true;
                     }
+                    
+                    if (p[0].ParameterType == typeof(AddonReceiveEventArgs)) { 
+                        Kind = SubscriberKind.AddonReceiveEventArgs;
+                        return true;
+                    }
 
                 } else if (p.Length == 3) {
                     if (p[1].IsPointer<NumberArrayData>(2) && p[2].IsPointer<StringArrayData>(2)) {
@@ -154,7 +170,7 @@ public static unsafe class EventController {
             return false;
         }
         
-        public void Invoke(AddonArgs args) {
+        public void Invoke(object args) {
             if (NthTick > 1) {
                 if (++tick < NthTick) return;
                 tick = 0;
@@ -176,10 +192,10 @@ public static unsafe class EventController {
                     SubscriberKind.Unknown => null,
                     SubscriberKind.Framework => Method.Invoke(Tweak, Array.Empty<object>()),
                     SubscriberKind.NoParameter => Method.Invoke(Tweak, Array.Empty<object>()),
-                    SubscriberKind.AtkUnitBase => Method.Invoke(Tweak, new[] { Pointer.Box((void*)args.Addon, typeof(AtkUnitBase*)) }),
-                    SubscriberKind.AtkUnitBaseWithArrays => Method.Invoke(Tweak, new[] { Pointer.Box((void*)args.Addon, typeof(AtkUnitBase*)), Pointer.Box(AtkStage.GetSingleton()->GetNumberArrayData(), typeof(NumberArrayData**)), Pointer.Box(AtkStage.GetSingleton()->GetStringArrayData(), typeof(StringArrayData**)), }),
-                    SubscriberKind.AddonPointer => Method.Invoke(Tweak, new[] { Pointer.Box((void*)args.Addon, addonPointerType) }),
-                    SubscriberKind.AddonPointerWithArrays => Method.Invoke(Tweak, new[] { Pointer.Box((void*)args.Addon, addonPointerType), Pointer.Box(AtkStage.GetSingleton()->GetNumberArrayData(), typeof(NumberArrayData**)), Pointer.Box(AtkStage.GetSingleton()->GetStringArrayData(), typeof(StringArrayData**)), }),
+                    SubscriberKind.AtkUnitBase => Method.Invoke(Tweak, new[] { Pointer.Box((void*)((AddonArgs)args).Addon, typeof(AtkUnitBase*)) }),
+                    SubscriberKind.AtkUnitBaseWithArrays => Method.Invoke(Tweak, new[] { Pointer.Box((void*)((AddonArgs)args).Addon, typeof(AtkUnitBase*)), Pointer.Box(AtkStage.GetSingleton()->GetNumberArrayData(), typeof(NumberArrayData**)), Pointer.Box(AtkStage.GetSingleton()->GetStringArrayData(), typeof(StringArrayData**)), }),
+                    SubscriberKind.AddonPointer => Method.Invoke(Tweak, new[] { Pointer.Box((void*)((AddonArgs)args).Addon, addonPointerType) }),
+                    SubscriberKind.AddonPointerWithArrays => Method.Invoke(Tweak, new[] { Pointer.Box((void*)((AddonArgs)args).Addon, addonPointerType), Pointer.Box(AtkStage.GetSingleton()->GetNumberArrayData(), typeof(NumberArrayData**)), Pointer.Box(AtkStage.GetSingleton()->GetStringArrayData(), typeof(StringArrayData**)), }),
                     SubscriberKind.AddonArgs => Method.Invoke(Tweak, new object[] { args }),
                     SubscriberKind.AddonSetupArgs when args is AddonSetupArgs addonSetupArgs => Method.Invoke(Tweak, new object[] { addonSetupArgs }),
                     SubscriberKind.AddonUpdateArgs when args is AddonUpdateArgs addonUpdateArgs => Method.Invoke(Tweak, new object[] { addonUpdateArgs }),
@@ -187,6 +203,8 @@ public static unsafe class EventController {
                     SubscriberKind.AddonFinalizeArgs when args is AddonFinalizeArgs addonFinalizeArgs => Method.Invoke(Tweak, new object[] { addonFinalizeArgs }),
                     SubscriberKind.AddonRequestedUpdateArgs when args is AddonRequestedUpdateArgs addonRequestedUpdateArgs => Method.Invoke(Tweak, new object[] { addonRequestedUpdateArgs }),
                     SubscriberKind.AddonRefreshArgs when args is AddonRefreshArgs addonRefreshArgs => Method.Invoke(Tweak, new object[] { addonRefreshArgs }),
+                    SubscriberKind.AddonReceiveEventArgs when args is AddonReceiveEventArgs addonReceiveEventArgs => Method.Invoke(Tweak, new object[] { addonReceiveEventArgs }),
+                    SubscriberKind.TerritoryChanged => Method.Invoke(Tweak, new object[] { args }),
                     _ => null,
                 };
             } catch (Exception ex) {
@@ -200,6 +218,7 @@ public static unsafe class EventController {
     
     private static Dictionary<AddonEvent, Dictionary<string, List<EventSubscriber>>> AddonEventSubscribers { get; } = new();
     private static List<EventSubscriber> FrameworkUpdateSubscribers { get; } = new();
+    private static List<EventSubscriber> TerritoryChangedSubscribers { get; } = new();
 
     private static bool TryGetCustomAttribute<T>(this MemberInfo element, out T attribute) where T : Attribute {
         attribute = element.GetCustomAttribute<T>();
@@ -222,6 +241,17 @@ public static unsafe class EventController {
                 }
                 
                 FrameworkUpdateSubscribers.Add(subscriber);
+            }
+            
+            if (method.TryGetCustomAttribute<TerritoryChangedAttribute>(out _)) {
+                var subscriber = EventSubscriber.CreateTerritoryChangedSubscriber(tweak, method);
+
+                if (TerritoryChangedSubscribers.Count == 0) {
+                    Service.ClientState.TerritoryChanged -= HandleTerritoryChanged;
+                    Service.ClientState.TerritoryChanged += HandleTerritoryChanged;
+                }
+                
+                TerritoryChangedSubscribers.Add(subscriber);
             }
             
             foreach (var attr in method.GetCustomAttributes<AddonEventAttribute>()) {
@@ -253,6 +283,12 @@ public static unsafe class EventController {
         }
     }
 
+    private static void HandleTerritoryChanged(ushort newTerritory) {
+        foreach (var tcSubscriber in TerritoryChangedSubscribers) {
+            tcSubscriber.Invoke(newTerritory);
+        }
+    }
+
     private static void HandleEvent(AddonEvent type, AddonArgs args) {
         if (!AddonEventSubscribers.TryGetValue(type, out var addonSubscriberDict)) return;
 
@@ -277,6 +313,11 @@ public static unsafe class EventController {
         FrameworkUpdateSubscribers.RemoveAll(f => f.Tweak == tweak);
         if (FrameworkUpdateSubscribers.Count == 0) {
             Service.Framework.Update -= HandleFrameworkUpdate;
+        }
+
+        TerritoryChangedSubscribers.RemoveAll(f => f.Tweak == tweak);
+        if (TerritoryChangedSubscribers.Count == 0) {
+            Service.ClientState.TerritoryChanged -= HandleTerritoryChanged;
         }
         
         foreach (var (_, addonSubscribers) in AddonEventSubscribers) {
