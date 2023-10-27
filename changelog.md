@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.9.2.0
+***New Tweaks***
+- **`Alt + F4 Exit Game`** - Pressing Alt + F4 will cause the game to close safely. *(MidoriKami)*
+
+- **`Fast Item Search`** - Enable superfast searches for the market board & crafting log. *(Asriel)*
+
+- **`Hide 'Character not found' Message`** - Prevent the game from displaying the "The character you last logged out with could not be found on the current data center." message.
+
+- **`Use Custom Time for Furniture Clocks`** - Changes the time displayed on chronometer furniture.
+
+
+***Tweak Changes***
+- **`Fade Unavailable Actions`** - Added option to make skills that are out of range red
+
+
 ## 1.9.1.1
 ***Tweak Changes***
 - **`Duplicate Keybind Hints Between Hotbars`** - Fixed flickering while cooldown is active.

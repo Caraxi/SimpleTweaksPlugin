@@ -6,6 +6,11 @@
 
 ---
 
+- **Alt + F4 Exit Game**
+
+  Pressing Alt + F4 will cause the game to close safely.
+
+
 - **Auto Lock Action Bars**
 
   Automatically locks action bars when certain conditions are met.
@@ -104,6 +109,11 @@
 - **Fixed Shadow Distance**
 
   Sets a fixed value for the shadow rendering, preventing it from changing when flying.
+
+
+- **Hide 'Character not found' Message**
+
+  Prevent the game from displaying the "The character you last logged out with could not be found on the current data center." message.
 
 
 - **Hide Hotbar Lock**
@@ -248,6 +258,11 @@
   Show the correct item when trying on a glamoured item.
 
 
+- **Use Custom Time for Furniture Clocks**
+
+  Changes the time displayed on chronometer furniture.
+
+
 ### Chat Tweaks
 
 ---
@@ -275,6 +290,11 @@
 - **Disable Chat Movement**
 
   Prevents movement of the chat window.
+
+
+- **Echo Party Finder**
+
+  Prints Party Finder description to chat when joining a group and entering a duty.
 
 
 - **Echo Story Selection**
@@ -524,7 +544,12 @@
 
 - **Fade Unavailable Actions**
 
-  Instead of darkening icons, makes them transparent when unavailable
+  Instead of darkening icons, makes them transparent when unavailable.
+
+
+- **Fast Item Search**
+
+  Enable superfast searches for the market board & crafting log.
 
 
 - **Hide Achievements Nearing Completion Notifications**
@@ -554,7 +579,7 @@
 
 - **Hide Unwanted Banners**
 
-  Hide information banners such as 'Venture Complete', or 'Levequest Accepted'
+  Hide information banners such as 'Venture Complete', or 'Levequest Accepted'.
 
 
 - **Housing Lottery Timer**
@@ -569,7 +594,7 @@
 
 - **Improved Interruptable Castbars**
 
-  Displays an icon next to interruptable castbars
+  Displays an icon next to interruptable castbars.
 
 
 - **Item Level in Examine**

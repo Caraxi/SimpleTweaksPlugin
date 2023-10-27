@@ -12,7 +12,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakName("Use Custom Time for Furniture Clocks")]
 [TweakDescription("Changes the time displayed on chronometer furniture.")]
 [TweakAutoConfig]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.9.2.0")]
 public unsafe class FurnitureClocksCustomTime : Tweak {
     public enum TimeMode {
         [Description("Local Time")] Local,

@@ -18,7 +18,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakVersion(2)]
 [TweakAutoConfig]
 [TweakReleaseVersion("1.8.3.0")]
-[Changelog(UnreleasedVersion, "Rewrote Tweak for Patch 6.5")]
+[Changelog("1.9.2.0", "Rewrote Tweak for Patch 6.5")]
 public unsafe class EchoPartyFinder : ChatTweaks.SubTweak {
     public class Config : TweakConfig {
         [TweakConfigOption("Show PF description when joining party")]

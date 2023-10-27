@@ -1,4 +1,4 @@
-﻿using Dalamud.Utility;
+using Dalamud.Utility;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -26,7 +26,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Enable superfast searches for the market board & crafting log.")]
 [TweakAuthor("Asriel")]
 [TweakAutoConfig]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.9.2.0")]
 public unsafe class FastSearch : UiAdjustments.SubTweak {
     public class FastSearchConfig : TweakConfig {
         [TweakConfigOption("Use Fuzzy Search")]
