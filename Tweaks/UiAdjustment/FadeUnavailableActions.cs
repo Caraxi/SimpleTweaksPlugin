@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -22,15 +23,16 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [Changelog("1.8.3.2", "Add option to apply to sync'd skills only")]
 [Changelog("1.8.4.0", "Tweak now only applies to combat actions")]
 [Changelog("1.8.4.0", "Properly resets hotbar state on unload/disable")]
+[Changelog(UnreleasedVersion, "Added option to make skills that are out of range red")]
 public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
-    private delegate void UpdateHotBarSlotDelegate(AddonActionBarBase* addon, SlotData* uiData, NumberArrayData* numberArray, StringArrayData* stringArray, int numberArrayIndex, int stringArrayIndex);
+    private delegate void UpdateHotBarSlotDelegate(AddonActionBarBase* addon, ActionBarSlot* uiData, NumberArrayData* numberArray, StringArrayData* stringArray, int numberArrayIndex, int stringArrayIndex);
     
     [TweakHook, Signature("E8 ?? ?? ?? ?? 49 81 C6 ?? ?? ?? ?? 83 C7 10", DetourName = nameof(OnHotBarSlotUpdate))]
     private readonly HookWrapper<UpdateHotBarSlotDelegate>? onHotBarSlotUpdateHook = null!;
 
     private readonly Dictionary<uint, Action> actionCache = new();
 
-    private readonly List<string> addonActionBarNames = new() { "_ActionBar", "_ActionBar01", "_ActionBar02", "_ActionBar03", "_ActionBar04", "_ActionBar05", "_ActionBar06", "_ActionBar07", "_ActionBar08", "_ActionBar09","_ActionCross", "_ActionDoubleCrossR", "_ActionDoubleCrossL" };
+    private readonly List<string> addonActionBarNames = new() { "_ActionBar", "_ActionBar01", "_ActionBar02", "_ActionBar03", "_ActionBar04", "_ActionBar05", "_ActionBar06", "_ActionBar07", "_ActionBar08", "_ActionBar09", "_ActionCross", "_ActionDoubleCrossR", "_ActionDoubleCrossL" };
     
     public class Config : TweakConfig {
         [TweakConfigOption("Fade Percentage", IntMax = 90, IntMin = 0, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EditorSize = 150)]
@@ -38,6 +40,12 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
 
         [TweakConfigOption("Apply Transparency to Frame")]
         public bool ApplyToFrame = true;
+
+        [TweakConfigOption("Redden Percentage", IntMax = 100, IntMin = 5, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EditorSize = 150)]
+        public int ReddenPercentage = 50;
+        
+        [TweakConfigOption("Redden skills out of range")]
+        public bool ReddenOutOfRange = true;
 
         [TweakConfigOption("Apply Only to Sync'd Actions")]
         public bool ApplyToSyncActions = false;
@@ -59,6 +67,9 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
                     var iconComponent = (AtkComponentIcon*) slot.Icon->Component;
                     if (iconComponent is not null) {
                         iconComponent->IconImage->AtkResNode.Color.A = 0xFF;
+                        iconComponent->IconImage->AtkResNode.Color.R = 0xFF;
+                        iconComponent->IconImage->AtkResNode.Color.G = 0xFF;
+                        iconComponent->IconImage->AtkResNode.Color.B = 0xFF;
                         iconComponent->Frame->Color.A = 0xFF;
                     }
                 }
@@ -66,7 +77,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         }
     }
     
-    private void OnHotBarSlotUpdate(AddonActionBarBase* addon, SlotData* hotBarSlotData, NumberArrayData* numberArray, StringArrayData* stringArray, int numberArrayIndex, int stringArrayIndex) {
+    private void OnHotBarSlotUpdate(AddonActionBarBase* addon, ActionBarSlot* hotBarSlotData, NumberArrayData* numberArray, StringArrayData* stringArray, int numberArrayIndex, int stringArrayIndex) {
         try {
             ProcessHotBarSlot(hotBarSlotData, numberArray, numberArrayIndex);
         } 
@@ -77,35 +88,41 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         onHotBarSlotUpdateHook!.Original(addon, hotBarSlotData, numberArray, stringArray, numberArrayIndex, stringArrayIndex);
     }
 
-    private void ProcessHotBarSlot(SlotData* hotBarSlotData, NumberArrayData* numberArray, int numberArrayIndex) {
-        if (hotBarSlotData->ActionId > ushort.MaxValue) return;
+    private void ProcessHotBarSlot(ActionBarSlot* hotBarSlotData, NumberArrayData* numberArray, int numberArrayIndex) {
         if (Service.ClientState.LocalPlayer is { IsCasting: true } ) return;
 
         var numberArrayData = (NumberArrayStruct*) (&numberArray->IntArray[numberArrayIndex]);
+        var hotBarSlotIndex = ((numberArrayIndex - 15) / 16) % 16;
+        var hotBarIndex = ((numberArrayIndex - 15) / 16) / 15;
+
+        if (hotBarIndex > RaptureHotbarModule.Instance()->HotBarsSpan.Length) return;
+        ref var raptureSlotData = ref RaptureHotbarModule.Instance()->HotBarsSpan[hotBarIndex].SlotsSpan[hotBarSlotIndex];
         
-        // If action type is not combat action, remove transparency and return
-        if (numberArrayData->ActionType != 45) {
+        if (raptureSlotData.CommandType is not (HotbarSlotType.Action or HotbarSlotType.CraftAction)) {
             ApplyTransparency(hotBarSlotData, false);
             return;
         }
 
         if (TweakConfig.ApplyToSyncActions) {
-            var action = GetAction(hotBarSlotData->ActionId);
+            var action = GetAction((uint)hotBarSlotData->ActionId);
             var actionLevel = action.ClassJobLevel;
             var playerLevel = Service.ClientState.LocalPlayer?.Level ?? 0;
 
             switch (action) {
                 case { IsRoleAction: false } when actionLevel > playerLevel:
                     ApplyTransparency(hotBarSlotData, true);
+                    ApplyReddening(hotBarSlotData, false);
                     break;
                 
                 default:
                     ApplyTransparency(hotBarSlotData, false);
+                    ApplyReddening(hotBarSlotData, false);
                     break;
             }
         }
         else {
             ApplyTransparency(hotBarSlotData, ShouldFadeAction(numberArrayData));
+            ApplyReddening(hotBarSlotData, !numberArrayData->TargetInRange && !ShouldFadeAction(numberArrayData));
         }
     }
 
@@ -120,10 +137,30 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
     }
 
     private bool ShouldFadeAction(NumberArrayStruct* numberArrayData) => !(numberArrayData->ActionAvailable_1 && numberArrayData->ActionAvailable_2);
-
-    private void ApplyTransparency(SlotData* hotBarSlotData, bool fade) {
+    
+    private void ApplyReddening(ActionBarSlot* hotBarSlotData, bool redden) {
         if (hotBarSlotData is null) return;
-        var iconComponent = (AtkComponentIcon*) hotBarSlotData->IconComponentNode->Component;
+        var iconComponent = (AtkComponentIcon*) hotBarSlotData->Icon->Component;
+
+        if (iconComponent is null) return;
+        if (iconComponent->IconImage is null) return;
+        if (iconComponent->Frame is null) return;
+
+        if (TweakConfig.ReddenOutOfRange && redden) {
+            iconComponent->IconImage->AtkResNode.Color.R = 0xFF;
+            iconComponent->IconImage->AtkResNode.Color.G = (byte)(0xFF * ((100 - TweakConfig.ReddenPercentage) / 100.0f));
+            iconComponent->IconImage->AtkResNode.Color.B = (byte)(0xFF * ((100 - TweakConfig.ReddenPercentage) / 100.0f));
+        }
+        else {
+            iconComponent->IconImage->AtkResNode.Color.R = 0xFF;
+            iconComponent->IconImage->AtkResNode.Color.G = 0xFF;
+            iconComponent->IconImage->AtkResNode.Color.B = 0xFF;
+        }
+    }
+    
+    private void ApplyTransparency(ActionBarSlot* hotBarSlotData, bool fade) {
+        if (hotBarSlotData is null) return;
+        var iconComponent = (AtkComponentIcon*) hotBarSlotData->Icon->Component;
 
         if (iconComponent is null) return;
         if (iconComponent->IconImage is null) return;
@@ -147,17 +184,6 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         [FieldOffset(0x18)] public bool ActionAvailable_2;
         [FieldOffset(0x20)] public int CooldownPercent;
         [FieldOffset(0x28)] public int ManaCost;
-    }
-    
-    [StructLayout(LayoutKind.Explicit, Size = 0xC8)]
-    private struct SlotData {
-        [FieldOffset(0x04)] public uint ActionId;
-        [FieldOffset(0x88)] public AtkComponentDragDrop* DragDropNode;
-        [FieldOffset(0x90)] public AtkComponentNode* IconComponentNode;
-        [FieldOffset(0x98)] public AtkTextNode* HotkeyTextNode;
-        [FieldOffset(0xA0)] public AtkResNode* FrameNode;
-        [FieldOffset(0xA8)] public AtkImageNode* ChargeIconNode;
-        [FieldOffset(0xB0)] public AtkResNode* RecastNode;
-        [FieldOffset(0xB8)] public byte* TooltipString;
+        [FieldOffset(0x3C)] public bool TargetInRange;
     }
 }
