@@ -59,4 +59,12 @@ public class AddonPostRefreshAttribute : AddonEventAttribute {
     public AddonPostRefreshAttribute(params string[] addonNames) : base(AddonEvent.PostRefresh, addonNames) { }
 }
 
+public class AddonPreReceiveEventAttribute : AddonEventAttribute {
+    public AddonPreReceiveEventAttribute(params string[] addonNames) : base(AddonEvent.PreReceiveEvent, addonNames) { }
+}
+
+public class AddonPostReceiveEventAttribute : AddonEventAttribute {
+    public AddonPostReceiveEventAttribute(params string[] addonNames) : base(AddonEvent.PostReceiveEvent, addonNames) { }
+}
+
 #endregion

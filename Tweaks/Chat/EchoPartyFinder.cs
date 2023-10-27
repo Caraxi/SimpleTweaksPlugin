@@ -42,15 +42,8 @@ public unsafe class EchoPartyFinder : ChatTweaks.SubTweak {
     public override void Setup() {
         onLookingForGroupEventHook ??= Common.Hook(AgentModule.Instance()->GetAgentByInternalId(AgentId.LookingForGroup)->VTable->ReceiveEvent, new ReceiveEventDelegate(OnLookingForGroupReceiveEvent));
     }
-
-    protected override void Enable() {
-        Service.ClientState.TerritoryChanged += OnTerritoryChanged;
-    }
-
-    protected override void Disable() {
-        Service.ClientState.TerritoryChanged -= OnTerritoryChanged;
-    }
-
+    
+    [TerritoryChanged]
     private void OnTerritoryChanged(ushort territoryId) {
         if (territoryId != targetTerritoryId) return;
         if (TweakConfig.ShowUponEnteringInstance) PrintListing();

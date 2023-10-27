@@ -7,6 +7,7 @@ using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -75,20 +76,17 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
         }
 
         Config = LoadConfig<Configs>() ?? new Configs();
-        Common.FrameworkUpdate += OnFrameworkUpdate;
-        Service.ClientState.TerritoryChanged += OnTerritoryChanged;
         OnTerritoryChanged(Service.ClientState.TerritoryType);
         base.Enable();
     }
 
     protected override void Disable() {
-        Common.FrameworkUpdate -= OnFrameworkUpdate;
-        Service.ClientState.TerritoryChanged -= OnTerritoryChanged;
         UpdateParameterBar(true);
         SaveConfig(Config);
         base.Disable();
     }
 
+    [FrameworkUpdate]
     private void OnFrameworkUpdate() {
         try {
             UpdateParameterBar();
@@ -98,6 +96,7 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
         }
     }
     
+    [TerritoryChanged]
     private void OnTerritoryChanged(ushort territoryType) {
         var territory = Service.Data.Excel.GetSheet<TerritoryType>()?.GetRow(territoryType);
         if (territory == null) return;

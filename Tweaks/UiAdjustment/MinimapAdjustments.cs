@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Numerics;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -64,11 +65,11 @@ public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         Service.ClientState.Login += OnLogin;
-        Service.ClientState.TerritoryChanged += OnTerritoryChanged;
         base.Enable();
         Update();
     }
 
+    [TerritoryChanged]
     private void OnTerritoryChanged(ushort _) {
         sw.Restart();
         Common.FrameworkUpdate -= WaitForUpdate;
