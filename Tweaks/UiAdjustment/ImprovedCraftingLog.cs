@@ -22,8 +22,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [Changelog("1.8.2.1", "Fixed a potential crash in specific circumstances.")]
 [Changelog("1.9.1.0", "Made attempt to fix some issues", "Tweak has been disabled for everyone and marked as experimental.")]
 public unsafe class ImprovedCraftingLog : Tweak {
-    public override bool Experimental => true;
-
     private readonly Stopwatch removeFrameworkUpdateEventStopwatch = new();
     private bool standingUp;
 
