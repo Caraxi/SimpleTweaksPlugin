@@ -2,7 +2,7 @@
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 
-namespace SimpleTweaksPlugin.Tweaks.Chat;
+namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("Alt + F4 Exit Game")]
 [TweakDescription("Pressing Alt + F4 will cause the game to close safely.")]
