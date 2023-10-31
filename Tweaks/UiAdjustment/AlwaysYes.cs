@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Interface;
@@ -30,6 +30,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         public bool Desynthesis = true;
         public bool Lobby = true;
         public bool ItemExchangeConfirmations = true;
+        public bool BlundervilleExitDialog = true;
         public List<string> ExceptionsYesNo = new();
     }
 
@@ -93,6 +94,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         hasChanged |= ImGui.Checkbox("Desynthesis", ref Config.Desynthesis);
         hasChanged |= ImGui.Checkbox("Character selection dialogs", ref Config.Lobby);
         hasChanged |= ImGui.Checkbox("Item exchange confirmations", ref Config.ItemExchangeConfirmations);
+        hasChanged |= ImGui.Checkbox("Blunderville exit dialog", ref Config.BlundervilleExitDialog);
 
         ImGui.Unindent();
 
@@ -158,6 +160,9 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
             case "ShopExchangeItemDialog":
                 if (Config.ItemExchangeConfirmations) SetFocusYes(args.Addon, 18);
                 return;
+            case "FGSExitDialog":
+                if (Config.BlundervilleExitDialog) SetSpecialFocus(args.Addon, 10, 6);
+                return;
         }
     }
     private void SetFocusYes(nint unitBaseAddress, uint yesButtonId, uint? yesHoldButtonId = null, uint? checkBoxId = null) {
@@ -191,6 +196,21 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
 
         unitBase->SetFocusNode(yesCollision);
         unitBase->CursorTarget = yesCollision;
+    }
+
+    private static void SetSpecialFocus(nint unitBaseAddress, uint buttonId, uint collisionId)
+    {
+        var unitBase = (AtkUnitBase*)unitBaseAddress;
+        if (unitBase == null) return;
+
+        var button = unitBase->UldManager.SearchNodeById(buttonId);
+        if (button == null) return;
+
+        var collision = ((AtkComponentNode *)button)->Component->UldManager.SearchNodeById(collisionId);
+        if (collision == null) return;
+
+        unitBase->SetFocusNode(collision);
+        unitBase->CursorTarget = collision;
     }
     
     private bool IsYesnoAnException(nint unitBaseAddress) {
