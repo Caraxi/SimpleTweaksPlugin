@@ -1,17 +1,9 @@
 ﻿using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
-using System.Threading.Tasks;
-using static Dalamud.Interface.Utility.Raii.ImRaii;
-using static Lumina.Data.Parsing.Uld.NodeData;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 {
@@ -78,7 +70,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                 ImGui.ColorEdit4("Edge Color##Target", ref Config.TargetEdgeColor);
                 ImGui.ColorEdit4("Background Color##Target", ref Config.TargetBackgroundColor);
                 ImGui.Checkbox("Auto Adjust Width##Target", ref Config.TargetAutoAdjustWidth);
-                ImGui.DragInt("Background Width##Target", ref Config.TargetBackgroundWidth, 0.6f, 90, 800);                
+                ImGui.DragInt("Background Width##Target", ref Config.TargetBackgroundWidth, 0.6f, 90, 800);
                 ImGui.DragInt("Background Height Padding##Target", ref Config.TargetBackgroundHeight, 0.6f, -10, 30);
                 ImGui.DragInt("Font Size##Target", ref Config.TargetFontSize, 0.4f, 12, 50);
                 ImGui.Unindent();
@@ -147,7 +139,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                 if (ui->IsVisible && useCustomColor)
                 {
                     TryLinkNode(ui, defaultNodeCount, imageNode);
-                    imageNode->AtkResNode.ToggleVisibility(textNode->AtkResNode.IsVisible);                    
+                    imageNode->AtkResNode.ToggleVisibility(textNode->AtkResNode.IsVisible);
                     AdjustTextColorsAndFontSize(textNode, textColor, edgeColor, fontSize);
                     drawBackground(textNode);
                 }
@@ -171,18 +163,18 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             var tui = Common.GetUnitBase("_TargetInfo", 1);
             var ftext = (AtkTextNode*)fui->UldManager.NodeList[focusTargetTextNodeIndex];
             var ttext = (AtkTextNode*)tui->UldManager.NodeList[targetTextNodeIndex];
-            if (fui != null)  ResetText(ftext);
-            if (tui != null)  ResetText(ttext);
+            if (fui != null) ResetText(ftext);
+            if (tui != null) ResetText(ttext);
         }
 
         private void TryLinkNode(AtkUnitBase* ui, int defaultNodeCount, AtkImageNode* imageNode)
         {
-            if (ui == null || ui->RootNode == null || ui->RootNode->ChildNode == null) return;         
+            if (ui == null || ui->RootNode == null || ui->RootNode->ChildNode == null) return;
             if (imageNode == null) return;
             if (ui->UldManager.NodeListCount <= defaultNodeCount)
-                UiHelper.LinkNodeAtEnd(&imageNode->AtkResNode, ui);            
+                UiHelper.LinkNodeAtEnd(&imageNode->AtkResNode, ui);
             else
-                imageNode = (AtkImageNode*)ui->UldManager.NodeList[focusTargetDefaultNodeCount];            
+                imageNode = (AtkImageNode*)ui->UldManager.NodeList[focusTargetDefaultNodeCount];
         }
 
         private void AdjustTextColorsAndFontSize(AtkTextNode* textNode, Vector4 textColor, Vector4 edgeColor, int fontSize)
@@ -206,7 +198,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             var textNodeHeight = textNode->AtkResNode.Height;
             var imageNodeHeight = (int)(1.33 * Config.FocusFontSize + 1) + Config.FocusBackgroundHeight;
             var imageNodeWidth = Config.FocusAutoAdjustWidth ? GetWidthFromTextLength(textNode) : Config.FocusBackgroundWidth;
-            
+
             //text node height is affected by the 'Reposition Target Castbar Text' tweak.            
             var xOffset = 0;
             var yOffset = ((24) - textNodeHeight + (imageNodeHeight - 24)) - Config.FocusBackgroundHeight / 2;
@@ -232,13 +224,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             focusTargetImageNode->AtkResNode.AddGreen = (byte)(Config.FocusBackgroundColor.Y * 255);
             focusTargetImageNode->AtkResNode.AddBlue = (byte)(Config.FocusBackgroundColor.Z * 255);
         }
-      
+
         private void DrawTargetBackground(AtkTextNode* textNode)
         {
             var textNodeHeight = textNode->AtkResNode.Height;
             var imageNodeHeight = (int)(1.33 * Config.TargetFontSize + 1) + Config.TargetBackgroundHeight;
             var imageNodeWidth = Config.TargetAutoAdjustWidth ? GetWidthFromTextLength(textNode) : Config.TargetBackgroundWidth;
-          
+
             var xOffset = 0;
             var yOffset = ((14) - textNodeHeight + (imageNodeHeight - 24)) - Config.TargetBackgroundHeight / 2;
 
@@ -313,9 +305,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             TryUnlinkImageNodes();
 
             if (focusTargetImageNode != null)
-
-                if (targetImageNode != null)
-                    UiHelper.FreeImageNode(targetImageNode);
+                UiHelper.FreeImageNode(focusTargetImageNode);
+            if (targetImageNode != null)
+                UiHelper.FreeImageNode(targetImageNode);
 
             focusTargetImageNode = null;
             targetImageNode = null;
