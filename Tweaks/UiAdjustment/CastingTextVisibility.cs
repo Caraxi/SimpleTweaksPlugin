@@ -93,7 +93,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             FreeAllNodes();            
         }
 
-        [AddonPostUpdateAttribute("_TargetInfo", "_FocusTargetInfo")]
+        [AddonPostRequestedUpdateAttribute("_TargetInfo", "_FocusTargetInfo")]
         private void OnAddonRequestedUpdate(AddonArgs args)
         {
             var addon = (AtkUnitBase*)args.Addon;
