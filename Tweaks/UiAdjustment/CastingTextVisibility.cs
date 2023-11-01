@@ -1,16 +1,35 @@
-﻿using FFXIVClientStructs.FFXIV.Component.GUI;
+﻿using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
+using System.Text;
+using System.Threading.Tasks;
+using static Lumina.Data.Parsing.Uld.NodeData;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 {
+    [TweakName("Casting Text Visibility")]
+    [TweakDescription("Change the font size, color, and background of the casting text.")]
+    [TweakAuthor("img")]
+    [TweakAutoConfig]
+    [TweakReleaseVersion("1.0.0.0")]
+
     internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak
     {
+        private uint focusTargetImageNodeid => CustomNodes.Get(this, "CTVFocus");
+        private uint targetImageNodeid => CustomNodes.Get(this, "CTVTarget");
 
-        public class Configs : TweakConfig
+        private uint focusTargetTextNodeId = 5;
+        private uint targetTextNodeId = 12;
+
+        private Configuration Config { get; set; } = null!;
+        public class Configuration : TweakConfig
         {
             public bool UseCustomFocusColor = false;
             public bool UseCustomTargetColor = false;
@@ -32,17 +51,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             public bool TargetAutoAdjustWidth = false;
         }
 
-        public Configs Config { get; private set; }
-        private AtkImageNode* focusTargetImageNode = null;
-        private AtkImageNode* targetImageNode = null;
-
-        private int focusTargetDefaultNodeCount = 19;
-        private int targetDefaultNodeCount = 54;
-
-        private int focusTargetTextNodeIndex = 16;
-        private int targetTextNodeIndex = 44;
-
-        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) =>
+        private void DrawConfig()
         {
             ImGui.Checkbox("Focus Target", ref Config.UseCustomFocusColor);
 
@@ -76,106 +85,67 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                 ImGui.Unindent();
                 ImGui.NewLine();
             }
-        };
-
-        public override string Name => "Casting Text Visibility";
-        public override string Description => "Change casting text color and font size.";
-
-        public override void Setup()
-        {
-            base.Setup();
-        }
-
-        protected override void Enable()
-        {
-            Config = LoadConfig<Configs>() ?? new Configs();
-            CreateImageNodes();
-            Common.FrameworkUpdate += FrameworkUpdate;
-            base.Enable();
         }
 
         protected override void Disable()
         {
-            SaveConfig(Config);
-            DeleteImageNodes();
             ResetTextNodes();
-            Common.FrameworkUpdate -= FrameworkUpdate;
-            base.Disable();
+            FreeAllNodes();            
         }
 
-        private void FrameworkUpdate()
+        [AddonPostUpdateAttribute("_TargetInfo", "_FocusTargetInfo")]
+        private void OnAddonRequestedUpdate(AddonArgs args)
         {
-            try
+            var addon = (AtkUnitBase*)args.Addon;
+            switch (args.AddonName)
             {
-                Update();
-            }
-            catch (Exception ex)
-            {
-                SimpleLog.Error(ex);
-            }
-        }
-
-        private void Update()
-        {
-            TryDrawUi("_FocusTargetInfo", 1, focusTargetTextNodeIndex, focusTargetDefaultNodeCount,
-                Config.UseCustomFocusColor, focusTargetImageNode, Config.FocusTextColor,
-                Config.FocusEdgeColor, Config.FocusFontSize, DrawFocusTargetBackground);
-
-            TryDrawUi("_TargetInfo", 1, targetTextNodeIndex, targetDefaultNodeCount,
-               Config.UseCustomTargetColor, targetImageNode, Config.TargetTextColor,
-               Config.TargetEdgeColor, Config.TargetFontSize, DrawTargetBackground);
-        }
-
-        unsafe delegate void DrawBackgroundAction(AtkTextNode* node);
-
-        private void TryDrawUi(string unitBaseName, int unitBaseId, int nodeIndex, int defaultNodeCount, bool useCustomColor, AtkImageNode* imageNode,
-            Vector4 textColor, Vector4 edgeColor, int fontSize, DrawBackgroundAction drawBackground)
-        {
-            var ui = Common.GetUnitBase(unitBaseName, unitBaseId);
-            if (NodeExists(ui, nodeIndex))
-            {
-                var textNode = (AtkTextNode*)ui->UldManager.NodeList[nodeIndex];
-                //'_TargetInfo' text node can sometimes remain visible when targetting non-bnpcs, but parent node invis.
-                if (ui->IsVisible && useCustomColor && textNode->AtkResNode.ParentNode->IsVisible)
-                {
-                    TryLinkNode(ui, defaultNodeCount, imageNode);
-                    imageNode->AtkResNode.ToggleVisibility(textNode->AtkResNode.IsVisible);
-                    AdjustTextColorsAndFontSize(textNode, textColor, edgeColor, fontSize);
-                    drawBackground(textNode);
-                }
-                else
-                {
-                    if (imageNode != null)
-                        imageNode->AtkResNode.ToggleVisibility(false);
-                    ResetText(textNode);
-                }
+                case "_FocusTargetInfo" when addon->IsVisible:
+                    UpdateAddOn(addon, focusTargetTextNodeId, focusTargetImageNodeid,
+                        Config.UseCustomFocusColor, Config.FocusTextColor,
+                        Config.FocusEdgeColor, Config.FocusFontSize, DrawFocusTargetBackground);
+                    break;
+                case "_TargetInfo" when addon->IsVisible:
+                    UpdateAddOn(addon, targetTextNodeId, targetImageNodeid,
+                       Config.UseCustomTargetColor,Config.TargetTextColor,
+                       Config.TargetEdgeColor, Config.TargetFontSize, DrawTargetBackground);
+                    break;
             }
         }
-        private void ResetText(AtkTextNode* textNode)
-        {
-            var defaultEdgeColor = new Vector4(115 / 255f, 85 / 255f, 15 / 255f, 1);
-            AdjustTextColorsAndFontSize(textNode, Vector4.One, defaultEdgeColor, 14);
-        }
 
-        private void ResetTextNodes()
-        {
-            var fui = Common.GetUnitBase("_FocusTargetInfo", 1);
-            var tui = Common.GetUnitBase("_TargetInfo", 1);
-            var ftext = (AtkTextNode*)fui->UldManager.NodeList[focusTargetTextNodeIndex];
-            var ttext = (AtkTextNode*)tui->UldManager.NodeList[targetTextNodeIndex];
-            if (fui != null) ResetText(ftext);
-            if (tui != null) ResetText(ttext);
-        }
+        unsafe delegate void DrawBackgroundAction(AtkTextNode* textNode, AtkImageNode* imageNode);
 
-        private void TryLinkNode(AtkUnitBase* ui, int defaultNodeCount, AtkImageNode* imageNode)
+        private void UpdateAddOn(AtkUnitBase* ui, uint textNodeId, uint imageNodeId,  
+            bool useCustomColor, Vector4 textColor, Vector4 edgeColor, 
+            int fontSize, DrawBackgroundAction drawBackground)
         {
-            if (ui == null || ui->RootNode == null || ui->RootNode->ChildNode == null) return;
-            if (imageNode == null) return;
-            if (ui->UldManager.NodeListCount <= defaultNodeCount)
-                UiHelper.LinkNodeAtEnd(&imageNode->AtkResNode, ui);
+            var textNode = Common.GetNodeByID<AtkTextNode>(&ui->UldManager, textNodeId);
+            if (textNode == null) return;
+            
+            //'_TargetInfo' text node can sometimes remain visible when targetting non-bnpcs, but parent node invis.
+            if (ui->IsVisible && useCustomColor && textNode->AtkResNode.ParentNode->IsVisible)  
+            {
+                TryMakeNodes(ui, imageNodeId);
+                ToggleImageNodeVisibility(textNode->AtkResNode.IsVisible, &ui->UldManager, imageNodeId);
+                AdjustTextColorsAndFontSize(textNode, textColor, edgeColor, fontSize);
+
+                var imageNode = GetImageNode(&ui->UldManager, imageNodeId);
+                if (imageNode != null) drawBackground(textNode, imageNode);
+            }
             else
-                imageNode = (AtkImageNode*)ui->UldManager.NodeList[focusTargetDefaultNodeCount];
+            {
+                ToggleImageNodeVisibility(false, &ui->UldManager, imageNodeId);
+                ResetText(textNode);
+            }
         }
+
+        private void ToggleImageNodeVisibility(bool visible, AtkUldManager* uldManager, uint nodeId)
+        {
+            var imageNode = GetImageNode(uldManager, nodeId);
+            if (imageNode == null) return;
+            imageNode->AtkResNode.ToggleVisibility(visible);
+        }
+
+        private AtkImageNode* GetImageNode(AtkUldManager* uldManager, uint nodeId) => Common.GetNodeByID<AtkImageNode>(uldManager, nodeId);        
 
         private void AdjustTextColorsAndFontSize(AtkTextNode* textNode, Vector4 textColor, Vector4 edgeColor, int fontSize)
         {
@@ -192,130 +162,118 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             textNode->FontSize = (byte)(fontSize);
         }
 
-        private void DrawFocusTargetBackground(AtkTextNode* textNode)
+        private void ResetText(AtkTextNode* textNode)
+        {
+            var defaultEdgeColor = new Vector4(115 / 255f, 85 / 255f, 15 / 255f, 1);
+            AdjustTextColorsAndFontSize(textNode, Vector4.One, defaultEdgeColor, 14);
+        }
+        private void ResetTextNodes()
+        {
+            var fui = Common.GetUnitBase("_FocusTargetInfo", 1);
+            var tui = Common.GetUnitBase("_TargetInfo", 1);
+            var ftext = Common.GetNodeByID<AtkTextNode>(&fui->UldManager, focusTargetTextNodeId);
+            var ttext = Common.GetNodeByID<AtkTextNode>(&tui->UldManager, targetTextNodeId);
+            if (fui != null) ResetText(ftext);
+            if (tui != null) ResetText(ttext);
+        }
+
+        private void DrawFocusTargetBackground(AtkTextNode* textNode, AtkImageNode* imageNode)
+        {
+            var offsetBaseX = 6;
+            var offsetBaseY = 24;
+
+            DrawBackground(imageNode, textNode, offsetBaseX, offsetBaseY, Config.FocusFontSize, Config.FocusBackgroundHeight, 
+                Config.FocusBackgroundWidth, Config.FocusAutoAdjustWidth, Config.FocusBackgroundColor);
+        }
+
+        private void DrawTargetBackground(AtkTextNode* textNode, AtkImageNode* imageNode)
+        {            
+            var offsetBaseX = 244;
+            var offsetBaseY = 14;
+
+            DrawBackground(imageNode, textNode, offsetBaseX, offsetBaseY, Config.TargetFontSize, Config.TargetBackgroundHeight,
+                 Config.TargetBackgroundWidth, Config.TargetAutoAdjustWidth, Config.TargetBackgroundColor);
+        }
+
+        private void DrawBackground(AtkImageNode* imageNode, AtkTextNode* textNode, int offsetBaseX, 
+            int offsetBaseY, int fontSize, int backgroundHeight, int backgroundWidth, bool autoAdjust, Vector4 color)
         {
             //https://accessibility.psu.edu/legibility/fontsize/ idk
             var textNodeHeight = textNode->AtkResNode.Height;
-            var imageNodeHeight = (int)(1.33 * Config.FocusFontSize + 1) + Config.FocusBackgroundHeight;
-            var imageNodeWidth = Config.FocusAutoAdjustWidth ? GetWidthFromTextLength(textNode) : Config.FocusBackgroundWidth;
+            var imageNodeHeight = (int)(1.33 * fontSize + 1) + backgroundHeight;
+            var imageNodeWidth = autoAdjust ? GetWidthFromTextLength(textNode) : backgroundWidth;
 
-            //text node height is affected by the 'Reposition Target Castbar Text' tweak.            
             var xOffset = 0;
-            var yOffset = ((24) - textNodeHeight + (imageNodeHeight - 24)) - Config.FocusBackgroundHeight / 2;
+            var yOffset = ((offsetBaseY) - textNodeHeight + (imageNodeHeight - 24)) - Config.FocusBackgroundHeight / 2;
 
             switch (textNode->AlignmentType)
             {
                 case AlignmentType.BottomLeft:
-                    xOffset = 6;
+                    xOffset = offsetBaseX;
                     break;
                 case AlignmentType.BottomRight:
-                    xOffset = 6 - (imageNodeWidth - 192);
+                    xOffset = offsetBaseX - (imageNodeWidth - 192);
                     break;
                 case AlignmentType.Bottom:
-                    xOffset = 6 - ((imageNodeWidth - 192) + 1) / 2;
+                    xOffset = offsetBaseX - ((imageNodeWidth - 192) + 1) / 2;
                     break;
             }
 
-            UiHelper.SetPosition(focusTargetImageNode, textNode->AtkResNode.X + xOffset, textNode->AtkResNode.Y - yOffset);
-            UiHelper.SetSize(focusTargetImageNode, imageNodeWidth, imageNodeHeight);
+            UiHelper.SetPosition(imageNode, textNode->AtkResNode.X + xOffset, textNode->AtkResNode.Y - yOffset);
+            UiHelper.SetSize(imageNode, imageNodeWidth, imageNodeHeight);
 
-            focusTargetImageNode->AtkResNode.Color.A = (byte)(Config.FocusBackgroundColor.W * 255);
-            focusTargetImageNode->AtkResNode.AddRed = (byte)(Config.FocusBackgroundColor.X * 255);
-            focusTargetImageNode->AtkResNode.AddGreen = (byte)(Config.FocusBackgroundColor.Y * 255);
-            focusTargetImageNode->AtkResNode.AddBlue = (byte)(Config.FocusBackgroundColor.Z * 255);
-        }
-
-        private void DrawTargetBackground(AtkTextNode* textNode)
-        {
-            var textNodeHeight = textNode->AtkResNode.Height;
-            var imageNodeHeight = (int)(1.33 * Config.TargetFontSize + 1) + Config.TargetBackgroundHeight;
-            var imageNodeWidth = Config.TargetAutoAdjustWidth ? GetWidthFromTextLength(textNode) : Config.TargetBackgroundWidth;
-
-            var xOffset = 0;
-            var yOffset = ((14) - textNodeHeight + (imageNodeHeight - 24)) - Config.TargetBackgroundHeight / 2;
-
-            switch (textNode->AlignmentType)
-            {
-                case AlignmentType.BottomLeft:
-                    xOffset = 244;
-                    break;
-                case AlignmentType.BottomRight:
-                    xOffset = 244 - ((imageNodeWidth - 192));
-                    break;
-                case AlignmentType.Bottom:
-                    xOffset = 244 - ((imageNodeWidth - 192) + 1) / 2;
-                    break;
-            }
-
-            UiHelper.SetPosition(targetImageNode, textNode->AtkResNode.X + xOffset, textNode->AtkResNode.Y - yOffset);
-            UiHelper.SetSize(targetImageNode, imageNodeWidth, imageNodeHeight);
-
-            targetImageNode->AtkResNode.Color.A = (byte)(Config.TargetBackgroundColor.W * 255);
-            targetImageNode->AtkResNode.AddRed = (byte)(Config.TargetBackgroundColor.X * 255);
-            targetImageNode->AtkResNode.AddBlue = (byte)(Config.TargetBackgroundColor.Z * 255);
-            targetImageNode->AtkResNode.AddGreen = (byte)(Config.TargetBackgroundColor.Y * 255);
+            imageNode->AtkResNode.Color.A = (byte)(color.W * 255);
+            imageNode->AtkResNode.AddRed = (byte)(color.X * 255);
+            imageNode->AtkResNode.AddGreen = (byte)(color.Y * 255);
+            imageNode->AtkResNode.AddBlue = (byte)(color.Z * 255);
         }
 
         //font is not monospace, so not 100% accurate
         private int GetWidthFromTextLength(AtkTextNode* textNode)
         {
             var textLength = textNode->NodeText.ToString().Length;
-
             return (int)(0.7 * textLength * textNode->FontSize + 1);
         }
 
-        private void UnlinkImageNode(AtkUnitBase* ui, int defaultNodeCount, AtkImageNode* imageNode)
+        private void TryMakeNodes(AtkUnitBase* parent, uint imageNodeId)
         {
-            if (ui == null) return;
-            if (imageNode == null) return;
-            if (ui->UldManager.NodeListCount > defaultNodeCount)
-                UiHelper.UnlinkNode(&imageNode->AtkResNode, ui);
+            var imageNode = Common.GetNodeByID<AtkTextNode>(&parent->UldManager, imageNodeId);
+            if (imageNode is null) CreateImageNode(parent, imageNodeId);
         }
 
-        private void TryUnlinkImageNodes()
+        private void CreateImageNode(AtkUnitBase* parent, uint id)
         {
-            var focusTargetUi = Common.GetUnitBase("_FocusTargetInfo", 1);
-            UnlinkImageNode(focusTargetUi, focusTargetDefaultNodeCount, focusTargetImageNode);
-
-            var targetUi = Common.GetUnitBase("_TargetInfo", 1);
-            UnlinkImageNode(targetUi, targetDefaultNodeCount, targetImageNode);
-        }
-
-        private void CreateImageNodes()
-        {
-            CreateImageNode(out focusTargetImageNode, 0);
-            CreateImageNode(out targetImageNode, 1);
-        }
-
-        private void CreateImageNode(out AtkImageNode* node, int id)
-        {
-            node = UiHelper.MakeImageNode(CustomNodes.Get(nameof(CastingTextVisibility), id), new UiHelper.PartInfo(0, 0, 0, 0));
-            if (node == null)
+            var imageNode = UiHelper.MakeImageNode(id, new UiHelper.PartInfo(0, 0, 0, 0));
+            if (imageNode == null)
             {
                 SimpleLog.Error("Casting Text Visibiility: Failed to make background image node");
                 return;
             }
-            node->AtkResNode.NodeFlags = NodeFlags.Enabled | NodeFlags.AnchorLeft | NodeFlags.Visible;
-            node->WrapMode = 1;
-            node->Flags = 0;
+            imageNode->AtkResNode.NodeFlags = NodeFlags.Enabled | NodeFlags.AnchorLeft | NodeFlags.Visible;
+            imageNode->WrapMode = 1;
+            imageNode->Flags = 0;
+
+            UiHelper.LinkNodeAtEnd((AtkResNode*)imageNode, parent);
         }
 
-        private void DeleteImageNodes()
-        {
-            TryUnlinkImageNodes();
-
-            if (focusTargetImageNode != null)
-                UiHelper.FreeImageNode(focusTargetImageNode);
-            if (targetImageNode != null)
-                UiHelper.FreeImageNode(targetImageNode);
-
-            focusTargetImageNode = null;
-            targetImageNode = null;
+        private void FreeAllNodes()
+        {            
+            var addonTargetInfo = Common.GetUnitBase("_TargetInfo");
+            var addonFocusTargetInfo = Common.GetUnitBase("_FocusTargetInfo");
+            
+            TryFreeImageNode(addonTargetInfo, targetImageNodeid);
+            TryFreeImageNode(addonFocusTargetInfo, focusTargetImageNodeid);
         }
 
-        private bool NodeExists(AtkUnitBase* unitBase, int index)
+        private void TryFreeImageNode(AtkUnitBase* addon, uint nodeId)
         {
-            return unitBase != null && unitBase->UldManager.NodeListCount > index;
+            if (addon == null) return;
+
+            var imageNode = Common.GetNodeByID<AtkTextNode>(&addon->UldManager, nodeId);
+            if (imageNode is not null)
+            {
+                UiHelper.UnlinkAndFreeTextNode(imageNode, addon);
+            }
         }
     }
 }
