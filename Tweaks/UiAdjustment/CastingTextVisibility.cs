@@ -135,8 +135,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             if (NodeExists(ui, nodeIndex))
             {
                 var textNode = (AtkTextNode*)ui->UldManager.NodeList[nodeIndex];
-
-                if (ui->IsVisible && useCustomColor)
+                //'_TargetInfo' text node can sometimes remain visible when targetting non-bnpcs, but parent node invis.
+                if (ui->IsVisible && useCustomColor && textNode->AtkResNode.ParentNode->IsVisible)
                 {
                     TryLinkNode(ui, defaultNodeCount, imageNode);
                     imageNode->AtkResNode.ToggleVisibility(textNode->AtkResNode.IsVisible);
