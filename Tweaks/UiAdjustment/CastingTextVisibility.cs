@@ -40,7 +40,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             public int FocusFontSize = 14;
             public int FocusBackgroundWidth = 192;
             public int FocusBackgroundHeight = 0;
-            public bool FocusAutoAdjustWidth = false;
+            public bool FocusAutoAdjustWidth = true;
 
             public Vector4 TargetTextColor = new Vector4(1);
             public Vector4 TargetEdgeColor = new Vector4(157 / 255f, 131 / 255f, 91 / 255f, 1);
@@ -48,7 +48,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             public int TargetFontSize = 14;
             public int TargetBackgroundWidth = 192;
             public int TargetBackgroundHeight = 0;
-            public bool TargetAutoAdjustWidth = false;
+            public bool TargetAutoAdjustWidth = true;
         }
 
         private void DrawConfig()
