@@ -26,4 +26,5 @@ public class Service {
     [PluginService] public static IGameConfig GameConfig { get; private set; }
     [PluginService] public static ITextureProvider TextureProvider { get; private set; }
     [PluginService] public static IAddonLifecycle AddonLifecycle { get; private set; }
+    [PluginService] public static IDutyState DutyState { get; private set; }
 }
