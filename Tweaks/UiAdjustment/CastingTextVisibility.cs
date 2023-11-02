@@ -90,7 +90,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         protected override void Disable()
         {
             ResetTextNodes();
-            FreeAllNodes();            
+            FreeAllNodes();
         }
 
         [AddonPostRequestedUpdateAttribute("_TargetInfo", "_FocusTargetInfo")]
@@ -106,7 +106,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                     break;
                 case "_TargetInfo" when addon->IsVisible:
                     UpdateAddOn(addon, targetTextNodeId, targetImageNodeid,
-                       Config.UseCustomTargetColor,Config.TargetTextColor,
+                       Config.UseCustomTargetColor, Config.TargetTextColor,
                        Config.TargetEdgeColor, Config.TargetFontSize, DrawTargetBackground);
                     break;
             }
@@ -114,15 +114,15 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
 
         unsafe delegate void DrawBackgroundAction(AtkTextNode* textNode, AtkImageNode* imageNode);
 
-        private void UpdateAddOn(AtkUnitBase* ui, uint textNodeId, uint imageNodeId,  
-            bool useCustomColor, Vector4 textColor, Vector4 edgeColor, 
+        private void UpdateAddOn(AtkUnitBase* ui, uint textNodeId, uint imageNodeId,
+            bool useCustomColor, Vector4 textColor, Vector4 edgeColor,
             int fontSize, DrawBackgroundAction drawBackground)
         {
             var textNode = Common.GetNodeByID<AtkTextNode>(&ui->UldManager, textNodeId);
             if (textNode == null) return;
-            
+
             //'_TargetInfo' text node can sometimes remain visible when targetting non-bnpcs, but parent node invis.
-            if (ui->IsVisible && useCustomColor && textNode->AtkResNode.ParentNode->IsVisible)  
+            if (ui->IsVisible && useCustomColor && textNode->AtkResNode.ParentNode->IsVisible)
             {
                 TryMakeNodes(ui, imageNodeId);
                 ToggleImageNodeVisibility(textNode->AtkResNode.IsVisible, &ui->UldManager, imageNodeId);
@@ -145,7 +145,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             imageNode->AtkResNode.ToggleVisibility(visible);
         }
 
-        private AtkImageNode* GetImageNode(AtkUldManager* uldManager, uint nodeId) => Common.GetNodeByID<AtkImageNode>(uldManager, nodeId);        
+        private AtkImageNode* GetImageNode(AtkUldManager* uldManager, uint nodeId) => Common.GetNodeByID<AtkImageNode>(uldManager, nodeId);
 
         private void AdjustTextColorsAndFontSize(AtkTextNode* textNode, Vector4 textColor, Vector4 edgeColor, int fontSize)
         {
@@ -182,12 +182,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
             var offsetBaseX = 6;
             var offsetBaseY = 24;
 
-            DrawBackground(imageNode, textNode, offsetBaseX, offsetBaseY, Config.FocusFontSize, Config.FocusBackgroundHeight, 
+            DrawBackground(imageNode, textNode, offsetBaseX, offsetBaseY, Config.FocusFontSize, Config.FocusBackgroundHeight,
                 Config.FocusBackgroundWidth, Config.FocusAutoAdjustWidth, Config.FocusBackgroundColor);
         }
 
         private void DrawTargetBackground(AtkTextNode* textNode, AtkImageNode* imageNode)
-        {            
+        {
             var offsetBaseX = 244;
             var offsetBaseY = 14;
 
@@ -195,7 +195,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
                  Config.TargetBackgroundWidth, Config.TargetAutoAdjustWidth, Config.TargetBackgroundColor);
         }
 
-        private void DrawBackground(AtkImageNode* imageNode, AtkTextNode* textNode, int offsetBaseX, 
+        private void DrawBackground(AtkImageNode* imageNode, AtkTextNode* textNode, int offsetBaseX,
             int offsetBaseY, int fontSize, int backgroundHeight, int backgroundWidth, bool autoAdjust, Vector4 color)
         {
             //https://accessibility.psu.edu/legibility/fontsize/ idk
@@ -231,8 +231,29 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         //font is not monospace, so not 100% accurate
         private int GetWidthFromTextLength(AtkTextNode* textNode)
         {
-            var textLength = textNode->NodeText.ToString().Length;
-            return (int)(0.7 * textLength * textNode->FontSize + 1);
+            //less accurate guestimation 
+            //var textLength = textNode->NodeText.ToString().Length;
+            //return (int)(0.7 * textLength * textNode->FontSize + 1);
+
+            var text = textNode->NodeText.ToString();
+            var length = 4;
+            foreach (var c in text) length += GetPixelWidthOfChar(c);
+            return (int)((1.0 * textNode->FontSize / 22) * length + 4);
+        }
+
+        private int GetPixelWidthOfChar(char c)
+        {
+            var defaultSpace = 4;
+            var spaceBetweenChar = 2;
+
+            //alphabetical order, eyeballed px measurement in paint, based on font size 22
+            var lowerCasePx = new[] { 13, 13, 11, 14, 12, 10, 14, 13, 4, 7, 12, 4,  20, 12, 15, 13, 14, 9,  9,  9,  12, 13, 20, 14, 13, 12 };
+            var upperCasePx = new[] { 17, 13, 14, 16, 13, 10, 15, 16, 5, 7, 14, 12, 20, 15, 19, 14, 18, 13, 12, 15, 16, 17, 23, 17, 15, 14 };
+
+            var val = (int)c;
+            if (val is >= 97 and <= 122) return spaceBetweenChar + lowerCasePx[val - 97];
+            if (val is >= 65 and <= 90) return spaceBetweenChar + upperCasePx[val - 65];
+            return defaultSpace;
         }
 
         private void TryMakeNodes(AtkUnitBase* parent, uint imageNodeId)
@@ -257,10 +278,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment
         }
 
         private void FreeAllNodes()
-        {            
+        {
             var addonTargetInfo = Common.GetUnitBase("_TargetInfo");
             var addonFocusTargetInfo = Common.GetUnitBase("_FocusTargetInfo");
-            
+
             TryFreeImageNode(addonTargetInfo, targetImageNodeid);
             TryFreeImageNode(addonFocusTargetInfo, focusTargetImageNodeid);
         }
