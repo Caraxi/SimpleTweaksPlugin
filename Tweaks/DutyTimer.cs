@@ -24,5 +24,5 @@ public class DutyTimer : Tweak {
         => startTimestamp = DateTime.UtcNow;
 
     private void OnDutyCompleted(object sender, ushort e) 
-        => Service.Chat.Print($"Duty Completed in: {DateTime.UtcNow - startTimestamp:HH:mm:ss.fff}");
+        => Service.Chat.Print($@"Duty Completed in: {DateTime.UtcNow - startTimestamp:hh\:mm\:ss\.ffff}");
 }
