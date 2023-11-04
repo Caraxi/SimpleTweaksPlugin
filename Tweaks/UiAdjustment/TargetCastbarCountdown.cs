@@ -20,6 +20,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakReleaseVersion("1.8.3.0")]
 [Changelog("1.8.3.1", "Add TopRight option for displaying countdown")]
 [Changelog("1.8.9.0", "Add option to disable on primary target")]
+[Changelog(UnreleasedVersion, "Fix updating slowly for really slow castbars")]
 public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
     private uint CastBarTextNodeId => CustomNodes.Get(this, "Countdown");
 
@@ -92,8 +93,8 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         FreeAllNodes();
     }
 
-    [AddonPostRequestedUpdate("_TargetInfoCastBar", "_TargetInfo", "_FocusTargetInfo")]
-    private void OnAddonRequestedUpdate(AddonArgs args) {
+    [AddonPreDraw("_TargetInfoCastBar", "_TargetInfo", "_FocusTargetInfo")]
+    private void OnAddonPreDraw(AddonArgs args) {
         if (Service.ClientState.IsPvP) return;
         
         var addon = (AtkUnitBase*) args.Addon;
@@ -144,7 +145,6 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         var textNode = UiHelper.MakeTextNode(nodeId);
         
         textNode->AtkResNode.NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.AnchorTop | NodeFlags.AnchorLeft;
-        textNode->AtkResNode.DrawFlags = 2;
         textNode->AtkResNode.DrawFlags = 2;
         textNode->AtkResNode.Alpha_2 = 255;
         
