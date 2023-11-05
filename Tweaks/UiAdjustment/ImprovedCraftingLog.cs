@@ -124,8 +124,7 @@ public unsafe class ImprovedCraftingLog : Tweak {
     }
 
     private void ForceUpdateFramework() {
-        if (removeFrameworkUpdateEventStopwatch.ElapsedMilliseconds > 5000)
-        {
+        if (removeFrameworkUpdateEventStopwatch.ElapsedMilliseconds > 5000) {
             Common.FrameworkUpdate -= ForceUpdateFramework;
             removeFrameworkUpdateEventStopwatch.Stop();
         }
