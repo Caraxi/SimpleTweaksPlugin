@@ -18,6 +18,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakAuthor("MidoriKami")]
 [TweakAutoConfig]
 [TweakReleaseVersion("1.8.3.1")]
+[TweakVersion(2)]
 [Changelog("1.8.3.2", "Tweak now only applies to the icon image itself and not the entire button")]
 [Changelog("1.8.3.2", "Add option to apply transparency to the slot frame of the icon")]
 [Changelog("1.8.3.2", "Add option to apply to sync'd skills only")]
@@ -30,7 +31,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
     [TweakHook, Signature("E8 ?? ?? ?? ?? 49 81 C6 ?? ?? ?? ?? 83 C7 10", DetourName = nameof(OnHotBarSlotUpdate))]
     private readonly HookWrapper<UpdateHotBarSlotDelegate>? onHotBarSlotUpdateHook = null!;
 
-    private readonly Dictionary<uint, Action> actionCache = new();
+    private readonly Dictionary<uint, Action?> actionCache = new();
 
     private readonly List<string> addonActionBarNames = new() { "_ActionBar", "_ActionBar01", "_ActionBar02", "_ActionBar03", "_ActionBar04", "_ActionBar05", "_ActionBar06", "_ActionBar07", "_ActionBar08", "_ActionBar09", "_ActionCross", "_ActionDoubleCrossR", "_ActionDoubleCrossL" };
     
@@ -104,7 +105,12 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         }
 
         if (TweakConfig.ApplyToSyncActions) {
-            var action = GetAction((uint)hotBarSlotData->ActionId);
+            var action = GetAction(raptureSlotData.CommandId);
+            if (action == null) { 
+                ApplyTransparency(hotBarSlotData, false);
+                ApplyReddening(hotBarSlotData, false);
+                return;
+            }
             var actionLevel = action.ClassJobLevel;
             var playerLevel = Service.ClientState.LocalPlayer?.Level ?? 0;
 
@@ -126,12 +132,12 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         }
     }
 
-    private Action GetAction(uint actionId) {
+    private Action? GetAction(uint actionId) {
         var adjustedActionId = ActionManager.Instance()->GetAdjustedActionId(actionId);
 
         if (actionCache.TryGetValue(adjustedActionId, out var action)) return action;
 
-        action = Service.Data.GetExcelSheet<Action>()!.GetRow(adjustedActionId)!;
+        action = Service.Data.GetExcelSheet<Action>()!.GetRow(adjustedActionId);
         actionCache.Add(adjustedActionId, action);
         return action;
     }
