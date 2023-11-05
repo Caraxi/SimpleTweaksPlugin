@@ -2,3 +2,4 @@ UiAdjustments@ExtendedDesynthesisWindow
 UiAdjustments@ActionPressMirroring
 UiAdjustments@ControlHintMirroring
 UiAdjustments@StopCraftingButton::2
+UiAdjustments@FadeUnavailableActions
