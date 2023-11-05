@@ -160,7 +160,9 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
 
     private byte ControllerInputDetour(AtkUnitBase* atkUnitBase, Dir d, byte a3) {
         var name = Common.ReadString(atkUnitBase->Name, 0x20);
-        SimpleLog.Log($"{name}, {GetCollisionNodeIndex(atkUnitBase)}, {d}");
+#if DEBUG
+        SimpleLog.Verbose($"{name}, {GetCollisionNodeIndex(atkUnitBase)}, {d}");
+#endif
         try {
             if (atkUnitBase == Common.GetUnitBase("CharacterStatus")) {
                 var currentSelectedNodeIndex = (CharacterStatusNode)GetCollisionNodeIndex(atkUnitBase);
