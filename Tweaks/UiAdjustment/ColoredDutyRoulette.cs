@@ -77,6 +77,7 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak {
             var filteredName = Alphanumeric().Replace(entry.Category.ToString().ToLower(), string.Empty);
             rouletteIdDictionary.TryAdd(filteredName, entry.RowId);
         }
+        base.Setup();
     }
 
     protected override void Disable() {
