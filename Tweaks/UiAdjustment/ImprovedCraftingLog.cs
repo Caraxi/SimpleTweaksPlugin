@@ -124,13 +124,16 @@ public unsafe class ImprovedCraftingLog : Tweak {
     }
 
     private void ForceUpdateFramework() {
-        if (removeFrameworkUpdateEventStopwatch.ElapsedMilliseconds > 5000) Common.FrameworkUpdate -= ForceUpdateFramework;
-        ForceUpdate();
+        if (removeFrameworkUpdateEventStopwatch.ElapsedMilliseconds > 5000) {
+            Common.FrameworkUpdate -= ForceUpdateFramework;
+            removeFrameworkUpdateEventStopwatch.Stop();
+        }
         if (standingUp == false || Service.ClientState.LocalPlayer == null) return;
         var localPlayer = (Character*) Service.ClientState.LocalPlayer.Address;
         if (localPlayer->Mode != Character.CharacterModes.Crafting) {
             standingUp = false;
         }
+        ForceUpdate();
     }
     
     public enum CraftReadyState {
@@ -193,6 +196,7 @@ public unsafe class ImprovedCraftingLog : Tweak {
             agent->OpenRecipeByRecipeId(selectedRecipeId);
 
             standingUp = true;
+            removeFrameworkUpdateEventStopwatch.Restart();
             Common.FrameworkUpdate += ForceUpdateFramework;
         }
     }
