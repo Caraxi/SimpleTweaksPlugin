@@ -11,6 +11,7 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
+[Changelog("1.9.2.1", "Added support for Blunderville exit dialog.")]
 public unsafe class AlwaysYes : UiAdjustments.SubTweak {
     public override string Name => "Always Yes";
     public override string Description => "Sets the default action in dialog boxes to yes when using confirm (num 0).";

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.2.1
+***Tweak Changes***
+- **`Always Yes`** - Added support for Blunderville exit dialog.
+
+- **`Target Castbar Countdown`** - Fix updating slowly for really slow castbars
+
+
 ## 1.9.2.0
 ***New Tweaks***
 - **`Alt + F4 Exit Game`** - Pressing Alt + F4 will cause the game to close safely. *(MidoriKami)*

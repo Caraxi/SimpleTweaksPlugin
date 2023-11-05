@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Numerics;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
@@ -20,7 +20,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakReleaseVersion("1.8.3.0")]
 [Changelog("1.8.3.1", "Add TopRight option for displaying countdown")]
 [Changelog("1.8.9.0", "Add option to disable on primary target")]
-[Changelog(UnreleasedVersion, "Fix updating slowly for really slow castbars")]
+[Changelog("1.9.2.1", "Fix updating slowly for really slow castbars")]
 public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
     private uint CastBarTextNodeId => CustomNodes.Get(this, "Countdown");
 
