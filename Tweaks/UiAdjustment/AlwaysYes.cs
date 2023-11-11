@@ -3,6 +3,7 @@ using System.Linq;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Interface;
 using Dalamud.Utility;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Events;
@@ -156,7 +157,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 if (Config.Lobby) SetFocusYes(args.Addon, 23);
                 return;
             case "LobbyDKTCheckExec":
-                if (Config.Lobby) SetFocusYes(args.Addon, 3);
+                if (Config.Lobby) DelayedSetFocusYes(args.AddonName, 3);
                 return;
             case "ShopExchangeItemDialog":
                 if (Config.ItemExchangeConfirmations) SetFocusYes(args.Addon, 18);
@@ -166,6 +167,13 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 return;
         }
     }
+
+    private void DelayedSetFocusYes(string addon, uint yesButtonId, int delay = 0) {
+        Service.Framework.RunOnTick(() => {
+            if (Common.GetUnitBase(addon, out var unitBase)) SetFocusYes((nint)unitBase, yesButtonId);
+        }, delayTicks: delay);
+    }
+    
     private void SetFocusYes(nint unitBaseAddress, uint yesButtonId, uint? yesHoldButtonId = null, uint? checkBoxId = null) {
         var unitBase = (AtkUnitBase*)unitBaseAddress;
         if (unitBase == null) return;
