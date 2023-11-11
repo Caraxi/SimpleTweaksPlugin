@@ -12,7 +12,7 @@ using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin; 
+namespace SimpleTweaksPlugin;
 
 public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     [NonSerialized]
@@ -22,7 +22,10 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
 
     public List<string> EnabledTweaks = new();
     public List<string> HiddenTweaks = new();
-    public List<string> CustomProviders = new();
+    public List<string> CustomProviders;
+    public bool ShouldSerializeCustomProviders() => CustomProviders != null;
+    
+    public List<CustomTweakProviderConfig> CustomTweakProviders = new();
     public List<string> BlacklistedTweaks = new();
     public List<string> HiddenCategories = new();
     
@@ -54,9 +57,30 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
 
     public void Init(SimpleTweaksPlugin plugin) {
         this.plugin = plugin;
+        Update();
         HiddenTweaks.RemoveAll(t => EnabledTweaks.Contains(t));
     }
 
+    private void Update() {
+        var didUpdate = false;
+
+        if (CustomProviders != null) {
+            foreach (var p in CustomProviders) {
+                var enabled = !p.StartsWith("!");
+                var path = enabled ? p : p.TrimStart('!');
+                if (CustomTweakProviders.Any(ctp => ctp.Assembly.Equals(path, StringComparison.InvariantCultureIgnoreCase))) continue;
+                var provider = new CustomTweakProviderConfig() {
+                    Enabled = enabled,
+                    Assembly = path,
+                };
+                
+                CustomTweakProviders.Add(provider);
+            }
+
+            CustomProviders = null;
+        }
+    }
+    
     public void Save() {
         Service.PluginInterface.SavePluginConfig(this);
     }
@@ -681,62 +705,58 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                         ImGui.Separator();
                     }
 
-                    if (CustomProviders.Count > 0 || ShowExperimentalTweaks) {
+                    if (CustomTweakProviders.Count > 0 || ShowExperimentalTweaks) {
 
-                        if (ImGui.CollapsingHeader($"Tweak Providers ({CustomProviders.Count(p => !p.StartsWith('!'))}/{CustomProviders.Count} Enabled)###tweakProviders")) {
+                        if (ImGui.CollapsingHeader($"Tweak Providers ({CustomTweakProviders.Count(p => p.Enabled)}/{CustomTweakProviders.Count} Enabled)###tweakProviders")) {
                             ImGui.Indent();
                             ImGuiExt.TextWrappedDisabled("Tweak providers allow for loading tweaks from other sources. Only use providers created by someone you trust.");
-                            string? deleteCustomProvider = null;
-                            for (var i = 0; i < CustomProviders.Count; i++) {
+                            CustomTweakProviderConfig? deleteCustomProvider = null;
+                            for (var i = 0; i < CustomTweakProviders.Count; i++) {
                                 if (ImGui.Button($"X##deleteCustomProvider_{i}")) {
-                                    deleteCustomProvider = CustomProviders[i];
+                                    deleteCustomProvider = CustomTweakProviders[i];
                                 }
                                 ImGui.SameLine();
                                 if (ImGui.Button($"R##reloadcustomProvider_{i}")) {
                                     foreach (var tp in SimpleTweaksPlugin.Plugin.TweakProviders) {
                                         if (tp.IsDisposed) continue;
                                         if (tp is not CustomTweakProvider ctp) continue;
-                                        if (ctp.AssemblyPath == CustomProviders[i]) {
+                                        if (ctp.AssemblyPath == CustomTweakProviders[i].Assembly) {
                                             ctp.Dispose();
                                         }
                                     }
-                                    plugin.LoadCustomProvider(CustomProviders[i]);
+                                    plugin.LoadCustomProvider(CustomTweakProviders[i]);
                                     Loc.ClearCache();
                                 }
 
                                 ImGui.SameLine();
-                                var enabled = !CustomProviders[i].StartsWith("!");
-                                if (ImGui.Checkbox($"###customProvider_{i}", ref enabled)) {
+                                if (ImGui.Checkbox($"###customProvider_{i}", ref CustomTweakProviders[i].Enabled)) {
 
                                     foreach (var tp in SimpleTweaksPlugin.Plugin.TweakProviders) {
                                         if (tp.IsDisposed) continue;
                                         if (tp is not CustomTweakProvider ctp) continue;
-                                        if (ctp.AssemblyPath == CustomProviders[i]) {
+                                        if (ctp.AssemblyPath == CustomTweakProviders[i].Assembly) {
                                             ctp.Dispose();
                                         }
                                         DebugManager.Reload();
                                     }
                                     
-                                    if (enabled) {
-                                        if (CustomProviders[i].StartsWith("!")) CustomProviders[i] = CustomProviders[i].TrimStart('!');
-                                        plugin.LoadCustomProvider(CustomProviders[i]);
-                                    } else {
-                                        if (!CustomProviders[i].StartsWith("!")) CustomProviders[i] = "!" + CustomProviders[i];
+                                    if (CustomTweakProviders[i].Enabled) {
+                                        plugin.LoadCustomProvider(CustomTweakProviders[i]);
                                     }
                                     
                                     Save();
                                 }
                                 ImGui.SameLine();
-                                ImGui.Text(CustomProviders[i].TrimStart('!'));
+                                ImGui.Text(CustomTweakProviders[i].Assembly);
                             }
 
                             if (deleteCustomProvider != null) {
-                                CustomProviders.Remove(deleteCustomProvider);
+                                CustomTweakProviders.Remove(deleteCustomProvider);
 
                                 foreach (var tp in SimpleTweaksPlugin.Plugin.TweakProviders) {
                                     if (tp.IsDisposed) continue;
                                     if (tp is not CustomTweakProvider ctp) continue;
-                                    if (ctp.AssemblyPath == deleteCustomProvider) {
+                                    if (ctp.AssemblyPath == deleteCustomProvider.Assembly) {
                                         ctp.Dispose();
                                     }
                                 }
@@ -746,9 +766,10 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                             }
 
                             if (ImGui.Button("+##addCustomProvider")) {
-                                if (!string.IsNullOrWhiteSpace(addCustomProviderInput) && !CustomProviders.Contains(addCustomProviderInput)) {
-                                    CustomProviders.Add(addCustomProviderInput);
-                                    SimpleTweaksPlugin.Plugin.LoadCustomProvider(addCustomProviderInput);
+                                if (!string.IsNullOrWhiteSpace(addCustomProviderInput) && CustomTweakProviders.All(p => !p.Assembly.Equals(addCustomProviderInput, StringComparison.InvariantCultureIgnoreCase))) {
+                                    var provider = new CustomTweakProviderConfig { Assembly = addCustomProviderInput, Enabled = true };
+                                    CustomTweakProviders.Add(provider);
+                                    SimpleTweaksPlugin.Plugin.LoadCustomProvider(provider);
                                     addCustomProviderInput = string.Empty;
                                     Save();
                                 }

@@ -4,29 +4,28 @@ using System.Reflection;
 
 namespace SimpleTweaksPlugin.TweakSystem; 
 
+public class CustomTweakProviderConfig {
+    public string Assembly;
+    public bool Enabled;
+}
+
 public class CustomTweakProvider : TweakProvider {
 
     private readonly TweakLoadContext loadContext;
+    private readonly CustomTweakProviderConfig config;
 
     public string AssemblyPath { get; }
     
     private DateTime lastWriteTime;
 
-    public CustomTweakProvider(string path) {
-        var loadedFileInfo = new FileInfo(path);
+    public CustomTweakProvider(CustomTweakProviderConfig config) {
+        this.config = config;
+        var loadedFileInfo = new FileInfo(this.config.Assembly);
         lastWriteTime = loadedFileInfo.LastWriteTime;
         loadContext = new TweakLoadContext(loadedFileInfo.Name, loadedFileInfo.Directory);
-        AssemblyPath = path;
-        Assembly = loadContext.LoadFromFile(path);
+        AssemblyPath = config.Assembly;
+        Assembly = loadContext.LoadFromFile(this.config.Assembly);
         Service.PluginInterface.UiBuilder.Draw += OnDraw;
-    }
-
-    public CustomTweakProvider(Assembly assembly) {
-        var loadedFileInfo = new FileInfo(assembly.Location);
-        lastWriteTime = loadedFileInfo.LastWriteTime;
-        loadContext = new TweakLoadContext(loadedFileInfo.Name, loadedFileInfo.Directory);
-        AssemblyPath = assembly.Location;
-        Assembly = assembly;
     }
     
     private void OnDraw() {
@@ -42,7 +41,7 @@ public class CustomTweakProvider : TweakProvider {
                 SimpleLog.Log($"Detected Change in {AssemblyPath}");
                 Dispose();
                 Loc.ClearCache();
-                SimpleTweaksPlugin.Plugin.LoadCustomProvider(AssemblyPath);
+                SimpleTweaksPlugin.Plugin.LoadCustomProvider(config);
             }
         }
     }
