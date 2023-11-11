@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
@@ -37,11 +38,13 @@ public class CustomTweakProvider : TweakProvider {
         if (Service.PluginInterface.UiBuilder.FrameCount % 100 == 0) {
             
             var f = new FileInfo(AssemblyPath);
-            if (f.Exists && lastWriteTime != f.LastWriteTime) {
-                SimpleLog.Log($"Detected Change in {AssemblyPath}");
-                Dispose();
-                Loc.ClearCache();
-                SimpleTweaksPlugin.Plugin.LoadCustomProvider(config);
+            if (f.Exists) {
+                if (lastWriteTime != f.LastWriteTime || loadContext.DetectChanges()) {
+                    SimpleLog.Log($"Detected Change in {AssemblyPath}");
+                    Dispose();
+                    Loc.ClearCache();
+                    SimpleTweaksPlugin.Plugin.LoadCustomProvider(config);
+                }
             }
         }
     }

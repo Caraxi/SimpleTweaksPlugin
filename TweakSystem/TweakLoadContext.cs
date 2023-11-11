@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
@@ -11,14 +12,13 @@ public class TweakLoadContext : AssemblyLoadContext {
 
     private DirectoryInfo directory;
     private string name;
-    
-    
+    private record MonitoredPath(string path, DateTime modified);
+    private List<MonitoredPath> monitoredPaths = new();
     
     public TweakLoadContext(string name, DirectoryInfo directoryInfo) : base(true) {
         this.name = name;
         directory = directoryInfo;
     }
-
 
     private static Dictionary<string, Assembly> handledAssemblies;
 
@@ -30,21 +30,31 @@ public class TweakLoadContext : AssemblyLoadContext {
         };
     }
     
-    
-    
     protected override Assembly? Load(AssemblyName assemblyName) {
         SimpleLog.Log($"[{name}] Attempting to load {assemblyName.FullName}");
-
+        
+        if (assemblyName.Name == "FFXIVClientStructs") {
+            var csFilePath = Path.Join(directory.FullName, "FFXIVClientStructs.dll");
+            var csFile = new FileInfo(csFilePath);
+            if (csFile.Exists) {
+                SimpleLog.Log($"[{name}] Attempting to load custom FFXIVClientStructs from {csFile.FullName}");
+                monitoredPaths.Add(new MonitoredPath(csFile.FullName, csFile.LastWriteTime));
+                return LoadFromFile(csFile.FullName);
+            }
+        }
+        
         if (assemblyName.Name != null && handledAssemblies.ContainsKey(assemblyName.Name)) {
             SimpleLog.Log($"[{name}] Forwarded reference to {assemblyName.Name}");
             return handledAssemblies[assemblyName.Name];
         }
         
-        var file = Path.Join(directory.FullName, $"{assemblyName.Name}.dll");
-        if (File.Exists(file)) {
+        var filePath = Path.Join(directory.FullName, $"{assemblyName.Name}.dll");
+        var file = new FileInfo(filePath);
+        if (file.Exists) {
             try {
-                SimpleLog.Log($"[{name}] Attempting to load {assemblyName.Name} from {file}");
-                return LoadFromFile(file);
+                SimpleLog.Log($"[{name}] Attempting to load {assemblyName.Name} from {file.FullName}");
+                monitoredPaths.Add(new MonitoredPath(file.FullName, file.LastWriteTime));
+                return LoadFromFile(file.FullName);
             } catch {
                 //
             }
@@ -59,5 +69,17 @@ public class TweakLoadContext : AssemblyLoadContext {
         if (!File.Exists(pdbPath)) return LoadFromStream(file);
         using var pdbFile = File.Open(pdbPath, FileMode.Open, FileAccess.Read, FileShare.Read);
         return LoadFromStream(file, pdbFile);
+    }
+
+    public bool DetectChanges() {
+        foreach (var m in monitoredPaths) {
+            var f = new FileInfo(m.path);
+            if (f.Exists && f.LastWriteTime != m.modified) {
+                SimpleLog.Log($"Loaded Assembly Changed: {f.FullName}");
+                return true;
+            }
+        }
+
+        return false;
     }
 }
