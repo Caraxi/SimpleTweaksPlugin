@@ -118,7 +118,7 @@ public unsafe class SetOptionCommand : CommandTweak {
         
         new OptionDefinition<uint>("DisplayNameSize", "NamePlateDispSize", OptionGroup.UiConfig, () => {
             return (
-                new() { ["maximum"] = 2, ["large"] = 1, ["standard"] = 0 },
+                new() { ["maximum"] = 2, ["large"] = 1, ["standard"] = 0, ["small"] = 3, ["smallest"] = 4 },
                 new() { ["m"] = 2, ["max"] = 2, ["l"] = 1, ["s"] = 0, }
             );
         }, "dns") { AllowToggle = true },
