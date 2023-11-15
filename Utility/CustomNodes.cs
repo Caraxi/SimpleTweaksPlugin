@@ -44,5 +44,6 @@ public static class CustomNodes {
         AdditionalInfo =       SimpleTweaksNodeBase + 11,
         CraftingGhostBar =     SimpleTweaksNodeBase + 12,
         CraftingGhostText =    SimpleTweaksNodeBase + 13,
+        GlamNameReplacementText = SimpleTweaksNodeBase + 14,
         SimpleTweaksNodeBase = 0x53540000;
 }
