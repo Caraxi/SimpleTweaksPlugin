@@ -79,6 +79,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
             foreach (var direction in Enum.GetValues<NodePosition>()) {
                 if (ImGui.Selectable(direction.ToString(), setting == direction)) {
                     setting = direction;
+                    ImGui.EndCombo();
                     return true;
                 }
             }
