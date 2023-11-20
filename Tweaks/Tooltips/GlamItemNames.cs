@@ -14,6 +14,8 @@ public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
     private const uint ITEM_TOOLTIP_NAME_NODE_ID = 32;
     private const byte NAME_DEFAULT_FONT_SIZE = 14;
 
+    private const string GLAM_NAME_REPLACEMENT_TEXT = "GlamNameReplacementText";
+
     private string last = "";
 
     public override void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
@@ -22,7 +24,7 @@ public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
         AtkUnitBase* unitBase = Common.GetUnitBase("ItemDetail");
         if (unitBase == null) return;
 
-        AtkTextNode* replacementNameNode = Common.GetNodeByID<AtkTextNode>(&unitBase->UldManager, CustomNodes.GlamNameReplacementText, NodeType.Text);
+        AtkTextNode* replacementNameNode = Common.GetNodeByID<AtkTextNode>(&unitBase->UldManager, CustomNodes.Get(this, GLAM_NAME_REPLACEMENT_TEXT), NodeType.Text);
 
         // Hide the replacement widget and show the original widget, so that if we don't need to add a glam name it'll be back to vanilla
         if (replacementNameNode != null) replacementNameNode->AtkResNode.ToggleVisibility(false);
@@ -70,7 +72,7 @@ public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
         AtkTextNode* node = IMemorySpace.GetUISpace()->Create<AtkTextNode>();
         if (node == null) return null;
         node->AtkResNode.Type = NodeType.Text;
-        node->AtkResNode.NodeID = CustomNodes.GlamNameReplacementText;
+        node->AtkResNode.NodeID = CustomNodes.Get(this, GLAM_NAME_REPLACEMENT_TEXT);
 
         node->AtkResNode.SetWidth(replacedNode->GetWidth());
         node->AtkResNode.SetHeight(replacedNode->GetHeight());
@@ -111,7 +113,7 @@ public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
     protected override void Disable() {        
         AtkUnitBase* unitBase = Common.GetUnitBase("ItemDetail");
         if (unitBase != null) {
-            AtkResNode* textNode = Common.GetNodeByID(&unitBase->UldManager, CustomNodes.GlamNameReplacementText, NodeType.Text);
+            AtkResNode* textNode = Common.GetNodeByID(&unitBase->UldManager, CustomNodes.Get(this, GLAM_NAME_REPLACEMENT_TEXT), NodeType.Text);
             if (textNode != null) {
                 if (textNode->PrevSiblingNode != null)
                     textNode->PrevSiblingNode->NextSiblingNode = textNode->NextSiblingNode;
