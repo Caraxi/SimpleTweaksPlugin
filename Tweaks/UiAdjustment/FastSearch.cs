@@ -25,7 +25,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakAuthor("Asriel")]
 [TweakAutoConfig]
 [TweakReleaseVersion("1.9.2.0")]
-[Changelog(UnreleasedVersion, "Fix random ordering (results are now always in the same order)")]
+[Changelog("1.9.2.1", "Fix random ordering (results are now always in the same order)")]
 public unsafe class FastSearch : UiAdjustments.SubTweak {
     public class FastSearchConfig : TweakConfig {
         [TweakConfigOption("Use Fuzzy Search")]
