@@ -93,19 +93,14 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         if (Service.ClientState.LocalPlayer is { IsCasting: true } ) return;
 
         var numberArrayData = (NumberArrayStruct*) (&numberArray->IntArray[numberArrayIndex]);
-        var hotBarSlotIndex = ((numberArrayIndex - 15) / 16) % 16;
-        var hotBarIndex = ((numberArrayIndex - 15) / 16) / 15;
 
-        if (hotBarIndex > RaptureHotbarModule.Instance()->HotBarsSpan.Length) return;
-        ref var raptureSlotData = ref RaptureHotbarModule.Instance()->HotBarsSpan[hotBarIndex].SlotsSpan[hotBarSlotIndex];
-        
-        if (raptureSlotData.CommandType is not (HotbarSlotType.Action or HotbarSlotType.CraftAction)) {
+        if (numberArrayData->ActionType is not (NumberArrayActionType.Action or NumberArrayActionType.CraftAction)) {
             ApplyTransparency(hotBarSlotData, false);
             return;
         }
 
         if (TweakConfig.ApplyToSyncActions) {
-            var action = GetAction(raptureSlotData.CommandId);
+            var action = GetAction(numberArrayData->ActionId);
             if (action == null) { 
                 ApplyTransparency(hotBarSlotData, false);
                 ApplyReddening(hotBarSlotData, false);
@@ -184,12 +179,45 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
 
     [StructLayout(LayoutKind.Explicit, Size = 0x40)]
     private struct NumberArrayStruct {
-        [FieldOffset(0x00)] public uint ActionType;
+        [FieldOffset(0x00)] public NumberArrayActionType ActionType;
         [FieldOffset(0x0C)] public uint ActionId;
         [FieldOffset(0x14)] public bool ActionAvailable_1;
         [FieldOffset(0x18)] public bool ActionAvailable_2;
         [FieldOffset(0x20)] public int CooldownPercent;
         [FieldOffset(0x28)] public int ManaCost;
         [FieldOffset(0x3C)] public bool TargetInRange;
+    }
+
+    private enum NumberArrayActionType: uint
+    {
+        Empty = 0x0,
+        Macro = 0x2C,
+        Action = 0x2D,
+        Emote = 0x2E,
+        Item = 0x2F,
+        EventItem = 0x31, // Starting from EventItem, all values are HotbarSlotType.SomeType + 0x2C
+        Marker = 0x34,
+        CraftAction = 0x35,
+        GeneralAction = 0x36,
+        BuddyAction = 0x37,
+        MainCommand = 0x38,
+        Companion = 0x39,
+        GearSet = 0x3A,
+        PetAction = 0x3B,
+        Mount = 0x3C,
+        FieldMarker = 0x3D,
+        Recipe = 0x3E,
+        ChocoboRaceAbility = 0x3F, // Untested
+        ChocoboRaceItem = 0x40, // Untested
+        Unk_0x17 = 0x41, // Untested
+        ExtraCommand = 0x42,
+        PvPQuickChat = 0x43,
+        PvPCombo = 0x44,
+        BgcArmyAction = 0x45,
+        Unk_0x1C = 0x46, // Untested
+        PerformanceInstrument = 0x47, // Untested
+        Collection = 0x48,
+        Ornament = 0x49,
+        LostFindsItem = 0x4A // Untested
     }
 }
