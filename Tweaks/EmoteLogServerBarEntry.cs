@@ -5,15 +5,15 @@ using SimpleTweaksPlugin.TweakSystem;
 namespace SimpleTweaksPlugin;
 
 [TweakAuthor("Sythiri")]
+[TweakName("Emote Log Status in Server Bar")]
+[TweakDescription("Show the emote log status in the server bar.")]
 public unsafe class EmoteLogServerBarEntry : Tweak
 {
-    public override string Name => "Emote Log Status in Server Bar";
-    public override string Description => "Show the emote log status in the server bar.";
     private DtrBarEntry _emoteLogBarEntry;
 
     protected override void Enable()
     {
-        _emoteLogBarEntry = Plugin.DtrBar.Get("EmoteLog");
+        _emoteLogBarEntry = Service.DtrBar.Get("EmoteLog");
         _emoteLogBarEntry.OnClick += DtrEntryClicked;
         Service.GameConfig.UiConfigChanged += UiConfigChanged;
         SetDtrEntryText();
@@ -24,14 +24,9 @@ public unsafe class EmoteLogServerBarEntry : Tweak
     {
         _emoteLogBarEntry.OnClick -= DtrEntryClicked;
         Service.GameConfig.UiConfigChanged -= UiConfigChanged;
-        Plugin.DtrBar.Remove("EmoteLog");
+        Service.DtrBar.Remove("EmoteLog");
         _emoteLogBarEntry.Shown = false;
         base.Disable();
-    }
-
-    public override void Dispose()
-    {
-        base.Dispose();
     }
 
     private void DtrEntryClicked()

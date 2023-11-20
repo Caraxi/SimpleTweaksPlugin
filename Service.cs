@@ -6,10 +6,11 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 
-namespace SimpleTweaksPlugin; 
+namespace SimpleTweaksPlugin;
 
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
-public class Service {
+public class Service
+{
     [PluginService] public static DalamudPluginInterface PluginInterface { get; private set; }
     [PluginService] public static IChatGui Chat { get; private set; }
     [PluginService] public static IClientState ClientState { get; private set; }
@@ -26,4 +27,5 @@ public class Service {
     [PluginService] public static IGameConfig GameConfig { get; private set; }
     [PluginService] public static ITextureProvider TextureProvider { get; private set; }
     [PluginService] public static IAddonLifecycle AddonLifecycle { get; private set; }
+    [PluginService] public static IDtrBar DtrBar { get; private set; }
 }

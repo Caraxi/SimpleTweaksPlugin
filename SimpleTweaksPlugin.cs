@@ -1,4 +1,4 @@
-using Dalamud.Plugin;
+﻿using Dalamud.Plugin;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
@@ -45,9 +45,8 @@ namespace SimpleTweaksPlugin {
         public readonly DebugWindow DebugWindow = new DebugWindow();
         public readonly WindowSystem WindowSystem = new WindowSystem("SimpleTweaksPlugin");
         public readonly Changelog ChangelogWindow = new();
-
-        public IDtrBar DtrBar { get; private set; }
-
+        
+        
         internal CultureInfo Culture {
             get {
                 if (setCulture != null) return setCulture;
@@ -88,7 +87,7 @@ namespace SimpleTweaksPlugin {
 
         public int UpdateFrom = -1;
 
-        public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface, IDtrBar dtrBar) {
+        public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface) {
             Plugin = this;
             pluginInterface.Create<Service>();
             pluginInterface.Create<SimpleLog>();
@@ -96,7 +95,7 @@ namespace SimpleTweaksPlugin {
             
             this.PluginConfig = (SimpleTweaksPluginConfig)Service.PluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
             this.PluginConfig.Init(this);
-            this.DtrBar = dtrBar;
+            
 #if DEBUG
             SimpleLog.SetupBuildPath();
             Task.Run(() => {
