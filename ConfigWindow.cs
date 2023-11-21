@@ -22,5 +22,6 @@ public class ConfigWindow : SimpleWindow {
         base.OnClose();
         SimpleTweaksPlugin.Plugin.SaveAllConfig();
         SimpleTweaksPlugin.Plugin.PluginConfig.ClearSearch();
+        MetricsService.ReportMetrics();
     }
 }
