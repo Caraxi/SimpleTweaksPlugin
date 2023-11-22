@@ -16,11 +16,12 @@ public static unsafe class MetricsService {
     private static SimpleTweaksPlugin Plugin => SimpleTweaksPlugin.Plugin;
     private static SimpleTweaksPluginConfig Config => Plugin.PluginConfig;
     
-    public static void ReportMetrics() {
+    public static void ReportMetrics(bool allowFirstUse = false) {
         if (Config.AnalyticsOptOut) return;
         
         var identifier = Config.MetricsIdentifier;
         if (string.IsNullOrEmpty(identifier) || identifier.Length != 64) {
+            if (!allowFirstUse) return;
             try {
 
                 var idStr = "SimpleTweaksMetrics:";
