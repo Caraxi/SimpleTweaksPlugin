@@ -7,7 +7,8 @@ namespace SimpleTweaksPlugin;
 [TweakAuthor("Sythiri")]
 [TweakName("Emote Log Status in Server Bar")]
 [TweakDescription("Show the emote log status in the server bar.")]
-public unsafe class EmoteLogServerBarEntry : Tweak
+[TweakReleaseVersion(UnreleasedVersion)]
+public class EmoteLogServerBarEntry : Tweak
 {
     private DtrBarEntry _emoteLogBarEntry;
 
