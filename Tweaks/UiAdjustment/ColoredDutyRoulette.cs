@@ -87,39 +87,39 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak {
     [AddonPostRefresh("ContentsFinder")]
     private void OnContentsFinderRefresh(AddonRefreshArgs args) {
         var addon = (AddonContentsFinder*) args.Addon;
-        
-        foreach (uint nodeId in Enumerable.Range(61001, 15).Append(6)) {
-            var listComponentNode = Common.GetNodeByID<AtkComponentNode>(&addon->DutyList->AtkComponentList.AtkComponentBase.UldManager, nodeId);
-            if (listComponentNode is null || listComponentNode->Component is null) continue;
 
-            var dutyNameNode = Common.GetNodeByID<AtkTextNode>(&listComponentNode->Component->UldManager, 5);
-            var dutyLevelNode = Common.GetNodeByID<AtkTextNode>(&listComponentNode->Component->UldManager, 15);
-            if (dutyNameNode is null || dutyLevelNode is null) continue;
+        foreach (var itemRenderer in addon->DutyList->Items.Span) {
+            var componentNode = itemRenderer.Value->Renderer->AtkDragDropInterface.ComponentNode;
+            if (componentNode is null) continue;
 
-            if (AgentContentsFinder.Instance()->SelectedTab is 0) {
-                var filteredDutyName = Alphanumeric().Replace(dutyNameNode->NodeText.ToString().ToLower(), string.Empty);
+            var textNode = (AtkTextNode*)componentNode->Component->GetTextNodeById(5);
+            var levelNode = (AtkTextNode*)componentNode->Component->GetTextNodeById(15);
+            if (levelNode is null || textNode is null) continue;
 
-                if (!rouletteIdDictionary.TryGetValue(filteredDutyName, out var rouletteId)) {
-                    dutyNameNode->TextColor = dutyLevelNode->TextColor;
-                    continue;
-                }
-            
-                switch (RouletteController.Instance()->IsRouletteComplete((byte) rouletteId)) {
-                    case true when TweakConfig.ColorCompleteRoulette && TweakConfig.EnabledRoulettes.Contains(rouletteId):
-                        SetNodeColor(dutyNameNode, TweakConfig.CompleteColor);
-                        break;
-                
-                    case false when TweakConfig.ColorIncompleteRoulette && TweakConfig.EnabledRoulettes.Contains(rouletteId):
-                        SetNodeColor(dutyNameNode, TweakConfig.IncompleteColor);
-                        break;
-                
-                    default:
-                        dutyNameNode->TextColor = dutyLevelNode->TextColor;
-                        break;
-                }
+            if (AgentContentsFinder.Instance()->SelectedTab is not 0) {
+                textNode->TextColor = levelNode->TextColor;
+                continue;
             }
-            else {
-                dutyNameNode->TextColor = dutyLevelNode->TextColor;
+
+            // If we can't find a matching entry, reset this entries color.
+            var filteredDutyName = Alphanumeric().Replace(textNode->NodeText.ToString().ToLower(), string.Empty);
+            if (!rouletteIdDictionary.TryGetValue(filteredDutyName, out var rouletteId)) {
+                textNode->TextColor = textNode->TextColor;
+                continue;
+            }
+
+            switch (RouletteController.Instance()->IsRouletteComplete((byte) rouletteId)) {
+                case true when TweakConfig.ColorCompleteRoulette && TweakConfig.EnabledRoulettes.Contains(rouletteId):
+                    SetNodeColor(textNode, TweakConfig.CompleteColor);
+                    break;
+
+                case false when TweakConfig.ColorIncompleteRoulette && TweakConfig.EnabledRoulettes.Contains(rouletteId):
+                    SetNodeColor(textNode, TweakConfig.IncompleteColor);
+                    break;
+
+                default:
+                    textNode->TextColor = levelNode->TextColor;
+                    break;
             }
         }
     }
@@ -130,15 +130,15 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak {
         if (!UiHelper.IsAddonReady((AtkUnitBase*)addon)) return;
         if (addon->DutyList is null) return;
         
-        foreach (uint nodeId in Enumerable.Range(61001, 15).Append(6)) {
-            var listComponentNode = Common.GetNodeByID<AtkComponentNode>(&addon->DutyList->AtkComponentList.AtkComponentBase.UldManager, nodeId);
-            if (listComponentNode is null || listComponentNode->Component is null) continue;
+        foreach (var itemRenderer in addon->DutyList->Items.Span) {
+            var componentNode = itemRenderer.Value->Renderer->AtkDragDropInterface.ComponentNode;
+            if (componentNode is null) continue;
 
-            var dutyNameNode = (AtkTextNode*)listComponentNode->Component->GetTextNodeById(5);
-            var dutyLevelNode = (AtkTextNode*)listComponentNode->Component->GetTextNodeById(15);
-            if (dutyNameNode is null || dutyLevelNode is null) continue;
-            
-            dutyNameNode->TextColor = dutyLevelNode->TextColor;
+            var textNode = (AtkTextNode*)componentNode->Component->GetTextNodeById(5);
+            var levelNode = (AtkTextNode*)componentNode->Component->GetTextNodeById(15);
+            if (levelNode is null || textNode is null) continue;
+
+            textNode->TextColor = levelNode->TextColor;
         }
     }
 

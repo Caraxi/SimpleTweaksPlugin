@@ -176,6 +176,8 @@ namespace SimpleTweaksPlugin {
 
 
             Service.Framework.Update += FrameworkOnUpdate;
+            
+            MetricsService.ReportMetrics();
         }
         
 

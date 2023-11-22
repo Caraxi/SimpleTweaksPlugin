@@ -11,8 +11,6 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud.Utility.Signatures;
-using Dalamud.Game.Addon.Lifecycle;
-using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using FFXIVClientStructs.Interop.Attributes;
 using Dalamud.Memory;
 using LuminaAddon = Lumina.Excel.GeneratedSheets.Addon;
@@ -27,6 +25,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakAuthor("Asriel")]
 [TweakAutoConfig]
 [TweakReleaseVersion("1.9.2.0")]
+[Changelog("1.9.2.1", "Fix random ordering (results are now always in the same order)")]
 public unsafe class FastSearch : UiAdjustments.SubTweak {
     public class FastSearchConfig : TweakConfig {
         [TweakConfigOption("Use Fuzzy Search")]
@@ -196,6 +195,7 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
             .Select(i => (Item: i, Score: matcher.Matches(i.ItemResult.Value!.Name.ToDalamudString().ToString().ToLowerInvariant())))
             .Where(t => t.Score > 0)
             .OrderByDescending(t => t.Score)
+            .ThenBy(t => t.Item.RowId)
             .Select(t => t.Item.RowId);
 
         foreach (var v in query)
@@ -211,6 +211,7 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
             .Select(i => (Item: i, Score: matcher.Matches(i.Name.ToDalamudString().ToString().ToLowerInvariant())))
             .Where(t => t.Score > 0)
             .OrderByDescending(t => t.Score)
+            .ThenBy(t => t.Item.RowId)
             .Select(t => t.Item.RowId);
         foreach (var item in query) {
             agent->ItemBuffer[agent->ItemCount++] = item;

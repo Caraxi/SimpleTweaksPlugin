@@ -55,6 +55,8 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     public bool AutoOpenChangelog;
     public bool DisableChangelogNotification;
 
+    public string MetricsIdentifier;
+    
     public void Init(SimpleTweaksPlugin plugin) {
         this.plugin = plugin;
         Update();
@@ -428,12 +430,19 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                 if (ImGui.BeginTabItem(Loc.Localize("General Options / TabHeader", "General Options") + $"###generalOptionsTab")) {
                     ImGui.BeginChild($"generalOptions-scroll", new Vector2(-1, -1));
 
-                    if (ImGui.Checkbox(Loc.Localize("General Options / Analytics Opt Out", "Opt out of analytics"), ref AnalyticsOptOut)) Save();
-                    ImGui.Indent();
-                    ImGui.PushStyleColor(ImGuiCol.Text, ImGui.GetColorU32(ImGuiCol.TextDisabled));
-                    ImGui.TextWrapped("Note: The current version of simple tweaks does not collect any analytics regardless of this setting. This is here to preemptively opt out of any future analytics that may or may not be added to the plugin. All information that may be collected will be anonymous, but may include information such as the list of enabled tweaks and a subset of configured options within those tweaks.");
-                    ImGui.PopStyleColor();
-                    ImGui.Unindent();
+                    if (ImGui.Checkbox(Loc.Localize("General Options / Analytics Opt Out", "Opt out of metrics"), ref AnalyticsOptOut)) Save();
+                    
+                    #if DEBUG
+                    ImGui.SameLine();
+                    if (ImGui.Button("Report Metrics")) {
+                        MetricsService.ReportMetrics();
+                    }
+                    #endif
+                    
+                    
+                    ImGui.SameLine();
+                    ImGuiComponents.HelpMarker("Simple tweaks collects a list of enabled tweaks to give me an idea of which tweaks are being used. You can choose to opt out of this data collection and no information will be sent. No identifying information will be collected in any way.");
+
                     ImGui.Separator();
 
                     if (ImGui.CollapsingHeader(Loc.Localize("General Options / Visible Category Tabs", "Visible Category Tabs") + $" ({tweakCategories.Count + (ShowAllTweaksTab ? 1 : 0) + (ShowEnabledTweaksTab ? 1 : 0)})###visibleCategoryTabs") ) {

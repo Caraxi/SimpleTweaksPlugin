@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.9.2.2
+***Tweak Changes***
+- **`Fast Item Search`** - Fix random ordering (results are now always in the same order)
+
+
 ## 1.9.2.1
 ***Tweak Changes***
 - **`Always Yes`** - Added support for Blunderville exit dialog.
