@@ -29,7 +29,7 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
     public override void Setup() {
         base.Setup();
         AddChangelog("1.8.7.0", "Fixed tweak not functioning at all.");
-        AddChangelog("999.999.999.999", "Added tracking for faded rolls with multiple crafts.");
+        AddChangelog(UnreleasedVersion, "Added tracking for faded rolls with multiple crafts.").Author("KazWolfe");
     }
 
     protected override void Enable() {
