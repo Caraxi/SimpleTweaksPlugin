@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
@@ -29,7 +29,7 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
     public override void Setup() {
         base.Setup();
         AddChangelog("1.8.7.0", "Fixed tweak not functioning at all.");
-        AddChangelog(UnreleasedVersion, "Added tracking for faded rolls with multiple crafts.").Author("KazWolfe");
+        AddChangelog("1.9.3.0", "Added tracking for faded rolls with multiple crafts.").Author("KazWolfe");
     }
 
     protected override void Enable() {

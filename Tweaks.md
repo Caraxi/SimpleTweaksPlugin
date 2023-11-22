@@ -81,6 +81,16 @@
   Click 'Previous' class icon in Duty Ready window to switch class.
 
 
+- **Duty Timer**
+
+  When completing a duty, tells you how much time the duty took.
+
+
+- **Emote Log Status in Server Bar**
+
+  Show the emote log status in the server bar.
+
+
 - **Emote Log Subcommand**
 
   Adds a 'text' subcommand for emotes when emotelog is disabled.  /yes text
@@ -272,6 +282,11 @@
   Gives players a random colour in chat, or set the name manually.
 
 
+- **Chat Sounds Everywhere**
+
+  Enables <se.#> chat sounds everywhere, regardless of channel.
+
+
 - **Clickable Links in Chat**
 
   Parses links posted in chat and allows them to be clicked.
@@ -409,6 +424,11 @@
   ![Show expected food and potion stats Preview](TweakPreviews/TooltipTweaks@FoodStats.png)
 
 
+- **Show Glamour in Item Name**
+
+  Displays the glamoured item name underneath the real item name.
+
+
 - **Show ID**
 
   Show the ID of actions and items on their tooltips.
@@ -473,6 +493,11 @@
 - **Cast Bar Adjustments**
 
   Allows hiding or moving specific parts of the castbar.
+
+
+- **Casting Text Visibility**
+
+  Change the font size, color, and background of the casting text.
 
 
 - **Change Map Area Colors**

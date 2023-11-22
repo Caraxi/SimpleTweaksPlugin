@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks; 
@@ -6,7 +6,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakName("Duty Timer")]
 [TweakDescription("When completing a duty, tells you how much time the duty took.")]
 [TweakAuthor("MidoriKami")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.9.3.0")]
 public class DutyTimer : Tweak {
     private DateTime startTimestamp;
 

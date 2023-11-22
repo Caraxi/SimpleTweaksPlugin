@@ -10,6 +10,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 [TweakAuthor("Enriath")]
 [TweakName("Show Glamour in Item Name")]
 [TweakDescription("Displays the glamoured item name underneath the real item name.")]
+[TweakReleaseVersion("1.9.3.0")]
 public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
     private const uint ITEM_TOOLTIP_NAME_NODE_ID = 32;
     private const byte NAME_DEFAULT_FONT_SIZE = 14;

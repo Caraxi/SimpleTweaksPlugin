@@ -70,7 +70,7 @@ public class Changelog : Window {
             .Sub("Categories can be disabled in settings.")
             .Sub("The 'All Tweaks' pseudo-category displays all available tweaks.", 2)
             .Sub("The 'Enabled Tweaks' pesudo-category displays only enabled tweaks.", 2);
-        Add(UnreleasedVersion, "Added optional metrics collection")
+        Add("1.9.3.0", "Added optional metrics collection")
             .Sub("Everyone will be given a chance to opt in or our to the collection of a list of enabled tweaks when first accessing the simple tweaks config window.")
             .Sub("Anyone who preemptivly opted out will not see the notice as they already made the choice.")
             .Sub("No information will be collected until the 'Allow collection' button is pressed.");

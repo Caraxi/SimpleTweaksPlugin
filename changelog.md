@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.9.3.0
+***General Changes***
+- Added optional metrics collection
+	 - Everyone will be given a chance to opt in or our to the collection of a list of enabled tweaks when first accessing the simple tweaks config window.
+	 - Anyone who preemptivly opted out will not see the notice as they already made the choice.
+	 - No information will be collected until the 'Allow collection' button is pressed.
+
+***New Tweaks***
+- **`Casting Text Visibility`** - Change the font size, color, and background of the casting text. *(img)*
+
+- **`Chat Sounds Everywhere`** - Enables <se.#> chat sounds everywhere, regardless of channel. *(Asriel)*
+
+- **`Duty Timer`** - When completing a duty, tells you how much time the duty took. *(MidoriKami)*
+
+- **`Emote Log Status in Server Bar`** - Show the emote log status in the server bar. *(Sythiri)*
+
+- **`Show Glamour in Item Name`** - Displays the glamoured item name underneath the real item name. *(Enriath)*
+
+
+***Tweak Changes***
+- **`Track Faded Orchestrion Rolls`** - Added tracking for faded rolls with multiple crafts. *(KazWolfe)*
+
+
 ## 1.9.2.2
 ***Tweak Changes***
 - **`Fast Item Search`** - Fix random ordering (results are now always in the same order)

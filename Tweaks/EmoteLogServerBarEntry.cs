@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.Config;
+using Dalamud.Game.Config;
 using Dalamud.Game.Gui.Dtr;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -7,7 +7,7 @@ namespace SimpleTweaksPlugin;
 [TweakAuthor("Sythiri")]
 [TweakName("Emote Log Status in Server Bar")]
 [TweakDescription("Show the emote log status in the server bar.")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.9.3.0")]
 public class EmoteLogServerBarEntry : Tweak
 {
     private DtrBarEntry _emoteLogBarEntry;

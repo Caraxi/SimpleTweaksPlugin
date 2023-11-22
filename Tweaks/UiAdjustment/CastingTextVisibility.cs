@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Events;
@@ -12,7 +12,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Change the font size, color, and background of the casting text.")]
 [TweakAuthor("img")]
 [TweakAutoConfig]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.9.3.0")]
 internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
     private uint focusTargetImageNodeid => CustomNodes.Get(this, "CTVFocus");
     private uint targetImageNodeid => CustomNodes.Get(this, "CTVTarget");
