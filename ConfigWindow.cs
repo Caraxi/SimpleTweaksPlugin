@@ -35,7 +35,7 @@ public class ConfigWindow : SimpleWindow {
                               "You may opt out of this collection now and no information will be sent. You may also choose to opt back in at a later date in the simple tweaks config.");
 
             
-            ImGui.Dummy(new Vector2(20));
+            ImGui.Dummy(new Vector2(20) * ImGuiHelpers.GlobalScale);
 
             using (ImRaii.PushColor(ImGuiCol.Button, new Vector4(0.2f, 0.7f, 0.3f, 0.8f))) 
             using (ImRaii.PushColor(ImGuiCol.ButtonActive, new Vector4(0.2f, 0.7f, 0.3f, 1f))) 
@@ -59,6 +59,18 @@ public class ConfigWindow : SimpleWindow {
                 }
 
             }
+            
+            ImGui.Dummy(new Vector2(20) * ImGuiHelpers.GlobalScale);
+            
+            ImGui.Separator();
+            
+            ImGui.Dummy(new Vector2(20) * ImGuiHelpers.GlobalScale);
+            
+            if (ImGui.Button("Open Changelog")) {
+                SimpleTweaksPlugin.Plugin.ChangelogWindow.IsOpen = true;
+            }
+            
+            
             
             return;
         }

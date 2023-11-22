@@ -69,7 +69,7 @@ public static unsafe class MetricsService {
                 
 #if DEBUG
                 if (ImGui.GetIO().KeyShift) {
-                    payload.TweakNames.Add(t.Key, t.Name);
+                    if (t is not SubTweakManager { AlwaysEnabled: true }) payload.TweakNames.Add(t.Key, t.Name);
                 }
 #endif
                 if (t is SubTweakManager stm) {
