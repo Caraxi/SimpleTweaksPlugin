@@ -22,34 +22,14 @@ public static unsafe class MetricsService {
         var identifier = Config.MetricsIdentifier;
         if (string.IsNullOrEmpty(identifier) || identifier.Length != 64) {
             if (!allowFirstUse) return;
-            try {
-
-                var idStr = "SimpleTweaksMetrics:";
-
-                var userDir = Framework.Instance()->UserPath;
-
-                var dir = new DirectoryInfo(userDir);
-                
-                if (!dir.Exists) return;
-
-                DirectoryInfo? oldest = null;
-                
-                foreach (var d in dir.GetDirectories()) {
-                    if (!d.Name.StartsWith("FFXIV_CHR")) continue;
-                    if (oldest == null || d.CreationTime < oldest.CreationTime) oldest = d;
-                }
-
-                if (oldest == null) return;
-
-                idStr += oldest.Name[16..];
-
-                using var hash = SHA256.Create();
-                var result = hash.ComputeHash(Encoding.UTF8.GetBytes(idStr));
+            try
+            {
+                var idStr = Guid.NewGuid().ToString();
+                var result = SHA256.HashData(Encoding.UTF8.GetBytes(idStr));
                 Config.MetricsIdentifier = identifier = BitConverter.ToString(result).Replace("-", "");
                 Config.Save();
-                
-                SimpleLog.Verbose($"Created Metrics User Hash: [{identifier.Length}] {identifier}");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 SimpleTweaksPlugin.Plugin.Error(ex, "Error reporting metrics.");
                 return;
             }
