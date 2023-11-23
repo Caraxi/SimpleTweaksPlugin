@@ -22,27 +22,23 @@ public static unsafe class MetricsService {
         var identifier = Config.MetricsIdentifier;
         if (string.IsNullOrEmpty(identifier) || identifier.Length != 64) {
             if (!allowFirstUse) return;
-            try
-            {
+            try {
                 var idStr = Guid.NewGuid().ToString();
                 var result = SHA256.HashData(Encoding.UTF8.GetBytes(idStr));
                 Config.MetricsIdentifier = identifier = BitConverter.ToString(result).Replace("-", "");
                 Config.Save();
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 SimpleTweaksPlugin.Plugin.Error(ex, "Error reporting metrics.");
                 return;
             }
         }
 
         if (string.IsNullOrEmpty(identifier) || identifier.Length != 64) return;
-
-
+        
         var payload = new MetricsPayload {
             Identifier = identifier
         };
-
-
+        
         void ParseTweakList(IEnumerable<BaseTweak> tweaks) {
             foreach (var t in tweaks) {
                 if (t.TweakProvider is CustomTweakProvider) continue;
