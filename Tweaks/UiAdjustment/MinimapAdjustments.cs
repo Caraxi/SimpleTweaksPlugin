@@ -56,7 +56,7 @@ public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
             hasChanged |= ImGui.Checkbox("No Border", ref Config.NoBorder);
         }
 
-        if (hasChanged) Update();
+        if (hasChanged) Update(true);
     };
 
     public override string Name => "Minimap Adjustments";
@@ -66,7 +66,7 @@ public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
         Config = LoadConfig<Configs>() ?? new Configs();
         Service.ClientState.Login += OnLogin;
         base.Enable();
-        Update();
+        Update(true);
     }
 
     [TerritoryChanged]
@@ -81,7 +81,7 @@ public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
         Common.FrameworkUpdate -= WaitForUpdate;
         Service.ClientState.Login -= OnLogin;
         base.Disable();
-        Update();
+        Update(false);
     }
 
         
@@ -102,7 +102,7 @@ public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
                 }
                 return;
             }
-            Update();
+            Update(true);
             Common.FrameworkUpdate -= WaitForUpdate;
         } catch (Exception ex) {
             SimpleLog.Error(ex);
@@ -110,19 +110,19 @@ public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
         }
     }
 
-    public void Update() {
+    public void Update(bool enabled) {
         var unitBase = (AtkUnitBase*) Service.GameGui.GetAddonByName("_NaviMap", 1);
         if (unitBase == null) return;
 
         if (unitBase->UldManager.NodeListCount < 19) return;
             
         var sunImage = unitBase->UldManager.NodeList[4];
-        if (Enabled && Config.HideSun) sunImage->ToggleVisibility(false); else sunImage->ToggleVisibility(true);
+        if (enabled && Config.HideSun) sunImage->ToggleVisibility(false); else sunImage->ToggleVisibility(true);
             
         var weatherIcon = unitBase->UldManager.NodeList[6];
-        if (Enabled && Config.HideWeather) weatherIcon->ToggleVisibility(false); else weatherIcon->ToggleVisibility(true);
+        if (enabled && Config.HideWeather) weatherIcon->ToggleVisibility(false); else weatherIcon->ToggleVisibility(true);
             
-        if (Enabled && !Config.HideWeather) {
+        if (enabled && !Config.HideWeather) {
             // Weather Position Set
             var rad = 95f;
             var x = 90 + rad * Math.Cos(Config.WeatherPosition + 5.51524f);
@@ -133,30 +133,30 @@ public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
         }
 
         var standardBorderImage = unitBase->UldManager.NodeList[5];
-        if (Enabled && Config.CleanBorder && Config.NoBorder) standardBorderImage->ToggleVisibility(false); else standardBorderImage->ToggleVisibility(true);
+        if (enabled && Config.CleanBorder && Config.NoBorder) standardBorderImage->ToggleVisibility(false); else standardBorderImage->ToggleVisibility(true);
             
         var fancyBorderImage = unitBase->UldManager.NodeList[8];
-        if (Enabled && Config.CleanBorder) fancyBorderImage->ToggleVisibility(false); else fancyBorderImage->ToggleVisibility(true);
+        if (enabled && Config.CleanBorder) fancyBorderImage->ToggleVisibility(false); else fancyBorderImage->ToggleVisibility(true);
             
         for (var i = 9; i < 13; i++) {
             var directionIcon = unitBase->UldManager.NodeList[i];
-            if (Enabled && Config.HideCompassDirections) directionIcon->ToggleVisibility(false); else directionIcon->ToggleVisibility(true);
+            if (enabled && Config.HideCompassDirections) directionIcon->ToggleVisibility(false); else directionIcon->ToggleVisibility(true);
         }
             
         var coordinateDisplay = unitBase->UldManager.NodeList[13];
-        if (Enabled && Config.HideCoordinates) coordinateDisplay->ToggleVisibility(false); else coordinateDisplay->ToggleVisibility(true);
-        if (Enabled) {
+        if (enabled && Config.HideCoordinates) coordinateDisplay->ToggleVisibility(false); else coordinateDisplay->ToggleVisibility(true);
+        if (enabled) {
             coordinateDisplay->SetPositionFloat(44 + Config.CoordinatesPosition.X, 194 + Config.CoordinatesPosition.Y);
         } else {
             coordinateDisplay->SetPositionFloat(44, 194);
         }
             
         var compassLockButton = unitBase->UldManager.NodeList[16];
-        if (Enabled && Config.HideCompassLock) compassLockButton->ToggleVisibility(false); else compassLockButton->ToggleVisibility(true);
+        if (enabled && Config.HideCompassLock) compassLockButton->ToggleVisibility(false); else compassLockButton->ToggleVisibility(true);
             
         for (var i = 17; i < 19; i++) {
             var zoomButton = unitBase->UldManager.NodeList[i];
-            if (Enabled && Config.HideZoom) zoomButton->ToggleVisibility(false); else zoomButton->ToggleVisibility(true);
+            if (enabled && Config.HideZoom) zoomButton->ToggleVisibility(false); else zoomButton->ToggleVisibility(true);
         }
     }
 }
