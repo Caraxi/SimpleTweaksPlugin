@@ -12,7 +12,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakReleaseVersion("1.0.0.0")]
 [Changelog(UnreleasedVersion, "Rewrote tweak to modernize and simplify code.")]
 public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
-    private readonly string prefix = Service.Data.Excel.GetSheet<Addon>()?.GetRow(2780)?.Text?.RawString ?? "Checking member status...";
+    private readonly string prefix = Service.Data.GetExcelSheet<Addon>()?.GetRow(2780)?.Text?.RawString ?? "Checking member status...";
     private Stopwatch stopwatch = new();
     private TimeSpan timeOffset = TimeSpan.Zero;
 
