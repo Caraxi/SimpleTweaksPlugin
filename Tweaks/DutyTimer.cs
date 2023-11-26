@@ -1,4 +1,5 @@
 using System;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks; 
@@ -25,4 +26,8 @@ public class DutyTimer : Tweak {
 
     private void OnDutyCompleted(object sender, ushort e) 
         => Service.Chat.Print($@"Duty Completed in: {DateTime.UtcNow - startTimestamp:hh\:mm\:ss\.ffff}");
+
+    [TerritoryChanged]
+    private void OnTerritoryChanged(uint newTerritory)
+        => startTimestamp = DateTime.UtcNow;
 }
