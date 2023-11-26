@@ -1,4 +1,5 @@
 using System.Numerics;
+using Dalamud.Game.ClientState.Conditions;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Events;
@@ -72,6 +73,10 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak {
                 imageNode->AtkResNode.AddRed = (byte)(TweakConfig.BackgroundColor.X * 255);
                 imageNode->AtkResNode.AddGreen = (byte)(TweakConfig.BackgroundColor.Y * 255);
                 imageNode->AtkResNode.AddBlue = (byte)(TweakConfig.BackgroundColor.Z * 255);
+
+                if (TweakConfig.HideInDuties && Service.Condition.Any(ConditionFlag.BoundByDuty, ConditionFlag.BoundByDuty95, ConditionFlag.BoundToDuty97)) {
+                    imageNode->AtkResNode.ToggleVisibility(false);
+                }
             }
         }
     }
@@ -89,7 +94,11 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak {
     }
 
     private void DrawConfig() {
-        if (ImGui.ColorEdit4($"Background Color##ColorEdit", ref TweakConfig.BackgroundColor, ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.AlphaBar)) {
+        var changed = false;
+        changed |= ImGui.ColorEdit4($"Background Color##ColorEdit", ref TweakConfig.BackgroundColor, ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.AlphaBar);
+        changed |= ImGui.Checkbox("Hide in Duties", ref TweakConfig.HideInDuties);
+        
+        if (changed) {
             if (Common.GetUnitBase("_ToDoList", out var unitBase)) {
                 OnAddonUpdate(unitBase);
             }
@@ -98,5 +107,6 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak {
 
     public class Config : TweakConfig {
         public Vector4 BackgroundColor = new(0.0f, 0.0f, 0.0f, 0.40f);
+        public bool HideInDuties = false;
     }
 }
