@@ -6,9 +6,11 @@ using Dalamud.Game.Config;
 using ImGuiNET;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
+[Changelog(UnreleasedVersion, "Added support for changing the cutscene audio language.")]
 public unsafe class SetOptionCommand : CommandTweak {
 
     public override string Name => "Set Option Command";
@@ -100,6 +102,31 @@ public unsafe class SetOptionCommand : CommandTweak {
             };
             return (main, alias);
         }
+        public static (Dictionary<string, uint>, Dictionary<string, uint>) AudioLanguage() {
+            var main = new Dictionary<string, uint> {
+                ["auto"] = uint.MaxValue,
+                ["japanese"] = 0,
+                ["english"] = 1,
+                ["german"] = 2,
+                ["french"] = 3,
+            };
+            var alias = new Dictionary<string, uint> {
+                ["a"] = uint.MaxValue,
+                ["j"] = 0,
+                ["jp"] = 0,
+                ["jpn"] = 0,
+                ["e"] = 1,
+                ["en"] = 1,
+                ["eng"] = 1,
+                ["g"] = 2,
+                ["de"] = 2,
+                ["ger"] = 2,
+                ["f"] = 3,
+                ["fr"] = 3,
+                ["fre"] = 3,
+            };
+            return (main, alias);
+        }
     }
     
     private readonly List<IOptionDefinition> optionDefinitions = new() {
@@ -116,6 +143,7 @@ public unsafe class SetOptionCommand : CommandTweak {
         new OptionDefinition<uint>("OtherPlayerDisplayName", "NamePlateDispTypeOther", OptionGroup.UiConfig, ValueType.NamePlateDisplay, "opcdn") { AllowToggle = true },
         new OptionDefinition<uint>("FriendDisplayName", "NamePlateDispTypeFriend", OptionGroup.UiConfig, ValueType.NamePlateDisplay, "fdn") { AllowToggle = true },
         
+        new OptionDefinition<uint>("CutsceneAudioLanguage", "CutsceneMovieVoice", OptionGroup.System, ValueType.AudioLanguage, "cl"),
         new OptionDefinition<uint>("DisplayNameSize", "NamePlateDispSize", OptionGroup.UiConfig, () => {
             return (
                 new() { ["maximum"] = 2, ["large"] = 1, ["standard"] = 0 },
