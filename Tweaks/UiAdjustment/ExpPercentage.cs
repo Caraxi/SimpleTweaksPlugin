@@ -13,6 +13,8 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
 
+
+[Changelog(UnreleasedVersion, "Added the ability to show rested experience without showing experience percentage.")]
 public unsafe class ExpPercentage : UiAdjustments.SubTweak {
     public override string Name => "Show Experience Percentage";
 
@@ -27,6 +29,10 @@ public unsafe class ExpPercentage : UiAdjustments.SubTweak {
 
         [TweakConfigOption("Show Rested Experience")]
         public bool ShowRestedExperience;
+        
+        [TweakConfigOption("Show only Rested Experience as percentage", 2, ConditionalDisplay = true)]
+        public bool NoExpPercentage;
+        public bool ShouldShowNoExpPercentage() => PercentageOnly == false && ShowRestedExperience;
     }
 
     public Configs Config { get; private set; }
@@ -103,7 +109,7 @@ public unsafe class ExpPercentage : UiAdjustments.SubTweak {
                     }
 
                 }
-            } else if (percent < 100) {
+            } else if (percent < 100 && !(Config.ShowRestedExperience && Config.NoExpPercentage)) {
                 str.Payloads.Add(new TextPayload($" ({percent.ToString($"F{Config.Decimals}", Culture)}%)"));
             }
 
