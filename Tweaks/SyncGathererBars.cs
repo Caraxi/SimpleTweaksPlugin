@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using Dalamud.Interface.Colors;
+using Dalamud.Interface.Components;
+using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.Interop;
 using ImGuiNET;
@@ -38,6 +41,14 @@ public unsafe class SyncGathererBars : Tweak {
 
     public Configs Config { get; private set; }
 
+    public bool IsShared(int number, bool cross) {
+        var name = $"Hotbar{(cross ? "Cross" : "")}Common{number + 1:00}";
+        if (Service.GameConfig.UiConfig.TryGetBool(name, out var v)) {
+            return v;
+        }
+        return false;
+    }
+    
     protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
         if (Config.StandardBars.Length != 10) Config.StandardBars = new bool[10];
         if (Config.CrossBars.Length != 8) Config.CrossBars = new bool[8];
@@ -49,13 +60,41 @@ public unsafe class SyncGathererBars : Tweak {
 
         ImGui.Columns(columns, "hotbarColumns", false);
         for (var i = 0; i < Config.StandardBars.Length; i++) {
-            ImGui.Checkbox($"Hotbar {i+1}##syncBar_{i}", ref Config.StandardBars[i]);
+            var isShared = IsShared(i, false);
+            using (ImRaii.Disabled(isShared)) {
+                ImGui.Checkbox($"Hotbar {i+1}##syncBar_{i}", ref Config.StandardBars[i]);
+            }
+
+            if (isShared && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) {
+                ImGui.SetTooltip("Shared Hotbars will not be synced");
+            }
+
+            if (isShared && Config.StandardBars[i]) {
+                using (ImRaii.PushColor(ImGuiCol.TextDisabled, ImGuiColors.DalamudYellow)) {
+                    ImGui.SameLine();
+                    ImGuiComponents.HelpMarker("Shared Hotbars will not be synced");
+                }
+            }
             ImGui.NextColumn();
         }
         ImGui.Columns(1);
         ImGui.Columns(columns, "crosshotbarColumns", false);
         for (var i = 0; i < Config.CrossBars.Length; i++) {
-            ImGui.Checkbox($"Cross Hotbar {i+1}##syncCrossBar_{i}", ref Config.CrossBars[i]);
+            var isShared = IsShared(i, true);
+            using (ImRaii.Disabled(isShared)) {
+                ImGui.Checkbox($"Cross Hotbar {i+1}##syncCrossBar_{i}", ref Config.CrossBars[i]);
+            }
+            
+            if (isShared && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) {
+                ImGui.SetTooltip("Shared Cross Hotbars will not be synced");
+            }
+            
+            if (isShared && Config.CrossBars[i]) {
+                using (ImRaii.PushColor(ImGuiCol.TextDisabled, ImGuiColors.DalamudYellow)) {
+                    ImGui.SameLine();
+                    ImGuiComponents.HelpMarker("Shared Cross Hotbars will not be synced");
+                }
+            }
             ImGui.NextColumn();
         }
         ImGui.Columns(1);
@@ -93,6 +132,9 @@ public unsafe class SyncGathererBars : Tweak {
         if (Service.ClientState.LocalPlayer == null) return;
         var currentId = (int)Service.ClientState.LocalPlayer.ClassJob.Id;
         if (currentId is not (16 or 17)) return;
+
+        if (IsShared(checkBar < 10 ? checkBar : checkBar - 10, checkBar >= 10)) return;
+        
         var otherId = currentId is 16 ? 17 : 16;
 
         var swapDict = actionSwaps[currentId is 16 ? 0 : 1];
