@@ -143,6 +143,12 @@ public unsafe class SetOptionCommand : CommandTweak {
         new OptionDefinition<uint>("OtherPlayerDisplayName", "NamePlateDispTypeOther", OptionGroup.UiConfig, ValueType.NamePlateDisplay, "opcdn") { AllowToggle = true },
         new OptionDefinition<uint>("FriendDisplayName", "NamePlateDispTypeFriend", OptionGroup.UiConfig, ValueType.NamePlateDisplay, "fdn") { AllowToggle = true },
         
+        new OptionDefinition<uint>("SelfNameTitle", "NamePlateNameTitleTypeSelf", OptionGroup.UiConfig, ValueType.Boolean, "snt") { AllowToggle = true },
+        new OptionDefinition<uint>("PartyNameTitle", "NamePlateNameTitleTypeParty", OptionGroup.UiConfig, ValueType.Boolean, "pnt") { AllowToggle = true },
+        new OptionDefinition<uint>("AllianceNameTitle", "NamePlateNameTitleTypeAlliance", OptionGroup.UiConfig, ValueType.Boolean, "ant") { AllowToggle = true },
+        new OptionDefinition<uint>("OtherNameTitle", "NamePlateNameTitleTypeOther", OptionGroup.UiConfig, ValueType.Boolean, "ont") { AllowToggle = true },
+        new OptionDefinition<uint>("FriendNameTitle", "NamePlateNameTitleTypeFriend", OptionGroup.UiConfig, ValueType.Boolean, "fnt") { AllowToggle = true },
+        
         new OptionDefinition<uint>("CutsceneAudioLanguage", "CutsceneMovieVoice", OptionGroup.System, ValueType.AudioLanguage, "cl"),
         new OptionDefinition<uint>("DisplayNameSize", "NamePlateDispSize", OptionGroup.UiConfig, () => {
             return (
