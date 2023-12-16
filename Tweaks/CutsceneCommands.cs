@@ -19,6 +19,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakAuthor("Kurochi")]
 [TweakAutoConfig]
 [TweakReleaseVersion(UnreleasedVersion)]
+[TweakCategory(TweakCategory.Command)]
 public class CutsceneCommands : Tweak
 {
     public class Configs : TweakConfig
