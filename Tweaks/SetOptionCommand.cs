@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,9 +10,9 @@ using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
-[Changelog(UnreleasedVersion, "Added support for changing the cutscene audio language.")]
-[Changelog(UnreleasedVersion, "Added support for changing title display options.", Author = "Gehock")]
-[Changelog(UnreleasedVersion, "Added support for 'Small' and 'Smallest' for nameplate size options.", Author = "Gehock")]
+[Changelog("1.9.4.0", "Added support for changing the cutscene audio language.")]
+[Changelog("1.9.4.0", "Added support for changing title display options.", Author = "Gehock")]
+[Changelog("1.9.4.0", "Added support for 'Small' and 'Smallest' for nameplate size options.", Author = "Gehock")]
 public unsafe class SetOptionCommand : CommandTweak {
 
     public override string Name => "Set Option Command";

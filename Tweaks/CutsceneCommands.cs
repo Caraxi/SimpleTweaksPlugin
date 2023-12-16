@@ -18,7 +18,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakDescription("Enable the use of certain commands in cutscenes")]
 [TweakAuthor("Kurochi")]
 [TweakAutoConfig]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.9.4.0")]
 [TweakCategory(TweakCategory.Command)]
 public class CutsceneCommands : Tweak
 {

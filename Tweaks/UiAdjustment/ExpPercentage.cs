@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Dalamud;
 using Dalamud.Game.Text;
@@ -14,7 +14,7 @@ using SimpleTweaksPlugin.Utility;
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
 
 
-[Changelog(UnreleasedVersion, "Added the ability to show rested experience without showing experience percentage.")]
+[Changelog("1.9.4.0", "Added the ability to show rested experience without showing experience percentage.")]
 public unsafe class ExpPercentage : UiAdjustments.SubTweak {
     public override string Name => "Show Experience Percentage";
 

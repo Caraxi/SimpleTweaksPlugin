@@ -1,4 +1,4 @@
-﻿using FFXIVClientStructs.FFXIV.Component.GUI;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets2;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
@@ -8,7 +8,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakName("Hide Guildhest Objective Popup")]
 [TweakAuthor("MidoriKami")]
 [TweakDescription("Hides the objective popup when starting a guildhest.")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.9.4.0")]
 public unsafe class HideGuildhestObjectivePopup : UiAdjustments.SubTweak {
     [AddonPreSetup("JournalAccept")]
     private void JournalAcceptPreSetup(AtkUnitBase* addon) {

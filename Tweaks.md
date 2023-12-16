@@ -46,6 +46,16 @@
   Allows replacing commands typed into chat box with other commands.
 
 
+- **Customize default deposit and withdraw quanity**
+
+  Allows setting a custom amount to deposit or withdraw when using the 'Retrieve Quantity' and 'Entrust Quantity' options.
+
+
+- **Cutscene commands**
+
+  Enable the use of certain commands in cutscenes
+
+
 - **Data Centre on Title Screen**
 
   Shows the current Data Centre on the Title Screen
@@ -119,6 +129,11 @@
 - **Fixed Shadow Distance**
 
   Sets a fixed value for the shadow rendering, preventing it from changing when flying.
+
+
+- **Gearset Update Command**
+
+  Updates the active gearset with your current equipment.
 
 
 - **Hide 'Character not found' Message**
@@ -585,6 +600,11 @@
 - **Hide Experience Bar at Max Level**
 
   Hides the experience bar when at max level.
+
+
+- **Hide Guildhest Objective Popup**
+
+  Hides the objective popup when starting a guildhest.
 
 
 - **Hide Job Gauge**

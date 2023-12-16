@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.9.4.0
+***New Tweaks***
+- **`Customize default deposit and withdraw quanity`** - Allows setting a custom amount to deposit or withdraw when using the 'Retrieve Quantity' and 'Entrust Quantity' options.
+
+- **`Cutscene commands`** - Enable the use of certain commands in cutscenes *(Kurochi)*
+
+- **`Hide Guildhest Objective Popup`** - Hides the objective popup when starting a guildhest. *(MidoriKami)*
+
+
+***Tweak Changes***
+- **`Set Option Command`**
+  - Added support for changing the cutscene audio language.
+  - Added support for changing title display options. *(Gehock)*
+  - Added support for 'Small' and 'Smallest' for nameplate size options. *(Gehock)*
+
+- **`Show Experience Percentage`** - Added the ability to show rested experience without showing experience percentage.
+
+
 ## 1.9.3.0
 ***General Changes***
 - Added optional metrics collection

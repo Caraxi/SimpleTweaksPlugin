@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
@@ -13,7 +13,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakName("Customize default deposit and withdraw quanity")]
 [TweakDescription("Allows setting a custom amount to deposit or withdraw when using the 'Retrieve Quantity' and 'Entrust Quantity' options.")]
 [TweakAutoConfig]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.9.4.0")]
 public unsafe class CustomDefaultQuantity : Tweak {
     
     public class ModeConfig {
