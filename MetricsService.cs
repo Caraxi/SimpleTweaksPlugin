@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
@@ -36,7 +37,8 @@ public static unsafe class MetricsService {
         if (string.IsNullOrEmpty(identifier) || identifier.Length != 64) return;
         
         var payload = new MetricsPayload {
-            Identifier = identifier
+            Identifier = identifier,
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty,
         };
         
         void ParseTweakList(IEnumerable<BaseTweak> tweaks) {
@@ -77,6 +79,7 @@ public static unsafe class MetricsService {
     
     public class MetricsPayload {
         public string Identifier;
+        public string Version;
         public List<string> EnabledTweaks = new();
 
 #if DEBUG
