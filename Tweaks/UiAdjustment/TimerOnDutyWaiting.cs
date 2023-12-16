@@ -9,7 +9,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [TweakName("Timer on Duty Waiting")]
 [TweakDescription("Shows the 45 second countdown after readying for a duty.")]
-[Changelog(UnreleasedVersion, "Rewrote tweak to modernize and simplify code.")]
 public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
     private readonly string prefix = Service.Data.GetExcelSheet<Addon>()?.GetRow(2780)?.Text?.RawString ?? "Checking member status...";
     private Stopwatch stopwatch = new();
