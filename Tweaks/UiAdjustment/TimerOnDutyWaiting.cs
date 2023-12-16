@@ -2,65 +2,32 @@
 using System.Diagnostics;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.Utility;
+using SimpleTweaksPlugin.Events;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
 
+[TweakName("Timer on Duty Waiting")]
+[TweakDescription("Shows the 45 second countdown after readying for a duty.")]
+[Changelog(UnreleasedVersion, "Rewrote tweak to modernize and simplify code.")]
 public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
-    public override string Name => "Timer on Duty Waiting";
-    public override string Description => "Shows the 45 second countdown after readying for a duty.";
+    private readonly string prefix = Service.Data.GetExcelSheet<Addon>()?.GetRow(2780)?.Text?.RawString ?? "Checking member status...";
+    private Stopwatch stopwatch = new();
+    private TimeSpan timeOffset = TimeSpan.Zero;
 
-    protected override void Enable() {
-        Common.FrameworkUpdate += UpdateFramework;
-        prefix = Service.Data.Excel.GetSheet<Addon>()?.GetRow(2780)?.Text?.RawString ?? "Checking member status...";
-        base.Enable();
-    }
-
-    private string prefix = "Checking member status...";
-
-    private int lastValue;
-
-    private readonly Stopwatch sw = new();
-
-    private void UpdateFramework() {
-        try {
-            var confirmWindow = Common.GetUnitBase("ContentsFinderConfirm");
-            if (confirmWindow != null && confirmWindow->UldManager.NodeList != null) {
-                var timerTextNode = (AtkTextNode*) confirmWindow->UldManager.NodeList[10];
-                if (timerTextNode == null) return;
-                var text = Common.ReadSeString(timerTextNode->NodeText.StringPtr).TextValue;
-                if (!TimeSpan.TryParse($"0:{text}", out var ts)) return;
-                if (!sw.IsRunning || (int)ts.TotalSeconds != lastValue) {
-                    lastValue = (int)ts.TotalSeconds;
-                    sw.Restart();
-                }
-
-                return;
-            }
-
-            if (!sw.IsRunning) return;
-
-            var v = lastValue - (int)(sw.Elapsed.TotalSeconds + 1);
-            if (v < 0) {
-                sw.Stop();
-                return;
-            }
-
-            var readyWindow = Common.GetUnitBase("ContentsFinderReady");
-            if (readyWindow == null || readyWindow->UldManager.NodeList == null) return;
-
-            var checkingTextNode = (AtkTextNode*) readyWindow->UldManager.NodeList[7];
-            if (checkingTextNode == null) return;
-
-            Common.WriteSeString(checkingTextNode->NodeText, $"{prefix} ({v})");
-        } catch {
-            //
+    [AddonPostRequestedUpdate("ContentsFinderConfirm")]
+    private void OnPostSetup(AtkUnitBase* addon) {
+        if (TimeSpan.TryParse($"0:{addon->GetTextNodeById(60)->NodeText.ToString()}", out var timeSpan)) {
+            timeOffset = timeSpan;
+            stopwatch = Stopwatch.StartNew();
         }
     }
 
-    protected override void Disable() {
-        Common.FrameworkUpdate -= UpdateFramework;
-        sw.Stop();
-        base.Disable();
+    [AddonPostUpdate("ContentsFinderReady")]
+    private void OnPostUpdate(AtkUnitBase* addon) {
+        var timeRemaining = timeOffset.Seconds - stopwatch.Elapsed.Seconds;
+        if (timeRemaining <= 0) return;
+
+        addon->GetTextNodeById(3)->SetText($"{prefix} ({timeRemaining})");
     }
 }
