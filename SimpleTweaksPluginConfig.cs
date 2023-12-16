@@ -64,8 +64,6 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     }
 
     private void Update() {
-        var didUpdate = false;
-
         if (CustomProviders != null) {
             foreach (var p in CustomProviders) {
                 var enabled = !p.StartsWith("!");

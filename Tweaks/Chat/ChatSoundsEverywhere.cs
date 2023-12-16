@@ -14,8 +14,8 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 public unsafe class ChatSoundsEverywhere : ChatTweaks.SubTweak {
     private delegate Utf8String* PronounModuleProcessChatStringDelegate(PronounModule* a1, Utf8String* a2, bool a3);
     [TweakHook, Signature("E8 ?? ?? ?? ?? 0F B7 7F 08", DetourName = nameof(PronounModuleProcessChatStringDetour))]
-    private readonly HookWrapper<PronounModuleProcessChatStringDelegate> pronounModuleProcessChatString;
+    private readonly HookWrapper<PronounModuleProcessChatStringDelegate>? pronounModuleProcessChatString;
 
     private Utf8String* PronounModuleProcessChatStringDetour(PronounModule* a1, Utf8String* a2, bool _) =>
-        pronounModuleProcessChatString.Original(a1, a2, true);
+        pronounModuleProcessChatString!.Original(a1, a2, true);
 }
