@@ -163,7 +163,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips {
                     potionMaxPayload.Text = $"{max}";
                     potionActualValuePayload.Text = $"{actual}";
 
-                    stringArrayData->SetValue((int) TooltipTweaks.ItemTooltipField.Effects, seStr.Encode(), false);
+                    SetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.Effects, seStr);
                 }
 
 
