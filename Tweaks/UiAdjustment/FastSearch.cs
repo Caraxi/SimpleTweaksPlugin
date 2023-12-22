@@ -126,15 +126,13 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
     [TweakHook, Signature("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 80 B9", DetourName = nameof(RecipeNoteRecieveDetour))]
     private readonly HookWrapper<RecipeNoteRecieveDelegate> recipeNoteRecieveHook;
     
-    // // Warning CS0169 field is never used
-    // private delegate void RecipeNoteIterateDelegate(SearchContext* a1);
-    // [TweakHook, Signature("80 B9 ?? ?? ?? ?? ?? 74 27 8B 81", DetourName = nameof(RecipeNoteIterateDetour))]
-    // private readonly HookWrapper<RecipeNoteIterateDelegate> recipeNoteIterateHook;
-    //
-    // // Warning CS0169 field is never used
-    // private delegate void AgentItemSearchUpdate1Delegate(AgentItemSearch2* a1);
-    // [TweakHook, Signature("E8 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 80 BB ?? ?? ?? ?? ?? 75 19", DetourName = nameof(AgentItemSearchUpdate1Detour))]
-    // private readonly HookWrapper<AgentItemSearchUpdate1Delegate> agentItemSearchUpdate1Hook;
+    private delegate void RecipeNoteIterateDelegate(SearchContext* a1);
+    [TweakHook, Signature("80 B9 ?? ?? ?? ?? ?? 74 27 8B 81", DetourName = nameof(RecipeNoteIterateDetour))]
+    private readonly HookWrapper<RecipeNoteIterateDelegate> recipeNoteIterateHook;
+    
+    private delegate void AgentItemSearchUpdate1Delegate(AgentItemSearch2* a1);
+    [TweakHook, Signature("E8 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 80 BB ?? ?? ?? ?? ?? 75 19", DetourName = nameof(AgentItemSearchUpdate1Detour))]
+    private readonly HookWrapper<AgentItemSearchUpdate1Delegate> agentItemSearchUpdate1Hook;
 
     private delegate void AgentItemSearchUpdateAtkValuesDelegate(AgentItemSearch2* a1, uint a2, byte* a3, bool a4);
     [TweakHook, Signature("40 55 56 41 56 B8", DetourName = nameof(AgentItemSearchUpdateAtkValuesDetour))]

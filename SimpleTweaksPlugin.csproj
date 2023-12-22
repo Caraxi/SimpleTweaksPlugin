@@ -7,7 +7,7 @@
         <Configurations>Debug;Release</Configurations>
     </PropertyGroup>
     <PropertyGroup Label="Build">
-        <NoWarn>CS8632,CS0649</NoWarn>
+        <NoWarn>CS8632,CS0649,CS0169</NoWarn>
         <OutputType>Library</OutputType>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
