@@ -20,9 +20,6 @@ public unsafe class ActionBarDebug : DebugHelper {
     public override string Name => "Action Bar Debugging";
         
     public override void Draw() {
-        ImGui.Text($"{Name} Debug");
-        ImGui.Separator();
-
         var raptureHotbarModule = Framework.Instance()->GetUiModule()->GetRaptureHotbarModule();
         ImGui.Text("RaptureHotbarModule:");
         ImGui.SameLine();
@@ -31,6 +28,8 @@ public unsafe class ActionBarDebug : DebugHelper {
         ImGui.Text("ActionManager:");
         ImGui.SameLine();
         DebugManager.ClickToCopyText($"{(ulong)ActionManager.Instance():X}");
+
+        DebugManager.PrintOutObject(raptureHotbarModule);
             
         ImGui.Separator();
 
@@ -211,8 +210,9 @@ public unsafe class ActionBarDebug : DebugHelper {
 
     private void DrawHotbar(RaptureHotbarModule* hotbarModule, HotBar* hotbar) {
 
-        ImGui.Columns(8);
+        ImGui.Columns(6);
         ImGuiExt.SetColumnWidths(35);
+        ImGui.SetColumnWidth(6, 512);
             
         ImGui.Text($"##");
         ImGui.NextColumn();
@@ -224,7 +224,8 @@ public unsafe class ActionBarDebug : DebugHelper {
         ImGui.NextColumn();
         ImGui.Text("Cooldown");
         ImGui.NextColumn();
-            
+        ImGui.Text("Struct");
+        ImGui.NextColumn();
             
         ImGuiExt.NextRow();
         ImGui.Separator();
@@ -349,7 +350,13 @@ public unsafe class ActionBarDebug : DebugHelper {
                 }
 
                 case HotbarSlotType.Macro: {
+                    var macroModule = RaptureMacroModule.Instance();
+                    var macro = macroModule->GetMacro(slot->CommandId / 256, slot->CommandId % 256);
+                    
                     ImGui.Text($"{(slot->CommandId >= 256 ? "Shared" : "Individual")} #{slot->CommandId%256}");
+                    if (macro != null) {
+                        ImGui.Text(macro->Name.ToString());
+                    }
                     break;
                 }
 
@@ -389,13 +396,26 @@ public unsafe class ActionBarDebug : DebugHelper {
 
                     break;
                 }
+
+                case HotbarSlotType.Collection: {
+                    var c = Service.Data.Excel.GetSheet<McGuffin>()!.GetRow(slot->CommandId);
+                    if (c == null) {
+                        ImGui.TextDisabled("Not Found");
+                    } else {
+                        ImGui.TextWrapped(c.UIData.Value!.Name);
+                    }
+                    
+                    break;
+                }
                     
                 default: {
-                    ImGui.TextDisabled("Name Not Supprorted");
+                    ImGui.TextDisabled("Name Lookup Not Supported");
+                    ImGui.TextUnformatted(slot->PopUpHelp.ToString());
                     break;
                 }
             }
                 
+            // Column "Cooldown"
             ImGui.NextColumn();
 
             var cooldownGroup = -1;
@@ -446,11 +466,13 @@ public unsafe class ActionBarDebug : DebugHelper {
                     ImGui.Text("Failed");
                 }
             }
+            
+            // Column "Struct"
+            ImGui.NextColumn();
+            DebugManager.PrintOutObject(slot);
                 
             ImGuiExt.NextRow();
             ImGui.Separator();
-                
-
         }
         ImGui.Columns();
     }
