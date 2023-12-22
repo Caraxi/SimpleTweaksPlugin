@@ -5,13 +5,21 @@ namespace SimpleTweaksPlugin.Events;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public class AddonEventAttribute : EventAttribute {
-    public AddonEvent Event { get; }
+    public AddonEvent[] Event { get; }
     public string[] AddonNames { get; }
 
     public AddonEventAttribute(AddonEvent @event, params string[] addonNames) {
-        Event = @event;
+        Event = new[] { @event };
         AddonNames = addonNames.Length == 0 ? new []{ "ALL_ADDONS" } : addonNames;
     }
+    
+    public AddonEventAttribute(string addonName, params AddonEvent[] events) {
+        if (events.Length == 0) events = Enum.GetValues<AddonEvent>();
+        Event = events;
+        AddonNames = new[] { addonName };
+    }
+    
+    
 }
 
 #region Aliases

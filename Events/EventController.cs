@@ -260,18 +260,20 @@ public static unsafe class EventController {
                     
                     var subscriber = new EventSubscriber { Tweak = tweak, Method = method };
 
-                    if (!AddonEventSubscribers.TryGetValue(attr.Event, out var addonSubscriberDict)) {
-                        addonSubscriberDict = new Dictionary<string, List<EventSubscriber>>();
-                        AddonEventSubscribers.Add(attr.Event, addonSubscriberDict);
-                        Service.AddonLifecycle.RegisterListener(attr.Event, HandleEvent);
+                    foreach (var e in attr.Event) {
+                        if (!AddonEventSubscribers.TryGetValue(e, out var addonSubscriberDict)) {
+                            addonSubscriberDict = new Dictionary<string, List<EventSubscriber>>();
+                            AddonEventSubscribers.Add(e, addonSubscriberDict);
+                            Service.AddonLifecycle.RegisterListener(e, HandleEvent);
+                        }
+                        
+                        if (!addonSubscriberDict.TryGetValue(addon, out var addonSubscriberList)) {
+                            addonSubscriberList = new List<EventSubscriber>();
+                            addonSubscriberDict.Add(addon, addonSubscriberList);
+                        }
+                        
+                        addonSubscriberList.Add(subscriber);
                     }
-
-                    if (!addonSubscriberDict.TryGetValue(addon, out var addonSubscriberList)) {
-                        addonSubscriberList = new List<EventSubscriber>();
-                        addonSubscriberDict.Add(addon, addonSubscriberList);
-                    }
-                    
-                    addonSubscriberList.Add(subscriber);
                 }
             }
         }
