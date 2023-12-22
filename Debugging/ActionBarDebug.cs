@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -209,54 +210,45 @@ public unsafe class ActionBarDebug : DebugHelper {
     }
 
     private void DrawHotbar(RaptureHotbarModule* hotbarModule, HotBar* hotbar) {
-
-        ImGui.Columns(6);
-        ImGuiExt.SetColumnWidths(35);
-        ImGui.SetColumnWidth(6, 512);
-            
-        ImGui.Text($"##");
-        ImGui.NextColumn();
-        ImGui.Text("Command");
-        ImGui.NextColumn();
-        ImGui.Text("Icon");
-        ImGui.NextColumn();
-        ImGui.Text("Name");
-        ImGui.NextColumn();
-        ImGui.Text("Cooldown");
-        ImGui.NextColumn();
-        ImGui.Text("Struct");
-        ImGui.NextColumn();
-            
-        ImGuiExt.NextRow();
-        ImGui.Separator();
-        ImGui.Separator();
-            
-            
+        using var tableBorderLight = ImRaii.PushColor(ImGuiCol.TableBorderLight, ImGui.GetColorU32(ImGuiCol.Border));
+        using var tableBorderStrong = ImRaii.PushColor(ImGuiCol.TableBorderStrong, ImGui.GetColorU32(ImGuiCol.Border));
+        if (!ImGui.BeginTable("HotbarTable", 6, ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable)) return;
+        
+        ImGui.TableSetupColumn("##", ImGuiTableColumnFlags.WidthFixed, 30);
+        ImGui.TableSetupColumn("Command", ImGuiTableColumnFlags.WidthFixed, 150);
+        ImGui.TableSetupColumn("Icon", ImGuiTableColumnFlags.WidthFixed, 180);
+        ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthFixed, 180);
+        ImGui.TableSetupColumn("Cooldown", ImGuiTableColumnFlags.WidthFixed, 180);
+        ImGui.TableSetupColumn("Struct", ImGuiTableColumnFlags.WidthStretch);
+        ImGui.TableHeadersRow();
+        
         for (var i = 0; i < 16; i++) {
             var slot = hotbar->SlotsSpan.GetPointer(i);
             if (slot == null) break;
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn();
             if (slot->CommandType == HotbarSlotType.Empty) {
                 ImGui.PushStyleColor(ImGuiCol.Text, slot->CommandType == HotbarSlotType.Empty ? 0x99999999 : 0xFFFFFFFF);
                 DebugManager.ClickToCopyText($"{i+1:00}", $"{(ulong)slot:X}");
-                ImGui.NextColumn();
+                ImGui.SameLine();
+                ImGui.Dummy(new Vector2(1, ImGui.GetTextLineHeight() * 4));
+                ImGui.TableNextColumn();
                 ImGui.Text("Empty");
                 ImGui.PopStyleColor();
-                ImGuiExt.NextRow();
-                ImGui.Separator();
                 continue;
             }
                 
             var adjustedId = slot->CommandType == HotbarSlotType.Action ? ActionManager.Instance()->GetAdjustedActionId(slot->CommandId) : slot->CommandId;
-
             DebugManager.ClickToCopyText($"{i+1:00}", $"{(ulong)slot:X}");
-                
-            ImGui.NextColumn();
+            ImGui.SameLine();
+            ImGui.Dummy(new Vector2(1, ImGui.GetTextLineHeight() * 4));
+            ImGui.TableNextColumn();
                 
             ImGui.Text($"{slot->CommandType} : {slot->CommandId}");
             if (slot->CommandType == HotbarSlotType.Action) {
                 ImGui.Text($"Adjusted: {adjustedId}");
             }
-            ImGui.NextColumn();
+            ImGui.TableNextColumn();
 
             var iconGood = false;
             if (slot->Icon >= 0) {
@@ -276,7 +268,7 @@ public unsafe class ActionBarDebug : DebugHelper {
                 
             ImGui.Text($"{slot->IconTypeA} : {slot->IconA}\n{slot->IconTypeB} : {slot->IconB}");
 
-            ImGui.NextColumn();
+            ImGui.TableNextColumn();
             switch (slot->CommandType) {
                 case HotbarSlotType.Empty: { break; }
                 case HotbarSlotType.Action: {
@@ -416,7 +408,7 @@ public unsafe class ActionBarDebug : DebugHelper {
             }
                 
             // Column "Cooldown"
-            ImGui.NextColumn();
+            ImGui.TableNextColumn();
 
             var cooldownGroup = -1;
                 
@@ -468,12 +460,11 @@ public unsafe class ActionBarDebug : DebugHelper {
             }
             
             // Column "Struct"
-            ImGui.NextColumn();
+            ImGui.TableNextColumn();
             DebugManager.PrintOutObject(slot);
-                
-            ImGuiExt.NextRow();
-            ImGui.Separator();
         }
-        ImGui.Columns();
+        
+        ImGui.EndTable();
+        
     }
 }
