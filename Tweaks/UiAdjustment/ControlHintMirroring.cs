@@ -27,7 +27,7 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak {
         if (barId == 9) hints.Clear(); // Relies on the game updating action bars in reverse order
         for (var slotIndex = (byte)(addon->AddonActionBarBase.SlotCount - 1); slotIndex < addon->AddonActionBarBase.SlotCount; slotIndex--) {
             if (barSlotIsSet.TryGetValue((barId, slotIndex), out var isSet) && isSet) {
-                addon->AddonActionBarBase.Slot[slotIndex].ControlHintTextNode->SetText(string.Empty);
+                addon->AddonActionBarBase.ActionBarSlotVector.Get(slotIndex).ControlHintTextNode->SetText(string.Empty);
                 barSlotIsSet[(barId, slotIndex)] = false;
             }
 
@@ -59,10 +59,10 @@ public unsafe class ControlHintMirroring : UiAdjustments.SubTweak {
                 if (barSlotHasNoHint.TryGetValue((barId, slotIndex), out var noHint) && noHint) {
                     var commandId = slot->CommandType == HotbarSlotType.Action ? ActionManager.Instance()->GetAdjustedActionId(slot->CommandId) : slot->CommandId;
                     if (hints.TryGetValue((slot->CommandType, commandId), out var hint)) {
-                        addon->AddonActionBarBase.Slot[slotIndex].ControlHintTextNode->SetText(hint);
+                        addon->AddonActionBarBase.ActionBarSlotVector.Get(slotIndex).ControlHintTextNode->SetText(hint);
                         barSlotIsSet[(barId, slotIndex)] = true;
                     } else if (barSlotIsSet.TryGetValue((barId, slotIndex), out var isSet) && isSet) {
-                        addon->AddonActionBarBase.Slot[slotIndex].ControlHintTextNode->SetText(string.Empty);
+                        addon->AddonActionBarBase.ActionBarSlotVector.Get(slotIndex).ControlHintTextNode->SetText(string.Empty);
                         barSlotIsSet[(barId, slotIndex)] = false;
                     }
                 }

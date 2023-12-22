@@ -63,7 +63,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
             var addon = (AddonActionBarBase*) Common.GetUnitBase(addonName);
             if (addon is null) continue;
 
-            foreach (var slot in addon->Slot) {
+            foreach (var slot in addon->ActionBarSlotVector.Span) {
                 if (slot.Icon is not null) {
                     var iconComponent = (AtkComponentIcon*) slot.Icon->Component;
                     if (iconComponent is not null) {
