@@ -3,6 +3,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using Dalamud.Interface.Utility.Raii;
+using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -59,16 +60,18 @@ public unsafe class ActionBarDebug : DebugHelper {
             }
 
             if (ImGui.BeginTabItem("Saved Bars")) {
-
+                var classJobSheet = Service.Data.GetExcelSheet<ClassJob>()!;
+                
                 if (ImGui.BeginChild("savedBarsIndexSelect", new Vector2(150, -1) * ImGui.GetIO().FontGlobalScale, true)) {
-                    for (byte i = 0; i < 61; i++) {
-                        var cj = Service.Data.Excel.GetSheet<ClassJob>()?.GetRow(i)?.Abbreviation?.RawString;
-
-                        if (i > 41) {
-                            cj = Service.Data.Excel.GetSheet<ClassJob>()?.Where(j => j.IsLimitedJob == false && j.JobIndex > 0).Skip(i - 42).FirstOrDefault()?.Abbreviation?.RawString;
-                        }
-
-                        if (ImGui.Selectable((i > 40 ? "[PVP] " : "") + (i is 0 or 41 ? "Shared" : cj ?? $"{i}"), selectedSavedIndex == i)) {
+                    for (byte i = 0; i < raptureHotbarModule->SavedHotBarsSpan.Length; i++) {
+                        var classJobId = raptureHotbarModule->GetClassJobIdForSavedHotbarIndex(i);
+                        var jobName = classJobId == 0 ? "Shared" : classJobSheet.GetRow(classJobId)?.Abbreviation?.RawString;
+                        var isPvp = i >= classJobSheet.RowCount;
+                        
+                        // hack for unreleased jobs
+                        if (jobName.IsNullOrEmpty() || (i > classJobSheet.RowCount && classJobId == 0)) jobName = "Unknown";
+                        
+                        if (ImGui.Selectable($"{i}: {(isPvp ? "[PVP]" : "")} {jobName}", selectedSavedIndex == i)) {
                             selectedSavedIndex = i;
                         }
                     }
