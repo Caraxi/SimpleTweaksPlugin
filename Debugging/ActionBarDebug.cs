@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Text;
+using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game;
@@ -248,6 +249,11 @@ public unsafe class ActionBarDebug : DebugHelper {
             if (slot->CommandType == HotbarSlotType.Action) {
                 ImGui.Text($"Adjusted: {adjustedId}");
             }
+
+            if (slot->CommandType == HotbarSlotType.Macro) {
+                ImGui.Text($"{(slot->CommandId >= 256 ? "Shared" : "Individual")} #{slot->CommandId % 256}");
+            }
+            
             ImGui.TableNextColumn();
 
             var iconGood = false;
@@ -268,8 +274,16 @@ public unsafe class ActionBarDebug : DebugHelper {
                 
             ImGui.Text($"A: {slot->IconTypeA}#{slot->IconA}\nB: {slot->IconTypeB}#{slot->IconB}");
 
+            // Column "Name"
             ImGui.TableNextColumn();
-            ImGui.TextWrapped(slot->PopUpHelp.ToString());
+            
+            var popUpHelp = SeString.Parse(slot->PopUpHelp).ToString();
+            if (popUpHelp.IsNullOrEmpty()) {
+                ImGui.TextDisabled("Empty PopUpHelp");
+            } else {
+                ImGui.TextWrapped(popUpHelp);
+            }
+
             if (this.ResolveSlotName(slot->CommandType, slot->CommandId, out var resolvedName)) {
                 ImGui.TextWrapped($"Resolved: {resolvedName}");
             } else {
@@ -439,12 +453,17 @@ public unsafe class ActionBarDebug : DebugHelper {
             case HotbarSlotType.Macro: {
                 var macroModule = RaptureMacroModule.Instance();
                 var macro = macroModule->GetMacro(commandId / 256, commandId % 256);
-
-                resolvedName = $"{(commandId >= 256 ? "Shared" : "Individual")} #{commandId % 256}";
-                if (macro != null) {
-                    resolvedName += $"\n{macro->Name.ToString()}";
+                
+                if (macro == null) {
+                    return false;
                 }
 
+                var macroName = macro->Name.ToString();
+                if (macroName.IsNullOrEmpty()) {
+                    macroName = $"{(commandId >= 256 ? "Shared" : "Individual")} #{commandId % 256}";
+                }
+                
+                resolvedName = macroName;
                 return true;
             }
 
