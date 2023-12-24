@@ -50,10 +50,6 @@ public unsafe class ActionBarDebug : DebugHelper {
                         ImGui.EndTabItem();
                     }
 
-                    if (ImGui.BeginTabItem("Pet")) {
-                        DrawHotbarType(raptureHotbarModule, HotBarType.Pet, "Normal Pet", "Cross Pet");
-                    }
-
                     ImGui.EndTabBar();
                 }
                 ImGui.EndTabItem();
@@ -166,47 +162,43 @@ public unsafe class ActionBarDebug : DebugHelper {
 
     private int selectedSavedIndex = 0;
 
-
-    public class HotBarType {
-
-        public static HotBarType Normal => new HotBarType() { Count = 10, FirstIndex = 0, GetName = (i) => i == 0 ? "_ActionBar" : $"_ActionBar{i:00}" };
-        public static HotBarType Cross => new HotBarType() { Count = 8, FirstIndex = 10 };
-        public static HotBarType Pet => new HotBarType() { Count = 2, FirstIndex = 18 };
-
-
-        public int Count;
-        public int FirstIndex;
-        public Func<int, string> GetName { get; init; } = _ => string.Empty;
+    public enum HotBarType {
+        Normal,
+        Cross,
     }
 
-
     private void DrawHotbarType(RaptureHotbarModule* hotbarModule, HotBarType type, params string[] names) {
+        var isNormalBar = type == HotBarType.Normal;
+        var baseSpan = isNormalBar ? hotbarModule->StandardHotBars : hotbarModule->CrossHotBars;
+        
         if (ImGui.BeginTabBar("##hotbarTabs")) {
-            for (var i = 0; i < type.Count; i++) {
-                var tabName = names.Length > i ? names[i] : $"{i+1:00}";
-                if (ImGui.BeginTabItem($"{tabName}##hotbar{i}")) {
-                    var hotbar = hotbarModule->HotBarsSpan.GetPointer(type.FirstIndex + i);
+            for (var i = 0; i < baseSpan.Length; i++) {
+                if (ImGui.BeginTabItem($"{i+1:00}##hotbar{i}")) {
+                    var hotbar = baseSpan.GetPointer(i);
                     if (hotbar != null) {
                         DrawHotbar(hotbarModule, hotbar);
                     }
 
-                    var name = type.GetName(i);
-                    if (!string.IsNullOrEmpty(name)) {
-                        var addon = Common.GetUnitBase<AddonActionBarBase>(name);
-                        if (addon != null) {
-                            ImGui.Dummy(new Vector2(50));
-                            ImGui.Separator();
-                            
-                            ImGui.Text($"Shared: {addon->IsSharedHotbar}");
-                            ImGui.Text($"Slot Count: {addon->SlotCount}");
-                            
-                            ImGui.Dummy(new Vector2(50));
-                            UIDebug.DrawUnitBase(&addon->AtkUnitBase);
-                        }
+                    if (isNormalBar) {
+                        this.DrawAddonInfo(i == 0 ? "_ActionBar" : $"_ActionBar{i:00}");
                     }
+                    
                     ImGui.EndTabItem();
                 }
 
+            }
+            
+            // Pet hotbar is a special case
+            if (ImGui.BeginTabItem("Pet##hotbarex")) {
+                
+                var petBar = isNormalBar ? &hotbarModule->PetHotBar : &hotbarModule->PetCrossHotBar;
+                DrawHotbar(hotbarModule, petBar);
+
+                if (isNormalBar) {
+                    this.DrawAddonInfo("_ActionBarEx");
+                }
+                
+                ImGui.EndTabItem();
             }
             ImGui.EndTabBar();
         }
@@ -273,7 +265,9 @@ public unsafe class ActionBarDebug : DebugHelper {
 
             ImGui.TableNextColumn();
             switch (slot->CommandType) {
-                case HotbarSlotType.Empty: { break; }
+                case HotbarSlotType.Empty: {
+                    break;
+                }
                 case HotbarSlotType.Action: {
 
                     var action = Service.Data.Excel.GetSheet<Action>().GetRow(slot->CommandId);
@@ -282,6 +276,7 @@ public unsafe class ActionBarDebug : DebugHelper {
                     } else {
                         ImGui.TextWrapped($"{action.Name}");
                     }
+
                     break;
                 }
 
@@ -292,6 +287,7 @@ public unsafe class ActionBarDebug : DebugHelper {
                     } else {
                         ImGui.TextWrapped($"{item.Name}");
                     }
+
                     break;
                 }
 
@@ -302,6 +298,7 @@ public unsafe class ActionBarDebug : DebugHelper {
                     } else {
                         ImGui.TextWrapped($"{action.Name}");
                     }
+
                     break;
                 }
 
@@ -312,9 +309,10 @@ public unsafe class ActionBarDebug : DebugHelper {
                     } else {
                         ImGui.TextWrapped($"{action.Name}");
                     }
+
                     break;
                 }
-                    
+
                 case HotbarSlotType.MainCommand: {
                     var action = Service.Data.GetExcelSheet<MainCommand>().GetRow(slot->CommandId);
                     if (action == null) {
@@ -322,9 +320,10 @@ public unsafe class ActionBarDebug : DebugHelper {
                     } else {
                         ImGui.TextWrapped($"{action.Name}");
                     }
+
                     break;
                 }
-                    
+
                 case HotbarSlotType.ExtraCommand: {
                     var rawSheet = Service.Data.Excel.GetSheetRaw("ExtraCommand");
                     var parser = rawSheet.GetRowParser(slot->CommandId);
@@ -340,6 +339,7 @@ public unsafe class ActionBarDebug : DebugHelper {
                         ImGui.Text($"InvalidGearset#{slot->CommandId}");
                         break;
                     }
+
                     ImGui.Text($"{Encoding.UTF8.GetString(gearset->Name, 0x2F)}");
                     break;
                 }
@@ -347,11 +347,12 @@ public unsafe class ActionBarDebug : DebugHelper {
                 case HotbarSlotType.Macro: {
                     var macroModule = RaptureMacroModule.Instance();
                     var macro = macroModule->GetMacro(slot->CommandId / 256, slot->CommandId % 256);
-                    
-                    ImGui.Text($"{(slot->CommandId >= 256 ? "Shared" : "Individual")} #{slot->CommandId%256}");
+
+                    ImGui.Text($"{(slot->CommandId >= 256 ? "Shared" : "Individual")} #{slot->CommandId % 256}");
                     if (macro != null) {
                         ImGui.Text(macro->Name.ToString());
                     }
+
                     break;
                 }
 
@@ -359,7 +360,7 @@ public unsafe class ActionBarDebug : DebugHelper {
                     ImGui.Text($"{Service.Data.Excel.GetSheet<Emote>().GetRow(slot->CommandId)?.Name ?? "Invalid"}");
                     break;
                 }
-                    
+
                 case HotbarSlotType.EventItem: {
                     var item = Service.Data.GetExcelSheet<EventItem>().GetRow(slot->CommandId);
                     if (item == null) {
@@ -367,9 +368,10 @@ public unsafe class ActionBarDebug : DebugHelper {
                     } else {
                         ImGui.TextWrapped($"{item.Name}");
                     }
+
                     break;
                 }
-                    
+
                 case HotbarSlotType.Mount: {
                     var m = Service.Data.Excel.GetSheet<Mount>().GetRow(slot->CommandId);
                     if (m == null) {
@@ -402,7 +404,18 @@ public unsafe class ActionBarDebug : DebugHelper {
                     
                     break;
                 }
-                    
+
+                case HotbarSlotType.PetAction: { 
+                    var pa = Service.Data.GetExcelSheet<PetAction>()!.GetRow(slot->CommandId);
+                    if (pa == null) {
+                        ImGui.TextDisabled("Not Found");
+                    } else {
+                        ImGui.TextWrapped(pa.Name);
+                    }
+
+                    break;
+                }
+
                 default: {
                     ImGui.TextDisabled("Name Lookup Not Supported");
                     ImGui.TextUnformatted(slot->PopUpHelp.ToString());
@@ -469,5 +482,22 @@ public unsafe class ActionBarDebug : DebugHelper {
         
         ImGui.EndTable();
         
+    }
+
+    private void DrawAddonInfo(string addonName) {
+        var addon = Common.GetUnitBase<AddonActionBarBase>(addonName);
+        
+        ImGui.Dummy(new Vector2(50));
+        ImGui.Separator();
+        
+        if (addon != null) {
+            ImGui.Text($"Shared: {addon->IsSharedHotbar}");
+            ImGui.Text($"Slot Count: {addon->SlotCount}");
+                        
+            ImGui.Dummy(new Vector2(50));
+            UIDebug.DrawUnitBase(&addon->AtkUnitBase);
+        } else {
+            ImGui.TextDisabled($"Couldn't get addon {addonName}");
+        }
     }
 }
