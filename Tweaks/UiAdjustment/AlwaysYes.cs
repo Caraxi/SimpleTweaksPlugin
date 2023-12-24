@@ -183,11 +183,11 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
 
         uint collisionId;
         AtkResNode* targetNode;
-        var checkBox = checkBoxId != null ? unitBase->UldManager.SearchNodeById(checkBoxId.Value) : null;
-        var textCheckBox = checkBox != null ? (AtkTextNode*)((AtkComponentNode *)checkBox)->Component->UldManager.SearchNodeById(2) : null;
-        if (Config.SelectCheckBox && checkBox != null && checkBox->IsVisible && textCheckBox != null && !textCheckBox->NodeText.ToString().IsNullOrWhitespace()) {
+        var checkBox = checkBoxId != null ? (AtkComponentNode*)unitBase->UldManager.SearchNodeById(checkBoxId.Value) : null;
+        var textCheckBox = checkBox != null && checkBox->Component != null ? (AtkTextNode*)checkBox->Component->UldManager.SearchNodeById(2) : null;
+        if (Config.SelectCheckBox && checkBox != null && checkBox->AtkResNode.IsVisible && textCheckBox != null && !textCheckBox->NodeText.ToString().IsNullOrWhitespace()) {
             collisionId = 5;
-            targetNode = checkBox;
+            targetNode = &checkBox->AtkResNode;
         } else {
             var holdButton = yesHoldButtonId != null ? unitBase->UldManager.SearchNodeById(yesHoldButtonId.Value) : null;
             if (holdButton != null && !yesButton->IsVisible) {
