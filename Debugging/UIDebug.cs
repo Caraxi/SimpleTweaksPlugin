@@ -876,7 +876,15 @@ public unsafe class UIDebug : DebugHelper {
                                             var width = isHighResolution ? tPart.Width * 2.0f : tPart.Width;
                                             var height = isHighResolution ? tPart.Height * 2.0f : tPart.Height;
 
-                                            ImGui.Text($"[U: {u}  V: {v}  W: {width}  H: {height}]");
+                                            if (ImGui.GetIO().KeyShift) {
+                                                ImGui.Text($"[U1: {u / kernelTexture->Width }  V1: {v / kernelTexture->Height}  U2: {(u + width) / kernelTexture->Width}  V2: {(v + height) / kernelTexture->Height}]");
+                                                if (ImGui.IsItemClicked()) {
+                                                    ImGui.SetClipboardText($"new Vector2({u / kernelTexture->Width:F4}f, {v / kernelTexture->Height:F4}f), new Vector2({ (u + width) / kernelTexture->Width :F4}f, {(v + height) / kernelTexture->Height:F4}f),");
+                                                }
+                                            } else {
+                                                ImGui.Text($"[U: {u}  V: {v}  W: {width}  H: {height}]");
+                                            }
+                                            
                                             ImGui.Image(new IntPtr(kernelTexture->D3D11ShaderResourceView), new Vector2(width, height), new Vector2(u , v) / textureSize, new Vector2(u + width, v + height) / textureSize);
                                         }
                                         ImGui.EndTable();
