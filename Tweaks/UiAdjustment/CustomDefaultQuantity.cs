@@ -10,10 +10,11 @@ using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
-[TweakName("Customize default deposit and withdraw quanity")]
+[TweakName("Customize default deposit and withdraw quantity")]
 [TweakDescription("Allows setting a custom amount to deposit or withdraw when using the 'Retrieve Quantity' and 'Entrust Quantity' options.")]
 [TweakAutoConfig]
 [TweakReleaseVersion("1.9.4.0")]
+[TweakCategory(TweakCategory.UI)]
 public unsafe class CustomDefaultQuantity : Tweak {
     
     public class ModeConfig {
