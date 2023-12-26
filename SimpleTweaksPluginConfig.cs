@@ -56,6 +56,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     public bool ShowEnabledTweaksTab = true;
     public bool ShowOtherTweaksTab = true;
     public bool NoCallerInLog;
+    public bool UseFuzzyTweakSearch = true;
 
     public bool ShowTweakDescriptions = true;
     public bool ShowTweakIDs;
@@ -351,17 +352,22 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                 lastSearchInput = searchInput;
                 searchResults = new List<BaseTweak>();
                 var searchValue = searchInput.ToLowerInvariant();
+                var fuzzyMatcher = new FuzzyMatcher(searchValue, UseFuzzyTweakSearch ? MatchMode.FuzzyParts : MatchMode.Simple);
                 foreach (var t in plugin.Tweaks) {
                     if (t is SubTweakManager stm) {
                         if (!stm.Enabled) continue;
                         foreach (var st in stm.GetTweakList()) {
-                            if (st.Name.ToLowerInvariant().Contains(searchValue) || st.Tags.Any(tag => tag.ToLowerInvariant().Contains(searchValue)) || st.LocalizedName.ToLowerInvariant().Contains(searchValue)) {
+                            if (fuzzyMatcher.MatchesAny(st.LocalizedName.ToLowerInvariant(), st.Name.ToLowerInvariant()) > 0) {
+                                searchResults.Add(st);
+                            } else if (st.Name.ToLowerInvariant().Contains(searchValue) || st.Tags.Any(tag => tag.ToLowerInvariant().Contains(searchValue)) || st.LocalizedName.ToLowerInvariant().Contains(searchValue)) {
                                 searchResults.Add(st);
                             }
                         }
                         continue;
                     }
-                    if (t.Name.ToLowerInvariant().Contains(searchValue) || t.Tags.Any(tag => tag.ToLowerInvariant().Contains(searchValue))|| t.LocalizedName.ToLowerInvariant().Contains(searchValue)) {
+                    if (fuzzyMatcher.MatchesAny(t.LocalizedName.ToLowerInvariant(), t.Name.ToLowerInvariant()) > 0) {
+                        searchResults.Add(t);
+                    } else if (t.Name.ToLowerInvariant().Contains(searchValue) || t.Tags.Any(tag => tag.ToLowerInvariant().Contains(searchValue))|| t.LocalizedName.ToLowerInvariant().Contains(searchValue)) {
                         searchResults.Add(t);
                     }
                 }
@@ -506,6 +512,8 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                         if (ImGui.Checkbox(Loc.Localize("General Options / Show Experimental Tweaks", "Show Experimental Tweaks."), ref ShowExperimentalTweaks)) Save();
                         ImGui.Separator();
                         if (ImGui.Checkbox(Loc.Localize("General Options / Show Tweak Descriptions","Show tweak descriptions."), ref ShowTweakDescriptions)) Save();
+                        ImGui.Separator();
+                        if (ImGui.Checkbox(Loc.Localize("General Options / Use Fuzzy Search", "Use fuzzy search"), ref UseFuzzyTweakSearch)) Save();
                         ImGui.Separator();
                         if (ImGui.Checkbox(Loc.Localize("General Options / Show Tweak IDs", "Show tweak IDs."), ref ShowTweakIDs)) Save();
                         ImGui.Separator();
