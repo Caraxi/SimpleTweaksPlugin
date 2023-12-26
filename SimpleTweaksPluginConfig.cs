@@ -8,11 +8,23 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
+using Dalamud.Interface.Utility;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin;
+
+public enum DecorationType {
+    Christmas,
+    Easter,
+    Valentines,
+    Halloween,
+    
+    None = -3,
+    Auto = -2,
+    Random = -1,
+}
 
 public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     [NonSerialized]
@@ -56,6 +68,8 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     public bool DisableChangelogNotification;
 
     public string MetricsIdentifier;
+    
+    public DecorationType FestiveDecorationType = DecorationType.Auto;
     
     public void Init(SimpleTweaksPlugin plugin) {
         this.plugin = plugin;
@@ -494,6 +508,19 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                         if (ImGui.Checkbox(Loc.Localize("General Options / Show Tweak Descriptions","Show tweak descriptions."), ref ShowTweakDescriptions)) Save();
                         ImGui.Separator();
                         if (ImGui.Checkbox(Loc.Localize("General Options / Show Tweak IDs", "Show tweak IDs."), ref ShowTweakIDs)) Save();
+                        ImGui.Separator();
+                        ImGui.SetNextItemWidth(150 * ImGuiHelpers.GlobalScale);
+                        if (ImGui.BeginCombo(Loc.Localize("General Options / Festive Decorations", "Festive Decorations"), $"{FestiveDecorationType}")) {
+                            foreach (var v in Enum.GetValues<DecorationType>().OrderBy(v => (int)v)) {
+                                if (ImGui.Selectable($"{v}", FestiveDecorationType == v)) {
+                                    FestiveDecorationType = v;
+                                    Save();
+                                }
+                            }
+                            
+                            ImGui.EndCombo();
+                        }
+                        
                         ImGui.Separator();
                         if (ImGui.Checkbox(Loc.Localize("General Options / Hide KoFi", "Hide Ko-fi link."), ref HideKofi)) Save();
                         ImGui.Unindent();

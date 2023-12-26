@@ -38,6 +38,9 @@
       <None Update="TweakPreviews\**">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+        <None Update="Decorations\**">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
     <ItemGroup>
       <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
