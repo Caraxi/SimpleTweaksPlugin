@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.9.5.0
+***General Changes***
+- The Simple Tweaks config window will now be decorated during various festive periods.
+	 - This can be disabled in the 'General Options' tab.
+	 - You can also set a permanent decoration to be used all year round.
+
+***New Tweaks***
+- **`Remove Client Limit`** - Allows opening more than the standard two FFXIV clients.
+
+- **`Reposition Cutscene Dialogue Box`** - Allows setting a custom position for dialogue boxes used in cutscenes.
+
+
 ## 1.9.4.0
 ***New Tweaks***
 - **`Customize default deposit and withdraw quanity`** - Allows setting a custom amount to deposit or withdraw when using the 'Retrieve Quantity' and 'Entrust Quantity' options.

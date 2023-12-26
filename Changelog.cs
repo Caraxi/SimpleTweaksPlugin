@@ -74,7 +74,7 @@ public class Changelog : Window {
             .Sub("Everyone will be given a chance to opt in or our to the collection of a list of enabled tweaks when first accessing the simple tweaks config window.")
             .Sub("Anyone who preemptivly opted out will not see the notice as they already made the choice.")
             .Sub("No information will be collected until the 'Allow collection' button is pressed.");
-        Add(UnreleasedVersion, "The Simple Tweaks config window will now be decorated during various festive periods.")
+        Add("1.9.5.0", "The Simple Tweaks config window will now be decorated during various festive periods.")
             .Sub("This can be disabled in the 'General Options' tab.")
             .Sub("You can also set a permanent decoration to be used all year round.");
     }

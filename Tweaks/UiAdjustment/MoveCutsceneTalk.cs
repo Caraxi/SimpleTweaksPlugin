@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Game.Addon.Lifecycle;
@@ -16,7 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakName("Reposition Cutscene Dialogue Box")]
 [TweakDescription("Allows setting a custom position for dialogue boxes used in cutscenes.")]
 [TweakAutoConfig]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.9.5.0")]
 public unsafe class MoveCutsceneTalk : Tweak {
     public class Config : TweakConfig {
         public AddonConfig AddonTalkConfig = new();

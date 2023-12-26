@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -10,7 +10,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("Remove Client Limit")]
 [TweakDescription("Allows opening more than the standard two FFXIV clients.")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.9.5.0")]
 public class RemoveClientLimit : Tweak {
     public override bool Experimental => true;
 

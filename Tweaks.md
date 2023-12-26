@@ -46,7 +46,7 @@
   Allows replacing commands typed into chat box with other commands.
 
 
-- **Customize default deposit and withdraw quanity**
+- **Customize default deposit and withdraw quantity**
 
   Allows setting a custom amount to deposit or withdraw when using the 'Retrieve Quantity' and 'Entrust Quantity' options.
 
@@ -234,6 +234,16 @@
 - **Remember Selected World**
 
   Remembers which world was selected for each datacentre.
+
+
+- **Remove Client Limit**
+
+  Allows opening more than the standard two FFXIV clients.
+
+
+- **Reposition Cutscene Dialogue Box**
+
+  Allows setting a custom position for dialogue boxes used in cutscenes.
 
 
 - **Screenshot File Name**
