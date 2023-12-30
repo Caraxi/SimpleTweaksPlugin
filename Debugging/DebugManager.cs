@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud;
+using Dalamud.Interface.Utility.Raii;
 using Dalamud.Memory;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.String;
@@ -32,6 +33,8 @@ namespace SimpleTweaksPlugin.Debugging {
     public partial class DebugConfig {
         public string SelectedPage = String.Empty;
         public Dictionary<string, object> SavedValues = new();
+
+        public List<string> Undocked = new List<string>();
     }
 
     public abstract class DebugHelper : IDisposable {
@@ -168,11 +171,18 @@ namespace SimpleTweaksPlugin.Debugging {
 
                 foreach (var k in keys) {
 
+                    using var _ = ImRaii.Disabled(_plugin.PluginConfig.Debugging.Undocked.Contains(k));
+                    
                     if (ImGui.Selectable($"{k}##debugPageOption", _plugin.PluginConfig.Debugging.SelectedPage == k)) {
                         _plugin.PluginConfig.Debugging.SelectedPage = k;
                         _plugin.PluginConfig.Save();
                     }
 
+                    if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) && ImGui.IsMouseClicked(ImGuiMouseButton.Right)) {
+                        if (!_plugin.PluginConfig.Debugging.Undocked.Remove(k)) {
+                            _plugin.PluginConfig.Debugging.Undocked.Add(k);
+                        }
+                    }
                 }
 
 
@@ -776,6 +786,35 @@ namespace SimpleTweaksPlugin.Debugging {
                 ImGui.PopStyleColor();
             } else {
                 ClickToCopyText(addressString);
+            }
+        }
+
+        public static void DrawUndockedPages() {
+            string? closedWindow = null;
+            foreach (var k in _plugin.PluginConfig.Debugging.Undocked) {
+                if (debugPages.TryGetValue(k, out var debugPage)) {
+
+                    ImGui.SetNextWindowSize(new Vector2(300, 300), ImGuiCond.FirstUseEver);
+
+                    var isOpen = true;
+                    
+                    if (ImGui.Begin($"{_plugin.Name} - Debug : {k}", ref isOpen)) {
+                        try {
+                            debugPage();
+                        } catch (Exception ex) {
+                            SimpleLog.Error(ex);
+                            ImGui.TextColored(new Vector4(1, 0, 0, 1), ex.ToString());
+                        }
+                    }
+                    ImGui.End();
+
+
+                    if (!isOpen) closedWindow = k;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(closedWindow)) {
+                _plugin.PluginConfig.Debugging.Undocked.Remove(closedWindow);
             }
         }
     }

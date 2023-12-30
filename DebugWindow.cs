@@ -24,4 +24,8 @@ public class DebugWindow : SimpleWindow {
         base.Draw();
         DebugManager.DrawDebugWindow();
     }
+
+    public override void PostDraw() {
+        DebugManager.DrawUndockedPages();
+    }
 }
