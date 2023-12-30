@@ -32,6 +32,9 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         [TweakConfigOption("No Sell List", ConditionalDisplay = true)]
         public bool NoSellList = false;
         public bool ShouldShowNoSellList() => SimpleTweaksPlugin.Plugin.GetTweak<NoSellList>()?.Enabled ?? false;
+        
+        [TweakConfigOption("Additional Data", HelpText = "Shows the 'AdditionalData' field some items contain. This is likely only useful for developers.")]
+        public bool AdditionalData = false;
     }
 
     public Configs Config { get; private set; }
@@ -152,6 +155,15 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
                     str.Append(UIForegroundPayload.UIForegroundOff);
                     str.AppendLine();
                 }
+            }
+        }
+        
+        if (Config.AdditionalData) {
+            if (item.AdditionalData > 0) {
+                str.Append(new UIForegroundPayload(5));
+                str.Append($"AdditionalData: {item.AdditionalData}");
+                str.Append(UIForegroundPayload.UIForegroundOff);
+                str.AppendLine();
             }
         }
         
