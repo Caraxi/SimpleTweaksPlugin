@@ -12,6 +12,8 @@ public class TweakConfigOptionAttribute : Attribute {
 
     public string LocalizeKey { get; }
 
+    public string HelpText { get; init; } = string.Empty;
+    
     public int Priority { get; } = 0;
     public int EditorSize { get; set; } = int.MinValue;
 

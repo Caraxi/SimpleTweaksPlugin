@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
+using Dalamud.Interface.Components;
 using Dalamud.Interface.Internal;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin;
@@ -344,8 +345,13 @@ public abstract class BaseTweak {
                     }
                 } else {
                     ImGui.Text($"Invalid Auto Field Type: {f.Name}");
+                    continue;
                 }
 
+                if (!string.IsNullOrWhiteSpace(attr.HelpText)) {
+                    ImGui.SameLine();
+                    ImGuiComponents.HelpMarker(attr.HelpText);
+                }
             }
 
         } catch (Exception ex) {
