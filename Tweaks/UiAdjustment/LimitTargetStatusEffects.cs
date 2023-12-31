@@ -52,7 +52,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             ImGui.Text("Limiting:");
             ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-            if (ImGui.InputInt(LocString("NbStatusEffects", "Number of status effects displayed##nbStatusEffectsDisplayed"), ref Config.NbStatusEffects, 1)) {
+            if (ImGui.InputInt(LocString("NbStatusEffects", "Number of status effects displayed (default 30)##nbStatusEffectsDisplayed"), ref Config.NbStatusEffects, 1)) {
                 hasChanged = true;
                 Config.NbStatusEffects = Config.NbStatusEffects switch {
                     < 0 => 0,
@@ -65,28 +65,37 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             ImGui.Separator();
             ImGui.Text("Filtering:");
-            ImGui.TextColored(ImGuiColors.DalamudGrey, "Note: Your status effects will not be filtered out and the filtering is disabled in PvP.");
+            ImGui.TextColored(ImGuiColors.DalamudGrey, "Note: Your status effects will never be filtered and the filtering is disabled in PvP.");
             hasChanged |= ImGui.Checkbox(LocString("FilterOnlyInCombat", "Only filter in combat##FilterOnlyInCombat"), ref Config.FilterOnlyInCombat);
 
-            hasChanged |= ImGui.Checkbox(LocString("FilterPersonalStatus", "Filter all personal status on enemies (DoTs, etc...,)##FilterPersonalStatus"), ref Config.FilterPersonalStatus);
+            hasChanged |= ImGui.Checkbox(LocString("FilterPersonalStatus", "Filter all personal status of others on enemies (DoTs, self-buffs, etc...,)##FilterPersonalStatus"), ref Config.FilterPersonalStatus);
             ImGui.SameLine();
             ImGui.TextColored(ImGuiColors.DalamudGrey, "(?)");
             if (ImGui.IsItemHovered()) {
-                ImGui.SetTooltip("If you find status that should be filtered but are not, please report it by using the feedback button\nor by pinging Aireil in goat place Discord.");
+                ImGui.SetTooltip("This should only display relevant status for you.\nIf you find one that should be filtered but is not, please report it\nby using the feedback button or by pinging Aireil in goat place Discord.");
             }
 
-            ImGui.Text("Custom filtered status (added to the settings above):");
+            ImGui.SameLine();
+            if (ImGui.Button("Personal Status List##PersonalStatusList"))
+            {
+                ImGui.OpenPopup("PersonalStatusList");
+            }
+
+            DrawPersonalStatusListPopup();
+
+            ImGui.Text("Custom filtered status (added to the setting above):");
 
             var ySize = 23.0f + (25.0f * Config.FilteredStatusCustom.Count);
             if (ySize > 125.0f) {
                 ySize = 125.0f;
             }
 
-            if (statusSheet != null && ImGui.BeginTable("##FilteredStatusCustom", 3, ImGuiTableFlags.BordersInnerH | ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.ScrollY,
-                    new Vector2(-1.0f, ySize * ImGuiHelpers.GlobalScale))) {
+            if (statusSheet != null && ImGui.BeginTable("##FilteredStatusCustom", 4, ImGuiTableFlags.BordersInnerH | ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.ScrollY,
+                    new Vector2(-1, ySize * ImGuiHelpers.GlobalScale))) {
                 ImGui.TableSetupScrollFreeze(0, 1);
 
                 ImGui.TableSetupColumn("Status ID");
+                ImGui.TableSetupColumn("Icon", ImGuiTableColumnFlags.WidthFixed, 25 * ImGuiHelpers.GlobalScale);
                 ImGui.TableSetupColumn("Name");
                 ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed, 20 * ImGuiHelpers.GlobalScale);
 
@@ -94,9 +103,20 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 foreach (var statusId in Config.FilteredStatusCustom) {
                     ImGui.TableNextRow();
+
                     ImGui.TableNextColumn();
                     ImGui.AlignTextToFramePadding();
                     ImGui.Text(statusId.ToString());
+
+                    ImGui.TableNextColumn();
+                    var statusIconTex = Service.TextureProvider.GetIcon(statusSheet[statusId].Icon);
+                    if (statusIconTex != null) {
+                        var scale = (25 * ImGuiHelpers.GlobalScale) / statusIconTex.Height;
+                        ImGui.Image(statusIconTex.ImGuiHandle, new Vector2(statusIconTex.Width * scale, statusIconTex.Height * scale));
+                    } else {
+                        ImGui.Text("-");
+                    }
+
                     ImGui.TableNextColumn();
                     ImGui.AlignTextToFramePadding();
                     ImGui.Text(statusSheet[statusId].Name);
@@ -301,6 +321,49 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             ImGui.EndPopup();
 
             return hasChanged;
+        }
+
+        private static void DrawPersonalStatusListPopup() {
+            ImGui.SetNextWindowSize(new Vector2(0, 200 * ImGuiHelpers.GlobalScale));
+
+            if (!ImGui.BeginPopup("PersonalStatusList")) {
+                return;
+            }
+
+            if (statusSheet != null && ImGui.BeginTable("##PersonalStatusList", 3, ImGuiTableFlags.BordersInnerH | ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.ScrollY)) {
+                ImGui.TableSetupScrollFreeze(0, 1);
+
+                ImGui.TableSetupColumn("Status ID");
+                ImGui.TableSetupColumn("Icon");
+                ImGui.TableSetupColumn("Name");
+
+                ImGui.TableHeadersRow();
+
+                foreach (var statusId in GetPersonalStatus()) {
+                    ImGui.TableNextRow();
+
+                    ImGui.TableNextColumn();
+                    ImGui.AlignTextToFramePadding();
+                    ImGui.Text(statusId.ToString());
+
+                    ImGui.TableNextColumn();
+                    var statusIconTex = Service.TextureProvider.GetIcon(statusSheet[statusId].Icon);
+                    if (statusIconTex != null) {
+                        var scale = (25 * ImGuiHelpers.GlobalScale) / statusIconTex.Height;
+                        ImGui.Image(statusIconTex.ImGuiHandle, new Vector2(statusIconTex.Width * scale, statusIconTex.Height * scale));
+                    } else {
+                        ImGui.Text("-");
+                    }
+
+                    ImGui.TableNextColumn();
+                    ImGui.AlignTextToFramePadding();
+                    ImGui.Text(statusSheet[statusId].Name);
+                }
+
+                ImGui.EndTable();
+            }
+
+            ImGui.EndPopup();
         }
 
         private static IEnumerable<ushort> GetPersonalStatus() {
