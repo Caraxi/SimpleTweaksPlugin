@@ -19,7 +19,7 @@ public unsafe class EquipJobCommand : CommandTweak
     {
         if (string.IsNullOrWhiteSpace(arguments))
         {
-            Service.Chat.PrintError("/equipjob (job abbreviation)");
+            Service.Chat.PrintError($"/{Command} (job abbreviation)");
             return;
         }
 
