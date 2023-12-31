@@ -53,7 +53,7 @@ public unsafe class EquipJobCommand : CommandTweak
             .FirstOrDefault();
         if (bestGearset.ClassJob != 0)
         {
-            Service.Chat.Print($"Equipping gearset #{bestGearset.Id}");
+            Service.Chat.Print($"Equipping gearset #{bestGearset.Id + 1}");
             raptureGearsetModule->EquipGearset(bestGearset.Id);
         }
         else
