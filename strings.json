@@ -391,6 +391,22 @@
     "message": "Emote Log Subcommand",
     "description": "[EmoteLogSubcommand] Tweak Name"
   },
+  "EquipJobCommand / Description": {
+    "message": "Adds a command to switch to a class or job's gearset.",
+    "description": "[EquipJobCommand] Tweak Description"
+  },
+  "EquipJobCommand / Name": {
+    "message": "Equip Job Command",
+    "description": "[EquipJobCommand] Tweak Name"
+  },
+  "EquipJobCommand / PriorityHelp": {
+    "message": "Useful when generalizing between classes / jobs (e.g. /equipjob pld gla)",
+    "description": "[EquipJobCommand] Allow Priority Tooltip"
+  },
+  "EquipJobCommand / PriorityName": {
+    "message": "Allow priority list of jobs? (Only allows using abbreviations)",
+    "description": "[EquipJobCommand] Allow Priority Config Option"
+  },
   "EstateListCommand / Description": {
     "message": "Adds a command to open the estate list of one of your friends. (/estatelist)",
     "description": "[EstateListCommand] Tweak Description"
