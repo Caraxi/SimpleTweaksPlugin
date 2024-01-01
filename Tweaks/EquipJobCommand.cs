@@ -19,14 +19,14 @@ public unsafe class EquipJobCommand : CommandTweak
     {
         if (string.IsNullOrWhiteSpace(arguments))
         {
-            Service.Chat.PrintError($"/{Command} (job abbreviation)");
+            Service.Chat.PrintError($"/{Command} (priority list of job abbreviations / names)");
             return;
         }
 
         var sheet = Service.Data.GetExcelSheet<ClassJob>();
         var classJob =
             from row in sheet
-            where row.Abbreviation.ToDalamudString().ToString().ToLower() == arguments.ToLower()
+            where row.Abbreviation.ToDalamudString().ToString().ToLower() == arguments.ToLower() || row.Name.ToDalamudString().ToString().ToLower() == arguments.ToLower()
             select row.RowId;
         var id = classJob.FirstOrDefault((uint)0);
         if (id == 0)
@@ -35,7 +35,7 @@ public unsafe class EquipJobCommand : CommandTweak
             SwitchClassJob(id);
     }
 
-    private void SwitchClassJob(uint classJobId)
+    private static void SwitchClassJob(uint classJobId)
     {
         var raptureGearsetModule = RaptureGearsetModule.Instance();
         if (raptureGearsetModule == null)
