@@ -72,7 +72,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
             using (ImRaii.PushIndent()) {
                 hasChanged |= DrawCombo(ref TweakConfig.FocusTargetPosition, "Focus Target");
                 ImGui.SetNextItemWidth(250 * ImGuiHelpers.GlobalScale);
-                hasChanged |= ImGui.DragFloat2("Custom Position Offset##focus", ref TweakConfig.FocusOffset);
+                hasChanged |= ImGui.DragFloat2("Position Offset##focus", ref TweakConfig.FocusOffset);
                 ImGui.SetNextItemWidth(250 * ImGuiHelpers.GlobalScale);
                 hasChanged |= ImGui.SliderInt("Font Size##focus", ref TweakConfig.FocusFontSize, 8, 30);
             }
