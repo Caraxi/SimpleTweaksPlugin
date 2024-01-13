@@ -116,6 +116,10 @@ namespace SimpleTweaksPlugin.Debugging {
             _plugin = plugin;
         }
 
+        static DebugManager() {
+            Service.PluginInterface.UiBuilder.Draw += DrawUndockedPages;
+        }
+        
         private static Stopwatch initDelay = Stopwatch.StartNew();
 
         public static void DrawDebugWindow() {
@@ -216,6 +220,7 @@ namespace SimpleTweaksPlugin.Debugging {
             }
             DebugHelpers.Clear();
             debugPages.Clear();
+            Service.PluginInterface.UiBuilder.Draw -= DrawUndockedPages;
         }
 
 
