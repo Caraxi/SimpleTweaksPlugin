@@ -4,6 +4,7 @@ using System.Numerics;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Interface.Utility;
+using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
@@ -21,6 +22,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [Changelog("1.8.3.1", "Add TopRight option for displaying countdown")]
 [Changelog("1.8.9.0", "Add option to disable on primary target")]
 [Changelog("1.9.2.1", "Fix updating slowly for really slow castbars")]
+[Changelog(UnreleasedVersion, "Added option to change font size")]
+[Changelog(UnreleasedVersion, "Added option to adjust position")]
 public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
     private uint CastBarTextNodeId => CustomNodes.Get(this, "Countdown");
 
@@ -35,6 +38,10 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         public bool FocusTargetEnabled = false;
         public NodePosition FocusTargetPosition = NodePosition.Left;
         public NodePosition CastbarPosition = NodePosition.BottomLeft;
+        public int FontSize = 20;
+        public int FocusFontSize = 20;
+        public Vector2 Offset = Vector2.Zero;
+        public Vector2 FocusOffset = Vector2.Zero;
     }
 
     private enum NodePosition {
@@ -49,32 +56,35 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
     private void DrawConfig() {
         var hasChanged = ImGui.Checkbox("Enable Primary Target", ref TweakConfig.PrimaryTargetEnabled);
 
-        hasChanged |= ImGui.Checkbox("Enable Focus Target", ref TweakConfig.FocusTargetEnabled);
-
-        ImGui.TextUnformatted("Select which direction relative to Cast Bar to show countdown");
-        if (TweakConfig is { PrimaryTargetEnabled: false, FocusTargetEnabled: false }) {
-            ImGuiHelpers.ScaledIndent(20.0f);
-            ImGui.TextUnformatted("No CastBars Selected");
-            ImGuiHelpers.ScaledIndent(-20.0f);
+        if (TweakConfig.PrimaryTargetEnabled) {
+            using (ImRaii.PushIndent()) {
+                hasChanged |= DrawCombo(ref TweakConfig.CastbarPosition, "Primary Target");
+                ImGui.SetNextItemWidth(250 * ImGuiHelpers.GlobalScale);
+                hasChanged |= ImGui.DragFloat2("Position Offset##primary", ref TweakConfig.Offset);
+                ImGui.SetNextItemWidth(250 * ImGuiHelpers.GlobalScale);
+                hasChanged |= ImGui.SliderInt("Font Size##primary", ref TweakConfig.FontSize, 8, 30);
+            }
         }
         
+        hasChanged |= ImGui.Checkbox("Enable Focus Target", ref TweakConfig.FocusTargetEnabled);
+        
         if (TweakConfig.FocusTargetEnabled) {
-            hasChanged |= DrawCombo(ref TweakConfig.FocusTargetPosition, "Focus Target");
-        }
-
-        if (TweakConfig.PrimaryTargetEnabled) {
-            hasChanged |= DrawCombo(ref TweakConfig.CastbarPosition, "Primary Target");
+            using (ImRaii.PushIndent()) {
+                hasChanged |= DrawCombo(ref TweakConfig.FocusTargetPosition, "Focus Target");
+                ImGui.SetNextItemWidth(250 * ImGuiHelpers.GlobalScale);
+                hasChanged |= ImGui.DragFloat2("Custom Position Offset##focus", ref TweakConfig.FocusOffset);
+                ImGui.SetNextItemWidth(250 * ImGuiHelpers.GlobalScale);
+                hasChanged |= ImGui.SliderInt("Font Size##focus", ref TweakConfig.FocusFontSize, 8, 30);
+            }
         }
 
         if (hasChanged) {
             SaveConfig(TweakConfig);
-            FreeAllNodes();
         }
     }
 
     private bool DrawCombo(ref NodePosition setting, string label) {
-        var regionSize = ImGui.GetContentRegionAvail();
-        ImGui.SetNextItemWidth(regionSize.X * 1.0f / 3.0f);
+        ImGui.SetNextItemWidth(250 * ImGuiHelpers.GlobalScale);
         if (ImGui.BeginCombo(label, setting.ToString())) {
             foreach (var direction in Enum.GetValues<NodePosition>()) {
                 if (ImGui.Selectable(direction.ToString(), setting == direction)) {
@@ -119,30 +129,43 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         var interruptNode = Common.GetNodeByID<AtkImageNode>(&addon->UldManager, visibilityNodeId);
         var castBarNode = Common.GetNodeByID(&addon->UldManager, positioningNodeId);
         if (interruptNode is not null && castBarNode is not null) {
-            TryMakeNodes(addon, castBarNode, focusTarget);
-            UpdateIcons(interruptNode->AtkResNode.IsVisible, addon, target);
+            TryMakeNodes(addon);
+            UpdateIcons(interruptNode->AtkResNode.IsVisible, addon, target, castBarNode, focusTarget);
         }
     }
 
-    private void TryMakeNodes(AtkUnitBase* parent, AtkResNode* positionNode, bool focusTarget) {
+    private void TryMakeNodes(AtkUnitBase* parent) {
         var textNode = Common.GetNodeByID<AtkTextNode>(&parent->UldManager, CastBarTextNodeId);
-        if (textNode is null) MakeTextNode(parent, CastBarTextNodeId, positionNode, focusTarget);
+        if (textNode is null) MakeTextNode(parent, CastBarTextNodeId);
     }
     
-    private void UpdateIcons(bool castBarVisible, AtkUnitBase* parent, GameObject? target) {
+    private void UpdateIcons(bool castBarVisible, AtkUnitBase* parent, GameObject? target, AtkResNode* positioningNode, bool focusTarget) {
         var textNode = Common.GetNodeByID<AtkTextNode>(&parent->UldManager, CastBarTextNodeId);
         if (textNode is null) return;
         
         if (target as BattleChara is { IsCasting: true } targetInfo && castBarVisible && targetInfo.TotalCastTime > targetInfo.CurrentCastTime) {
             textNode->AtkResNode.ToggleVisibility(true);
             textNode->SetText($"{targetInfo.TotalCastTime - targetInfo.CurrentCastTime:00.00}");
+            textNode->FontSize = (byte) Math.Clamp(focusTarget ? TweakConfig.FocusFontSize : TweakConfig.FontSize, 8, 30);
+            
+            var nodePosition = (focusTarget ? TweakConfig.FocusTargetPosition : TweakConfig.CastbarPosition) switch {
+                NodePosition.Left => new Vector2(positioningNode->X - 80, positioningNode->Y),
+                NodePosition.Right => new Vector2(positioningNode->X + positioningNode->Width, positioningNode->Y),
+                NodePosition.TopLeft => new Vector2(positioningNode->X, positioningNode->Y - 14),
+                NodePosition.TopRight => new Vector2(positioningNode->X + positioningNode->Width - 80, positioningNode->Y - 14),
+                NodePosition.BottomLeft => new Vector2(positioningNode->X, positioningNode->Y + 14),
+                NodePosition.BottomRight => new Vector2(positioningNode->X + positioningNode->Width - 80, positioningNode->Y + 14),
+                _ => Vector2.Zero
+            } + (focusTarget ? TweakConfig.FocusOffset : TweakConfig.Offset);
+        
+            textNode->AtkResNode.SetPositionFloat(nodePosition.X, nodePosition.Y);
         }
         else {
             textNode->AtkResNode.ToggleVisibility(false);
         }
     }
     
-    private void MakeTextNode(AtkUnitBase* parent, uint nodeId, AtkResNode* positioningNode, bool focusTarget) {
+    private void MakeTextNode(AtkUnitBase* parent, uint nodeId) {
         var textNode = UiHelper.MakeTextNode(nodeId);
         
         textNode->AtkResNode.NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.AnchorTop | NodeFlags.AnchorLeft;
@@ -159,18 +182,6 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         
         textNode->AtkResNode.SetWidth(80);
         textNode->AtkResNode.SetHeight(22);
-
-        var nodePosition = (focusTarget ? TweakConfig.FocusTargetPosition : TweakConfig.CastbarPosition) switch {
-            NodePosition.Left => new Vector2(positioningNode->X - 80, positioningNode->Y),
-            NodePosition.Right => new Vector2(positioningNode->X + positioningNode->Width, positioningNode->Y),
-            NodePosition.TopLeft => new Vector2(positioningNode->X, positioningNode->Y - 14),
-            NodePosition.TopRight => new Vector2(positioningNode->X + positioningNode->Width - 80, positioningNode->Y - 14),
-            NodePosition.BottomLeft => new Vector2(positioningNode->X, positioningNode->Y + 14),
-            NodePosition.BottomRight => new Vector2(positioningNode->X + positioningNode->Width - 80, positioningNode->Y + 14),
-            _ => Vector2.Zero
-        };
-        
-        textNode->AtkResNode.SetPositionFloat(nodePosition.X, nodePosition.Y);
 
         UiHelper.LinkNodeAtEnd((AtkResNode*) textNode, parent);
     }
