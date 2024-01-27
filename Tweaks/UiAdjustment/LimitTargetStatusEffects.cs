@@ -10,6 +10,7 @@ using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -34,6 +35,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool LimitOnlyInCombat;
             public bool FilterOnlyInCombat;
             public bool FilterPersonalStatus;
+            public bool FilterTarget = true;
+            public bool FilterFocusTarget = true;
             public readonly HashSet<ushort> FilteredStatusCustom = new();
         }
 
@@ -41,18 +44,23 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private bool isDirty;
         private static string statusSearch = string.Empty;
         private readonly ushort[] removedStatus = new ushort[60 * 2];
+        private uint removedStatusIndex;
         private readonly HashSet<ushort> filteredStatus = new();
         private static Dictionary<ushort, Lumina.Excel.GeneratedSheets.Status> statusSheet;
+        private readonly TargetSystem* targetSystem = TargetSystem.Instance();
 
-        private delegate long UpdateTargetStatusDelegate(void* agentHud, void* numberArray, void* stringArray, StatusManager* statusManager, void* target, void* isLocalPlayerAndRollPlaying);
+        private delegate long UpdateTargetStatusDelegate(void* agentHud, void* numberArray, void* stringArray, StatusManager* statusManager, GameObject* target, void* isLocalPlayerAndRollPlaying);
         private HookWrapper<UpdateTargetStatusDelegate> updateTargetStatusHook;
+
+        private delegate long UpdateFocusTargetDelegate(void* agentHud);
+        private HookWrapper<UpdateFocusTargetDelegate> updateFocusTargetHook;
 
         protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
             statusSheet ??= Service.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>()?.ToDictionary(row => (ushort)row.RowId, row => row);
 
             ImGui.Text("Limiting:");
             ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-            if (ImGui.InputInt(LocString("NbStatusEffects", "Number of status effects displayed##nbStatusEffectsDisplayed"), ref Config.NbStatusEffects, 1)) {
+            if (ImGui.InputInt(LocString("NbStatusEffects", "Number of status effects displayed (default 30)##nbStatusEffectsDisplayed"), ref Config.NbStatusEffects, 1)) {
                 hasChanged = true;
                 Config.NbStatusEffects = Config.NbStatusEffects switch {
                     < 0 => 0,
@@ -65,28 +73,38 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             ImGui.Separator();
             ImGui.Text("Filtering:");
-            ImGui.TextColored(ImGuiColors.DalamudGrey, "Note: Your status effects will not be filtered out and the filtering is disabled in PvP.");
+            ImGui.TextColored(ImGuiColors.DalamudGrey, "Note: Your status effects will never be filtered and the filtering is disabled in PvP and on you.");
             hasChanged |= ImGui.Checkbox(LocString("FilterOnlyInCombat", "Only filter in combat##FilterOnlyInCombat"), ref Config.FilterOnlyInCombat);
+            hasChanged |= ImGui.Checkbox(LocString("FilterTarget", "Filter target##FilterTarget"), ref Config.FilterTarget);
+            hasChanged |= ImGui.Checkbox(LocString("FilterFocusTarget", "Filter focus target##FilterFocusTarget"), ref Config.FilterFocusTarget);
 
-            hasChanged |= ImGui.Checkbox(LocString("FilterPersonalStatus", "Filter all personal status on enemies (DoTs, etc...,)##FilterPersonalStatus"), ref Config.FilterPersonalStatus);
+            hasChanged |= ImGui.Checkbox(LocString("FilterPersonalStatus", "Filter all personal status of others on enemies (DoTs, self-buffs, etc...,)##FilterPersonalStatus"), ref Config.FilterPersonalStatus);
             ImGui.SameLine();
             ImGui.TextColored(ImGuiColors.DalamudGrey, "(?)");
             if (ImGui.IsItemHovered()) {
-                ImGui.SetTooltip("If you find status that should be filtered but are not, please report it by using the feedback button\nor by pinging Aireil in goat place Discord.");
+                ImGui.SetTooltip("This should only display relevant status for you.\nIf you find one that should be filtered but is not, please report it\nby using the feedback button or by pinging Aireil in goat place Discord.");
             }
 
-            ImGui.Text("Custom filtered status (added to the settings above):");
+            ImGui.SameLine();
+            if (ImGui.Button("Personal Status List##PersonalStatusList")) {
+                ImGui.OpenPopup("PersonalStatusList");
+            }
+
+            DrawPersonalStatusListPopup();
+
+            ImGui.Text("Custom filtered status (added to the setting above):");
 
             var ySize = 23.0f + (25.0f * Config.FilteredStatusCustom.Count);
             if (ySize > 125.0f) {
                 ySize = 125.0f;
             }
 
-            if (statusSheet != null && ImGui.BeginTable("##FilteredStatusCustom", 3, ImGuiTableFlags.BordersInnerH | ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.ScrollY,
-                    new Vector2(-1.0f, ySize * ImGuiHelpers.GlobalScale))) {
+            if (statusSheet != null && ImGui.BeginTable("##FilteredStatusCustom", 4, ImGuiTableFlags.BordersInnerH | ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.ScrollY,
+                    new Vector2(-1, ySize * ImGuiHelpers.GlobalScale))) {
                 ImGui.TableSetupScrollFreeze(0, 1);
 
                 ImGui.TableSetupColumn("Status ID");
+                ImGui.TableSetupColumn("Icon", ImGuiTableColumnFlags.WidthFixed, 25 * ImGuiHelpers.GlobalScale);
                 ImGui.TableSetupColumn("Name");
                 ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed, 20 * ImGuiHelpers.GlobalScale);
 
@@ -94,9 +112,20 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 foreach (var statusId in Config.FilteredStatusCustom) {
                     ImGui.TableNextRow();
+
                     ImGui.TableNextColumn();
                     ImGui.AlignTextToFramePadding();
                     ImGui.Text(statusId.ToString());
+
+                    ImGui.TableNextColumn();
+                    var statusIconTex = Service.TextureProvider.GetIcon(statusSheet[statusId].Icon);
+                    if (statusIconTex != null) {
+                        var scale = (25 * ImGuiHelpers.GlobalScale) / statusIconTex.Height;
+                        ImGui.Image(statusIconTex.ImGuiHandle, new Vector2(statusIconTex.Width * scale, statusIconTex.Height * scale));
+                    } else {
+                        ImGui.Text("-");
+                    }
+
                     ImGui.TableNextColumn();
                     ImGui.AlignTextToFramePadding();
                     ImGui.Text(statusSheet[statusId].Name);
@@ -115,8 +144,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             if (statusSheet != null) {
                 ImGui.PushFont(UiBuilder.IconFont);
-                if (ImGui.Button(FontAwesomeIcon.Plus.ToIconString()))
-                {
+                if (ImGui.Button(FontAwesomeIcon.Plus.ToIconString())) {
                     ImGui.OpenPopup("AddCustomStatus");
                 }
                 ImGui.PopFont();
@@ -137,60 +165,92 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.LimitTargetStatusEffects ?? new Configs();
             UpdateFilteredStatus();
             Common.FrameworkUpdate += FrameworkOnUpdate;
-            Service.ClientState.EnterPvP += OnEnterPvP;
-            Service.ClientState.LeavePvP += OnLeavePvP;
 
             updateTargetStatusHook = Common.Hook<UpdateTargetStatusDelegate>("E8 ?? ?? ?? ?? 4C 8B 44 24 ?? 4D 8B CE", UpdateTargetStatusDetour);
-            if (!Service.ClientState.IsPvP) {
-                updateTargetStatusHook?.Enable();
-            }
+            updateFocusTargetHook = Common.Hook<UpdateFocusTargetDelegate>("40 55 53 57 48 8D 6C 24 90", UpdateFocusTargetDetour);
+
+            this.updateFocusTargetHook?.Enable();
+            this.updateTargetStatusHook?.Enable();
 
             base.Enable();
         }
 
-        private void OnEnterPvP() {
-            updateTargetStatusHook?.Disable();
-        }
+        private void FilterStatus(StatusManager* statusManager, GameObject* target) {
+            GameObject* localPlayer = null;
+            this.removedStatusIndex = 0;
 
-        private void OnLeavePvP() {
-            updateTargetStatusHook?.Enable();
-        }
-
-        private long UpdateTargetStatusDetour(void* agentHud, void* numberArray, void* stringArray, StatusManager* statusManager, void* target, void* isLocalPlayerAndRollPlaying) {
-            long ret = 0;
-            try {
-                GameObject* localPlayer = null;
-                var filteredIndex = 0;
-                for (ushort i = 0; i < statusManager->NumValidStatuses; i++) {
-                    var status = (Status*)(statusManager->Status + (0xc * i));
-                    var statusId = status->StatusID;
-                    if (statusId == 0 || !filteredStatus.Contains(statusId)) {
-                        continue;
-                    }
-
-                    if (localPlayer == null) {
-                        localPlayer = GameObjectManager.GetGameObjectByIndex(0);
-                        if (localPlayer == null || (Config.FilterOnlyInCombat && !((Character*)localPlayer)->InCombat)) {
-                            break;
-                        }
-                    }
-
-                    if (status->SourceID == localPlayer->ObjectID) {
-                        continue;
-                    }
-
-                    removedStatus[filteredIndex++] = i;
-                    removedStatus[filteredIndex++] = statusId;
-                    status->StatusID = 0;
+            for (ushort i = 0; i < statusManager->NumValidStatuses; i++) {
+                var status = (Status*)(statusManager->Status + (0xc * i));
+                var statusId = status->StatusID;
+                if (statusId == 0 || !filteredStatus.Contains(statusId)) {
+                    continue;
                 }
 
-                ret = updateTargetStatusHook.Original(agentHud, numberArray, stringArray, statusManager, target, isLocalPlayerAndRollPlaying);
+                if (localPlayer == null) {
+                    localPlayer = GameObjectManager.GetGameObjectByIndex(0);
+                    if (localPlayer == null
+                        || localPlayer->ObjectID == target->ObjectID
+                        || (Config.FilterOnlyInCombat && !((Character*)localPlayer)->InCombat)
+                        || Service.ClientState.IsPvP) {
+                        break;
+                    }
+                }
 
-                for (var i = 0; i < filteredIndex; i += 2) {
-                    ((Status*)(statusManager->Status + (0xc * removedStatus[i])))->StatusID = removedStatus[i + 1];
+                if (status->SourceID == localPlayer->ObjectID) {
+                    continue;
+                }
+
+                removedStatus[this.removedStatusIndex++] = i;
+                removedStatus[this.removedStatusIndex++] = statusId;
+                status->StatusID = 0;
+            }
+        }
+
+        private void RestoreStatus(StatusManager* statusManager) {
+            for (var i = 0; i < this.removedStatusIndex; i += 2) {
+                ((Status*)(statusManager->Status + (0xc * removedStatus[i])))->StatusID = removedStatus[i + 1];
+            }
+
+            this.removedStatusIndex = 0;
+        }
+
+        private long UpdateTargetStatusDetour(void* agentHud, void* numberArray, void* stringArray, StatusManager* statusManager, GameObject* target, void* isLocalPlayerAndRolePlaying) {
+            long ret = 0;
+            try {
+                if (Config.FilterTarget) {
+                    FilterStatus(statusManager, target);
+
+                    ret = updateTargetStatusHook.Original(agentHud, numberArray, stringArray, statusManager, target, isLocalPlayerAndRolePlaying);
+
+                    RestoreStatus(statusManager);
+                } else {
+                    ret = updateTargetStatusHook.Original(agentHud, numberArray, stringArray, statusManager, target, isLocalPlayerAndRolePlaying);
                 }
             } catch (Exception ex) {
                 SimpleLog.Error(ex, "Exception in UpdateTargetStatusDetour");
+            }
+
+            return ret;
+        }
+
+        private long UpdateFocusTargetDetour(void* agentHud) {
+            long ret = 0;
+            try {
+                var focusTarget = this.targetSystem != null ? this.targetSystem->FocusTarget : null;
+                var shouldFilter = Config.FilterFocusTarget && this.targetSystem != null && focusTarget != null && focusTarget->IsCharacter();
+
+                if (shouldFilter) {
+                    var focusTargetStatusManager = ((Character*)focusTarget)->GetStatusManager();
+                    FilterStatus(focusTargetStatusManager, focusTarget);
+
+                    ret = updateFocusTargetHook.Original(agentHud);
+
+                    RestoreStatus(focusTargetStatusManager);
+                } else {
+                    ret = updateFocusTargetHook.Original(agentHud);
+                }
+            } catch (Exception ex) {
+                SimpleLog.Error(ex, "Exception in UpdateFocusTargetDetour");
             }
 
             return ret;
@@ -200,8 +260,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             SaveConfig(Config);
             PluginConfig.UiAdjustments.LimitTargetStatusEffects = null;
             updateTargetStatusHook?.Disable();
-            Service.ClientState.LeavePvP -= OnLeavePvP;
-            Service.ClientState.EnterPvP -= OnEnterPvP;
+            updateFocusTargetHook?.Disable();
             Common.FrameworkUpdate -= FrameworkOnUpdate;
             UpdateTargetStatus(true);
             base.Disable();
@@ -301,6 +360,49 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             ImGui.EndPopup();
 
             return hasChanged;
+        }
+
+        private static void DrawPersonalStatusListPopup() {
+            ImGui.SetNextWindowSize(new Vector2(0, 200 * ImGuiHelpers.GlobalScale));
+
+            if (!ImGui.BeginPopup("PersonalStatusList")) {
+                return;
+            }
+
+            if (statusSheet != null && ImGui.BeginTable("##PersonalStatusList", 3, ImGuiTableFlags.BordersInnerH | ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.ScrollY)) {
+                ImGui.TableSetupScrollFreeze(0, 1);
+
+                ImGui.TableSetupColumn("Status ID");
+                ImGui.TableSetupColumn("Icon");
+                ImGui.TableSetupColumn("Name");
+
+                ImGui.TableHeadersRow();
+
+                foreach (var statusId in GetPersonalStatus()) {
+                    ImGui.TableNextRow();
+
+                    ImGui.TableNextColumn();
+                    ImGui.AlignTextToFramePadding();
+                    ImGui.Text(statusId.ToString());
+
+                    ImGui.TableNextColumn();
+                    var statusIconTex = Service.TextureProvider.GetIcon(statusSheet[statusId].Icon);
+                    if (statusIconTex != null) {
+                        var scale = (25 * ImGuiHelpers.GlobalScale) / statusIconTex.Height;
+                        ImGui.Image(statusIconTex.ImGuiHandle, new Vector2(statusIconTex.Width * scale, statusIconTex.Height * scale));
+                    } else {
+                        ImGui.Text("-");
+                    }
+
+                    ImGui.TableNextColumn();
+                    ImGui.AlignTextToFramePadding();
+                    ImGui.Text(statusSheet[statusId].Name);
+                }
+
+                ImGui.EndTable();
+            }
+
+            ImGui.EndPopup();
         }
 
         private static IEnumerable<ushort> GetPersonalStatus() {
