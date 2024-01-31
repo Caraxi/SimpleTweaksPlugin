@@ -1,19 +1,23 @@
-﻿using Dalamud.Utility.Signatures;
-using FFXIVClientStructs.FFXIV.Client.UI.Shell;
+﻿using Dalamud;
 using SimpleTweaksPlugin.TweakSystem;
-using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Chat; 
 
+[TweakName("Sticky Shout Chat")]
+[TweakDescription("Prevents the game from automatically switching out of shout chat.")]
 [TweakReleaseVersion(UnreleasedVersion)]
-public unsafe class StickyShoutChat : ChatTweaks.SubTweak {
-    public override string Name => "Sticky Shout Chat";
-    public override string Description => "Prevents the game from automatically switching out of shout chat.";
+public class StickyShoutChat : ChatTweaks.SubTweak {
+    private nint editAddress;
     
-    private delegate void FocusPreviousChatChannelDelegate(RaptureShellModule* self);
+    protected override void Enable() {
+        // Skip the 
+        if (!Service.SigScanner.TryScanText("05 75 0C 8B D7 E8 ?? ?? ?? ?? E9", out editAddress)) return;
+        SafeMemory.Write(editAddress, (sbyte)-2);
+    }
 
-    [TweakHook, Signature("E8 ?? ?? ?? ?? 33 C0 49 8B CE", DetourName = nameof(SkipFocusChannel))]
-    private readonly HookWrapper<FocusPreviousChatChannelDelegate> focusPreviousChannelHook;
-
-    private void SkipFocusChannel(RaptureShellModule* self) { }
+    protected override void Disable() {
+        if (editAddress == nint.Zero) return;
+        if (SafeMemory.Write(editAddress, (sbyte) 5))
+            editAddress = nint.Zero;
+    }
 }
