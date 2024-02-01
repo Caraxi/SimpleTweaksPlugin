@@ -158,7 +158,7 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
             SetVisible("ActionDetailDisp", !Config.HideActionOoc);
             SetVisible("ItemDetailDisp", !Config.HideItemOoc);
             SetVisible("ToolTipDisp", !Config.HidePopUpOoc);
-            SetVisible("HotbarCrossHelpDisp", !Config.HideCrossbarHintsOoc, true);
+            SetVisible("HotbarCrossHelpDisp", !Config.HideCrossbarHintsOoc, false);
         }
     }
 }
