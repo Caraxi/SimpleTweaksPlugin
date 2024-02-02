@@ -13,12 +13,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakAuthor("img")]
 [TweakAutoConfig]
 [TweakReleaseVersion("1.9.3.0")]
+[Changelog(UnreleasedVersion, "Fixed tweak not working with a split primary target window")]
 internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
     private uint focusTargetImageNodeid => CustomNodes.Get(this, "CTVFocus");
     private uint targetImageNodeid => CustomNodes.Get(this, "CTVTarget");
 
     private readonly uint focusTargetTextNodeId = 5;
     private readonly uint targetTextNodeId = 12;
+    private readonly uint splitTargetTextNodeId = 4;
 
     private Configuration Config { get; set; } = null!;
 
@@ -81,7 +83,7 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
         FreeAllNodes();
     }
 
-    [AddonPostRequestedUpdate("_TargetInfo", "_FocusTargetInfo")]
+    [AddonPostRequestedUpdate("_TargetInfo", "_FocusTargetInfo", "_TargetInfoCastBar")]
     private void OnAddonRequestedUpdate(AddonArgs args) {
         var addon = (AtkUnitBase*)args.Addon;
         switch (args.AddonName) {
@@ -90,6 +92,9 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
                 break;
             case "_TargetInfo" when addon->IsVisible:
                 UpdateAddOn(addon, targetTextNodeId, targetImageNodeid, Config.UseCustomTargetColor, Config.TargetTextColor, Config.TargetEdgeColor, Config.TargetFontSize, DrawTargetBackground);
+                break;
+            case "_TargetInfoCastBar" when addon->IsVisible:
+                UpdateAddOn(addon, splitTargetTextNodeId, targetImageNodeid, Config.UseCustomTargetColor, Config.TargetTextColor, Config.TargetEdgeColor, Config.TargetFontSize, DrawTargetBackground);
                 break;
         }
     }
@@ -144,10 +149,13 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
     private void ResetTextNodes() {
         var fui = Common.GetUnitBase("_FocusTargetInfo", 1);
         var tui = Common.GetUnitBase("_TargetInfo", 1);
+        var stui = Common.GetUnitBase("_TargetInfoCastBar", 1);
         var ftext = Common.GetNodeByID<AtkTextNode>(&fui->UldManager, focusTargetTextNodeId);
         var ttext = Common.GetNodeByID<AtkTextNode>(&tui->UldManager, targetTextNodeId);
+        var sttext = Common.GetNodeByID<AtkTextNode>(&stui->UldManager, splitTargetTextNodeId);
         if (fui != null) ResetText(ftext);
         if (tui != null) ResetText(ttext);
+        if (sttext != null) ResetText(sttext);
     }
 
     private void DrawFocusTargetBackground(AtkTextNode* textNode, AtkImageNode* imageNode) {
@@ -242,9 +250,11 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
     private void FreeAllNodes() {
         var addonTargetInfo = Common.GetUnitBase("_TargetInfo");
         var addonFocusTargetInfo = Common.GetUnitBase("_FocusTargetInfo");
+        var addonTargetInfoCastBar = Common.GetUnitBase("_TargetInfoCastBar");
 
         TryFreeImageNode(addonTargetInfo, targetImageNodeid);
         TryFreeImageNode(addonFocusTargetInfo, focusTargetImageNodeid);
+        TryFreeImageNode(addonTargetInfoCastBar, splitTargetTextNodeId);
     }
 
     private void TryFreeImageNode(AtkUnitBase* addon, uint nodeId) {
