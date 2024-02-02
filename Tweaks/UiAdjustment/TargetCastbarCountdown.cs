@@ -24,6 +24,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [Changelog("1.9.2.1", "Fix updating slowly for really slow castbars")]
 [Changelog(UnreleasedVersion, "Added option to change font size")]
 [Changelog(UnreleasedVersion, "Added option to adjust position")]
+[Changelog(UnreleasedVersion, "Fixed disable on primary and focus target")]
 public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
     private uint CastBarTextNodeId => CustomNodes.Get(this, "Countdown");
 
