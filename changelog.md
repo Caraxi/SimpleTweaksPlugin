@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.9.6.0
+***New Tweaks***
+- **`Equip Job Command`** - Adds a command to switch to a class or job's gearset. *(Lumina Sapphira)*
+
+- **`Sticky Shout Chat`** - Prevents the game from automatically switching out of shout chat.
+
+
+***Tweak Changes***
+- **`Casting Text Visibility`** - Fixed tweak not working with a split primary target window
+
+- **`Quick Sell Items at Vendors`** - Added option to allow quick selling items from player inventory while using a retainer.
+
+- **`Target Castbar Countdown`**
+  - Added option to change font size
+  - Added option to adjust position
+  - Fixed disable on primary and focus target
+
+
 ## 1.9.5.0
 ***General Changes***
 - The Simple Tweaks config window will now be decorated during various festive periods.

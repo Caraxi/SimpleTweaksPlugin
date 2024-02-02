@@ -106,6 +106,11 @@
   Adds a 'text' subcommand for emotes when emotelog is disabled.  /yes text
 
 
+- **Equip Job Command**
+
+  Adds a command to switch to a class or job's gearset.
+
+
 - **Equip Recommended Command**
 
   Adds /equiprecommended to equip recommended gear.
@@ -382,6 +387,11 @@
   Sets the chat channel when you use temporary chat messages.
 
   Example: "/p hello!" will set the chat channel to Party
+
+
+- **Sticky Shout Chat**
+
+  Prevents the game from automatically switching out of shout chat.
 
 
 - **Zoomed Chat Customization**

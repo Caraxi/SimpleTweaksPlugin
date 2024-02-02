@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Game.ClientState.Keys;
@@ -14,7 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("Quick Sell Items at Vendors")]
 [TweakDescription("Hold a modifier key to sell items from your inventory in one click.")]
-[Changelog(UnreleasedVersion, "Added option to allow quick selling items from player inventory while using a retainer.")]
+[Changelog("1.9.6.0", "Added option to allow quick selling items from player inventory while using a retainer.")]
 public unsafe class QuickSellItems : Tweak {
     
     public class Configs : TweakConfig {

@@ -13,7 +13,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakAuthor("img")]
 [TweakAutoConfig]
 [TweakReleaseVersion("1.9.3.0")]
-[Changelog(UnreleasedVersion, "Fixed tweak not working with a split primary target window")]
+[Changelog("1.9.6.0", "Fixed tweak not working with a split primary target window")]
 internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
     private uint focusTargetImageNodeid => CustomNodes.Get(this, "CTVFocus");
     private uint targetImageNodeid => CustomNodes.Get(this, "CTVTarget");

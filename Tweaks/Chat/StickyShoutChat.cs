@@ -1,11 +1,11 @@
-﻿using Dalamud;
+using Dalamud;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks.Chat; 
 
 [TweakName("Sticky Shout Chat")]
 [TweakDescription("Prevents the game from automatically switching out of shout chat.")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.9.6.0")]
 public class StickyShoutChat : ChatTweaks.SubTweak {
     private nint editAddress;
     

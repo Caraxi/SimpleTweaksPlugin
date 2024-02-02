@@ -13,7 +13,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakName("Equip Job Command")]
 [TweakDescription("Adds a command to switch to a class or job's gearset.")]
 [TweakAuthor("Lumina Sapphira")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.9.6.0")]
 public unsafe class EquipJobCommand : CommandTweak {
     protected override string Command => "equipjob";
     protected override string HelpMessage => "Switches to the highest item-level gearset for a job.";
