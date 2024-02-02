@@ -54,8 +54,8 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
     }
 
     private void DrawConfig() {
-        var hasChanged = ImGui.Checkbox("Enable Primary Target", ref TweakConfig.PrimaryTargetEnabled);
-
+        var rebuild = ImGui.Checkbox("Enable Primary Target", ref TweakConfig.PrimaryTargetEnabled);
+        var hasChanged = false;
         if (TweakConfig.PrimaryTargetEnabled) {
             using (ImRaii.PushIndent()) {
                 hasChanged |= DrawCombo(ref TweakConfig.CastbarPosition, "Primary Target");
@@ -66,7 +66,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
             }
         }
         
-        hasChanged |= ImGui.Checkbox("Enable Focus Target", ref TweakConfig.FocusTargetEnabled);
+        rebuild |= ImGui.Checkbox("Enable Focus Target", ref TweakConfig.FocusTargetEnabled);
         
         if (TweakConfig.FocusTargetEnabled) {
             using (ImRaii.PushIndent()) {
@@ -78,9 +78,8 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
             }
         }
 
-        if (hasChanged) {
-            SaveConfig(TweakConfig);
-        }
+        if (hasChanged || rebuild) SaveConfig(TweakConfig);
+        if (rebuild) FreeAllNodes();
     }
 
     private bool DrawCombo(ref NodePosition setting, string label) {
@@ -111,15 +110,15 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         var addon = (AtkUnitBase*) args.Addon;
 
         switch (args.AddonName) {
-            case "_TargetInfoCastBar" when addon->IsVisible:
+            case "_TargetInfoCastBar" when addon->IsVisible && TweakConfig.PrimaryTargetEnabled:
                 UpdateAddon(addon, 7, 2, Service.Targets.Target);
                 break;
 
-            case "_TargetInfo" when addon->IsVisible:
+            case "_TargetInfo" when addon->IsVisible && TweakConfig.PrimaryTargetEnabled:
                 UpdateAddon(addon, 15, 10, Service.Targets.Target);
                 break;
 
-            case "_FocusTargetInfo" when addon->IsVisible:
+            case "_FocusTargetInfo" when addon->IsVisible && TweakConfig.FocusTargetEnabled:
                 UpdateAddon(addon, 8, 3, Service.Targets.FocusTarget, true);
                 break;
         }
