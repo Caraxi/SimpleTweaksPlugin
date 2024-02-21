@@ -134,12 +134,7 @@ public unsafe class Common {
         *(dst + bytes.Length) = 0;
     }
 
-    public static SeString ReadSeString(Utf8String xivString) {
-        var len = (int) (xivString.BufUsed > int.MaxValue ? int.MaxValue : xivString.BufUsed);
-        var bytes = new byte[len];
-        Marshal.Copy(new IntPtr(xivString.StringPtr), bytes, 0, len);
-        return SeString.Parse(bytes);
-    }
+    public static SeString ReadSeString(Utf8String xivString) => SeString.Parse(xivString);
 
     public static void WriteSeString(Utf8String xivString, SeString s) {
         var bytes = s.Encode();
