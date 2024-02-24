@@ -8,6 +8,7 @@ using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using Dalamud.ContextMenu;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.IoC;
 using Dalamud.Networking.Http;
@@ -48,12 +49,16 @@ public unsafe class Common {
     }
     public static void* ThrowawayOut { get; private set; } = (void*) Marshal.AllocHGlobal(1024);
 
+    public static DalamudContextMenu ContextMenu;
+    
     public static void Setup() {
         LastCommandAddress = Service.SigScanner.GetStaticAddressFromSig("4C 8D 05 ?? ?? ?? ?? 41 B1 01 49 8B D4 E8 ?? ?? ?? ?? 83 EB 06");
         LastCommand = (Utf8String*) (LastCommandAddress);
 
         updateCursorHook = Hook<AtkModuleUpdateCursor>("48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 20 4C 8B F1 E8 ?? ?? ?? ?? 49 8B CE", UpdateCursorDetour);
         updateCursorHook?.Enable();
+
+        ContextMenu = new DalamudContextMenu(Service.PluginInterface);
     }
 
     public static UIModule* UIModule => Framework.Instance()->GetUiModule();

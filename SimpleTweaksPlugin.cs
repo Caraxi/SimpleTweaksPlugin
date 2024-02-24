@@ -555,6 +555,7 @@ namespace SimpleTweaksPlugin {
             TweakProviders.Add(tweakProvider);
             Loc.ClearCache();
             DebugManager.Reload();
+            Common.ContextMenu.Dispose();
         }
     }
 }
