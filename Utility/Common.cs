@@ -296,9 +296,10 @@ public unsafe class Common {
     public static AtkResNode* GetNodeByID(AtkComponentBase* component, uint nodeId, NodeType? type = null) => GetNodeByID(&component->UldManager, nodeId, type);
     public static AtkResNode* GetNodeByID(AtkUldManager* uldManager, uint nodeId, NodeType? type = null) => GetNodeByID<AtkResNode>(uldManager, nodeId, type);
     public static T* GetNodeByID<T>(AtkUldManager* uldManager, uint nodeId, NodeType? type = null) where T : unmanaged {
+        if (uldManager->NodeList == null) return null;
         for (var i = 0; i < uldManager->NodeListCount; i++) {
             var n = uldManager->NodeList[i];
-            if (n->NodeID != nodeId || type != null && n->Type != type.Value) continue;
+            if (n == null || n->NodeID != nodeId || type != null && n->Type != type.Value) continue;
             return (T*)n;
         }
         return null;
