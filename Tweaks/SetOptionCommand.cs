@@ -13,6 +13,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [Changelog("1.9.4.0", "Added support for changing the cutscene audio language.")]
 [Changelog("1.9.4.0", "Added support for changing title display options.", Author = "Gehock")]
 [Changelog("1.9.4.0", "Added support for 'Small' and 'Smallest' for nameplate size options.", Author = "Gehock")]
+[Changelog(UnreleasedVersion, "Added support for cutscene skipping options.", Author = "Gehock")]
 public unsafe class SetOptionCommand : CommandTweak {
 
     public override string Name => "Set Option Command";
@@ -152,6 +153,11 @@ public unsafe class SetOptionCommand : CommandTweak {
         new OptionDefinition<uint>("FriendNameTitle", "NamePlateNameTitleTypeFriend", OptionGroup.UiConfig, ValueType.Boolean, "fnt") { AllowToggle = true },
         
         new OptionDefinition<uint>("CutsceneAudioLanguage", "CutsceneMovieVoice", OptionGroup.System, ValueType.AudioLanguage, "cl"),
+
+        new OptionDefinition<uint>("SkipTransportCutscenes", "CutsceneSkipIsShip", OptionGroup.UiConfig, ValueType.Boolean, "stc") { AllowToggle = true },
+        new OptionDefinition<uint>("SkipScenarioCutscenes", "CutsceneSkipIsContents", OptionGroup.UiConfig, ValueType.Boolean, "scc") { AllowToggle = true },
+        new OptionDefinition<uint>("SkipHousingCutscenes", "CutsceneSkipIsHousing", OptionGroup.UiConfig, ValueType.Boolean, "shc") { AllowToggle = true },
+
         new OptionDefinition<uint>("DisplayNameSize", "NamePlateDispSize", OptionGroup.UiConfig, () => {
             return (
                 new() { ["maximum"] = 2, ["large"] = 1, ["standard"] = 0, ["small"] = 3, ["smallest"] = 4 },
