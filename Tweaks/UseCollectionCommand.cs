@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
+using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
@@ -25,15 +24,9 @@ public unsafe class UseCollectionCommand : CommandTweak {
         .ToDictionary(b => b.Name.ToString().ToLower(), b => b.RowId);
 
     private delegate byte UseMcGuffinDelegate(IntPtr module, uint id);
-    private UseMcGuffinDelegate? useMcGuffin;
 
-    protected override void Enable() {
-        if (useMcGuffin is null) {
-            var useMcGuffinPtr = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? EB 0C 48 8B 07");
-            useMcGuffin = Marshal.GetDelegateForFunctionPointer<UseMcGuffinDelegate>(useMcGuffinPtr);
-        }
-        base.Enable();
-    }
+    [Signature("E8 ?? ?? ?? ?? EB 0C 48 8B 07")]
+    private UseMcGuffinDelegate useMcGuffin = null!;
 
     protected override void OnCommand(string args) {
         if (args.Length == 0) {
@@ -44,20 +37,13 @@ public unsafe class UseCollectionCommand : CommandTweak {
                     Service.Chat.Print($"  {row.Name} (ID: {row.RowId})");
                 }
             }
-
             return;
         }
 
-        if (!uint.TryParse(args, out var mcGuffinId)) {
-            if (!McGuffin.TryGetValue(args.ToLower(), out mcGuffinId)) {
-                return;
-            }
-        }
-
+        if (!uint.TryParse(args, out var mcGuffinId) && !McGuffin.TryGetValue(args.ToLower(), out mcGuffinId)) return;
         if (McGuffin.ContainsValue(mcGuffinId) && UIState.Instance()->PlayerState.IsMcGuffinUnlocked(mcGuffinId)) {
-            var module =
-                (IntPtr)Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(AgentId.McGuffin);
-            useMcGuffin?.Invoke(module, mcGuffinId);
+            var module = (nint) AgentModule.Instance()->GetAgentByInternalId(AgentId.McGuffin);
+            useMcGuffin(module, mcGuffinId);
         }
     }
 }
