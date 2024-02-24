@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Utility.Signatures;
@@ -14,7 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakDescription("Adds a command to use Collection items. /usecollection")]
 [TweakCategory(TweakCategory.Command)]
 [TweakAuthor("nebel")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.9.7.0")]
 public unsafe class UseCollectionCommand : CommandTweak {
     protected override string HelpMessage => "Use a Collection item by name or ID. Use without parameters to list available items and IDs.";
     protected override string Command => "usecollection";

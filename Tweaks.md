@@ -106,6 +106,11 @@
   Adds a 'text' subcommand for emotes when emotelog is disabled.  /yes text
 
 
+- **Equip items from Hotbars**
+
+  Enables the ability to equip items assigned to hotbars.
+
+
 - **Equip Job Command**
 
   Adds a command to switch to a class or job's gearset.
@@ -296,6 +301,11 @@
 - **Try On Correct Item**
 
   Show the correct item when trying on a glamoured item.
+
+
+- **Use Collection Command**
+
+  Adds a command to use Collection items. /usecollection
 
 
 - **Use Custom Time for Furniture Clocks**

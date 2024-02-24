@@ -15,7 +15,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakName("Quick Sell Items at Vendors")]
 [TweakDescription("Hold a modifier key to sell items from your inventory in one click.")]
 [Changelog("1.9.6.0", "Added option to allow quick selling items from player inventory while using a retainer.")]
-[Changelog(UnreleasedVersion, "Allowed selling from player inventory while accessing retainer's market inventory.")]
+[Changelog("1.9.7.0", "Allowed selling from player inventory while accessing retainer's market inventory.")]
 public unsafe class QuickSellItems : Tweak {
     
     public class Configs : TweakConfig {

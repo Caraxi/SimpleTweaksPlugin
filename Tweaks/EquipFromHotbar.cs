@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility.Signatures;
@@ -18,7 +18,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakName("Equip items from Hotbars")]
 [TweakDescription("Enables the ability to equip items assigned to hotbars.")]
 [TweakCategory(TweakCategory.UI)]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.9.7.0")]
 public unsafe class EquipFromHotbar : Tweak {
     private void DrawConfig() {
         using (ImRaii.PushIndent()) {

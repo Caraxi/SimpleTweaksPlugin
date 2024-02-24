@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.9.7.0
+***New Tweaks***
+- **`Equip items from Hotbars`** - Enables the ability to equip items assigned to hotbars.
+
+- **`Use Collection Command`** - Adds a command to use Collection items. /usecollection *(nebel)*
+
+
+***Tweak Changes***
+- **`Quick Sell Items at Vendors`** - Allowed selling from player inventory while accessing retainer's market inventory.
+
+- **`Set Option Command`** - Added support for cutscene skipping options. *(Gehock)*
+
+
 ## 1.9.6.0
 ***New Tweaks***
 - **`Equip Job Command`** - Adds a command to switch to a class or job's gearset. *(Lumina Sapphira)*
