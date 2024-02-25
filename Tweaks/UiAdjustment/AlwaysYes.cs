@@ -177,7 +177,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
     private void SetFocusYes(nint unitBaseAddress, uint yesButtonId, uint? yesHoldButtonId = null, uint? checkBoxId = null) {
         var unitBase = (AtkUnitBase*)unitBaseAddress;
         if (unitBase == null) return;
-        if (unitBase->UldManager.Objects == null) return;
+        if (unitBase->UldManager.LoadedState != AtkLoadState.Loaded) return;
 
         var yesButton = unitBase->UldManager.SearchNodeById(yesButtonId);
         if (yesButton == null) return;
@@ -185,7 +185,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         uint collisionId;
         AtkResNode* targetNode;
         var checkBox = checkBoxId != null ? (AtkComponentNode*)unitBase->UldManager.SearchNodeById(checkBoxId.Value) : null;
-        var textCheckBox = checkBox != null && checkBox->Component != null && checkBox->Component->UldManager.Objects != null ? (AtkTextNode*)checkBox->Component->UldManager.SearchNodeById(2) : null;
+        var textCheckBox = checkBox != null && checkBox->Component != null && checkBox->Component->UldManager.LoadedState == AtkLoadState.Loaded ? (AtkTextNode*)checkBox->Component->UldManager.SearchNodeById(2) : null;
         if (Config.SelectCheckBox && checkBox != null && checkBox->AtkResNode.IsVisible && textCheckBox != null && !textCheckBox->NodeText.ToString().IsNullOrWhitespace()) {
             collisionId = 5;
             targetNode = &checkBox->AtkResNode;
@@ -202,7 +202,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         }
 
         var targetComponent = ((AtkComponentNode*)targetNode)->Component;
-        if (targetComponent == null || targetComponent->UldManager.Objects == null) return;
+        if (targetComponent == null || targetComponent->UldManager.LoadedState != AtkLoadState.Loaded) return;
 
         var yesCollision = targetComponent->UldManager.SearchNodeById(collisionId);
         if (yesCollision == null) return;
