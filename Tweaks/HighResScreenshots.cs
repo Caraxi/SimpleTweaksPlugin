@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Game.ClientState.Keys;
@@ -15,7 +15,7 @@ using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
-[Changelog(Changelog.UnreleasedVersion, "Re-added 'Use ReShade' option")]
+[Changelog(Changelog."1.9.7.1", "Re-added 'Use ReShade' option")]
 public unsafe class HighResScreenshots : Tweak {
     public override string Name => "Screenshot Improvements";
     public override string Description => "Allows taking higher resolution screenshots, Hiding Dalamud & Game UIs and removing the copyright notice from screenshots.";

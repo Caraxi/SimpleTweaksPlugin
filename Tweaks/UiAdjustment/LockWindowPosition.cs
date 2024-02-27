@@ -19,7 +19,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakVersion(2)]
 public unsafe class LockWindowPosition : UiAdjustments.SubTweak {
     public override string Name => "Lock Window Positions";
-    public override string Description => "Allows locking thse position of almost any UI window.";
+    public override string Description => "Allows locking the position of almost any UI window.";
 
     public class Configs : TweakConfig {
         public HashSet<string> LockedWindows = new();

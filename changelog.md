@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.9.7.1
+***Tweak Changes***
+- **`Screenshot Improvements`** - Re-added 'Use ReShade' option
+
+
 ## 1.9.7.0
 ***New Tweaks***
 - **`Equip items from Hotbars`** - Enables the ability to equip items assigned to hotbars.
