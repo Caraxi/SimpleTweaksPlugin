@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility;
 using Dalamud.Memory;
@@ -12,6 +15,7 @@ using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
+[Changelog(Changelog.UnreleasedVersion, "Re-added 'Use ReShade' option")]
 public unsafe class HighResScreenshots : Tweak {
     public override string Name => "Screenshot Improvements";
     public override string Description => "Allows taking higher resolution screenshots, Hiding Dalamud & Game UIs and removing the copyright notice from screenshots.";
@@ -25,6 +29,12 @@ public unsafe class HighResScreenshots : Tweak {
         public bool HideDalamudUi;
         public bool HideGameUi;
         public bool RemoveCopyright;
+        
+        public bool UseReShade;
+        public VirtualKey ReShadeMainKey = VirtualKey.SNAPSHOT;
+        public bool ReShadeCtrl = false;
+        public bool ReShadeShift = false;
+        public bool ReShadeAlt = false;
     }
 
     public Configs Config { get; private set; }
@@ -82,6 +92,44 @@ public unsafe class HighResScreenshots : Tweak {
             }
         } else {
             hasChanged |= ImGui.Checkbox("Remove copyright text", ref Config.RemoveCopyright);
+        }
+        
+        if (ImGui.Checkbox("Use ReShade to take screenshot", ref Config.UseReShade)) {
+            hasChanged = true;
+        }
+        
+        if (Config.UseReShade) {
+            ImGui.Indent();
+            ImGui.Indent();
+
+            ImGui.TextWrapped("Take a screenshot using your FFXIV screenshot keybind.\nReShade will be used to take the screenshot instead.");
+            ImGui.Spacing();
+            var keybindText = new List<string>();
+            if (Config.ReShadeCtrl) keybindText.Add("CTRL");
+            if (Config.ReShadeAlt) keybindText.Add("ALT");
+            if (Config.ReShadeShift) keybindText.Add("SHIFT");
+            keybindText.Add($"{Config.ReShadeMainKey.GetFancyName()}");
+            
+            ImGui.Text($"Current Keybind: {string.Join(" + ", keybindText)}");
+            if (updatingReShadeKeybind) {
+                var keyDown = Service.KeyState.GetValidVirtualKeys().FirstOrDefault(k => k is not (VirtualKey.CONTROL or VirtualKey.SHIFT or VirtualKey.MENU) && Service.KeyState[k], VirtualKey.NO_KEY);
+                if (keyDown != VirtualKey.NO_KEY) {
+                    updatingReShadeKeybind = false;
+                    Config.ReShadeMainKey = keyDown;
+                    Config.ReShadeAlt = ImGui.GetIO().KeyAlt;
+                    Config.ReShadeShift = ImGui.GetIO().KeyShift;
+                    Config.ReShadeCtrl = ImGui.GetIO().KeyCtrl;
+                } else {
+                    ImGui.TextColored(ImGuiColors.DalamudOrange, "Take a screenshot with ReShade to update the keybind.");
+                }
+            } else {
+                if (ImGui.Button("Update Keybind")) {
+                    updatingReShadeKeybind = true;
+                }
+            }
+            
+            ImGui.Unindent();
+            ImGui.Unindent();
         }
     };
 
@@ -173,7 +221,7 @@ public unsafe class HighResScreenshots : Tweak {
                     device->NewHeight = oldHeight;
                     device->RequestResolutionChange = 1;
                 }
-            }, delayTicks: 1);
+            }, delayTicks: Config.UseReShade ? 10 : 1);
 
             Service.Framework.RunOnTick(() => {
                 if (originalCopyrightBytes != null) {
@@ -183,6 +231,21 @@ public unsafe class HighResScreenshots : Tweak {
                 isRunning = false;
             }, delayTicks: 60);
             
+            if (Config.UseReShade) {
+                if (Config.ReShadeCtrl) SendInput.KeyDown(VirtualKey.CONTROL);
+                if (Config.ReShadeAlt) SendInput.KeyDown(VirtualKey.MENU);
+                if (Config.ReShadeShift) SendInput.KeyDown(VirtualKey.SHIFT);
+                SendInput.KeyDown(Config.ReShadeMainKey);
+                
+                Service.Framework.RunOnTick(() => {
+                    if (Config.ReShadeCtrl) SendInput.KeyUp(VirtualKey.CONTROL);
+                    if (Config.ReShadeAlt) SendInput.KeyUp(VirtualKey.MENU);
+                    if (Config.ReShadeShift) SendInput.KeyUp(VirtualKey.SHIFT);
+                    SendInput.KeyUp(Config.ReShadeMainKey);
+                }, delayTicks: 1);
+                
+                return 0;
+            }
 
             return 1;
         }
