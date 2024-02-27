@@ -314,6 +314,7 @@ public unsafe class Common {
         updateCursorHook?.Disable();
         updateCursorHook?.Dispose();
         httpClient?.Dispose();
+        ContextMenu.Dispose();
     }
 
     public const int UnitListCount = 18;
