@@ -95,6 +95,9 @@ public static class SignatureHelper {
 
     private const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
+    private static PropertyInfo PIsFunctionPointer { get; } = typeof(Type).GetProperty("IsFunctionPointer", BindingFlags.Public | BindingFlags.Instance);
+    private static PropertyInfo PIsUnmanagedFunctionPointer { get; } = typeof(Type).GetProperty("IsUnmanagedFunctionPointer", BindingFlags.Public | BindingFlags.Instance);
+
     public static void Initialise(object self, bool log = true) {
         var scanner = Service.SigScanner;
         var selfType = self.GetType();
@@ -135,8 +138,21 @@ public static class SignatureHelper {
                 continue;
             }
 
+            
+            // Hack to make it work for both NET7 and NET8
+            bool isFunctionPointer;
+            if (PIsFunctionPointer == null || PIsUnmanagedFunctionPointer == null) {
+                // NET7 Compat
+                isFunctionPointer = actualType.IsPointer;
+            } else {
+                // Net8 Compat
+                isFunctionPointer = PIsFunctionPointer.GetValue(actualType) as bool? == true || PIsUnmanagedFunctionPointer.GetValue(actualType) as bool? == true;
+            }
+            
+            // TODO: Don't do reflection
+            
             switch (sig.UseFlags) {
-                case SignatureUseFlags.Auto when actualType == typeof(IntPtr) || actualType.IsPointer || actualType.IsAssignableTo(typeof(Delegate)):
+                case SignatureUseFlags.Auto when actualType == typeof(IntPtr) || isFunctionPointer || actualType.IsAssignableTo(typeof(Delegate)):
                 case SignatureUseFlags.Pointer: {
                     if (actualType.IsAssignableTo(typeof(Delegate))) {
                         info.SetValue(self, Marshal.GetDelegateForFunctionPointer(ptr, actualType));
