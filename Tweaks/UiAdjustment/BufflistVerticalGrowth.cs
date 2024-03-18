@@ -4,6 +4,7 @@ using SimpleTweaksPlugin.Events;
 using Dalamud.Logging;
 
 using System.Collections.Generic;
+using System.Linq;
 using System;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
@@ -25,15 +26,14 @@ public unsafe class BufflistVerticalGrowth : UiAdjustments.SubTweak
 
         [TweakConfigOption("Justify Auras List to the bottom")]
         public bool aurasListBool = false;
-        
+
+        [TweakConfigOption("Justify Conditional Buff List to the bottom")]
+        public bool ConditionalBuffListBool = false;
+
     }
 
     public Configs Config { get; private set; }
 
-    // max number of buffs show
-    private int MAX_NUMBER_OF_BUFFS = 20;
-    // number of nodes before the first buff node
-    private int NODES_BEFORE_BUFFS_LIST = 5;
 
 
     protected override void Enable()
@@ -48,28 +48,47 @@ public unsafe class BufflistVerticalGrowth : UiAdjustments.SubTweak
         UpdateHorizontalGrowth(0);
         UpdateHorizontalGrowth(1);
         UpdateHorizontalGrowth(2);
+        UpdateHorizontalGrowth(3);
     }
 
     private unsafe void UpdateHorizontalGrowth(int index, bool getConfigBool = true)
     {
         string AddonName;
         bool ConfigBool;
+
+        // max number of buffs show
+        int maxNumberOfBuffs;
+        // number of nodes before the first buff node
+        int nodesBeforeBuffsList;
+
         switch (index)
         {
             case 0:
                 AddonName = "_StatusCustom0";
                 ConfigBool = Config.buffListBool;
+                nodesBeforeBuffsList = 5;
+                maxNumberOfBuffs = 20;
                 break;
             case 1:
                 AddonName = "_StatusCustom1";
                 ConfigBool = Config.debuffListBool;
+                nodesBeforeBuffsList = 5;
+                maxNumberOfBuffs = 20;
                 break;
             case 2:
                 AddonName = "_StatusCustom2";
                 ConfigBool = Config.aurasListBool;
+                nodesBeforeBuffsList = 5;
+                maxNumberOfBuffs = 20;
+                break;
+            case 3:
+                AddonName = "_StatusCustom3";
+                ConfigBool = Config.ConditionalBuffListBool;
+                nodesBeforeBuffsList = 4;
+                maxNumberOfBuffs = 8;
                 break;
             default:
-                PluginLog.Log($"Wrong index value, should be 0, 1 or 2, got {index}");
+                PluginLog.Log($"Wrong index value, should be 0, 1, 2 or 3, got {index}");
                 return;
         }
         if (getConfigBool)
@@ -82,7 +101,7 @@ public unsafe class BufflistVerticalGrowth : UiAdjustments.SubTweak
 
         var targetStatusCustom = (AtkUnitBase*)Service.GameGui.GetAddonByName(AddonName ?? "", 1);
         if (targetStatusCustom == null) return;
-        if (targetStatusCustom->UldManager.NodeList == null || targetStatusCustom->UldManager.NodeListCount < 25) return;
+        //if (targetStatusCustom->UldManager.NodeList == null || targetStatusCustom->UldManager.NodeListCount < 25) return;
 
         AtkResNode* node;
 
@@ -91,19 +110,37 @@ public unsafe class BufflistVerticalGrowth : UiAdjustments.SubTweak
         // Get a list of a all icons Y positions
         List<float> yValuesArray = new List<float>();
 
-        for (int i = 0; i < MAX_NUMBER_OF_BUFFS; i++)
+        for (int i = 0; i < maxNumberOfBuffs; i++)
         {
-            node = targetStatusCustom->UldManager.NodeList[MAX_NUMBER_OF_BUFFS + NODES_BEFORE_BUFFS_LIST -1 - i];
+            node = targetStatusCustom->UldManager.NodeList[maxNumberOfBuffs + nodesBeforeBuffsList -1 - i];
 
             yValuesArray.Add(node->Y);
         }
 
+  
+
+        IEnumerable<float> uniqueFloats = yValuesArray.Distinct();
+
+
+        // fix for the 3x3 with 8 buffs and 1 vacant spot
+        // in the Conditional Buff List
+        // this assures the third and the sixth buff icon 
+        // are in the first and second line respectively
+        if (index == 3) 
+        { 
+            List<float> uniqueFloatsList = uniqueFloats.ToList();
+            if (uniqueFloatsList.Count == 3)
+            {
+                yValuesArray[2] = yValuesArray[0];
+                yValuesArray[5] = yValuesArray[3];
+            }
+        }
 
         float yValue;
 
-        bool arraySorted = yValuesArray[0] < yValuesArray[MAX_NUMBER_OF_BUFFS-1];
+        bool arraySorted = yValuesArray[0] < yValuesArray[maxNumberOfBuffs-1];
 
-        for (var i = 0; i < MAX_NUMBER_OF_BUFFS; i++)
+        for (var i = 0; i < maxNumberOfBuffs; i++)
         {
             // always get the smallest Y position first
             if (arraySorted)
@@ -112,18 +149,18 @@ public unsafe class BufflistVerticalGrowth : UiAdjustments.SubTweak
             }
             else
             {
-                yValue = yValuesArray[MAX_NUMBER_OF_BUFFS-1 - i];
+                yValue = yValuesArray[maxNumberOfBuffs-1 - i];
             }
 
             // if true start with the last icon (it has the smallest index)
             // else start with the first icon (it has the biggest index)
             if (ConfigBool)
             {
-                node = targetStatusCustom->UldManager.NodeList[NODES_BEFORE_BUFFS_LIST + i];
+                node = targetStatusCustom->UldManager.NodeList[nodesBeforeBuffsList + i];
             }
             else
             {
-                node = targetStatusCustom->UldManager.NodeList[MAX_NUMBER_OF_BUFFS + NODES_BEFORE_BUFFS_LIST - 1 - i];
+                node = targetStatusCustom->UldManager.NodeList[maxNumberOfBuffs + nodesBeforeBuffsList - 1 - i];
             }
 
             node->Y = yValue;
@@ -172,11 +209,25 @@ public unsafe class BufflistVerticalGrowth : UiAdjustments.SubTweak
         }
     }
 
+    [AddonPostRequestedUpdate("_StatusCustom3")]
+    private void AfterConditionalBuffListUpdate()
+    {
+        try
+        {
+            UpdateHorizontalGrowth(3);
+        }
+        catch (Exception ex)
+        {
+            Plugin.Error(this, ex);
+        }
+    }
+
     protected override void Disable()
     {
         UpdateHorizontalGrowth(0, false);
         UpdateHorizontalGrowth(1, false);
         UpdateHorizontalGrowth(2, false);
+        UpdateHorizontalGrowth(3, false);
         SaveConfig(Config);
         base.Disable();
     }
