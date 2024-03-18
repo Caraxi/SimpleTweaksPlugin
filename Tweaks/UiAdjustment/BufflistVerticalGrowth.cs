@@ -23,7 +23,7 @@ public unsafe class BufflistVerticalGrowth : UiAdjustments.SubTweak
         [TweakConfigOption("Justify Debuff List to the bottom")]
         public bool debuffListBool = false;
 
-        [TweakConfigOption("Justify Buff List to the bottom")]
+        [TweakConfigOption("Justify Auras List to the bottom")]
         public bool aurasListBool = false;
         
     }
