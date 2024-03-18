@@ -119,7 +119,6 @@ public unsafe class BufflistVerticalGrowth : UiAdjustments.SubTweak
 
   
 
-        IEnumerable<float> uniqueFloats = yValuesArray.Distinct();
 
 
         // fix for the 3x3 with 8 buffs and 1 vacant spot
@@ -128,6 +127,7 @@ public unsafe class BufflistVerticalGrowth : UiAdjustments.SubTweak
         // are in the first and second line respectively
         if (index == 3) 
         { 
+            IEnumerable<float> uniqueFloats = yValuesArray.Distinct();
             List<float> uniqueFloatsList = uniqueFloats.ToList();
             if (uniqueFloatsList.Count == 3)
             {
