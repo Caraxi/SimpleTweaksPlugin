@@ -114,9 +114,10 @@ public unsafe class TrackGachaItems : TooltipTweaks.SubTweak {
                 description.Payloads.Add(new TextPayload("All Options Obtained"));
                 description.Payloads.Add(new UIForegroundPayload(0));
             } else {
+                var percentage = (float) obtainedCount / gachaList.Length;
                 description.Payloads.Add(new NewLinePayload());
                 description.Payloads.Add(new UIForegroundPayload(500));
-                description.Payloads.Add(new TextPayload($"Obtained: {obtainedCount}/{gachaList.Length}"));
+                description.Payloads.Add(new TextPayload($"Obtained: {obtainedCount}/{gachaList.Length} ({percentage:#0.0%})"));
                 description.Payloads.Add(new UIForegroundPayload(0));
             }
 
