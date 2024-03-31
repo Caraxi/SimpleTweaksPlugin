@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Dalamud.ContextMenu;
+using Dalamud.Game.Gui.ContextMenu;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface;
@@ -81,8 +81,8 @@ public unsafe class LockWindowPosition : UiAdjustments.SubTweak {
     }
     
     public override void LanguageChanged() {
-        lockText = new SeStringBuilder().AddUiForeground($"{(char)SeIconChar.ServerTimeEn} ", 500).AddText(LocString("Lock Window Position")).BuiltString;
-        unlockText = new SeStringBuilder().AddUiForeground($"{(char)SeIconChar.ServerTimeEn} ", 500).AddText(LocString("Unlock Window Position")).BuiltString;
+        lockText = new SeStringBuilder().AddText(LocString("Lock Window Position")).BuiltString;
+        unlockText = new SeStringBuilder().AddText(LocString("Unlock Window Position")).BuiltString;
     }
 
     protected override void Enable() {
@@ -96,23 +96,30 @@ public unsafe class LockWindowPosition : UiAdjustments.SubTweak {
         
         LanguageChanged();
         
-        Common.ContextMenu.OnOpenGameObjectContextMenu += ContextMenuOnOnOpenGameObjectContextMenu;
+        Service.ContextMenu.OnMenuOpened += ContextMenuOnOnOpenGameObjectContextMenu;
         base.Enable();
     }
 
-    private void ContextMenuOnOnOpenGameObjectContextMenu(GameObjectContextMenuOpenArgs args) {
-        if (string.IsNullOrWhiteSpace(args.ParentAddonName)) return;
-        if (args.ObjectId != 0xE0000000) return;
+    private void ContextMenuOnOnOpenGameObjectContextMenu(MenuOpenedArgs args) {
+        if (args is not MenuOpenedArgs { MenuType: ContextMenuType.Default }) return;
+        if (string.IsNullOrWhiteSpace(args.AddonName)) return;
+        if (args.Target is not MenuTargetDefault mtd) return;
+        if (mtd.TargetObjectId != 0xE0000000) return;
         
         var b = *(byte*)((ulong)AgentContext.Instance() + 0x68C);
         if (b != 2) return;
         var str = (Config.LockedWindows.Contains(activeWindowName) ? unlockText : lockText);
         
-        args.AddCustomItem(new GameObjectContextMenuItem(str, (_) => {
-            if (!Config.LockedWindows.Remove(activeWindowName)) {
-                Config.LockedWindows.Add(activeWindowName);
+        args.AddMenuItem(new MenuItem() {
+            Name = str,
+            Prefix = SeIconChar.ServerTimeEn,
+            PrefixColor = 500,
+            OnClicked = (_) => {
+                if (!Config.LockedWindows.Remove(activeWindowName)) {
+                    Config.LockedWindows.Add(activeWindowName);
+                }
             }
-        }));
+        });
     }
 
     private byte WindowClickedDetour(AtkUnitBase* unitBase, ushort a2, ushort a3) {
@@ -149,7 +156,7 @@ public unsafe class LockWindowPosition : UiAdjustments.SubTweak {
     private SeString unlockText = SeString.Empty;
 
     protected override void Disable() {
-        Common.ContextMenu.OnOpenGameObjectContextMenu -= ContextMenuOnOnOpenGameObjectContextMenu;
+        Service.ContextMenu.OnMenuOpened -= ContextMenuOnOnOpenGameObjectContextMenu;
         moveAddonHook?.Disable();
         addMenuItemHook?.Disable();
         windowClickedHook?.Disable();
