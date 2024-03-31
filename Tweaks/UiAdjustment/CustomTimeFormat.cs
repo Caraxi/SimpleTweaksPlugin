@@ -105,7 +105,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             switch (id) {
                 case 0: {
                     if (Service.GameConfig.TryGet(UiConfigOption.TimeEorzea, out bool showET)) {
-                        var et = DateTimeOffset.FromUnixTimeSeconds(FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->EorzeaTime);
+                        var et = DateTimeOffset.FromUnixTimeSeconds(FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->ClientTime.EorzeaTime);
                         DrawClockConfig(index, LocString("Eorzea Time"), icons[0], ref hasChanged, ref showET, ref TweakConfig.CustomFormatET, ref moveAction, et);
                         if (hasChanged) Service.GameConfig.Set(UiConfigOption.TimeEorzea, showET);
                     } else {
@@ -250,7 +250,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                   Service.GameConfig.TryGet(UiConfigOption.TimeServer, out bool showST))) return;
             
             var icons = GetClockIcons();
-            var et = DateTimeOffset.FromUnixTimeSeconds(FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->EorzeaTime);
+            var et = DateTimeOffset.FromUnixTimeSeconds(FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->ClientTime.EorzeaTime);
             var lt = DateTimeOffset.Now;
             var timeSeString = new SeString(new List<Payload>());
 

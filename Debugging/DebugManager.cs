@@ -325,7 +325,6 @@ namespace SimpleTweaksPlugin.Debugging {
                 
                 var valueParser = member.GetCustomAttribute(typeof(ValueParser));
                 var fixedBuffer = (FixedBufferAttribute) member.GetCustomAttribute(typeof(FixedBufferAttribute));
-                var fixedArray = (FixedArrayAttribute)member.GetCustomAttribute(typeof(FixedArrayAttribute));
                 var fixedSizeArray = member.GetCustomAttribute(typeof(FixedSizeArrayAttribute<>));
                 
                 if (valueParser is ValueParser vp) {
@@ -411,40 +410,6 @@ namespace SimpleTweaksPlugin.Debugging {
                                 
                                 ImGui.TreePop();
                             }
-                        } else
-                        if (fixedArray != null) {
-
-
-                            if (fixedArray.Type == typeof(string) && fixedArray.Count == 1) {
-
-                                
-                                var text = Marshal.PtrToStringUTF8((IntPtr)addr);
-                                if (text != null) {
-                                    ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 0));
-                                    ImGui.TextDisabled("\"");
-                                    ImGui.SameLine();
-                                    ImGui.Text(text);
-                                    ImGui.SameLine();
-                                    ImGui.PopStyleVar();
-                                    
-                                    ImGui.TextDisabled("\"");
-                                } else {
-                                    ImGui.TextDisabled("null");
-                                }
-                            } else {
-                                if (ImGui.TreeNode($"Fixed {ParseTypeName(fixedArray.Type)} Array##{member.Name}-{addr}-{string.Join("-", path)}")) {
-
-                                    var arrAddr = (IntPtr) addr;
-                                    for (var i = 0; i < fixedArray.Count; i++) {
-                                        var arrObj = SafeMemory.PtrToStructure(arrAddr, fixedArray.Type);
-                                        PrintOutObject(arrObj, (ulong)arrAddr.ToInt64(), new List<string>(path) { $"_arrValue_{i}" }, false, $"[{i}] {arrObj}");
-                                        arrAddr += Marshal.SizeOf(fixedArray.Type);
-                                    }
-
-                                    ImGui.TreePop();
-                                }
-                            }
-                            
                         } else {
                         
                             if (ImGui.TreeNode($"Fixed {ParseTypeName(fixedBuffer.ElementType)} Buffer##{member.Name}-{addr}-{string.Join("-", path)}")) {
@@ -657,7 +622,6 @@ namespace SimpleTweaksPlugin.Debugging {
                         
                         var fixedBuffer = (FixedBufferAttribute) f.GetCustomAttribute(typeof(FixedBufferAttribute));
                         if (fixedBuffer != null) {
-                            var fixedArray = (FixedArrayAttribute)f.GetCustomAttribute(typeof(FixedArrayAttribute));
                             var fixedSizeArray = f.GetCustomAttribute(typeof(FixedSizeArrayAttribute<>));
                             ImGui.Text($"fixed");
                             ImGui.SameLine();
@@ -665,13 +629,6 @@ namespace SimpleTweaksPlugin.Debugging {
                                 var fixedType = fixedSizeArray.GetType().GetGenericArguments()[0];
                                 var size = (int) fixedSizeArray.GetType().GetProperty("Count").GetValue(fixedSizeArray);
                                 ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{ParseTypeName(fixedType)}[{size}]");
-                            } else if (fixedArray != null) {
-                                if (fixedArray.Type == typeof(string) && fixedArray.Count == 1) {
-                                    ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{fixedArray.Type.Name}");
-                                } else {
-                                    ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{fixedArray.Type.Name}[{fixedArray.Count:X}]");
-                                }
-                                
                             } else {
                                 ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{fixedBuffer.ElementType.Name}[0x{fixedBuffer.Length:X}]");
                             }

@@ -28,4 +28,5 @@ public class Service {
     [PluginService] public static IAddonLifecycle AddonLifecycle { get; private set; }
     [PluginService] public static IDtrBar DtrBar { get; private set; }
     [PluginService] public static IDutyState DutyState { get; private set; }
+    [PluginService] public static INotificationManager NotificationManager { get; private set; }
 }

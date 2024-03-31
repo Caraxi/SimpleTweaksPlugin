@@ -7,6 +7,7 @@ using Dalamud.Interface.Utility;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
 using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ImGuiNET;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
@@ -29,6 +30,10 @@ public unsafe class HighResScreenshots : Tweak {
         public bool HideDalamudUi;
         public bool HideGameUi;
         public bool RemoveCopyright;
+
+        public bool UseCustom;
+        public int CustomWidth = 1920;
+        public int CustomHeight = 1080;
         
         public bool UseReShade;
         public VirtualKey ReShadeMainKey = VirtualKey.SNAPSHOT;
@@ -63,12 +68,21 @@ public unsafe class HighResScreenshots : Tweak {
         ImGui.TextWrapped("The game WILL crash if you set the scale too high.");
         ImGui.PopStyleColor();
 
-        ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale * 100);
-        hasChanged |= ImGui.InputInt("Scale", ref Config.Scale);
+        hasChanged |= ImGui.Checkbox("Use Fixed Resolution", ref Config.UseCustom);
 
-        ImGui.SameLine();
-        var device = Device.Instance();
-        ImGui.TextDisabled($"{device->Width*Config.Scale}x{device->Height*Config.Scale}");
+        if (Config.UseCustom) {
+
+            hasChanged |= ImGui.InputInt("Width", ref Config.CustomWidth);
+            hasChanged |= ImGui.InputInt("Height", ref Config.CustomHeight);
+
+        } else {
+            ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale * 100);
+            hasChanged |= ImGui.InputInt("Scale", ref Config.Scale);
+
+            ImGui.SameLine();
+            var device = Device.Instance();
+            ImGui.TextDisabled($"{device->Width*Config.Scale}x{device->Height*Config.Scale}");
+        }
         
         ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale * 100);
         hasChanged |= ImGui.InputFloat("Delay", ref Config.Delay);
@@ -169,6 +183,7 @@ public unsafe class HighResScreenshots : Tweak {
     // We change the res when the button is pressed and tell it to take a screenshot the next time it is polled
     private byte IsInputIDClickedDetour(nint a1, int a2) {
         var orig = isInputIDClickedHook.Original(a1, a2);
+        if (AgentModule.Instance()->GetAgentByInternalId(AgentId.Configkey)->IsAgentActive()) return orig;
 
         if (orig == 1 && a2 == ScreenshotButton && !shouldPress && !isRunning) {
             isRunning = true;
@@ -176,11 +191,23 @@ public unsafe class HighResScreenshots : Tweak {
             oldWidth = device->Width;
             oldHeight = device->Height;
 
-            if (Config.Scale > 1) {
-                device->NewWidth = oldWidth * (uint)Config.Scale;
-                device->NewHeight = oldHeight * (uint)Config.Scale;
-                device->RequestResolutionChange = 1;
+            if (Config.UseCustom) {
+                var w = Math.Clamp((uint)Config.CustomWidth, 1280, ushort.MaxValue);
+                var h = Math.Clamp((uint)Config.CustomHeight, 720, ushort.MaxValue);
+                if (device->Width != w || device->Height != h) {
+                    device->NewWidth = w;
+                    device->NewHeight = h;
+                    device->RequestResolutionChange = 1;
+                }
+            } else {
+                if (Config.Scale > 1) {
+                    device->NewWidth = oldWidth * (uint)Config.Scale;
+                    device->NewHeight = oldHeight * (uint)Config.Scale;
+                    device->RequestResolutionChange = 1;
+                }
             }
+            
+            
 
             if (Config.HideGameUi) {
                 var raptureAtkModule = Framework.Instance()->GetUiModule()->GetRaptureAtkModule();
@@ -244,7 +271,7 @@ public unsafe class HighResScreenshots : Tweak {
                     SendInput.KeyUp(Config.ReShadeMainKey);
                 }, delayTicks: 1);
                 
-                return 0;
+                return 1;
             }
 
             return 1;

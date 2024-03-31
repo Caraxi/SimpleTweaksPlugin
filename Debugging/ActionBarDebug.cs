@@ -507,7 +507,7 @@ public unsafe class ActionBarDebug : DebugHelper {
                 return true;
             }
 
-            case HotbarSlotType.Collection: {
+            case HotbarSlotType.McGuffin: {
                 var c = Service.Data.Excel.GetSheet<McGuffin>()!.GetRow(commandId);
                 if (c == null) {
                     return false;
