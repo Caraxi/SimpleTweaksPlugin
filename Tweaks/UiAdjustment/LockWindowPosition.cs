@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using Dalamud.Game.Gui.ContextMenu;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
@@ -11,16 +13,16 @@ using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
+using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [TweakVersion(2)]
+[TweakName("Lock Window Positions")]
+[TweakDescription("Allows locking the position of almost any UI window.")]
 public unsafe class LockWindowPosition : UiAdjustments.SubTweak {
-    public override string Name => "Lock Window Positions";
-    public override string Description => "Allows locking the position of almost any UI window.";
-
     public class Configs : TweakConfig {
         public HashSet<string> LockedWindows = new();
     }
@@ -28,19 +30,8 @@ public unsafe class LockWindowPosition : UiAdjustments.SubTweak {
     private delegate void* MoveAddon(RaptureAtkModule* atkModule, AtkUnitBase* addon, void* idk);
     private HookWrapper<MoveAddon> moveAddonHook;
 
-    private delegate void* AddMenuItem(AgentContext* agent, uint addonTextId, void* a3, long a4, byte a5, void* a6, void* a7, void* a8, void* a9, void* a10);
-    private HookWrapper<AddMenuItem> addMenuItemHook;
-
-    private delegate byte WindowClicked(AtkUnitBase* unitBase, ushort a2, ushort a3);
-    private HookWrapper<WindowClicked> windowClickedHook;
-
-    private delegate void* WindowContextHandle(void* a1, void* a2, void* a3, void* a4, uint a5);
-    private HookWrapper<WindowContextHandle> windowContextHandleHook;
-
     public Configs Config { get; private set; }
     private string addLockInputText = string.Empty;
-
-    private string activeWindowName = string.Empty;
     
     protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
 
@@ -87,60 +78,36 @@ public unsafe class LockWindowPosition : UiAdjustments.SubTweak {
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        
         moveAddonHook ??= Common.Hook<MoveAddon>("40 53 48 83 EC 20 80 A2 ?? ?? ?? ?? ??", MoveAddonDetour);
         moveAddonHook?.Enable();
-
-        windowClickedHook ??= Common.Hook<WindowClicked>("E8 ?? ?? ?? ?? 84 C0 74 14 48 8B 07 48 8B D6", WindowClickedDetour);
-        windowClickedHook?.Enable();
-        
         LanguageChanged();
-        
-        Service.ContextMenu.OnMenuOpened += ContextMenuOnOnOpenGameObjectContextMenu;
+        Service.ContextMenu.OnMenuOpened += OpenContextMenu;
         base.Enable();
     }
 
-    private void ContextMenuOnOnOpenGameObjectContextMenu(MenuOpenedArgs args) {
-        if (args is not MenuOpenedArgs { MenuType: ContextMenuType.Default }) return;
-        if (string.IsNullOrWhiteSpace(args.AddonName)) return;
+    private void OpenContextMenu(MenuOpenedArgs args) {
+        if (args is not { MenuType: ContextMenuType.Default }) return;
         if (args.Target is not MenuTargetDefault mtd) return;
+        if (string.IsNullOrWhiteSpace(args.AddonName)) return;
         if (mtd.TargetObjectId != 0xE0000000) return;
         
-        var b = *(byte*)((ulong)AgentContext.Instance() + 0x68C);
-        if (b != 2) return;
-        var str = (Config.LockedWindows.Contains(activeWindowName) ? unlockText : lockText);
+        // TODO: Remove Reflection when fixed, Use field when merged.
+        IReadOnlySet<nint>? eventInterfaces = typeof(MenuArgs).GetField("eventInterfaces", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(args) as IReadOnlySet<nint>;
+        var unitManagerEventInterface = (nint)((ulong)RaptureAtkUnitManager.Instance() + 0x9C90); // (nint)(&RaptureAtkUnitManager.Instance()->AtkEventInterface);
+        if (eventInterfaces == null || eventInterfaces.All(e => e != unitManagerEventInterface)) return;
         
+        var str = (Config.LockedWindows.Contains(args.AddonName) ? unlockText : lockText);
         args.AddMenuItem(new MenuItem() {
             Name = str,
             Prefix = SeIconChar.ServerTimeEn,
             PrefixColor = 500,
             OnClicked = (_) => {
-                if (!Config.LockedWindows.Remove(activeWindowName)) {
-                    Config.LockedWindows.Add(activeWindowName);
+                if (!Config.LockedWindows.Remove(args.AddonName)) {
+                    Config.LockedWindows.Add(args.AddonName);
                 }
             }
         });
     }
-
-    private byte WindowClickedDetour(AtkUnitBase* unitBase, ushort a2, ushort a3) {
-        var ret = windowClickedHook.Original(unitBase, a2, a3);
-        try {
-            if (ret != 0) {
-                try {
-                    activeWindowName = Common.ReadString(unitBase->Name, 0x20);
-                } catch {
-                    activeWindowName = string.Empty;
-                }
-            
-            }
-        } catch (Exception ex) {
-            Plugin.Error(this, ex);
-        }
-        
-        return ret;
-    }
-
-    public const uint ToggleLockContextAction = 0x5354 + 1;
 
     private void* MoveAddonDetour(RaptureAtkModule* atkModule, AtkUnitBase* addon, void* idk) {
         try {
@@ -156,20 +123,14 @@ public unsafe class LockWindowPosition : UiAdjustments.SubTweak {
     private SeString unlockText = SeString.Empty;
 
     protected override void Disable() {
-        Service.ContextMenu.OnMenuOpened -= ContextMenuOnOnOpenGameObjectContextMenu;
+        Service.ContextMenu.OnMenuOpened -= OpenContextMenu;
         moveAddonHook?.Disable();
-        addMenuItemHook?.Disable();
-        windowClickedHook?.Disable();
-        windowContextHandleHook?.Disable();
         SaveConfig(Config);
         base.Disable();
     }
 
     public override void Dispose() {
         moveAddonHook?.Dispose();
-        addMenuItemHook?.Dispose();
-        windowClickedHook?.Disable();
-        windowContextHandleHook?.Disable();
         base.Dispose();
     }
 }
