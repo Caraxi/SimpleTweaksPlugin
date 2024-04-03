@@ -1,16 +1,19 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using System.Collections.Frozen;
+using System.Collections.Generic;
 
 using Dalamud;
 using Dalamud.Utility;
 using Dalamud.Game.Text;
 using Dalamud.Game.Config;
-using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Plugin.Services;
-using SimpleTweaksPlugin.Utility;
+using Lumina.Excel.GeneratedSheets2;
+using Dalamud.Game.Text.SeStringHandling;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
@@ -66,17 +69,8 @@ public class CutsceneCommands : Tweak
     private const string JpMessage = "そのコマンドは現在使用できません。： ";
 
     private string loc1, loc2;
-
-    private readonly List<string> allCommands = MasterVolumeCommands
-                                                .Concat(BgmVolumeCommands)
-                                                .Concat(SoundFxVolumeCommands)
-                                                .Concat(VoiceVolumeCommands)
-                                                .Concat(SystemVolumeCommands)
-                                                .Concat(AmbientVolumeCommands)
-                                                .Concat(ControllerSpeakerVolumeCommands)
-                                                .Concat(PerformanceVolumeCommands)
-                                                .Concat(MountBgmVolumeCommands)
-                                                .ToList();
+    private (bool, FrozenSet<string>, SystemConfigOption)[] commandArray;
+    private FrozenSet<string> allCommands;
 
     protected override void Enable()
     {
@@ -91,23 +85,56 @@ public class CutsceneCommands : Tweak
         {
             return;
         }
+        _ = Task.Run(() =>
+        {
+            var masterVolumeCommands = GetCommands(clientLanguage, 329);
+            var bgmVolumeCommands = GetCommands(clientLanguage, 330);
+            var soundFxVolumeCommands = GetCommands(clientLanguage, 331);
+            var voiceVolumeCommands = GetCommands(clientLanguage, 332);
+            var systemVolumeCommands = GetCommands(clientLanguage, 333);
+            var ambientVolumeCommands = GetCommands(clientLanguage, 334);
+            var controllerSpeakerVolumeCommands = GetCommands(clientLanguage, 338);
+            var performanceVolumeCommands = GetCommands(clientLanguage, 341);
+            var mountBgmVolumeCommands = GetCommands(clientLanguage, 340);
+            allCommands = CreateFrozenSet<string>(masterVolumeCommands,
+                bgmVolumeCommands,
+                soundFxVolumeCommands,
+                voiceVolumeCommands,
+                systemVolumeCommands,
+                ambientVolumeCommands,
+                controllerSpeakerVolumeCommands,
+                performanceVolumeCommands,
+                mountBgmVolumeCommands);
+            commandArray =
+            [
+                (Config.MasterVolume, masterVolumeCommands, SystemConfigOption.IsSndMaster),
+                (Config.BackgroundMusic, bgmVolumeCommands, SystemConfigOption.IsSndBgm),
+                (Config.SoundEffects, soundFxVolumeCommands, SystemConfigOption.IsSndSe),
+                (Config.Voice, voiceVolumeCommands, SystemConfigOption.IsSndVoice),
+                (Config.System, systemVolumeCommands, SystemConfigOption.IsSndSystem),
+                (Config.Ambient, ambientVolumeCommands, SystemConfigOption.IsSndEnv),
+                (Config.ControllerSpeaker, controllerSpeakerVolumeCommands, SystemConfigOption.IsSoundPad),
+                (Config.Performance, performanceVolumeCommands, SystemConfigOption.IsSndPerform),
+                (Config.MountBackgroundMusic, mountBgmVolumeCommands, SystemConfigOption.SoundChocobo), // MountBGM
+            ];
+        });
+        Service.Framework.Update -= PopulateLoc;
         loc1 = clientLanguage switch
         {
-            ClientLanguage.French   => FrMessageP1,
-            ClientLanguage.German   => DeMessageP1,
+            ClientLanguage.French => FrMessageP1,
+            ClientLanguage.German => DeMessageP1,
             ClientLanguage.Japanese => JpMessage,
-            ClientLanguage.English  => EnMessageP1,
-            _                       => throw new ArgumentException($"Client Language: {clientLanguage} is unsupported"),
+            ClientLanguage.English => EnMessageP1,
+            _ => throw new ArgumentException($"Client Language: {clientLanguage} is unsupported"),
         };
         loc2 = clientLanguage switch
         {
-            ClientLanguage.French   => FrMessageP2,
-            ClientLanguage.German   => DeMessageP2,
+            ClientLanguage.French => FrMessageP2,
+            ClientLanguage.German => DeMessageP2,
             ClientLanguage.Japanese => string.Empty,
-            ClientLanguage.English  => EnMessageP2,
-            _                       => throw new ArgumentException($"Client Language: {clientLanguage} is unsupported"),
+            ClientLanguage.English => EnMessageP2,
+            _ => throw new ArgumentException($"Client Language: {clientLanguage} is unsupported"),
         };
-        Service.Framework.Update -= PopulateLoc;
     }
 
     private unsafe void OnChatMessage(
@@ -121,30 +148,18 @@ public class CutsceneCommands : Tweak
         {
             return;
         }
-        if (Common.LastCommand is null || !allCommands.Exists(command => Common.LastCommand->ToString().Contains(command)))
+        if (Common.LastCommand is null || !allCommands.Any(command => Common.LastCommand->ToString().Contains(command)))
         {
             return;
         }
-        var configCommandArray = new[]
-        {
-            (Config.MasterVolume, MasterVolumeCommands, SystemConfigOption.IsSndMaster),
-            (Config.BackgroundMusic, BgmVolumeCommands, SystemConfigOption.IsSndBgm),
-            (Config.SoundEffects, SoundFxVolumeCommands, SystemConfigOption.IsSndSe),
-            (Config.Voice, VoiceVolumeCommands, SystemConfigOption.IsSndVoice),
-            (Config.System, SystemVolumeCommands, SystemConfigOption.IsSndSystem),
-            (Config.Ambient, AmbientVolumeCommands, SystemConfigOption.IsSndEnv),
-            (Config.ControllerSpeaker, ControllerSpeakerVolumeCommands, SystemConfigOption.IsSoundPad),
-            (Config.Performance, PerformanceVolumeCommands, SystemConfigOption.IsSndPerform),
-            (Config.MountBackgroundMusic, MountBgmVolumeCommands, SystemConfigOption.SoundChocobo), // MountBGM
-        };
-        foreach (var (config, commands, option) in configCommandArray)
+        foreach (var (config, commands, option) in commandArray)
         {
             HandleCommands((config, commands, option), clientLanguage, message, ref isHandled, loc1, loc2);
         }
     }
 
     private static void HandleCommands(
-        (bool config, IReadOnlyList<string> commands, SystemConfigOption option) configCommandOption,
+        (bool config, IReadOnlySet<string> commands, SystemConfigOption option) configCommandOption,
         ClientLanguage clientLanguage,
         SeString message,
         ref bool isHandled,
@@ -198,15 +213,15 @@ public class CutsceneCommands : Tweak
                 message = optionFlag ? "Vous avez activé " : "Vous avez désactivé ";
                 message += option switch
                 {
-                    SystemConfigOption.IsSndMaster  => "le volume général.",
-                    SystemConfigOption.IsSndBgm     => "la musique.",
-                    SystemConfigOption.IsSndSe      => "les effets sonores.",
-                    SystemConfigOption.IsSndVoice   => "les voix.",
-                    SystemConfigOption.IsSndSystem  => "les sons système.",
-                    SystemConfigOption.IsSndEnv     => "l'ambiance sonore.",
-                    SystemConfigOption.IsSoundPad   => "le haut-parleur pour les sons système.",
+                    SystemConfigOption.IsSndMaster => "le volume général.",
+                    SystemConfigOption.IsSndBgm => "la musique.",
+                    SystemConfigOption.IsSndSe => "les effets sonores.",
+                    SystemConfigOption.IsSndVoice => "les voix.",
+                    SystemConfigOption.IsSndSystem => "les sons système.",
+                    SystemConfigOption.IsSndEnv => "l'ambiance sonore.",
+                    SystemConfigOption.IsSoundPad => "le haut-parleur pour les sons système.",
                     SystemConfigOption.IsSndPerform => "les Actions d'interprétation.",
-                    _                               => string.Empty,
+                    _ => string.Empty,
                 };
                 if (message.Last() is not '.')
                 {
@@ -218,16 +233,16 @@ public class CutsceneCommands : Tweak
             {
                 message = option switch
                 {
-                    SystemConfigOption.IsSndMaster  => "Hauptlautstärke",
-                    SystemConfigOption.IsSndBgm     => "Hintergrundmusik",
-                    SystemConfigOption.IsSndSe      => "Soundeffekte",
-                    SystemConfigOption.IsSndVoice   => "Stimmen",
-                    SystemConfigOption.IsSndSystem  => "Systemtöne",
-                    SystemConfigOption.IsSndEnv     => "Umgebungsgeräusche",
-                    SystemConfigOption.IsSoundPad   => "Systemtöne über Lautsprecher",
+                    SystemConfigOption.IsSndMaster => "Hauptlautstärke",
+                    SystemConfigOption.IsSndBgm => "Hintergrundmusik",
+                    SystemConfigOption.IsSndSe => "Soundeffekte",
+                    SystemConfigOption.IsSndVoice => "Stimmen",
+                    SystemConfigOption.IsSndSystem => "Systemtöne",
+                    SystemConfigOption.IsSndEnv => "Umgebungsgeräusche",
+                    SystemConfigOption.IsSoundPad => "Systemtöne über Lautsprecher",
                     SystemConfigOption.IsSndPerform => "Kompositionen",
                     SystemConfigOption.SoundChocobo => "Musik beim Reiten",
-                    _                               => message,
+                    _ => message,
                 };
                 if (message.IsNullOrWhitespace())
                 {
@@ -245,16 +260,16 @@ public class CutsceneCommands : Tweak
             {
                 message = option switch
                 {
-                    SystemConfigOption.IsSndMaster  => "マスターボリューム",
-                    SystemConfigOption.IsSndBgm     => "BGM",
-                    SystemConfigOption.IsSndSe      => "効果音",
-                    SystemConfigOption.IsSndVoice   => "ボイス",
-                    SystemConfigOption.IsSndSystem  => "システム音",
-                    SystemConfigOption.IsSndEnv     => "環境音",
-                    SystemConfigOption.IsSoundPad   => "システム音のスピーカー出力",
+                    SystemConfigOption.IsSndMaster => "マスターボリューム",
+                    SystemConfigOption.IsSndBgm => "BGM",
+                    SystemConfigOption.IsSndSe => "効果音",
+                    SystemConfigOption.IsSndVoice => "ボイス",
+                    SystemConfigOption.IsSndSystem => "システム音",
+                    SystemConfigOption.IsSndEnv => "環境音",
+                    SystemConfigOption.IsSoundPad => "システム音のスピーカー出力",
                     SystemConfigOption.IsSndPerform => "楽器演奏",
                     SystemConfigOption.SoundChocobo => "マウント騎乗中のBGM再生を",
-                    _                               => message,
+                    _ => message,
                 };
                 if (message.IsNullOrWhitespace())
                 {
@@ -272,16 +287,16 @@ public class CutsceneCommands : Tweak
             {
                 message = option switch
                 {
-                    SystemConfigOption.IsSndMaster  => "Master",
-                    SystemConfigOption.IsSndBgm     => "BGM",
-                    SystemConfigOption.IsSndSe      => "Sound effects",
-                    SystemConfigOption.IsSndVoice   => "Voice",
-                    SystemConfigOption.IsSndSystem  => "System sounds",
-                    SystemConfigOption.IsSndEnv     => "Ambient sounds",
-                    SystemConfigOption.IsSoundPad   => "System sounds speaker",
+                    SystemConfigOption.IsSndMaster => "Master",
+                    SystemConfigOption.IsSndBgm => "BGM",
+                    SystemConfigOption.IsSndSe => "Sound effects",
+                    SystemConfigOption.IsSndVoice => "Voice",
+                    SystemConfigOption.IsSndSystem => "System sounds",
+                    SystemConfigOption.IsSndEnv => "Ambient sounds",
+                    SystemConfigOption.IsSoundPad => "System sounds speaker",
                     SystemConfigOption.IsSndPerform => "Performance",
                     SystemConfigOption.SoundChocobo => "Mount BGM",
-                    _                               => message,
+                    _ => message,
                 };
                 if (message.IsNullOrWhitespace())
                 {
@@ -306,68 +321,32 @@ public class CutsceneCommands : Tweak
         SaveConfig(Config);
     }
 
-    private static List<string> MasterVolumeCommands { get; } = new()
+    private static FrozenSet<string>? GetCommands(ClientLanguage? language, params int[] rows)
     {
-        "/mastervolume",
-        "/lautstärke",
-        "/vgénéral",
-    };
+        var sheet = Service.Data.GetExcelSheet<TextCommand>(language ?? ClientLanguage.English);
+        if (sheet is null)
+        {
+            SimpleLog.Error("Failed to retrieve lumina sheet.");
+            throw new NotSupportedException("Lumina unavailable.");
+        }
+        var commands = new List<string>();
+        foreach (var row in sheet.Where(s => Array.Exists(rows, r => r == s.RowId)))
+        {
+            var mainCommand = row.Command.ToDalamudString().TextValue;
+            var aliasCommand = row.Alias.ToDalamudString().TextValue;
 
-    private static List<string> BgmVolumeCommands { get; } = new()
-    {
-        "/bgm",
-        "/musik",
-        "/vmusique",
-    };
+            if (!mainCommand.IsNullOrWhitespace())
+            {
+                commands.Add(mainCommand);
+            }
+            if (!aliasCommand.IsNullOrWhitespace())
+            {
+                commands.Add(aliasCommand);
+            }
+        }
+        return commands.ToFrozenSet();
+    }
 
-    private static List<string> SoundFxVolumeCommands { get; } = new()
-    {
-        "/soundeffects",
-        "/soundeffekte",
-        "/veffetssonores",
-    };
-
-    private static List<string> VoiceVolumeCommands { get; } = new()
-    {
-        "/voice",
-        "/stimmen",
-        "/vvoix",
-    };
-
-    private static List<string> SystemVolumeCommands { get; } = new()
-    {
-        "/systemsounds",
-        "/systemtöne",
-        "/vsonssystèmes",
-    };
-
-    private static List<string> AmbientVolumeCommands { get; } = new()
-    {
-        "/ambientsounds",
-        "/umgebung",
-        "/vambiancesonore",
-    };
-
-    private static List<string> ControllerSpeakerVolumeCommands { get; } = new()
-    {
-        "/systemsoundsspeaker",
-        "/systemlautsprecher",
-        "/vhautparleur",
-        "/vhp",
-    };
-
-    private static List<string> PerformanceVolumeCommands { get; } = new()
-    {
-        "/performsounds",
-        "/komplaut",
-        "/actionsinterprétation",
-        "/ainterp",
-    };
-
-    private static List<string> MountBgmVolumeCommands { get; } = new()
-    {
-        "/mountbgm",
-        "/reitbgm",
-        "/musiquemonture",
-    };
+    public static FrozenSet<T> CreateFrozenSet<T>(params IEnumerable<T>[] collections)
+        => collections.SelectMany(i => i).ToFrozenSet();
 }
