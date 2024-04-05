@@ -182,6 +182,8 @@ public unsafe class HighResScreenshots : Tweak {
     // IsInputIDClicked is called from Client::UI::UIInputModule.CheckScreenshotState, which is polled
     // We change the res when the button is pressed and tell it to take a screenshot the next time it is polled
     private byte IsInputIDClickedDetour(nint a1, int a2) {
+        if (a2 == ScreenshotButton && Config.UseReShade && Framework.Instance()->WindowInactive) return 0;
+        
         var orig = isInputIDClickedHook.Original(a1, a2);
         if (AgentModule.Instance()->GetAgentByInternalId(AgentId.Configkey)->IsAgentActive()) return orig;
 
@@ -271,7 +273,7 @@ public unsafe class HighResScreenshots : Tweak {
                     SendInput.KeyUp(Config.ReShadeMainKey);
                 }, delayTicks: 1);
                 
-                return 1;
+                return 0;
             }
 
             return 1;
