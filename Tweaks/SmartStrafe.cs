@@ -105,26 +105,28 @@ namespace SimpleTweaksPlugin.Tweaks
 
         private bool CheckStrafeKeybind(IntPtr ptr, Keybind keybind)
         {
-            if (keybind is Keybind.StrafeLeft or Keybind.StrafeRight) {
-                if (TweakConfig.ManualBackpedal &&
-                    (Hook.Original(ptr, Keybind.TurnLeft) || Hook.Original(ptr, Keybind.StrafeLeft)) &&
-                    (Hook.Original(ptr, Keybind.TurnRight) || Hook.Original(ptr, Keybind.StrafeRight))) {
-                    return true;
-                }
+            if (!Service.ClientState.IsGPosing) {
+                if (keybind is Keybind.StrafeLeft or Keybind.StrafeRight) {
+                    if (TweakConfig.ManualBackpedal &&
+                        (Hook.Original(ptr, Keybind.TurnLeft) || Hook.Original(ptr, Keybind.StrafeLeft)) &&
+                        (Hook.Original(ptr, Keybind.TurnRight) || Hook.Original(ptr, Keybind.StrafeRight))) {
+                        return true;
+                    }
 
-                var mode = Service.Condition[ConditionFlag.InCombat]
-                    ? TweakConfig.InCombat
-                    : TweakConfig.OutOfCombat;
+                    var mode = Service.Condition[ConditionFlag.InCombat]
+                        ? TweakConfig.InCombat
+                        : TweakConfig.OutOfCombat;
 
-                switch (mode) {
-                    case Mode.Turning: return false;
-                    case Mode.StrafingNoBackpedal:
-                        if (Hook.Original(ptr, Keybind.MoveBack)) {
-                            return false;
-                        }
-                        goto case Mode.Strafing;
-                    case Mode.Strafing:
-                        return Hook.Original(ptr, keybind - 2) || Hook.Original(ptr, keybind);
+                    switch (mode) {
+                        case Mode.Turning: return false;
+                        case Mode.StrafingNoBackpedal:
+                            if (Hook.Original(ptr, Keybind.MoveBack)) {
+                                return false;
+                            }
+                            goto case Mode.Strafing;
+                        case Mode.Strafing:
+                            return Hook.Original(ptr, keybind - 2) || Hook.Original(ptr, keybind);
+                    }
                 }
             }
 
