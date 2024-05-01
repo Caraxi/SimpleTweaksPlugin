@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Linq;
+using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
@@ -15,25 +16,28 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakDescription("Prints the Search Info of people, that get inspected, into the chat.")]
 [TweakAuthor("Infi")]
 [TweakReleaseVersion(UnreleasedVersion)]
-public unsafe class SearchInfoPrint : ChatTweaks.SubTweak {
+public class SearchInfoPrint : ChatTweaks.SubTweak {
     [TweakHook, Signature("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 49 8B E8 8B DA", DetourName = nameof(SearchInfoDownloadedDetour))]
     private HookWrapper<SearchInfoDownloadedDelegate>? searchInfoDownloadedHook;
-    private delegate byte SearchInfoDownloadedDelegate(nint data, nint a2, nint searchInfoPtr, nint a4);
+    private delegate byte SearchInfoDownloadedDelegate(nint agentInspect, uint objectId, nint searchInfoPtr);
 
-    private byte SearchInfoDownloadedDetour(nint data, nint a2, nint searchInfoPtr, nint a4)
+    private byte SearchInfoDownloadedDetour(nint agentInspect, uint objectId, nint searchInfoPtr)
     {
-        var result = searchInfoDownloadedHook!.Original(data, a2, searchInfoPtr, a4);
-        try {
-            // Updated: 4.5
-            var actorId = *(uint*) (data + 48);
+        var result = searchInfoDownloadedHook!.Original(agentInspect, objectId, searchInfoPtr);
+
+        // Updated: 4.5
+        try
+        {
             var searchInfo = MemoryHelper.ReadSeStringNullTerminated(searchInfoPtr);
 
-            var obj = Service.Objects.FirstOrDefault(o => o.ObjectId == actorId);
-            if (obj == null) {
-                SimpleLog.Debug("Unable to find ObjectID.");
+            var obj = Service.Objects.FirstOrDefault(o => o.ObjectId == objectId);
+            if (obj == null || !obj.IsValid()) {
+                SimpleLog.Debug($"Unable to find ObjectID.");
             }
-            else if (searchInfo.Payloads.Count > 0) {
+            else if (searchInfo.Payloads.Count > 0 && obj.ObjectKind == ObjectKind.Player)
+            {
                 var character = (PlayerCharacter) obj;
+
                 var builder = new SeStringBuilder();
                 builder.AddUiForeground(45);
                 builder.AddText("Search Info from <");
