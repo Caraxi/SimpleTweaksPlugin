@@ -56,6 +56,7 @@ public unsafe class EstateListCommand : CommandTweak {
             if (f->HomeWorld != Service.ClientState.LocalPlayer?.CurrentWorld.Id) continue;
             if (f->ContentId == 0) continue;
             if (f->Name[0] == 0) continue;
+            if ((f->ExtraFlags & 32) != 0) continue;
             if (useContentId && contentId == (ulong)f->ContentId) {
                 this.showEstateTeleportation(agent, (ulong)f->ContentId);
                 return;
