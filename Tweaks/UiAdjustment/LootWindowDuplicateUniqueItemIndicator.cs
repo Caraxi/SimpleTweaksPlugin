@@ -102,9 +102,9 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
             if (listComponentNode is null || listComponentNode->Component is null) return;
             
             // For each possible item slot, get the item info
-            foreach (var index in Enumerable.Range(0, callingAddon->ItemsSpan.Length)) {
+            foreach (var index in Enumerable.Range(0, callingAddon->Items.Length)) {
                 // If this data slot doesn't have an item id, skip.
-                var itemInfo = callingAddon->ItemsSpan[index];
+                var itemInfo = callingAddon->Items[index];
                 if (itemInfo.ItemId is 0) continue;
 
                 var adjustedItemId = itemInfo.ItemId > 1_000_000 ? itemInfo.ItemId - 1_000_000 : itemInfo.ItemId;
@@ -175,8 +175,8 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         return exdItem is null || UIState.Instance()->IsItemActionUnlocked(exdItem) is 1;
     }
     
-    private void MakeCrossNode(uint nodeId, AtkComponentNode* parent) {
-        var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(0, 0, 32, 32));
+    private void MakeCrossNode(uint NodeId, AtkComponentNode* parent) {
+        var imageNode = UiHelper.MakeImageNode(NodeId, new UiHelper.PartInfo(0, 0, 32, 32));
         imageNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorTop | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents; // 8243;
         imageNode->WrapMode = 1;
 
@@ -193,8 +193,8 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         UiHelper.LinkNodeAfterTargetNode((AtkResNode*) imageNode, parent, targetTextNode);
     }
 
-    private void MakePadlockNode(uint nodeId, AtkComponentNode* parent) {
-        var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(48, 0, 20, 24));
+    private void MakePadlockNode(uint NodeId, AtkComponentNode* parent) {
+        var imageNode = UiHelper.MakeImageNode(NodeId, new UiHelper.PartInfo(48, 0, 20, 24));
         imageNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorTop | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents; // 8243;
         imageNode->WrapMode = 1;
 

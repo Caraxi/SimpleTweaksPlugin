@@ -94,7 +94,7 @@ public unsafe class ShowShieldOnHPBar: UiAdjustments.SubTweak
             void CreateBar(uint id) {
                 var bar = IMemorySpace.GetUISpace()->Create<AtkNineGridNode>();
                 bar->AtkResNode.Type = NodeType.NineGrid;
-                bar->AtkResNode.NodeID = id;
+                bar->AtkResNode.NodeId = id;
                 bar->PartsList = hpNineGrid->PartsList;
                 bar->TopOffset = 0;
                 bar->BottomOffset = 0;
@@ -102,7 +102,7 @@ public unsafe class ShowShieldOnHPBar: UiAdjustments.SubTweak
                 bar->RightOffset = 7;
                 bar->BlendMode = 0;
                 bar->PartsTypeRenderType = 0;
-                bar->PartID = 2;
+                bar->PartId = 2;
                 bar->AtkResNode.MultiplyRed = 255;
                 bar->AtkResNode.MultiplyGreen = 255;
                 bar->AtkResNode.MultiplyBlue = 0;

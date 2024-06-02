@@ -98,7 +98,7 @@ public unsafe class TrackGachaItems : TooltipTweaks.SubTweak {
     }
     
     public override void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
-        if (Gachas.TryGetValue(Item.ItemID, out var gachaList)) {
+        if (Gachas.TryGetValue(Item.ItemId, out var gachaList)) {
 
             var fullyObtained = IsGachaFullyObtained(gachaList, out var obtainedCount);
             var description = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ItemDescription);

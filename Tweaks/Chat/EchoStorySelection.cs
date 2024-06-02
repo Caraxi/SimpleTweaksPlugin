@@ -83,7 +83,7 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak {
             .AddText(options[selectedItem])
             .Build();
 
-        var playerName = Common.ReadString(PlayerState.Instance()->CharacterName);
+        var playerName = PlayerState.Instance()->CharacterNameString;
             
         var name = new SeStringBuilder()
             .AddUiForeground(TweakConfig.DisplayCharacterName ? playerName : "Story Selection", 62)

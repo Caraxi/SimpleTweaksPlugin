@@ -95,7 +95,7 @@ public unsafe class ComboTimer : UiAdjustments.SubTweak {
         AtkTextNode* textNode = null;
         for (var i = 0; i < paramWidget->UldManager.NodeListCount; i++) {
             if (paramWidget->UldManager.NodeList[i] == null) continue;
-            if (paramWidget->UldManager.NodeList[i]->NodeID == CustomNodes.ComboTimer) {
+            if (paramWidget->UldManager.NodeList[i]->NodeId == CustomNodes.ComboTimer) {
                 textNode = (AtkTextNode*)paramWidget->UldManager.NodeList[i];
                 if (reset) {
                     paramWidget->UldManager.NodeList[i]->ToggleVisibility(false);
@@ -132,7 +132,7 @@ public unsafe class ComboTimer : UiAdjustments.SubTweak {
                 newTextNode->TextFlags = (byte)(TextFlags.Edge);
                 newTextNode->TextFlags2 = 0;
 
-                newTextNode->AtkResNode.NodeID = CustomNodes.ComboTimer;
+                newTextNode->AtkResNode.NodeId = CustomNodes.ComboTimer;
 
                 newTextNode->AtkResNode.Color.A = 0xFF;
                 newTextNode->AtkResNode.Color.R = 0xFF;

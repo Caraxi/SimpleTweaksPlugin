@@ -167,7 +167,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             for (var i = 5; i < gauge->Component->UldManager.NodeListCount; i++) {
                 var node = gauge->Component->UldManager.NodeList[i];
-                if (node->Type == NodeType.Text && node->NodeID == CustomNodes.TargetHP) {
+                if (node->Type == NodeType.Text && node->NodeId == CustomNodes.TargetHP) {
                     textNode = (AtkTextNode*) node;
                     break;
                 }
@@ -177,7 +177,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             
             if (textNode == null) {
                 textNode = UiHelper.CloneNode(cloneTextNode);
-                textNode->AtkResNode.NodeID = CustomNodes.TargetHP;
+                textNode->AtkResNode.NodeId = CustomNodes.TargetHP;
                 var newStrPtr = UiHelper.Alloc(512);
                 textNode->NodeText.StringPtr = (byte*) newStrPtr;
                 textNode->NodeText.BufSize = 512;

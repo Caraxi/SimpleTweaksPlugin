@@ -35,7 +35,7 @@ public unsafe class DataCentreOnTitleScreen : Tweak {
         if (addon == null) return;
         var dc = Service.Data.Excel.GetSheet<WorldDCGroupType>()?.GetRow(AgentLobby.Instance()->DataCenter);
         if (dc == null || dc.RowId == 0) {
-            var world = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->SystemConfig.GetLastWorldID();
+            var world = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->SystemConfig.GetLastWorldId();
             dc = Service.Data.Excel.GetSheet<World>()?.GetRow(world)?.DataCenter?.Value;
         }
         if (dc == null) return;

@@ -74,10 +74,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             #endif
             var character = (Character*)(Service.ClientState.LocalPlayer?.Address ?? nint.Zero);
 
-            foreach (var j in Enumerable.Range(0, Math.Min(loadedUnitsList->Count, loadedUnitsList->EntriesSpan.Length))) {
-                var addon = loadedUnitsList->EntriesSpan[j].Value;
+            foreach (var j in Enumerable.Range(0, Math.Min(loadedUnitsList->Count, loadedUnitsList->Entries.Length))) {
+                var addon = loadedUnitsList->Entries[j].Value;
                 if (addon == null) continue;
-                var name = Marshal.PtrToStringAnsi(new IntPtr(addon->Name));
+                var name = addon->NameString;
                 
                 if (name != null && name.StartsWith("JobHud")) {
                     if (reset || Config.ShowInDuty && InCombatDuty) {

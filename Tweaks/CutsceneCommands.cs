@@ -112,7 +112,7 @@ public class CutsceneCommands : Tweak
 
     private unsafe void OnChatMessage(
         XivChatType type,
-        uint senderid,
+        int timestamp,
         ref SeString sender,
         ref SeString message,
         ref bool isHandled)

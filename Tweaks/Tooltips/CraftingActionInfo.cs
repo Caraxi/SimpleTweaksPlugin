@@ -85,7 +85,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
 
                 newGhostBar->AtkResNode.Type = NodeType.NineGrid;
                 newGhostBar->PartsList = mainBar->PartsList;
-                newGhostBar->PartID = mainBar->PartID;
+                newGhostBar->PartId = mainBar->PartId;
                 newGhostBar->TopOffset = mainBar->TopOffset;
                 newGhostBar->BottomOffset = mainBar->BottomOffset;
                 newGhostBar->LeftOffset = mainBar->LeftOffset;
@@ -93,7 +93,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
                 newGhostBar->BlendMode = mainBar->BlendMode;
                 newGhostBar->PartsTypeRenderType = mainBar->PartsTypeRenderType;
 
-                newGhostBar->AtkResNode.NodeID = CustomNodes.CraftingGhostBar;
+                newGhostBar->AtkResNode.NodeId = CustomNodes.CraftingGhostBar;
                 newGhostBar->AtkResNode.SetPositionShort(0, 2);
                 newGhostBar->AtkResNode.ScaleX = 1;
                 newGhostBar->AtkResNode.ScaleY = 1;
@@ -142,7 +142,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
                 newGhostText->TextFlags = (byte) ((TextFlags)textNode->TextFlags | TextFlags.Edge);
                 newGhostText->TextFlags2 = 0;
 
-                newGhostText->AtkResNode.NodeID = CustomNodes.CraftingGhostText;
+                newGhostText->AtkResNode.NodeId = CustomNodes.CraftingGhostText;
 
                 newGhostText->AtkResNode.Color.A = 0xFF;
                 newGhostText->AtkResNode.Color.R = 0xFF;

@@ -143,7 +143,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     private void* UpdatePositionDetour(AtkUnitBase* unitBase) {
         try {
             if (unitBase->Name[0] == '_') {
-                var name = Common.ReadString(unitBase->Name, 0x20);
+                var name = unitBase->NameString;
                 if (name == "_Money") FreeAllNodes();
             }
         } catch (Exception ex) {
@@ -173,14 +173,14 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     }
 
     private void HandleEvent(AtkEventType eventType, AtkUnitBase* atkUnitBase, AtkResNode* node) {
-        if (tooltipStrings.TryGetValue(node->NodeID, out var tooltipString)) {
+        if (tooltipStrings.TryGetValue(node->NodeId, out var tooltipString)) {
             switch (eventType) {
                 case AtkEventType.MouseOver: {
-                    AtkStage.GetSingleton()->TooltipManager.ShowTooltip(AddonMoney->ID, node, tooltipString);
+                    AtkStage.GetSingleton()->TooltipManager.ShowTooltip(AddonMoney->Id, node, tooltipString);
                     break;
                 }
                 case AtkEventType.MouseOut:
-                    AtkStage.GetSingleton()->TooltipManager.HideTooltip(AddonMoney->ID);
+                    AtkStage.GetSingleton()->TooltipManager.HideTooltip(AddonMoney->Id);
                     break;
             }
         }
@@ -609,7 +609,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     {
         if (UiHelper.IsAddonReady(AddonMoney))
         {
-            AtkStage.GetSingleton()->TooltipManager.HideTooltip(AddonMoney->ID);
+            AtkStage.GetSingleton()->TooltipManager.HideTooltip(AddonMoney->Id);
             foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
             {
                 var iconNode = Common.GetNodeByID<AtkImageNode>(&AddonMoney->UldManager, ImageBaseId + index);
@@ -641,9 +641,9 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         tooltipStrings.Clear();
     }
 
-    private void TryUpdateCounterNode(uint nodeId, int newCount)
+    private void TryUpdateCounterNode(uint NodeId, int newCount)
     {
-        var counterNode = (AtkCounterNode*) Common.GetNodeByID(&AddonMoney->UldManager, nodeId);
+        var counterNode = (AtkCounterNode*) Common.GetNodeByID(&AddonMoney->UldManager, NodeId);
         if (counterNode is not null)
         {
             var numString = newCount.ToString("n0", CultureInfo.InvariantCulture);
@@ -655,12 +655,12 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         }
     }
     
-    private void TryMakeIconNode(uint nodeId, Vector2 position, int icon, bool hqIcon, string? tooltipText = null)
+    private void TryMakeIconNode(uint NodeId, Vector2 position, int icon, bool hqIcon, string? tooltipText = null)
     {
-        var iconNode = Common.GetNodeByID(&AddonMoney->UldManager, nodeId);
+        var iconNode = Common.GetNodeByID(&AddonMoney->UldManager, NodeId);
         if (iconNode is null)
         {
-            MakeIconNode(nodeId, position, icon, hqIcon, tooltipText);
+            MakeIconNode(NodeId, position, icon, hqIcon, tooltipText);
         }
         else
         {
@@ -668,12 +668,12 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         }
     }
 
-    private void TryMakeCounterNode(uint nodeId, Vector2 position, AtkUldPartsList* partsList)
+    private void TryMakeCounterNode(uint NodeId, Vector2 position, AtkUldPartsList* partsList)
     {
-        var counterNode = Common.GetNodeByID(&AddonMoney->UldManager, nodeId);
+        var counterNode = Common.GetNodeByID(&AddonMoney->UldManager, NodeId);
         if (counterNode is null)
         {
-            MakeCounterNode(nodeId, position, partsList);
+            MakeCounterNode(NodeId, position, partsList);
         }
         else
         {
@@ -681,9 +681,9 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         }
     }
     
-    private void MakeIconNode(uint nodeId, Vector2 position, int icon, bool hqIcon, string? tooltipText = null)
+    private void MakeIconNode(uint NodeId, Vector2 position, int icon, bool hqIcon, string? tooltipText = null)
     {
-        var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(0, 0, 36, 36));
+        var imageNode = UiHelper.MakeImageNode(NodeId, new UiHelper.PartInfo(0, 0, 36, 36));
         imageNode->AtkResNode.NodeFlags = NodeFlags.AnchorTop | NodeFlags.AnchorLeft | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents;
         imageNode->WrapMode = 1;
         imageNode->Flags = (byte) ImageNodeFlags.AutoFit;
@@ -702,15 +702,15 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
             AddonMoney->UpdateCollisionNodeList(false);
             simpleEvent?.Add(AddonMoney, &imageNode->AtkResNode, AtkEventType.MouseOver);
             simpleEvent?.Add(AddonMoney, &imageNode->AtkResNode, AtkEventType.MouseOut);
-            tooltipStrings.TryAdd(nodeId, tooltipText);
+            tooltipStrings.TryAdd(NodeId, tooltipText);
         }
     }
 
-    private void MakeCounterNode(uint nodeId, Vector2 position, AtkUldPartsList* partsList)
+    private void MakeCounterNode(uint NodeId, Vector2 position, AtkUldPartsList* partsList)
     {
         var counterNode = IMemorySpace.GetUISpace()->Create<AtkCounterNode>();
         counterNode->AtkResNode.Type = NodeType.Counter;
-        counterNode->AtkResNode.NodeID = nodeId;
+        counterNode->AtkResNode.NodeId = NodeId;
         counterNode->AtkResNode.NodeFlags = NodeFlags.AnchorTop | NodeFlags.AnchorLeft | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents;
         counterNode->AtkResNode.DrawFlags = 0;
         counterNode->NumberWidth = 10;

@@ -122,7 +122,7 @@ public class TryOnCorrectItem : Tweak {
         if (addonId is 0 or > ushort.MaxValue) return Config.Default;
         var addon = AtkStage.GetSingleton()->RaptureAtkUnitManager->GetAddonById((ushort)addonId);
         if (addon == null) return Config.Default;
-        var addonName = MemoryHelper.ReadString(new IntPtr(addon->Name), 0x20);
+        var addonName = addon->NameString;
         if (string.IsNullOrEmpty(addonName)) return Config.Default;
         SimpleLog.Log($"Try on from : {addonName}");
         if (Config.WindowSettings.ContainsKey(addonName)) return Config.WindowSettings[addonName];

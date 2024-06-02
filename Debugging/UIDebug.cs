@@ -14,7 +14,6 @@ using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
 using ImGuiScene;
 using SimpleTweaksPlugin.Utility;
@@ -132,8 +131,8 @@ public unsafe class UIDebug : DebugHelper {
         
         for (var i = 0; i < UnitListCount; i++) {
             var unitManager = &unitManagers[i];
-            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->EntriesSpan.Length))) {
-                var unitBase = unitManager->EntriesSpan[j].Value;
+            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->Entries.Length))) {
+                var unitBase = unitManager->Entries[j].Value;
                 if ((ulong)unitBase == address || FindByAddress(unitBase, address)) {
                     selectedUnitBase = unitBase;
                     Plugin.PluginConfig.Debugging.SelectedAtkUnitBase = address;
@@ -297,7 +296,7 @@ public unsafe class UIDebug : DebugHelper {
         var i = 0;
             
         foreach (var a in windows) {
-            var name = Marshal.PtrToStringAnsi(new IntPtr(a.UnitBase->Name));
+            var name = a.UnitBase->NameString;
             ImGui.Text($"[Addon] {name}");
             ImGui.Indent(15);
             foreach (var n in a.Nodes) {
@@ -353,8 +352,8 @@ public unsafe class UIDebug : DebugHelper {
         var unitManagers = &stage->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
         for (var i = 0; i < UnitListCount; i++) {
             var unitManager = &unitManagers[i];
-            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->EntriesSpan.Length))) {
-                var unitBase = unitManager->EntriesSpan[j].Value;
+            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->Entries.Length))) {
+                var unitBase = unitManager->Entries[j].Value;
                 if (unitBase == null || unitBase->RootNode == null) continue;
                 if (!(unitBase->IsVisible && unitBase->RootNode->IsVisible)) continue;
                 var addonResult = new AddonResult() {UnitBase = unitBase};
@@ -423,7 +422,7 @@ public unsafe class UIDebug : DebugHelper {
     public static void DrawUnitBase(AtkUnitBase* atkUnitBase) {
 
         var isVisible = (atkUnitBase->Flags & 0x20) == 0x20;
-        var addonName = Marshal.PtrToStringAnsi(new IntPtr(atkUnitBase->Name));
+        var addonName = atkUnitBase->NameString;
             
         ImGui.Text($"{addonName}");
         ImGui.SameLine();
@@ -674,7 +673,7 @@ public unsafe class UIDebug : DebugHelper {
 
     private static Dictionary<uint, string> customNodeIds;
 
-    private static string NodeID(uint id, bool includeHashOnNoMatch = true) {
+    private static string NodeId(uint id, bool includeHashOnNoMatch = true) {
         if (customNodeIds == null) {
             customNodeIds = new Dictionary<uint, string>();
             foreach (var f in typeof(CustomNodes).GetFields(BindingFlags.Static | BindingFlags.Public)) {
@@ -707,7 +706,7 @@ public unsafe class UIDebug : DebugHelper {
             ImGui.SetNextItemOpen(elementSelectorFind.Contains((ulong) node), ImGuiCond.Always);
         }
         if (textOnly) ImGui.SetNextItemOpen(false, ImGuiCond.Always);
-        if (ImGui.TreeNode($"{treePrefix} [{NodeID(node->NodeID)}] {node->Type} Node (ptr = {(long)node:X})###{(long)node}"))
+        if (ImGui.TreeNode($"{treePrefix} [{NodeId(node->NodeId)}] {node->Type} Node (ptr = {(long)node:X})###{(long)node}"))
         {
             if (ImGui.IsItemHovered()) DrawOutline(node);
             if (isVisible && !textOnly)
@@ -946,7 +945,7 @@ public unsafe class UIDebug : DebugHelper {
             ImGui.SetNextItemOpen(elementSelectorFind.Contains((ulong) node), ImGuiCond.Always);
         }
         if (textOnly) ImGui.SetNextItemOpen(false, ImGuiCond.Always);
-        if (ImGui.TreeNode($"{treePrefix} [{NodeID(node->NodeID)}] {objectInfo->ComponentType} Component Node (ptr = {(long)node:X}, component ptr = {(long)compNode->Component:X}) child count = {childCount}  ###{(long)node}"))
+        if (ImGui.TreeNode($"{treePrefix} [{NodeId(node->NodeId)}] {objectInfo->ComponentType} Component Node (ptr = {(long)node:X}, component ptr = {(long)compNode->Component:X}) child count = {childCount}  ###{(long)node}"))
         {
             if (ImGui.IsItemHovered()) DrawOutline(node);
             if (isVisible && !textOnly)
@@ -1042,11 +1041,11 @@ public unsafe class UIDebug : DebugHelper {
                     var textInputComponent = (AtkComponentTextInput*)compNode->Component;
                     ImGui.Text($"InputBase Text1: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->AtkComponentInputBase.UnkText1.StringPtr))}");
                     ImGui.Text($"InputBase Text2: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->AtkComponentInputBase.UnkText2.StringPtr))}");
-                    ImGui.Text($"Text1: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText1.StringPtr))}");
-                    ImGui.Text($"Text2: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText2.StringPtr))}");
-                    ImGui.Text($"Text3: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText3.StringPtr))}");
-                    ImGui.Text($"Text4: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText4.StringPtr))}");
-                    ImGui.Text($"Text5: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText5.StringPtr))}");
+                    ImGui.Text($"Text1: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText01.StringPtr))}");
+                    ImGui.Text($"Text2: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText02.StringPtr))}");
+                    ImGui.Text($"Text3: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText03.StringPtr))}");
+                    ImGui.Text($"Text4: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText04.StringPtr))}");
+                    ImGui.Text($"Text5: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText05.StringPtr))}");
                     break;
                 case ComponentType.List:
                 case ComponentType.TreeList:
@@ -1081,7 +1080,7 @@ public unsafe class UIDebug : DebugHelper {
         
     private static void PrintResNode(AtkResNode* node)
     {
-        ImGui.Text($"NodeID: {NodeID(node->NodeID, false)}   Type: {node->Type}");
+        ImGui.Text($"NodeId: {NodeId(node->NodeId, false)}   Type: {node->Type}");
         ImGui.SameLine();
         if (ImGui.SmallButton($"T:Visible##{(ulong)node:X}")) {
             node->NodeFlags ^= NodeFlags.Visible;
@@ -1224,13 +1223,14 @@ public unsafe class UIDebug : DebugHelper {
             ImGui.Text(
                 $"Start: {anim->StartFrameIdx} " +
                 $"End: {anim->EndFrameIdx}");
-            var props = new Span<AtkTimelineKeyGroup>(Unsafe.AsPointer(ref anim->KeyGroups[0]), 8);
-            var k = 0;
-            foreach (var prop in props)
-            {
-                DrawAtkTimelineKeyGroup(FormatTimelineKeyGroupId(node->Type, k), node, &prop);
-                k++;
-            }
+            // todo: uncomment when KeyGroups is restored in ClientStructs
+            // var props = new Span<AtkTimelineKeyGroup>(Unsafe.AsPointer(ref anim->KeyGroups[0]), 8);
+            // var k = 0;
+            // foreach (var prop in props)
+            // {
+            //     DrawAtkTimelineKeyGroup(FormatTimelineKeyGroupId(node->Type, k), node, &prop);
+            //     k++;
+            // }
             ImGui.TreePop();
         }
     }
@@ -1345,14 +1345,14 @@ public unsafe class UIDebug : DebugHelper {
                 headerDrawn = true;
                 noResults = false;
             }
-            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->EntriesSpan.Length))) {
-                var unitBase = unitManager->EntriesSpan[j].Value;
+            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->Entries.Length))) {
+                var unitBase = unitManager->Entries[j].Value;
                 if (unitBase == null) continue;
                 if (selectedUnitBase != null && unitBase == selectedUnitBase) {
                     selectedInList[i] = true;
                     foundSelected = true;
                 }
-                var name = Marshal.PtrToStringAnsi(new IntPtr(unitBase->Name));
+                var name = unitBase->NameString;
                 if (searching) {
                     if (name == null || !name.ToLower().Contains(searchStr.ToLower())) continue;
                 }
@@ -1383,8 +1383,8 @@ public unsafe class UIDebug : DebugHelper {
             }
                 
             if (selectedInList[i] == false && selectedUnitBase != null) {
-                foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->EntriesSpan.Length))) {
-                    var unitBase = unitManager->EntriesSpan[j].Value;
+                foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->Entries.Length))) {
+                    var unitBase = unitManager->Entries[j].Value;
                     if (selectedUnitBase == null || unitBase != selectedUnitBase) continue;
                     selectedInList[i] = true;
                     foundSelected = true;

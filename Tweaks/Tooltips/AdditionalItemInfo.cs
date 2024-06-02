@@ -55,11 +55,11 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         for (var gs = 0; gs < 101; gs++) {
             var gearSet = gearSetModule->GetGearset(gs);
             if (gearSet == null) continue;
-            if (gearSet->ID != gs) break;
+            if (gearSet->Id != gs) break;
             if (!gearSet->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists)) continue;
-            foreach (var item in gearSet->ItemsSpan) {
-                if (item.ItemID == itemId) {
-                    var name = Marshal.PtrToStringUTF8(new IntPtr(gearSet->Name));
+            foreach (var item in gearSet->Items) {
+                if (item.ItemId == itemId) {
+                    var name = gearSet->NameString;
                     l.Add((gs, name));
                     break;
                 }
@@ -239,7 +239,7 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
             textNode = IMemorySpace.GetUISpace()->Create<AtkTextNode>();
             if (textNode == null) return;
             textNode->AtkResNode.Type = NodeType.Text;
-            textNode->AtkResNode.NodeID = CustomNodes.AdditionalInfo;
+            textNode->AtkResNode.NodeId = CustomNodes.AdditionalInfo;
             
             
             textNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorTop;

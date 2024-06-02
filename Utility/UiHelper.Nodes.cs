@@ -219,7 +219,7 @@ public static unsafe partial class UiHelper
         if (textNode is not null)
         {
             textNode->AtkResNode.Type = NodeType.Text;
-            textNode->AtkResNode.NodeID = id;
+            textNode->AtkResNode.NodeId = id;
             return true;
         }
 
@@ -233,7 +233,7 @@ public static unsafe partial class UiHelper
         if (imageNode is not null)
         {
             imageNode->AtkResNode.Type = NodeType.Image;
-            imageNode->AtkResNode.NodeID = id;
+            imageNode->AtkResNode.NodeId = id;
             imageNode->AtkResNode.NodeFlags = resNodeFlags;
             imageNode->AtkResNode.DrawFlags = resNodeDrawFlags;
             imageNode->WrapMode = wrapMode;

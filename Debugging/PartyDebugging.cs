@@ -30,19 +30,19 @@ public unsafe class PartyDebugging : DebugHelper {
                 
             ImGui.Text($"Party Member Count: {groupManager->MemberCount}");
 
-            var partyMembers = (PartyMember*) groupManager->PartyMembers;
+            var partyMembers = groupManager->PartyMembers;
 
             for (var i = 0; i < 8 && i < groupManager->MemberCount; i++) {
                 var partyMember = partyMembers[i];
                 var name = Marshal.PtrToStringAnsi(new IntPtr(partyMember.Name));
-                ImGui.Text($"[{(ulong)&partyMember:X}] Lv {partyMember.Level}, {partyMember.ObjectID:X}, {name}");
+                ImGui.Text($"[{(ulong)&partyMember:X}] Lv {partyMember.Level}, {partyMember.ObjectId:X}, {name}");
 
                 PlayerCharacter chara = null;
 
                 for (var a = 0; a < Service.Objects.Length; a += 2) {
                     var actor = Service.Objects[a];
                     if (actor == null) continue;
-                    if ((uint)actor.ObjectId == partyMember.ObjectID && actor is PlayerCharacter pc) {
+                    if ((uint)actor.ObjectId == partyMember.ObjectId && actor is PlayerCharacter pc) {
                         chara = pc;
                     }
                 }

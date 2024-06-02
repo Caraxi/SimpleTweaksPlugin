@@ -222,17 +222,17 @@ public unsafe class NoSellList : Tweak {
             if (container != null) {
                 var slot = container->GetInventorySlot(slotIndex);
                 if (slot != null) {
-                    if (Config.NoSellList.Any(i => i == slot->ItemID)) {
-                        var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(slot->ItemID);
+                    if (Config.NoSellList.Any(i => i == slot->ItemId)) {
+                        var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(slot->ItemId);
                         if (!string.IsNullOrEmpty(item?.Name?.RawString)) {
                             Service.Toasts.ShowError($"{item.Name.RawString} is locked by {Name} in {Plugin.Name}.");
                             return;
                         }
                     }
 
-                    var customListMatch = Config.CustomLists.FirstOrDefault(t => t.Enabled && t.NoSellList.Any(i => i == slot->ItemID));
+                    var customListMatch = Config.CustomLists.FirstOrDefault(t => t.Enabled && t.NoSellList.Any(i => i == slot->ItemId));
                     if (customListMatch != null) {
-                        var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(slot->ItemID);
+                        var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(slot->ItemId);
                         if (!string.IsNullOrEmpty(item?.Name?.RawString)) {
                             Service.Toasts.ShowError(new SeString(
                                     new TextPayload(item.Name.ToDalamudString().TextValue),

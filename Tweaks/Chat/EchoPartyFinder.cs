@@ -40,7 +40,7 @@ public unsafe class EchoPartyFinder : ChatTweaks.SubTweak {
     private uint? targetTerritoryId;
 
     public override void Setup() {
-        onLookingForGroupEventHook ??= Common.Hook(AgentModule.Instance()->GetAgentByInternalId(AgentId.LookingForGroup)->VTable->ReceiveEvent, new ReceiveEventDelegate(OnLookingForGroupReceiveEvent));
+        onLookingForGroupEventHook ??= Common.Hook(AgentModule.Instance()->GetAgentByInternalId(AgentId.LookingForGroup)->VirtualTable->ReceiveEvent, new ReceiveEventDelegate(OnLookingForGroupReceiveEvent));
     }
     
     [TerritoryChanged]

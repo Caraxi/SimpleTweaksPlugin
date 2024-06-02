@@ -485,7 +485,7 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
         return false;
     }
 
-    private void HandleChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
+    private void HandleChatMessage(XivChatType type, int senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
         if (Config.ChannelConfigs.TryGetValue(type, out var channelConfig) && channelConfig != null) {
             if (chatTypes.Contains(type)) {
                 if (channelConfig.Sender) Parse(ref sender);

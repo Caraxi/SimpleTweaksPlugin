@@ -36,13 +36,13 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         private SimpleEvent eventManager;
 
         private void HideTooltip(AtkUnitBase* unitBase) {
-            AtkStage.GetSingleton()->TooltipManager.HideTooltip(unitBase->ID);
+            AtkStage.GetSingleton()->TooltipManager.HideTooltip(unitBase->Id);
         }
 
         private void ShowTooltip(AtkUnitBase* unitBase, AtkResNode* node) {
             var tooltipId = GetTooltip();
             var tooltip = Service.Data.GetExcelSheet<Addon>()?.GetRow(tooltipId)?.Text.ToDalamudString()?.TextValue ?? $"{Setting}";
-            AtkStage.GetSingleton()->TooltipManager.ShowTooltip(unitBase->ID, node, tooltip);
+            AtkStage.GetSingleton()->TooltipManager.ShowTooltip(unitBase->Id, node, tooltip);
         }
 
         public SimpleEvent Event {
@@ -130,7 +130,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         container->SetHeight(defaultContainer->GetHeight());
         container->SetPositionFloat(defaultContainer->GetX(), defaultContainer->GetY());
         container->SetScale(1, 1);
-        container->NodeID = CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Container");
+        container->NodeId = CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Container");
         container->Type = NodeType.Res;
         container->ToggleVisibility(true);
         UiHelper.LinkNodeAfterTargetNode(container, unitBase, defaultContainer);
@@ -187,8 +187,8 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         frameworkTicksSinceUpdate = 0;
         for (var i = 0; i < dutyFinderSettingIcons.Count; i++) {
             var settingDetail = dutyFinderSettingIcons[i];
-            var nodeId = CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Icon_{settingDetail.Setting}");
-            var imgNode = Common.GetNodeByID<AtkImageNode>(&unitBase->UldManager, nodeId, NodeType.Image);
+            var NodeId = CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Icon_{settingDetail.Setting}");
+            var imgNode = Common.GetNodeByID<AtkImageNode>(&unitBase->UldManager, NodeId, NodeType.Image);
             if (imgNode == null) continue;
             
             var icon = settingDetail.GetIcon();

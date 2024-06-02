@@ -62,7 +62,7 @@ public unsafe class EstateListCommand : CommandTweak {
                 return;
             }
 
-            var name = MemoryHelper.ReadString(new nint(f->Name), 32);
+            var name = f->NameString;
             if (name.StartsWith(arguments, StringComparison.InvariantCultureIgnoreCase)) {
                 this.showEstateTeleportation(agent, (ulong)f->ContentId);
                 return;

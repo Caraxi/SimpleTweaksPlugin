@@ -111,7 +111,7 @@ public unsafe class LockWindowPosition : UiAdjustments.SubTweak {
 
     private void* MoveAddonDetour(RaptureAtkModule* atkModule, AtkUnitBase* addon, void* idk) {
         try {
-            var name = Common.ReadString(addon->Name, 0x20);
+            var name = addon->NameString;
             return Config.LockedWindows.Contains(name) ? null : moveAddonHook.Original(atkModule, addon, idk);
         } catch (Exception ex) {
             Plugin.Error(this, ex);

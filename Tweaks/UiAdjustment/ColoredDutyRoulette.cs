@@ -14,6 +14,7 @@ using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
+using InstanceContent = FFXIVClientStructs.FFXIV.Client.Game.UI.InstanceContent;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
@@ -108,7 +109,7 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak {
                 continue;
             }
 
-            switch (RouletteController.Instance()->IsRouletteComplete((byte) rouletteId)) {
+            switch (InstanceContent.Instance()->IsRouletteComplete((byte) rouletteId)) {
                 case true when TweakConfig.ColorCompleteRoulette && TweakConfig.EnabledRoulettes.Contains(rouletteId):
                     SetNodeColor(textNode, TweakConfig.CompleteColor);
                     break;

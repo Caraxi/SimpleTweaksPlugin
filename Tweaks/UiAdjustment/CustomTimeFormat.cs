@@ -286,7 +286,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private unsafe void OnFrameworkUpdate() {
             try {
                 if (textNodePtr != null) {
-                    if (textNodePtr->AtkResNode.AtkEventTarget.vtbl == textNodeVtablePtr) {
+                    if (textNodePtr->AtkResNode.VirtualTable == textNodeVtablePtr) {
                         UpdateTimeString(textNodePtr->NodeText);
                     } else {
                         SimpleLog.Verbose("Lost Text Node");
@@ -301,7 +301,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 textNodePtr = (AtkTextNode*) UiAdjustments.GetResNodeByPath(serverInfo->RootNode, Child, Previous, Child);
                 if (textNodePtr == null) return;
                 SimpleLog.Verbose($"Found Text Node: {(ulong) textNodePtr:X}");
-                textNodeVtablePtr = textNodePtr->AtkResNode.AtkEventTarget.vtbl;
+                textNodeVtablePtr = textNodePtr->AtkResNode.VirtualTable;
             } catch (Exception ex) {
                 SimpleLog.Error(ex);
             }

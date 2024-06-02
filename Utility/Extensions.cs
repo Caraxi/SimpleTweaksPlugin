@@ -171,8 +171,8 @@ public static class Extensions {
             ValueType.Bool => $"{v.Byte != 0}",
             ValueType.Float => $"{v.Float}",
             ValueType.Vector => "[Vector]",
-            ValueType.AllocatedString => Marshal.PtrToStringUTF8(new IntPtr(v.String))?.TrimEnd('\0') ?? string.Empty,
-            ValueType.AllocatedVector => "[Allocated Vector]",
+            ValueType.ManagedString => Marshal.PtrToStringUTF8(new IntPtr(v.String))?.TrimEnd('\0') ?? string.Empty,
+            ValueType.ManagedVector => "[Allocated Vector]",
             _ => $"Unknown Type: {v.Type}"
         };
     }

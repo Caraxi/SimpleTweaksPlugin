@@ -241,23 +241,17 @@ public unsafe class Common {
         }
     }
 
-    [StructLayout(LayoutKind.Explicit, Size = 64)]
-    public struct EventObject {
-        [FieldOffset(0)] public ulong Unknown0;
-        [FieldOffset(8)] public ulong Unknown8;
-    }
-
-    public static EventObject* SendEvent(AgentId agentId, ulong eventKind, params object[] eventparams) {
+    public static AtkValue* SendEvent(AgentId agentId, ulong eventKind, params object[] eventparams) {
         var agent = AgentModule.Instance()->GetAgentByInternalId(agentId);
         return agent == null ? null : SendEvent(agent, eventKind, eventparams);
     }
 
-    public static EventObject* SendEvent(AgentInterface* agentInterface, ulong eventKind, params object[] eventParams) {
-        var eventObject = stackalloc EventObject[1];
+    public static AtkValue* SendEvent(AgentInterface* agentInterface, ulong eventKind, params object[] eventParams) {
+        var eventObject = stackalloc AtkValue[1];
         return SendEvent(agentInterface, eventObject, eventKind, eventParams);
     }
     
-    public static EventObject* SendEvent(AgentInterface* agentInterface, EventObject* eventObject, ulong eventKind, params object[] eventParams) {
+    public static AtkValue* SendEvent(AgentInterface* agentInterface, AtkValue* eventObject, ulong eventKind, params object[] eventParams) {
         var atkValues = CreateAtkValueArray(eventParams);
         if (atkValues == null) return eventObject;
         try {
@@ -288,14 +282,14 @@ public unsafe class Common {
         return new Vector3(fr / 255f, fg / 255f, fb / 255f);
     }
 
-    public static AtkResNode* GetNodeByID(AtkUnitBase* unitBase, uint nodeId, NodeType? type = null) => GetNodeByID(&unitBase->UldManager, nodeId, type);
-    public static AtkResNode* GetNodeByID(AtkComponentBase* component, uint nodeId, NodeType? type = null) => GetNodeByID(&component->UldManager, nodeId, type);
-    public static AtkResNode* GetNodeByID(AtkUldManager* uldManager, uint nodeId, NodeType? type = null) => GetNodeByID<AtkResNode>(uldManager, nodeId, type);
-    public static T* GetNodeByID<T>(AtkUldManager* uldManager, uint nodeId, NodeType? type = null) where T : unmanaged {
+    public static AtkResNode* GetNodeByID(AtkUnitBase* unitBase, uint NodeId, NodeType? type = null) => GetNodeByID(&unitBase->UldManager, NodeId, type);
+    public static AtkResNode* GetNodeByID(AtkComponentBase* component, uint NodeId, NodeType? type = null) => GetNodeByID(&component->UldManager, NodeId, type);
+    public static AtkResNode* GetNodeByID(AtkUldManager* uldManager, uint NodeId, NodeType? type = null) => GetNodeByID<AtkResNode>(uldManager, NodeId, type);
+    public static T* GetNodeByID<T>(AtkUldManager* uldManager, uint NodeId, NodeType? type = null) where T : unmanaged {
         if (uldManager->NodeList == null) return null;
         for (var i = 0; i < uldManager->NodeListCount; i++) {
             var n = uldManager->NodeList[i];
-            if (n == null || n->NodeID != nodeId || type != null && n->Type != type.Value) continue;
+            if (n == null || n->NodeId != NodeId || type != null && n->Type != type.Value) continue;
             return (T*)n;
         }
         return null;
@@ -317,9 +311,9 @@ public unsafe class Common {
         var unitManagers = &AtkStage.GetSingleton()->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
         for (var i = 0; i < UnitListCount; i++) {
             var unitManager = &unitManagers[i];
-            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->EntriesSpan.Length))) {
-                var unitBase = unitManager->EntriesSpan[j].Value;
-                if (unitBase != null && unitBase->ID == id) {
+            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->Entries.Length))) {
+                var unitBase = unitManager->Entries[j].Value;
+                if (unitBase != null && unitBase->Id == id) {
                     return unitBase;
                 }
             }

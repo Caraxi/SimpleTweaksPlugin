@@ -119,13 +119,13 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
         }
     }
 
-    private void ToggleImageNodeVisibility(bool visible, AtkUldManager* uldManager, uint nodeId) {
-        var imageNode = GetImageNode(uldManager, nodeId);
+    private void ToggleImageNodeVisibility(bool visible, AtkUldManager* uldManager, uint NodeId) {
+        var imageNode = GetImageNode(uldManager, NodeId);
         if (imageNode == null) return;
         imageNode->AtkResNode.ToggleVisibility(visible);
     }
 
-    private AtkImageNode* GetImageNode(AtkUldManager* uldManager, uint nodeId) => Common.GetNodeByID<AtkImageNode>(uldManager, nodeId);
+    private AtkImageNode* GetImageNode(AtkUldManager* uldManager, uint NodeId) => Common.GetNodeByID<AtkImageNode>(uldManager, NodeId);
 
     private void AdjustTextColorsAndFontSize(AtkTextNode* textNode, Vector4 textColor, Vector4 edgeColor, int fontSize) {
         textNode->TextColor.A = (byte)(textColor.W * 255);
@@ -257,10 +257,10 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
         TryFreeImageNode(addonTargetInfoCastBar, splitTargetTextNodeId);
     }
 
-    private void TryFreeImageNode(AtkUnitBase* addon, uint nodeId) {
+    private void TryFreeImageNode(AtkUnitBase* addon, uint NodeId) {
         if (addon == null) return;
 
-        var imageNode = Common.GetNodeByID<AtkTextNode>(&addon->UldManager, nodeId);
+        var imageNode = Common.GetNodeByID<AtkTextNode>(&addon->UldManager, NodeId);
         if (imageNode is not null) {
             UiHelper.UnlinkAndFreeTextNode(imageNode, addon);
         }

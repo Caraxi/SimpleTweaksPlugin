@@ -40,8 +40,8 @@ public unsafe class FriendListDebugging : DebugHelper {
                 if (friend == null) continue;
                 
                 ImGui.TableNextRow();
-                
-                var name = MemoryHelper.ReadString(new nint(friend->Name), 32);
+
+                var name = friend->NameString;
                 ImGui.TableNextColumn();
                 ImGui.Text(name);
                 ImGui.TableNextColumn();
@@ -65,27 +65,27 @@ public unsafe class FriendListDebugging : DebugHelper {
                 }
                 
                 ImGui.TableNextColumn();
-                var fcTag = MemoryHelper.ReadString(new nint(friend->FCTag), 6);
+                var fcTag = friend->FCTagString;
                 ImGui.Text($"{friend->GrandCompany} {fcTag}");
 
                 ImGui.TableNextColumn();
                 
                 ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(1));
                 var dl = ImGui.GetWindowDrawList();
-                ImGui.TextColored(friend->Languages.HasFlag(LanguageMask.JP) ? ImGuiColors.DalamudWhite : ImGuiColors.DalamudGrey3, "J");
-                if (friend->ClientLanguage == Language.JP) dl.AddLine(new Vector2(ImGui.GetItemRectMin().X, ImGui.GetItemRectMax().Y + 1), ImGui.GetItemRectMax() + new Vector2(0, 1), 0xFFFFFFFF, 2);
+                ImGui.TextColored(friend->Languages.HasFlag(LanguageMask.Jp) ? ImGuiColors.DalamudWhite : ImGuiColors.DalamudGrey3, "J");
+                if (friend->ClientLanguage == Language.Jp) dl.AddLine(new Vector2(ImGui.GetItemRectMin().X, ImGui.GetItemRectMax().Y + 1), ImGui.GetItemRectMax() + new Vector2(0, 1), 0xFFFFFFFF, 2);
                 
                 ImGui.SameLine();
-                ImGui.TextColored(friend->Languages.HasFlag(LanguageMask.EN) ? ImGuiColors.DalamudWhite : ImGuiColors.DalamudGrey3, "E");
-                if (friend->ClientLanguage == Language.EN) dl.AddLine(new Vector2(ImGui.GetItemRectMin().X, ImGui.GetItemRectMax().Y + 1), ImGui.GetItemRectMax() + new Vector2(0, 1), 0xFFFFFFFF, 2);
+                ImGui.TextColored(friend->Languages.HasFlag(LanguageMask.En) ? ImGuiColors.DalamudWhite : ImGuiColors.DalamudGrey3, "E");
+                if (friend->ClientLanguage == Language.En) dl.AddLine(new Vector2(ImGui.GetItemRectMin().X, ImGui.GetItemRectMax().Y + 1), ImGui.GetItemRectMax() + new Vector2(0, 1), 0xFFFFFFFF, 2);
 
                 ImGui.SameLine();
-                ImGui.TextColored(friend->Languages.HasFlag(LanguageMask.DE) ? ImGuiColors.DalamudWhite : ImGuiColors.DalamudGrey3, "D");
-                if (friend->ClientLanguage == Language.DE) dl.AddLine(new Vector2(ImGui.GetItemRectMin().X, ImGui.GetItemRectMax().Y + 1), ImGui.GetItemRectMax() + new Vector2(0, 1), 0xFFFFFFFF, 2);
+                ImGui.TextColored(friend->Languages.HasFlag(LanguageMask.De) ? ImGuiColors.DalamudWhite : ImGuiColors.DalamudGrey3, "D");
+                if (friend->ClientLanguage == Language.De) dl.AddLine(new Vector2(ImGui.GetItemRectMin().X, ImGui.GetItemRectMax().Y + 1), ImGui.GetItemRectMax() + new Vector2(0, 1), 0xFFFFFFFF, 2);
 
                 ImGui.SameLine();
-                ImGui.TextColored(friend->Languages.HasFlag(LanguageMask.FR) ? ImGuiColors.DalamudWhite : ImGuiColors.DalamudGrey3, "F");
-                if (friend->ClientLanguage == Language.FR) dl.AddLine(new Vector2(ImGui.GetItemRectMin().X, ImGui.GetItemRectMax().Y + 1), ImGui.GetItemRectMax() + new Vector2(0, 1), 0xFFFFFFFF, 2);
+                ImGui.TextColored(friend->Languages.HasFlag(LanguageMask.Fr) ? ImGuiColors.DalamudWhite : ImGuiColors.DalamudGrey3, "F");
+                if (friend->ClientLanguage == Language.Fr) dl.AddLine(new Vector2(ImGui.GetItemRectMin().X, ImGui.GetItemRectMax().Y + 1), ImGui.GetItemRectMax() + new Vector2(0, 1), 0xFFFFFFFF, 2);
                 ImGui.PopStyleVar();
                 
                 ImGui.TableNextColumn();

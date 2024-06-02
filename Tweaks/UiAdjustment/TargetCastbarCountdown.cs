@@ -165,8 +165,8 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         }
     }
     
-    private void MakeTextNode(AtkUnitBase* parent, uint nodeId) {
-        var textNode = UiHelper.MakeTextNode(nodeId);
+    private void MakeTextNode(AtkUnitBase* parent, uint NodeId) {
+        var textNode = UiHelper.MakeTextNode(NodeId);
         
         textNode->AtkResNode.NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.AnchorTop | NodeFlags.AnchorLeft;
         textNode->AtkResNode.DrawFlags = 2;
@@ -196,10 +196,10 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         TryFreeTextNode(addonFocusTargetInfo, CastBarTextNodeId);
     }
 
-    private void TryFreeTextNode(AtkUnitBase* addon, uint nodeId) {
+    private void TryFreeTextNode(AtkUnitBase* addon, uint NodeId) {
         if (addon == null) return;
 
-        var textNode = Common.GetNodeByID<AtkTextNode>(&addon->UldManager, nodeId);
+        var textNode = Common.GetNodeByID<AtkTextNode>(&addon->UldManager, NodeId);
         if (textNode is not null) {
             UiHelper.UnlinkAndFreeTextNode(textNode, addon);
         }

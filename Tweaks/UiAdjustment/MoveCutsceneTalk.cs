@@ -70,7 +70,7 @@ public unsafe class MoveCutsceneTalk : Tweak {
             }
         );
         
-        SimpleLog.Verbose($"Update {Common.ReadString(addon->Name)} Position: [{addon->X}, {addon->Y}] -> [{(short)position.X}, {(short)position.Y}]");
+        SimpleLog.Verbose($"Update {addon->NameString} Position: [{addon->X}, {addon->Y}] -> [{(short)position.X}, {(short)position.Y}]");
         addon->SetPosition((short)position.X, (short)position.Y);
     }
 

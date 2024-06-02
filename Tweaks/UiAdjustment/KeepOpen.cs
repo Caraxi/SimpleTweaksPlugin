@@ -69,7 +69,7 @@ public unsafe class KeepOpen : Tweak {
         var doReopen = false;
         try {
             if (atkUnitBase != null && a2 == 1 && a3 == 0 && a4 == 2) {
-                var name = Common.ReadString(atkUnitBase->Name, 0x20);
+                var name = atkUnitBase->NameString;
 
                 if (Windows.TryGetValue(name, out var windowInfo)) {
                     if (Config.EnabledWindows.Contains(name)) {

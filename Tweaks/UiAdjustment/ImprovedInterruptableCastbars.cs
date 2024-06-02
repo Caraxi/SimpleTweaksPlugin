@@ -122,8 +122,8 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
         }
     }
     
-    private void MakeImageNode(AtkUnitBase* parent, uint nodeId, int icon, AtkResNode* positioningNode) {
-        var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(0, 0, 36, 36));
+    private void MakeImageNode(AtkUnitBase* parent, uint NodeId, int icon, AtkResNode* positioningNode) {
+        var imageNode = UiHelper.MakeImageNode(NodeId, new UiHelper.PartInfo(0, 0, 36, 36));
         imageNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorTop | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents;
         imageNode->WrapMode = 1;
         imageNode->Flags = (byte) ImageNodeFlags.AutoFit;
@@ -161,10 +161,10 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
         TryFreeImageNode(addonFocusTargetInfo, HeadGrazeImageNodeId);
     }
     
-    private void TryFreeImageNode(AtkUnitBase* addon, uint nodeId) {
+    private void TryFreeImageNode(AtkUnitBase* addon, uint NodeId) {
         if (!UiHelper.IsAddonReady(addon)) return;
         
-        var imageNode = Common.GetNodeByID<AtkImageNode>(&addon->UldManager, nodeId);
+        var imageNode = Common.GetNodeByID<AtkImageNode>(&addon->UldManager, NodeId);
         if (imageNode is not null) {
             UiHelper.UnlinkAndFreeImageNode(imageNode, addon);
         }

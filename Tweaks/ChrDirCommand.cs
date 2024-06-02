@@ -30,7 +30,7 @@ public class ChrDirCommand : CommandTweak {
     }
 
     protected override unsafe void OnCommand(string arguments) {
-        var saveDir = Path.Combine(Framework.Instance()->UserPath, $"FFXIV_CHR{Service.ClientState.LocalContentId:X16}").Replace('/', '\\');
+        var saveDir = Path.Combine(Framework.Instance()->UserPathString, $"FFXIV_CHR{Service.ClientState.LocalContentId:X16}").Replace('/', '\\');
         if (arguments == "open") {
             Process.Start("explorer.exe", saveDir);
             return;

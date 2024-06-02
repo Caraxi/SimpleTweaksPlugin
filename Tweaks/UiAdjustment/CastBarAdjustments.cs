@@ -149,10 +149,10 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
         var classicSlideMarker = (AtkImageNode*)null;
 
         for (var i = 0; i < castBar->AtkUnitBase.UldManager.NodeListCount; i++) {
-            if (castBar->AtkUnitBase.UldManager.NodeList[i]->NodeID == CustomNodes.SlideCastMarker) {
+            if (castBar->AtkUnitBase.UldManager.NodeList[i]->NodeId == CustomNodes.SlideCastMarker) {
                 slideMarker = (AtkNineGridNode*) castBar->AtkUnitBase.UldManager.NodeList[i];
             }
-            if (castBar->AtkUnitBase.UldManager.NodeList[i]->NodeID == CustomNodes.ClassicSlideCast) {
+            if (castBar->AtkUnitBase.UldManager.NodeList[i]->NodeId == CustomNodes.ClassicSlideCast) {
                 classicSlideMarker = (AtkImageNode*) castBar->AtkUnitBase.UldManager.NodeList[i];
             }
         }
@@ -225,7 +225,7 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
                 // Create Node
 
                 slideMarker = UiHelper.CloneNode(progressBar);
-                slideMarker->AtkResNode.NodeID = CustomNodes.SlideCastMarker;
+                slideMarker->AtkResNode.NodeId = CustomNodes.SlideCastMarker;
                 castBar->AtkUnitBase.GetNodeById(10)->PrevSiblingNode = (AtkResNode*) slideMarker;
                 slideMarker->AtkResNode.NextSiblingNode = castBar->AtkUnitBase.GetNodeById(10);
                 slideMarker->AtkResNode.ParentNode = castBar->AtkUnitBase.GetNodeById(9);
@@ -247,7 +247,7 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
                 slideMarker->AtkResNode.MultiplyGreen = (byte) (255 * c.Y);
                 slideMarker->AtkResNode.MultiplyBlue = (byte) (255 * c.Z);
                 slideMarker->AtkResNode.Color.A = (byte) (255 * c.W);
-                slideMarker->PartID = 0;
+                slideMarker->PartId = 0;
                 slideMarker->AtkResNode.DrawFlags |= 1;
             }
             
@@ -259,7 +259,7 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
                 // Create Node
                     classicSlideMarker = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
                     classicSlideMarker->AtkResNode.Type = NodeType.Image;
-                    classicSlideMarker->AtkResNode.NodeID = CustomNodes.ClassicSlideCast;
+                    classicSlideMarker->AtkResNode.NodeId = CustomNodes.ClassicSlideCast;
                     classicSlideMarker->AtkResNode.NodeFlags = NodeFlags.AnchorTop | NodeFlags.AnchorLeft;
                     classicSlideMarker->AtkResNode.DrawFlags = 0;
                     classicSlideMarker->WrapMode = 1;

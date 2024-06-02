@@ -92,7 +92,7 @@ public class MateriaStats : TooltipTweaks.SubTweak {
     public override unsafe void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         if (!(Config.Delta || Config.Total == false)) Config.Total = true; // Config invalid check
         try {
-            var item = itemSheet.GetRow(Item.ItemID);
+            var item = itemSheet.GetRow(Item.ItemId);
             if (item == null) return;
             if (item.MateriaSlotCount == 0) return;
             var itemLevel = itemLevelSheet.GetRow(item.LevelItem.Row);
@@ -111,7 +111,7 @@ public class MateriaStats : TooltipTweaks.SubTweak {
                 }
             }
 
-            if (Item.Flags.HasFlag(InventoryItem.ItemFlags.HQ)) {
+            if (Item.Flags.HasFlag(InventoryItem.ItemFlags.HighQuality)) {
                 foreach (var bp in item.BaseParamSpecial) {
                     if (bp.Value == 0 || bp.BaseParam.Row == 0) continue;
                     if (baseParamOriginal.ContainsKey(bp.BaseParam.Row)) baseParamOriginal[bp.BaseParam.Row] += bp.Value;

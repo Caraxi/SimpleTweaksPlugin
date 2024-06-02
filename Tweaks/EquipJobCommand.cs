@@ -124,7 +124,7 @@ public unsafe class EquipJobCommand : CommandTweak {
 
         var bestGearset = Enumerable.Range(0, 100).Where(raptureGearsetModule->IsValidGearset).Select(gearsetId => {
             var gearset = raptureGearsetModule->GetGearset(gearsetId);
-            return (Id: gearset->ID, ClassJob: gearset->ClassJob, ILvl: gearset->ItemLevel);
+            return (Id: gearset->Id, ClassJob: gearset->ClassJob, ILvl: gearset->ItemLevel);
         }).Where(x => x.ClassJob == classJobId).OrderByDescending(x => x.ILvl).FirstOrDefault();
         if (bestGearset.ClassJob == 0) return SwitchClassJobResult.FailedToFindGearset;
         raptureGearsetModule->EquipGearset(bestGearset.Id);

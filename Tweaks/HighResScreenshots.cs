@@ -8,6 +8,7 @@ using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
@@ -213,7 +214,7 @@ public unsafe class HighResScreenshots : Tweak {
 
             if (Config.HideGameUi) {
                 var raptureAtkModule = Framework.Instance()->GetUiModule()->GetRaptureAtkModule();
-                originalUiVisibility = !raptureAtkModule->RaptureAtkUnitManager.Flags.HasFlag(RaptureAtkModuleFlags.UiHidden);
+                originalUiVisibility = !raptureAtkModule->RaptureAtkUnitManager.Flags.HasFlag(AtkUnitManagerFlags.UiHidden);
                 if (originalUiVisibility) {
                     raptureAtkModule->SetUiVisibility(false);
                 }
@@ -239,7 +240,7 @@ public unsafe class HighResScreenshots : Tweak {
                 UIDebug.FreeExclusiveDraw();
                 if (Config.HideGameUi) {
                     var raptureAtkModule = Framework.Instance()->GetUiModule()->GetRaptureAtkModule();
-                    if (originalUiVisibility && raptureAtkModule->RaptureAtkUnitManager.Flags.HasFlag(RaptureAtkModuleFlags.UiHidden)) {
+                    if (originalUiVisibility && raptureAtkModule->RaptureAtkUnitManager.Flags.HasFlag(AtkUnitManagerFlags.UiHidden)) {
                         raptureAtkModule->SetUiVisibility(true);
                     }
                 }

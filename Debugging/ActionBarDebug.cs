@@ -58,7 +58,7 @@ public unsafe class ActionBarDebug : DebugHelper {
                 var classJobSheet = Service.Data.GetExcelSheet<ClassJob>()!;
                 
                 if (ImGui.BeginChild("savedBarsIndexSelect", new Vector2(150, -1) * ImGui.GetIO().FontGlobalScale, true)) {
-                    for (byte i = 0; i < raptureHotbarModule->SavedHotBarsSpan.Length; i++) {
+                    for (byte i = 0; i < raptureHotbarModule->SavedHotBars.Length; i++) {
                         var classJobId = raptureHotbarModule->GetClassJobIdForSavedHotbarIndex(i);
                         var jobName = classJobId == 0 ? "Shared" : classJobSheet.GetRow(classJobId)?.Abbreviation?.RawString;
                         var isPvp = i >= classJobSheet.RowCount;
@@ -74,13 +74,13 @@ public unsafe class ActionBarDebug : DebugHelper {
                 ImGui.EndChild();
                 ImGui.SameLine();
                 ImGui.BeginGroup();
-                var savedBarClassJob = raptureHotbarModule->SavedHotBarsSpan.GetPointer(selectedSavedIndex);
+                var savedBarClassJob = raptureHotbarModule->SavedHotBars.GetPointer(selectedSavedIndex);
                 if (savedBarClassJob != null && ImGui.BeginTabBar("savedClassJobBarSelectType")) {
 
 
                     void ShowBar(int b) {
 
-                        var savedBar = savedBarClassJob->HotBarsSpan.GetPointer(b);
+                        var savedBar = savedBarClassJob->HotBars.GetPointer(b);
                         if (savedBar == null) {
                             ImGui.Text("Bar is Null");
                             return;
@@ -99,7 +99,7 @@ public unsafe class ActionBarDebug : DebugHelper {
                                 ImGui.TableNextColumn();
                                 ImGui.Text($"{i:00}");
                                 ImGui.TableNextColumn();
-                                var slot = savedBar->SlotsSpan.GetPointer(i);
+                                var slot = savedBar->Slots.GetPointer(i);
                                 if (slot == null) {
                                     ImGui.TableNextRow();
                                     continue;
@@ -224,7 +224,7 @@ public unsafe class ActionBarDebug : DebugHelper {
         ImGui.TableHeadersRow();
         
         for (var i = 0; i < 16; i++) {
-            var slot = hotbar->SlotsSpan.GetPointer(i);
+            var slot = hotbar->Slots.GetPointer(i);
             if (slot == null) break;
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
@@ -446,7 +446,7 @@ public unsafe class ActionBarDebug : DebugHelper {
                     return false;
                 }
 
-                resolvedName = $"{Encoding.UTF8.GetString(gearset->Name, 0x2F)}";
+                resolvedName = $"{gearset->NameString}";
                 return true;
             }
 

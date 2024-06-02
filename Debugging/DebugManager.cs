@@ -14,9 +14,8 @@ using System.Text;
 using Dalamud;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Memory;
-using FFXIVClientStructs.Attributes;
+using InteropGenerator.Runtime.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.String;
-using FFXIVClientStructs.Interop.Attributes;
 using Lumina.Excel;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
@@ -325,7 +324,7 @@ namespace SimpleTweaksPlugin.Debugging {
                 
                 var valueParser = member.GetCustomAttribute(typeof(ValueParser));
                 var fixedBuffer = (FixedBufferAttribute) member.GetCustomAttribute(typeof(FixedBufferAttribute));
-                var fixedSizeArray = member.GetCustomAttribute(typeof(FixedSizeArrayAttribute<>));
+                var fixedSizeArray = member.GetCustomAttribute(typeof(FixedSizeArrayAttribute));
                 
                 if (valueParser is ValueParser vp) {
                     vp.ImGuiPrint(type, value, member, addr);
@@ -622,7 +621,7 @@ namespace SimpleTweaksPlugin.Debugging {
                         
                         var fixedBuffer = (FixedBufferAttribute) f.GetCustomAttribute(typeof(FixedBufferAttribute));
                         if (fixedBuffer != null) {
-                            var fixedSizeArray = f.GetCustomAttribute(typeof(FixedSizeArrayAttribute<>));
+                            var fixedSizeArray = f.GetCustomAttribute(typeof(FixedSizeArrayAttribute));
                             ImGui.Text($"fixed");
                             ImGui.SameLine();
                             if (fixedSizeArray != null) {

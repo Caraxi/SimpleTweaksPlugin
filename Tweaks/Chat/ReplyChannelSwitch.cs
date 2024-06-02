@@ -25,7 +25,7 @@ public class ReplyChannelSwitch : ChatTweaks.SubTweak {
         base.Enable();
     }
 
-    private void CheckMesssage(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
+    private void CheckMesssage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled) {
         if (type != XivChatType.ErrorMessage) return;
         if (message.TextValue == searchString) {
             ChatHelper.SendMessage("/t <r>");

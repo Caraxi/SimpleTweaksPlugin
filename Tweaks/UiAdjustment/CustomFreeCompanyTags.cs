@@ -74,7 +74,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
     }
 
     private void* UpdateNameplatesDetour(RaptureAtkModule* raptureAtkModule, NamePlateInfo* namePlateInfo, NumberArrayData* numArray, StringArrayData* stringArray, GameObject* gameObject, int numArrayIndex, int stringArrayIndex) {
-        if (gameObject->ObjectKind != 1) goto ReturnOriginal;
+        if (gameObject->ObjectKind != ObjectKind.Pc) goto ReturnOriginal;
         var battleChara = (BattleChara*) gameObject;
         try {
             var customization = Config.DefaultCustomization;
@@ -88,7 +88,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                     customization = Config.TravellerCustomization;
                 }
             } else {
-                companyTag = Encoding.UTF8.GetString(battleChara->Character.FreeCompanyTag, 6).Trim('\0', ' ');
+                companyTag = battleChara->FreeCompanyTagString;
 
                 customization = companyTag.Length switch {
                     <= 0 => null,

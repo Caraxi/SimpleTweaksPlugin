@@ -81,7 +81,7 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
         try {
             if (itemSearchResult == null) itemSearchResult = Common.GetUnitBase("ItemSearchResult");
             if (itemSearchResult == null) return;
-            if (Encoding.UTF8.GetString(itemSearchResult->Name, 16) != "ItemSearchResult") return;
+            if (itemSearchResult->NameString != "ItemSearchResult") return;
 
             var listNode = (AtkComponentNode*)itemSearchResult->UldManager.SearchNodeById(26);
             if (listNode == null) return;
@@ -90,16 +90,16 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
             var agent = AgentItemSearch.Instance();
             if (agent == null) return;
             
-            if (npcPriceId != agent->ResultItemID) {
-                var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(agent->ResultItemID);
+            if (npcPriceId != agent->ResultItemId) {
+                var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(agent->ResultItemId);
                 if (item == null) return;
-                npcPriceId = agent->ResultItemID;
+                npcPriceId = agent->ResultItemId;
                 npcBuyPrice = 0;
                 npcSellPrice = item.PriceLow;
                 if (item.ItemUICategory.Row is 58) {
                     npcSellPrice += (uint)MathF.Ceiling(npcSellPrice * 0.1f);
                 }
-                var gilShopItem = Service.Data.Excel.GetSheet<GilShopItem>()?.Where(a => a.Item.Row == agent->ResultItemID).ToList();
+                var gilShopItem = Service.Data.Excel.GetSheet<GilShopItem>()?.Where(a => a.Item.Row == agent->ResultItemId).ToList();
                 if (gilShopItem is { Count: > 0 }) npcBuyPrice = item.PriceMid;
             }
                 

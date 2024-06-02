@@ -49,7 +49,7 @@ public unsafe class SmartNameplates : UiAdjustments.SubTweak {
 
     // returns 2 bits (b01 == display name, b10 == display hp)
     private unsafe byte ShouldDisplayNameplateDetour(IntPtr raptureAtkModule, GameObject* actor, GameObject* localPlayer, float distance) {
-        if (actor->ObjectKind != (byte) ObjectKind.Pc) goto ReturnOriginal;
+        if (actor->ObjectKind != ObjectKind.Pc) goto ReturnOriginal;
         var pc = (BattleChara*) actor;
 
         var targets = TargetSystem.Instance();

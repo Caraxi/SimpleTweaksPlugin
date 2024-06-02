@@ -125,7 +125,7 @@ public unsafe class EquipFromHotbar : Tweak {
         for (var i = 0U; i < sorter->Items.Size(); i++) {
             var entry = sorter->Items.Get(i).Value;
             var item = inventoryManager->GetInventorySlot(inventoryType + entry->Page, entry->Slot);
-            if (item->ItemID == itemId && item->Flags.HasFlag(InventoryItem.ItemFlags.HQ) == isHq) {
+            if (item->ItemId == itemId && item->Flags.HasFlag(InventoryItem.ItemFlags.HighQuality) == isHq) {
                 var page = (uint) (i / sorter->ItemsPerPage);
                 var slot = (uint) (i % sorter->ItemsPerPage);
                 Equip(inventoryType + page, slot, equipSlot);

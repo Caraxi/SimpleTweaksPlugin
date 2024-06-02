@@ -21,13 +21,13 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak {
 
     [AddonPostSetup("NeedGreed")]
     private void AddonSetup(AtkUnitBase* atkUnitBase) {
-        needGreedReceiveEventHook ??= Common.Hook<NeedGreedReceiveEventDelegate>((nint) atkUnitBase->AtkEventListener.vfunc[2], OnNeedGreedReceiveEvent);
+        needGreedReceiveEventHook ??= Common.Hook<NeedGreedReceiveEventDelegate>(atkUnitBase->AtkEventListener.VirtualTable->ReceiveEvent, OnNeedGreedReceiveEvent);
         needGreedReceiveEventHook?.Enable();
 
         // Find first item that hasn't been rolled on, and select it.
         var addonNeedGreed = (AddonNeedGreed*) atkUnitBase;
         foreach (var index in Enumerable.Range(0, addonNeedGreed->NumItems)) {
-            if (addonNeedGreed->ItemsSpan[index] is { Roll: 0, ItemId: not 0 }) {
+            if (addonNeedGreed->Items[index] is { Roll: 0, ItemId: not 0 }) {
                 SelectItem(addonNeedGreed, index);
                 break;
             }
@@ -69,7 +69,7 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak {
     }
 
     private LootItemInfo GetSelectedItem(AddonNeedGreed* addon) 
-        => addon->ItemsSpan[addon->SelectedItemIndex];
+        => addon->Items[addon->SelectedItemIndex];
 
     private bool IsSelectedItemUnrolled(AddonNeedGreed* addon)
         => GetSelectedItem(addon) is { Roll: 0, ItemId: not 0 };
