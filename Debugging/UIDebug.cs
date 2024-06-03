@@ -1223,14 +1223,13 @@ public unsafe class UIDebug : DebugHelper {
             ImGui.Text(
                 $"Start: {anim->StartFrameIdx} " +
                 $"End: {anim->EndFrameIdx}");
-            // todo: uncomment when KeyGroups is restored in ClientStructs
-            // var props = new Span<AtkTimelineKeyGroup>(Unsafe.AsPointer(ref anim->KeyGroups[0]), 8);
-            // var k = 0;
-            // foreach (var prop in props)
-            // {
-            //     DrawAtkTimelineKeyGroup(FormatTimelineKeyGroupId(node->Type, k), node, &prop);
-            //     k++;
-            // }
+            var props = anim->KeyGroups;
+            var k = 0;
+            foreach (var prop in props)
+            {
+                DrawAtkTimelineKeyGroup(FormatTimelineKeyGroupId(node->Type, k), node, &prop);
+                k++;
+            }
             ImGui.TreePop();
         }
     }
