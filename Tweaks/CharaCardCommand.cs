@@ -19,7 +19,7 @@ public unsafe class CharaCardCommand : CommandTweak {
             Service.Chat.PrintError($"/playerplate <t>");
             return;
         }
-        var resolve = Framework.Instance()->GetUiModule()->GetPronounModule()->ResolvePlaceholder(arguments, 0, 0);
+        var resolve = Framework.Instance()->GetUIModule()->GetPronounModule()->ResolvePlaceholder(arguments, 0, 0);
         if (resolve == null) {
             foreach (var actor in Service.Objects) {
                 if (actor == null) continue;

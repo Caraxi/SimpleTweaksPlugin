@@ -36,13 +36,13 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         private SimpleEvent eventManager;
 
         private void HideTooltip(AtkUnitBase* unitBase) {
-            AtkStage.GetSingleton()->TooltipManager.HideTooltip(unitBase->Id);
+            AtkStage.Instance()->TooltipManager.HideTooltip(unitBase->Id);
         }
 
         private void ShowTooltip(AtkUnitBase* unitBase, AtkResNode* node) {
             var tooltipId = GetTooltip();
             var tooltip = Service.Data.GetExcelSheet<Addon>()?.GetRow(tooltipId)?.Text.ToDalamudString()?.TextValue ?? $"{Setting}";
-            AtkStage.GetSingleton()->TooltipManager.ShowTooltip(unitBase->Id, node, tooltip);
+            AtkStage.Instance()->TooltipManager.ShowTooltip(unitBase->Id, node, tooltip);
         }
 
         public SimpleEvent Event {
@@ -348,7 +348,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         }
 
         fixed (byte* arrayPtr = array) {
-            _setContentsFinderSettings(arrayPtr, (nint)Framework.Instance()->GetUiModule());
+            _setContentsFinderSettings(arrayPtr, (nint)Framework.Instance()->GetUIModule());
         }
     }
 

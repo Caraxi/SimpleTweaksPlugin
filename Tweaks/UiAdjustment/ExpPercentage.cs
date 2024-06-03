@@ -131,8 +131,8 @@ public unsafe class ExpPercentage : UiAdjustments.SubTweak {
     protected override void ConfigChanged() {
         var addonExp = Common.GetUnitBase("_Exp");
         if (addonExp != null) {
-            var atkArrayDataHolder = Framework.Instance()->GetUiModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder;
-            addonExp->OnUpdate(atkArrayDataHolder.NumberArrays, atkArrayDataHolder.StringArrays);
+            var atkArrayDataHolder = Framework.Instance()->GetUIModule()->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder;
+            addonExp->OnRequestedUpdate(atkArrayDataHolder.NumberArrays, atkArrayDataHolder.StringArrays);
         }
     }
 

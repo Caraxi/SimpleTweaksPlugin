@@ -120,7 +120,7 @@ public class TryOnCorrectItem : Tweak {
         }
 
         if (addonId is 0 or > ushort.MaxValue) return Config.Default;
-        var addon = AtkStage.GetSingleton()->RaptureAtkUnitManager->GetAddonById((ushort)addonId);
+        var addon = AtkStage.Instance()->RaptureAtkUnitManager->GetAddonById((ushort)addonId);
         if (addon == null) return Config.Default;
         var addonName = addon->NameString;
         if (string.IsNullOrEmpty(addonName)) return Config.Default;

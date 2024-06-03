@@ -10,7 +10,7 @@ public unsafe class RecommendEquipCommand : CommandTweak {
     public override string Description => $"Adds /{Command} to equip recommended gear.";
     protected override string HelpMessage => "Equips recommended gear.";
     protected override string Command => "equiprecommended";
-    private static RecommendEquipModule* Module => Framework.Instance()->GetUiModule()->GetRecommendEquipModule();
+    private static RecommendEquipModule* Module => Framework.Instance()->GetUIModule()->GetRecommendEquipModule();
     
     protected override void OnCommand(string args) {
         if (Module == null) return;

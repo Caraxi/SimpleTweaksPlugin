@@ -19,7 +19,7 @@ public unsafe class GearsetDebug : DebugHelper {
         ImGui.SameLine();
         DebugManager.ClickToCopyText($"{(ulong)raptureGearsetModule:X}");
         ImGui.SameLine();
-        ImGui.Text($"{Encoding.ASCII.GetString(raptureGearsetModule->UserFileEvent.FileName, 15)}");
+        ImGui.Text($"{raptureGearsetModule->UserFileEvent.FileNameString}");
             
         ImGui.Columns(6);
         ImGui.Text($"##");
@@ -52,19 +52,20 @@ public unsafe class GearsetDebug : DebugHelper {
             ImGui.Text(gearset->NameString);
             ImGui.NextColumn();
 
-            ImGui.Text("MainHand"); ImGui.SameLine(); ImGui.Text($"[{gearset->MainHand.ItemId}]");
-            ImGui.Text("OffHand"); ImGui.SameLine(); ImGui.Text($"[{gearset->OffHand.ItemId}]");
-            ImGui.Text("Head"); ImGui.SameLine(); ImGui.Text($"[{gearset->Head.ItemId}]");
-            ImGui.Text("Body"); ImGui.SameLine(); ImGui.Text($"[{gearset->Body.ItemId}]");
-            ImGui.Text("Hands"); ImGui.SameLine(); ImGui.Text($"[{gearset->Hands.ItemId}]");
-            ImGui.Text("Belt"); ImGui.SameLine(); ImGui.Text($"[{gearset->Belt.ItemId}]");
-            ImGui.Text("Legs"); ImGui.SameLine(); ImGui.Text($"[{gearset->Legs.ItemId}]");
-            ImGui.Text("Feet"); ImGui.SameLine(); ImGui.Text($"[{gearset->Feet.ItemId}]");
-            ImGui.Text("Ears"); ImGui.SameLine(); ImGui.Text($"[{gearset->Ears.ItemId}]");
-            ImGui.Text("Neck"); ImGui.SameLine(); ImGui.Text($"[{gearset->Neck.ItemId}]");
-            ImGui.Text("Wrists"); ImGui.SameLine(); ImGui.Text($"[{gearset->Wrists.ItemId}]");
-            ImGui.Text("RingRight"); ImGui.SameLine(); ImGui.Text($"[{gearset->RingRight.ItemId}]");
-            ImGui.Text("SoulStone"); ImGui.SameLine(); ImGui.Text($"[{gearset->SoulStone.ItemId}]");
+            ImGui.Text("MainHand"); ImGui.SameLine(); ImGui.Text($"[{gearset->GetItem(RaptureGearsetModule.GearsetItemIndex.MainHand).ItemId}]");
+            ImGui.Text("OffHand"); ImGui.SameLine(); ImGui.Text($"[{gearset->GetItem(RaptureGearsetModule.GearsetItemIndex.OffHand).ItemId}]");
+            ImGui.Text("Head"); ImGui.SameLine(); ImGui.Text($"[{gearset->GetItem(RaptureGearsetModule.GearsetItemIndex.Head).ItemId}]");
+            ImGui.Text("Body"); ImGui.SameLine(); ImGui.Text($"[{gearset->GetItem(RaptureGearsetModule.GearsetItemIndex.Body).ItemId}]");
+            ImGui.Text("Hands"); ImGui.SameLine(); ImGui.Text($"[{gearset->GetItem(RaptureGearsetModule.GearsetItemIndex.Hands).ItemId}]");
+            ImGui.Text("Belt"); ImGui.SameLine(); ImGui.Text($"[{gearset->GetItem(RaptureGearsetModule.GearsetItemIndex.Belt).ItemId}]");
+            ImGui.Text("Legs"); ImGui.SameLine(); ImGui.Text($"[{gearset->GetItem(RaptureGearsetModule.GearsetItemIndex.Legs).ItemId}]");
+            ImGui.Text("Feet"); ImGui.SameLine(); ImGui.Text($"[{gearset->GetItem(RaptureGearsetModule.GearsetItemIndex.Feet).ItemId}]");
+            ImGui.Text("Ears"); ImGui.SameLine(); ImGui.Text($"[{gearset->GetItem(RaptureGearsetModule.GearsetItemIndex.Ears).ItemId}]");
+            ImGui.Text("Neck"); ImGui.SameLine(); ImGui.Text($"[{gearset->GetItem(RaptureGearsetModule.GearsetItemIndex.Neck).ItemId}]");
+            ImGui.Text("Wrists"); ImGui.SameLine(); ImGui.Text($"[{gearset->GetItem(RaptureGearsetModule.GearsetItemIndex.Wrists).ItemId}]");
+            ImGui.Text("RingRight"); ImGui.SameLine(); ImGui.Text($"[{gearset->GetItem(RaptureGearsetModule.GearsetItemIndex.RingRight).ItemId}]");
+            ImGui.Text("RingLeft"); ImGui.SameLine(); ImGui.Text($"[{gearset->GetItem(RaptureGearsetModule.GearsetItemIndex.RingLeft).ItemId}]");
+            ImGui.Text("SoulStone"); ImGui.SameLine(); ImGui.Text($"[{gearset->GetItem(RaptureGearsetModule.GearsetItemIndex.SoulStone).ItemId}]");
             ImGui.NextColumn();
 
             foreach (RaptureGearsetModule.GearsetFlag r in Enum.GetValues(typeof(RaptureGearsetModule.GearsetFlag))) {
@@ -82,7 +83,5 @@ public unsafe class GearsetDebug : DebugHelper {
         }
             
         ImGui.Columns();
-            
     }
-        
 }

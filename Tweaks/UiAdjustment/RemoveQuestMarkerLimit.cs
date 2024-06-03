@@ -19,7 +19,7 @@ public unsafe class RemoveQuestMarkerLimit : UiAdjustments.SubTweak {
     private void* SetQuestMarkerInfoDetour(Map* map, uint index, ushort questId, Utf8String* name, ushort recommendedLevel) {
         var result = setQuestMarkerInfoHook.Original(map, index, questId, name, recommendedLevel);
         if (!QuestManager.Instance()->NormalQuests[(int)index].IsHidden) {
-            map->QuestData.GetPointer((int) index)->ShouldRender = true;
+            map->QuestMarkers.GetPointer((int) index)->ShouldRender = true;
         }
         return result;
     }

@@ -42,8 +42,8 @@ public unsafe class ActionPressMirroring : UiAdjustments.SubTweak {
         pulseActionBarSlotHook.Original(ab, slotIndex, a3, a4);
     }
 
-    private uint GetAdjustedId(HotbarSlotType type, uint id) => type switch {
-        HotbarSlotType.Action => ActionManager.Instance()->GetAdjustedActionId(id),
+    private uint GetAdjustedId(RaptureHotbarModule.HotbarSlotType type, uint id) => type switch {
+        RaptureHotbarModule.HotbarSlotType.Action => ActionManager.Instance()->GetAdjustedActionId(id),
         _ => id
     };
 

@@ -213,7 +213,7 @@ public unsafe class HighResScreenshots : Tweak {
             
 
             if (Config.HideGameUi) {
-                var raptureAtkModule = Framework.Instance()->GetUiModule()->GetRaptureAtkModule();
+                var raptureAtkModule = Framework.Instance()->GetUIModule()->GetRaptureAtkModule();
                 originalUiVisibility = !raptureAtkModule->RaptureAtkUnitManager.Flags.HasFlag(AtkUnitManagerFlags.UiHidden);
                 if (originalUiVisibility) {
                     raptureAtkModule->SetUiVisibility(false);
@@ -239,7 +239,7 @@ public unsafe class HighResScreenshots : Tweak {
             Service.Framework.RunOnTick(() => {
                 UIDebug.FreeExclusiveDraw();
                 if (Config.HideGameUi) {
-                    var raptureAtkModule = Framework.Instance()->GetUiModule()->GetRaptureAtkModule();
+                    var raptureAtkModule = Framework.Instance()->GetUIModule()->GetRaptureAtkModule();
                     if (originalUiVisibility && raptureAtkModule->RaptureAtkUnitManager.Flags.HasFlag(AtkUnitManagerFlags.UiHidden)) {
                         raptureAtkModule->SetUiVisibility(true);
                     }

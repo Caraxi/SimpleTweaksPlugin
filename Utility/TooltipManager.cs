@@ -46,9 +46,9 @@ public static unsafe class TooltipManager {
         if (!_tooltips.TryGetValue(addonName, out var addonDict)) return;
         if (!addonDict.TryGetValue(node->NodeId, out Func<string> tooltip)) return;
         if (eventType == AtkEventType.MouseOver) {
-            AtkStage.GetSingleton()->TooltipManager.ShowTooltip(atkUnitBase->Id, node, tooltip());
+            AtkStage.Instance()->TooltipManager.ShowTooltip(atkUnitBase->Id, node, tooltip());
         } else if (eventType == AtkEventType.MouseOut) {
-            AtkStage.GetSingleton()->TooltipManager.HideTooltip(atkUnitBase->Id);
+            AtkStage.Instance()->TooltipManager.HideTooltip(atkUnitBase->Id);
         }
     }
 

@@ -98,7 +98,7 @@ namespace SimpleTweaksPlugin {
             this.PluginConfig = (SimpleTweaksPluginConfig)Service.PluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
             this.PluginConfig.Init(this);
             
-#if DEBUG
+#if !DEBUG
             SimpleLog.SetupBuildPath();
             Task.Run(() => {
                 FFXIVClientStructs.Interop.Resolver.GetInstance.SetupSearchSpace(Service.SigScanner.SearchBase);

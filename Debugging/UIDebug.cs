@@ -125,7 +125,7 @@ public unsafe class UIDebug : DebugHelper {
     }
 
     internal void FindByAddress(ulong address) {
-        var stage = AtkStage.GetSingleton();
+        var stage = AtkStage.Instance();
                 
         var unitManagers = &stage->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
         
@@ -348,7 +348,7 @@ public unsafe class UIDebug : DebugHelper {
 
     private IEnumerable<AddonResult> GetAtkUnitBaseAtPosition(Vector2 position) {
         var list = new List<AddonResult>();
-        var stage = AtkStage.GetSingleton();
+        var stage = AtkStage.Instance();
         var unitManagers = &stage->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
         for (var i = 0; i < UnitListCount; i++) {
             var unitManager = &unitManagers[i];
@@ -508,7 +508,7 @@ public unsafe class UIDebug : DebugHelper {
                                     ImGui.Text($"{atkValue->Int}");
                                     break;
                                 }
-                                case ValueType.AllocatedString:
+                                case ValueType.ManagedString:
                                 case ValueType.String8:
                                 case ValueType.String: {
                                     if (atkValue->String == null) {
@@ -1323,7 +1323,7 @@ public unsafe class UIDebug : DebugHelper {
 
         bool foundSelected = false;
         bool noResults = true;
-        var stage = AtkStage.GetSingleton();
+        var stage = AtkStage.Instance();
                 
         var unitManagers = &stage->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
             

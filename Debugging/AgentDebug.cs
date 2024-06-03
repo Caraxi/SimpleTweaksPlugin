@@ -50,7 +50,7 @@ public unsafe class AgentDebug : DebugHelper {
 
         public AgentEventHandlerHook(AgentId agentId) {
             AgentId = agentId;
-            agentInterface = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(agentId);
+            agentInterface = Framework.Instance()->GetUIModule()->GetAgentModule()->GetAgentByInternalId(agentId);
             hook = Common.Hook<AgentEventHandler>(agentInterface->AtkEventInterface.VirtualTable->ReceiveEvent, HandleEvent);
             hook?.Enable();
         }
@@ -165,7 +165,7 @@ public unsafe class AgentDebug : DebugHelper {
                     ImGui.Separator();
                     if (ImGui.BeginChild("AgentListScroll", new Vector2(-1, -1), false)) {
                         foreach (var agent in sortedAgentList) {
-                            var agentInterface = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(agent.id);
+                            var agentInterface = Framework.Instance()->GetUIModule()->GetAgentModule()->GetAgentByInternalId(agent.id);
                             if (agentInterface == null) continue;
                             if (agentListKnownOnly && !agent.hasClass) continue;
                             var active = agentInterface->IsAgentActive();
@@ -212,7 +212,7 @@ public unsafe class AgentDebug : DebugHelper {
                 ImGui.SameLine();
                 if (ImGui.BeginChild("AgentView", new Vector2(-1, -1), true)) {
 
-                    var agentInterface = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(selectAgent);
+                    var agentInterface = Framework.Instance()->GetUIModule()->GetAgentModule()->GetAgentByInternalId(selectAgent);
 
                     var agentHook = AgentEventHooks.ContainsKey(selectAgent) ? AgentEventHooks[selectAgent] : null;
 

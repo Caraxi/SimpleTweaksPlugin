@@ -12,13 +12,13 @@ public unsafe class MainCommandCommand : CommandTweak {
 
     protected override void OnCommand(string arguments) {
         if (uint.TryParse(arguments, out var id)) {
-            Framework.Instance()->GetUiModule()->ExecuteMainCommand(id);
+            Framework.Instance()->GetUIModule()->ExecuteMainCommand(id);
             return;
         }
 
         foreach (var mainCommand in Service.Data.Excel.GetSheet<MainCommand>()) {
             if (arguments == mainCommand.Name.ToString()) {
-                Framework.Instance()->GetUiModule()->ExecuteMainCommand(mainCommand.RowId);
+                Framework.Instance()->GetUIModule()->ExecuteMainCommand(mainCommand.RowId);
                 return;
             }
         }

@@ -128,7 +128,7 @@ public unsafe class SyncGathererBars : Tweak {
             return;
         }
 
-        var hotbarModule = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUiModule()->GetRaptureHotbarModule();
+        var hotbarModule = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUIModule()->GetRaptureHotbarModule();
         if (Service.ClientState.LocalPlayer == null) return;
         var currentId = (int)Service.ClientState.LocalPlayer.ClassJob.Id;
         if (currentId is not (16 or 17)) return;
@@ -148,7 +148,7 @@ public unsafe class SyncGathererBars : Tweak {
             var cSlot = cBar->Slots.GetPointer(i);
             var oSlot = oBar->Slots.GetPointer(i);
             oSlot->CommandType = cSlot->CommandType;
-            if (cSlot->CommandType == HotbarSlotType.Action) {
+            if (cSlot->CommandType == RaptureHotbarModule.HotbarSlotType.Action) {
                 if (swapDict.ContainsKey(cSlot->CommandId)) {
                     oSlot->CommandId = swapDict[cSlot->CommandId];
                 } else {

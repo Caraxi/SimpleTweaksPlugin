@@ -14,7 +14,7 @@ public unsafe class EstateListCommand : CommandTweak {
     protected override string Command => "estatelist";
     protected override string HelpMessage => "Opens the estate list for one of your friends.";
 
-    private delegate IntPtr ShowEstateTeleportationDelegate(AgentFriendList* friendListAgent, ulong contentId);
+    private delegate IntPtr ShowEstateTeleportationDelegate(AgentFriendlist* friendListAgent, ulong contentId);
     private ShowEstateTeleportationDelegate showEstateTeleportation;
     
     public override void Setup() {
@@ -39,7 +39,7 @@ public unsafe class EstateListCommand : CommandTweak {
         }
 
         if (arguments.StartsWith("<") && arguments.EndsWith(">")) {
-            var resolved = Framework.Instance()->GetUiModule()->GetPronounModule()->ResolvePlaceholder(arguments, 1, 0);
+            var resolved = Framework.Instance()->GetUIModule()->GetPronounModule()->ResolvePlaceholder(arguments, 1, 0);
             if (resolved != null) {
                 arguments = MemoryHelper.ReadStringNullTerminated(new IntPtr(resolved->GetName()));
             }
@@ -47,11 +47,11 @@ public unsafe class EstateListCommand : CommandTweak {
 
         var useContentId = ulong.TryParse(arguments, out var contentId);
 
-        var agent = AgentFriendList.Instance();
+        var agent = AgentFriendlist.Instance();
 
         InfoProxyCommonList.CharacterData* friend = null;
-        for (var i = 0U; i < agent->Count; i++) {
-            var f = agent->GetFriend(i);
+        for (var i = 0U; i < agent->InfoProxy->GetEntryCount(); i++) {
+            var f = agent->InfoProxy->GetEntry(i);
             if (f == null) continue;
             if (f->HomeWorld != Service.ClientState.LocalPlayer?.CurrentWorld.Id) continue;
             if (f->ContentId == 0) continue;

@@ -123,11 +123,11 @@ public class MateriaStats : TooltipTweaks.SubTweak {
 
             var pItem = Item;
             var materiaId = pItem.Materia;
-            var level = pItem.MateriaGrade;
+            var level = pItem.Materia;
 
-            for (var i = 0; i < 5; i++, materiaId++, level++) {
-                if (*level >= 10) continue;
-                var materia = materiaSheet.GetRow(*materiaId);
+            for (var i = 0; i < 5; i++) {
+                if (level[i] >= 10) continue;
+                var materia = materiaSheet.GetRow(materiaId[i]);
                 if (materia == null) continue;
                 if (materia.BaseParam.Row == 0) continue;
                 if (materia.BaseParam.Value == null) continue;
@@ -135,12 +135,12 @@ public class MateriaStats : TooltipTweaks.SubTweak {
                     var bp = Service.Data.Excel.GetSheet<ExtendedBaseParam>()?.GetRow(materia.BaseParam.Row);
                     if (bp == null) continue;
                     baseParams.Add(materia.BaseParam.Row, bp);
-                    baseParamDeltas.Add(materia.BaseParam.Row, materia.Value[*level]);
+                    baseParamDeltas.Add(materia.BaseParam.Row, materia.Value[level[i]]);
                     baseParamOriginal.Add(materia.BaseParam.Row, 0);
                     baseParamLimits.Add(materia.BaseParam.Row, (int) Math.Round(itemLevel.BaseParam[materia.BaseParam.Row] * (bp.EquipSlotCategoryPct[item.EquipSlotCategory.Row] / 1000f), MidpointRounding.AwayFromZero));
                     continue;
                 }
-                baseParamDeltas[materia.BaseParam.Row] += materia.Value[*level];
+                baseParamDeltas[materia.BaseParam.Row] += materia.Value[level[i]];
             }
             
             foreach (var bp in baseParamDeltas) {

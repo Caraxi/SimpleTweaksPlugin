@@ -57,7 +57,7 @@ public unsafe class Common {
         updateCursorHook?.Enable();
     }
 
-    public static UIModule* UIModule => Framework.Instance()->GetUiModule();
+    public static UIModule* UIModule => Framework.Instance()->GetUIModule();
 
 
     public static bool GetUnitBase(string name, out AtkUnitBase* unitBase, int index = 1) {
@@ -308,7 +308,7 @@ public unsafe class Common {
 
     public const int UnitListCount = 18;
     public static AtkUnitBase* GetAddonByID(uint id) {
-        var unitManagers = &AtkStage.GetSingleton()->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
+        var unitManagers = &AtkStage.Instance()->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
         for (var i = 0; i < UnitListCount; i++) {
             var unitManager = &unitManagers[i];
             foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->Entries.Length))) {
@@ -328,7 +328,7 @@ public unsafe class Common {
     }
 
     public static AgentInterface* GetAgent(AgentId agentId) {
-        return Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(agentId);
+        return Framework.Instance()->GetUIModule()->GetAgentModule()->GetAgentByInternalId(agentId);
     }
 
     public static T* GetAgent<T>() where T : unmanaged {
@@ -345,9 +345,9 @@ public unsafe class Common {
     
     private static void* UpdateCursorDetour(RaptureAtkModule* module) {
         if (_lockedCursorType != AtkCursor.CursorType.Arrow) {
-            var cursor = AtkStage.GetSingleton()->AtkCursor;
+            var cursor = AtkStage.Instance()->AtkCursor;
             if (cursor.Type != _lockedCursorType) {
-                AtkStage.GetSingleton()->AtkCursor.SetCursorType(_lockedCursorType, 1);
+                AtkStage.Instance()->AtkCursor.SetCursorType(_lockedCursorType, 1);
             }
             return null;
         }
@@ -361,7 +361,7 @@ public unsafe class Common {
             return;
         }
         _lockedCursorType = cursorType;
-        AtkStage.GetSingleton()->AtkCursor.SetCursorType(cursorType);
+        AtkStage.Instance()->AtkCursor.SetCursorType(cursorType);
         updateCursorHook?.Enable();
     }
 

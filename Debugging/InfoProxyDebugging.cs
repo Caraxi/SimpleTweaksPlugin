@@ -28,7 +28,7 @@ public unsafe class InfoProxyDebugging : DebugHelper {
             }
         }
 
-        var module = Framework.Instance()->GetUiModule()->GetInfoModule();
+        var module = Framework.Instance()->GetUIModule()->GetInfoModule();
         if (module == null) return;
 
         DebugManager.PrintAddress(module);

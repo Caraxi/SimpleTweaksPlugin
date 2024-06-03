@@ -73,7 +73,7 @@ public unsafe class HideMouseAfterInactivity : Tweak {
         if (TweakConfig.NoHideInCutscenes && Service.Condition.Cutscene()) return;
         if (TweakConfig.NoHideInCombat && Service.Condition[ConditionFlag.InCombat]) return;
         if (TweakConfig.NoHideInInstance && Service.Condition.Duty()) return;
-        var stage = AtkStage.GetSingleton();
+        var stage = AtkStage.Instance();
         if (TweakConfig.NoHideWhileHovering && stage->AtkCursor.Type != AtkCursor.CursorType.Arrow && !Service.Condition.Cutscene()) return;
 
         if (lastMoved.Elapsed > TimeSpan.FromSeconds(TweakConfig.InactiveSeconds)) {

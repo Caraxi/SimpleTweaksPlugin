@@ -67,7 +67,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         
         private void Update(bool reset = false) {
             if (Common.GetUnitBase("JobHudNotice") != null) reset = true;
-            var stage = AtkStage.GetSingleton();
+            var stage = AtkStage.Instance();
             var loadedUnitsList = &stage->RaptureAtkUnitManager->AtkUnitManager.AllLoadedUnitsList;
 #if DEBUG
             PerformanceMonitor.Begin();

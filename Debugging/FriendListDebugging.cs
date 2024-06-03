@@ -14,7 +14,7 @@ public unsafe class FriendListDebugging : DebugHelper {
     public override string Name => "Friend List";
 
     public override void Draw() {
-        var agent = AgentFriendList.Instance();
+        var agent = AgentFriendlist.Instance();
         if (agent == null) return;
 
         DebugManager.PrintOutObject(agent);
@@ -35,8 +35,8 @@ public unsafe class FriendListDebugging : DebugHelper {
             ImGui.TableSetupColumn("Data");
             ImGui.TableHeadersRow();
             
-            for (var i = 0U; i < agent->Count; i++) {
-                var friend = agent->GetFriend(i);
+            for (var i = 0U; i < agent->InfoProxy->GetEntryCount(); i++) {
+                var friend = agent->InfoProxy->GetEntry(i);
                 if (friend == null) continue;
                 
                 ImGui.TableNextRow();

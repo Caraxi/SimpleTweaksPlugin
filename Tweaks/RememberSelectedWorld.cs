@@ -59,7 +59,7 @@ public unsafe class RememberSelectedWorld : Tweak {
     private void SelectWorld(uint worldId) {
         if (!Common.GetUnitBase("_CharaSelectWorldServer", out var addon)) return;
         
-        var stringArray = AtkStage.GetSingleton()->GetStringArrayData()[1];
+        var stringArray = AtkStage.Instance()->GetStringArrayData()[1];
         if (stringArray == null) return;
 
         var world = Service.Data.Excel.GetSheet<World>()?.GetRow(worldId);

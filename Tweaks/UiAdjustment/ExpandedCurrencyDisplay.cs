@@ -87,7 +87,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     private readonly Dictionary<uint, string> tooltipStrings = new();
     private SimpleEvent? simpleEvent;
 
-    private delegate void* HudLayoutDelegate(AgentHudLayout* agentHudLayout);
+    private delegate void* HudLayoutDelegate(AgentHUDLayout* agentHudLayout);
     private HookWrapper<HudLayoutDelegate>? openHudLayoutHook;
     private HookWrapper<HudLayoutDelegate>? closeHudLayoutHook;
 
@@ -132,7 +132,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         updatePositionHook ??= Common.Hook<UnitBaseUpdatePosition>("E8 ?? ?? ?? ?? 48 8B 03 41 B9 ?? ?? ?? ?? 45 33 C0 41 0F B6 D1 48 8B CB FF 50 30 48 8B CB", UpdatePositionDetour);
         updatePositionHook?.Enable();
 
-        var agent = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentHudLayout();
+        var agent = AgentHUDLayout.Instance();
         if (!agent->AgentInterface.IsAgentActive()) {
             Common.FrameworkUpdate += OnFrameworkUpdate;
         }
@@ -154,13 +154,13 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         return updatePositionHook!.Original(unitBase);
     }
 
-    private void* OnOpenHudLayout(AgentHudLayout* agent) {
+    private void* OnOpenHudLayout(AgentHUDLayout* agent) {
         FreeAllNodes();
         Common.FrameworkUpdate -= OnFrameworkUpdate;
         return openHudLayoutHook!.Original(agent);
     }
 
-    private void* OnCloseHudLayout(AgentHudLayout* agent) {
+    private void* OnCloseHudLayout(AgentHUDLayout* agent) {
         FreeAllNodes();
         Common.FrameworkUpdate -= OnFrameworkUpdate;
         Common.FrameworkUpdate += OnFrameworkUpdate;
@@ -176,11 +176,11 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         if (tooltipStrings.TryGetValue(node->NodeId, out var tooltipString)) {
             switch (eventType) {
                 case AtkEventType.MouseOver: {
-                    AtkStage.GetSingleton()->TooltipManager.ShowTooltip(AddonMoney->Id, node, tooltipString);
+                    AtkStage.Instance()->TooltipManager.ShowTooltip(AddonMoney->Id, node, tooltipString);
                     break;
                 }
                 case AtkEventType.MouseOut:
-                    AtkStage.GetSingleton()->TooltipManager.HideTooltip(AddonMoney->Id);
+                    AtkStage.Instance()->TooltipManager.HideTooltip(AddonMoney->Id);
                     break;
             }
         }
@@ -609,7 +609,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     {
         if (UiHelper.IsAddonReady(AddonMoney))
         {
-            AtkStage.GetSingleton()->TooltipManager.HideTooltip(AddonMoney->Id);
+            AtkStage.Instance()->TooltipManager.HideTooltip(AddonMoney->Id);
             foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
             {
                 var iconNode = Common.GetNodeByID<AtkImageNode>(&AddonMoney->UldManager, ImageBaseId + index);
