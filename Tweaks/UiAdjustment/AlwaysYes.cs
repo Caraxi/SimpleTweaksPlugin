@@ -3,7 +3,6 @@ using System.Linq;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Interface;
 using Dalamud.Utility;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Events;
@@ -12,6 +11,7 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
+[Changelog(UnreleasedVersion, "Added support for automatic aetherial reduction.")]
 [Changelog("1.9.2.1", "Added support for Blunderville exit dialog.")]
 public unsafe class AlwaysYes : UiAdjustments.SubTweak {
     public override string Name => "Always Yes";
@@ -30,6 +30,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         public bool MateriaRetrievals = true;
         public bool GlamourDispels = true;
         public bool Desynthesis = true;
+        public bool AutomaticAetherialReduction = true;
         public bool Lobby = true;
         public bool ItemExchangeConfirmations = true;
         public bool BlundervilleExitDialog = true;
@@ -94,6 +95,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         hasChanged |= ImGui.Checkbox("Materia retrievals", ref Config.MateriaRetrievals);
         hasChanged |= ImGui.Checkbox("Glamour dispels", ref Config.GlamourDispels);
         hasChanged |= ImGui.Checkbox("Desynthesis", ref Config.Desynthesis);
+        hasChanged |= ImGui.Checkbox("Automatic aetherial reduction", ref Config.AutomaticAetherialReduction);
         hasChanged |= ImGui.Checkbox("Character selection dialogs", ref Config.Lobby);
         hasChanged |= ImGui.Checkbox("Item exchange confirmations", ref Config.ItemExchangeConfirmations);
         hasChanged |= ImGui.Checkbox("Blunderville exit dialog", ref Config.BlundervilleExitDialog);
@@ -149,6 +151,9 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 return;
             case "SalvageDialog":
                 if (Config.Desynthesis) SetFocusYes(args.Addon, 24, null, 23);
+                return;
+            case "PurifyResult":
+                if (Config.AutomaticAetherialReduction) SetFocusYes(args.Addon, 19);
                 return;
             case "LobbyWKTCheck":
                 if (Config.Lobby) SetFocusYes(args.Addon, 4);
