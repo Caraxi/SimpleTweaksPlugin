@@ -55,13 +55,13 @@ public class ConfigWindow : SimpleWindow {
             case DecorationType.Easter:
             case DecorationType.Auto when currentDate > EasterDate.AddDays(-4) && EasterDate < EasterDate.AddDays(4):
                 // Easter
-                textures.Add(Service.TextureProvider.GetTextureFromGame("ui/icon/080000/080110_hr1.tex"));
-                textures.Add(Service.TextureProvider.GetTextureFromGame("ui/icon/080000/080131_hr1.tex"));
+                textures.Add(Service.TextureProvider.GetFromGame("ui/icon/080000/080110_hr1.tex").GetWrapOrDefault());
+                textures.Add(Service.TextureProvider.GetFromGame("ui/icon/080000/080131_hr1.tex").GetWrapOrDefault());
                 break;
             case DecorationType.Christmas:
             case DecorationType.Auto when currentDate is { Month: 12, Day: >= 20 and <= 28 }:
-                textures.Add(Service.TextureProvider.GetTextureFromGame("ui/icon/080000/080106_hr1.tex"));
-                var hat = Service.TextureProvider.GetTextureFromFile(new FileInfo(Path.Join(Service.PluginInterface.AssemblyLocation.Directory!.FullName, "Decorations", "xmashat.png")));
+                textures.Add(Service.TextureProvider.GetFromGame("ui/icon/080000/080106_hr1.tex").GetWrapOrDefault());
+                var hat = Service.TextureProvider.GetFromFile(new FileInfo(Path.Join(Service.PluginInterface.AssemblyLocation.Directory!.FullName, "Decorations", "xmashat.png")).FullName).GetWrapOrDefault();
                 if (hat != null) {
                     var dl2 = IsFocused ? ImGui.GetForegroundDrawList() : ImGui.GetBackgroundDrawList();
                     var hatPos = ImGui.GetWindowPos() - hat.Size * new Vector2(0.35f, 0.35f);
@@ -72,12 +72,12 @@ public class ConfigWindow : SimpleWindow {
                 break;
             case DecorationType.Valentines:
             case DecorationType.Auto when currentDate is { Month: 2, Day: >= 13 and <= 15 }:
-                textures.Add(Service.TextureProvider.GetTextureFromGame("ui/icon/080000/080108_hr1.tex"));
-                textures.Add(Service.TextureProvider.GetTextureFromGame("ui/icon/080000/080126_hr1.tex"));
+                textures.Add(Service.TextureProvider.GetFromGame("ui/icon/080000/080108_hr1.tex").GetWrapOrDefault());
+                textures.Add(Service.TextureProvider.GetFromGame("ui/icon/080000/080126_hr1.tex").GetWrapOrDefault());
                 break;
             case DecorationType.Halloween:
             case DecorationType.Auto when currentDate is { Month: 10, Day: >= 30 }:
-                textures.Add(Service.TextureProvider.GetTextureFromGame("ui/icon/080000/080103_hr1.tex"));
+                textures.Add(Service.TextureProvider.GetFromGame("ui/icon/080000/080103_hr1.tex").GetWrapOrDefault());
                 break;
             case DecorationType.None:
             case DecorationType.Random:

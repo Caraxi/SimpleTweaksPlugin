@@ -82,7 +82,7 @@ public abstract class BaseTweak {
                 ImGui.BeginTooltip();
                 if (previewImage == null) {
                     try {
-                        previewImage = PluginInterface.UiBuilder.LoadImage(Path.Join(PluginInterface.AssemblyLocation.DirectoryName, "TweakPreviews", $"{Key}.png"));
+                        previewImage = Service.TextureProvider.GetFromFile(Path.Join(PluginInterface.AssemblyLocation.DirectoryName, "TweakPreviews", $"{Key}.png")).GetWrapOrDefault();
                     } catch {
                         hasPreviewImage = false;
                     }

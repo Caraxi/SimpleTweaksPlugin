@@ -119,7 +119,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     ImGui.Text(statusId.ToString());
 
                     ImGui.TableNextColumn();
-                    var statusIconTex = Service.TextureProvider.GetIcon(statusSheet[statusId].Icon);
+                    var statusIconTex = Service.TextureProvider.GetFromGameIcon(statusSheet[statusId].Icon).GetWrapOrDefault();
                     if (statusIconTex != null) {
                         var scale = (25 * ImGuiHelpers.GlobalScale) / statusIconTex.Height;
                         ImGui.Image(statusIconTex.ImGuiHandle, new Vector2(statusIconTex.Width * scale, statusIconTex.Height * scale));
@@ -387,7 +387,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     ImGui.Text(statusId.ToString());
 
                     ImGui.TableNextColumn();
-                    var statusIconTex = Service.TextureProvider.GetIcon(statusSheet[statusId].Icon);
+                    var statusIconTex = Service.TextureProvider.GetFromGameIcon(statusSheet[statusId].Icon).GetWrapOrDefault();
                     if (statusIconTex != null) {
                         var scale = (25 * ImGuiHelpers.GlobalScale) / statusIconTex.Height;
                         ImGui.Image(statusIconTex.ImGuiHandle, new Vector2(statusIconTex.Width * scale, statusIconTex.Height * scale));
