@@ -257,7 +257,7 @@ public unsafe class ActionBarDebug : DebugHelper {
             ImGui.TableNextColumn();
 
             var iconGood = false;
-            if (slot->IconId >= 0) {
+            if (slot->IconId != 0) {
                 var icon = Plugin.IconManager.GetIconTexture(slot->IconId % 1000000, slot->IconId >= 1000000);
                 if (icon != null) {
                     ImGui.Image(icon.ImGuiHandle, new Vector2(32));

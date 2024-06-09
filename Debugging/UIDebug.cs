@@ -910,7 +910,7 @@ public unsafe class UIDebug : DebugHelper {
                     ImGui.InputInt($"###inputIconVersion__{(ulong)node:X}", ref loadImageVersion);
                     ImGui.SameLine();
                     if (ImGui.SmallButton("Load Icon")) {
-                        iNode->LoadIconTexture(loadImageId, loadImageVersion);
+                        iNode->LoadIconTexture((uint)loadImageId, loadImageVersion);
                     }
                         
                         

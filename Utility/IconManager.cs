@@ -17,7 +17,7 @@ namespace SimpleTweaksPlugin.Utility;
 
 public class IconManager : IDisposable {
     private bool disposed;
-    private readonly Dictionary<(int, bool), IDalamudTextureWrap> iconTextures = new();
+    private readonly Dictionary<(uint, bool), IDalamudTextureWrap> iconTextures = new();
     private readonly Dictionary<uint, ushort> actionCustomIcons = new() {
             
     };
@@ -149,7 +149,7 @@ public class IconManager : IDisposable {
         
     }
         
-    private void LoadIconTexture(int iconId, bool hq = false) {
+    private void LoadIconTexture(uint iconId, bool hq = false) {
         Task.Run(() => {
             try {
                 var tex = Service.TextureProvider.GetFromGameIcon(iconId).GetWrapOrEmpty();
@@ -217,7 +217,7 @@ public class IconManager : IDisposable {
         return actionCustomIcons.ContainsKey(action.RowId) ? actionCustomIcons[action.RowId] : action.Icon;
     }
 
-    public IDalamudTextureWrap GetIconTexture(int iconId, bool hq = false) {
+    public IDalamudTextureWrap GetIconTexture(uint iconId, bool hq = false) {
         if (this.disposed) return null;
         if (this.iconTextures.ContainsKey((iconId, hq))) return this.iconTextures[(iconId, hq)];
         this.iconTextures.Add((iconId, hq), null);

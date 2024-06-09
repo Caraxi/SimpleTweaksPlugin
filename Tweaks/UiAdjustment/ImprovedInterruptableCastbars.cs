@@ -122,7 +122,7 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
         }
     }
     
-    private void MakeImageNode(AtkUnitBase* parent, uint NodeId, int icon, AtkResNode* positioningNode) {
+    private void MakeImageNode(AtkUnitBase* parent, uint NodeId, uint icon, AtkResNode* positioningNode) {
         var imageNode = UiHelper.MakeImageNode(NodeId, new UiHelper.PartInfo(0, 0, 36, 36));
         imageNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorTop | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents;
         imageNode->WrapMode = 1;
