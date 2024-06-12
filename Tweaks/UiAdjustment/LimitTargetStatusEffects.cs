@@ -236,11 +236,15 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private long UpdateFocusTargetDetour(void* agentHud) {
             long ret = 0;
             try {
-                var focusTarget = this.targetSystem != null ? this.targetSystem->FocusTarget : null;
-                var shouldFilter = Config.FilterFocusTarget && this.targetSystem != null && focusTarget != null && focusTarget->IsCharacter();
+                if (!Config.FilterFocusTarget) {
+                    return updateFocusTargetHook.Original(agentHud);
+                }
 
-                if (shouldFilter) {
-                    var focusTargetStatusManager = ((Character*)focusTarget)->GetStatusManager();
+                var focusTarget = this.targetSystem != null ? this.targetSystem->FocusTarget : null;
+                var isFocusTargetACharacter = focusTarget != null && focusTarget->IsCharacter();
+                var focusTargetStatusManager = isFocusTargetACharacter ? ((Character*)focusTarget)->GetStatusManager() : null;
+
+                if (focusTargetStatusManager != null) {
                     FilterStatus(focusTargetStatusManager, focusTarget);
 
                     ret = updateFocusTargetHook.Original(agentHud);
