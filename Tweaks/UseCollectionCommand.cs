@@ -19,9 +19,9 @@ public unsafe class UseCollectionCommand : CommandTweak {
     protected override string HelpMessage => "Use a Collection item by name or ID. Use without parameters to list available items and IDs.";
     protected override string Command => "usecollection";
 
-    private static readonly Dictionary<string, uint> McGuffin = Service.Data.GetExcelSheet<McGuffinUIData>()!
-        .Where(a => a.RowId > 0)
-        .ToDictionary(b => b.Name.ToString().ToLower(), b => b.RowId);
+    private static readonly Dictionary<string, uint> McGuffin = Service.Data.GetExcelSheet<McGuffin>()!
+        .Where(a => a.UIData.Value is { RowId: > 0 })
+        .ToDictionary(b => b.UIData.Value.Name.ToString().ToLower(), b => b.RowId);
 
     private delegate byte UseMcGuffinDelegate(IntPtr module, uint id);
 
@@ -32,9 +32,9 @@ public unsafe class UseCollectionCommand : CommandTweak {
         if (args.Length == 0) {
             var playerState = UIState.Instance()->PlayerState;
             Service.Chat.Print("Available Collection items:");
-            foreach (var row in Service.Data.GetExcelSheet<McGuffinUIData>()!) {
-                if (row.RowId > 0 && playerState.IsMcGuffinUnlocked(row.RowId)) {
-                    Service.Chat.Print($"  {row.Name} (ID: {row.RowId})");
+            foreach (var row in Service.Data.GetExcelSheet<McGuffin>()!) {
+                if (row.UIData.Value is { RowId: > 0 } uiData && playerState.IsMcGuffinUnlocked(row.RowId)) {
+                    Service.Chat.Print($"  {uiData.Name} (ID: {row.RowId})");
                 }
             }
             return;
