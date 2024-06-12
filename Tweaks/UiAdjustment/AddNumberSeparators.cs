@@ -24,7 +24,7 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
         public bool PartyList = true;
         public char? CustomSeparator;
     }
-    
+
     public Configs Config { get; private set; }
 
     protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
@@ -42,6 +42,7 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
 
         if (hasChanged) {
             SaveConfig(Config);
+            ConfigureInstructions();
         }
     };
 
@@ -55,11 +56,11 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
 
         internal const string Separator = "44 0F B6 05 ?? ?? ?? ?? 45 84 C0 74 36 F6 87";
     }
-    
+
     private Dictionary<nint, byte[]> OldBytes { get; } = new();
     private byte OriginalSeparator { get; set; }
     private nint SeparatorPtr { get; set; }
-    
+
     private delegate void ShowFlyTextDelegate(nint addon, uint actorIndex, uint messageMax, nint numbers, int offsetNum, int offsetNumMax, nint strings, int offsetStr, int offsetStrMax, int a10);
 
     [TweakHook, Signature(Signatures.ShowFlyText, DetourName = nameof(ShowFlyTextDetour))]
@@ -69,7 +70,7 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
 
     [TweakHook, Signature(Signatures.SprintfNumber, DetourName = nameof(SprintfNumberDetour))]
     private HookWrapper<SprintfNumberDelegate>? _sprintfNumberHook;
-    
+
     private static readonly byte[] ThirdArgOne = [
         0x41, 0xB0, 0x01,
     ];
@@ -79,11 +80,12 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
             SeparatorPtr = separatorPtr;
             OriginalSeparator = *(byte*) separatorPtr;
         }
-        
+
         base.Setup();
     }
 
     protected override void Enable() {
+        Config = LoadConfig<Configs>() ?? new Configs();
         ConfigureInstructions();
         SetSeparator(Config.CustomSeparator);
         base.Enable();
@@ -91,11 +93,11 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
 
     protected override void Disable() {
         RestoreAllBytes();
-        
+
         if (SeparatorPtr != 0 && OriginalSeparator != 0) {
             *(byte*) SeparatorPtr = OriginalSeparator;
         }
-        
+
         base.Disable();
     }
 
@@ -111,11 +113,11 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
 
         *(byte*) SeparatorPtr = separator;
     }
-    
+
     internal void ConfigureInstructions() {
-        this.ConfigureInstruction(Signatures.FlyTextStringify, this.Config.FlyText);
-        this.ConfigureInstruction(Signatures.HotbarManaStringify, this.Config.AbilityCost);
-        this.ConfigureInstruction(Signatures.PartyListStringify, this.Config.PartyList);
+        this.ConfigureInstruction(Signatures.FlyTextStringify, Config.FlyText);
+        this.ConfigureInstruction(Signatures.HotbarManaStringify, Config.AbilityCost);
+        this.ConfigureInstruction(Signatures.PartyListStringify, Config.PartyList);
     }
 
     private void ConfigureInstruction(string sig, bool enabled) {
@@ -154,7 +156,7 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
             this.RestoreBytes(ptr);
         }
     }
-    
+
     private void ShowFlyTextDetour(nint addon, uint actorIndex, uint messageMax, nint numbers, int offsetNum, int offsetNumMax, nint strings, int offsetStr, int offsetStrMax, int a10) {
         this._showFlyTextHook!.Original(addon, actorIndex, messageMax, numbers, offsetNum, offsetNumMax, strings, offsetStr, offsetStrMax, a10);
 
@@ -228,7 +230,7 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
             this.TraverseNodes(next, action, false);
         }
     }
-    
+
     private nint SprintfNumberDetour(uint number) {
         var ret = (byte*) this._sprintfNumberHook!.Original(number);
         if (!this.Config.AbilityTooltip) {
