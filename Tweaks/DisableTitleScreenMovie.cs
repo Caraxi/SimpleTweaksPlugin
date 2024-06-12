@@ -1,30 +1,23 @@
-﻿using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+﻿using Dalamud;
 using SimpleTweaksPlugin.TweakSystem;
-using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
-internal unsafe class DisableTitleScreenMovie : Tweak {
+internal class DisableTitleScreenMovie : Tweak {
     public override string Name => "Disable Title Screen Movie";
     public override string Description => "Prevents the title screen from playing the introduction movie after 60 seconds.";
 
+    private nint compareIdleTimeAddress;
+
     protected override void Enable() {
-        Common.FrameworkUpdate += FrameworkUpdate;
-        base.Enable();
+        if (!Service.SigScanner.TryScanText("48 81 ?? ?? ?? ?? ?? 60 EA 00 00 0F 86 ?? ?? ?? ??", out compareIdleTimeAddress)) return;
+        compareIdleTimeAddress += 11;
+        SafeMemory.Write(compareIdleTimeAddress, new byte[]{0x90, 0xE9});
     }
 
     protected override void Disable() {
-        Common.FrameworkUpdate -= FrameworkUpdate;
-        base.Disable();
-    }
-
-    private void FrameworkUpdate() {
-        try {
-            if (Service.Condition == null) return;
-            if (Service.Condition.Any()) return;
-            AgentLobby.Instance()->IdleTime = 0;
-        } catch {
-            // Ignored
-        }
+        if (compareIdleTimeAddress == nint.Zero) return;
+        if (SafeMemory.Write(compareIdleTimeAddress, new byte[]{0x0F, 0x86}))
+            compareIdleTimeAddress = nint.Zero;
     }
 }
