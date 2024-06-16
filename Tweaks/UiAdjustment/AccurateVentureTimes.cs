@@ -74,7 +74,7 @@ public unsafe class AccurateVentureTimes : UiAdjustments.SubTweak {
 
                 if (retainer->VentureComplete != 0) {
                     var renderer = Common.GetNodeByID<AtkComponentNode>(&listNode->Component->UldManager, i == 0 ? 4U : 41000U + i, (NodeType) 1011);
-                    if (renderer == null || !renderer->AtkResNode.IsVisible) continue;
+                    if (renderer == null || !renderer->IsVisible()) continue;
                     var ventureText = (AtkTextNode*) renderer->Component->UldManager.SearchNodeById(12);
                     var cTime = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.GetServerTime();
                     var rTime = retainer->VentureComplete - cTime;

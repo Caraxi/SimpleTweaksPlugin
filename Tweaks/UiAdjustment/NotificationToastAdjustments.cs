@@ -55,7 +55,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 if (offsetChanged)
                 {
                     var toastNode = GetToastNode(2);
-                    if (toastNode != null && !toastNode->IsVisible)
+                    if (toastNode != null && !toastNode->IsVisible())
                         Service.Toasts.ShowNormal("This is a preview of a toast message.");
                     hasChanged = true;
                 }
@@ -131,7 +131,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 return;
             }
 
-            if (!toastNode->IsVisible) return;
+            if (!toastNode->IsVisible()) return;
 
             SetOffsetPosition(toastNode, Config.OffsetXPosition, Config.OffsetYPosition, Config.Scale);
             toastNode->SetScale(Config.Scale, Config.Scale);

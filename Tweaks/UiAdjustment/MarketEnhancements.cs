@@ -134,8 +134,8 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
                 var realCostPerItem = totalWithTax / (float)qtyValue; 
                 
 
-                var sellValue = Math.Ceiling(npcSellPrice * (hqImageNode->AtkResNode.IsVisible ? 1.1 : 1.0));
-                if (Config.HighlightLazyTax && npcBuyPrice > 0 && realCostPerItem > npcBuyPrice && !hqImageNode->AtkResNode.IsVisible) {
+                var sellValue = Math.Ceiling(npcSellPrice * (hqImageNode->IsVisible() ? 1.1 : 1.0));
+                if (Config.HighlightLazyTax && npcBuyPrice > 0 && realCostPerItem > npcBuyPrice && !hqImageNode->IsVisible()) {
                     singlePriceNode->EdgeColor.R = (byte)(Config.LazyTaxColour.X * 255f);
                     singlePriceNode->EdgeColor.G = (byte)(Config.LazyTaxColour.Y * 255f);
                     singlePriceNode->EdgeColor.B = (byte)(Config.LazyTaxColour.Z * 255f);

@@ -106,9 +106,9 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
         if (textNode == null) return;
 
         //'_TargetInfo' text node can sometimes remain visible when targetting non-bnpcs, but parent node invis.
-        if (ui->IsVisible && useCustomColor && textNode->AtkResNode.ParentNode->IsVisible) {
+        if (ui->IsVisible && useCustomColor && textNode->AtkResNode.ParentNode->IsVisible()) {
             TryMakeNodes(ui, imageNodeId);
-            ToggleImageNodeVisibility(textNode->AtkResNode.IsVisible, &ui->UldManager, imageNodeId);
+            ToggleImageNodeVisibility(textNode->IsVisible(), &ui->UldManager, imageNodeId);
             AdjustTextColorsAndFontSize(textNode, textColor, edgeColor, fontSize);
 
             var imageNode = GetImageNode(&ui->UldManager, imageNodeId);

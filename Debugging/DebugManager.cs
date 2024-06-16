@@ -247,7 +247,7 @@ namespace SimpleTweaksPlugin.Debugging {
         private static unsafe bool GetNodeVisible(AtkResNode* node) {
             if (node == null) return false;
             while (node != null) {
-                if (!node->IsVisible) return false;
+                if (!node->IsVisible()) return false;
                 node = node->ParentNode;
             }
             return true;

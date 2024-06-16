@@ -85,7 +85,7 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
         var castBarNode = Common.GetNodeByID(&addon->UldManager, positioningNodeId);
         if (interruptNode is not null && castBarNode is not null) {
             TryMakeNodes(addon, castBarNode);
-            UpdateIcons(interruptNode->AtkResNode.IsVisible, addon, target);
+            UpdateIcons(interruptNode->AtkResNode.IsVisible(), addon, target);
         }
     }
     
@@ -128,7 +128,7 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
         imageNode->WrapMode = 1;
         imageNode->Flags = (byte) ImageNodeFlags.AutoFit;
         
-        imageNode->LoadIconTexture(icon, 0);
+        imageNode->LoadIconTexture((uint)icon, 0);
         imageNode->AtkResNode.ToggleVisibility(true);
 
         imageNode->AtkResNode.SetWidth(36);

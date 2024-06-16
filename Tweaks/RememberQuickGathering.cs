@@ -61,7 +61,7 @@ public unsafe class RememberQuickGathering : Tweak {
 
     private bool CanQuickGather(AddonGathering* addon) {
         // Use visibility of quick gathering checkbox as indicator
-        return addon->QuickGatheringComponentCheckBox->AtkComponentButton.AtkComponentBase.OwnerNode->AtkResNode.IsVisible;
+        return addon->QuickGatheringComponentCheckBox->AtkComponentButton.AtkComponentBase.OwnerNode->IsVisible();
     }
     private void TrySetQuickGathering(AddonGathering* addon) {
         // Only toggle if not already in target state
@@ -76,7 +76,7 @@ public unsafe class RememberQuickGathering : Tweak {
 
         // I don't know if there's a better way to get the checkmark image node
         AtkResNode* checkmarkNode = addon->QuickGatheringComponentCheckBox->AtkComponentButton.ButtonBGNode->PrevSiblingNode;
-        if (checkmarkNode->IsVisible == targetQuickGatheringStatus) {
+        if (checkmarkNode->IsVisible() == targetQuickGatheringStatus) {
             // Finally, success
             shouldUpdateCheckmark = false;
         } else {

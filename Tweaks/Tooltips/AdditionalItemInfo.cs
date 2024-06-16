@@ -207,7 +207,7 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
     private void BeforeItemDetailUpdate(AtkUnitBase* atkUnitBase) {
         var textNode = Common.GetNodeByID<AtkTextNode>(&atkUnitBase->UldManager, CustomNodes.AdditionalInfo, NodeType.Text);
         if (textNode != null) {
-            if (textNode->AtkResNode.IsVisible) {
+            if (textNode->IsVisible()) {
                 var insertNode = atkUnitBase->GetNodeById(2);
                 if (insertNode == null) return;
                 atkUnitBase->WindowNode->AtkResNode.SetHeight((ushort)(atkUnitBase->WindowNode->AtkResNode.Height - textNode->AtkResNode.Height));

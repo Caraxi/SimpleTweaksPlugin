@@ -230,7 +230,7 @@ public unsafe class Common {
         var atkValues = CreateAtkValueArray(values);
         if (atkValues == null) return;
         try {
-            unitBase->FireCallback(values.Length, atkValues);
+            unitBase->FireCallback((uint)values.Length, atkValues);
         } finally {
             for (var i = 0; i < values.Length; i++) {
                 if (atkValues[i].Type == ValueType.String) {

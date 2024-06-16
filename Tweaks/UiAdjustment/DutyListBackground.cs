@@ -65,7 +65,7 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak {
                 }
 
                 var padding = new Vector2(5.0f, 5.0f);
-                imageNode->AtkResNode.ToggleVisibility(unitBase->IsVisible && unitBase->RootNode->IsVisible && (unitBase->VisibilityFlags & 1) == 0);
+                imageNode->AtkResNode.ToggleVisibility(unitBase->IsVisible && unitBase->RootNode->IsVisible() && (unitBase->VisibilityFlags & 1) == 0);
                 imageNode->AtkResNode.SetWidth((ushort)(unitBase->GetScaledWidth(true) + padding.X * 2.0f));
                 imageNode->AtkResNode.SetHeight((ushort)(unitBase->GetScaledHeight(true) + padding.Y * 2.0f));
                 imageNode->AtkResNode.SetPositionFloat(unitBase->X - padding.X, unitBase->Y - padding.Y);

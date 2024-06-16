@@ -130,7 +130,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         var castBarNode = Common.GetNodeByID(&addon->UldManager, positioningNodeId);
         if (interruptNode is not null && castBarNode is not null) {
             TryMakeNodes(addon);
-            UpdateIcons(interruptNode->AtkResNode.IsVisible, addon, target, castBarNode, focusTarget);
+            UpdateIcons(interruptNode->IsVisible(), addon, target, castBarNode, focusTarget);
         }
     }
 

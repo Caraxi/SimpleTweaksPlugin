@@ -355,8 +355,8 @@ public unsafe class UIDebug : DebugHelper {
             foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->Entries.Length))) {
                 var unitBase = unitManager->Entries[j].Value;
                 if (unitBase == null || unitBase->RootNode == null) continue;
-                if (!(unitBase->IsVisible && unitBase->RootNode->IsVisible)) continue;
-                var addonResult = new AddonResult() {UnitBase = unitBase};
+                if (!(unitBase->IsVisible && unitBase->IsVisible)) continue;
+                var addonResult = new AddonResult {UnitBase = unitBase};
                 if (list.Contains(addonResult)) continue;
                 if (unitBase->X > position.X || unitBase->Y > position.Y) continue;
                 if (unitBase->X + unitBase->RootNode->Width < position.X) continue;
@@ -421,7 +421,7 @@ public unsafe class UIDebug : DebugHelper {
         
     public static void DrawUnitBase(AtkUnitBase* atkUnitBase) {
 
-        var isVisible = (atkUnitBase->Flags & 0x20) == 0x20;
+        var isVisible = atkUnitBase->IsVisible;
         var addonName = atkUnitBase->NameString;
             
         ImGui.Text($"{addonName}");
@@ -442,7 +442,7 @@ public unsafe class UIDebug : DebugHelper {
         ImGui.SameLine(ImGuiExt.GetWindowContentRegionSize().X - 25);
         if (ImGui.SmallButton("V")) {
             if (atkUnitBase->IsVisible) {
-                atkUnitBase->Flags ^= 0x20;
+                atkUnitBase->IsVisible = !atkUnitBase->IsVisible;
             } else {
                 atkUnitBase->Show(false, 0);
             }
@@ -697,7 +697,7 @@ public unsafe class UIDebug : DebugHelper {
     private static void PrintSimpleNode(AtkResNode* node, string treePrefix, bool textOnly = false)
     {
         bool popped = false;
-        bool isVisible = node->IsVisible;
+        bool isVisible = node->IsVisible();
 
         if (isVisible && !textOnly)
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0, 255, 0, 255));
@@ -910,7 +910,7 @@ public unsafe class UIDebug : DebugHelper {
                     ImGui.InputInt($"###inputIconVersion__{(ulong)node:X}", ref loadImageVersion);
                     ImGui.SameLine();
                     if (ImGui.SmallButton("Load Icon")) {
-                        iNode->LoadIconTexture(loadImageId, loadImageVersion);
+                        iNode->LoadIconTexture((uint)loadImageId, loadImageVersion);
                     }
                         
                         
@@ -934,7 +934,7 @@ public unsafe class UIDebug : DebugHelper {
         if (objectInfo == null) return;
 
         bool popped = false;
-        bool isVisible = node->IsVisible;
+        bool isVisible = node->IsVisible();
 
         if (isVisible && !textOnly)
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0, 255, 0, 255));
@@ -1362,7 +1362,7 @@ public unsafe class UIDebug : DebugHelper {
                 }
                     
                 if (headerOpen) {
-                    var visible = (unitBase->Flags & 0x20) == 0x20;
+                    var visible = unitBase->IsVisible;
                     ImGui.PushStyleColor(ImGuiCol.Text, visible ? 0xFF00FF00 : 0xFF999999);
                         
                     if (ImGui.Selectable($"{name}##list{i}-{(ulong) unitBase:X}_{j}", selectedUnitBase == unitBase)) {
@@ -1434,7 +1434,7 @@ public unsafe class UIDebug : DebugHelper {
     private static bool GetNodeVisible(AtkResNode* node) {
         if (node == null) return false;
         while (node != null) {
-            if (!node->IsVisible) return false;
+            if (!node->IsVisible()) return false;
             node = node->ParentNode;
         }
         return true;

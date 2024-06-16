@@ -55,16 +55,16 @@
             <HintPath>$(DalamudLibPath)\Dalamud.dll</HintPath>
 		</Reference>
 		<Reference Include="FFXIVClientStructs">
-			<Private Condition="'$(Configuration)' == 'Debug'">true</Private>
-			<Private Condition="'$(Configuration)' == 'Release'">false</Private>
-			<HintPath Condition="'$(Configuration)' == 'Debug'">$(ProjectDir)\lib\FFXIVClientStructs\bin\$(ConfigurationName)\FFXIVClientStructs.dll</HintPath>
-			<HintPath Condition="'$(Configuration)' == 'Release'">$(DalamudLibPath)\FFXIVClientStructs.dll</HintPath>
+			<Private Condition="'$(Configuration)' == 'Release'">true</Private>
+			<Private Condition="'$(Configuration)' == 'Debug'">false</Private>
+			<HintPath Condition="'$(Configuration)' == 'Release'">$(ProjectDir)\lib\FFXIVClientStructs\bin\$(ConfigurationName)\FFXIVClientStructs.dll</HintPath>
+			<HintPath Condition="'$(Configuration)' == 'Debug'">$(DalamudLibPath)\FFXIVClientStructs.dll</HintPath>
 		</Reference>
         <Reference Include="InteropGenerator.Runtime">
-            <Private Condition="'$(Configuration)' == 'Debug'">true</Private>
-            <Private Condition="'$(Configuration)' == 'Release'">false</Private>
-            <HintPath Condition="'$(Configuration)' == 'Debug'">$(ProjectDir)\lib\FFXIVClientStructs\bin\$(ConfigurationName)\InteropGenerator.Runtime.dll</HintPath>
-            <HintPath Condition="'$(Configuration)' == 'Release'">$(DalamudLibPath)\InteropGenerator.Runtime.dll</HintPath>
+            <Private Condition="'$(Configuration)' == 'Release'">true</Private>
+            <Private Condition="'$(Configuration)' == 'Debug'">false</Private>
+            <HintPath Condition="'$(Configuration)' == 'Release'">$(ProjectDir)\lib\FFXIVClientStructs\bin\$(ConfigurationName)\InteropGenerator.Runtime.dll</HintPath>
+            <HintPath Condition="'$(Configuration)' == 'Debug'">$(DalamudLibPath)\InteropGenerator.Runtime.dll</HintPath>
         </Reference>
         <Reference Include="Newtonsoft.Json">
             <Private>false</Private>

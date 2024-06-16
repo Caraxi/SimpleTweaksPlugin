@@ -67,7 +67,7 @@ public unsafe class HideChatAuto : ChatTweaks.SubTweak
             var inputCursorNode = GetChatInputCursorNode();
             if (inputCursorNode == null) return;
 
-            var visibility = inputCursorNode->IsVisible;
+            var visibility = inputCursorNode->IsVisible();
             if (visibility)
             {
                 SetVisibility(true);
