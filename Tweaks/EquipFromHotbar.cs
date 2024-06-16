@@ -122,8 +122,8 @@ public unsafe class EquipFromHotbar : Tweak {
     
     private bool FindAndEquip(uint itemId, bool isHq, InventoryType inventoryType, uint equipSlot, ItemOrderModuleSorter* sorter) {
         var inventoryManager = InventoryManager.Instance();
-        for (var i = 0U; i < sorter->Items.Size(); i++) {
-            var entry = sorter->Items.Get(i).Value;
+        for (var i = 0U; i < sorter->Items.Count; i++) {
+            var entry = sorter->Items[i].Value;
             var item = inventoryManager->GetInventorySlot(inventoryType + entry->Page, entry->Slot);
             if (item->ItemId == itemId && item->Flags.HasFlag(InventoryItem.ItemFlags.HighQuality) == isHq) {
                 var page = (uint) (i / sorter->ItemsPerPage);

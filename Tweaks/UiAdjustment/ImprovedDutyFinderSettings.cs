@@ -314,8 +314,8 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
 
     private void ToggleSetting(DutyFinderSetting setting) {
         // block setting change if queued for a duty
-        if (Service.Condition[ConditionFlag.BoundToDuty97]) {
-            var condition = Service.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Condition>()?.GetRow((uint)ConditionFlag.BoundToDuty97)?.LogMessage?.Value?.Text?.ToDalamudString();
+        if (Service.Condition[ConditionFlag.InDutyQueue]) {
+            var condition = Service.Data.GetExcelSheet<Condition>()?.GetRow((uint)ConditionFlag.InDutyQueue)?.LogMessage?.Value?.Text?.ToDalamudString();
             Service.Toasts.ShowError(condition ?? "Unable to execute command while bound by duty.");
             return;
         }

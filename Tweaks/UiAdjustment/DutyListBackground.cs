@@ -74,7 +74,8 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak {
                 imageNode->AtkResNode.AddGreen = (byte)(TweakConfig.BackgroundColor.Y * 255);
                 imageNode->AtkResNode.AddBlue = (byte)(TweakConfig.BackgroundColor.Z * 255);
 
-                if (TweakConfig.HideInDuties && Service.Condition.Any(ConditionFlag.BoundByDuty, ConditionFlag.BoundByDuty95, ConditionFlag.BoundToDuty97)) {
+                
+                if (TweakConfig.HideInDuties && Service.Condition.Any(ConditionFlag.BoundByDuty, ConditionFlag.BoundByDuty95)) {
                     imageNode->AtkResNode.ToggleVisibility(false);
                 }
             }

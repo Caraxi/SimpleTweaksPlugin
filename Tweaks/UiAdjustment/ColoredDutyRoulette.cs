@@ -89,7 +89,7 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak {
     private void OnContentsFinderRefresh(AddonRefreshArgs args) {
         var addon = (AddonContentsFinder*) args.Addon;
 
-        foreach (var itemRenderer in addon->DutyList->Items.Span) {
+        foreach (var itemRenderer in addon->DutyList->Items) {
             var componentNode = itemRenderer.Value->Renderer->AtkDragDropInterface.ComponentNode;
             if (componentNode is null) continue;
 
@@ -131,7 +131,7 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak {
         if (!UiHelper.IsAddonReady((AtkUnitBase*)addon)) return;
         if (addon->DutyList is null) return;
         
-        foreach (var itemRenderer in addon->DutyList->Items.Span) {
+        foreach (var itemRenderer in addon->DutyList->Items) {
             var componentNode = itemRenderer.Value->Renderer->AtkDragDropInterface.ComponentNode;
             if (componentNode is null) continue;
 
