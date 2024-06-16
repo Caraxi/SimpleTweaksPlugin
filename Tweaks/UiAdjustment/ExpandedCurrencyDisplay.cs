@@ -44,7 +44,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
     {
         public bool Enabled = true;
         public uint ItemId;
-        public int IconId;
+        public uint IconId;
         public bool HqItem;
         public bool CollectibleItem;
         public string Name = string.Empty;
@@ -655,7 +655,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         }
     }
     
-    private void TryMakeIconNode(uint NodeId, Vector2 position, int icon, bool hqIcon, string? tooltipText = null)
+    private void TryMakeIconNode(uint NodeId, Vector2 position, uint icon, bool hqIcon, string? tooltipText = null)
     {
         var iconNode = Common.GetNodeByID(&AddonMoney->UldManager, NodeId);
         if (iconNode is null)
@@ -681,7 +681,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak
         }
     }
     
-    private void MakeIconNode(uint NodeId, Vector2 position, int icon, bool hqIcon, string? tooltipText = null)
+    private void MakeIconNode(uint NodeId, Vector2 position, uint icon, bool hqIcon, string? tooltipText = null)
     {
         var imageNode = UiHelper.MakeImageNode(NodeId, new UiHelper.PartInfo(0, 0, 36, 36));
         imageNode->AtkResNode.NodeFlags = NodeFlags.AnchorTop | NodeFlags.AnchorLeft | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents;

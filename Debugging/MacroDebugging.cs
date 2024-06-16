@@ -25,7 +25,7 @@ public unsafe class MacroDebugging : DebugHelper {
             var macro = span.GetPointer(i);
             if (macro == null) continue;
             if (macro->IconId == 0) continue;
-            var icon = Plugin.IconManager.GetIconTexture((int)macro->IconId);
+            var icon = Plugin.IconManager.GetIconTexture(macro->IconId);
 
             if (icon != null) {
                 ImGui.Image(icon.ImGuiHandle, new Vector2(24));
