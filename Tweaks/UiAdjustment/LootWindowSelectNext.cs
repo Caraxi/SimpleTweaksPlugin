@@ -14,14 +14,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakAuthor("MidoriKami")]
 [TweakReleaseVersion("1.8.9.2")]
 public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak {
-    private delegate void NeedGreedReceiveEventDelegate(AddonNeedGreed* addon, AtkEventType type, ButtonType buttonType, AtkEvent* eventInfo, nint data);
 
     [TweakHook(AutoEnable = false)]
-    private HookWrapper<NeedGreedReceiveEventDelegate>? needGreedReceiveEventHook;
+    private HookWrapper<AddonNeedGreed.Delegates.ReceiveEvent>? needGreedReceiveEventHook;
 
     [AddonPostSetup("NeedGreed")]
     private void AddonSetup(AtkUnitBase* atkUnitBase) {
-        needGreedReceiveEventHook ??= Common.Hook<NeedGreedReceiveEventDelegate>(atkUnitBase->AtkEventListener.VirtualTable->ReceiveEvent, OnNeedGreedReceiveEvent);
+        needGreedReceiveEventHook ??= Common.Hook<AddonNeedGreed.Delegates.ReceiveEvent>(atkUnitBase->VirtualTable->ReceiveEvent, OnNeedGreedReceiveEvent);
         needGreedReceiveEventHook?.Enable();
 
         // Find first item that hasn't been rolled on, and select it.
@@ -41,11 +40,13 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak {
         Pass = 2,
     }
 
-    private void OnNeedGreedReceiveEvent(AddonNeedGreed* addon, AtkEventType type, ButtonType buttonType, AtkEvent* eventInfo, nint data) {
-        needGreedReceiveEventHook!.Original(addon, type, buttonType, eventInfo, data);
+    private void OnNeedGreedReceiveEvent(AddonNeedGreed* addon, AtkEventType type, int eventParam, AtkEvent* eventInfo, AtkEventData* atkEventData) {
+        needGreedReceiveEventHook!.Original(addon, type, eventParam, eventInfo, atkEventData);
         
         try {
             if (type is not AtkEventType.ButtonClick) return;
+
+            var buttonType = (ButtonType) eventParam;
 
             switch (buttonType) {
                 case ButtonType.Need:
@@ -63,9 +64,9 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak {
     }
 
     private void SelectItem(AddonNeedGreed* addon, int index) {
-        var values = stackalloc int[6];
-        values[4] = index;
-        OnNeedGreedReceiveEvent(addon, AtkEventType.ListItemToggle, 0, null, (nint)values); 
+        var values = new AtkEventData();
+        values.ListItemData.SelectedIndex = index;
+        OnNeedGreedReceiveEvent(addon, AtkEventType.ListItemToggle, 0, null, &values); 
     }
 
     private LootItemInfo GetSelectedItem(AddonNeedGreed* addon) 
