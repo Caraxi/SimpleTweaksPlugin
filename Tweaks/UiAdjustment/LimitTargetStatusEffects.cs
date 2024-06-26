@@ -166,8 +166,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             UpdateFilteredStatus();
             Common.FrameworkUpdate += FrameworkOnUpdate;
 
-            updateTargetStatusHook = Common.Hook<UpdateTargetStatusDelegate>("E8 ?? ?? ?? ?? 4C 8B 44 24 ?? 4D 8B CE", UpdateTargetStatusDetour);
-            updateFocusTargetHook = Common.Hook<UpdateFocusTargetDelegate>("40 55 53 57 48 8D 6C 24 90", UpdateFocusTargetDetour);
+            updateTargetStatusHook = Common.Hook<UpdateTargetStatusDelegate>("4C 8B DC 53 48 81 EC 30 03 00 00", UpdateTargetStatusDetour);
+            updateFocusTargetHook = Common.Hook<UpdateFocusTargetDelegate>("40 55 53 57 41 57 48 8D 6C 24 98", UpdateFocusTargetDetour);
 
             this.updateFocusTargetHook?.Enable();
             this.updateTargetStatusHook?.Enable();

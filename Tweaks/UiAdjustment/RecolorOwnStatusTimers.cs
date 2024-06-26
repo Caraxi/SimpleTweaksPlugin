@@ -42,7 +42,7 @@ public unsafe class RecolorOwnStatusTimers : UiAdjustments.SubTweak {
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
 
-        getUiColorHook ??= Common.Hook<GetUiColor>("83 F9 0A 73 26", GetUiColorDetour);
+        getUiColorHook ??= Common.Hook<GetUiColor>("83 F9 0A 73 24", GetUiColorDetour);
         getUiColorHook?.Enable();
         base.Enable();
     }
