@@ -6,38 +6,42 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Memory;
-using Dalamud.Utility.Signatures;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Chat;
 
-[TweakName("Search Info Print")]
-[TweakDescription("Prints the Search Info of people, that get inspected, into the chat.")]
+[TweakName("Print Search Comment")]
+[TweakDescription("Prints the Search Comment of people, that get inspected, into the chat.")]
 [TweakAuthor("Infi")]
 [TweakReleaseVersion(UnreleasedVersion)]
-public class SearchInfoPrint : ChatTweaks.SubTweak {
-    [TweakHook, Signature("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 49 8B E8 8B DA", DetourName = nameof(SearchInfoDownloadedDetour))]
-    private HookWrapper<SearchInfoDownloadedDelegate>? searchInfoDownloadedHook;
-    private delegate byte SearchInfoDownloadedDelegate(nint agentInspect, uint objectId, nint searchInfoPtr);
+public class PrintSearchComment : ChatTweaks.SubTweak {
+    [TweakHook]
+    private HookWrapper<AgentInspect.Delegates.ReceiveSearchComment>? receiveSearchComment;
 
-    private byte SearchInfoDownloadedDetour(nint agentInspect, uint objectId, nint searchInfoPtr)
+    public override unsafe void Setup()
     {
-        var result = searchInfoDownloadedHook!.Original(agentInspect, objectId, searchInfoPtr);
+        base.Setup();
 
-        // Updated: 4.5
+        receiveSearchComment ??= Common.Hook<AgentInspect.Delegates.ReceiveSearchComment>(AgentInspect.MemberFunctionPointers.ReceiveSearchComment, ReceiveSearchCommentDetour);
+        receiveSearchComment?.Enable();
+    }
+
+    private unsafe void ReceiveSearchCommentDetour(AgentInspect* agent, uint entityId, byte* searchComment)
+    {
+        receiveSearchComment!.Original(agent, entityId, searchComment);
+
         try
         {
-            var searchInfo = MemoryHelper.ReadSeStringNullTerminated(searchInfoPtr);
+            var searchInfo = MemoryHelper.ReadSeStringNullTerminated((nint) searchComment);
 
-            var obj = Service.Objects.FirstOrDefault(o => o.ObjectId == objectId);
+            var obj = Service.Objects.SearchById(entityId);
             if (obj == null || !obj.IsValid()) {
-                SimpleLog.Debug($"Unable to find ObjectID.");
+                SimpleLog.Debug("Unable to find ObjectID.");
             }
-            else if (searchInfo.Payloads.Count > 0 && obj.ObjectKind == ObjectKind.Player)
+            else if (searchInfo.Payloads.Count > 0 && obj is PlayerCharacter { ObjectKind: ObjectKind.Player } character)
             {
-                var character = (PlayerCharacter) obj;
-
                 var builder = new SeStringBuilder();
                 builder.AddUiForeground(45);
                 builder.AddText("Search Info from <");
@@ -52,7 +56,5 @@ public class SearchInfoPrint : ChatTweaks.SubTweak {
         catch (Exception ex) {
             SimpleLog.Error(ex, $"Error in {GetType().Name} hook");
         }
-
-        return result;
     }
 }
