@@ -334,7 +334,7 @@ public unsafe class Common {
     public static T* GetAgent<T>() where T : unmanaged {
         var attr = typeof(T).GetCustomAttribute<AgentAttribute>();
         if (attr == null) return null;
-        return (T*)GetAgent(attr.ID);
+        return (T*)GetAgent(attr.Id);
     }
 
 

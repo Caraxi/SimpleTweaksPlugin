@@ -23,7 +23,7 @@ public unsafe class InfoProxyDebugging : DebugHelper {
             proxyType = new Dictionary<InfoProxyId, Type>();
             foreach (var a in typeof(InfoProxyInterface).Assembly.GetTypes().Select((t) => (t, t.GetCustomAttributes(typeof(InfoProxyAttribute)).Cast<InfoProxyAttribute>().ToArray())).Where(t => t.Item2.Length > 0)) {
                 foreach (var attr in a.Item2) {
-                    proxyType.TryAdd(attr.ID, a.t);
+                    proxyType.TryAdd(attr.InfoProxyId, a.t);
                 }
             }
         }

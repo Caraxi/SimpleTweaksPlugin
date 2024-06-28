@@ -119,7 +119,7 @@ public unsafe class AgentDebug : DebugHelper {
             }
 
             sortedAgentList = l.Select((a) => {
-                return (a, agentClasses.Any(t => t.Item2.Any(aa => aa.ID == a)));
+                return (a, agentClasses.Any(t => t.Item2.Any(aa => aa.Id == a)));
             }).OrderBy(a => $"{a}").ToList();
 
             for (var i = 0U; i < maxAgentId; i++) {
@@ -219,7 +219,7 @@ public unsafe class AgentDebug : DebugHelper {
                     if (selectedAgentType == null) {
                         try {
                             var agentClasses = typeof(AgentInterface).Assembly.GetTypes().Select((t) => (t, t.GetCustomAttributes(typeof(AgentAttribute)).Cast<AgentAttribute>().ToArray())).Where(t => t.Item2.Length > 0).ToArray();
-                            selectedAgentType = agentClasses.FirstOrDefault(t => t.Item2.Any(aa => aa.ID == selectAgent)).t;
+                            selectedAgentType = agentClasses.FirstOrDefault(t => t.Item2.Any(aa => aa.Id == selectAgent)).t;
                             selectedAgentType ??= typeof(AgentInterface);
                         } catch {
                             selectedAgentType = typeof(AgentInterface);

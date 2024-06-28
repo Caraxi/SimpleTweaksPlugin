@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using Dalamud.Plugin;
 using FFXIVClientStructs.Interop;
+using InteropGenerator.Runtime;
 
 namespace SimpleTweaksPlugin.TweakSystem; 
 

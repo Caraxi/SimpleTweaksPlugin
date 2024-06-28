@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text;
+using FFXIVClientStructs.FFXIV.Common.Component.Excel;
 using FFXIVClientStructs.FFXIV.Component.Excel;
 using ImGuiNET;
 using SimpleTweaksPlugin.Utility;
