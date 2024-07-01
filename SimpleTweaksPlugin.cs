@@ -20,6 +20,7 @@ using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Utility;
 using Task = System.Threading.Tasks.Task;
+using InteropGenerator.Runtime;
 #if DEBUG
 using System.Runtime.CompilerServices;
 #endif
@@ -100,10 +101,10 @@ namespace SimpleTweaksPlugin {
             this.PluginConfig.Init(this);
             
 #if !DEBUG
-            SimpleLog.SetupBuildPath();
             Task.Run(() => {
-                FFXIVClientStructs.Interop.Resolver.GetInstance.SetupSearchSpace(Service.SigScanner.SearchBase);
-                FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
+                FFXIVClientStructs.Interop.Generated.Addresses.Register();
+                Resolver.GetInstance.Setup(Service.SigScanner.SearchBase);
+                Resolver.GetInstance.Resolve();
                 UpdateBlacklist();
                 Service.Framework.RunOnFrameworkThread(Initialize);
             });

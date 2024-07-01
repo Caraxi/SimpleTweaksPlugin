@@ -80,7 +80,7 @@ public unsafe class ActionBarDebug : DebugHelper {
 
                     void ShowBar(int b) {
 
-                        var savedBar = savedBarClassJob->HotBars.GetPointer(b);
+                        var savedBar = savedBarClassJob->Hotbars.GetPointer(b);
                         if (savedBar == null) {
                             ImGui.Text("Bar is Null");
                             return;
