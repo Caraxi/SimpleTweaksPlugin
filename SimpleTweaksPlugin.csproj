@@ -1,58 +1,58 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup Label="Target">
-        <PlatformTarget>x64</PlatformTarget>
-        <TargetFramework>net8.0-windows</TargetFramework>
-        <LangVersion>preview</LangVersion>
-        <Platforms>x64</Platforms>
-        <Configurations>Debug;Release</Configurations>
-    </PropertyGroup>
-    <PropertyGroup Label="Build">
-        <NoWarn>CS8632,CS0649,CS0169</NoWarn>
-        <OutputType>Library</OutputType>
-        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-        <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
-        <DebugSymbols>true</DebugSymbols>
-        <DebugType>full</DebugType>
-        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    </PropertyGroup>
-    <PropertyGroup Label="Feature">
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>1.9.7.3</Version>
-    </PropertyGroup>
+	<PropertyGroup Label="Target">
+		<PlatformTarget>x64</PlatformTarget>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<LangVersion>preview</LangVersion>
+		<Platforms>x64</Platforms>
+		<Configurations>Debug;Release</Configurations>
+	</PropertyGroup>
+	<PropertyGroup Label="Build">
+		<NoWarn>CS8632,CS0649,CS0169</NoWarn>
+		<OutputType>Library</OutputType>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>full</DebugType>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+	</PropertyGroup>
+	<PropertyGroup Label="Feature">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<Version>1.9.7.3</Version>
+	</PropertyGroup>
 	<PropertyGroup>
-        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-        <AssemblyName>SimpleTweaksPlugin</AssemblyName>
-    </PropertyGroup>
-    <ItemGroup>
-      <Compile Remove="lib\**" />
-      <Compile Remove="Publish\**" />
-      <EmbeddedResource Remove="lib\**" />
-      <EmbeddedResource Remove="Publish\**" />
-      <None Remove="lib\**" />
-      <None Remove="Publish\**" />
-      <None Update="images\icon.png">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="TweakPreviews\**">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-        <None Update="Decorations\**">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
-    <ItemGroup>
-      <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-      <PackageReference Include="DalamudPackager" Version="2.1.12" />
-    </ItemGroup>
-    <PropertyGroup>
-        <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
-    </PropertyGroup>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+		<AssemblyName>SimpleTweaksPlugin</AssemblyName>
+	</PropertyGroup>
+	<ItemGroup>
+		<Compile Remove="lib\**" />
+		<Compile Remove="Publish\**" />
+		<EmbeddedResource Remove="lib\**" />
+		<EmbeddedResource Remove="Publish\**" />
+		<None Remove="lib\**" />
+		<None Remove="Publish\**" />
+		<None Update="images\icon.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="TweakPreviews\**">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Decorations\**">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+		<PackageReference Include="DalamudPackager" Version="2.1.13" />
+	</ItemGroup>
+	<PropertyGroup>
+		<DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+	</PropertyGroup>
 	<ItemGroup>
 		<Reference Include="Dalamud">
-            <Private>false</Private>
-            <HintPath>$(DalamudLibPath)\Dalamud.dll</HintPath>
+			<Private>false</Private>
+			<HintPath>$(DalamudLibPath)\Dalamud.dll</HintPath>
 		</Reference>
 		<Reference Include="FFXIVClientStructs">
 			<Private Condition="'$(Configuration)' == 'Release'">true</Private>
@@ -60,38 +60,38 @@
 			<HintPath Condition="'$(Configuration)' == 'Release'">$(ProjectDir)\lib\FFXIVClientStructs\bin\$(ConfigurationName)\FFXIVClientStructs.dll</HintPath>
 			<HintPath Condition="'$(Configuration)' == 'Debug'">$(DalamudLibPath)\FFXIVClientStructs.dll</HintPath>
 		</Reference>
-        <Reference Include="InteropGenerator.Runtime">
-            <Private Condition="'$(Configuration)' == 'Release'">true</Private>
-            <Private Condition="'$(Configuration)' == 'Debug'">false</Private>
-            <HintPath Condition="'$(Configuration)' == 'Release'">$(ProjectDir)\lib\FFXIVClientStructs\bin\$(ConfigurationName)\InteropGenerator.Runtime.dll</HintPath>
-            <HintPath Condition="'$(Configuration)' == 'Debug'">$(DalamudLibPath)\InteropGenerator.Runtime.dll</HintPath>
-        </Reference>
-        <Reference Include="Newtonsoft.Json">
-            <Private>false</Private>
-            <HintPath>$(DalamudLibPath)\Newtonsoft.Json.dll</HintPath>
+		<Reference Include="InteropGenerator.Runtime">
+			<Private Condition="'$(Configuration)' == 'Release'">true</Private>
+			<Private Condition="'$(Configuration)' == 'Debug'">false</Private>
+			<HintPath Condition="'$(Configuration)' == 'Release'">$(ProjectDir)\lib\FFXIVClientStructs\bin\$(ConfigurationName)\InteropGenerator.Runtime.dll</HintPath>
+			<HintPath Condition="'$(Configuration)' == 'Debug'">$(DalamudLibPath)\InteropGenerator.Runtime.dll</HintPath>
+		</Reference>
+		<Reference Include="Newtonsoft.Json">
+			<Private>false</Private>
+			<HintPath>$(DalamudLibPath)\Newtonsoft.Json.dll</HintPath>
 		</Reference>
 		<Reference Include="ImGui.NET">
-            <Private>false</Private>
-            <HintPath>$(DalamudLibPath)\ImGui.NET.dll</HintPath>
+			<Private>false</Private>
+			<HintPath>$(DalamudLibPath)\ImGui.NET.dll</HintPath>
 		</Reference>
 		<Reference Include="ImGuiScene">
-            <Private>false</Private>
-            <HintPath>$(DalamudLibPath)\ImGuiScene.dll</HintPath>
+			<Private>false</Private>
+			<HintPath>$(DalamudLibPath)\ImGuiScene.dll</HintPath>
 		</Reference>
 		<Reference Include="Lumina">
-            <Private>false</Private>
-            <HintPath>$(DalamudLibPath)\Lumina.dll</HintPath>
+			<Private>false</Private>
+			<HintPath>$(DalamudLibPath)\Lumina.dll</HintPath>
 		</Reference>
 		<Reference Include="Lumina.Excel">
-            <Private>false</Private>
-            <HintPath>$(DalamudLibPath)\Lumina.Excel.dll</HintPath>
+			<Private>false</Private>
+			<HintPath>$(DalamudLibPath)\Lumina.Excel.dll</HintPath>
 		</Reference>
 		<Reference Include="JetBrains.Annotations">
-            <Private>false</Private>
-            <HintPath>$(DalamudLibPath)\JetBrains.Annotations.dll</HintPath>
+			<Private>false</Private>
+			<HintPath>$(DalamudLibPath)\JetBrains.Annotations.dll</HintPath>
 		</Reference>
-    </ItemGroup>
+	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="Utility\FriendList" />
+		<Folder Include="Utility\FriendList" />
 	</ItemGroup>
 </Project>
