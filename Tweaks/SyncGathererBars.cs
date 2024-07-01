@@ -141,8 +141,8 @@ public unsafe class SyncGathererBars : Tweak {
         var current = hotbarModule->SavedHotbars.GetPointer(currentId);
         var other = hotbarModule->SavedHotbars.GetPointer(otherId);
 
-        var cBar = current->HotBars.GetPointer(checkBar);
-        var oBar = other->HotBars.GetPointer(checkBar);
+        var cBar = current->Hotbars.GetPointer(checkBar);
+        var oBar = other->Hotbars.GetPointer(checkBar);
 
         for (var i = 0; i < 16; i++) {
             var cSlot = cBar->Slots.GetPointer(i);
