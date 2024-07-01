@@ -77,7 +77,7 @@ public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
 
         node->AtkResNode.SetWidth(replacedNode->GetWidth());
         node->AtkResNode.SetHeight(replacedNode->GetHeight());
-        node->AtkResNode.SetPositionFloat(replacedNode->GetX(), replacedNode->GetY());
+        node->AtkResNode.SetPositionFloat(replacedNode->GetXFloat(), replacedNode->GetYFloat());
         node->FontSize = NAME_DEFAULT_FONT_SIZE;
         node->TextFlags = replacedNode->GetAsAtkTextNode()->TextFlags;
         node->TextFlags2 = replacedNode->GetAsAtkTextNode()->TextFlags2;

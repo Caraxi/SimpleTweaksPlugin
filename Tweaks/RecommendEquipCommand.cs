@@ -5,29 +5,30 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
-public unsafe class RecommendEquipCommand : CommandTweak {
-    public override string Name => "Equip Recommended Command";
-    public override string Description => $"Adds /{Command} to equip recommended gear.";
-    protected override string HelpMessage => "Equips recommended gear.";
-    protected override string Command => "equiprecommended";
-    private static RecommendEquipModule* Module => Framework.Instance()->GetUIModule()->GetRecommendEquipModule();
-    
-    protected override void OnCommand(string args) {
-        if (Module == null) return;
-        Module->SetupFromPlayerState();
-        Common.FrameworkUpdate += DoEquip;
-    }
-
-    private static void DoEquip() {
-        if (Module == null || Module->EquippedMainHand == null) {
-            Common.FrameworkUpdate -= DoEquip;
-            return;
-        }
-        Module->EquipRecommendedGear();
-    }
-
-    protected override void Disable() {
-        Common.FrameworkUpdate -= DoEquip;
-        base.Disable();
-    }
-}
+// public unsafe class RecommendEquipCommand : CommandTweak {
+//     public override string Name => "Equip Recommended Command";
+//     public override string Description => $"Adds /{Command} to equip recommended gear.";
+//     protected override string HelpMessage => "Equips recommended gear.";
+//     protected override string Command => "equiprecommended";
+//     private static RecommendEquipModule* Module => Framework.Instance()->GetUIModule()->GetRecommendEquipModule();
+//     
+//     // Function inlined as of 7.0
+//     protected override void OnCommand(string args) {
+//         if (Module == null) return;
+//         Module->SetupFromPlayerState();
+//         Common.FrameworkUpdate += DoEquip;
+//     }
+//
+//     private static void DoEquip() {
+//         if (Module == null || Module->EquippedMainHand == null) {
+//             Common.FrameworkUpdate -= DoEquip;
+//             return;
+//         }
+//         Module->EquipRecommendedGear();
+//     }
+//
+//     protected override void Disable() {
+//         Common.FrameworkUpdate -= DoEquip;
+//         base.Disable();
+//     }
+// }

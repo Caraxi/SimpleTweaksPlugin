@@ -98,7 +98,7 @@ public unsafe class StatusEffectsDebugging : DebugHelper {
 
         if (ImGui.BeginTabBar($"statusExplorerTabs")) {
             if (ImGui.BeginTabItem($"Self")) {
-                var selfObject = GameObjectManager.GetGameObjectByIndex(0);
+                var selfObject = GameObjectManager.Instance()->Objects.IndexSorted[0].Value;
                 if (selfObject == null || selfObject->ObjectKind != ObjectKind.Pc) {
                     ImGui.Text("Self Not Found");
                 } else {

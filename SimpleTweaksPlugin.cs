@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Numerics;
 using System.Reflection;
 using Dalamud;
+using Dalamud.Game;
 using Dalamud.Interface;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Windowing;
@@ -89,7 +90,7 @@ namespace SimpleTweaksPlugin {
 
         public int UpdateFrom = -1;
 
-        public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface) {
+        public SimpleTweaksPlugin(IDalamudPluginInterface pluginInterface) {
             Plugin = this;
             pluginInterface.Create<Service>();
             pluginInterface.Create<SimpleLog>();

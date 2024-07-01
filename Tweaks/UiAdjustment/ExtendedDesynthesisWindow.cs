@@ -151,7 +151,7 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
             var n = lastNode;
             while (n != null) {
                 if (n->Type != NodeType.Text) continue;
-                if (n->GetX() > lastNode->GetX()) {
+                if (n->GetXFloat() > lastNode->GetXFloat()) {
                     lastNode = n;
                 }
 
@@ -165,8 +165,8 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
             header->SetText(label);
             header->AtkResNode.SetWidth(size);
             header->AtkResNode.SetHeight(lastNode->GetHeight());
-            header->AtkResNode.SetX(lastNode->GetX() + lastNode->GetWidth());
-            header->AtkResNode.SetY(lastNode->GetY());
+            header->AtkResNode.SetXFloat(lastNode->GetXFloat() + lastNode->GetWidth());
+            header->AtkResNode.SetYFloat(lastNode->GetYFloat());
             header->SetFont(lastLabel->FontType);
             header->SetAlignment(lastLabel->AlignmentType);
             header->LineSpacing = lastLabel->LineSpacing;
@@ -183,8 +183,8 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
 
             UiHelper.LinkNodeAfterTargetNode(&header->AtkResNode, unitBase, lastNode);
 
-            headerContainer->SetWidth((ushort)(header->AtkResNode.GetX() + header->AtkResNode.GetWidth()));
-            separator->SetWidth((ushort)(header->AtkResNode.GetX() + header->AtkResNode.GetWidth() + 6));
+            headerContainer->SetWidth((ushort)(header->AtkResNode.GetXFloat() + header->AtkResNode.GetWidth()));
+            separator->SetWidth((ushort)(header->AtkResNode.GetXFloat() + header->AtkResNode.GetWidth() + 6));
 
             // Resize Window
             unitBase->RootNode->SetWidth((ushort)(unitBase->RootNode->GetWidth() + size));
@@ -205,7 +205,7 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
             foreach (var moveId in new uint[] { 5, 6, 7 }) {
                 var moveNode = component->UldManager.SearchNodeById(moveId);
                 if (moveNode == null) continue;
-                moveNode->SetX(moveNode->GetX() + size);
+                moveNode->SetXFloat(moveNode->GetXFloat() + size);
             }
 
             // Resize List
@@ -215,7 +215,7 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
 
             foreach (var node in Common.GetNodeList(listNode->Component)) {
                 if (node->NodeId == 5) {
-                    node->SetX(node->GetX() + size);
+                    node->SetXFloat(node->GetXFloat() + size);
                     continue;
                 }
 
@@ -232,8 +232,8 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
                     entryNode->SetText(string.Empty);
                     entryNode->AtkResNode.SetWidth(size);
                     entryNode->AtkResNode.SetHeight(baseNode->GetHeight());
-                    entryNode->AtkResNode.SetX(lastNode->GetX() + lastNode->GetWidth());
-                    entryNode->AtkResNode.SetY(baseNode->GetY());
+                    entryNode->AtkResNode.SetXFloat(lastNode->GetXFloat() + lastNode->GetWidth());
+                    entryNode->AtkResNode.SetYFloat(baseNode->GetYFloat());
                     entryNode->SetFont(baseTextNode->FontType);
                     entryNode->SetAlignment(AlignmentType.Center);
                     entryNode->LineSpacing = baseTextNode->LineSpacing;

@@ -58,7 +58,7 @@ public unsafe class ActionBarDebug : DebugHelper {
                 var classJobSheet = Service.Data.GetExcelSheet<ClassJob>()!;
                 
                 if (ImGui.BeginChild("savedBarsIndexSelect", new Vector2(150, -1) * ImGui.GetIO().FontGlobalScale, true)) {
-                    for (byte i = 0; i < raptureHotbarModule->SavedHotBars.Length; i++) {
+                    for (byte i = 0; i < raptureHotbarModule->SavedHotbars.Length; i++) {
                         var classJobId = raptureHotbarModule->GetClassJobIdForSavedHotbarIndex(i);
                         var jobName = classJobId == 0 ? "Shared" : classJobSheet.GetRow(classJobId)?.Abbreviation?.RawString;
                         var isPvp = i >= classJobSheet.RowCount;
@@ -74,7 +74,7 @@ public unsafe class ActionBarDebug : DebugHelper {
                 ImGui.EndChild();
                 ImGui.SameLine();
                 ImGui.BeginGroup();
-                var savedBarClassJob = raptureHotbarModule->SavedHotBars.GetPointer(selectedSavedIndex);
+                var savedBarClassJob = raptureHotbarModule->SavedHotbars.GetPointer(selectedSavedIndex);
                 if (savedBarClassJob != null && ImGui.BeginTabBar("savedClassJobBarSelectType")) {
 
 
@@ -175,7 +175,7 @@ public unsafe class ActionBarDebug : DebugHelper {
 
     private void DrawHotbarType(RaptureHotbarModule* hotbarModule, HotBarType type) {
         var isNormalBar = type == HotBarType.Normal;
-        var baseSpan = isNormalBar ? hotbarModule->StandardHotBars : hotbarModule->CrossHotBars;
+        var baseSpan = isNormalBar ? hotbarModule->StandardHotbars : hotbarModule->CrossHotbars;
         
         if (ImGui.BeginTabBar("##hotbarTabs")) {
             for (var i = 0; i < baseSpan.Length; i++) {
@@ -197,7 +197,7 @@ public unsafe class ActionBarDebug : DebugHelper {
             // Pet hotbar is a special case
             if (ImGui.BeginTabItem("Pet##hotbarex")) {
                 
-                var petBar = isNormalBar ? &hotbarModule->PetHotBar : &hotbarModule->PetCrossHotBar;
+                var petBar = isNormalBar ? &hotbarModule->PetHotbar : &hotbarModule->PetCrossHotbar;
                 DrawHotbar(hotbarModule, petBar);
 
                 if (isNormalBar) {
@@ -210,7 +210,7 @@ public unsafe class ActionBarDebug : DebugHelper {
         }
     }
 
-    private void DrawHotbar(RaptureHotbarModule* hotbarModule, RaptureHotbarModule.HotBar* hotbar) {
+    private void DrawHotbar(RaptureHotbarModule* hotbarModule, RaptureHotbarModule.Hotbar* hotbar) {
         using var tableBorderLight = ImRaii.PushColor(ImGuiCol.TableBorderLight, ImGui.GetColorU32(ImGuiCol.Border));
         using var tableBorderStrong = ImRaii.PushColor(ImGuiCol.TableBorderStrong, ImGui.GetColorU32(ImGuiCol.Border));
         if (!ImGui.BeginTable("HotbarTable", 6, ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable)) return;

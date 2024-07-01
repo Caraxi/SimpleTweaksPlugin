@@ -10,7 +10,7 @@ namespace SimpleTweaksPlugin;
 [TweakReleaseVersion("1.9.3.0")]
 public class EmoteLogServerBarEntry : Tweak
 {
-    private DtrBarEntry _emoteLogBarEntry;
+    private IDtrBarEntry _emoteLogBarEntry;
 
     protected override void Enable()
     {
@@ -25,7 +25,7 @@ public class EmoteLogServerBarEntry : Tweak
     {
         _emoteLogBarEntry.OnClick -= DtrEntryClicked;
         Service.GameConfig.UiConfigChanged -= UiConfigChanged;
-        Service.DtrBar.Remove("EmoteLog");
+        _emoteLogBarEntry.Remove();
         _emoteLogBarEntry.Shown = false;
         base.Disable();
     }

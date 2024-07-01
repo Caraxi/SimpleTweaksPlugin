@@ -330,7 +330,7 @@ public unsafe class ChatNameColours : ChatTweaks.SubTweak {
                 ImGui.TextColored(new Vector4(1, 0, 0, 1), addError);
 
                 var target = Service.Targets.SoftTarget ?? Service.Targets.Target;
-                if (target != null && target is PlayerCharacter pc && !Config.ForcedColours.Any(f => f.PlayerName == pc.Name.TextValue && f.WorldName == pc.HomeWorld.GameData?.Name.RawString)) {
+                if (target != null && target is IPlayerCharacter pc && !Config.ForcedColours.Any(f => f.PlayerName == pc.Name.TextValue && f.WorldName == pc.HomeWorld.GameData?.Name.RawString)) {
                     ImGui.TableNextColumn();
                     ImGui.TableNextColumn();
                     if (ImGui.Button($"Add {pc.Name.TextValue}")) {

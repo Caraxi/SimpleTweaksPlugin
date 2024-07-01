@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using Dalamud;
+using Dalamud.Game;
 using Dalamud.Utility;
 using Dalamud.Game.Text;
 using Dalamud.Game.Config;

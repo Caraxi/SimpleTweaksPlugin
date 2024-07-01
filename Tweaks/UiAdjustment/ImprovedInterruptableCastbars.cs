@@ -80,7 +80,7 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
         }
     }
 
-    private void UpdateAddon(AtkUnitBase* addon, uint interruptNodeId, uint positioningNodeId, GameObject? target) {
+    private void UpdateAddon(AtkUnitBase* addon, uint interruptNodeId, uint positioningNodeId, IGameObject? target) {
         var interruptNode = Common.GetNodeByID<AtkImageNode>(&addon->UldManager, interruptNodeId);
         var castBarNode = Common.GetNodeByID(&addon->UldManager, positioningNodeId);
         if (interruptNode is not null && castBarNode is not null) {
@@ -97,13 +97,13 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
         if(headGraze is null) MakeImageNode(parent, HeadGrazeImageNodeId, 848, positionNode);
     }
     
-    private void UpdateIcons(bool castBarVisible, AtkUnitBase* parent, GameObject? target) {
+    private void UpdateIcons(bool castBarVisible, AtkUnitBase* parent, IGameObject? target) {
         var interject = Common.GetNodeByID<AtkImageNode>(&parent->UldManager, InterjectImageNodeId);
         var headGraze = Common.GetNodeByID<AtkImageNode>(&parent->UldManager, HeadGrazeImageNodeId);
     
         if (interject is null || headGraze is null) return;
         
-        if (target as BattleChara is { IsCasting: true, IsCastInterruptible: true } && castBarVisible) {
+        if (target as IBattleChara is { IsCasting: true, IsCastInterruptible: true } && castBarVisible) {
             switch (Service.ClientState.LocalPlayer) {
                 case { ClassJob.GameData.Role: 1, Level: >= 18 }: // Tank
                     interject->AtkResNode.ToggleVisibility(true);

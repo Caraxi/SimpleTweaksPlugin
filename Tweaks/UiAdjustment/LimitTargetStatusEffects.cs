@@ -188,7 +188,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 }
 
                 if (localPlayer == null) {
-                    localPlayer = GameObjectManager.GetGameObjectByIndex(0);
+                    localPlayer = GameObjectManager.Instance()->Objects.IndexSorted[0];
                     if (localPlayer == null
                         || localPlayer->EntityId == target->EntityId
                         || (Config.FilterOnlyInCombat && !((Character*)localPlayer)->InCombat)

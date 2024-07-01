@@ -128,7 +128,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         var container = IMemorySpace.GetUISpace()->Create<AtkResNode>();
         container->SetWidth(defaultContainer->GetWidth());
         container->SetHeight(defaultContainer->GetHeight());
-        container->SetPositionFloat(defaultContainer->GetX(), defaultContainer->GetY());
+        container->SetPositionFloat(defaultContainer->GetXFloat(), defaultContainer->GetYFloat());
         container->SetScale(1, 1);
         container->NodeId = CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Container");
         container->Type = NodeType.Res;
@@ -144,7 +144,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
             var imgNode = UiHelper.MakeImageNode(CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Icon_{settingDetail.Setting}"), new UiHelper.PartInfo(0, 0, 24, 24));
             UiHelper.LinkNodeAtEnd(imgNode, container, unitBase);
 
-            imgNode->AtkResNode.SetPositionFloat(basedOn->GetX(), basedOn->GetY());
+            imgNode->AtkResNode.SetPositionFloat(basedOn->GetXFloat(), basedOn->GetYFloat());
             imgNode->AtkResNode.SetWidth(basedOn->GetWidth());
             imgNode->AtkResNode.SetHeight(basedOn->GetHeight());
 

@@ -7,7 +7,6 @@ using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
-using GameObject = Dalamud.Game.ClientState.Objects.Types.GameObject;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     public unsafe class TargetHP : UiAdjustments.SubTweak {
@@ -138,21 +137,21 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             }
         }
         
-        private void UpdateMainTarget(AtkUnitBase* unitBase, GameObject target, bool reset = false) {
+        private void UpdateMainTarget(AtkUnitBase* unitBase, IGameObject target, bool reset = false) {
             if (unitBase == null || unitBase->UldManager.NodeList == null || unitBase->UldManager.NodeListCount < 40) return;
             var gauge = (AtkComponentNode*) unitBase->UldManager.NodeList[36];
             var textNode = (AtkTextNode*) unitBase->UldManager.NodeList[39];
             UiHelper.SetSize(unitBase->UldManager.NodeList[37], reset || !Config.HideAutoAttack ? 44 : 0, reset || !Config.HideAutoAttack ? 20 : 0);
             UpdateGaugeBar(gauge, textNode, target, Config.Position, Config.UseCustomColor ? Config.CustomColor : null, Config.FontSize, Config.AlignLeft, reset);
         }
-        private void UpdateFocusTarget(AtkUnitBase* unitBase, GameObject target, bool reset = false) {
+        private void UpdateFocusTarget(AtkUnitBase* unitBase, IGameObject target, bool reset = false) {
             if (Config.NoFocus) reset = true;
             if (unitBase == null || unitBase->UldManager.NodeList == null || unitBase->UldManager.NodeListCount < 11) return;
             var gauge = (AtkComponentNode*) unitBase->UldManager.NodeList[2];
             var textNode = (AtkTextNode*) unitBase->UldManager.NodeList[10];
             UpdateGaugeBar(gauge, textNode, target, Config.FocusPosition, Config.FocusUseCustomColor ? Config.FocusCustomColor : null, Config.FocusFontSize, Config.FocusAlignLeft, reset);
         }
-        private void UpdateMainTargetSplit(AtkUnitBase* unitBase, GameObject target, bool reset = false) {
+        private void UpdateMainTargetSplit(AtkUnitBase* unitBase, IGameObject target, bool reset = false) {
             if (unitBase == null || unitBase->UldManager.NodeList == null || unitBase->UldManager.NodeListCount < 9) return;
             var gauge = (AtkComponentNode*) unitBase->UldManager.NodeList[5];
             var textNode = (AtkTextNode*) unitBase->UldManager.NodeList[8];
@@ -160,7 +159,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             UpdateGaugeBar(gauge, textNode, target, Config.Position, Config.UseCustomColor ? Config.CustomColor : null, Config.FontSize, Config.AlignLeft, reset);
         }
         
-        private void UpdateGaugeBar(AtkComponentNode* gauge, AtkTextNode* cloneTextNode, GameObject target, Vector2 positionOffset, Vector4? customColor, byte fontSize, bool alignLeft, bool reset) {
+        private void UpdateGaugeBar(AtkComponentNode* gauge, AtkTextNode* cloneTextNode, IGameObject target, Vector2 positionOffset, Vector4? customColor, byte fontSize, bool alignLeft, bool reset) {
             if (gauge == null || (ushort) gauge->AtkResNode.Type < 1000) return;
             
             AtkTextNode* textNode = null;
@@ -219,7 +218,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             textNode->FontSize = fontSize;
             
             
-            if (target is Character chara) {
+            if (target is ICharacter chara) {
                 textNode->SetText( $"{FormatNumber(chara.CurrentHp)}/{FormatNumber(chara.MaxHp)}");
             } else {
                 textNode->SetText("");

@@ -9,6 +9,7 @@ using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin;
 using ImGuiNET;
@@ -21,7 +22,7 @@ namespace SimpleTweaksPlugin.TweakSystem;
 
 public abstract class BaseTweak {
     protected SimpleTweaksPlugin Plugin;
-    protected DalamudPluginInterface PluginInterface;
+    protected IDalamudPluginInterface PluginInterface;
     protected SimpleTweaksPluginConfig PluginConfig;
 
     public virtual bool Ready { get; protected set; }
@@ -56,7 +57,7 @@ public abstract class BaseTweak {
 
     protected CultureInfo Culture => Plugin.Culture;
 
-    public void InterfaceSetup(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface, SimpleTweaksPluginConfig config, TweakProvider tweakProvider, SubTweakManager tweakManager = null) {
+    public void InterfaceSetup(SimpleTweaksPlugin plugin, IDalamudPluginInterface pluginInterface, SimpleTweaksPluginConfig config, TweakProvider tweakProvider, SubTweakManager tweakManager = null) {
         this.PluginInterface = pluginInterface;
         this.PluginConfig = config;
         this.Plugin = plugin;

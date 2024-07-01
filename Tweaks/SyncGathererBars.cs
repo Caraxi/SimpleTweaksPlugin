@@ -138,8 +138,8 @@ public unsafe class SyncGathererBars : Tweak {
         var otherId = currentId is 16 ? 17 : 16;
 
         var swapDict = actionSwaps[currentId is 16 ? 0 : 1];
-        var current = hotbarModule->SavedHotBars.GetPointer(currentId);
-        var other = hotbarModule->SavedHotBars.GetPointer(otherId);
+        var current = hotbarModule->SavedHotbars.GetPointer(currentId);
+        var other = hotbarModule->SavedHotbars.GetPointer(otherId);
 
         var cBar = current->HotBars.GetPointer(checkBar);
         var oBar = other->HotBars.GetPointer(checkBar);
