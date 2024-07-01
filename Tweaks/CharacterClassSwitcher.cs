@@ -79,8 +79,8 @@ public unsafe class CharacterClassSwitcher : Tweak {
     private void SetupCharacterClass(AtkUnitBase* atkUnitBase) {
         if (atkUnitBase != null) {
             SimpleLog.Log("Setup CharacterClass Events");
-            foreach (var (cjId, nodeId) in ClassJobComponentMap) {
-                var componentNode = (AtkComponentNode*) atkUnitBase->GetNodeById(nodeId);
+            foreach (var (cjId, NodeId) in ClassJobComponentMap) {
+                var componentNode = (AtkComponentNode*) atkUnitBase->GetNodeById(NodeId);
                 if (componentNode == null) continue;
 
                 switch (componentNode->AtkResNode.Type) {
@@ -174,9 +174,9 @@ public unsafe class CharacterClassSwitcher : Tweak {
             var gearset = gearsetModule->GetGearset(i);
             if (gearset == null) continue;
             if (!gearset->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists)) continue;
-            if (gearset->ID != i) continue;
-            if (gearset->ClassJob == cj.RowId) return gearset->ID;
-            if (backup == null && cj.ClassJobParent.Row != 0 && gearset->ClassJob == cj.ClassJobParent.Row) backup = gearset->ID;
+            if (gearset->Id != i) continue;
+            if (gearset->ClassJob == cj.RowId) return gearset->Id;
+            if (backup == null && cj.ClassJobParent.Row != 0 && gearset->ClassJob == cj.ClassJobParent.Row) backup = gearset->Id;
         }
 
         return backup;
@@ -189,8 +189,8 @@ public unsafe class CharacterClassSwitcher : Tweak {
         var atkUnitBase = Common.GetUnitBase("CharacterClass");
         if (atkUnitBase != null) {
             try {
-                foreach (var (cjId, nodeId) in ClassJobComponentMap) {
-                    var componentNode = (AtkComponentNode*) atkUnitBase->GetNodeById(nodeId);
+                foreach (var (cjId, NodeId) in ClassJobComponentMap) {
+                    var componentNode = (AtkComponentNode*) atkUnitBase->GetNodeById(NodeId);
                     if (componentNode == null) continue;
 
                     switch (componentNode->AtkResNode.Type) {

@@ -49,7 +49,7 @@ public unsafe class HideChat : ChatTweaks.SubTweak
             // Always show chat when actively typing
             var inputCursorNode = GetChatInputCursorNode();
             if (inputCursorNode == null) return;
-            if (inputCursorNode->IsVisible) SetVisibility(true);
+            if (inputCursorNode->IsVisible()) SetVisibility(true);
         }
         catch (Exception ex)
         {
@@ -73,7 +73,7 @@ public unsafe class HideChat : ChatTweaks.SubTweak
 
             case "toggle":
                 var baseNode = Common.GetUnitBase("ChatLog");
-                var isVisible = baseNode->RootNode->IsVisible;
+                var isVisible = baseNode->RootNode->IsVisible();
 
                 SetVisibility(!isVisible);
                 break;

@@ -61,7 +61,7 @@ public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
         var armorAetherpoolTextNode = (AtkTextNode*) armorAetherpoolNode->Component->UldManager.NodeList[1];
         var textNode = (AtkTextNode*) deepDungeonUnitBase->UldManager.NodeList[77]; // "To next level:" node
 
-        var isHoh = magiciteInfoNode->IsVisible;
+        var isHoh = magiciteInfoNode->IsVisible();
 
         if (reset) {
             gearInfoNode->ToggleVisibility(true);

@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using Dalamud.Plugin;
 using FFXIVClientStructs.Interop;
+using InteropGenerator.Runtime;
 
 namespace SimpleTweaksPlugin.TweakSystem; 
 
@@ -26,7 +27,7 @@ public class TweakLoadContext : AssemblyLoadContext {
         handledAssemblies = new Dictionary<string, Assembly>() {
             ["SimpleTweaksPlugin"] = typeof(SimpleTweaksPlugin).Assembly,
             ["FFXIVClientStructs"] = typeof(Resolver).Assembly,
-            ["Dalamud"] = typeof(DalamudPluginInterface).Assembly,
+            ["Dalamud"] = typeof(IDalamudPluginInterface).Assembly,
         };
     }
     

@@ -1,5 +1,6 @@
 ﻿using System;
 using Dalamud;
+using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
@@ -19,7 +20,7 @@ public unsafe class AutoOpenLootWindow : Tweak {
         base.Enable();
     }
 
-    private void HandleChat(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
+    private void HandleChat(XivChatType type, int senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
         try {
             if ((ushort)type != 2105) return;
             if (message.TextValue == Service.ClientState.ClientLanguage switch

@@ -110,7 +110,7 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
     }
 
     private static bool IsHoveredItemOrchestrion(out Item? item) {
-        item = Service.Data.GetExcelSheet<Item>()!.GetRow(Item.ItemID);
+        item = Service.Data.GetExcelSheet<Item>()!.GetRow(Item.ItemId);
         
         return item is { FilterGroup: 12, ItemUICategory.Row: 94, LevelItem.Row: 1 };
     }

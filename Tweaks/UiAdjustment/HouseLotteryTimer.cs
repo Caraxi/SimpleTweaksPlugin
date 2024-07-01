@@ -52,7 +52,7 @@ public unsafe class HouseLotteryTimer : UiAdjustments.SubTweak {
                 var timespan = lotteryPeriod.NextPeriodBegins;
                 displayString += "  ";
                 displayString += $"{(int)timespan.TotalHours}:{timespan.Minutes:00}";
-                atkValue->SetString(displayString);
+                atkValue->SetManagedString(displayString);
                 break;
             }
         } catch (Exception ex) {

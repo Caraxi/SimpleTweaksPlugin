@@ -49,7 +49,7 @@ public unsafe class SimpleEvent : IDisposable {
     
     private static void* GlobalEventDetour(AtkUnitBase* atkUnitBase, AtkEventType eventType, uint eventParam, AtkResNode** eventData, uint* a5) {
         if (EventHandlers.ContainsKey(eventParam)) {
-            SimpleLog.Debug($"Simple Event #{eventParam:X} [{eventType}] on {MemoryHelper.ReadString(new IntPtr(atkUnitBase->Name), 0x20)} ({(ulong)eventData[0]:X})");
+            SimpleLog.Debug($"Simple Event #{eventParam:X} [{eventType}] on {atkUnitBase->NameString} ({(ulong)eventData[0]:X})");
             try {
                 EventHandlers[eventParam].Action(eventType, atkUnitBase, eventData[0]);
                 return null;

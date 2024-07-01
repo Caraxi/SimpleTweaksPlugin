@@ -50,8 +50,8 @@ public unsafe class AgentDebug : DebugHelper {
 
         public AgentEventHandlerHook(AgentId agentId) {
             AgentId = agentId;
-            agentInterface = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(agentId);
-            hook = Common.Hook<AgentEventHandler>(agentInterface->AtkEventInterface.vtbl[0], HandleEvent);
+            agentInterface = Framework.Instance()->GetUIModule()->GetAgentModule()->GetAgentByInternalId(agentId);
+            hook = Common.Hook<AgentEventHandler>(agentInterface->AtkEventInterface.VirtualTable->ReceiveEvent, HandleEvent);
             hook?.Enable();
         }
 
@@ -119,7 +119,7 @@ public unsafe class AgentDebug : DebugHelper {
             }
 
             sortedAgentList = l.Select((a) => {
-                return (a, agentClasses.Any(t => t.Item2.Any(aa => aa.ID == a)));
+                return (a, agentClasses.Any(t => t.Item2.Any(aa => aa.Id == a)));
             }).OrderBy(a => $"{a}").ToList();
 
             for (var i = 0U; i < maxAgentId; i++) {
@@ -165,7 +165,7 @@ public unsafe class AgentDebug : DebugHelper {
                     ImGui.Separator();
                     if (ImGui.BeginChild("AgentListScroll", new Vector2(-1, -1), false)) {
                         foreach (var agent in sortedAgentList) {
-                            var agentInterface = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(agent.id);
+                            var agentInterface = Framework.Instance()->GetUIModule()->GetAgentModule()->GetAgentByInternalId(agent.id);
                             if (agentInterface == null) continue;
                             if (agentListKnownOnly && !agent.hasClass) continue;
                             var active = agentInterface->IsAgentActive();
@@ -212,14 +212,14 @@ public unsafe class AgentDebug : DebugHelper {
                 ImGui.SameLine();
                 if (ImGui.BeginChild("AgentView", new Vector2(-1, -1), true)) {
 
-                    var agentInterface = Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(selectAgent);
+                    var agentInterface = Framework.Instance()->GetUIModule()->GetAgentModule()->GetAgentByInternalId(selectAgent);
 
                     var agentHook = AgentEventHooks.ContainsKey(selectAgent) ? AgentEventHooks[selectAgent] : null;
 
                     if (selectedAgentType == null) {
                         try {
                             var agentClasses = typeof(AgentInterface).Assembly.GetTypes().Select((t) => (t, t.GetCustomAttributes(typeof(AgentAttribute)).Cast<AgentAttribute>().ToArray())).Where(t => t.Item2.Length > 0).ToArray();
-                            selectedAgentType = agentClasses.FirstOrDefault(t => t.Item2.Any(aa => aa.ID == selectAgent)).t;
+                            selectedAgentType = agentClasses.FirstOrDefault(t => t.Item2.Any(aa => aa.Id == selectAgent)).t;
                             selectedAgentType ??= typeof(AgentInterface);
                         } catch {
                             selectedAgentType = typeof(AgentInterface);
@@ -237,14 +237,14 @@ public unsafe class AgentDebug : DebugHelper {
                         ImGui.SameLine();
                         ImGui.Text("      VTable:");
                         ImGui.SameLine();
-                        DebugManager.ClickToCopyText($"{(ulong)agentInterface->AtkEventInterface.vtbl:X}");
+                        DebugManager.ClickToCopyText($"{(ulong)agentInterface->AtkEventInterface.VirtualTable:X}");
 
                         var beginModule = (ulong) Process.GetCurrentProcess().MainModule.BaseAddress.ToInt64();
                         var endModule = (beginModule + (ulong)Process.GetCurrentProcess().MainModule.ModuleMemorySize);
-                        if (beginModule > 0 && (ulong)agentInterface->AtkEventInterface.vtbl >= beginModule && (ulong)agentInterface->AtkEventInterface.vtbl <= endModule) {
+                        if (beginModule > 0 && (ulong)agentInterface->AtkEventInterface.VirtualTable >= beginModule && (ulong)agentInterface->AtkEventInterface.VirtualTable <= endModule) {
                             ImGui.SameLine();
                             ImGui.PushStyleColor(ImGuiCol.Text, 0xffcbc0ff);
-                            DebugManager.ClickToCopyText($"ffxiv_dx11.exe+{((ulong)agentInterface->AtkEventInterface.vtbl - beginModule):X}");
+                            DebugManager.ClickToCopyText($"ffxiv_dx11.exe+{((ulong)agentInterface->AtkEventInterface.VirtualTable - beginModule):X}");
                             ImGui.PopStyleColor();
                         }
 
@@ -314,7 +314,7 @@ public unsafe class AgentDebug : DebugHelper {
                         
                         ImGui.Text($"Addon: ");
                         
-                        var addonId = agentInterface->GetAddonID();
+                        var addonId = agentInterface->GetAddonId();
                         AtkUnitBase* addon;
                         if (addonId == 0 || (addon = Common.GetAddonByID(addonId)) == null ) {
                             ImGui.SameLine();
@@ -387,7 +387,7 @@ public unsafe class AgentDebug : DebugHelper {
 
     private void SetupLogging() {
         agentGetLog = new List<(AgentId, ulong, ulong)>();
-        getAgentByInternalIdHook ??= Common.Hook(AgentModule.Addresses.GetAgentByInternalId.Value, new GetAgentByInternalIDDelegate(GetAgentByInternalIDDetour));
+        getAgentByInternalIdHook ??= Common.Hook(AgentModule.MemberFunctionPointers.GetAgentByInternalId, new GetAgentByInternalIDDelegate(GetAgentByInternalIDDetour));
         getAgentByInternalId2Hook ??= Common.Hook("E8 ?? ?? ?? ?? 48 85 C0 74 12 0F BF 80", new GetAgentByInternalIDDelegate(GetAgentByInternalIDDetour));
         getAgentByInternalIdHook?.Enable();
         getAgentByInternalId2Hook?.Enable();

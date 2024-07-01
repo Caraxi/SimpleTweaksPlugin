@@ -67,17 +67,17 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         
         private void Update(bool reset = false) {
             if (Common.GetUnitBase("JobHudNotice") != null) reset = true;
-            var stage = AtkStage.GetSingleton();
+            var stage = AtkStage.Instance();
             var loadedUnitsList = &stage->RaptureAtkUnitManager->AtkUnitManager.AllLoadedUnitsList;
 #if DEBUG
             PerformanceMonitor.Begin();
             #endif
             var character = (Character*)(Service.ClientState.LocalPlayer?.Address ?? nint.Zero);
 
-            foreach (var j in Enumerable.Range(0, Math.Min(loadedUnitsList->Count, loadedUnitsList->EntriesSpan.Length))) {
-                var addon = loadedUnitsList->EntriesSpan[j].Value;
+            foreach (var j in Enumerable.Range(0, Math.Min(loadedUnitsList->Count, loadedUnitsList->Entries.Length))) {
+                var addon = loadedUnitsList->Entries[j].Value;
                 if (addon == null) continue;
-                var name = Marshal.PtrToStringAnsi(new IntPtr(addon->Name));
+                var name = addon->NameString;
                 
                 if (name != null && name.StartsWith("JobHud")) {
                     if (reset || Config.ShowInDuty && InCombatDuty) {

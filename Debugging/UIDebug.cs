@@ -14,7 +14,6 @@ using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using FFXIVClientStructs.FFXIV.Component.GUI.ULD;
 using ImGuiNET;
 using ImGuiScene;
 using SimpleTweaksPlugin.Utility;
@@ -126,14 +125,14 @@ public unsafe class UIDebug : DebugHelper {
     }
 
     internal void FindByAddress(ulong address) {
-        var stage = AtkStage.GetSingleton();
+        var stage = AtkStage.Instance();
                 
         var unitManagers = &stage->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
         
         for (var i = 0; i < UnitListCount; i++) {
             var unitManager = &unitManagers[i];
-            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->EntriesSpan.Length))) {
-                var unitBase = unitManager->EntriesSpan[j].Value;
+            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->Entries.Length))) {
+                var unitBase = unitManager->Entries[j].Value;
                 if ((ulong)unitBase == address || FindByAddress(unitBase, address)) {
                     selectedUnitBase = unitBase;
                     Plugin.PluginConfig.Debugging.SelectedAtkUnitBase = address;
@@ -297,7 +296,7 @@ public unsafe class UIDebug : DebugHelper {
         var i = 0;
             
         foreach (var a in windows) {
-            var name = Marshal.PtrToStringAnsi(new IntPtr(a.UnitBase->Name));
+            var name = a.UnitBase->NameString;
             ImGui.Text($"[Addon] {name}");
             ImGui.Indent(15);
             foreach (var n in a.Nodes) {
@@ -349,15 +348,15 @@ public unsafe class UIDebug : DebugHelper {
 
     private IEnumerable<AddonResult> GetAtkUnitBaseAtPosition(Vector2 position) {
         var list = new List<AddonResult>();
-        var stage = AtkStage.GetSingleton();
+        var stage = AtkStage.Instance();
         var unitManagers = &stage->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
         for (var i = 0; i < UnitListCount; i++) {
             var unitManager = &unitManagers[i];
-            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->EntriesSpan.Length))) {
-                var unitBase = unitManager->EntriesSpan[j].Value;
+            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->Entries.Length))) {
+                var unitBase = unitManager->Entries[j].Value;
                 if (unitBase == null || unitBase->RootNode == null) continue;
-                if (!(unitBase->IsVisible && unitBase->RootNode->IsVisible)) continue;
-                var addonResult = new AddonResult() {UnitBase = unitBase};
+                if (!(unitBase->IsVisible && unitBase->IsVisible)) continue;
+                var addonResult = new AddonResult {UnitBase = unitBase};
                 if (list.Contains(addonResult)) continue;
                 if (unitBase->X > position.X || unitBase->Y > position.Y) continue;
                 if (unitBase->X + unitBase->RootNode->Width < position.X) continue;
@@ -422,8 +421,8 @@ public unsafe class UIDebug : DebugHelper {
         
     public static void DrawUnitBase(AtkUnitBase* atkUnitBase) {
 
-        var isVisible = (atkUnitBase->Flags & 0x20) == 0x20;
-        var addonName = Marshal.PtrToStringAnsi(new IntPtr(atkUnitBase->Name));
+        var isVisible = atkUnitBase->IsVisible;
+        var addonName = atkUnitBase->NameString;
             
         ImGui.Text($"{addonName}");
         ImGui.SameLine();
@@ -443,7 +442,7 @@ public unsafe class UIDebug : DebugHelper {
         ImGui.SameLine(ImGuiExt.GetWindowContentRegionSize().X - 25);
         if (ImGui.SmallButton("V")) {
             if (atkUnitBase->IsVisible) {
-                atkUnitBase->Flags ^= 0x20;
+                atkUnitBase->IsVisible = !atkUnitBase->IsVisible;
             } else {
                 atkUnitBase->Show(false, 0);
             }
@@ -509,7 +508,7 @@ public unsafe class UIDebug : DebugHelper {
                                     ImGui.Text($"{atkValue->Int}");
                                     break;
                                 }
-                                case ValueType.AllocatedString:
+                                case ValueType.ManagedString:
                                 case ValueType.String8:
                                 case ValueType.String: {
                                     if (atkValue->String == null) {
@@ -674,7 +673,7 @@ public unsafe class UIDebug : DebugHelper {
 
     private static Dictionary<uint, string> customNodeIds;
 
-    private static string NodeID(uint id, bool includeHashOnNoMatch = true) {
+    private static string NodeId(uint id, bool includeHashOnNoMatch = true) {
         if (customNodeIds == null) {
             customNodeIds = new Dictionary<uint, string>();
             foreach (var f in typeof(CustomNodes).GetFields(BindingFlags.Static | BindingFlags.Public)) {
@@ -698,7 +697,7 @@ public unsafe class UIDebug : DebugHelper {
     private static void PrintSimpleNode(AtkResNode* node, string treePrefix, bool textOnly = false)
     {
         bool popped = false;
-        bool isVisible = node->IsVisible;
+        bool isVisible = node->IsVisible();
 
         if (isVisible && !textOnly)
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0, 255, 0, 255));
@@ -707,7 +706,7 @@ public unsafe class UIDebug : DebugHelper {
             ImGui.SetNextItemOpen(elementSelectorFind.Contains((ulong) node), ImGuiCond.Always);
         }
         if (textOnly) ImGui.SetNextItemOpen(false, ImGuiCond.Always);
-        if (ImGui.TreeNode($"{treePrefix} [{NodeID(node->NodeID)}] {node->Type} Node (ptr = {(long)node:X})###{(long)node}"))
+        if (ImGui.TreeNode($"{treePrefix} [{NodeId(node->NodeId)}] {node->Type} Node (ptr = {(long)node:X})###{(long)node}"))
         {
             if (ImGui.IsItemHovered()) DrawOutline(node);
             if (isVisible && !textOnly)
@@ -911,7 +910,7 @@ public unsafe class UIDebug : DebugHelper {
                     ImGui.InputInt($"###inputIconVersion__{(ulong)node:X}", ref loadImageVersion);
                     ImGui.SameLine();
                     if (ImGui.SmallButton("Load Icon")) {
-                        iNode->LoadIconTexture(loadImageId, loadImageVersion);
+                        iNode->LoadIconTexture((uint)loadImageId, loadImageVersion);
                     }
                         
                         
@@ -935,7 +934,7 @@ public unsafe class UIDebug : DebugHelper {
         if (objectInfo == null) return;
 
         bool popped = false;
-        bool isVisible = node->IsVisible;
+        bool isVisible = node->IsVisible();
 
         if (isVisible && !textOnly)
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0, 255, 0, 255));
@@ -946,7 +945,7 @@ public unsafe class UIDebug : DebugHelper {
             ImGui.SetNextItemOpen(elementSelectorFind.Contains((ulong) node), ImGuiCond.Always);
         }
         if (textOnly) ImGui.SetNextItemOpen(false, ImGuiCond.Always);
-        if (ImGui.TreeNode($"{treePrefix} [{NodeID(node->NodeID)}] {objectInfo->ComponentType} Component Node (ptr = {(long)node:X}, component ptr = {(long)compNode->Component:X}) child count = {childCount}  ###{(long)node}"))
+        if (ImGui.TreeNode($"{treePrefix} [{NodeId(node->NodeId)}] {objectInfo->ComponentType} Component Node (ptr = {(long)node:X}, component ptr = {(long)compNode->Component:X}) child count = {childCount}  ###{(long)node}"))
         {
             if (ImGui.IsItemHovered()) DrawOutline(node);
             if (isVisible && !textOnly)
@@ -1042,11 +1041,11 @@ public unsafe class UIDebug : DebugHelper {
                     var textInputComponent = (AtkComponentTextInput*)compNode->Component;
                     ImGui.Text($"InputBase Text1: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->AtkComponentInputBase.UnkText1.StringPtr))}");
                     ImGui.Text($"InputBase Text2: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->AtkComponentInputBase.UnkText2.StringPtr))}");
-                    ImGui.Text($"Text1: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText1.StringPtr))}");
-                    ImGui.Text($"Text2: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText2.StringPtr))}");
-                    ImGui.Text($"Text3: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText3.StringPtr))}");
-                    ImGui.Text($"Text4: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText4.StringPtr))}");
-                    ImGui.Text($"Text5: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText5.StringPtr))}");
+                    ImGui.Text($"Text1: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText01.StringPtr))}");
+                    ImGui.Text($"Text2: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText02.StringPtr))}");
+                    ImGui.Text($"Text3: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText03.StringPtr))}");
+                    ImGui.Text($"Text4: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText04.StringPtr))}");
+                    ImGui.Text($"Text5: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText05.StringPtr))}");
                     break;
                 case ComponentType.List:
                 case ComponentType.TreeList:
@@ -1081,7 +1080,7 @@ public unsafe class UIDebug : DebugHelper {
         
     private static void PrintResNode(AtkResNode* node)
     {
-        ImGui.Text($"NodeID: {NodeID(node->NodeID, false)}   Type: {node->Type}");
+        ImGui.Text($"NodeId: {NodeId(node->NodeId, false)}   Type: {node->Type}");
         ImGui.SameLine();
         if (ImGui.SmallButton($"T:Visible##{(ulong)node:X}")) {
             node->NodeFlags ^= NodeFlags.Visible;
@@ -1224,7 +1223,7 @@ public unsafe class UIDebug : DebugHelper {
             ImGui.Text(
                 $"Start: {anim->StartFrameIdx} " +
                 $"End: {anim->EndFrameIdx}");
-            var props = new Span<AtkTimelineKeyGroup>(Unsafe.AsPointer(ref anim->KeyGroups[0]), 8);
+            var props = anim->KeyGroups;
             var k = 0;
             foreach (var prop in props)
             {
@@ -1323,7 +1322,7 @@ public unsafe class UIDebug : DebugHelper {
 
         bool foundSelected = false;
         bool noResults = true;
-        var stage = AtkStage.GetSingleton();
+        var stage = AtkStage.Instance();
                 
         var unitManagers = &stage->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
             
@@ -1345,14 +1344,14 @@ public unsafe class UIDebug : DebugHelper {
                 headerDrawn = true;
                 noResults = false;
             }
-            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->EntriesSpan.Length))) {
-                var unitBase = unitManager->EntriesSpan[j].Value;
+            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->Entries.Length))) {
+                var unitBase = unitManager->Entries[j].Value;
                 if (unitBase == null) continue;
                 if (selectedUnitBase != null && unitBase == selectedUnitBase) {
                     selectedInList[i] = true;
                     foundSelected = true;
                 }
-                var name = Marshal.PtrToStringAnsi(new IntPtr(unitBase->Name));
+                var name = unitBase->NameString;
                 if (searching) {
                     if (name == null || !name.ToLower().Contains(searchStr.ToLower())) continue;
                 }
@@ -1363,7 +1362,7 @@ public unsafe class UIDebug : DebugHelper {
                 }
                     
                 if (headerOpen) {
-                    var visible = (unitBase->Flags & 0x20) == 0x20;
+                    var visible = unitBase->IsVisible;
                     ImGui.PushStyleColor(ImGuiCol.Text, visible ? 0xFF00FF00 : 0xFF999999);
                         
                     if (ImGui.Selectable($"{name}##list{i}-{(ulong) unitBase:X}_{j}", selectedUnitBase == unitBase)) {
@@ -1383,8 +1382,8 @@ public unsafe class UIDebug : DebugHelper {
             }
                 
             if (selectedInList[i] == false && selectedUnitBase != null) {
-                foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->EntriesSpan.Length))) {
-                    var unitBase = unitManager->EntriesSpan[j].Value;
+                foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->Entries.Length))) {
+                    var unitBase = unitManager->Entries[j].Value;
                     if (selectedUnitBase == null || unitBase != selectedUnitBase) continue;
                     selectedInList[i] = true;
                     foundSelected = true;
@@ -1437,7 +1436,7 @@ public unsafe class UIDebug : DebugHelper {
     private static bool GetNodeVisible(AtkResNode* node) {
         if (node == null) return false;
         while (node != null) {
-            if (!node->IsVisible) return false;
+            if (!node->IsVisible()) return false;
             node = node->ParentNode;
         }
         return true;

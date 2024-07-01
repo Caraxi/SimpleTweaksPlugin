@@ -81,24 +81,24 @@ public unsafe class ResizeExperienceBar : UiAdjustments.SubTweak
         if (daggerNode == null) return;
         if (leftAlign)
         {
-            if (!moonNode->AtkResNode.IsVisible)
+            if (!moonNode->IsVisible())
             {
-                daggerNode->AtkResNode.SetPositionShort(-25, 17);
+                daggerNode->SetPositionShort(-25, 17);
             }
             else
             {
-                daggerNode->AtkResNode.SetPositionShort(-49, 17);
+                daggerNode->SetPositionShort(-49, 17);
             }
         }
         else
         {
-            if (!moonNode->AtkResNode.IsVisible)
+            if (!moonNode->IsVisible())
             {
-                daggerNode->AtkResNode.SetPositionShort(482, 17);
+                daggerNode->SetPositionShort(482, 17);
             }
             else
             {
-                daggerNode->AtkResNode.SetPositionShort(506, 17);
+                daggerNode->SetPositionShort(506, 17);
             }
         }
     }

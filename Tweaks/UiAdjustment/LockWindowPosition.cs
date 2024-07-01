@@ -85,14 +85,14 @@ public unsafe class LockWindowPosition : UiAdjustments.SubTweak {
         base.Enable();
     }
 
-    private void OpenContextMenu(MenuOpenedArgs args) {
+    private void OpenContextMenu(IMenuOpenedArgs args) {
         if (args is not { MenuType: ContextMenuType.Default }) return;
         if (args.Target is not MenuTargetDefault mtd) return;
         if (string.IsNullOrWhiteSpace(args.AddonName)) return;
         if (mtd.TargetObjectId != 0xE0000000) return;
         
         // TODO: Remove Reflection when fixed, Use field when merged.
-        IReadOnlySet<nint>? eventInterfaces = typeof(MenuArgs).GetField("eventInterfaces", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(args) as IReadOnlySet<nint>;
+        IReadOnlySet<nint>? eventInterfaces = typeof(IMenuArgs).GetField("eventInterfaces", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(args) as IReadOnlySet<nint>;
         var unitManagerEventInterface = (nint)((ulong)RaptureAtkUnitManager.Instance() + 0x9C90); // (nint)(&RaptureAtkUnitManager.Instance()->AtkEventInterface);
         if (eventInterfaces == null || eventInterfaces.All(e => e != unitManagerEventInterface)) return;
         
@@ -111,7 +111,7 @@ public unsafe class LockWindowPosition : UiAdjustments.SubTweak {
 
     private void* MoveAddonDetour(RaptureAtkModule* atkModule, AtkUnitBase* addon, void* idk) {
         try {
-            var name = Common.ReadString(addon->Name, 0x20);
+            var name = addon->NameString;
             return Config.LockedWindows.Contains(name) ? null : moveAddonHook.Original(atkModule, addon, idk);
         } catch (Exception ex) {
             Plugin.Error(this, ex);

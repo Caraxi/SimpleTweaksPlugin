@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Client.System.String;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 
 // Original:
@@ -56,7 +57,7 @@ public static class ChatHelper {
             throw new InvalidOperationException("Could not find signature for chat sending");
         }
 
-        var uiModule = (IntPtr) Framework.Instance()->GetUiModule();
+        var uiModule = (IntPtr) UIModule.Instance();
 
         using var payload = new ChatPayload(message);
         var mem1 = Marshal.AllocHGlobal(400);

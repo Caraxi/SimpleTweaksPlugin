@@ -126,16 +126,16 @@ public unsafe class QuickSellItems : Tweak {
                 if (inventory != null) {
                     var itemSlot = inventory->GetInventorySlot(slot);
                     if (itemSlot != null) {
-                        var itemId = itemSlot->ItemID;
+                        var itemId = itemSlot->ItemId;
                         var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(itemId);
                         if (item != null) {
-                            var addonId = agent->AgentInterface.GetAddonID();
+                            var addonId = agent->AgentInterface.GetAddonId();
                             if (addonId == 0) return false;
                             var addon = Common.GetAddonByID(addonId);
                             if (addon == null) return false;
 
                             for (var i = 0; i < agent->ContextItemCount; i++) {
-                                var contextItemParam = agent->EventParamsSpan[agent->ContexItemStartIndex + i];
+                                var contextItemParam = agent->EventParams[agent->ContexItemStartIndex + i];
                                 if (contextItemParam.Type != ValueType.String) continue;
                                 var contextItemName = contextItemParam.ValueString();
                                 

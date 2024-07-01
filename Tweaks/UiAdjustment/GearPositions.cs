@@ -159,7 +159,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
     
 
     private byte ControllerInputDetour(AtkUnitBase* atkUnitBase, Dir d, byte a3) {
-        var name = Common.ReadString(atkUnitBase->Name, 0x20);
+        var name = atkUnitBase->NameString;
 #if DEBUG
         SimpleLog.Verbose($"{name}, {GetCollisionNodeIndex(atkUnitBase)}, {d}");
 #endif
@@ -330,7 +330,7 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
 
                     bgImageNode = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
                     bgImageNode->AtkResNode.Type = NodeType.Image;
-                    bgImageNode->AtkResNode.NodeID = CustomNodes.GearPositionsBg + i;
+                    bgImageNode->AtkResNode.NodeId = CustomNodes.GearPositionsBg + i;
                     bgImageNode->AtkResNode.NodeFlags = NodeFlags.AnchorTop | NodeFlags.AnchorLeft;
                     bgImageNode->AtkResNode.DrawFlags = 0;
                     bgImageNode->WrapMode = 1;
@@ -512,16 +512,16 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
         MoveNode(atkUnitBase, 92, 18, 321); // Feet
     }
 
-    private void MoveNode(AtkComponentBase* componentBase, uint nodeId, float x, float y) {
+    private void MoveNode(AtkComponentBase* componentBase, uint NodeId, float x, float y) {
         if (componentBase == null) return;
-        var node = componentBase->UldManager.SearchNodeById(nodeId);
+        var node = componentBase->UldManager.SearchNodeById(NodeId);
         if (node == null) return;
         node->SetPositionFloat(x, y);
     }
 
-    private void MoveNode(AtkUnitBase* atkUnitBase, uint nodeId, float x, float y) {
+    private void MoveNode(AtkUnitBase* atkUnitBase, uint NodeId, float x, float y) {
         if (atkUnitBase == null) return;
-        var node = atkUnitBase->GetNodeById(nodeId);
+        var node = atkUnitBase->GetNodeById(NodeId);
         if (node == null) return;
         node->SetPositionFloat(x, y);
     }

@@ -53,7 +53,6 @@ public unsafe class ZoomedChatCustomization : ChatTweaks.SubTweak {
 
     private void ChatZoomedDetour(AtkUnitBase* atkUnitBase) {
         chatZoomedHook.Original(atkUnitBase);
-        Common.ReadString(atkUnitBase->Name);
         var chatLog = Common.GetUnitBase("ChatLog");
         if (chatLog != atkUnitBase) return;
         ApplyCustomization();

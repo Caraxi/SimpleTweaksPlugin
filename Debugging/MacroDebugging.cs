@@ -14,7 +14,7 @@ public unsafe class MacroDebugging : DebugHelper {
         ImGui.SameLine();
         DebugManager.PrintOutObject(macro);
         ImGui.Text($"Icon: {macro->IconId} / {macro->MacroIconRowId}");
-        foreach (var line in macro->LinesSpan.PointerEnumerator()) {
+        foreach (var line in macro->Lines.PointerEnumerator()) {
             if (line == null) continue;
             ImGui.Text($"{line->ToString()}");
         }
@@ -25,7 +25,7 @@ public unsafe class MacroDebugging : DebugHelper {
             var macro = span.GetPointer(i);
             if (macro == null) continue;
             if (macro->IconId == 0) continue;
-            var icon = Plugin.IconManager.GetIconTexture((int)macro->IconId);
+            var icon = Plugin.IconManager.GetIconTexture(macro->IconId);
 
             if (icon != null) {
                 ImGui.Image(icon.ImGuiHandle, new Vector2(24));
@@ -50,12 +50,12 @@ public unsafe class MacroDebugging : DebugHelper {
         
         if (ImGui.BeginTabBar("macroTabs")) {
             if (ImGui.BeginTabItem("Individual")) {
-                DrawMacroPage(module->IndividualSpan);
+                DrawMacroPage(module->Individual);
                 ImGui.EndTabItem();
             }
 
             if (ImGui.BeginTabItem("Shared")) {
-                DrawMacroPage(module->SharedSpan);
+                DrawMacroPage(module->Shared);
                 ImGui.EndTabItem();
             }
             
@@ -63,5 +63,3 @@ public unsafe class MacroDebugging : DebugHelper {
         }
     }
 }
-
-

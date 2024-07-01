@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using Dalamud;
+using Dalamud.Game;
 using Dalamud.Utility;
 using Dalamud.Game.Text;
 using Dalamud.Game.Config;
@@ -112,7 +113,7 @@ public class CutsceneCommands : Tweak
 
     private unsafe void OnChatMessage(
         XivChatType type,
-        uint senderid,
+        int timestamp,
         ref SeString sender,
         ref SeString message,
         ref bool isHandled)

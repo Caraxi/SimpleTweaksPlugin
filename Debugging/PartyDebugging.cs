@@ -23,26 +23,25 @@ public unsafe class PartyDebugging : DebugHelper {
             
         DebugManager.PrintOutObject(*groupManager, (ulong) groupManager, new List<string>());
 
-
-        if (groupManager->MemberCount < 1) {
+        if (groupManager->MainGroup.MemberCount < 1) {
             ImGui.Text("Not in a party");
         } else {
                 
-            ImGui.Text($"Party Member Count: {groupManager->MemberCount}");
+            ImGui.Text($"Party Member Count: {groupManager->MainGroup.MemberCount}");
 
-            var partyMembers = (PartyMember*) groupManager->PartyMembers;
+            var partyMembers = groupManager->MainGroup.PartyMembers;
 
-            for (var i = 0; i < 8 && i < groupManager->MemberCount; i++) {
+            for (var i = 0; i < 8 && i < groupManager->MainGroup.MemberCount; i++) {
                 var partyMember = partyMembers[i];
-                var name = Marshal.PtrToStringAnsi(new IntPtr(partyMember.Name));
-                ImGui.Text($"[{(ulong)&partyMember:X}] Lv {partyMember.Level}, {partyMember.ObjectID:X}, {name}");
+                var name = partyMember.NameString;
+                ImGui.Text($"[{(ulong)&partyMember:X}] Lv {partyMember.Level}, {partyMember.EntityId:X}, {name}");
 
-                PlayerCharacter chara = null;
+                IPlayerCharacter chara = null;
 
                 for (var a = 0; a < Service.Objects.Length; a += 2) {
                     var actor = Service.Objects[a];
                     if (actor == null) continue;
-                    if ((uint)actor.ObjectId == partyMember.ObjectID && actor is PlayerCharacter pc) {
+                    if ((uint)actor.EntityId == partyMember.EntityId && actor is IPlayerCharacter pc) {
                         chara = pc;
                     }
                 }
@@ -50,19 +49,7 @@ public unsafe class PartyDebugging : DebugHelper {
                 if (chara != null) {
                     DebugManager.PrintOutObject(chara, (ulong) chara.Address.ToInt64(), new List<string>());
                 }
-                    
-
-
             }
-                
-                
-                
         }
-            
-            
-            
-
     }
-
-        
 }

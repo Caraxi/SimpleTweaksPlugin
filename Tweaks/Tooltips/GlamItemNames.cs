@@ -73,11 +73,11 @@ public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
         AtkTextNode* node = IMemorySpace.GetUISpace()->Create<AtkTextNode>();
         if (node == null) return null;
         node->AtkResNode.Type = NodeType.Text;
-        node->AtkResNode.NodeID = CustomNodes.Get(this, GLAM_NAME_REPLACEMENT_TEXT);
+        node->AtkResNode.NodeId = CustomNodes.Get(this, GLAM_NAME_REPLACEMENT_TEXT);
 
         node->AtkResNode.SetWidth(replacedNode->GetWidth());
         node->AtkResNode.SetHeight(replacedNode->GetHeight());
-        node->AtkResNode.SetPositionFloat(replacedNode->GetX(), replacedNode->GetY());
+        node->AtkResNode.SetPositionFloat(replacedNode->GetXFloat(), replacedNode->GetYFloat());
         node->FontSize = NAME_DEFAULT_FONT_SIZE;
         node->TextFlags = replacedNode->GetAsAtkTextNode()->TextFlags;
         node->TextFlags2 = replacedNode->GetAsAtkTextNode()->TextFlags2;

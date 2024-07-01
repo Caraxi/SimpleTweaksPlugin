@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Dalamud.Game;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -17,10 +18,10 @@ public unsafe class BlueActionInfo : TooltipTweaks.SubTweak {
         if (aozActionTransient?.Stats == null) return;
         var descriptionString = GetTooltipString(stringArrayData, TooltipTweaks.ActionTooltipField.Description);
         if (descriptionString.TextValue.Contains(Service.ClientState.ClientLanguage switch {
-                Dalamud.ClientLanguage.English => "Rank: ★",
-                Dalamud.ClientLanguage.German => "Rang: ★",
-                Dalamud.ClientLanguage.French => "Rang: ★",
-                Dalamud.ClientLanguage.Japanese => "ランク：★",
+                ClientLanguage.English => "Rank: ★",
+                ClientLanguage.German => "Rang: ★",
+                ClientLanguage.French => "Rang: ★",
+                ClientLanguage.Japanese => "ランク：★",
                 _ => "Rank: ★" })) return; // Don't append when it already exists.
         var infoStr = aozActionTransient.Stats.ToDalamudString();
         descriptionString.Append(NewLinePayload.Payload);

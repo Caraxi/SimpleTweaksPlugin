@@ -30,9 +30,9 @@ public unsafe class TreasureHuntTargets : Tweak {
         var isTargetable = isTargetableHook.Original(potentialTarget);
         if (isTargetable == 0) return 0;
         if (potentialTarget == null) return isTargetable;
-        if (potentialTarget->ObjectKind != 2) return isTargetable;
+        if (potentialTarget->ObjectKind != ObjectKind.BattleNpc) return isTargetable;
         if (potentialTarget->SubKind != 5) return isTargetable;
-        if (potentialTarget->EventId.Type != EventHandlerType.TreasureHuntDirector) return isTargetable;
+        if (potentialTarget->EventId.ContentId != EventHandlerType.TreasureHuntDirector) return isTargetable;
         return potentialTarget->NamePlateIconId is 60094 or 60096 ? isTargetable : byte.MinValue;
     }
 

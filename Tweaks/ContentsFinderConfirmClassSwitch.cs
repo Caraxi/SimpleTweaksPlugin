@@ -40,7 +40,7 @@ public unsafe class ContentsFinderConfirmClassSwitch : Tweak {
         if (node == null) return;
         var imageNode = node->GetAsAtkImageNode();
         if (imageNode == null) return;
-        var iconId = imageNode->PartsList->Parts[imageNode->PartId].UldAsset->AtkTexture.Resource->IconID;
+        var iconId = imageNode->PartsList->Parts[imageNode->PartId].UldAsset->AtkTexture.Resource->IconId;
         if (iconId is < 62100 or >= 62200) return;
         var classJobId = (uint) (iconId - 62100);
         var classJob = Service.Data.Excel.GetSheet<ClassJob>()?.GetRow(classJobId);
@@ -48,7 +48,7 @@ public unsafe class ContentsFinderConfirmClassSwitch : Tweak {
         for (var i = 0; i < 101; i++) {
             var gs = RaptureGearsetModule.Instance()->GetGearset(i);
             if (gs != null && gs->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists) && gs->ClassJob == classJobId) {
-                ChatHelper.SendMessage($"/gearset change {gs->ID + 1}");
+                ChatHelper.SendMessage($"/gearset change {gs->Id + 1}");
                 return;
             }
         }

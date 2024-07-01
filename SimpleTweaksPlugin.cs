@@ -10,9 +10,9 @@ using System.Net.Http;
 using System.Numerics;
 using System.Reflection;
 using Dalamud;
+using Dalamud.Game;
 using Dalamud.Interface;
 using Dalamud.Interface.ImGuiNotification;
-using Dalamud.Interface.Internal.Notifications;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
@@ -20,6 +20,7 @@ using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Utility;
 using Task = System.Threading.Tasks.Task;
+using InteropGenerator.Runtime;
 #if DEBUG
 using System.Runtime.CompilerServices;
 #endif
@@ -90,7 +91,7 @@ namespace SimpleTweaksPlugin {
 
         public int UpdateFrom = -1;
 
-        public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface) {
+        public SimpleTweaksPlugin(IDalamudPluginInterface pluginInterface) {
             Plugin = this;
             pluginInterface.Create<Service>();
             pluginInterface.Create<SimpleLog>();
@@ -99,11 +100,11 @@ namespace SimpleTweaksPlugin {
             this.PluginConfig = (SimpleTweaksPluginConfig)Service.PluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
             this.PluginConfig.Init(this);
             
-#if DEBUG
-            SimpleLog.SetupBuildPath();
+#if !DEBUG
             Task.Run(() => {
-                FFXIVClientStructs.Interop.Resolver.GetInstance.SetupSearchSpace(Service.SigScanner.SearchBase);
-                FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
+                FFXIVClientStructs.Interop.Generated.Addresses.Register();
+                Resolver.GetInstance.Setup(Service.SigScanner.SearchBase);
+                Resolver.GetInstance.Resolve();
                 UpdateBlacklist();
                 Service.Framework.RunOnFrameworkThread(Initialize);
             });

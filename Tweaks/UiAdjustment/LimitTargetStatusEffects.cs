@@ -12,6 +12,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using FFXIVClientStructs.Interop;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using GameObject = FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject;
@@ -118,7 +119,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     ImGui.Text(statusId.ToString());
 
                     ImGui.TableNextColumn();
-                    var statusIconTex = Service.TextureProvider.GetIcon(statusSheet[statusId].Icon);
+                    var statusIconTex = Service.TextureProvider.GetFromGameIcon(statusSheet[statusId].Icon).GetWrapOrDefault();
                     if (statusIconTex != null) {
                         var scale = (25 * ImGuiHelpers.GlobalScale) / statusIconTex.Height;
                         ImGui.Image(statusIconTex.ImGuiHandle, new Vector2(statusIconTex.Width * scale, statusIconTex.Height * scale));
@@ -180,35 +181,35 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             this.removedStatusIndex = 0;
 
             for (ushort i = 0; i < statusManager->NumValidStatuses; i++) {
-                var status = (Status*)(statusManager->Status + (0xc * i));
-                var statusId = status->StatusID;
+                var status = statusManager->Status.GetPointer(i);
+                var statusId = status->StatusId;
                 if (statusId == 0 || !filteredStatus.Contains(statusId)) {
                     continue;
                 }
 
                 if (localPlayer == null) {
-                    localPlayer = GameObjectManager.GetGameObjectByIndex(0);
+                    localPlayer = GameObjectManager.Instance()->Objects.IndexSorted[0];
                     if (localPlayer == null
-                        || localPlayer->ObjectID == target->ObjectID
+                        || localPlayer->EntityId == target->EntityId
                         || (Config.FilterOnlyInCombat && !((Character*)localPlayer)->InCombat)
                         || Service.ClientState.IsPvP) {
                         break;
                     }
                 }
 
-                if (status->SourceID == localPlayer->ObjectID) {
+                if (status->SourceId == localPlayer->EntityId) {
                     continue;
                 }
 
                 removedStatus[this.removedStatusIndex++] = i;
                 removedStatus[this.removedStatusIndex++] = statusId;
-                status->StatusID = 0;
+                status->StatusId = 0;
             }
         }
 
         private void RestoreStatus(StatusManager* statusManager) {
             for (var i = 0; i < this.removedStatusIndex; i += 2) {
-                ((Status*)(statusManager->Status + (0xc * removedStatus[i])))->StatusID = removedStatus[i + 1];
+                statusManager->Status.GetPointer(removedStatus[i])->StatusId = removedStatus[i + 1];
             }
 
             this.removedStatusIndex = 0;
@@ -390,7 +391,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     ImGui.Text(statusId.ToString());
 
                     ImGui.TableNextColumn();
-                    var statusIconTex = Service.TextureProvider.GetIcon(statusSheet[statusId].Icon);
+                    var statusIconTex = Service.TextureProvider.GetFromGameIcon(statusSheet[statusId].Icon).GetWrapOrDefault();
                     if (statusIconTex != null) {
                         var scale = (25 * ImGuiHelpers.GlobalScale) / statusIconTex.Height;
                         ImGui.Image(statusIconTex.ImGuiHandle, new Vector2(statusIconTex.Width * scale, statusIconTex.Height * scale));

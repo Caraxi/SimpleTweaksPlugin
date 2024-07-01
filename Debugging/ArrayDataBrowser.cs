@@ -128,7 +128,7 @@ public unsafe class ArrayDataBrowser : DebugHelper {
     
     public override void Draw() {
 
-        var uiModule = Framework.Instance()->GetUiModule();
+        var uiModule = Framework.Instance()->GetUIModule();
         if (uiModule == null) {
             ImGui.Text("UIModule unavailable. ");
             return;

@@ -82,8 +82,8 @@ public unsafe class ImprovedCraftingLog : Tweak {
             var gearset = gearsetModule->GetGearset(i);
             if (gearset == null) continue;
             if (!gearset->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists)) continue;
-            if (gearset->ID != i) continue;
-            if (gearset->ClassJob == cjId) return gearset->ID;
+            if (gearset->Id != i) continue;
+            if (gearset->ClassJob == cjId) return gearset->Id;
         }
         return null;
     }

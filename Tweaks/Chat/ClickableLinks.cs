@@ -57,7 +57,7 @@ class ClickableLinks : ChatTweaks.SubTweak {
         }
     }
 
-    private void OnChatMessage(XivChatType type, uint senderid, ref SeString sender, ref SeString message, ref bool ishandled) {
+    private void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled) {
         if (IsBattleType(type)) {
             return;   
         }

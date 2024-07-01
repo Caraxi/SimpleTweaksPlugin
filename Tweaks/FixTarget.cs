@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Dalamud;
+using Dalamud.Game;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.ClientState.Objects.Types;
@@ -43,7 +44,7 @@ public class FixTarget : Tweak {
         base.Disable();
     }
 
-    private unsafe void OnChatMessage(XivChatType type, uint senderid, ref SeString sender, ref SeString message, ref bool isHandled) {
+    private unsafe void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled) {
         if (type != XivChatType.ErrorMessage) return;
         if (Common.LastCommand == null || Common.LastCommand->StringPtr == null) return;
         var lastCommandStr = Encoding.UTF8.GetString(Common.LastCommand->StringPtr, (int) Common.LastCommand->BufUsed);
@@ -55,7 +56,7 @@ public class FixTarget : Tweak {
         if (!match.Success) return;
         var searchName = match.Groups[1].Value.ToLowerInvariant();
 
-        GameObject closestMatch = null;
+        IGameObject closestMatch = null;
         var closestDistance = float.MaxValue;
         var player = Service.ClientState.LocalPlayer;
         foreach (var actor in Service.Objects) {

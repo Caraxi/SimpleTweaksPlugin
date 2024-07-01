@@ -94,9 +94,9 @@ public unsafe class RefreshMarketPrices : Tweak
 
     private bool AddonItemSearchResultThrottled(AddonItemSearchResult* addon) => addon != null
         && addon->ErrorMessage != null
-        && addon->ErrorMessage->AtkResNode.IsVisible
+        && addon->ErrorMessage->AtkResNode.IsVisible()
         && addon->HitsMessage != null
-        && !addon->HitsMessage->AtkResNode.IsVisible;
+        && !addon->HitsMessage->AtkResNode.IsVisible();
 
     protected override void Disable()
     {

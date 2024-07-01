@@ -17,10 +17,10 @@ public unsafe class MinionAway : CommandTweak {
     protected override void OnCommand(string args) {
         var c = (Character*)(Service.ClientState.LocalPlayer?.Address ?? IntPtr.Zero);
         if (c == null) return;
-        var minion = c->Companion.CompanionObject;
+        var minion = c->CompanionObject;
         if (minion == null) return;
-        if (minion->Character.GameObject.DataID == 0) return;
-        ActionManager.Instance()->UseAction((ActionType) 8, minion->Character.GameObject.DataID);
+        if (minion->Character.GameObject.BaseId == 0) return;
+        ActionManager.Instance()->UseAction((ActionType) 8, minion->Character.GameObject.BaseId);
     }
 
     protected override string Command => "minionaway";

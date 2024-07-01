@@ -6,8 +6,10 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Dalamud;
+using Dalamud.Game;
 using Dalamud.Game.Config;
 using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Utility;
 using ImGuiNET;
 using Lumina.Data.Files;
@@ -17,7 +19,7 @@ namespace SimpleTweaksPlugin.Utility;
 
 public class IconManager : IDisposable {
     private bool disposed;
-    private readonly Dictionary<(int, bool), IDalamudTextureWrap> iconTextures = new();
+    private readonly Dictionary<(uint, bool), IDalamudTextureWrap> iconTextures = new();
     private readonly Dictionary<uint, ushort> actionCustomIcons = new() {
             
     };
@@ -70,7 +72,7 @@ public class IconManager : IDisposable {
                 var size = Size * scale;
                 if (_textureWrap == null) {
                     if (Service.GameConfig.TryGet(SystemConfigOption.PadSelectButtonIcon, out _padIconMode) && _padIconMode < _texturePath.Length) {
-                        _textureWrap = Service.TextureProvider.GetTextureFromGame(_texturePath[_padIconMode]);
+                        _textureWrap = Service.TextureProvider.GetFromGame(_texturePath[_padIconMode]).GetWrapOrDefault();
                     }
                     ImGui.Dummy(drawSize ?? size);
                     return;
@@ -149,15 +151,13 @@ public class IconManager : IDisposable {
         
     }
         
-    private void LoadIconTexture(int iconId, bool hq = false) {
+    private void LoadIconTexture(uint iconId, bool hq = false) {
         Task.Run(() => {
             try {
-                var iconTex = GetIcon(iconId, hq);
-
-                var tex = Service.PluginInterface.UiBuilder.LoadImageRaw(iconTex.GetRgbaImageData(), iconTex.Header.Width, iconTex.Header.Height, 4);
+                var tex = Service.TextureProvider.GetFromGameIcon(iconId).GetWrapOrEmpty();
 
                 if (tex.ImGuiHandle != IntPtr.Zero) {
-                    this.iconTextures[(iconId, hq)] = tex;
+                    iconTextures[(iconId, hq)] = tex;
                 } else {
                     tex.Dispose();
                 }
@@ -219,7 +219,7 @@ public class IconManager : IDisposable {
         return actionCustomIcons.ContainsKey(action.RowId) ? actionCustomIcons[action.RowId] : action.Icon;
     }
 
-    public IDalamudTextureWrap GetIconTexture(int iconId, bool hq = false) {
+    public IDalamudTextureWrap GetIconTexture(uint iconId, bool hq = false) {
         if (this.disposed) return null;
         if (this.iconTextures.ContainsKey((iconId, hq))) return this.iconTextures[(iconId, hq)];
         this.iconTextures.Add((iconId, hq), null);

@@ -4,6 +4,7 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface.Components;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using FFXIVClientStructs.Interop;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -100,14 +101,14 @@ public unsafe class Fools2023 : JokeTweaks.SubTweak {
         
         for (var i = 200; i < 243; i++) {
             if (i < 240 && Service.ClientState.LocalContentId != 0) continue;
-            var o = (BattleChara*) GameObjectManager.GetGameObjectByIndex(i);
+            var o = (BattleChara*) GameObjectManager.Instance()->Objects.IndexSorted.GetPointer(i);
             if (o == null) continue;
             
-            if (statuses.Any(s => o->GetStatusManager->HasStatus(s))) continue;
+            if (statuses.Any(s => o->GetStatusManager()->HasStatus(s))) continue;
 
             var r = RandomStatus(i >= 240);
             if (r == 0) continue;
-            o->GetStatusManager->AddStatus(r);
+            o->GetStatusManager()->AddStatus(r);
         }
     }
 
@@ -125,11 +126,11 @@ public unsafe class Fools2023 : JokeTweaks.SubTweak {
         Service.Framework.RunOnTick(() => {
             for (var i = 200; i < 243; i++) {
                 if (i < 240 && Service.ClientState.LocalContentId != 0) continue;
-                var o = (BattleChara*)GameObjectManager.GetGameObjectByIndex(i);
+                var o = (BattleChara*) GameObjectManager.Instance()->Objects.IndexSorted.GetPointer(i);
                 if (o == null) continue;
                 foreach (var s in statuses) {
-                    if (o->GetStatusManager->HasStatus(s)) {
-                        o->GetStatusManager->RemoveStatus(s);
+                    if (o->GetStatusManager()->HasStatus(s)) {
+                        o->GetStatusManager()->RemoveStatus(s);
                     }
                 }
             }

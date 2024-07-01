@@ -80,12 +80,12 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
         }
     }
 
-    private void UpdateAddon(AtkUnitBase* addon, uint interruptNodeId, uint positioningNodeId, GameObject? target) {
+    private void UpdateAddon(AtkUnitBase* addon, uint interruptNodeId, uint positioningNodeId, IGameObject? target) {
         var interruptNode = Common.GetNodeByID<AtkImageNode>(&addon->UldManager, interruptNodeId);
         var castBarNode = Common.GetNodeByID(&addon->UldManager, positioningNodeId);
         if (interruptNode is not null && castBarNode is not null) {
             TryMakeNodes(addon, castBarNode);
-            UpdateIcons(interruptNode->AtkResNode.IsVisible, addon, target);
+            UpdateIcons(interruptNode->AtkResNode.IsVisible(), addon, target);
         }
     }
     
@@ -97,13 +97,13 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
         if(headGraze is null) MakeImageNode(parent, HeadGrazeImageNodeId, 848, positionNode);
     }
     
-    private void UpdateIcons(bool castBarVisible, AtkUnitBase* parent, GameObject? target) {
+    private void UpdateIcons(bool castBarVisible, AtkUnitBase* parent, IGameObject? target) {
         var interject = Common.GetNodeByID<AtkImageNode>(&parent->UldManager, InterjectImageNodeId);
         var headGraze = Common.GetNodeByID<AtkImageNode>(&parent->UldManager, HeadGrazeImageNodeId);
     
         if (interject is null || headGraze is null) return;
         
-        if (target as BattleChara is { IsCasting: true, IsCastInterruptible: true } && castBarVisible) {
+        if (target as IBattleChara is { IsCasting: true, IsCastInterruptible: true } && castBarVisible) {
             switch (Service.ClientState.LocalPlayer) {
                 case { ClassJob.GameData.Role: 1, Level: >= 18 }: // Tank
                     interject->AtkResNode.ToggleVisibility(true);
@@ -122,13 +122,13 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
         }
     }
     
-    private void MakeImageNode(AtkUnitBase* parent, uint nodeId, int icon, AtkResNode* positioningNode) {
-        var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(0, 0, 36, 36));
+    private void MakeImageNode(AtkUnitBase* parent, uint NodeId, uint icon, AtkResNode* positioningNode) {
+        var imageNode = UiHelper.MakeImageNode(NodeId, new UiHelper.PartInfo(0, 0, 36, 36));
         imageNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorTop | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents;
         imageNode->WrapMode = 1;
         imageNode->Flags = (byte) ImageNodeFlags.AutoFit;
         
-        imageNode->LoadIconTexture(icon, 0);
+        imageNode->LoadIconTexture((uint)icon, 0);
         imageNode->AtkResNode.ToggleVisibility(true);
 
         imageNode->AtkResNode.SetWidth(36);
@@ -161,10 +161,10 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
         TryFreeImageNode(addonFocusTargetInfo, HeadGrazeImageNodeId);
     }
     
-    private void TryFreeImageNode(AtkUnitBase* addon, uint nodeId) {
+    private void TryFreeImageNode(AtkUnitBase* addon, uint NodeId) {
         if (!UiHelper.IsAddonReady(addon)) return;
         
-        var imageNode = Common.GetNodeByID<AtkImageNode>(&addon->UldManager, nodeId);
+        var imageNode = Common.GetNodeByID<AtkImageNode>(&addon->UldManager, NodeId);
         if (imageNode is not null) {
             UiHelper.UnlinkAndFreeImageNode(imageNode, addon);
         }
