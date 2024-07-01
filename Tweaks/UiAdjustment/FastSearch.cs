@@ -39,15 +39,15 @@ public unsafe class FastSearch : UiAdjustments.SubTweak
     private HookWrapper<RecipeSearchContext.Delegates.Iterate>? recipeNoteIterateHook;
 
     private delegate void AgentItemSearchUpdate1Delegate(AgentItemSearch* a1);
-    [TweakHook, Signature("E8 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 80 BB ?? ?? ?? ?? ?? 75 19", DetourName = nameof(AgentItemSearchUpdate1Detour))]
+    [TweakHook, Signature("E8 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 80 BB ?? ?? ?? ?? ?? 0F 85", DetourName = nameof(AgentItemSearchUpdate1Detour))]
     private readonly HookWrapper<AgentItemSearchUpdate1Delegate> agentItemSearchUpdate1Hook;
 
     private delegate void AgentItemSearchUpdateAtkValuesDelegate(AgentItemSearch* a1, uint a2, byte* a3, bool a4);
-    [TweakHook, Signature("40 55 56 41 56 B8", DetourName = nameof(AgentItemSearchUpdateAtkValuesDetour))]
+    [TweakHook, Signature("E9 ?? ?? ?? ?? 45 E0 32", DetourName = nameof(AgentItemSearchUpdateAtkValuesDetour))]
     private readonly HookWrapper<AgentItemSearchUpdateAtkValuesDelegate> agentItemSearchUpdateAtkValuesHook;
 
     private delegate void AgentItemSearchPushFoundItemsDelegate(AgentItemSearch* a1);
-    [TweakHook, Signature("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 2B F8")]
+    [TweakHook, Signature("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 89 9C 24 ?? ?? ?? ?? 41 2B C9")]
     private readonly AgentItemSearchPushFoundItemsDelegate agentItemSearchPushFoundItems;
 
     protected override void Enable()
