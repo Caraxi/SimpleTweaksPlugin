@@ -25,7 +25,7 @@ public unsafe class UseCollectionCommand : CommandTweak {
 
     private delegate byte UseMcGuffinDelegate(IntPtr module, uint id);
 
-    [Signature("E8 ?? ?? ?? ?? EB 0C 48 8B 07")]
+    [Signature("48 89 5C 24 ?? 57 48 83 EC 40 80 3D ?? ?? ?? ?? ??")]
     private UseMcGuffinDelegate useMcGuffin = null!;
 
     protected override void OnCommand(string args) {
