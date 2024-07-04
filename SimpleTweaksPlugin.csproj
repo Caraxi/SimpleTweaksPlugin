@@ -187,7 +187,6 @@
         <Compile Remove="Tweaks\UiAdjustment\ResizeExperienceBar.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ScenarioProgressionDisplay.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ShiftTargetCastBarText.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\ShowShieldOnHPBar.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\SmartNameplates.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\SubmarineDestinationLetters.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\TargetCastbarCountdown.cs"/>
@@ -272,7 +271,6 @@
 		</Reference>
     </ItemGroup>
 	<ItemGroup>
-	  <Folder Include="Tweaks\" />
 	  <Folder Include="Utility\FriendList" />
 	</ItemGroup>
 </Project>
