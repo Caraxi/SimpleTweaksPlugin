@@ -1,23 +1,13 @@
 ﻿using SimpleTweaksPlugin.TweakSystem;
 
-namespace SimpleTweaksPlugin {
-    public partial class SimpleTweaksPluginConfig {
-        public bool ShouldSerializeChatTweaks() => ChatTweaks.DisableChatAutoscroll != null || ChatTweaks.RenameChatTabs != null;
-        public ChatTweaksConfig ChatTweaks = new();
-    }
+namespace SimpleTweaksPlugin.Tweaks;
 
-    public partial class ChatTweaksConfig { }
-}
+[TweakName("Chat Tweaks")]
+public class ChatTweaks : SubTweakManager<ChatTweaks.SubTweak> {
+    public override bool AlwaysEnabled => true;
 
-namespace SimpleTweaksPlugin.Tweaks {
-    public class ChatTweaks : SubTweakManager<ChatTweaks.SubTweak> {
-        public override bool AlwaysEnabled => true;
-
-        [TweakCategory(TweakCategory.Chat)]
-        public abstract class SubTweak : BaseTweak {
-            public override string Key => $"{nameof(ChatTweaks)}@{base.Key}";
-        }
-
-        public override string Name => "Chat Tweaks";
+    [TweakCategory(TweakCategory.Chat)]
+    public abstract class SubTweak : BaseTweak {
+        public override string Key => $"{nameof(ChatTweaks)}@{base.Key}";
     }
 }

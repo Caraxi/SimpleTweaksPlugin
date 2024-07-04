@@ -33,7 +33,6 @@
         <Compile Remove="Tweaks\CharaCardCommand.cs"/>
         <Compile Remove="Tweaks\CharacterClassSwitcher.cs"/>
         <Compile Remove="Tweaks\CharaViewIncreasedZoom.cs"/>
-        <Compile Remove="Tweaks\ChatTweaks.cs"/>
         <Compile Remove="Tweaks\ChrDirCommand.cs"/>
         <Compile Remove="Tweaks\CombatMovementControl.cs"/>
         <Compile Remove="Tweaks\CommandAlias.cs"/>
@@ -88,7 +87,6 @@
         <Compile Remove="Tweaks\UseCollectionCommand.cs"/>
         <Compile Remove="Tweaks\Chat\ChatNameColours.cs"/>
         <Compile Remove="Tweaks\Chat\ChatSoundsEverywhere.cs"/>
-        <Compile Remove="Tweaks\Chat\ClickableLinks.cs"/>
         <Compile Remove="Tweaks\Chat\CustomTimestampFormat.cs"/>
         <Compile Remove="Tweaks\Chat\DisableAutoChatInputs.cs"/>
         <Compile Remove="Tweaks\Chat\DisableChatAutoscroll.cs"/>
