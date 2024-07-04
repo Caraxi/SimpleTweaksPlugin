@@ -13,8 +13,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Show approximate shield on the HP Bar.")]
 [TweakAuthor("Chivalrik")]
 [TweakAutoConfig]
-[TweakCategory(TweakCategory.UI)]
-public unsafe class ShowShieldOnHPBar : Tweak {
+public unsafe class ShowShieldOnHPBar : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Shield Colour", "Color")]
         public Vector3 ShieldColour = Common.UiColorToVector3(0xFFFF00);

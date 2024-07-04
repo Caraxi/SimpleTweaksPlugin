@@ -85,7 +85,6 @@
         <Compile Remove="Tweaks\TooltipTweaks.cs"/>
         <Compile Remove="Tweaks\TreasureHuntTargets.cs"/>
         <Compile Remove="Tweaks\TryOnCorrectItem.cs"/>
-        <Compile Remove="Tweaks\UiAdjustments.cs"/>
         <Compile Remove="Tweaks\UseCollectionCommand.cs"/>
         <Compile Remove="Tweaks\Chat\ChatNameColours.cs"/>
         <Compile Remove="Tweaks\Chat\ChatSoundsEverywhere.cs"/>
