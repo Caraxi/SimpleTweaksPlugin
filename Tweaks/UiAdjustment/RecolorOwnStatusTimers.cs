@@ -7,11 +7,10 @@ using Vector4 = System.Numerics.Vector4;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
+[TweakName("Recolor Own Status Timers")]
+[TweakDescription("Allows the recoloring of the personal status timers color.")]
+[TweakAuthor("Aireil")]
 public unsafe class RecolorOwnStatusTimers : UiAdjustments.SubTweak {
-    public override string Name => "Recolor Own Status Timers";
-    public override string Description => "Allows the recoloring of the personal status timers color.";
-    protected override string Author => "Aireil";
-
     private delegate byte GetUiColor(uint colorIndex, ByteColor* color, ByteColor* edgeColor);
     private HookWrapper<GetUiColor> getUiColorHook;
 

@@ -4,14 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
+using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
-using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using GameObject = FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject;
@@ -24,11 +25,11 @@ namespace SimpleTweaksPlugin {
 }
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
+    [TweakName("Target Status Adjustments")]
+    [TweakDescription("Allows the filtering of specific status effects on your target as well as limiting the number of them.")]
+    [TweakAuthor("Aireil")]
     public unsafe class LimitTargetStatusEffects : UiAdjustments.SubTweak {
-        public override string Name => "Target Status Adjustments";
-        public override string Description => "Allows the filtering of specific status effects on your target as well as limiting the number of them.";
         public override IEnumerable<string> Tags => new[] {"Buffs", "Debuffs", "Limit", "Filter", "Effects"};
-        protected override string Author => "Aireil";
 
         public class Configs : TweakConfig {
             public int NbStatusEffects = 30;
@@ -37,7 +38,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             public bool FilterPersonalStatus;
             public bool FilterTarget = true;
             public bool FilterFocusTarget = true;
-            public readonly HashSet<ushort> FilteredStatusCustom = new();
+            public readonly HashSet<ushort> FilteredStatusCustom = [];
         }
 
         public Configs Config { get; private set; }
@@ -118,13 +119,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     ImGui.Text(statusId.ToString());
 
                     ImGui.TableNextColumn();
-                    var statusIconTex = Service.TextureProvider.GetIcon(statusSheet[statusId].Icon);
-                    if (statusIconTex != null) {
-                        var scale = (25 * ImGuiHelpers.GlobalScale) / statusIconTex.Height;
-                        ImGui.Image(statusIconTex.ImGuiHandle, new Vector2(statusIconTex.Width * scale, statusIconTex.Height * scale));
-                    } else {
-                        ImGui.Text("-");
-                    }
+                    var statusIconTex = Service.TextureProvider.GetFromGameIcon(new GameIconLookup(statusSheet[statusId].Icon)).GetWrapOrEmpty();
+                    var scale = (25 * ImGuiHelpers.GlobalScale) / statusIconTex.Height;
+                    ImGui.Image(statusIconTex.ImGuiHandle, new Vector2(statusIconTex.Width * scale, statusIconTex.Height * scale));
 
                     ImGui.TableNextColumn();
                     ImGui.AlignTextToFramePadding();
@@ -162,7 +159,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         };
 
         protected override void Enable() {
-            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.LimitTargetStatusEffects ?? new Configs();
+            Config = LoadConfig<Configs>() ?? new Configs();
             UpdateFilteredStatus();
             Common.FrameworkUpdate += FrameworkOnUpdate;
 
@@ -180,35 +177,35 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             this.removedStatusIndex = 0;
 
             for (ushort i = 0; i < statusManager->NumValidStatuses; i++) {
-                var status = (Status*)(statusManager->Status + (0xc * i));
-                var statusId = status->StatusID;
+                var status = statusManager->Status[i];
+                var statusId = status.StatusId;
                 if (statusId == 0 || !filteredStatus.Contains(statusId)) {
                     continue;
                 }
 
                 if (localPlayer == null) {
-                    localPlayer = GameObjectManager.GetGameObjectByIndex(0);
+                    localPlayer = (GameObject*)Service.ClientState.LocalPlayer?.Address;
                     if (localPlayer == null
-                        || localPlayer->ObjectID == target->ObjectID
+                        || localPlayer->EntityId == target->EntityId
                         || (Config.FilterOnlyInCombat && !((Character*)localPlayer)->InCombat)
                         || Service.ClientState.IsPvP) {
                         break;
                     }
                 }
 
-                if (status->SourceID == localPlayer->ObjectID) {
+                if (status.SourceId == localPlayer->EntityId) {
                     continue;
                 }
 
                 removedStatus[this.removedStatusIndex++] = i;
                 removedStatus[this.removedStatusIndex++] = statusId;
-                status->StatusID = 0;
+                (*(Status*)Unsafe.AsPointer(ref statusManager->Status[i])).StatusId = 0;
             }
         }
 
         private void RestoreStatus(StatusManager* statusManager) {
             for (var i = 0; i < this.removedStatusIndex; i += 2) {
-                ((Status*)(statusManager->Status + (0xc * removedStatus[i])))->StatusID = removedStatus[i + 1];
+                (*(Status*)Unsafe.AsPointer(ref statusManager->Status[this.removedStatus[i]])).StatusId = removedStatus[i + 1];
             }
 
             this.removedStatusIndex = 0;
@@ -262,7 +259,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         protected override void Disable() {
             SaveConfig(Config);
-            PluginConfig.UiAdjustments.LimitTargetStatusEffects = null;
             updateTargetStatusHook?.Disable();
             updateFocusTargetHook?.Disable();
             Common.FrameworkUpdate -= FrameworkOnUpdate;
@@ -390,13 +386,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     ImGui.Text(statusId.ToString());
 
                     ImGui.TableNextColumn();
-                    var statusIconTex = Service.TextureProvider.GetIcon(statusSheet[statusId].Icon);
-                    if (statusIconTex != null) {
-                        var scale = (25 * ImGuiHelpers.GlobalScale) / statusIconTex.Height;
-                        ImGui.Image(statusIconTex.ImGuiHandle, new Vector2(statusIconTex.Width * scale, statusIconTex.Height * scale));
-                    } else {
-                        ImGui.Text("-");
-                    }
+                    var statusIconTex = Service.TextureProvider.GetFromGameIcon(new GameIconLookup(statusSheet[statusId].Icon)).GetWrapOrEmpty();
+                    var scale = (25 * ImGuiHelpers.GlobalScale) / statusIconTex.Height;
+                    ImGui.Image(statusIconTex.ImGuiHandle, new Vector2(statusIconTex.Width * scale, statusIconTex.Height * scale));
 
                     ImGui.TableNextColumn();
                     ImGui.AlignTextToFramePadding();
@@ -412,8 +404,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private static IEnumerable<ushort> GetPersonalStatus() {
             return new HashSet<ushort>() {
                 248, // Circle of Scorn (PLD)
-                725, // Goring Blade (PLD)
-                2721, // Blade of Valor (PLD)
 
                 1837, // Sonic Break (GNB)
                 1838, // Bow Shock (GNB)
@@ -425,6 +415,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 179, // Bio (SCH)
                 189, // Bio II (SCH)
                 1895, // Biolysis (SCH)
+                3883, // Baneful Impaction (SCH)
 
                 838, // Combust (AST)
                 843, // Combust II (AST)
@@ -433,17 +424,19 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 2614, // Eukrasian Dosis (SGE)
                 2615, // Eukrasian Dosis II (SGE)
                 2616, // Eukrasian Dosis III (SGE)
-
-                246, // Demolish (MNK)
+                3897, // Eukrasian Dyskrasia (SGE)
 
                 118, // Chaos Thrust (DRG)
                 2719, // Chaotic Spring (DRG)
 
                 3254, // Trick Attack (NIN)
+                3906, // Kunai's Bane (NIN)
 
                 1228, // Higanbana (SAM)
 
                 2586, // Death's Design (RPR)
+
+                3667, // Noxious Gnash (VPR)
 
                 124, // Venomous Bite (BRD)
                 129, // Windbite (BRD)
@@ -457,6 +450,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 162, // Thunder II (BLM)
                 163, // Thunder III (BLM)
                 1210, // Thunder IV (BLM)
+                3871, // High Thunder (BLM)
+                3872, // High Thunder II (BLM)
 
                 1723, // Windburn (BLU)
                 1714, // Bleeding (BLU)

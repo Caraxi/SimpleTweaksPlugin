@@ -11,13 +11,12 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
+[TweakName("Always Yes")]
+[TweakDescription("Sets the default action in dialog boxes to yes when using confirm (num 0).")]
+[TweakAuthor("Aireil")]
 [Changelog(UnreleasedVersion, "Added support for automatic aetherial reduction.")]
 [Changelog("1.9.2.1", "Added support for Blunderville exit dialog.")]
 public unsafe class AlwaysYes : UiAdjustments.SubTweak {
-    public override string Name => "Always Yes";
-    public override string Description => "Sets the default action in dialog boxes to yes when using confirm (num 0).";
-    protected override string Author => "Aireil";
-
     public class Configs : TweakConfig {
         public bool SelectCheckBox = true;
         public bool YesNo = true;
@@ -191,12 +190,12 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         AtkResNode* targetNode;
         var checkBox = checkBoxId != null ? (AtkComponentNode*)unitBase->UldManager.SearchNodeById(checkBoxId.Value) : null;
         var textCheckBox = checkBox != null && checkBox->Component != null && checkBox->Component->UldManager.LoadedState == AtkLoadState.Loaded ? (AtkTextNode*)checkBox->Component->UldManager.SearchNodeById(2) : null;
-        if (Config.SelectCheckBox && checkBox != null && checkBox->AtkResNode.IsVisible && textCheckBox != null && !textCheckBox->NodeText.ToString().IsNullOrWhitespace()) {
+        if (Config.SelectCheckBox && checkBox != null && checkBox->AtkResNode.IsVisible() && textCheckBox != null && !textCheckBox->NodeText.ToString().IsNullOrWhitespace()) {
             collisionId = 5;
             targetNode = &checkBox->AtkResNode;
         } else {
             var holdButton = yesHoldButtonId != null ? unitBase->UldManager.SearchNodeById(yesHoldButtonId.Value) : null;
-            if (holdButton != null && !yesButton->IsVisible) {
+            if (holdButton != null && !yesButton->IsVisible()) {
                 collisionId = 7;
                 targetNode = holdButton;
             }

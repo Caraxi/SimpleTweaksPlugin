@@ -13,10 +13,10 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
 
+[TweakName("Parameter Bar Adjustments")]
+[TweakDescription("Allows hiding or moving specific parts of the parameter bar (HP and mana bars).")]
+[TweakAuthor("Aireil")]
 public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
-    public override string Name => "Parameter Bar Adjustments";
-    public override string Description => "Allows hiding or moving specific parts of the parameter bar (HP and mana bars).";
-    protected override string Author => "Aireil";
     public override IEnumerable<string> Tags => new[] {"parameter", "hp", "mana", "bar"};
 
     public class Configs : TweakConfig {
