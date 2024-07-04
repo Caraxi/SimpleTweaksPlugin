@@ -190,7 +190,6 @@
     </ItemGroup>
     
     <ItemGroup>
-        <Compile Remove="Debugging\ActionBarDebug.cs"/>
         <Compile Remove="Debugging\AddonDebug.cs"/>
         <Compile Remove="Debugging\AgentDebug.cs"/>
         <Compile Remove="Debugging\ArrayDataBrowser.cs"/>
