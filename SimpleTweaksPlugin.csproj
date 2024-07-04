@@ -189,7 +189,6 @@
         <Compile Remove="Tweaks\UiAdjustment\SmartNameplates.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\SubmarineDestinationLetters.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\TargetCastbarCountdown.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\TargetHP.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\TimerOnDutyWaiting.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\TimeUntilGpMax.cs"/>
     </ItemGroup>
