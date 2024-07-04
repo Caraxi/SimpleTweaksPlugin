@@ -19,6 +19,9 @@ using SimpleTweaksPlugin.Utility;
 namespace SimpleTweaksPlugin.TweakSystem; 
 
 public abstract class BaseTweak {
+    protected BaseTweak() { }
+    internal BaseTweak(string name) => tweakNameAttribute = new TweakNameAttribute(name);
+
     protected SimpleTweaksPlugin Plugin;
     protected IDalamudPluginInterface PluginInterface;
     protected SimpleTweaksPluginConfig PluginConfig;
@@ -33,14 +36,14 @@ public abstract class BaseTweak {
 
     public virtual string Key => GetType().Name;
 
-    public virtual string Name => TweakNameAttribute?.Name ?? GetType().Name;
+    public string Name => TweakNameAttribute?.Name ?? GetType().Name;
 
-    public virtual uint Version => TweakVersionAttribute?.Version ?? 1;
+    public uint Version => TweakVersionAttribute?.Version ?? 1;
 
     public string LocalizedName => LocString("Name", Name, "Tweak Name");
 
-    public virtual string Description => TweakDescriptionAttribute?.Description;
-    protected virtual string Author => TweakAuthorAttribute?.Author;
+    public string Description => TweakDescriptionAttribute?.Description;
+    protected string Author => TweakAuthorAttribute?.Author;
     public virtual bool Experimental => false;
     public virtual IEnumerable<string> Tags { get; } = new string[0];
     internal bool ForceOpenConfig { private get; set; }
