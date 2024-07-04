@@ -5,15 +5,15 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
 
+[TweakName("Reduced Deep Dungeon Info")]
+[TweakDescription("Removes redundant information from the deep dungeon character info.")]
+[TweakAuthor("Aireil")]
 public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
-    public override string Name => "Reduced Deep Dungeon Info";
-    public override string Description => "Removes redundant information from the deep dungeon character info.";
-    protected override string Author => "Aireil";
-
     protected override void Enable() {
         Common.FrameworkUpdate += OnFrameworkUpdate;
         base.Enable();
@@ -61,7 +61,7 @@ public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
         var armorAetherpoolTextNode = (AtkTextNode*) armorAetherpoolNode->Component->UldManager.NodeList[1];
         var textNode = (AtkTextNode*) deepDungeonUnitBase->UldManager.NodeList[77]; // "To next level:" node
 
-        var isHoh = magiciteInfoNode->IsVisible;
+        var isHoh = magiciteInfoNode->IsVisible();
 
         if (reset) {
             gearInfoNode->ToggleVisibility(true);
@@ -85,7 +85,7 @@ public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
             UiHelper.SetPosition(textNode, 78, 65);
             textNode->FontSize = 12;
             textNode->AlignmentFontType = 3;
-            textNode->SetText(Service.Data.Excel.GetSheet<Addon>().GetRow(10430).Text);
+            textNode->SetText(Service.Data.Excel.GetSheet<Addon>()!.GetRow(10430)!.Text);
 
             return;
         }

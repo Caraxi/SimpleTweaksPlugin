@@ -19,11 +19,10 @@ namespace SimpleTweaksPlugin {
 }
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
+    [TweakName("Notification Toast Adjustments")]
+    [TweakDescription("Allows moving or hiding of the notifications that appears in the middle of the screen at various times.")]
+    [TweakAuthor("Aireil")]
     public unsafe class NotificationToastAdjustments : UiAdjustments.SubTweak {
-        public override string Name => "Notification Toast Adjustments";
-        public override string Description => "Allows moving or hiding of the notifications that appears in the middle of the screen at various times.";
-        protected override string Author => "Aireil";
-
         public class Configs : TweakConfig {
             public bool Hide = false;
             public bool ShowInCombat = false;
@@ -55,7 +54,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 if (offsetChanged)
                 {
                     var toastNode = GetToastNode(2);
-                    if (toastNode != null && !toastNode->IsVisible)
+                    if (toastNode != null && !toastNode->IsVisible())
                         Service.Toasts.ShowNormal("This is a preview of a toast message.");
                     hasChanged = true;
                 }
@@ -93,7 +92,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         };
 
         protected override void Enable() {
-            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.NotificationToastAdjustments ?? new Configs();
+            Config = LoadConfig<Configs>() ?? new Configs();
             Common.FrameworkUpdate += FrameworkOnUpdate;
             Service.Toasts.Toast += OnToast;
             base.Enable();
@@ -101,7 +100,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         protected override void Disable() {
             SaveConfig(Config);
-            PluginConfig.UiAdjustments.NotificationToastAdjustments = null;
             Common.FrameworkUpdate -= FrameworkOnUpdate;
             Service.Toasts.Toast -= OnToast;
             UpdateNotificationToast(true);
@@ -131,7 +129,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 return;
             }
 
-            if (!toastNode->IsVisible) return;
+            if (!toastNode->IsVisible()) return;
 
             SetOffsetPosition(toastNode, Config.OffsetXPosition, Config.OffsetYPosition, Config.Scale);
             toastNode->SetScale(Config.Scale, Config.Scale);

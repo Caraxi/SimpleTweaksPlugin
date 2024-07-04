@@ -128,7 +128,6 @@
         <Compile Remove="Tweaks\Tooltips\Hotkeys\ViewOnUniversalis.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\AccurateVentureTimes.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ActionPressMirroring.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\AlwaysYes.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\AutoFocusRecipeSearch.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\BattleTalkAdjustments.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\CastingTextVisibility.cs"/>
@@ -162,7 +161,6 @@
         <Compile Remove="Tweaks\UiAdjustment\ImprovedWorldVisit.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\KeepOpen.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\LargeCooldownCounter.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\LimitTargetStatusEffects.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\LockWindowPosition.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\LootWindowDuplicateUniqueItemIndicator.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\LootWindowSelectNext.cs"/>
@@ -170,12 +168,8 @@
         <Compile Remove="Tweaks\UiAdjustment\MinimapAdjustments.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\MoveCutsceneTalk.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\NamePlateIconSpacing.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\NotificationToastAdjustments.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\OldNameplatesTweak.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\OpenGlamourDresserToCurrentJob.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\ParameterBarAdjustments.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\RecolorOwnStatusTimers.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\ReducedDeepDungeonInfo.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\RememberTitleSorting.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\RemoveCommunityFinder.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\RemoveQuestMarkerLimit.cs"/>
