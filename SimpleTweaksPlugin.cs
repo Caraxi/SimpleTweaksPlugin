@@ -9,13 +9,10 @@ using System.Net;
 using System.Net.Http;
 using System.Numerics;
 using System.Reflection;
-using Dalamud;
-using Dalamud.Interface;
+using Dalamud.Game;
 using Dalamud.Interface.ImGuiNotification;
-using Dalamud.Interface.Internal.Notifications;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Utility;
@@ -31,8 +28,6 @@ namespace SimpleTweaksPlugin {
         public SimpleTweaksPluginConfig PluginConfig { get; private set; }
 
         public List<TweakProvider> TweakProviders = new();
-
-        public IconManager IconManager { get; private set; }
 
         public string AssemblyLocation { get; private set; } = Assembly.GetExecutingAssembly().Location;
         
@@ -90,7 +85,7 @@ namespace SimpleTweaksPlugin {
 
         public int UpdateFrom = -1;
 
-        public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface) {
+        public SimpleTweaksPlugin(IDalamudPluginInterface pluginInterface) {
             Plugin = this;
             pluginInterface.Create<Service>();
             pluginInterface.Create<SimpleLog>();
@@ -101,18 +96,12 @@ namespace SimpleTweaksPlugin {
             
 #if DEBUG
             SimpleLog.SetupBuildPath();
-            Task.Run(() => {
-                FFXIVClientStructs.Interop.Resolver.GetInstance.SetupSearchSpace(Service.SigScanner.SearchBase);
-                FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
-                UpdateBlacklist();
-                Service.Framework.RunOnFrameworkThread(Initialize);
-            });
-#else
-            Task.Run(() => {
-                UpdateBlacklist();
-                Service.Framework.RunOnFrameworkThread(Initialize);
-            });
 #endif
+            Task.Run(() => {
+                UpdateBlacklist();
+                Service.Framework.RunOnFrameworkThread(Initialize);
+            });
+
         }
 
 
@@ -139,9 +128,6 @@ namespace SimpleTweaksPlugin {
         }
         
         private void Initialize() {
-
-            IconManager = new IconManager();
-
             SetupLocalization();
 
             UiHelper.Setup(Service.SigScanner);

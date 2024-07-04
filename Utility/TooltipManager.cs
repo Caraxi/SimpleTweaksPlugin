@@ -17,12 +17,12 @@ public static unsafe class TooltipManager {
     public static void AddTooltip(AtkUnitBase* atkUnitBase, AtkResNode* node, string tooltip) => AddTooltip(atkUnitBase, node, () => tooltip);
     public static void AddTooltip(AtkUnitBase* atkUnitBase, AtkResNode* node, Func<string> tooltip) {
         if (atkUnitBase == null || node == null) return;
-        var addonName = Common.ReadString(atkUnitBase->Name, 0x20);
+        var addonName = atkUnitBase->NameString;
         if (!_tooltips.TryGetValue(addonName, out var addonDict)) {
             addonDict = new ConcurrentDictionary<uint, Func<string>>();
             if (!_tooltips.TryAdd(addonName, addonDict)) return;
         }
-        addonDict.AddOrUpdate(node->NodeID, _ => tooltip, (_, _) => tooltip);
+        addonDict.AddOrUpdate(node->NodeId, _ => tooltip, (_, _) => tooltip);
 
         _event.Remove(atkUnitBase, node, AtkEventType.MouseOver);
         _event.Remove(atkUnitBase, node, AtkEventType.MouseOut);
@@ -36,19 +36,19 @@ public static unsafe class TooltipManager {
         if (atkUnitBase == null || node == null) return;
         _event.Remove(atkUnitBase, node, AtkEventType.MouseOver);
         _event.Remove(atkUnitBase, node, AtkEventType.MouseOut);
-        var addonName = Common.ReadString(atkUnitBase->Name, 0x20);
+        var addonName = atkUnitBase->NameString;
         if (!_tooltips.TryGetValue(addonName, out var addonDict)) return;
-        addonDict.TryRemove(node->NodeID, out _);
+        addonDict.TryRemove(node->NodeId, out _);
     }
 
     private static void TooltipDelegate(AtkEventType eventType, AtkUnitBase* atkUnitBase, AtkResNode* node) {
-        var addonName = Common.ReadString(atkUnitBase->Name, 0x20);
+        var addonName = atkUnitBase->NameString;
         if (!_tooltips.TryGetValue(addonName, out var addonDict)) return;
-        if (!addonDict.TryGetValue(node->NodeID, out Func<string> tooltip)) return;
+        if (!addonDict.TryGetValue(node->NodeId, out Func<string> tooltip)) return;
         if (eventType == AtkEventType.MouseOver) {
-            AtkStage.GetSingleton()->TooltipManager.ShowTooltip(atkUnitBase->ID, node, tooltip());
+            AtkStage.Instance()->TooltipManager.ShowTooltip(atkUnitBase->Id, node, tooltip());
         } else if (eventType == AtkEventType.MouseOut) {
-            AtkStage.GetSingleton()->TooltipManager.HideTooltip(atkUnitBase->ID);
+            AtkStage.Instance()->TooltipManager.HideTooltip(atkUnitBase->Id);
         }
     }
 

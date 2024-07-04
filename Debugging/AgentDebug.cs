@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using FFXIVClientStructs.Attributes;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -405,7 +406,7 @@ public unsafe class AgentDebug : DebugHelper {
         } else {
             agentGetLog[index] = (agentId, (ulong) ret, e.hitCount + 1);
         }
-            
+        Character
         return ret;
     }
 

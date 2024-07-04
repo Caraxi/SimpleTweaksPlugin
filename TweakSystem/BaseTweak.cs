@@ -8,7 +8,6 @@ using System.Reflection;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
-using Dalamud.Interface.Internal;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin;
 using ImGuiNET;
@@ -21,7 +20,7 @@ namespace SimpleTweaksPlugin.TweakSystem;
 
 public abstract class BaseTweak {
     protected SimpleTweaksPlugin Plugin;
-    protected DalamudPluginInterface PluginInterface;
+    protected IDalamudPluginInterface PluginInterface;
     protected SimpleTweaksPluginConfig PluginConfig;
 
     public virtual bool Ready { get; protected set; }
@@ -29,7 +28,6 @@ public abstract class BaseTweak {
     protected virtual bool Unloading { get; private set; } = true;
 
     private bool hasPreviewImage;
-    private IDalamudTextureWrap previewImage;
     
     public bool IsDisposed { get; private set; }
 
@@ -56,7 +54,7 @@ public abstract class BaseTweak {
 
     protected CultureInfo Culture => Plugin.Culture;
 
-    public void InterfaceSetup(SimpleTweaksPlugin plugin, DalamudPluginInterface pluginInterface, SimpleTweaksPluginConfig config, TweakProvider tweakProvider, SubTweakManager tweakManager = null) {
+    public void InterfaceSetup(SimpleTweaksPlugin plugin, IDalamudPluginInterface pluginInterface, SimpleTweaksPluginConfig config, TweakProvider tweakProvider, SubTweakManager tweakManager = null) {
         this.PluginInterface = pluginInterface;
         this.PluginConfig = config;
         this.Plugin = plugin;
@@ -80,14 +78,16 @@ public abstract class BaseTweak {
             ImGuiExt.IconButton($"##previewButton", FontAwesomeIcon.Image);
             if (ImGui.IsItemHovered()) {
                 ImGui.BeginTooltip();
-                if (previewImage == null) {
-                    try {
-                        previewImage = PluginInterface.UiBuilder.LoadImage(Path.Join(PluginInterface.AssemblyLocation.DirectoryName, "TweakPreviews", $"{Key}.png"));
-                    } catch {
+                try {
+                    var image = Service.TextureProvider.GetFromFile(Path.Join(PluginInterface.AssemblyLocation.DirectoryName, "TweakPreviews", $"{Key}.png"));
+                    var previewImage = image.GetWrapOrDefault();
+                    if (previewImage == null) {
                         hasPreviewImage = false;
+                    } else {
+                        ImGui.Image(previewImage.ImGuiHandle, new Vector2(previewImage.Width, previewImage.Height));
                     }
-                } else {
-                    ImGui.Image(previewImage.ImGuiHandle, new Vector2(previewImage.Width, previewImage.Height));
+                } catch {
+                    hasPreviewImage = false;
                 }
                 ImGui.EndTooltip();
             }
@@ -611,7 +611,6 @@ public abstract class BaseTweak {
     }
 
     internal void InternalDispose() {
-        previewImage?.Dispose();
         Dispose();
         IsDisposed = true;
     }

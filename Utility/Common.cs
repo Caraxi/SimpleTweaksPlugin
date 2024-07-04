@@ -57,7 +57,7 @@ public unsafe class Common {
         updateCursorHook?.Enable();
     }
 
-    public static UIModule* UIModule => Framework.Instance()->GetUiModule();
+    public static UIModule* UIModule => Framework.Instance()->GetUIModule();
 
 
     public static bool GetUnitBase(string name, out AtkUnitBase* unitBase, int index = 1) {
@@ -230,7 +230,7 @@ public unsafe class Common {
         var atkValues = CreateAtkValueArray(values);
         if (atkValues == null) return;
         try {
-            unitBase->FireCallback(values.Length, atkValues);
+            unitBase->FireCallback((uint)values.Length, atkValues);
         } finally {
             for (var i = 0; i < values.Length; i++) {
                 if (atkValues[i].Type == ValueType.String) {
@@ -241,23 +241,19 @@ public unsafe class Common {
         }
     }
 
-    [StructLayout(LayoutKind.Explicit, Size = 64)]
-    public struct EventObject {
-        [FieldOffset(0)] public ulong Unknown0;
-        [FieldOffset(8)] public ulong Unknown8;
-    }
 
-    public static EventObject* SendEvent(AgentId agentId, ulong eventKind, params object[] eventparams) {
+
+    public static AtkValue* SendEvent(AgentId agentId, ulong eventKind, params object[] eventparams) {
         var agent = AgentModule.Instance()->GetAgentByInternalId(agentId);
         return agent == null ? null : SendEvent(agent, eventKind, eventparams);
     }
 
-    public static EventObject* SendEvent(AgentInterface* agentInterface, ulong eventKind, params object[] eventParams) {
-        var eventObject = stackalloc EventObject[1];
+    public static AtkValue* SendEvent(AgentInterface* agentInterface, ulong eventKind, params object[] eventParams) {
+        var eventObject = stackalloc AtkValue[1];
         return SendEvent(agentInterface, eventObject, eventKind, eventParams);
     }
     
-    public static EventObject* SendEvent(AgentInterface* agentInterface, EventObject* eventObject, ulong eventKind, params object[] eventParams) {
+    public static AtkValue* SendEvent(AgentInterface* agentInterface, AtkValue* eventObject, ulong eventKind, params object[] eventParams) {
         var atkValues = CreateAtkValueArray(eventParams);
         if (atkValues == null) return eventObject;
         try {
@@ -295,7 +291,7 @@ public unsafe class Common {
         if (uldManager->NodeList == null) return null;
         for (var i = 0; i < uldManager->NodeListCount; i++) {
             var n = uldManager->NodeList[i];
-            if (n == null || n->NodeID != nodeId || type != null && n->Type != type.Value) continue;
+            if (n == null || n->NodeId != nodeId || type != null && n->Type != type.Value) continue;
             return (T*)n;
         }
         return null;
@@ -314,12 +310,12 @@ public unsafe class Common {
 
     public const int UnitListCount = 18;
     public static AtkUnitBase* GetAddonByID(uint id) {
-        var unitManagers = &AtkStage.GetSingleton()->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
+        var unitManagers = &AtkStage.Instance()->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
         for (var i = 0; i < UnitListCount; i++) {
             var unitManager = &unitManagers[i];
-            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->EntriesSpan.Length))) {
-                var unitBase = unitManager->EntriesSpan[j].Value;
-                if (unitBase != null && unitBase->ID == id) {
+            foreach (var j in Enumerable.Range(0, Math.Min(unitManager->Count, unitManager->Entries.Length))) {
+                var unitBase = unitManager->Entries[j].Value;
+                if (unitBase != null && unitBase->Id == id) {
                     return unitBase;
                 }
             }
@@ -334,13 +330,13 @@ public unsafe class Common {
     }
 
     public static AgentInterface* GetAgent(AgentId agentId) {
-        return Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(agentId);
+        return Framework.Instance()->GetUIModule()->GetAgentModule()->GetAgentByInternalId(agentId);
     }
 
     public static T* GetAgent<T>() where T : unmanaged {
         var attr = typeof(T).GetCustomAttribute<AgentAttribute>();
         if (attr == null) return null;
-        return (T*)GetAgent(attr.ID);
+        return (T*)GetAgent(attr.Id);
     }
 
 
@@ -351,9 +347,9 @@ public unsafe class Common {
     
     private static void* UpdateCursorDetour(RaptureAtkModule* module) {
         if (_lockedCursorType != AtkCursor.CursorType.Arrow) {
-            var cursor = AtkStage.GetSingleton()->AtkCursor;
+            var cursor = AtkStage.Instance()->AtkCursor;
             if (cursor.Type != _lockedCursorType) {
-                AtkStage.GetSingleton()->AtkCursor.SetCursorType(_lockedCursorType, 1);
+                AtkStage.Instance()->AtkCursor.SetCursorType(_lockedCursorType, 1);
             }
             return null;
         }
@@ -367,7 +363,7 @@ public unsafe class Common {
             return;
         }
         _lockedCursorType = cursorType;
-        AtkStage.GetSingleton()->AtkCursor.SetCursorType(cursorType);
+        AtkStage.Instance()->AtkCursor.SetCursorType(cursorType);
         updateCursorHook?.Enable();
     }
 
