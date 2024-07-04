@@ -134,7 +134,6 @@
         <Compile Remove="Tweaks\UiAdjustment\AlwaysYes.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\AutoFocusRecipeSearch.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\BattleTalkAdjustments.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\CastBarAdjustments.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\CastingTextVisibility.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ChangeMapAreaColors.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ColoredDutyRoulette.cs"/>
