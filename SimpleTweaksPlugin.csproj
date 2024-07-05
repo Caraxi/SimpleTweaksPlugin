@@ -192,11 +192,6 @@
         <Compile Remove="Debugging\ExcelSheetDebugging.cs"/>
         <Compile Remove="Debugging\InfoProxyDebugging.cs"/>
         <Compile Remove="Debugging\InventoryDebug.cs"/>
-        <Compile Remove="Debugging\MacroDebugging.cs"/>
-        <Compile Remove="Debugging\PartyDebugging.cs"/>
-        <Compile Remove="Debugging\RetainersDebugging.cs"/>
-        <Compile Remove="Debugging\StatusEffectsDebugging.cs"/>
-        <Compile Remove="Debugging\TargetDebugging.cs"/>
         <Compile Remove="Debugging\UIDebug.cs"/>
     </ItemGroup>
     
