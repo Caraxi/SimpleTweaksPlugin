@@ -190,7 +190,6 @@
         <Compile Remove="Debugging\BattleCharaDebug.cs"/>
         <Compile Remove="Debugging\ConfigDebug.cs"/>
         <Compile Remove="Debugging\ExcelSheetDebugging.cs"/>
-        <Compile Remove="Debugging\FriendListDebugging.cs"/>
         <Compile Remove="Debugging\InfoProxyDebugging.cs"/>
         <Compile Remove="Debugging\InventoryDebug.cs"/>
         <Compile Remove="Debugging\MacroDebugging.cs"/>
