@@ -138,12 +138,12 @@ public unsafe class ConfigDebug : DebugHelper {
     public override void Draw() {
         if (ImGui.BeginTabBar("ConfigTabs")) {
             if (ImGui.BeginTabItem("System")) {
-                DrawConfigBase(&Framework.Instance()->SystemConfig.CommonSystemConfig.ConfigBase);
+                DrawConfigBase(&Framework.Instance()->SystemConfig.SystemConfigBase.ConfigBase);
                 ImGui.EndTabItem();
             }
 
             if (ImGui.BeginTabItem("UiConfig")) {
-                DrawConfigBase(&Framework.Instance()->SystemConfig.CommonSystemConfig.UiConfig);
+                DrawConfigBase(&Framework.Instance()->SystemConfig.UiConfig);
                 ImGui.EndTabItem();
             }
 
@@ -153,22 +153,22 @@ public unsafe class ConfigDebug : DebugHelper {
                         var padMode = Service.GameConfig.UiConfig.GetUInt("PadMode");
                         if (padMode == 0) {
                             ImGui.Text("Keyboard & Mouse");
-                            DrawConfigBase(&Framework.Instance()->SystemConfig.CommonSystemConfig.UiControlConfig);
+                            DrawConfigBase(&Framework.Instance()->SystemConfig.UiControlConfig);
                         } else {
                             ImGui.Text("Controller");
-                            DrawConfigBase(&Framework.Instance()->SystemConfig.CommonSystemConfig.UiControlGamepadConfig);
+                            DrawConfigBase(&Framework.Instance()->SystemConfig.UiControlGamepadConfig);
                         }
 
                         ImGui.EndTabItem();
                     }
 
                     if (ImGui.BeginTabItem("Mouse & Keyboard")) {
-                        DrawConfigBase(&Framework.Instance()->SystemConfig.CommonSystemConfig.UiControlConfig);
+                        DrawConfigBase(&Framework.Instance()->SystemConfig.UiControlConfig);
                         ImGui.EndTabItem();
                     }
 
                     if (ImGui.BeginTabItem("Controller")) {
-                        DrawConfigBase(&Framework.Instance()->SystemConfig.CommonSystemConfig.UiControlGamepadConfig);
+                        DrawConfigBase(&Framework.Instance()->SystemConfig.UiControlGamepadConfig);
                         ImGui.EndTabItem();
                     }
 
@@ -179,7 +179,7 @@ public unsafe class ConfigDebug : DebugHelper {
             }
 
             if (ImGui.BeginTabItem("Dev")) {
-                DrawConfigBase(&Framework.Instance()->DevConfig.CommonDevConfig.ConfigBase);
+                DrawConfigBase(&Framework.Instance()->DevConfig.DevConfigBase.ConfigBase);
                 ImGui.EndTabItem();
             }
 
@@ -299,7 +299,7 @@ public unsafe class ConfigDebug : DebugHelper {
 public enum SystemConfigOption
 {");
 
-                        Generate(&Framework.Instance()->SystemConfig.CommonSystemConfig.ConfigBase, typeof(SystemConfigOption));
+                        Generate(&Framework.Instance()->SystemConfig.SystemConfigBase.ConfigBase, typeof(SystemConfigOption));
 
                         ImGui.EndTabItem();
                     }
@@ -316,7 +316,7 @@ public enum SystemConfigOption
 /// </summary>
 public enum UiConfigOption
 {");
-                        Generate(&Framework.Instance()->SystemConfig.CommonSystemConfig.UiConfig, typeof(UiConfigOption));
+                        Generate(&Framework.Instance()->SystemConfig.UiConfig, typeof(UiConfigOption));
                         ImGui.EndTabItem();
                     }
 
@@ -332,7 +332,7 @@ public enum UiConfigOption
 /// </summary>
 public enum UiControlOption
 {");
-                        Generate(&Framework.Instance()->SystemConfig.CommonSystemConfig.UiControlConfig, typeof(UiControlOption));
+                        Generate(&Framework.Instance()->SystemConfig.UiControlConfig, typeof(UiControlOption));
                         ImGui.EndTabItem();
                     }
 
