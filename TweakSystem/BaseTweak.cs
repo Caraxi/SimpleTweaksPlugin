@@ -53,7 +53,7 @@ public abstract class BaseTweak {
 
     public virtual bool CanLoad => true;
 
-    public virtual bool UseAutoConfig => TweakAutoConfigAttribute is not NoAutoConfig;
+    public bool UseAutoConfig => TweakAutoConfigAttribute is not NoAutoConfig;
 
     protected CultureInfo Culture => Plugin.Culture;
 

@@ -140,7 +140,6 @@
         <Compile Remove="Tweaks\UiAdjustment\DutyListBackground.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ExamineItemLevel.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ExpandedCurrencyDisplay.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\ExpPercentage.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ExtendedDesynthesisWindow.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\FadeUnavailableActions.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\FastSearch.cs"/>
