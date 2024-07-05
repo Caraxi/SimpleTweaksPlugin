@@ -146,7 +146,6 @@
         <Compile Remove="Tweaks\UiAdjustment\FastSearch.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\GearPositions.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideAchievementsNotifications.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\HideExperienceBar.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideGuildhestObjectivePopup.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideHotbarLock.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideJobGauge.cs"/>
