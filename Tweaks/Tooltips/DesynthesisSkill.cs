@@ -10,12 +10,11 @@ using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltipField;
 
-namespace SimpleTweaksPlugin.Tweaks.Tooltips; 
+namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
+[TweakName("Show Desynthesis Skill")]
+[TweakDescription("Shows your current desynthesis level when viewing a desynthesizable item.")]
 public class DesynthesisSkill : TooltipTweaks.SubTweak {
-    public override string Name => "Show Desynthesis Skill";
-    public override string Description => "Shows your current desynthesis level when viewing a desynthesizable item.";
-
     private readonly uint[] desynthesisInDescription = { 46, 56, 65, 66, 67, 68, 69, 70, 71, 72 };
 
     public class Configs : TweakConfig {

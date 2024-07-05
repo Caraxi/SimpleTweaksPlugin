@@ -16,9 +16,10 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
+[TweakName("Extra Information for Tooltips")]
+[TweakDescription("Adds extra information to item tooltips.")]
+[TweakAutoConfig]
 public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
-    public override string Name => "Extra Information for Tooltips";
-    public override string Description => "Adds extra information to item tooltips";
     public class Configs : TweakConfig {
         [TweakConfigOption("Craftable")]
         public bool Craftable = false;
@@ -39,9 +40,6 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
 
     public Configs Config { get; private set; }
 
-    public override bool UseAutoConfig => true;
-    
-
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
     }
@@ -55,11 +53,11 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         for (var gs = 0; gs < 101; gs++) {
             var gearSet = gearSetModule->GetGearset(gs);
             if (gearSet == null) continue;
-            if (gearSet->ID != gs) break;
+            if (gearSet->Id != gs) break;
             if (!gearSet->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists)) continue;
-            foreach (var item in gearSet->ItemsSpan) {
-                if (item.ItemID == itemId) {
-                    var name = Marshal.PtrToStringUTF8(new IntPtr(gearSet->Name));
+            foreach (var item in gearSet->Items) {
+                if (item.ItemId == itemId) {
+                    var name = gearSet->NameString;
                     l.Add((gs, name));
                     break;
                 }
@@ -207,7 +205,7 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
     private void BeforeItemDetailUpdate(AtkUnitBase* atkUnitBase) {
         var textNode = Common.GetNodeByID<AtkTextNode>(&atkUnitBase->UldManager, CustomNodes.AdditionalInfo, NodeType.Text);
         if (textNode != null) {
-            if (textNode->AtkResNode.IsVisible) {
+            if (textNode->AtkResNode.IsVisible()) {
                 var insertNode = atkUnitBase->GetNodeById(2);
                 if (insertNode == null) return;
                 atkUnitBase->WindowNode->AtkResNode.SetHeight((ushort)(atkUnitBase->WindowNode->AtkResNode.Height - textNode->AtkResNode.Height));
@@ -239,7 +237,7 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
             textNode = IMemorySpace.GetUISpace()->Create<AtkTextNode>();
             if (textNode == null) return;
             textNode->AtkResNode.Type = NodeType.Text;
-            textNode->AtkResNode.NodeID = CustomNodes.AdditionalInfo;
+            textNode->AtkResNode.NodeId = CustomNodes.AdditionalInfo;
             
             
             textNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorTop;

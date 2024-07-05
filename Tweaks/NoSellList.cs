@@ -12,14 +12,13 @@ using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Utility;
 using SimpleTweaksPlugin.TweakSystem;
 
-namespace SimpleTweaksPlugin.Tweaks; 
+namespace SimpleTweaksPlugin.Tweaks;
 
 // TODO: Add a context menu to items when dalamud brings back context menus.
 
+[TweakName("No Sell List")]
+[TweakDescription("Allows you to define a list of items that can not be sold to a vendor.")]
 public unsafe class NoSellList : Tweak {
-    public override string Name => "No Sell List";
-    public override string Description => "Allows you to define a list of items that can not be sold to a vendor.";
-
     public class Configs : TweakConfig {
         public HashSet<uint> NoSellList = new();
         public List<NoSellItemList> CustomLists = new();
@@ -204,35 +203,23 @@ public unsafe class NoSellList : Tweak {
         }
     };
 
-    private delegate void SellItem(void* a1, int a2, InventoryType a3);
-
-    private HookWrapper<SellItem> sellItemHook;
-
-    protected override void Enable() {
-        Config = LoadConfig<Configs>() ?? new Configs();
-        sellItemHook = Common.Hook<SellItem>("48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 80 B9 ?? ?? ?? ?? ?? 41 8B F0", SellItemDetour);
-        sellItemHook?.Enable();
-        
-        base.Enable();
-    }
-    
-    private void SellItemDetour(void* a1, int slotIndex, InventoryType inventory) {
+    private bool CanSell(int slotIndex, InventoryType inventory) {
         try {
             var container = InventoryManager.Instance()->GetInventoryContainer(inventory);
             if (container != null) {
                 var slot = container->GetInventorySlot(slotIndex);
                 if (slot != null) {
-                    if (Config.NoSellList.Any(i => i == slot->ItemID)) {
-                        var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(slot->ItemID);
+                    if (Config.NoSellList.Any(i => i == slot->ItemId)) {
+                        var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(slot->ItemId);
                         if (!string.IsNullOrEmpty(item?.Name?.RawString)) {
                             Service.Toasts.ShowError($"{item.Name.RawString} is locked by {Name} in {Plugin.Name}.");
-                            return;
+                            return false;
                         }
                     }
 
-                    var customListMatch = Config.CustomLists.FirstOrDefault(t => t.Enabled && t.NoSellList.Any(i => i == slot->ItemID));
+                    var customListMatch = Config.CustomLists.FirstOrDefault(t => t.Enabled && t.NoSellList.Any(i => i == slot->ItemId));
                     if (customListMatch != null) {
-                        var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(slot->ItemID);
+                        var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(slot->ItemId);
                         if (!string.IsNullOrEmpty(item?.Name?.RawString)) {
                             Service.Toasts.ShowError(new SeString(
                                     new TextPayload(item.Name.ToDalamudString().TextValue),
@@ -245,7 +232,7 @@ public unsafe class NoSellList : Tweak {
                                     new TextPayload(".")
                                 )
                             );
-                            return;
+                            return false;
                         }
                     }
                 }
@@ -253,18 +240,48 @@ public unsafe class NoSellList : Tweak {
         } catch {
             //
         }
-        
-        sellItemHook.Original(a1, slotIndex, inventory);
+        return true;
+    }
+
+    private delegate void SellItemFromRetainer(void* a1, int a2, InventoryType a3);
+    private delegate void SellItemFromInventory(int a2, InventoryType a3);
+
+    private HookWrapper<SellItemFromRetainer> sellItemFromRetainerHook;
+    private HookWrapper<SellItemFromInventory> sellItemFromInventoryHook;
+
+    protected override void Enable() {
+        Config = LoadConfig<Configs>() ?? new Configs();
+        sellItemFromRetainerHook = Common.Hook<SellItemFromRetainer>("48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 80 B9 ?? ?? ?? ?? ?? 41 8B F0", SellItemFromRetainerDetour);
+        sellItemFromRetainerHook?.Enable();
+
+        sellItemFromInventoryHook = Common.Hook<SellItemFromInventory>("48 89 5C 24 10 48 89 6C 24 18 56 48 83 EC 20 8B E9", SellItemFromInventoryDetour);
+        sellItemFromInventoryHook?.Enable();
+
+        base.Enable();
+    }
+
+    private void SellItemFromInventoryDetour(int slotIndex, InventoryType inventory) {
+        if (CanSell(slotIndex, inventory)) {
+            sellItemFromInventoryHook.Original(slotIndex, inventory);
+        }
+    }
+
+    private void SellItemFromRetainerDetour(void* a1, int slotIndex, InventoryType inventory) {
+        if (CanSell(slotIndex, inventory)) {
+            sellItemFromRetainerHook.Original(a1, slotIndex, inventory);
+        }
     }
 
     protected override void Disable() {
-        sellItemHook?.Disable();
+        sellItemFromRetainerHook?.Disable();
+        sellItemFromInventoryHook?.Disable();
         SaveConfig(Config);
         base.Disable();
     }
 
     public override void Dispose() {
-        sellItemHook?.Dispose();
+        sellItemFromRetainerHook?.Dispose();
+        sellItemFromInventoryHook?.Dispose();
         base.Dispose();
     }
 }

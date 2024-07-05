@@ -55,8 +55,6 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         protected static uint LoadedItem => LastLoadedItem;
     }
 
-    public override string Name => "Tooltip Tweaks";
-    public override uint Version => 2;
     private unsafe delegate IntPtr ActionTooltipDelegate(AtkUnitBase* a1, void* a2, ulong a3);
     private HookWrapper<ActionTooltipDelegate> actionTooltipHook;
 
@@ -84,12 +82,12 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
     protected override unsafe void Enable() {
         if (!Ready) return;
 
-        itemHoveredHook ??= Common.Hook<ItemHoveredDelegate>("E8 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? 48 89 B4 24 ?? ?? ?? ?? 48 89 BC 24 ?? ?? ?? ?? 48 8B 7C 24", ItemHoveredDetour);
-        actionTooltipHook ??= Common.Hook<ActionTooltipDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 54 41 55 41 56 41 57 48 83 EC 20 48 8B AA", ActionTooltipDetour);
-        actionHoveredHook ??= Common.Hook<ActionHoveredDelegate>("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 83 F8 0F", ActionHoveredDetour);
-        generateItemTooltipHook ??= Common.Hook<GenerateItemTooltip>("48 89 5C 24 ?? 55 56 57 41 54 41 55 41 56 41 57 48 83 EC 50 48 8B 42 20", GenerateItemTooltipDetour);
-        generateActionTooltipHook ??= Common.Hook<GenerateActionTooltip>("E8 ?? ?? ?? ?? 48 8B D5 48 8B CF E8 ?? ?? ?? ?? 41 8D 45 FF 83 F8 01 77 6D", GenerateActionTooltipDetour);
-        getItemRowHook ??= Common.Hook<GetItemRowDelegate>("E8 ?? ?? ?? ?? 4C 8B F8 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B D0", GetItemRowDetour);
+        itemHoveredHook ??= Common.Hook<ItemHoveredDelegate>("E8 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? 48 89 9C 24 ?? ?? ?? ?? 48 89 B4 24", ItemHoveredDetour);
+        actionTooltipHook ??= Common.Hook<ActionTooltipDelegate>("48 89 5C 24 ?? 55 56 57 41 56 41 57 48 83 EC ?? 48 8B 9A", ActionTooltipDetour);
+        actionHoveredHook ??= Common.Hook<ActionHoveredDelegate>("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 83 F8 ?? 75 ?? BA ?? ?? ?? ?? E8 ?? ?? ?? ?? 49 8D 4F ?? 48 8B F8", ActionHoveredDetour);
+        generateItemTooltipHook ??= Common.Hook<GenerateItemTooltip>("48 89 5C 24 ?? 55 56 57 41 54 41 55 41 56 41 57 48 83 EC ?? 48 8B 42 ?? 4C 8B EA", GenerateItemTooltipDetour);
+        generateActionTooltipHook ??= Common.Hook<GenerateActionTooltip>("E8 ?? ?? ?? ?? 48 8B 43 ?? 48 8B 9F", GenerateActionTooltipDetour);
+        getItemRowHook ??= Common.Hook<GetItemRowDelegate>("E8 ?? ?? ?? ?? 4C 8B F8 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B D0 48 8D 0D", GetItemRowDetour);
 
         itemHoveredHook?.Enable();
         actionTooltipHook?.Enable();

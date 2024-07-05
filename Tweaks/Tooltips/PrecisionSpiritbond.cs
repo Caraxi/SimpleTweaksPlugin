@@ -5,12 +5,11 @@ using SimpleTweaksPlugin.TweakSystem;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltipField;
 
-namespace SimpleTweaksPlugin.Tweaks.Tooltips; 
+namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
+[TweakName("Precise Spiritbond")]
+[TweakDescription("Show partial percentages for Spiritbond.")]
 public class PrecisionSpiritbond : SubTweak {
-    public override string Name => "Precise Spiritbond";
-    public override string Description => "Show partial percentages for Spiritbond.";
-
     public class Configs : TweakConfig {
         public bool TrailingZero = true;
     }

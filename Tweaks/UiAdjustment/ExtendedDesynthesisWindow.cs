@@ -70,7 +70,7 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
         var itemEntry = agent->ItemList + index;
         var inventoryItem = InventoryManager.Instance()->GetInventoryContainer(itemEntry->InventoryType)->GetInventorySlot((int)itemEntry->InventorySlot);
 
-        var itemData = Service.Data.GetExcelSheet<Item>()?.GetRow(inventoryItem->ItemID);
+        var itemData = Service.Data.GetExcelSheet<Item>()?.GetRow(inventoryItem->ItemId);
         if (itemData == null) return;
         
         var skillText = (AtkTextNode*)Common.GetNodeByID(listItemRenderer, CustomNodes.Get(this, "Skill"), NodeType.Text);
@@ -121,15 +121,15 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
 
     private static RaptureGearsetModule.GearsetEntry* GetGearSetWithItem(InventoryItem* slot) {
         var gearSetModule = RaptureGearsetModule.Instance();
-        var itemIdWithHQ = slot->ItemID;
-        if ((slot->Flags & InventoryItem.ItemFlags.HQ) > 0) itemIdWithHQ += 1000000;
+        var itemIdWithHQ = slot->ItemId;
+        if ((slot->Flags & InventoryItem.ItemFlags.HighQuality) > 0) itemIdWithHQ += 1000000;
         for (var gs = 0; gs < 101; gs++) {
             var gearSet = gearSetModule->GetGearset(gs);
             if (gearSet == null) continue;
-            if (gearSet->ID != gs) break;
+            if (gearSet->Id != gs) break;
             if (!gearSet->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists)) continue;
-            foreach (var i in gearSet->ItemsSpan) {
-                if (i.ItemID == itemIdWithHQ) {
+            foreach (var i in gearSet->Items) {
+                if (i.ItemId == itemIdWithHQ) {
                     return gearSet;
                 }
             }
@@ -151,7 +151,7 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
             var n = lastNode;
             while (n != null) {
                 if (n->Type != NodeType.Text) continue;
-                if (n->GetX() > lastNode->GetX()) {
+                if (n->GetXShort() > lastNode->GetXShort()) {
                     lastNode = n;
                 }
 
@@ -165,8 +165,8 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
             header->SetText(label);
             header->AtkResNode.SetWidth(size);
             header->AtkResNode.SetHeight(lastNode->GetHeight());
-            header->AtkResNode.SetX(lastNode->GetX() + lastNode->GetWidth());
-            header->AtkResNode.SetY(lastNode->GetY());
+            header->AtkResNode.SetXShort((short)(lastNode->GetXShort() + lastNode->GetWidth()));
+            header->AtkResNode.SetYShort(lastNode->GetYShort());
             header->SetFont(lastLabel->FontType);
             header->SetAlignment(lastLabel->AlignmentType);
             header->LineSpacing = lastLabel->LineSpacing;
@@ -183,8 +183,8 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
 
             UiHelper.LinkNodeAfterTargetNode(&header->AtkResNode, unitBase, lastNode);
 
-            headerContainer->SetWidth((ushort)(header->AtkResNode.GetX() + header->AtkResNode.GetWidth()));
-            separator->SetWidth((ushort)(header->AtkResNode.GetX() + header->AtkResNode.GetWidth() + 6));
+            headerContainer->SetWidth((ushort)(header->AtkResNode.GetXShort() + header->AtkResNode.GetWidth()));
+            separator->SetWidth((ushort)(header->AtkResNode.GetXShort() + header->AtkResNode.GetWidth() + 6));
 
             // Resize Window
             unitBase->RootNode->SetWidth((ushort)(unitBase->RootNode->GetWidth() + size));
@@ -205,7 +205,7 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
             foreach (var moveId in new uint[] { 5, 6, 7 }) {
                 var moveNode = component->UldManager.SearchNodeById(moveId);
                 if (moveNode == null) continue;
-                moveNode->SetX(moveNode->GetX() + size);
+                moveNode->SetXShort((short)(moveNode->GetXShort() + size));
             }
 
             // Resize List
@@ -214,14 +214,14 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
             listNode->AtkResNode.SetWidth((ushort)(listNode->AtkResNode.GetWidth() + size));
 
             foreach (var node in Common.GetNodeList(listNode->Component)) {
-                if (node->NodeID == 5) {
-                    node->SetX(node->GetX() + size);
+                if (node->NodeId == 5) {
+                    node->SetXShort((short)(node->GetXShort() + size));
                     continue;
                 }
 
                 node->SetWidth((ushort)(node->GetWidth() + size));
 
-                if (node->NodeID == 4 || (node->NodeID > 41000 && node->NodeID < 41100)) {
+                if (node->NodeId == 4 || (node->NodeId > 41000 && node->NodeId < 41100)) {
                     var listItemRendererNode = (AtkComponentNode*)node;
                     var listItemRenderer = listItemRendererNode->Component;
 
@@ -232,8 +232,8 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
                     entryNode->SetText(string.Empty);
                     entryNode->AtkResNode.SetWidth(size);
                     entryNode->AtkResNode.SetHeight(baseNode->GetHeight());
-                    entryNode->AtkResNode.SetX(lastNode->GetX() + lastNode->GetWidth());
-                    entryNode->AtkResNode.SetY(baseNode->GetY());
+                    entryNode->AtkResNode.SetXShort((short)(lastNode->GetXShort() + lastNode->GetWidth()));
+                    entryNode->AtkResNode.SetYShort(baseNode->GetYShort());
                     entryNode->SetFont(baseTextNode->FontType);
                     entryNode->SetAlignment(AlignmentType.Center);
                     entryNode->LineSpacing = baseTextNode->LineSpacing;

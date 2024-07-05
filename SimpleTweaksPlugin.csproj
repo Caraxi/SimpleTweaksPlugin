@@ -65,7 +65,6 @@
         <Compile Remove="Tweaks\MainCommandCommand.cs"/>
         <Compile Remove="Tweaks\MinionAway.cs"/>
         <Compile Remove="Tweaks\NoCharacterNotFoundWarning.cs"/>
-        <Compile Remove="Tweaks\NoSellList.cs"/>
         <Compile Remove="Tweaks\PidCommand.cs"/>
         <Compile Remove="Tweaks\QuickSellItems.cs"/>
         <Compile Remove="Tweaks\RecommendEquipCommand.cs"/>
@@ -80,7 +79,6 @@
         <Compile Remove="Tweaks\SyncCrafterBars.cs"/>
         <Compile Remove="Tweaks\SyncGathererBars.cs"/>
         <Compile Remove="Tweaks\SystemConfigInGroupPose.cs"/>
-        <Compile Remove="Tweaks\TooltipTweaks.cs"/>
         <Compile Remove="Tweaks\TreasureHuntTargets.cs"/>
         <Compile Remove="Tweaks\TryOnCorrectItem.cs"/>
         <Compile Remove="Tweaks\UseCollectionCommand.cs"/>
@@ -102,19 +100,12 @@
         <Compile Remove="Tweaks\Chat\StickyShoutChat.cs"/>
         <Compile Remove="Tweaks\Chat\ZoomedChatCustomization.cs"/>
         <Compile Remove="Tweaks\JokeTweak\Fools2023.cs"/>
-        <Compile Remove="Tweaks\Tooltips\AdditionalItemInfo.cs"/>
-        <Compile Remove="Tweaks\Tooltips\BlueActionInfo.cs"/>
-        <Compile Remove="Tweaks\Tooltips\CraftingActionInfo.cs"/>
-        <Compile Remove="Tweaks\Tooltips\DesynthesisSkill.cs"/>
         <Compile Remove="Tweaks\Tooltips\FoodStats.cs"/>
         <Compile Remove="Tweaks\Tooltips\GlamItemNames.cs"/>
         <Compile Remove="Tweaks\Tooltips\HideTooltipsInCombat.cs"/>
         <Compile Remove="Tweaks\Tooltips\ItemHotkeys.cs"/>
         <Compile Remove="Tweaks\Tooltips\MateriaStats.cs"/>
         <Compile Remove="Tweaks\Tooltips\PaintingPreview.cs"/>
-        <Compile Remove="Tweaks\Tooltips\PrecisionDurability.cs"/>
-        <Compile Remove="Tweaks\Tooltips\PrecisionSpiritbond.cs"/>
-        <Compile Remove="Tweaks\Tooltips\ShowItemID.cs"/>
         <Compile Remove="Tweaks\Tooltips\SimplifiedClassJobDisplay.cs"/>
         <Compile Remove="Tweaks\Tooltips\TrackFadedRolls.cs"/>
         <Compile Remove="Tweaks\Tooltips\TrackGachaItems.cs"/>
@@ -140,7 +131,6 @@
         <Compile Remove="Tweaks\UiAdjustment\DutyListBackground.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ExamineItemLevel.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ExpandedCurrencyDisplay.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\ExtendedDesynthesisWindow.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\FadeUnavailableActions.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\FastSearch.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\GearPositions.cs"/>
@@ -177,7 +167,6 @@
         <Compile Remove="Tweaks\UiAdjustment\SubmarineDestinationLetters.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\TargetCastbarCountdown.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\TimerOnDutyWaiting.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\TimeUntilGpMax.cs"/>
     </ItemGroup>
     
     <ItemGroup>
