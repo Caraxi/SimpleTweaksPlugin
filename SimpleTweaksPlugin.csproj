@@ -126,7 +126,6 @@
         <Compile Remove="Tweaks\Tooltips\Hotkeys\ViewOnGarlandTools.cs"/>
         <Compile Remove="Tweaks\Tooltips\Hotkeys\ViewOnTeamcraft.cs"/>
         <Compile Remove="Tweaks\Tooltips\Hotkeys\ViewOnUniversalis.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\AccurateVentureTimes.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ActionPressMirroring.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\AutoFocusRecipeSearch.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\BattleTalkAdjustments.cs"/>

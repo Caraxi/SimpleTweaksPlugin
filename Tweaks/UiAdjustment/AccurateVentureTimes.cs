@@ -2,55 +2,52 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Dalamud;
+using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
+[TweakName("Accurate Venture Times")]
+[TweakDescription("Show live countdowns to venture completion on the retainer list.")]
+[TweakAutoConfig]
 public unsafe class AccurateVentureTimes : UiAdjustments.SubTweak {
-    public override string Name => "Accurate Venture Times";
-    public override string Description => "Show live countdowns to venture completion on the retainer list.";
-
     public class Configs : TweakConfig {
-        [TweakConfigOption("Simple Display")]
-        public bool SimpleDisplay = false;
+        [TweakConfigOption("Simple Display")] public bool SimpleDisplay = false;
     }
 
     public Configs Config { get; private set; }
 
-    public override bool UseAutoConfig => true;
-
     private delegate void UpdateRetainerDelegate(void* a1, int index, void* a3, void* a4);
 
     private UpdateRetainerDelegate updateRetainer;
-
     private void* updateRetainerPointer;
-    private delegate void* AddonSetupDelegate(void* a1, AtkUnitBase* a2, void* a3);
-    private HookWrapper<AddonSetupDelegate> addonSetupHook;
+
+    private delegate void* SetupUpdateCallback(void* a1, AtkUnitBase* a2, void* a3);
+
+    private HookWrapper<SetupUpdateCallback> setupUpdateCallback;
 
     private UpdateRetainerDelegate replacementUpdateRetainerDelegate;
 
     protected override void Enable() {
-        Config = LoadConfig<Configs>() ?? new Configs();
         replacementUpdateRetainerDelegate = UpdateRetainerLineDetour;
-        updateRetainerPointer = (void*) Service.SigScanner.ScanText("40 53 56 41 56 48 83 EC 30 48 8B B1");
+        updateRetainerPointer = (void*)Service.SigScanner.ScanText("40 53 56 57 41 54 41 56 48 83 EC 30");
         updateRetainer = Marshal.GetDelegateForFunctionPointer<UpdateRetainerDelegate>(new IntPtr(updateRetainerPointer));
-        addonSetupHook ??= Common.Hook("E8 ?? ?? ?? ?? 41 B1 1E", new AddonSetupDelegate(SetupDetour));
-        addonSetupHook?.Enable();
+        setupUpdateCallback ??= Common.Hook("E8 ?? ?? ?? ?? 41 B1 1E", new SetupUpdateCallback(SetupUpdateCallbackDetour));
+        setupUpdateCallback?.Enable();
         Common.FrameworkUpdate += FrameworkOnUpdate;
-        base.Enable();
     }
 
-    private void* SetupDetour(void* a1, AtkUnitBase* a2, void* a3) {
+    private void* SetupUpdateCallbackDetour(void* a1, AtkUnitBase* a2, void* a3) {
         if (a3 == updateRetainerPointer) {
             var ptr = Marshal.GetFunctionPointerForDelegate(replacementUpdateRetainerDelegate);
-            a3 = (void*) ptr;
+            a3 = (void*)ptr;
         }
-        return addonSetupHook.Original(a1, a2, a3);
+
+        return setupUpdateCallback.Original(a1, a2, a3);
     }
 
     private void UpdateRetainerLineDetour(void* a1, int index, void* a3, void* a4) {
@@ -73,16 +70,15 @@ public unsafe class AccurateVentureTimes : UiAdjustments.SubTweak {
                 var retainer = retainerManager->GetRetainerBySortedIndex(i);
 
                 if (retainer->VentureComplete != 0) {
-                    var renderer = Common.GetNodeByID<AtkComponentNode>(&listNode->Component->UldManager, i == 0 ? 4U : 41000U + i, (NodeType) 1011);
-                    if (renderer == null || !renderer->AtkResNode.IsVisible) continue;
-                    var ventureText = (AtkTextNode*) renderer->Component->UldManager.SearchNodeById(12);
+                    var renderer = Common.GetNodeByID<AtkComponentNode>(&listNode->Component->UldManager, i == 0 ? 4U : 41000U + i, (NodeType)1011);
+                    if (renderer == null || !renderer->AtkResNode.IsVisible()) continue;
+                    var ventureText = (AtkTextNode*)renderer->Component->UldManager.SearchNodeById(12);
                     var cTime = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.GetServerTime();
                     var rTime = retainer->VentureComplete - cTime;
 
                     if (rTime <= 0) {
                         ventureText->SetText(Service.Data.Excel.GetSheet<Addon>()?.GetRow(12592)?.Text?.RawString ?? "Complete");
                     } else {
-
                         var tSpan = TimeSpan.FromSeconds(rTime);
 
                         if (Config.SimpleDisplay) {
@@ -151,14 +147,12 @@ public unsafe class AccurateVentureTimes : UiAdjustments.SubTweak {
 
     protected override void Disable() {
         Common.FrameworkUpdate -= FrameworkOnUpdate;
-        addonSetupHook?.Disable();
+        setupUpdateCallback?.Disable();
         CloseRetainerList();
-        SaveConfig(Config);
-        base.Disable();
     }
 
     public override void Dispose() {
-        addonSetupHook?.Dispose();
+        setupUpdateCallback?.Dispose();
         base.Dispose();
     }
 }
