@@ -59,8 +59,6 @@ public unsafe class ExpPercentage : UiAdjustments.SubTweak {
 
     [AddonPostRequestedUpdate("_Exp")]
     private void UpdateExpDisplay(AtkUnitBase* addonExp) {
-        SimpleLog.Error("Update Exp");
-
         var stringArray = AtkStage.Instance()->GetStringArrayData()[2];
 
         if (stringArray == null) return;
