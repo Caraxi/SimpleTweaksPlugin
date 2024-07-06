@@ -163,7 +163,6 @@
         <Compile Remove="Tweaks\UiAdjustment\MinimapAdjustments.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\MoveCutsceneTalk.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\NamePlateIconSpacing.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\OldNameplatesTweak.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\OpenGlamourDresserToCurrentJob.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\RemoveCommunityFinder.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\RemoveQuestMarkerLimit.cs"/>
