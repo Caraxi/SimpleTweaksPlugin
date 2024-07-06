@@ -25,7 +25,20 @@
         <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
         <AssemblyName>SimpleTweaksPlugin</AssemblyName>
     </PropertyGroup>
-    <ItemGroup Label="Disabled Tweaks">
+    <ItemGroup Label="Tweaks needing Testing">
+        <Compile Remove="Tweaks\NoSellList.cs"/>
+        <Compile Remove="Tweaks\TooltipTweaks.cs"/>
+        <Compile Remove="Tweaks\Tooltips\AdditionalItemInfo.cs"/>
+        <Compile Remove="Tweaks\Tooltips\BlueActionInfo.cs"/>
+        <Compile Remove="Tweaks\Tooltips\CraftingActionInfo.cs"/>
+        <Compile Remove="Tweaks\Tooltips\DesynthesisSkill.cs"/>
+        <Compile Remove="Tweaks\Tooltips\PrecisionDurability.cs"/>
+        <Compile Remove="Tweaks\Tooltips\PrecisionSpiritbond.cs"/>
+        <Compile Remove="Tweaks\Tooltips\ShowItemID.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\ExtendedDesynthesisWindow.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\TimeUntilGpMax.cs"/>
+    </ItemGroup>
+    <ItemGroup Label="Tweaks Needing Update">
         <Compile Remove="Tweaks\AutoLockHotbar.cs"/>
         <Compile Remove="Tweaks\AutoOpenCommendWindow.cs"/>
         <Compile Remove="Tweaks\AutoOpenLootWindow.cs"/>
