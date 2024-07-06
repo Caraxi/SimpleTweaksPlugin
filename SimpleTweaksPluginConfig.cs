@@ -187,7 +187,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
         checkboxSize = ImGui.GetItemRectSize();
         ImGui.SameLine();
         var descriptionX = ImGui.GetCursorPosX();
-        if (!t.DrawConfig(ref hasChange)) {
+        if (!t.DrawConfigUI(ref hasChange)) {
             if (t is IDisabledTweak dt) {
                 if (!string.IsNullOrEmpty(dt.DisabledMessage)) {
                     ImGui.SetCursorPosX(descriptionX);

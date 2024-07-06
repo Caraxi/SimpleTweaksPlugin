@@ -216,7 +216,7 @@ public abstract class BaseTweak {
         }
     }
         
-    public bool DrawConfig(ref bool hasChanged) {
+    public bool DrawConfigUI(ref bool hasChanged) {
         var shouldForceOpenConfig = ForceOpenConfig;
         ForceOpenConfig = false;
         var configTreeOpen = false;
@@ -455,7 +455,7 @@ public abstract class BaseTweak {
     }
 
     protected delegate void DrawConfigDelegate(ref bool hasChanged);
-    protected virtual DrawConfigDelegate DrawConfigTree { get; private set; }
+    private DrawConfigDelegate DrawConfigTree { get; set; }
 
 
     private void AttemptDrawConfigSetup() {

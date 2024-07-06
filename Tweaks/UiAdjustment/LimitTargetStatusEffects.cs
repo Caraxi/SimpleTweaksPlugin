@@ -29,7 +29,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     [TweakDescription("Allows the filtering of specific status effects on your target as well as limiting the number of them.")]
     [TweakAuthor("Aireil")]
     public unsafe class LimitTargetStatusEffects : UiAdjustments.SubTweak {
-        public override IEnumerable<string> Tags => new[] {"Buffs", "Debuffs", "Limit", "Filter", "Effects"};
+        public override IEnumerable<string> Tags => new[] { "Buffs", "Debuffs", "Limit", "Filter", "Effects" };
 
         public class Configs : TweakConfig {
             public int NbStatusEffects = 30;
@@ -51,12 +51,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private readonly TargetSystem* targetSystem = TargetSystem.Instance();
 
         private delegate long UpdateTargetStatusDelegate(void* agentHud, void* numberArray, void* stringArray, StatusManager* statusManager, GameObject* target, void* isLocalPlayerAndRollPlaying);
+
         private HookWrapper<UpdateTargetStatusDelegate> updateTargetStatusHook;
 
         private delegate long UpdateFocusTargetDelegate(void* agentHud);
+
         private HookWrapper<UpdateFocusTargetDelegate> updateFocusTargetHook;
 
-        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+        private void DrawConfig(ref bool hasChanged) {
             statusSheet ??= Service.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>()?.ToDictionary(row => (ushort)row.RowId, row => row);
 
             ImGui.Text("Limiting:");
@@ -100,8 +102,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 ySize = 125.0f;
             }
 
-            if (statusSheet != null && ImGui.BeginTable("##FilteredStatusCustom", 4, ImGuiTableFlags.BordersInnerH | ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.ScrollY,
-                    new Vector2(-1, ySize * ImGuiHelpers.GlobalScale))) {
+            if (statusSheet != null && ImGui.BeginTable("##FilteredStatusCustom", 4, ImGuiTableFlags.BordersInnerH | ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.ScrollY, new Vector2(-1, ySize * ImGuiHelpers.GlobalScale))) {
                 ImGui.TableSetupScrollFreeze(0, 1);
 
                 ImGui.TableSetupColumn("Status ID");
@@ -128,11 +129,11 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     ImGui.Text(statusSheet[statusId].Name);
                     ImGui.TableNextColumn();
                     ImGui.PushFont(UiBuilder.IconFont);
-                    if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString() + "##" + statusId))
-                    {
+                    if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString() + "##" + statusId)) {
                         Config.FilteredStatusCustom.Remove(statusId);
                         hasChanged = true;
                     }
+
                     ImGui.PopFont();
                 }
 
@@ -144,6 +145,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 if (ImGui.Button(FontAwesomeIcon.Plus.ToIconString())) {
                     ImGui.OpenPopup("AddCustomStatus");
                 }
+
                 ImGui.PopFont();
 
                 hasChanged |= DrawStatusPopup();
@@ -156,7 +158,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 UpdateTargetStatus(true);
                 SaveConfig(Config);
             }
-        };
+        }
 
         protected override void Enable() {
             Config = LoadConfig<Configs>() ?? new Configs();
@@ -185,10 +187,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                 if (localPlayer == null) {
                     localPlayer = (GameObject*)Service.ClientState.LocalPlayer?.Address;
-                    if (localPlayer == null
-                        || localPlayer->EntityId == target->EntityId
-                        || (Config.FilterOnlyInCombat && !((Character*)localPlayer)->InCombat)
-                        || Service.ClientState.IsPvP) {
+                    if (localPlayer == null || localPlayer->EntityId == target->EntityId || (Config.FilterOnlyInCombat && !((Character*)localPlayer)->InCombat) || Service.ClientState.IsPvP) {
                         break;
                     }
                 }
@@ -283,8 +282,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (targetInfoStatusUnitBase == null) return;
             if (targetInfoStatusUnitBase->UldManager.NodeList == null || targetInfoStatusUnitBase->UldManager.NodeListCount < 32) return;
 
-            var isInCombat =
-                Service.Condition[ConditionFlag.InCombat];
+            var isInCombat = Service.Condition[ConditionFlag.InCombat];
 
             if (reset || (Config.LimitOnlyInCombat && !isInCombat && isDirty)) {
                 for (var i = 32; i >= 3; i--) {

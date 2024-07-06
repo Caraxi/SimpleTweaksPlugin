@@ -12,6 +12,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakAuthor("Aireil")]
 public unsafe class RecolorOwnStatusTimers : UiAdjustments.SubTweak {
     private delegate byte GetUiColor(uint colorIndex, ByteColor* color, ByteColor* edgeColor);
+
     private HookWrapper<GetUiColor> getUiColorHook;
 
     public class Configs : TweakConfig {
@@ -21,7 +22,7 @@ public unsafe class RecolorOwnStatusTimers : UiAdjustments.SubTweak {
 
     public Configs Config { get; private set; }
 
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+    private void DrawConfig(ref bool hasChanged) {
         hasChanged |= ImGui.ColorEdit4("Color##colorEditStatusTimers", ref Config.OwnStatusColor);
         hasChanged |= ImGui.ColorEdit4("Edge Color##edgeColorEditStatusTimers", ref Config.OwnStatusEdgeColor);
 
@@ -30,13 +31,14 @@ public unsafe class RecolorOwnStatusTimers : UiAdjustments.SubTweak {
 
         ImGui.SameLine();
         ImGui.PushFont(UiBuilder.IconFont);
-        if (ImGui.Button($"{(char) FontAwesomeIcon.CircleNotch}##resetStatusTimerColors")) {
+        if (ImGui.Button($"{(char)FontAwesomeIcon.CircleNotch}##resetStatusTimerColors")) {
             Config.OwnStatusColor = new Vector4(201, 255, 228, 255) / 255f;
             Config.OwnStatusEdgeColor = new Vector4(10, 95, 36, 255) / 255f;
             hasChanged = true;
         }
+
         ImGui.PopFont();
-    };
+    }
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();

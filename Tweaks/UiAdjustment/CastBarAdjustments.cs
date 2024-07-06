@@ -46,67 +46,66 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
 
     private HookWrapper<CastBarOnUpdateDelegate> castBarOnUpdateHook;
 
-    protected override DrawConfigDelegate DrawConfigTree =>
-        (ref bool hasChanged) => {
-            hasChanged |= ImGui.Checkbox(LocString("Hide Casting", "Hide 'Casting' Text"), ref Config.RemoveCastingText);
-            hasChanged |= ImGui.Checkbox(LocString("Hide Icon"), ref Config.RemoveIcon);
-            hasChanged |= ImGui.Checkbox(LocString("Hide Interrupted Text"), ref Config.RemoveInterruptedText);
-            hasChanged |= ImGui.Checkbox(LocString("Hide Countdown Text"), ref Config.RemoveCounter);
-            if (Config.RemoveCastingText && !Config.RemoveCounter) {
-                ImGui.SameLine();
-                if (ImGui.GetCursorPosX() > configAlignmentX) configAlignmentX = ImGui.GetCursorPosX();
-                ImGui.SetCursorPosX(configAlignmentX);
-                hasChanged |= ImGuiExt.HorizontalAlignmentSelector(LocString("Align Countdown Text"), ref Config.AlignCounter);
+    private void DrawConfig(ref bool hasChanged) {
+        hasChanged |= ImGui.Checkbox(LocString("Hide Casting", "Hide 'Casting' Text"), ref Config.RemoveCastingText);
+        hasChanged |= ImGui.Checkbox(LocString("Hide Icon"), ref Config.RemoveIcon);
+        hasChanged |= ImGui.Checkbox(LocString("Hide Interrupted Text"), ref Config.RemoveInterruptedText);
+        hasChanged |= ImGui.Checkbox(LocString("Hide Countdown Text"), ref Config.RemoveCounter);
+        if (Config.RemoveCastingText && !Config.RemoveCounter) {
+            ImGui.SameLine();
+            if (ImGui.GetCursorPosX() > configAlignmentX) configAlignmentX = ImGui.GetCursorPosX();
+            ImGui.SetCursorPosX(configAlignmentX);
+            hasChanged |= ImGuiExt.HorizontalAlignmentSelector(LocString("Align Countdown Text"), ref Config.AlignCounter);
 
-                ImGui.SetCursorPosX(configAlignmentX);
-                ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
-                hasChanged |= ImGui.SliderFloat2(LocString("Offset") + "##offsetCounterPosition", ref Config.OffsetCounter, -100, 100, $"%.0f");
-                Config.OffsetCounter = Vector2.Clamp(Config.OffsetCounter, new Vector2(-100), new Vector2(100));
-            }
+            ImGui.SetCursorPosX(configAlignmentX);
+            ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
+            hasChanged |= ImGui.SliderFloat2(LocString("Offset") + "##offsetCounterPosition", ref Config.OffsetCounter, -100, 100, $"%.0f");
+            Config.OffsetCounter = Vector2.Clamp(Config.OffsetCounter, new Vector2(-100), new Vector2(100));
+        }
 
-            hasChanged |= ImGui.Checkbox(LocString("Hide Ability Name"), ref Config.RemoveName);
-            if (!Config.RemoveName) {
-                ImGui.SameLine();
-                if (ImGui.GetCursorPosX() > configAlignmentX) configAlignmentX = ImGui.GetCursorPosX();
-                ImGui.SetCursorPosX(configAlignmentX);
-                hasChanged |= ImGuiExt.HorizontalAlignmentSelector(LocString("Align Ability Name"), ref Config.AlignName);
-                ImGui.SetCursorPosX(configAlignmentX);
-                ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
+        hasChanged |= ImGui.Checkbox(LocString("Hide Ability Name"), ref Config.RemoveName);
+        if (!Config.RemoveName) {
+            ImGui.SameLine();
+            if (ImGui.GetCursorPosX() > configAlignmentX) configAlignmentX = ImGui.GetCursorPosX();
+            ImGui.SetCursorPosX(configAlignmentX);
+            hasChanged |= ImGuiExt.HorizontalAlignmentSelector(LocString("Align Ability Name"), ref Config.AlignName);
+            ImGui.SetCursorPosX(configAlignmentX);
+            ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
 
-                hasChanged |= ImGui.SliderFloat2(LocString("Offset") + "##offsetNamePosition", ref Config.OffsetName, -100, 100, "%.0f");
-                Config.OffsetName = Vector2.Clamp(Config.OffsetName, new Vector2(-100), new Vector2(100));
-            }
+            hasChanged |= ImGui.SliderFloat2(LocString("Offset") + "##offsetNamePosition", ref Config.OffsetName, -100, 100, "%.0f");
+            Config.OffsetName = Vector2.Clamp(Config.OffsetName, new Vector2(-100), new Vector2(100));
+        }
 
-            hasChanged |= ImGui.Checkbox(LocString("Show SlideCast Marker"), ref Config.SlideCast);
-            if (Config.SlideCast) {
+        hasChanged |= ImGui.Checkbox(LocString("Show SlideCast Marker"), ref Config.SlideCast);
+        if (Config.SlideCast) {
+            ImGui.Indent();
+            ImGui.Indent();
+            hasChanged |= ImGui.Checkbox(LocString("Classic Mode"), ref Config.ClassicSlideCast);
+            if (Config.ClassicSlideCast) {
                 ImGui.Indent();
                 ImGui.Indent();
-                hasChanged |= ImGui.Checkbox(LocString("Classic Mode"), ref Config.ClassicSlideCast);
-                if (Config.ClassicSlideCast) {
-                    ImGui.Indent();
-                    ImGui.Indent();
-                    ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-                    hasChanged |= ImGui.SliderInt(LocString("Width"), ref Config.ClassicSlideCastWidth, 1, 10);
-                    ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
-                    hasChanged |= ImGui.SliderInt(LocString("Extra Height"), ref Config.ClassicSlideCastOverHeight, 0, 20);
+                ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
+                hasChanged |= ImGui.SliderInt(LocString("Width"), ref Config.ClassicSlideCastWidth, 1, 10);
+                ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
+                hasChanged |= ImGui.SliderInt(LocString("Extra Height"), ref Config.ClassicSlideCastOverHeight, 0, 20);
 
-                    ImGui.Unindent();
-                    ImGui.Unindent();
-                }
-
-                hasChanged |= ImGui.SliderInt(LocString("SlideCast Offset Time"), ref Config.SlideCastAdjust, 0, 1000);
-                hasChanged |= ImGui.ColorEdit4(LocString("SlideCast Marker Colour"), ref Config.SlideCastColor);
-                hasChanged |= ImGui.ColorEdit4(LocString("SlideCast Ready Colour"), ref Config.SlideCastReadyColor);
                 ImGui.Unindent();
                 ImGui.Unindent();
             }
 
-            ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
+            hasChanged |= ImGui.SliderInt(LocString("SlideCast Offset Time"), ref Config.SlideCastAdjust, 0, 1000);
+            hasChanged |= ImGui.ColorEdit4(LocString("SlideCast Marker Colour"), ref Config.SlideCastColor);
+            hasChanged |= ImGui.ColorEdit4(LocString("SlideCast Ready Colour"), ref Config.SlideCastReadyColor);
+            ImGui.Unindent();
+            ImGui.Unindent();
+        }
 
-            if (hasChanged) {
-                UpdateCastBar(null, true);
-            }
-        };
+        ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
+
+        if (hasChanged) {
+            UpdateCastBar(null, true);
+        }
+    }
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();

@@ -42,52 +42,51 @@ public unsafe class TargetHP : UiAdjustments.SubTweak {
 
     public Configs Config { get; private set; }
 
-    protected override DrawConfigDelegate DrawConfigTree =>
-        (ref bool hasChanged) => {
-            if (ImGui.BeginCombo("Display Format###targetHpFormat", $"{Config.DisplayFormat.GetDescription()} ({FormatNumber(5555555, Config.DisplayFormat)})")) {
-                foreach (var v in (DisplayFormat[])Enum.GetValues(typeof(DisplayFormat))) {
-                    if (!ImGui.Selectable($"{v.GetDescription()} ({FormatNumber(5555555, v)})##targetHpFormatSelect", Config.DisplayFormat == v)) continue;
-                    Config.DisplayFormat = v;
-                    hasChanged = true;
-                }
-
-                ImGui.EndCombo();
+    private void DrawConfig(ref bool hasChanged) {
+        if (ImGui.BeginCombo("Display Format###targetHpFormat", $"{Config.DisplayFormat.GetDescription()} ({FormatNumber(5555555, Config.DisplayFormat)})")) {
+            foreach (var v in (DisplayFormat[])Enum.GetValues(typeof(DisplayFormat))) {
+                if (!ImGui.Selectable($"{v.GetDescription()} ({FormatNumber(5555555, v)})##targetHpFormatSelect", Config.DisplayFormat == v)) continue;
+                Config.DisplayFormat = v;
+                hasChanged = true;
             }
 
-            hasChanged |= ImGui.Checkbox("Align Left##AdjustTargetHPAlignLeft", ref Config.AlignLeft);
-            ImGui.SetNextItemWidth(150);
-            hasChanged |= ImGui.InputFloat("X Offset##AdjustTargetHPPositionX", ref Config.Position.X, 1, 5, "%.0f");
-            ImGui.SetNextItemWidth(150);
-            hasChanged |= ImGui.InputFloat("Y Offset##AdjustTargetHPPositionY", ref Config.Position.Y, 1, 5, "%0.f");
-            ImGui.SetNextItemWidth(150);
-            hasChanged |= ImGuiExt.InputByte("Font Size##TargetHPFontSize", ref Config.FontSize);
+            ImGui.EndCombo();
+        }
 
-            hasChanged |= ImGui.Checkbox("Custom Color?##TargetHPUseCustomColor", ref Config.UseCustomColor);
-            if (Config.UseCustomColor) {
+        hasChanged |= ImGui.Checkbox("Align Left##AdjustTargetHPAlignLeft", ref Config.AlignLeft);
+        ImGui.SetNextItemWidth(150);
+        hasChanged |= ImGui.InputFloat("X Offset##AdjustTargetHPPositionX", ref Config.Position.X, 1, 5, "%.0f");
+        ImGui.SetNextItemWidth(150);
+        hasChanged |= ImGui.InputFloat("Y Offset##AdjustTargetHPPositionY", ref Config.Position.Y, 1, 5, "%0.f");
+        ImGui.SetNextItemWidth(150);
+        hasChanged |= ImGuiExt.InputByte("Font Size##TargetHPFontSize", ref Config.FontSize);
+
+        hasChanged |= ImGui.Checkbox("Custom Color?##TargetHPUseCustomColor", ref Config.UseCustomColor);
+        if (Config.UseCustomColor) {
+            ImGui.SameLine();
+            hasChanged |= ImGui.ColorEdit4("##TargetHPCustomColor", ref Config.CustomColor);
+        }
+
+        hasChanged |= ImGui.Checkbox("Hide Auto Attack Icon", ref Config.HideAutoAttack);
+
+        ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
+        hasChanged |= ImGui.Checkbox("Disable Focus Target HP", ref Config.NoFocus);
+
+        if (!Config.NoFocus) {
+            hasChanged |= ImGui.Checkbox("Align Left on Focus Target##AdjustTargetHPFocusAlignLeft", ref Config.FocusAlignLeft);
+            ImGui.SetNextItemWidth(150);
+            hasChanged |= ImGui.InputFloat("Focus Target X Offset##AdjustTargetHPFocusPositionX", ref Config.FocusPosition.X, 1, 5, "%.0f");
+            ImGui.SetNextItemWidth(150);
+            hasChanged |= ImGui.InputFloat("Focus Target Y Offset##AdjustTargetHPFocusPositionY", ref Config.FocusPosition.Y, 1, 5, "%0.f");
+            ImGui.SetNextItemWidth(150);
+            hasChanged |= ImGuiExt.InputByte("Font Size##TargetHPFocusFontSize", ref Config.FocusFontSize);
+            hasChanged |= ImGui.Checkbox("Custom Color?##TargetHPFocusUseCustomColor", ref Config.FocusUseCustomColor);
+            if (Config.FocusUseCustomColor) {
                 ImGui.SameLine();
-                hasChanged |= ImGui.ColorEdit4("##TargetHPCustomColor", ref Config.CustomColor);
+                hasChanged |= ImGui.ColorEdit4("##TargetHPFocusCustomColor", ref Config.FocusCustomColor);
             }
-
-            hasChanged |= ImGui.Checkbox("Hide Auto Attack Icon", ref Config.HideAutoAttack);
-
-            ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
-            hasChanged |= ImGui.Checkbox("Disable Focus Target HP", ref Config.NoFocus);
-
-            if (!Config.NoFocus) {
-                hasChanged |= ImGui.Checkbox("Align Left on Focus Target##AdjustTargetHPFocusAlignLeft", ref Config.FocusAlignLeft);
-                ImGui.SetNextItemWidth(150);
-                hasChanged |= ImGui.InputFloat("Focus Target X Offset##AdjustTargetHPFocusPositionX", ref Config.FocusPosition.X, 1, 5, "%.0f");
-                ImGui.SetNextItemWidth(150);
-                hasChanged |= ImGui.InputFloat("Focus Target Y Offset##AdjustTargetHPFocusPositionY", ref Config.FocusPosition.Y, 1, 5, "%0.f");
-                ImGui.SetNextItemWidth(150);
-                hasChanged |= ImGuiExt.InputByte("Font Size##TargetHPFocusFontSize", ref Config.FocusFontSize);
-                hasChanged |= ImGui.Checkbox("Custom Color?##TargetHPFocusUseCustomColor", ref Config.FocusUseCustomColor);
-                if (Config.FocusUseCustomColor) {
-                    ImGui.SameLine();
-                    hasChanged |= ImGui.ColorEdit4("##TargetHPFocusCustomColor", ref Config.FocusCustomColor);
-                }
-            }
-        };
+        }
+    }
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();

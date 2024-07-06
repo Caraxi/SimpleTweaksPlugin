@@ -40,7 +40,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
 
     private string newException = string.Empty;
 
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+    private void DrawConfig(ref bool hasChanged) {
         hasChanged |= ImGui.Checkbox("Default cursor to the checkbox when one exists", ref Config.SelectCheckBox);
         ImGui.Text("Enable for:");
         ImGui.Indent();
@@ -49,7 +49,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         ImGui.Indent();
         if (ImGui.CollapsingHeader("Exceptions##AlwaysYes")) {
             ImGui.Text("Do not change default if dialog text contains:");
-            for (var  i = 0; i < Config.ExceptionsYesNo.Count; i++) {
+            for (var i = 0; i < Config.ExceptionsYesNo.Count; i++) {
                 ImGui.PushID($"AlwaysYesBlacklist_{i.ToString()}");
                 var exception = Config.ExceptionsYesNo[i];
                 if (ImGui.InputText("##AlwaysYesTextBlacklist", ref exception, 500)) {
@@ -104,7 +104,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         if (hasChanged) {
             SaveConfig(Config);
         }
-    };
+    }
 
     public override void Setup() {
         AddChangelog("1.8.5.0", "Added an option to default cursor to the checkbox when one exists.");
@@ -177,7 +177,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
             if (Common.GetUnitBase(addon, out var unitBase)) SetFocusYes((nint)unitBase, yesButtonId);
         }, delayTicks: delay);
     }
-    
+
     private void SetFocusYes(nint unitBaseAddress, uint yesButtonId, uint? yesHoldButtonId = null, uint? checkBoxId = null) {
         var unitBase = (AtkUnitBase*)unitBaseAddress;
         if (unitBase == null) return;
@@ -198,8 +198,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
             if (holdButton != null && !yesButton->IsVisible()) {
                 collisionId = 7;
                 targetNode = holdButton;
-            }
-            else {
+            } else {
                 collisionId = 4;
                 targetNode = yesButton;
             }
@@ -215,26 +214,25 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         unitBase->CursorTarget = yesCollision;
     }
 
-    private static void SetSpecialFocus(nint unitBaseAddress, uint buttonId, uint collisionId)
-    {
+    private static void SetSpecialFocus(nint unitBaseAddress, uint buttonId, uint collisionId) {
         var unitBase = (AtkUnitBase*)unitBaseAddress;
         if (unitBase == null) return;
 
         var button = unitBase->UldManager.SearchNodeById(buttonId);
         if (button == null) return;
 
-        var collision = ((AtkComponentNode *)button)->Component->UldManager.SearchNodeById(collisionId);
+        var collision = ((AtkComponentNode*)button)->Component->UldManager.SearchNodeById(collisionId);
         if (collision == null) return;
 
         unitBase->SetFocusNode(collision);
         unitBase->CursorTarget = collision;
     }
-    
+
     private bool IsYesnoAnException(nint unitBaseAddress) {
         var unitBase = (AtkUnitBase*)unitBaseAddress;
         if (Config.ExceptionsYesNo.Count == 0 || unitBase == null) return false;
 
-        var textNode = (AtkTextNode *)unitBase->UldManager.SearchNodeById(2);
+        var textNode = (AtkTextNode*)unitBase->UldManager.SearchNodeById(2);
         if (textNode == null) return false;
 
         var text = Common.ReadSeString(textNode->NodeText).TextValue.ReplaceLineEndings(string.Empty);
