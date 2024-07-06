@@ -127,7 +127,6 @@
         <Compile Remove="Tweaks\Tooltips\Hotkeys\ViewOnTeamcraft.cs"/>
         <Compile Remove="Tweaks\Tooltips\Hotkeys\ViewOnUniversalis.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ActionPressMirroring.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\AutoFocusRecipeSearch.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\BattleTalkAdjustments.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\CastingTextVisibility.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ChangeMapAreaColors.cs"/>
@@ -166,7 +165,6 @@
         <Compile Remove="Tweaks\UiAdjustment\NamePlateIconSpacing.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\OldNameplatesTweak.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\OpenGlamourDresserToCurrentJob.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\RememberTitleSorting.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\RemoveCommunityFinder.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\RemoveQuestMarkerLimit.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ResizeExperienceBar.cs"/>
