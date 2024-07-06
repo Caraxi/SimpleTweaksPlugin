@@ -37,9 +37,9 @@
         <Compile Remove="Tweaks\Tooltips\ShowItemID.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ExtendedDesynthesisWindow.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\TimeUntilGpMax.cs"/>
+        <Compile Remove="Tweaks\AutoLockHotbar.cs"/>
     </ItemGroup>
     <ItemGroup Label="Tweaks Needing Update">
-        <Compile Remove="Tweaks\AutoLockHotbar.cs"/>
         <Compile Remove="Tweaks\AutoOpenCommendWindow.cs"/>
         <Compile Remove="Tweaks\AutoOpenLootWindow.cs"/>
         <Compile Remove="Tweaks\BaitCommand.cs"/>

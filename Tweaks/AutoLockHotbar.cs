@@ -3,12 +3,12 @@ using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks; 
+namespace SimpleTweaksPlugin.Tweaks;
 
+[TweakName("Auto Lock Action Bars")]
+[TweakDescription("Automatically locks action bars when certain conditions are met.")]
+[TweakAutoConfig]
 public unsafe class AutoLockHotbar : Tweak {
-    public override string Name => "Auto Lock Action Bars";
-    public override string Description => "Automatically locks action bars when certain conditions are met.";
-
     public class Configs : TweakConfig {
         [TweakConfigOption("Lock at beginning of combat.")]
         public bool CombatStart = true;
@@ -19,12 +19,8 @@ public unsafe class AutoLockHotbar : Tweak {
 
     public Configs Config { get; private set; }
 
-    public override bool UseAutoConfig => true;
-
     protected override void Enable() {
-        Config = LoadConfig<Configs>() ?? new Configs();
         Service.Condition.ConditionChange += OnConditionChange;
-        base.Enable();
     }
 
     private void OnConditionChange(ConditionFlag flag, bool value) {
@@ -38,8 +34,6 @@ public unsafe class AutoLockHotbar : Tweak {
 
     protected override void Disable() {
         Service.Condition.ConditionChange -= OnConditionChange;
-        SaveConfig(Config);
-        base.Disable();
     }
 
     private void SetLock(bool lockHotbar) {
