@@ -18,16 +18,18 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
     private int gpPerTick = 5;
     private float timePerTick = 3f;
     private int forceVisible = 0;
+
     public delegate void UpdateParamDelegate(uint a1, uint* a2, byte a3);
+
     private HookWrapper<UpdateParamDelegate> updateParamHook;
-        
+
     public class Configs : TweakConfig {
         public int GpGoal = -1;
         public Vector2 PositionOffset = new(0);
         public bool EorzeaTime;
     }
 
-    protected override DrawConfigDelegate DrawConfigTree => ((ref bool hasChanged) => {
+    private void DrawConfig(ref bool hasChanged) {
         ImGui.Checkbox(LocString("EorzeaTime", "Display Eorzea Time"), ref Config.EorzeaTime);
         ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
         hasChanged |= ImGui.SliderInt("Target GP##timeUntilGpMax", ref Config.GpGoal, -1, 1000);
@@ -38,7 +40,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
         }
 
         if (hasChanged) Update();
-    });
+    }
 
     public Configs Config { get; private set; }
 
@@ -64,7 +66,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
                 lastGpChangeStopwatch.Restart();
             } else {
                 if (Service.ClientState.LocalPlayer.CurrentGp > lastGp && lastGpChangeStopwatch.ElapsedMilliseconds is > 1000 and < 4000) {
-                    var diff = (int) Service.ClientState.LocalPlayer.CurrentGp - (int) lastGp;
+                    var diff = (int)Service.ClientState.LocalPlayer.CurrentGp - (int)lastGp;
                     if (diff < 20) {
                         gpPerTick = diff;
                         lastGp = Service.ClientState.LocalPlayer.CurrentGp;
@@ -116,7 +118,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
 
         var gatheringWidget = Common.GetUnitBase("Gathering");
         if (gatheringWidget == null) gatheringWidget = Common.GetUnitBase("GatheringMasterpiece");
-            
+
         AtkTextNode* textNode = null;
         for (var i = 0; i < paramWidget->UldManager.NodeListCount; i++) {
             if (paramWidget->UldManager.NodeList[i] == null) continue;
@@ -126,6 +128,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
                     paramWidget->UldManager.NodeList[i]->ToggleVisibility(false);
                     continue;
                 }
+
                 break;
             }
         }
@@ -133,14 +136,10 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
         if (textNode == null && reset) return;
 
         if (textNode == null) {
-
             var newTextNode = IMemorySpace.GetUISpace()->Create<AtkTextNode>();
             if (newTextNode != null) {
-
                 var lastNode = paramWidget->RootNode;
                 if (lastNode == null) return;
-
-
 
                 textNode = newTextNode;
 
@@ -172,7 +171,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
 
                     newTextNode->AtkResNode.NextSiblingNode = lastNode;
                     newTextNode->AtkResNode.ParentNode = paramWidget->RootNode;
-                    lastNode->PrevSiblingNode = (AtkResNode*) newTextNode;
+                    lastNode->PrevSiblingNode = (AtkResNode*)newTextNode;
                 } else {
                     lastNode->ChildNode = (AtkResNode*)newTextNode;
                     newTextNode->AtkResNode.ParentNode = lastNode;

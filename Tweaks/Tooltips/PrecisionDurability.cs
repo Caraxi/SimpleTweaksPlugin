@@ -12,7 +12,7 @@ public class PrecisionDurability : TooltipTweaks.SubTweak {
     public class Configs : TweakConfig {
         public bool TrailingZero = true;
     }
-        
+
     public Configs Config { get; private set; }
 
     protected override void Enable() {
@@ -33,10 +33,9 @@ public class PrecisionDurability : TooltipTweaks.SubTweak {
         } catch (Exception ex) {
             Plugin.Error(this, ex);
         }
-        
     }
 
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+    private void DrawConfig(ref bool hasChanged) {
         hasChanged |= ImGui.Checkbox(LocString("Trailing Zeros") + $"###{GetType().Name}TrailingZeros", ref Config.TrailingZero);
-    };
+    }
 }
