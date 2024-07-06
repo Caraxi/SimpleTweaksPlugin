@@ -152,7 +152,6 @@
         <Compile Remove="Tweaks\UiAdjustment\HideTargetCircle.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideUnwantedBanner.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HouseLotteryTimer.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\ImprovedCraftingLog.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ImprovedDutyFinderSettings.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ImprovedInterruptableCastbars.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ImprovedWorldVisit.cs"/>
