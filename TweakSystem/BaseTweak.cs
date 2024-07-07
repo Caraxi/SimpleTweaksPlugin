@@ -461,7 +461,7 @@ public abstract class BaseTweak {
     private void AttemptDrawConfigSetup() {
         if (DrawConfigTree != null) return;
         
-        var method = GetType().GetMethod("DrawConfig", BindingFlags.NonPublic | BindingFlags.Instance);
+        var method = GetType().GetMethod("DrawConfig", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
         if (method == null) return;
 
         if (method.ReturnType != typeof(void)) {
