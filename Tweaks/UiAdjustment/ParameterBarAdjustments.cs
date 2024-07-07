@@ -133,7 +133,7 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
         return hasChanged;
     }
 
-    private void DrawConfig(ref bool hasChanged) {
+    protected void DrawConfig(ref bool hasChanged) {
         hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Target Cycling"), ref Config.TargetCycling, DefaultConfig.TargetCycling);
         ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
 

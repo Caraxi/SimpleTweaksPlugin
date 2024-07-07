@@ -38,7 +38,7 @@ public unsafe class NoSellList : Tweak {
 
     private Item[] matchedItems = [];
 
-    private void DrawConfig(ref bool hasChanged) {
+    protected void DrawConfig(ref bool hasChanged) {
         bool ShowList(HashSet<uint> itemList) {
             var changed = false;
             if (ImGui.BeginChild("noSellItemListView", new Vector2(-1, 200))) {

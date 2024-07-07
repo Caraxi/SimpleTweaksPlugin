@@ -46,7 +46,7 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
 
     private HookWrapper<CastBarOnUpdateDelegate> castBarOnUpdateHook;
 
-    private void DrawConfig(ref bool hasChanged) {
+    protected void DrawConfig(ref bool hasChanged) {
         hasChanged |= ImGui.Checkbox(LocString("Hide Casting", "Hide 'Casting' Text"), ref Config.RemoveCastingText);
         hasChanged |= ImGui.Checkbox(LocString("Hide Icon"), ref Config.RemoveIcon);
         hasChanged |= ImGui.Checkbox(LocString("Hide Interrupted Text"), ref Config.RemoveInterruptedText);

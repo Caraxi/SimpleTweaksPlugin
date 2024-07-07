@@ -40,7 +40,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
 
     private string newException = string.Empty;
 
-    private void DrawConfig(ref bool hasChanged) {
+    protected void DrawConfig(ref bool hasChanged) {
         hasChanged |= ImGui.Checkbox("Default cursor to the checkbox when one exists", ref Config.SelectCheckBox);
         ImGui.Text("Enable for:");
         ImGui.Indent();

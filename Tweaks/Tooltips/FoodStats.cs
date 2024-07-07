@@ -103,7 +103,7 @@ public unsafe class FoodStats : TooltipTweaks.SubTweak {
         SaveConfig(Config);
     }
 
-    public void DrawConfig(ref bool hasChanged) {
+    protected void DrawConfig(ref bool hasChanged) {
         hasChanged |= ImGui.Checkbox(LocString("Highlight Active"), ref Config.Highlight);
         if (hasChanged) BuildPotionEffectStrings();
     }

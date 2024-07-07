@@ -35,7 +35,7 @@ public class PrecisionDurability : TooltipTweaks.SubTweak {
         }
     }
 
-    private void DrawConfig(ref bool hasChanged) {
+    protected void DrawConfig(ref bool hasChanged) {
         hasChanged |= ImGui.Checkbox(LocString("Trailing Zeros") + $"###{GetType().Name}TrailingZeros", ref Config.TrailingZero);
     }
 }

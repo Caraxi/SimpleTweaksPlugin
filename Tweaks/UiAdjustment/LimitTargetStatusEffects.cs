@@ -58,7 +58,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private HookWrapper<UpdateFocusTargetDelegate> updateFocusTargetHook;
 
-        private void DrawConfig(ref bool hasChanged) {
+        protected void DrawConfig(ref bool hasChanged) {
             statusSheet ??= Service.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>()?.ToDictionary(row => (ushort)row.RowId, row => row);
 
             ImGui.Text("Limiting:");

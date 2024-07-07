@@ -36,7 +36,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private string newException = string.Empty;
 
-        private void DrawConfig(ref bool hasChanged) {
+        protected void DrawConfig(ref bool hasChanged) {
             hasChanged |= ImGui.Checkbox("Hide", ref Config.Hide);
             if (Config.Hide) {
                 ImGui.SameLine();

@@ -113,7 +113,7 @@ public class DesynthesisSkill : TooltipTweaks.SubTweak {
         }
     }
 
-    private void DrawConfig(ref bool hasChanged) {
+    protected void DrawConfig(ref bool hasChanged) {
         hasChanged |= ImGui.Checkbox(LocString("Desynthesis Delta") + $"###{GetType().Name}DesynthesisDelta", ref Config.Delta);
         hasChanged |= ImGui.Checkbox(LocString("Colour Value") + $"##{GetType().Name}ColourValue", ref Config.Colour);
     }

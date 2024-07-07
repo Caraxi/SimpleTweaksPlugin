@@ -40,7 +40,7 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
 
     private uint maxDesynthLevel;
     
-    private void DrawConfig() {
+    protected void DrawConfig() {
         ImGui.Checkbox(LocString("BlockClickOnGearset", "Block clicking on gearset items."), ref Config.BlockClickOnGearset);
         ImGui.Checkbox(LocString("YellowForSkillGain", "Highlight potential skill gains (Yellow)"), ref Config.YellowForSkillGain);
         ImGui.Checkbox(LocString("DesynthesisDelta", "Show desynthesis delta"), ref Config.Delta);

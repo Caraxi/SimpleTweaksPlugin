@@ -42,7 +42,7 @@ public unsafe class TargetHP : UiAdjustments.SubTweak {
 
     public Configs Config { get; private set; }
 
-    private void DrawConfig(ref bool hasChanged) {
+    protected void DrawConfig(ref bool hasChanged) {
         if (ImGui.BeginCombo("Display Format###targetHpFormat", $"{Config.DisplayFormat.GetDescription()} ({FormatNumber(5555555, Config.DisplayFormat)})")) {
             foreach (var v in (DisplayFormat[])Enum.GetValues(typeof(DisplayFormat))) {
                 if (!ImGui.Selectable($"{v.GetDescription()} ({FormatNumber(5555555, v)})##targetHpFormatSelect", Config.DisplayFormat == v)) continue;
