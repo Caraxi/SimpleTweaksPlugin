@@ -5,10 +5,10 @@ using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json;
 using SimpleTweaksPlugin.Sheets;
 
-namespace SimpleTweaksPlugin.Tweaks.Tooltips.Hotkeys; 
+namespace SimpleTweaksPlugin.Tweaks.Tooltips.Hotkeys;
 
 public abstract class ItemHotkey : IDisposable {
-    public abstract string Name { get; }
+    protected abstract string Name { get; }
     public string LocalizedName => LocString("Name", Name, "Tweak Name");
 
     protected abstract VirtualKey[] DefaultKeyCombo { get; }
@@ -20,7 +20,7 @@ public abstract class ItemHotkey : IDisposable {
             SaveConfig();
         }
     }
-    
+
     public virtual string Key => GetType().Name;
 
     public virtual string HintText => Name;
@@ -28,29 +28,26 @@ public abstract class ItemHotkey : IDisposable {
     private Type configType = typeof(ItemHotkeyConfig);
 
     public ItemHotkeyConfig Config;
-    
+
     public bool Enabled { get; private set; }
 
     public virtual bool AcceptsEventItem => false;
     public virtual bool AcceptsNormalItem => true;
-    
-    
-    
+
     public class ItemHotkeyConfig {
         public virtual int Version { get; set; } = 1;
 
         public bool Enabled = false;
         public bool HideFromTooltip = false;
         public VirtualKey[] Key;
-
     }
-    
+
     public void Enable(bool fromTweakEnable = false) {
         var cType = this.GetType().GetNestedType("HotkeyConfig");
         if (cType != null && cType.IsSubclassOf(typeof(ItemHotkeyConfig))) {
             configType = cType;
         }
-        
+
         LoadConfig();
         if (fromTweakEnable && Config.Enabled == false) return;
         Config.Enabled = true;
@@ -66,14 +63,10 @@ public abstract class ItemHotkey : IDisposable {
         if (!fromTweakDisable) Config.Enabled = false;
         SaveConfig();
     }
-    
-    protected virtual void OnEnable() {
-        
-    }
 
-    protected virtual void OnDisable() {
-        
-    }
+    protected virtual void OnEnable() { }
+
+    protected virtual void OnDisable() { }
 
     public virtual void OnTriggered(ExtendedItem item) { }
     public virtual void OnTriggered(EventItem item) { }
@@ -83,26 +76,25 @@ public abstract class ItemHotkey : IDisposable {
 
     public virtual void DrawExtraConfig() { }
 
-    public virtual void Dispose() {
-        
-    }
+    public virtual void Dispose() { }
 
     public void LoadConfig() {
         try {
-            Config = (ItemHotkeyConfig) Activator.CreateInstance(configType);
+            Config = (ItemHotkeyConfig)Activator.CreateInstance(configType);
             var configDirectory = Service.PluginInterface.GetPluginConfigDirectory();
             var configFile = Path.Combine(configDirectory, $"{nameof(TooltipTweaks)}@{nameof(ItemHotkeys)}.{Key}.json");
             if (File.Exists(configFile)) {
                 var jsonString = File.ReadAllText(configFile);
-                Config = (ItemHotkeyConfig) JsonConvert.DeserializeObject(jsonString, configType);
+                Config = (ItemHotkeyConfig)JsonConvert.DeserializeObject(jsonString, configType);
             }
+
             Config ??= (ItemHotkeyConfig)Activator.CreateInstance(configType);
         } catch (Exception ex) {
-            Config = (ItemHotkeyConfig) Activator.CreateInstance(configType);
+            Config = (ItemHotkeyConfig)Activator.CreateInstance(configType);
             SimpleLog.Error(ex);
         }
     }
-    
+
     public void SaveConfig() {
         try {
             if (Config == null) return;
@@ -114,7 +106,7 @@ public abstract class ItemHotkey : IDisposable {
             SimpleLog.Error(ex);
         }
     }
-    
+
     public string LocString(string key, string fallback, string description = null) {
         description ??= $"Item Hotkey : {Name} - {fallback}";
         return Loc.Localize($"{nameof(TooltipTweaks)}@{nameof(ItemHotkeys)}.{this.Key} / {key}", fallback, $"[Item Hotkey - {this.GetType().Name}] {description}");
