@@ -184,6 +184,10 @@
 			<Private>false</Private>
 			<HintPath>$(DalamudLibPath)\FFXIVClientStructs.dll</HintPath>
 		</Reference>
+		<Reference Include="InteropGenerator.Runtime">
+			<Private>false</Private>
+			<HintPath>$(DalamudLibPath)\InteropGenerator.Runtime.dll</HintPath>
+		</Reference>
         <Reference Include="Newtonsoft.Json">
             <Private>false</Private>
             <HintPath>$(DalamudLibPath)\Newtonsoft.Json.dll</HintPath>
