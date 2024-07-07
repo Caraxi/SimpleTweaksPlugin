@@ -62,7 +62,6 @@
         <Compile Remove="Tweaks\LongVeil.cs"/>
         <Compile Remove="Tweaks\MainCommandCommand.cs"/>
         <Compile Remove="Tweaks\MinionAway.cs"/>
-        <Compile Remove="Tweaks\NoCharacterNotFoundWarning.cs"/>
         <Compile Remove="Tweaks\PidCommand.cs"/>
         <Compile Remove="Tweaks\QuickSellItems.cs"/>
         <Compile Remove="Tweaks\RecommendEquipCommand.cs"/>
