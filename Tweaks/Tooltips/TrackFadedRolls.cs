@@ -2,62 +2,40 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Memory;
-using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using JetBrains.Annotations;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Enums;
+using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips; 
 
+[TweakName("Track Faded Orchestrion Rolls")]
+[TweakDescription("Adds the collectable checkmark to Faded Orchestrion Rolls.")]
+[TweakAuthor("KazWolfe")]
+[Changelog("1.8.7.0", "Fixed tweak not functioning at all.")]
+[Changelog("1.9.3.0", "Added tracking for faded rolls with multiple crafts.", Author = "KazWolfe")]
 public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
     // Thank you to ascclemens for the inspiration to do this through GoodMemory, as well as the base model for how to
     // get the crafted orchestrion rolls from the faded ones.
     
-    public override string Name => "Track Faded Orchestrion Rolls";
-    protected override string Author => "KazWolfe";
-    public override string Description => "Adds the collectable checkmark to Faded Orchestrion Rolls.";
-    
-    private delegate byte IsItemActionUnlocked(UIState* uiState, IntPtr item);
-    private HookWrapper<IsItemActionUnlocked>? _isItemActionUnlockedHookWrapper;
+    [TweakHook(typeof(UIState), nameof(UIState.IsItemActionUnlocked), nameof(IsItemActionUnlockedDetour))]
+    private HookWrapper<UIState.Delegates.IsItemActionUnlocked> isItemActionUnlockedHookWrapper;
 
-    [CanBeNull] private DalamudLinkPayload identifier;
-
-    public override void Setup() {
-        base.Setup();
-        AddChangelog("1.8.7.0", "Fixed tweak not functioning at all.");
-        AddChangelog("1.9.3.0", "Added tracking for faded rolls with multiple crafts.").Author("KazWolfe");
-    }
+    private DalamudLinkPayload identifier;
 
     protected override void Enable() {
-        this._isItemActionUnlockedHookWrapper ??=
-            Common.Hook<IsItemActionUnlocked>(UIState.Addresses.IsItemActionUnlocked.Value, this.IsItemActionUnlockedDetour);
-        this._isItemActionUnlockedHookWrapper?.Enable();
-        
-        this.identifier = this.PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.TrackFadedRollsIdentifier, (_, _) => { });
-
-        base.Enable();
+        identifier = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.TrackFadedRollsIdentifier, (_, _) => { });
     }
 
     protected override void Disable() {
-        this._isItemActionUnlockedHookWrapper?.Disable();
-        this.PluginInterface.RemoveChatLinkHandler((uint)LinkHandlerId.TrackFadedRollsIdentifier);
-        
-        base.Disable();
-    }
-
-    public override void Dispose() {
-        this._isItemActionUnlockedHookWrapper?.Dispose();
-
-        base.Dispose();
+        PluginInterface.RemoveChatLinkHandler((uint)LinkHandlerId.TrackFadedRollsIdentifier);
     }
     
-   private byte IsItemActionUnlockedDetour(UIState* uiState, IntPtr item) {
+   private long IsItemActionUnlockedDetour(UIState* uiState, void* item) {
         if (!IsHoveredItemOrchestrion(out var luminaItem)) {
-           return this._isItemActionUnlockedHookWrapper!.Original(uiState, item);
+           return isItemActionUnlockedHookWrapper!.Original(uiState, item);
         }
         
         if (luminaItem == null) return 4;
@@ -65,7 +43,7 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
         var areAllUnlocked = GetRollsCraftedWithItem(luminaItem)
             .TrueForAll(o => UIState.Instance()->PlayerState.IsOrchestrionRollUnlocked(o.AdditionalData));
 
-        return areAllUnlocked ? (byte)1 : (byte)2;
+        return areAllUnlocked ? 1 : 2;
     }
     
     public override void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
@@ -110,8 +88,7 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
     }
 
     private static bool IsHoveredItemOrchestrion(out Item? item) {
-        item = Service.Data.GetExcelSheet<Item>()!.GetRow(Item.ItemID);
-        
+        item = Service.Data.GetExcelSheet<Item>()!.GetRow(Item.ItemId);
         return item is { FilterGroup: 12, ItemUICategory.Row: 94, LevelItem.Row: 1 };
     }
 }
