@@ -49,7 +49,6 @@
         <Compile Remove="Tweaks\ExitGame.cs"/>
         <Compile Remove="Tweaks\ExtendedMacroIcon.cs"/>
         <Compile Remove="Tweaks\FixedShadowDistance.cs"/>
-        <Compile Remove="Tweaks\FixTarget.cs"/>
         <Compile Remove="Tweaks\FurnitureClocksCustomTime.cs"/>
         <Compile Remove="Tweaks\GearsetSaveCurrent.cs"/>
         <Compile Remove="Tweaks\HideMouseAfterInactivity.cs"/>
