@@ -100,6 +100,8 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         generateItemTooltipHook?.Enable();
         generateActionTooltipHook?.Enable();
         getItemRowHook?.Enable();
+        
+        base.Enable();
     }
 
     private unsafe void* GetItemRowDetour(uint itemId) {
