@@ -104,7 +104,6 @@
         <Compile Remove="Tweaks\Tooltips\HideTooltipsInCombat.cs"/>
         <Compile Remove="Tweaks\Tooltips\ItemHotkeys.cs"/>
         <Compile Remove="Tweaks\Tooltips\MateriaStats.cs"/>
-        <Compile Remove="Tweaks\Tooltips\PaintingPreview.cs"/>
         <Compile Remove="Tweaks\Tooltips\SimplifiedClassJobDisplay.cs"/>
         <Compile Remove="Tweaks\Tooltips\TrackFadedRolls.cs"/>
         <Compile Remove="Tweaks\Tooltips\TrackGachaItems.cs"/>
