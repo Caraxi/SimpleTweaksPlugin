@@ -131,6 +131,7 @@
         <Compile Remove="Tweaks\UiAdjustment\SubmarineDestinationLetters.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\TargetCastbarCountdown.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\TimerOnDutyWaiting.cs"/>
+        <Compile Remove="Tweaks\NoCharacterNotFoundWarning.cs"/>
     </ItemGroup>
     
     <ItemGroup>
