@@ -105,7 +105,6 @@
         <Compile Remove="Tweaks\UiAdjustment\CastingTextVisibility.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ChangeMapAreaColors.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ColoredDutyRoulette.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\ComboTimer.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\CustomDefaultQuantity.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\CustomFreeCompanyTags.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\CustomTimeFormat.cs"/>
