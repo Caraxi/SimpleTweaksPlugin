@@ -19,7 +19,7 @@ public unsafe class ActionPressMirroring : UiAdjustments.SubTweak {
     [TweakHook, Signature("85 d2 78 ?? 48 89 5c 24 ?? 57 48 83 ec ?? 48 63 da 48 8b f9 48 8b 89 ?? ?? ?? ?? ba", DetourName = nameof(PulseActionBarSlotDetour))]
     private readonly HookWrapper<PulseActionBarSlot> pulseActionBarSlotHook = null!;
 
-    private static readonly string[] AllActionBars = {
+    private static readonly string[] AllActionBars = [
         "_ActionBar",
         "_ActionBar01",
         "_ActionBar02",
@@ -34,18 +34,18 @@ public unsafe class ActionPressMirroring : UiAdjustments.SubTweak {
         "_ActionDoubleCrossL",
         "_ActionDoubleCrossR",
         "_ActionBarEx",
-    };
+    ];
 
-    private void PulseActionBarSlotDetour(AddonActionBarBase* ab, uint slotIndex, ulong a3, int a4)
-    {
+    private void PulseActionBarSlotDetour(AddonActionBarBase* ab, uint slotIndex, ulong a3, int a4) {
         HandlePulse(ab, slotIndex, a3, a4);
         pulseActionBarSlotHook.Original(ab, slotIndex, a3, a4);
     }
 
-    private uint GetAdjustedId(HotbarSlotType type, uint id) => type switch {
-        HotbarSlotType.Action => ActionManager.Instance()->GetAdjustedActionId(id),
-        _ => id
-    };
+    private uint GetAdjustedId(RaptureHotbarModule.HotbarSlotType type, uint id) =>
+        type switch {
+            RaptureHotbarModule.HotbarSlotType.Action => ActionManager.Instance()->GetAdjustedActionId(id),
+            _ => id
+        };
 
     private void HandlePulse(AddonActionBarBase* ab, uint slotIndex, ulong a3, int a4) {
         try {
@@ -65,6 +65,5 @@ public unsafe class ActionPressMirroring : UiAdjustments.SubTweak {
         } catch (Exception ex) {
             SimpleLog.Error(ex, "Error in HandlePulse");
         }
-
     }
 }

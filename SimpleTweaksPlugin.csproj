@@ -101,7 +101,6 @@
         <Compile Remove="Tweaks\Tooltips\HideTooltipsInCombat.cs"/>
         <Compile Remove="Tweaks\Tooltips\TrackFadedRolls.cs"/>
         <Compile Remove="Tweaks\Tooltips\TrackGachaItems.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\ActionPressMirroring.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\BattleTalkAdjustments.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\CastingTextVisibility.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ChangeMapAreaColors.cs"/>
