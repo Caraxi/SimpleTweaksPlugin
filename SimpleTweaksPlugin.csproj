@@ -84,7 +84,6 @@
         <Compile Remove="Tweaks\Chat\EchoStorySelection.cs"/>
         <Compile Remove="Tweaks\Chat\HideChat.cs"/>
         <Compile Remove="Tweaks\Chat\HideChatAuto.cs"/>
-        <Compile Remove="Tweaks\Chat\HideChatPanelButtons.cs"/>
         <Compile Remove="Tweaks\Chat\ImprovedFontSizes.cs"/>
         <Compile Remove="Tweaks\Chat\RenameChatTabs.cs"/>
         <Compile Remove="Tweaks\Chat\ReplyChannelSwitch.cs"/>
