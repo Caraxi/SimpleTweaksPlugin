@@ -1,34 +1,30 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Dalamud.Utility.Signatures;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakCategory(TweakCategory.Command)]
+[TweakName("Emote Log Subcommand")]
+[TweakDescription("Adds a 'text' subcommand for emotes when emotelog is disabled.  /yes text")]
 public unsafe class EmoteLogSubcommand : Tweak {
-    public override string Name => "Emote Log Subcommand";
-    public override string Description => "Adds a 'text' subcommand for emotes when emotelog is disabled.  /yes text";
-
     [StructLayout(LayoutKind.Explicit, Size = 0x10)]
     public struct EmoteCommandStruct {
         [FieldOffset(0x08)] public short TextCommandParam;
     }
 
     private delegate void* ExecuteEmoteCommand(void* a1, EmoteCommandStruct* command, void* a3);
+
+    [TweakHook, Signature("4C 8B DC 53 55 57 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? 48 8B 2D", DetourName = nameof(ExecuteDetour))]
     private HookWrapper<ExecuteEmoteCommand> executeEmoteCommandHook;
 
-    protected override void Enable() {
-        executeEmoteCommandHook ??= Common.Hook<ExecuteEmoteCommand>("4C 8B DC 53 55 57 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? 48 8B 2D", ExecuteDetour);
-        executeEmoteCommandHook?.Enable();
-        base.Enable();
-    }
-    
     private bool EmoteTextType {
         get => Service.GameConfig.UiConfig.GetBool("EmoteTextType");
         set => Service.GameConfig.UiConfig.Set("EmoteTextType", value);
     }
-    
+
     private void* ExecuteDetour(void* a1, EmoteCommandStruct* command, void* a3) {
         var didEnable = false;
         try {
@@ -37,22 +33,13 @@ public unsafe class EmoteLogSubcommand : Tweak {
                     EmoteTextType = didEnable = true;
                 }
             }
+
             return executeEmoteCommandHook.Original(a1, command, a3);
         } catch (Exception ex) {
             SimpleLog.Error(ex);
             return executeEmoteCommandHook.Original(a1, command, a3);
-        }finally {
+        } finally {
             if (didEnable) EmoteTextType = false;
         }
-    }
-
-    protected override void Disable() {
-        executeEmoteCommandHook?.Disable();
-        base.Disable();
-    }
-
-    public override void Dispose() {
-        executeEmoteCommandHook?.Dispose();
-        base.Dispose();
     }
 }

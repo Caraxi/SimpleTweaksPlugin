@@ -43,7 +43,6 @@
         <Compile Remove="Tweaks\DisableMouseCameraControl.cs"/>
         <Compile Remove="Tweaks\DutyTimer.cs"/>
         <Compile Remove="Tweaks\EmoteLogServerBarEntry.cs"/>
-        <Compile Remove="Tweaks\EmoteLogSubcommand.cs"/>
         <Compile Remove="Tweaks\EquipFromHotbar.cs"/>
         <Compile Remove="Tweaks\EquipJobCommand.cs"/>
         <Compile Remove="Tweaks\EstateListCommand.cs"/>
