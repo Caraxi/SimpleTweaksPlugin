@@ -46,7 +46,6 @@
         <Compile Remove="Tweaks\EquipJobCommand.cs"/>
         <Compile Remove="Tweaks\EstateListCommand.cs"/>
         <Compile Remove="Tweaks\ExitGame.cs"/>
-        <Compile Remove="Tweaks\ExtendedMacroIcon.cs"/>
         <Compile Remove="Tweaks\FixedShadowDistance.cs"/>
         <Compile Remove="Tweaks\FurnitureClocksCustomTime.cs"/>
         <Compile Remove="Tweaks\GearsetSaveCurrent.cs"/>
