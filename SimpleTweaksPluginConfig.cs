@@ -57,6 +57,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     public bool ShowOtherTweaksTab = true;
     public bool NoCallerInLog;
     public bool UseFuzzyTweakSearch = true;
+    public bool DismissedUpdateNotice;
 
     public bool ShowTweakDescriptions = true;
     public bool ShowTweakIDs;
