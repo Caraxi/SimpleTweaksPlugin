@@ -33,7 +33,6 @@
         <Compile Remove="Tweaks\CharacterClassSwitcher.cs"/>
         <Compile Remove="Tweaks\CharaViewIncreasedZoom.cs"/>
         <Compile Remove="Tweaks\ChrDirCommand.cs"/>
-        <Compile Remove="Tweaks\CombatMovementControl.cs"/>
         <Compile Remove="Tweaks\ContentsFinderConfirmClassSwitch.cs"/>
         <Compile Remove="Tweaks\CutsceneCommands.cs"/>
         <Compile Remove="Tweaks\DataCentreOnTitleScreen.cs"/>
