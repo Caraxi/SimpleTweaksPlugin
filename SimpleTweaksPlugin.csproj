@@ -128,6 +128,7 @@
         <Compile Remove="Tweaks\UiAdjustment\TargetCastbarCountdown.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\TimerOnDutyWaiting.cs"/>
         <Compile Remove="Tweaks\NoCharacterNotFoundWarning.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\AddNumberSeparators.cs" />
     </ItemGroup>
     
     <ItemGroup>

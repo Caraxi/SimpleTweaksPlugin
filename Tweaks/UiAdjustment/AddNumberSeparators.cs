@@ -27,7 +27,7 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
 
     public Configs Config { get; private set; }
 
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+    protected void DrawConfig(ref bool hasChanged) {
         hasChanged |= ImGui.Checkbox("Add separators to damage/healing numbers", ref Config.FlyText);
         hasChanged |= ImGui.Checkbox("Add separators to party list HP", ref Config.PartyList);
         hasChanged |= ImGui.Checkbox("Add separators to ability costs on hotbars", ref Config.AbilityCost);
@@ -44,7 +44,7 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
             SaveConfig(Config);
             ConfigureInstructions();
         }
-    };
+    }
 
     private static class Signatures {
         internal const string ShowFlyText = "E8 ?? ?? ?? ?? FF C7 41 D1 C7";
@@ -115,9 +115,9 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
     }
 
     internal void ConfigureInstructions() {
-        this.ConfigureInstruction(Signatures.FlyTextStringify, Config.FlyText);
-        this.ConfigureInstruction(Signatures.HotbarManaStringify, Config.AbilityCost);
-        this.ConfigureInstruction(Signatures.PartyListStringify, Config.PartyList);
+        ConfigureInstruction(Signatures.FlyTextStringify, Config.FlyText);
+        ConfigureInstruction(Signatures.HotbarManaStringify, Config.AbilityCost);
+        ConfigureInstruction(Signatures.PartyListStringify, Config.PartyList);
     }
 
     private void ConfigureInstruction(string sig, bool enabled) {
@@ -126,41 +126,41 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
         }
 
         if (enabled) {
-            this.ReplaceBytes(ptr);
+            ReplaceBytes(ptr);
         } else {
-            this.RestoreBytes(ptr);
+            RestoreBytes(ptr);
         }
     }
 
     private void ReplaceBytes(nint ptr) {
-        if (this.OldBytes.ContainsKey(ptr)) {
+        if (OldBytes.ContainsKey(ptr)) {
             return;
         }
 
         SafeMemory.ReadBytes(ptr, ThirdArgOne.Length, out var oldBytes);
         SafeMemory.WriteBytes(ptr, ThirdArgOne);
-        this.OldBytes[ptr] = oldBytes;
+        OldBytes[ptr] = oldBytes;
     }
 
     private void RestoreBytes(nint ptr) {
-        if (!this.OldBytes.TryGetValue(ptr, out var oldBytes)) {
+        if (!OldBytes.TryGetValue(ptr, out var oldBytes)) {
             return;
         }
 
         SafeMemory.WriteBytes(ptr, oldBytes);
-        this.OldBytes.Remove(ptr);
+        OldBytes.Remove(ptr);
     }
 
     private void RestoreAllBytes() {
-        foreach (var ptr in this.OldBytes.Keys.ToList()) {
-            this.RestoreBytes(ptr);
+        foreach (var ptr in OldBytes.Keys.ToList()) {
+            RestoreBytes(ptr);
         }
     }
 
     private void ShowFlyTextDetour(nint addon, uint actorIndex, uint messageMax, nint numbers, int offsetNum, int offsetNumMax, nint strings, int offsetStr, int offsetStrMax, int a10) {
-        this._showFlyTextHook!.Original(addon, actorIndex, messageMax, numbers, offsetNum, offsetNumMax, strings, offsetStr, offsetStrMax, a10);
+        _showFlyTextHook!.Original(addon, actorIndex, messageMax, numbers, offsetNum, offsetNumMax, strings, offsetStr, offsetStrMax, a10);
 
-        if (!this.Config.FlyText) {
+        if (!Config.FlyText) {
             return;
         }
 
@@ -190,12 +190,12 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
 
         var unit = (AtkUnitBase*) addon;
         if (unit->RootNode != null) {
-            this.TraverseNodes(unit->RootNode, Action);
+            TraverseNodes(unit->RootNode, Action);
         }
 
         for (var i = 0; i < unit->UldManager.NodeListCount; i++) {
             var node = unit->UldManager.NodeList[i];
-            this.TraverseNodes(node, Action);
+            TraverseNodes(node, Action);
         }
     }
 
@@ -207,12 +207,12 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
         action((nint) node);
 
         if ((int) node->Type < 1000) {
-            this.TraverseNodes(node->ChildNode, action);
+            TraverseNodes(node->ChildNode, action);
         } else {
             var comp = (AtkComponentNode*) node;
 
             for (var i = 0; i < comp->Component->UldManager.NodeListCount; i++) {
-                this.TraverseNodes(comp->Component->UldManager.NodeList[i], action);
+                TraverseNodes(comp->Component->UldManager.NodeList[i], action);
             }
         }
 
@@ -222,24 +222,24 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
 
         var prev = node;
         while ((prev = prev->PrevSiblingNode) != null) {
-            this.TraverseNodes(prev, action, false);
+            TraverseNodes(prev, action, false);
         }
 
         var next = node;
         while ((next = next->NextSiblingNode) != null) {
-            this.TraverseNodes(next, action, false);
+            TraverseNodes(next, action, false);
         }
     }
 
     private nint SprintfNumberDetour(uint number) {
-        var ret = (byte*) this._sprintfNumberHook!.Original(number);
-        if (!this.Config.AbilityTooltip) {
+        var ret = (byte*) _sprintfNumberHook!.Original(number);
+        if (!Config.AbilityTooltip) {
             goto Return;
         }
 
         var nfi = (NumberFormatInfo) NumberFormatInfo.CurrentInfo.Clone();
-        if (this.Config.CustomSeparator != null) {
-            nfi.NumberGroupSeparator = this.Config.CustomSeparator.ToString();
+        if (Config.CustomSeparator != null) {
+            nfi.NumberGroupSeparator = Config.CustomSeparator.ToString();
         }
 
         var str = number.ToString("N0", nfi);
