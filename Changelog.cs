@@ -77,6 +77,7 @@ public class Changelog : Window {
         Add("1.9.5.0", "The Simple Tweaks config window will now be decorated during various festive periods.")
             .Sub("This can be disabled in the 'General Options' tab.")
             .Sub("You can also set a permanent decoration to be used all year round.");
+        Add("1.10.0.0", "Support for Dawntrail");
     }
 
 #if DEBUG

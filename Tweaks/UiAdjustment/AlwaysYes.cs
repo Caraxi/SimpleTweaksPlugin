@@ -14,7 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakName("Always Yes")]
 [TweakDescription("Sets the default action in dialog boxes to yes when using confirm (num 0).")]
 [TweakAuthor("Aireil")]
-[Changelog(UnreleasedVersion, "Added support for automatic aetherial reduction.")]
+[Changelog("1.10.0.0", "Added support for automatic aetherial reduction.")]
 [Changelog("1.9.2.1", "Added support for Blunderville exit dialog.")]
 public unsafe class AlwaysYes : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
