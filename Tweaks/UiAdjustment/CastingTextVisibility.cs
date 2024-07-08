@@ -106,9 +106,9 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
         if (textNode == null) return;
 
         //'_TargetInfo' text node can sometimes remain visible when targetting non-bnpcs, but parent node invis.
-        if (ui->IsVisible && useCustomColor && textNode->AtkResNode.ParentNode->IsVisible) {
+        if (ui->IsVisible && useCustomColor && textNode->AtkResNode.ParentNode->IsVisible()) {
             TryMakeNodes(ui, imageNodeId);
-            ToggleImageNodeVisibility(textNode->AtkResNode.IsVisible, &ui->UldManager, imageNodeId);
+            ToggleImageNodeVisibility(textNode->AtkResNode.IsVisible(), &ui->UldManager, imageNodeId);
             AdjustTextColorsAndFontSize(textNode, textColor, edgeColor, fontSize);
 
             var imageNode = GetImageNode(&ui->UldManager, imageNodeId);
@@ -159,14 +159,14 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
     }
 
     private void DrawFocusTargetBackground(AtkTextNode* textNode, AtkImageNode* imageNode) {
-        var offsetBaseX = 6;
+        var offsetBaseX = 18;
         var offsetBaseY = 24;
 
         DrawBackground(imageNode, textNode, offsetBaseX, offsetBaseY, Config.FocusFontSize, Config.FocusBackgroundHeight, Config.FocusBackgroundWidth, Config.FocusAutoAdjustWidth, Config.FocusBackgroundColor);
     }
 
     private void DrawTargetBackground(AtkTextNode* textNode, AtkImageNode* imageNode) {
-        var offsetBaseX = 244;
+        var offsetBaseX = 256;
         var offsetBaseY = 14;
 
         DrawBackground(imageNode, textNode, offsetBaseX, offsetBaseY, Config.TargetFontSize, Config.TargetBackgroundHeight, Config.TargetBackgroundWidth, Config.TargetAutoAdjustWidth, Config.TargetBackgroundColor);
@@ -209,6 +209,7 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
         //return (int)(0.7 * textLength * textNode->FontSize + 1);
 
         var text = textNode->NodeText.ToString();
+        if (text.Length == 0) return 0; 
         var length = 4;
         foreach (var c in text) length += GetPixelWidthOfChar(c);
         return (int)((1.0 * textNode->FontSize / 22) * length + 4);
@@ -254,15 +255,15 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
 
         TryFreeImageNode(addonTargetInfo, targetImageNodeid);
         TryFreeImageNode(addonFocusTargetInfo, focusTargetImageNodeid);
-        TryFreeImageNode(addonTargetInfoCastBar, splitTargetTextNodeId);
+        TryFreeImageNode(addonTargetInfoCastBar, targetImageNodeid);
     }
 
     private void TryFreeImageNode(AtkUnitBase* addon, uint nodeId) {
         if (addon == null) return;
 
-        var imageNode = Common.GetNodeByID<AtkTextNode>(&addon->UldManager, nodeId);
+        var imageNode = Common.GetNodeByID<AtkImageNode>(&addon->UldManager, nodeId);
         if (imageNode is not null) {
-            UiHelper.UnlinkAndFreeTextNode(imageNode, addon);
+            UiHelper.UnlinkAndFreeImageNode(imageNode, addon);
         }
     }
 }
