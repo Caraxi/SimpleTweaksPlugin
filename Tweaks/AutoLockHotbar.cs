@@ -39,6 +39,6 @@ public unsafe class AutoLockHotbar : Tweak {
     private void SetLock(bool lockHotbar) {
         var actionBar = Common.GetUnitBase("_ActionBar");
         if (actionBar == null) return;
-        Common.GenerateCallback(actionBar, 8, 3, 51u, 0u, lockHotbar);
+        Common.GenerateCallback(actionBar, 9, 3, 51u, 0u, lockHotbar);
     }
 }
