@@ -10,7 +10,7 @@ namespace SimpleTweaksPlugin;
 [TweakReleaseVersion("1.9.3.0")]
 public class EmoteLogServerBarEntry : Tweak
 {
-    private DtrBarEntry _emoteLogBarEntry;
+    private IDtrBarEntry _emoteLogBarEntry;
 
     protected override void Enable()
     {
