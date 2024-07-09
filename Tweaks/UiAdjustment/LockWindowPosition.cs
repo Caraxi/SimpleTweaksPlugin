@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Dalamud.Game.Gui.ContextMenu;
 using Dalamud.Game.Text;
@@ -82,7 +83,10 @@ public unsafe class LockWindowPosition : UiAdjustments.SubTweak {
         if (args.Target is not MenuTargetDefault mtd) return;
         if (string.IsNullOrWhiteSpace(args.AddonName)) return;
         if (mtd.TargetObjectId != 0xE0000000) return;
-
+        
+        var unitManagerEventInterface = (nint)(&RaptureAtkUnitManager.Instance()->WindowContextMenuHandler);
+        if (args.EventInterfaces.All(e => e != unitManagerEventInterface)) return;
+        
         var str = (Config.LockedWindows.Contains(args.AddonName) ? unlockText : lockText);
         args.AddMenuItem(new MenuItem() {
             Name = str,

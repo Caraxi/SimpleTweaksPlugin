@@ -98,9 +98,6 @@ public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
             if (v7 == 5) {
                 var v8 = *(ulong*)(*(ulong*)(a2 + 136UL) + 248UL);
                 var cooldownTextNode = *(AtkTextNode**)(v8 + 248);
-
-                SimpleLog.Debug($"{(ulong)cooldownTextNode:X}");
-
                 if ((byte)Config.Font >= 4) Config.Font = FontType.TrumpGothic;
 
                 cooldownTextNode->SetAlignment(AlignmentType.Center);
