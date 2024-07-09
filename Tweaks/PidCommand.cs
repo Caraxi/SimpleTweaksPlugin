@@ -20,7 +20,7 @@ public class PidCommand : Tweak {
         if (type != XivChatType.ErrorMessage) return;
         if (Common.LastCommand == null || Common.LastCommand->StringPtr == null) return;
         var lastCommandStr = Encoding.UTF8.GetString(Common.LastCommand->StringPtr, (int)Common.LastCommand->BufUsed);
-        if (!lastCommandStr.Equals(command)){
+        if (!lastCommandStr.StartsWith(command)){
             return;
         }
 
