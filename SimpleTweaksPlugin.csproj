@@ -97,7 +97,6 @@
         <Compile Remove="Tweaks\UiAdjustment\GearPositions.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideAchievementsNotifications.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideGuildhestObjectivePopup.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\HideJobGauge.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideQualityWhenNoHQ.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideTargetCircle.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideUnwantedBanner.cs"/>
