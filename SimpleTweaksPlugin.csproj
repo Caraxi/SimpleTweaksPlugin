@@ -108,7 +108,6 @@
         <Compile Remove="Tweaks\UiAdjustment\ImprovedDutyFinderSettings.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ImprovedInterruptableCastbars.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ImprovedWorldVisit.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\KeepOpen.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\LargeCooldownCounter.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\LockWindowPosition.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\LootWindowDuplicateUniqueItemIndicator.cs"/>

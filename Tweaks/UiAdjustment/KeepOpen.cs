@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
@@ -7,13 +8,15 @@ using SimpleTweaksPlugin.Utility;
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [TweakCategory(TweakCategory.UI)]
+[TweakName("Keep Windows Open")]
+[TweakDescription("Prevents certain windows from hiding under specific circumstances.")]
+[TweakReleaseVersion("1.8.2.1")]
+[TweakAutoConfig]
 public unsafe class KeepOpen : Tweak {
-    public override string Name => "Keep Windows Open";
-    public override string Description => "Prevents certain windows from hiding under specific circumstances.";
-
     private delegate void* HideUnitBase(AtkUnitBase* atkUnitBase, byte a2, byte a3, int a4);
-    private HookWrapper<HideUnitBase> hideHook;
 
+    [TweakHook, Signature("E8 ?? ?? ?? ?? 32 DB 0F B6 D3", DetourName = nameof(HideDetour))]
+    private HookWrapper<HideUnitBase> hideHook;
 
     public class Configs : TweakConfig {
         public SortedSet<string> EnabledWindows = new();
@@ -21,9 +24,9 @@ public unsafe class KeepOpen : Tweak {
 
     public Configs Config { get; private set; }
 
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+    protected void DrawConfig(ref bool hasChanged) {
         ImGui.TextWrapped("Windows to keep open when accessing retainers, shops or market board:");
-        foreach (var (internalName, displayName) in Windows) {
+        foreach (var (internalName, displayName) in windows) {
             var enabled = Config.EnabledWindows.Contains(internalName);
 
             if (ImGui.Checkbox($"{displayName}###keepOpenWindow_{internalName}", ref enabled)) {
@@ -36,27 +39,14 @@ public unsafe class KeepOpen : Tweak {
                 hasChanged = true;
             }
         }
-    };
-
-    public override void Setup() {
-        AddChangelogNewTweak("1.8.2.1");
-        base.Setup();
     }
-
-    protected override void Enable() {
-        Config = LoadConfig<Configs>() ?? new Configs();
-        hideHook ??= Common.Hook<HideUnitBase>("E8 ?? ?? ?? ?? 32 DB 0F B6 D3", HideDetour);
-        hideHook?.Enable();
-        base.Enable();
-    }
-
 
     private record WindowInfo(string DisplayName, bool UseReopenMethod = false) {
         public static implicit operator WindowInfo(string displayName) => new(displayName);
         public override string ToString() => DisplayName;
     };
-    
-    private Dictionary<string, WindowInfo> Windows = new() {
+
+    private readonly Dictionary<string, WindowInfo> windows = new() {
         ["ItemFinder"] = "Item Search List",
         ["RecipeNote"] = "Crafting Log",
         ["RecipeTree"] = "Recipe Tree",
@@ -64,20 +54,21 @@ public unsafe class KeepOpen : Tweak {
         ["ContentsInfo"] = "Timers",
         ["Character"] = new("Character Window", true),
     };
-    
+
     private void* HideDetour(AtkUnitBase* atkUnitBase, byte a2, byte a3, int a4) {
         var doReopen = false;
         try {
             if (atkUnitBase != null && a2 == 1 && a3 == 0 && a4 == 2) {
-                var name = Common.ReadString(atkUnitBase->Name, 0x20);
+                var name = atkUnitBase->NameString;
 
-                if (Windows.TryGetValue(name, out var windowInfo)) {
+                if (windows.TryGetValue(name, out var windowInfo)) {
                     if (Config.EnabledWindows.Contains(name)) {
                         if (windowInfo.UseReopenMethod) {
                             doReopen = true;
                             SimpleLog.Log($"Attempting Reopen: {name}");
                             return hideHook.Original(atkUnitBase, a2, a3, a4);
                         }
+
                         SimpleLog.Log($"Suppress Hide: {name}");
                         return null;
                     }
@@ -95,16 +86,5 @@ public unsafe class KeepOpen : Tweak {
                 atkUnitBase->Show(false, 0);
             }
         }
-    }
-
-    protected override void Disable() {
-        hideHook?.Disable();
-        SaveConfig(Config);
-        base.Disable();
-    }
-
-    public override void Dispose() {
-        hideHook?.Dispose();
-        base.Dispose();
     }
 }
