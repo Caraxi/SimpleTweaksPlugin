@@ -106,7 +106,6 @@
         <Compile Remove="Tweaks\UiAdjustment\MoveCutsceneTalk.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\NamePlateIconSpacing.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\OpenGlamourDresserToCurrentJob.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\RemoveCommunityFinder.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\RemoveQuestMarkerLimit.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ResizeExperienceBar.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ScenarioProgressionDisplay.cs"/>
