@@ -17,6 +17,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Calculate and display the current EXP percentage on the EXP bar.")]
 [TweakAutoConfig]
 [Changelog("1.9.4.0", "Added the ability to show rested experience without showing experience percentage.")]
+[Changelog(UnreleasedVersion, "Added option to move EXP or Chain Bonus above the EXP bar.")]
 public unsafe class ExpPercentage : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Decimals", EditorSize = 140, IntMin = 0, IntMax = 3, IntType = TweakConfigOptionAttribute.IntEditType.Slider)]
@@ -31,6 +32,12 @@ public unsafe class ExpPercentage : UiAdjustments.SubTweak {
         [TweakConfigOption("Show only Rested Experience as percentage", 2, ConditionalDisplay = true)]
         public bool NoExpPercentage;
 
+        [TweakConfigOption("Move EXP text above bar", 3)]
+        public bool MoveExp;
+        
+        [TweakConfigOption("Move chain bonus text above bar", 4)]
+        public bool MoveChainBonus;
+        
         public bool ShouldShowNoExpPercentage() => PercentageOnly == false && ShowRestedExperience;
     }
 
@@ -59,6 +66,8 @@ public unsafe class ExpPercentage : UiAdjustments.SubTweak {
 
     [AddonPostRequestedUpdate("_Exp")]
     private void UpdateExpDisplay(AtkUnitBase* addonExp) {
+        MoveText(addonExp, 4, Config.MoveExp);
+        MoveText(addonExp, 5, Config.MoveChainBonus);
         var stringArray = AtkStage.Instance()->GetStringArrayData()[2];
 
         if (stringArray == null) return;
@@ -120,9 +129,19 @@ public unsafe class ExpPercentage : UiAdjustments.SubTweak {
         }
     }
 
+    private void MoveText(AtkUnitBase* unitBase, uint nodeId, bool above) {
+        if (unitBase == null) return;
+        var node = unitBase->GetNodeById(nodeId);
+        if (node == null) return;
+        node->SetYFloat(above ? 0 : 20);
+    }
+    
+
     protected override void Disable() {
         if (Common.GetUnitBase("_Exp", out var addonExp)) {
             addonExp->OnRequestedUpdate(AtkStage.Instance()->GetNumberArrayData(), AtkStage.Instance()->GetStringArrayData());
+            MoveText(addonExp, 4, false);
+            MoveText(addonExp, 5, false);
         }
     }
 }
