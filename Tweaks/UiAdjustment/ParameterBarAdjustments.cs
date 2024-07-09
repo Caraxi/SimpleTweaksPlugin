@@ -163,7 +163,7 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
 
     private const float ColorMultiplier = 120f;
 
-    private readonly uint[] autoHideMpClassJobs = { 1, 2, 3, 4, 5, 20, 21, 22, 23, 29, 30, 31, 34, 37, 38, 39 };
+    private readonly uint[] autoHideMpClassJobs = { 1, 2, 3, 4, 5, 20, 21, 22, 23, 29, 30, 31, 34, 37, 38, 39, 40 };
 
     private void UpdateParameter(AtkComponentNode* node, HideAndOffsetConfig barConfig, HideAndOffsetConfig valueConfig, Vector4 barColor, bool hideTitle, bool hideMp = false) {
         var valueNode = node->Component->UldManager.SearchNodeById(3);
