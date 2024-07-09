@@ -1,6 +1,5 @@
 ﻿using System;
 using Dalamud.Memory;
-using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
@@ -15,11 +14,6 @@ namespace SimpleTweaksPlugin.Tweaks;
 public unsafe class EstateListCommand : CommandTweak {
     protected override string Command => "estatelist";
     protected override string HelpMessage => "Opens the estate list for one of your friends.";
-
-    private delegate IntPtr ShowEstateTeleportationDelegate(AgentFriendlist* friendListAgent, ulong contentId);
-
-    [Signature("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 33 D2 48 8B CB")]
-    private ShowEstateTeleportationDelegate showEstateTeleportation;
 
     protected override void OnCommand(string arguments) {
         if (string.IsNullOrWhiteSpace(arguments)) {
@@ -46,13 +40,13 @@ public unsafe class EstateListCommand : CommandTweak {
             if (f->Name[0] == 0) continue;
             if ((f->ExtraFlags & 32) != 0) continue;
             if (useContentId && contentId == f->ContentId) {
-                showEstateTeleportation(agent, f->ContentId);
+                AgentFriendlist.Instance()->OpenFriendEstateTeleportation(f->ContentId);
                 return;
             }
 
             var name = f->NameString;
             if (name.StartsWith(arguments, StringComparison.InvariantCultureIgnoreCase)) {
-                showEstateTeleportation(agent, f->ContentId);
+                AgentFriendlist.Instance()->OpenFriendEstateTeleportation(f->ContentId);
                 return;
             }
         }
