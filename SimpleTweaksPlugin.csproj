@@ -101,7 +101,6 @@
         <Compile Remove="Tweaks\UiAdjustment\LootWindowDuplicateUniqueItemIndicator.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\LootWindowSelectNext.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\MarketEnhancements.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\MinimapAdjustments.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\MoveCutsceneTalk.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\NamePlateIconSpacing.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\OpenGlamourDresserToCurrentJob.cs"/>
@@ -116,7 +115,6 @@
     </ItemGroup>
     
     <ItemGroup>
-        <Compile Remove="Debugging\AgentDebug.cs"/>
         <Compile Remove="Debugging\ArrayDataBrowser.cs"/>
         <Compile Remove="Debugging\BattleCharaDebug.cs"/>
         <Compile Remove="Debugging\ExcelSheetDebugging.cs"/>
