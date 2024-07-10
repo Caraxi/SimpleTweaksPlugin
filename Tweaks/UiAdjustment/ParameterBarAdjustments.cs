@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -16,6 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakName("Parameter Bar Adjustments")]
 [TweakDescription("Allows hiding or moving specific parts of the parameter bar (HP and mana bars).")]
 [TweakAuthor("Aireil")]
+[Changelog("1.10.0.1", "Hide MP bar on Viper")]
 public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
     public override IEnumerable<string> Tags => new[] { "parameter", "hp", "mana", "bar" };
 

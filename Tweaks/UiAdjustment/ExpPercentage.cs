@@ -17,7 +17,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Calculate and display the current EXP percentage on the EXP bar.")]
 [TweakAutoConfig]
 [Changelog("1.9.4.0", "Added the ability to show rested experience without showing experience percentage.")]
-[Changelog(UnreleasedVersion, "Added option to move EXP or Chain Bonus above the EXP bar.")]
+[Changelog("1.10.0.1", "Added option to move EXP or Chain Bonus above the EXP bar.")]
 public unsafe class ExpPercentage : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Decimals", EditorSize = 140, IntMin = 0, IntMax = 3, IntType = TweakConfigOptionAttribute.IntEditType.Slider)]
