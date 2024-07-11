@@ -93,7 +93,7 @@ internal class SmartStrafe : Tweak {
 
     private bool CheckStrafeKeybind(IntPtr ptr, Keybind keybind)
     {
-        if (keybind is Keybind.StrafeLeft or Keybind.StrafeRight) {
+        if (keybind is Keybind.StrafeLeft or Keybind.StrafeRight && !Service.ClientState.IsGPosing) {
             if (Config.ManualBackpedal &&
                 (Hook.Original(ptr, Keybind.TurnLeft) || Hook.Original(ptr, Keybind.StrafeLeft)) &&
                 (Hook.Original(ptr, Keybind.TurnRight) || Hook.Original(ptr, Keybind.StrafeRight))) {
