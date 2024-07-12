@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using System.Linq;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.Text.SeStringHandling;
@@ -15,7 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakName("Print Search Comment")]
 [TweakDescription("Prints the Search Comment of people, that get inspected, into the chat.")]
 [TweakAuthor("Infi")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("0.0.0.0")]
 public class PrintSearchComment : ChatTweaks.SubTweak {
     [TweakHook]
     private HookWrapper<AgentInspect.Delegates.ReceiveSearchComment>? receiveSearchComment;
@@ -40,7 +39,7 @@ public class PrintSearchComment : ChatTweaks.SubTweak {
             if (obj == null || !obj.IsValid()) {
                 SimpleLog.Debug("Unable to find ObjectID.");
             }
-            else if (searchInfo.Payloads.Count > 0 && obj is PlayerCharacter { ObjectKind: ObjectKind.Player } character)
+            else if (searchInfo.Payloads.Count > 0 && obj is IPlayerCharacter { ObjectKind: ObjectKind.Player } character)
             {
                 var builder = new SeStringBuilder();
                 builder.AddUiForeground(45);
