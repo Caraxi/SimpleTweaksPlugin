@@ -39,7 +39,6 @@
         <Compile Remove="Tweaks\DutyTimer.cs"/>
         <Compile Remove="Tweaks\EmoteLogServerBarEntry.cs"/>
         <Compile Remove="Tweaks\EquipFromHotbar.cs"/>
-        <Compile Remove="Tweaks\EquipJobCommand.cs"/>
         <Compile Remove="Tweaks\ExitGame.cs"/>
         <Compile Remove="Tweaks\FixedShadowDistance.cs"/>
         <Compile Remove="Tweaks\FurnitureClocksCustomTime.cs"/>
