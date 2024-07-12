@@ -30,8 +30,7 @@ public unsafe class AddonDebug : DebugHelper {
     private HookWrapper<FormatAddonTextDelegate> formatAddonTextHook;
 
     public static bool IsSetupHooked(AtkUnitBase* atkUnitBase) {
-        var name = Encoding.UTF8.GetString(atkUnitBase->Name, 0x20).TrimEnd();
-        return setupHooks.ContainsKey(name);
+        return setupHooks.ContainsKey(atkUnitBase->NameString);
     }
 
     public class Callback {
@@ -57,7 +56,7 @@ public unsafe class AddonDebug : DebugHelper {
         public List<SetupCall> Calls = new();
 
         public SetupHook(AtkUnitBase* unitBase) {
-            Hook = Common.Hook<OnSetupDelegate>(unitBase->AtkEventListener.vfunc[45], SetupDetour);
+            Hook = Common.Hook<OnSetupDelegate>(unitBase->VirtualTable->OnSetup, SetupDetour);
         }
 
         public void* SetupDetour(AtkUnitBase* atkUnitBase, int valueCount, AtkValue* atkValues) {
@@ -98,7 +97,7 @@ public unsafe class AddonDebug : DebugHelper {
             var ret = Hook.Original(atkUnitBase, valueCount, atkValues);
             try {
                 Calls.Insert(0, new SetupCall() {
-                    AtkUnitBaseName = Encoding.UTF8.GetString(atkUnitBase->Name, 0x20).TrimEnd(),
+                    AtkUnitBaseName = atkUnitBase->NameString,
                     AtkUnitBase = atkUnitBase,
                     ReturnValue = ret,
                     AtkValues = atkValueList,
@@ -126,7 +125,7 @@ public unsafe class AddonDebug : DebugHelper {
                 if (ImGui.Checkbox($"Enable Logging", ref enabled)) {
                     fireCallbackHook?.Disable();
                     if (enabled) {
-                        fireCallbackHook ??= Common.Hook<FireCallbackDelegate>("E8 ?? ?? ?? ?? 8B 4C 24 20 0F B6 D8", CallbackDetour);
+                        fireCallbackHook ??= Common.Hook<FireCallbackDelegate>("E8 ?? ?? ?? ?? 0F B6 E8 8B 44 24 20", CallbackDetour);
                         fireCallbackHook?.Enable();
                     }
                 }
@@ -342,7 +341,7 @@ public unsafe class AddonDebug : DebugHelper {
             listHandlerSetupCalls.Insert(0, new ListHandlerSetupCall() {
                 This = a1,
                 UpdateItemCallback = updateItemCallback,
-                AtkUnitBaseName = Encoding.UTF8.GetString(atkUnitBase->Name, 0x20).Trim()
+                AtkUnitBaseName = atkUnitBase->NameString,
             });
         } catch {
             //
@@ -351,7 +350,7 @@ public unsafe class AddonDebug : DebugHelper {
     }
 
     public static void HookOnSetup(AtkUnitBase* atkUnitBase) {
-        var name = Encoding.UTF8.GetString(atkUnitBase->Name, 0x20).TrimEnd();
+        var name = atkUnitBase->NameString;
         setupHooks.Add(name, new SetupHook(atkUnitBase));
     }
 
@@ -394,7 +393,7 @@ public unsafe class AddonDebug : DebugHelper {
         var ret = fireCallbackHook.Original(atkunitbase, valuecount, atkvalues, updateVisibility);
         try {
             Callbacks.Insert(0, new Callback() {
-                AtkUnitBaseName = Encoding.UTF8.GetString(atkunitbase->Name, 0x20).TrimEnd(),
+                AtkUnitBaseName = atkunitbase->NameString,
                 UpdateVisibility = updateVisibility,
                 AtkUnitBase = atkunitbase,
                 ReturnValue = ret,

@@ -22,7 +22,6 @@ public unsafe class HideExperienceBar : UiAdjustments.SubTweak {
         expAddon->IsVisible = visible;
     }
 
-    [FrameworkUpdate(NthTick = 300)] 
-    protected override void Enable() => UpdateExp(Common.GetUnitBase("_Exp"));
+    [FrameworkUpdate(NthTick = 300)] protected override void Enable() => UpdateExp(Common.GetUnitBase("_Exp"));
     protected override void Disable() => SetExperienceBarVisible(true);
 }

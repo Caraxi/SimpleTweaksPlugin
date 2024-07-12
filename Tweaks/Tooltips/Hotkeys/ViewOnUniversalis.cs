@@ -2,11 +2,11 @@
 using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks.Tooltips.Hotkeys; 
+namespace SimpleTweaksPlugin.Tweaks.Tooltips.Hotkeys;
 
 public class ViewOnUniversalis : ItemHotkey {
-    public override string Name => "View on Universalis";
-    protected override VirtualKey[] DefaultKeyCombo => new[] { VirtualKey.CONTROL, VirtualKey.U};
+    protected override string Name => "View on Universalis";
+    protected override VirtualKey[] DefaultKeyCombo => [VirtualKey.CONTROL, VirtualKey.U];
 
     public override void OnTriggered(ExtendedItem item) {
         Common.OpenBrowser($"https://universalis.app/market/{item.RowId}");
@@ -16,4 +16,3 @@ public class ViewOnUniversalis : ItemHotkey {
         return item.ItemSearchCategory.Row != 0;
     }
 }
-

@@ -8,10 +8,10 @@ using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltipField;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips; 
 
+[TweakName("Show ID")]
+[TweakDescription("Show the ID of actions and items on their tooltips.")]
+[TweakAutoConfig]
 public class ShowItemID : TooltipTweaks.SubTweak {
-    public override string Name => "Show ID";
-    public override string Description => "Show the ID of actions and items on their tooltips.";
-
     public class Configs : TweakConfig {
         [TweakConfigOption("Use Hexadecimal ID")]
         public bool Hex = false;
@@ -25,8 +25,6 @@ public class ShowItemID : TooltipTweaks.SubTweak {
     }
 
     public Configs Config { get; private set; }
-
-    public override bool UseAutoConfig => true;
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();

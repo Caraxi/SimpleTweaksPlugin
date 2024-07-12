@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -11,13 +11,14 @@ using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
+[TweakName("Parameter Bar Adjustments")]
+[TweakDescription("Allows hiding or moving specific parts of the parameter bar (HP and mana bars).")]
+[TweakAuthor("Aireil")]
+[Changelog("1.10.0.1", "Hide MP bar on Viper")]
 public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
-    public override string Name => "Parameter Bar Adjustments";
-    public override string Description => "Allows hiding or moving specific parts of the parameter bar (HP and mana bars).";
-    protected override string Author => "Aireil";
-    public override IEnumerable<string> Tags => new[] {"parameter", "hp", "mana", "bar"};
+    public override IEnumerable<string> Tags => new[] { "parameter", "hp", "mana", "bar" };
 
     public class Configs : TweakConfig {
         public HideAndOffsetConfig TargetCycling = new() { OffsetX = 100, OffsetY = 1 };
@@ -68,10 +69,11 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
 
         for (var job = 0; job < nbJobs; job++) {
             if (doLParser?.ReadColumn<bool>(job + 1) ?? false) {
-                this.doLIds.Add((uint) job);
+                this.doLIds.Add((uint)job);
             }
+
             if (doHParser?.ReadColumn<bool>(job + 1) ?? false) {
-                this.doHIds.Add((uint) job);
+                this.doHIds.Add((uint)job);
             }
         }
 
@@ -90,12 +92,11 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
     private void OnFrameworkUpdate() {
         try {
             UpdateParameterBar();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             SimpleLog.Error(ex);
         }
     }
-    
+
     [TerritoryChanged]
     private void OnTerritoryChanged(ushort territoryType) {
         var territory = Service.Data.Excel.GetSheet<TerritoryType>()?.GetRow(territoryType);
@@ -121,18 +122,19 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
             ImGui.SameLine();
             ImGui.SetCursorPosX(positionOffset + (105 * ImGui.GetIO().FontGlobalScale) + resetOffset);
             ImGui.PushFont(UiBuilder.IconFont);
-            if (ImGui.Button($"{(char) FontAwesomeIcon.CircleNotch}##resetOffset_{label}")) {
+            if (ImGui.Button($"{(char)FontAwesomeIcon.CircleNotch}##resetOffset_{label}")) {
                 config.OffsetX = defConfig.OffsetX;
                 config.OffsetY = defConfig.OffsetY;
                 hasChanged = true;
             }
+
             ImGui.PopFont();
         }
 
         return hasChanged;
     }
 
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+    protected void DrawConfig(ref bool hasChanged) {
         hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Target Cycling"), ref Config.TargetCycling, DefaultConfig.TargetCycling);
         ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
 
@@ -146,7 +148,7 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
         hasChanged |= VisibilityAndOffsetEditor(LocString("Hide MP Value"), ref Config.MpValue, DefaultConfig.MpValue);
 
         hasChanged |= ImGui.Checkbox(LocString("AutoHideMp", "Hide MP Bar on jobs that don't use MP"), ref Config.AutoHideMp);
-        if (Config.AutoHideMp) 
+        if (Config.AutoHideMp)
             hasChanged |= ImGui.Checkbox(LocString("CenterHpWithMpHidden", "Center the HP Bar on jobs that don't use MP"), ref Config.CenterHpWithMpHidden);
 
         hasChanged |= ImGui.ColorEdit4(LocString("HP Bar Color"), ref Config.HpColor);
@@ -155,16 +157,14 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
         hasChanged |= ImGui.ColorEdit4(LocString("CP Bar Color"), ref Config.CpColor);
 
         if (hasChanged) UpdateParameterBar(true);
-    };
+    }
 
     private const byte Byte00 = 0x00;
     private const byte ByteFF = 0xFF;
 
     private const float ColorMultiplier = 120f;
 
-    private readonly uint[] autoHideMpClassJobs = {
-        1, 2, 3, 4, 5, 20, 21, 22, 23, 29, 30, 31, 34, 37, 38, 39
-    };
+    private readonly uint[] autoHideMpClassJobs = { 1, 2, 3, 4, 5, 20, 21, 22, 23, 29, 30, 31, 34, 37, 38, 39, 41 };
 
     private void UpdateParameter(AtkComponentNode* node, HideAndOffsetConfig barConfig, HideAndOffsetConfig valueConfig, Vector4 barColor, bool hideTitle, bool hideMp = false) {
         var valueNode = node->Component->UldManager.SearchNodeById(3);
@@ -173,7 +173,7 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
         var textureNode2 = node->Component->UldManager.SearchNodeById(4);
         var gridNode = node->Component->UldManager.SearchNodeById(7);
         var grindNode2 = node->Component->UldManager.SearchNodeById(6);
-        var gridNode3= node->Component->UldManager.SearchNodeById(5);
+        var gridNode3 = node->Component->UldManager.SearchNodeById(5);
 
         node->AtkResNode.SetPositionFloat(barConfig.OffsetX, barConfig.OffsetY);
         valueNode->SetPositionFloat(valueConfig.OffsetX, valueConfig.OffsetY);
@@ -214,11 +214,11 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
         }
 
         var hideMp = !reset && Config.AutoHideMp && !inPVP && Service.Condition[ConditionFlag.RolePlaying] == false && classJobId != null && autoHideMpClassJobs.Contains(classJobId.Value);
-        var mpNode = (AtkComponentNode*) parameterWidgetUnitBase->UldManager.SearchNodeById(4);
+        var mpNode = (AtkComponentNode*)parameterWidgetUnitBase->UldManager.SearchNodeById(4);
         if (mpNode != null) UpdateParameter(mpNode, reset ? DefaultConfig.MpBar : Config.MpBar, reset ? DefaultConfig.MpValue : Config.MpValue, mpColor, reset ? DefaultConfig.HideHpTitle : Config.HideMpTitle, hideMp);
 
         // HP
-        var hpNode = (AtkComponentNode*) parameterWidgetUnitBase->UldManager.SearchNodeById(3);
+        var hpNode = (AtkComponentNode*)parameterWidgetUnitBase->UldManager.SearchNodeById(3);
         if (hpNode != null) UpdateParameter(hpNode, reset ? DefaultConfig.HpBar : Config.HpBar, reset ? DefaultConfig.HpValue : Config.HpValue, reset ? DefaultConfig.HpColor : Config.HpColor, reset ? DefaultConfig.HideHpTitle : Config.HideHpTitle);
 
         var centerHpBar = hideMp && Config.CenterHpWithMpHidden;

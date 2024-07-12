@@ -19,11 +19,10 @@ namespace SimpleTweaksPlugin {
 }
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
+    [TweakName("Notification Toast Adjustments")]
+    [TweakDescription("Allows moving or hiding of the notifications that appears in the middle of the screen at various times.")]
+    [TweakAuthor("Aireil")]
     public unsafe class NotificationToastAdjustments : UiAdjustments.SubTweak {
-        public override string Name => "Notification Toast Adjustments";
-        public override string Description => "Allows moving or hiding of the notifications that appears in the middle of the screen at various times.";
-        protected override string Author => "Aireil";
-
         public class Configs : TweakConfig {
             public bool Hide = false;
             public bool ShowInCombat = false;
@@ -37,7 +36,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         private string newException = string.Empty;
 
-        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+        protected void DrawConfig(ref bool hasChanged) {
             hasChanged |= ImGui.Checkbox("Hide", ref Config.Hide);
             if (Config.Hide) {
                 ImGui.SameLine();
@@ -52,10 +51,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 offsetChanged |= ImGui.InputInt("Vertical Offset##offsetPosition", ref Config.OffsetYPosition, 1);
                 ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
                 offsetChanged |= ImGui.SliderFloat("##toastScale", ref Config.Scale, 0.1f, 5f, "Toast Scale: %.1fx");
-                if (offsetChanged)
-                {
+                if (offsetChanged) {
                     var toastNode = GetToastNode(2);
-                    if (toastNode != null && !toastNode->IsVisible)
+                    if (toastNode != null && !toastNode->IsVisible())
                         Service.Toasts.ShowNormal("This is a preview of a toast message.");
                     hasChanged = true;
                 }
@@ -64,23 +62,26 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (Config.Hide) return;
 
             ImGui.Text("Hide toast if text contains:");
-            for (var  i = 0; i < Config.Exceptions.Count; i++) {
+            for (var i = 0; i < Config.Exceptions.Count; i++) {
                 ImGui.PushID($"Exception_{i.ToString()}");
                 var exception = Config.Exceptions[i];
                 if (ImGui.InputText("##ToastTextException", ref exception, 500)) {
                     Config.Exceptions[i] = exception;
                     hasChanged = true;
                 }
+
                 ImGui.SameLine();
                 ImGui.PushFont(UiBuilder.IconFont);
                 if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString())) {
                     Config.Exceptions.RemoveAt(i--);
                     hasChanged = true;
                 }
+
                 ImGui.PopFont();
                 ImGui.PopID();
                 if (i < 0) break;
             }
+
             ImGui.InputText("##NewToastTextException", ref newException, 500);
             ImGui.SameLine();
             ImGui.PushFont(UiBuilder.IconFont);
@@ -89,11 +90,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 newException = string.Empty;
                 hasChanged = true;
             }
+
             ImGui.PopFont();
-        };
+        }
 
         protected override void Enable() {
-            Config = LoadConfig<Configs>() ?? PluginConfig.UiAdjustments.NotificationToastAdjustments ?? new Configs();
+            Config = LoadConfig<Configs>() ?? new Configs();
             Common.FrameworkUpdate += FrameworkOnUpdate;
             Service.Toasts.Toast += OnToast;
             base.Enable();
@@ -101,7 +103,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         protected override void Disable() {
             SaveConfig(Config);
-            PluginConfig.UiAdjustments.NotificationToastAdjustments = null;
             Common.FrameworkUpdate -= FrameworkOnUpdate;
             Service.Toasts.Toast -= OnToast;
             UpdateNotificationToast(true);
@@ -124,14 +125,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private void UpdateNotificationToastText(bool reset, int index) {
             var toastNode = GetToastNode(index);
             if (toastNode == null) return;
-            
+
             if (reset) {
                 SetOffsetPosition(toastNode, 0.0f, 0.0f, 1);
                 toastNode->SetScale(1, 1);
                 return;
             }
 
-            if (!toastNode->IsVisible) return;
+            if (!toastNode->IsVisible()) return;
 
             SetOffsetPosition(toastNode, Config.OffsetXPosition, Config.OffsetYPosition, Config.Scale);
             toastNode->SetScale(Config.Scale, Config.Scale);
@@ -154,8 +155,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             try {
                 defaultXPos = (ImGui.GetIO().DisplaySize.X * 1 / 2) - 512 * scale;
                 defaultYPos = (ImGui.GetIO().DisplaySize.Y * 3 / 5) - 20 * scale;
-            }
-            catch (NullReferenceException) { }
+            } catch (NullReferenceException) { }
 
             UiHelper.SetPosition(node, defaultXPos + offsetX, defaultYPos - offsetY);
         }
@@ -171,7 +171,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     var messageStr = message.ToString();
                     if (Config.Exceptions.All(x => !messageStr.Contains(x))) return;
                 }
-                
+
                 isHandled = true;
             } catch (Exception ex) {
                 SimpleLog.Error(ex);

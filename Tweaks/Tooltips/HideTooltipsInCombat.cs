@@ -10,10 +10,12 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
+[TweakName("Hide Tooltips in Combat")]
+[TweakDescription("Allow hiding action and/or Item tooltips while in combat. ")]
+[TweakAutoConfig]
+[Changelog("1.8.7.1", "Added support for crossbar hints.")]
+[Changelog("1.8.6.1", "Improved logic to attempt to reduce settings getting stuck in incorrect state.")]
 public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
-    public override string Name => "Hide Tooltips in Combat";
-    public override string Description => "Allows hiding Action and/or Item tooltips while in combat.";
-
     public class Configs : TweakConfig {
         [TweakConfigOption("Hide Action Tooltips in Combat", 1)]
         public bool HideAction = false;
@@ -40,22 +42,12 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
     
     public Configs Config { get; private set; }
 
-    public override bool UseAutoConfig => true;
-
     protected override void ConfigChanged() {
         OnConditionChange(ConditionFlag.InCombat, false);
         OnConditionChange(ConditionFlag.InCombat, Service.Condition[ConditionFlag.InCombat]);
-        base.ConfigChanged();
-    }
-
-    public override void Setup() {
-        AddChangelog("1.8.7.1", "Added support for crossbar hints.");
-        AddChangelog("1.8.6.1", "Improved logic to attempt to reduce settings getting stuck in incorrect state.");
-        base.Setup();
     }
 
     protected override void Enable() {
-        Config = LoadConfig<Configs>() ?? new Configs();
         Service.ClientState.Login += OnLogin;
         if (Service.ClientState.LocalContentId != 0) OnLogin();
         if (Common.GetUnitBase("ConfigCharacterHudGeneral", out var addon)) ToggleConfigLock(addon, false);
@@ -72,7 +64,6 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
     }
 
     protected override void Disable() {
-        SaveConfig(Config);
         Service.Condition.ConditionChange -= OnConditionChange;
         if (Service.ClientState.LocalContentId != 0) OnConditionChange(ConditionFlag.InCombat, false);
         if (Common.GetUnitBase("ConfigCharacterHudGeneral", out var addon)) ToggleConfigLock(addon, true);

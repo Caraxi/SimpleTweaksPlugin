@@ -77,7 +77,7 @@ public static class Extensions {
         { VirtualKey.SHIFT, "Shift"},
     };
     public static bool Cutscene(this ICondition condition) => condition[ConditionFlag.WatchingCutscene] || condition[ConditionFlag.WatchingCutscene78] || condition[ConditionFlag.OccupiedInCutSceneEvent];
-    public static bool Duty(this ICondition condition) => condition[ConditionFlag.BoundByDuty] || condition[ConditionFlag.BoundByDuty56] || condition[ConditionFlag.BoundToDuty97];
+    public static bool Duty(this ICondition condition) => condition[ConditionFlag.BoundByDuty] || condition[ConditionFlag.BoundByDuty56];
     public static string GetKeyName(this VirtualKey k) => NamedKeys.ContainsKey(k) ? NamedKeys[k] : k.ToString();
     
     public static void Replace(this List<byte> byteList, IEnumerable<byte> search, IEnumerable<byte> replace) {
@@ -171,8 +171,8 @@ public static class Extensions {
             ValueType.Bool => $"{v.Byte != 0}",
             ValueType.Float => $"{v.Float}",
             ValueType.Vector => "[Vector]",
-            ValueType.AllocatedString => Marshal.PtrToStringUTF8(new IntPtr(v.String))?.TrimEnd('\0') ?? string.Empty,
-            ValueType.AllocatedVector => "[Allocated Vector]",
+            ValueType.ManagedString => Marshal.PtrToStringUTF8(new IntPtr(v.String))?.TrimEnd('\0') ?? string.Empty,
+            ValueType.ManagedVector => "[Managed Vector]",
             _ => $"Unknown Type: {v.Type}"
         };
     }

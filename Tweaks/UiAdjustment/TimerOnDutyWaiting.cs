@@ -5,7 +5,7 @@ using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 
-namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [TweakName("Timer on Duty Waiting")]
 [TweakDescription("Shows the 45 second countdown after readying for a duty.")]

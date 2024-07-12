@@ -25,8 +25,8 @@ public class TweakLoadContext : AssemblyLoadContext {
     static TweakLoadContext() {
         handledAssemblies = new Dictionary<string, Assembly>() {
             ["SimpleTweaksPlugin"] = typeof(SimpleTweaksPlugin).Assembly,
-            ["FFXIVClientStructs"] = typeof(Resolver).Assembly,
-            ["Dalamud"] = typeof(DalamudPluginInterface).Assembly,
+            ["FFXIVClientStructs"] = typeof(FFXIVClientStructs.ThisAssembly).Assembly,
+            ["Dalamud"] = typeof(IDalamudPluginInterface).Assembly,
         };
     }
     

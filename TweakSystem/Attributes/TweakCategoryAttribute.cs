@@ -12,6 +12,7 @@ public enum TweakCategory {
     Chat,
     Command,
     Tooltip,
+    QoL,
     Joke,
     Disabled,
     Experimental
@@ -26,6 +27,7 @@ public class TweakCategoryAttribute : Attribute {
         ["Chat"] = "Tweaks that interact with the game's Chat.",
         ["Command"] = "Tweaks that add or adjust commands.",
         ["Tooltip"] = "Tweaks that modify the game's tooltips.",
+        ["QoL"] = "Tweaks that improve some experience of the game.",
         ["Joke"] = "Tweaks that serve no real purpose.",
         ["Disabled"] = "Tweaks that have been disabled or made obsolete by a game update or other issue.",
         ["Experimental"] = "Tweaks that have a higher than average chance of causing the game to break in some way.",

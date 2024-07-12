@@ -12,10 +12,10 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 [TweakDescription("Displays the glamoured item name underneath the real item name.")]
 [TweakReleaseVersion("1.9.3.0")]
 public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
-    private const uint ITEM_TOOLTIP_NAME_NODE_ID = 32;
-    private const byte NAME_DEFAULT_FONT_SIZE = 14;
+    private const uint ItemTooltipNameNodeID = 32;
+    private const byte NameDefaultFontSize = 14;
 
-    private const string GLAM_NAME_REPLACEMENT_TEXT = "GlamNameReplacementText";
+    private const string GlamNameReplacementText = "GlamNameReplacementText";
 
     private string last = "";
 
@@ -25,22 +25,22 @@ public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
         AtkUnitBase* unitBase = Common.GetUnitBase("ItemDetail");
         if (unitBase == null) return;
 
-        AtkTextNode* replacementNameNode = Common.GetNodeByID<AtkTextNode>(&unitBase->UldManager, CustomNodes.Get(this, GLAM_NAME_REPLACEMENT_TEXT), NodeType.Text);
+        AtkTextNode* replacementNameNode = Common.GetNodeByID<AtkTextNode>(&unitBase->UldManager, CustomNodes.Get(this, GlamNameReplacementText), NodeType.Text);
 
         // Hide the replacement widget and show the original widget, so that if we don't need to add a glam name it'll be back to vanilla
         if (replacementNameNode != null) replacementNameNode->AtkResNode.ToggleVisibility(false);
 
-        AtkResNode* vanillaNameNode = unitBase->GetNodeById(ITEM_TOOLTIP_NAME_NODE_ID);
+        AtkResNode* vanillaNameNode = unitBase->GetNodeById(ItemTooltipNameNodeID);
         if (vanillaNameNode == null) return;
         vanillaNameNode->ToggleVisibility(true);
 
         SeString glamName = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.GlamourName);
-        
+
         // We don't need to do anything the item isn't / cannot be glamoured
         if (glamName == null) return;
 
         SeString normalName = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ItemName);
-        
+
         normalName.Append(NewLinePayload.Payload);
         normalName.Append(glamName);
 
@@ -52,7 +52,7 @@ public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
         if (normalName.TextValue != last) {
             last = normalName.TextValue;
             ushort w, h;
-            byte fs = NAME_DEFAULT_FONT_SIZE;
+            byte fs = NameDefaultFontSize;
             // Shrink the font until we get to 2 lines
             // Also reset the size back to default if another tooltip's name shrank it
             do {
@@ -61,24 +61,24 @@ public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
                 replacementNameNode->SetText(normalName.Encode());
                 replacementNameNode->GetTextDrawSize(&w, &h);
                 fs -= 1;
-            } while(h > 35);
+            } while (h > 35);
         }
 
-        vanillaNameNode->ToggleVisibility(false); 
+        vanillaNameNode->ToggleVisibility(false);
         replacementNameNode->AtkResNode.ToggleVisibility(true);
-        unitBase->UldManager.UpdateDrawNodeList(); 
+        unitBase->UldManager.UpdateDrawNodeList();
     }
 
     private AtkTextNode* CreateReplacementTextNode(AtkResNode* replacedNode) {
         AtkTextNode* node = IMemorySpace.GetUISpace()->Create<AtkTextNode>();
         if (node == null) return null;
         node->AtkResNode.Type = NodeType.Text;
-        node->AtkResNode.NodeID = CustomNodes.Get(this, GLAM_NAME_REPLACEMENT_TEXT);
+        node->AtkResNode.NodeId = CustomNodes.Get(this, GlamNameReplacementText);
 
         node->AtkResNode.SetWidth(replacedNode->GetWidth());
         node->AtkResNode.SetHeight(replacedNode->GetHeight());
-        node->AtkResNode.SetPositionFloat(replacedNode->GetX(), replacedNode->GetY());
-        node->FontSize = NAME_DEFAULT_FONT_SIZE;
+        node->AtkResNode.SetPositionFloat(replacedNode->GetXFloat(), replacedNode->GetYFloat());
+        node->FontSize = NameDefaultFontSize;
         node->TextFlags = replacedNode->GetAsAtkTextNode()->TextFlags;
         node->TextFlags2 = replacedNode->GetAsAtkTextNode()->TextFlags2;
         node->AlignmentFontType = replacedNode->GetAsAtkTextNode()->AlignmentFontType;
@@ -111,10 +111,10 @@ public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
         return node;
     }
 
-    protected override void Disable() {        
+    protected override void Disable() {
         AtkUnitBase* unitBase = Common.GetUnitBase("ItemDetail");
         if (unitBase != null) {
-            AtkResNode* textNode = Common.GetNodeByID(&unitBase->UldManager, CustomNodes.Get(this, GLAM_NAME_REPLACEMENT_TEXT), NodeType.Text);
+            AtkResNode* textNode = Common.GetNodeByID(&unitBase->UldManager, CustomNodes.Get(this, GlamNameReplacementText), NodeType.Text);
             if (textNode != null) {
                 if (textNode->PrevSiblingNode != null)
                     textNode->PrevSiblingNode->NextSiblingNode = textNode->NextSiblingNode;
@@ -124,12 +124,12 @@ public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
                 textNode->Destroy(true);
             }
 
-            AtkResNode* original = unitBase->GetNodeById(ITEM_TOOLTIP_NAME_NODE_ID);
+            AtkResNode* original = unitBase->GetNodeById(ItemTooltipNameNodeID);
             if (original != null) {
                 original->ToggleVisibility(true);
             }
         }
-        
+
         base.Disable();
     }
 }

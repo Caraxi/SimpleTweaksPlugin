@@ -18,20 +18,106 @@
     </PropertyGroup>
     <PropertyGroup Label="Feature">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>1.9.7.2</Version>
+        <Version>1.10.0.2</Version>
     </PropertyGroup>
 	<PropertyGroup>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
         <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
         <AssemblyName>SimpleTweaksPlugin</AssemblyName>
     </PropertyGroup>
+    <ItemGroup Label="Tweaks Needing Update">
+        <Compile Remove="Tweaks\AutoOpenLootWindow.cs"/>
+        <Compile Remove="Tweaks\BaitCommand.cs"/>
+        <Compile Remove="Tweaks\CharaViewIncreasedZoom.cs"/>
+        <Compile Remove="Tweaks\ChrDirCommand.cs"/>
+        <Compile Remove="Tweaks\ContentsFinderConfirmClassSwitch.cs"/>
+        <Compile Remove="Tweaks\CutsceneCommands.cs"/>
+        <Compile Remove="Tweaks\DataCentreOnTitleScreen.cs"/>
+        <Compile Remove="Tweaks\DisableClickTargeting.cs"/>
+        <Compile Remove="Tweaks\DisableMountVolumeChange.cs"/>
+        <Compile Remove="Tweaks\DisableMouseCameraControl.cs"/>
+        <Compile Remove="Tweaks\DutyTimer.cs"/>
+        <Compile Remove="Tweaks\EquipFromHotbar.cs"/>
+        <Compile Remove="Tweaks\ExitGame.cs"/>
+        <Compile Remove="Tweaks\FixedShadowDistance.cs"/>
+        <Compile Remove="Tweaks\FurnitureClocksCustomTime.cs"/>
+        <Compile Remove="Tweaks\GearsetSaveCurrent.cs"/>
+        <Compile Remove="Tweaks\HideMouseAfterInactivity.cs"/>
+        <Compile Remove="Tweaks\HighResScreenshots.cs"/>
+        <Compile Remove="Tweaks\HouseLightCommand.cs"/>
+        <Compile Remove="Tweaks\JokeTweaks.cs"/>
+        <Compile Remove="Tweaks\KeyInterrupt.cs"/>
+        <Compile Remove="Tweaks\LeaveDutyCommand.cs"/>
+        <Compile Remove="Tweaks\LimitBreakAdjustments.cs"/>
+        <Compile Remove="Tweaks\LongVeil.cs"/>
+        <Compile Remove="Tweaks\MainCommandCommand.cs"/>
+        <Compile Remove="Tweaks\MinionAway.cs"/>
+        <Compile Remove="Tweaks\QuickSellItems.cs"/>
+        <Compile Remove="Tweaks\RecommendEquipCommand.cs"/>
+        <Compile Remove="Tweaks\RefreshMarketPrices.cs"/>
+        <Compile Remove="Tweaks\RememberQuickGathering.cs"/>
+        <Compile Remove="Tweaks\RememberSelectedWorld.cs"/>
+        <Compile Remove="Tweaks\RemoveClientLimit.cs"/>
+        <Compile Remove="Tweaks\SanctuarySprintReplacer.cs"/>
+        <Compile Remove="Tweaks\ScreenshotFileName.cs"/>
+        <Compile Remove="Tweaks\SetOptionCommand.cs"/>
+        <Compile Remove="Tweaks\SyncCrafterBars.cs"/>
+        <Compile Remove="Tweaks\SyncGathererBars.cs"/>
+        <Compile Remove="Tweaks\SystemConfigInGroupPose.cs"/>
+        <Compile Remove="Tweaks\TreasureHuntTargets.cs"/>
+        <Compile Remove="Tweaks\TryOnCorrectItem.cs"/>
+        <Compile Remove="Tweaks\UseCollectionCommand.cs"/>
+        <Compile Remove="Tweaks\Chat\EchoPartyFinder.cs"/>
+        <Compile Remove="Tweaks\Chat\EchoStorySelection.cs"/>
+        <Compile Remove="Tweaks\Chat\HideChat.cs"/>
+        <Compile Remove="Tweaks\Chat\HideChatAuto.cs"/>
+        <Compile Remove="Tweaks\Chat\ImprovedFontSizes.cs"/>
+        <Compile Remove="Tweaks\Chat\RenameChatTabs.cs"/>
+        <Compile Remove="Tweaks\Chat\StickyChat.cs"/>
+        <Compile Remove="Tweaks\Chat\ZoomedChatCustomization.cs"/>
+        <Compile Remove="Tweaks\JokeTweak\Fools2023.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\BattleTalkAdjustments.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\CastingTextVisibility.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\ChangeMapAreaColors.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\ColoredDutyRoulette.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\CustomDefaultQuantity.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\CustomFreeCompanyTags.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\DutyListBackground.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\ExamineItemLevel.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\ExpandedCurrencyDisplay.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\FadeUnavailableActions.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\FastSearch.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\HideAchievementsNotifications.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\HideGuildhestObjectivePopup.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\HideQualityWhenNoHQ.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\ImprovedDutyFinderSettings.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\ImprovedInterruptableCastbars.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\ImprovedWorldVisit.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\LootWindowDuplicateUniqueItemIndicator.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\LootWindowSelectNext.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\MarketEnhancements.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\MoveCutsceneTalk.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\NamePlateIconSpacing.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\OpenGlamourDresserToCurrentJob.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\ResizeExperienceBar.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\ScenarioProgressionDisplay.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\ShiftTargetCastBarText.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\SmartNameplates.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\SubmarineDestinationLetters.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\TargetCastbarCountdown.cs"/>
+        <Compile Remove="Tweaks\NoCharacterNotFoundWarning.cs"/>
+        <Compile Remove="Tweaks\UiAdjustment\AddNumberSeparators.cs" />
+    </ItemGroup>
+    
     <ItemGroup>
-      <Compile Remove="lib\**" />
-      <Compile Remove="Publish\**" />
-      <EmbeddedResource Remove="lib\**" />
-      <EmbeddedResource Remove="Publish\**" />
-      <None Remove="lib\**" />
-      <None Remove="Publish\**" />
+        <Compile Remove="Debugging\ArrayDataBrowser.cs"/>
+        <Compile Remove="Debugging\BattleCharaDebug.cs"/>
+        <Compile Remove="Debugging\ExcelSheetDebugging.cs"/>
+        <Compile Remove="Debugging\InfoProxyDebugging.cs"/>
+        <Compile Remove="Debugging\InventoryDebug.cs"/>
+    </ItemGroup>
+    
+    <ItemGroup>
       <None Update="images\icon.png">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
@@ -44,7 +130,7 @@
     </ItemGroup>
     <ItemGroup>
       <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-      <PackageReference Include="DalamudPackager" Version="2.1.12" />
+      <PackageReference Include="DalamudPackager" Version="2.1.13" />
     </ItemGroup>
     <PropertyGroup>
         <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
@@ -55,10 +141,12 @@
             <HintPath>$(DalamudLibPath)\Dalamud.dll</HintPath>
 		</Reference>
 		<Reference Include="FFXIVClientStructs">
-			<Private Condition="'$(Configuration)' == 'Debug'">true</Private>
-			<Private Condition="'$(Configuration)' == 'Release'">false</Private>
-			<HintPath Condition="'$(Configuration)' == 'Debug'">$(ProjectDir)\lib\FFXIVClientStructs\bin\$(ConfigurationName)\FFXIVClientStructs.dll</HintPath>
-			<HintPath Condition="'$(Configuration)' == 'Release'">$(DalamudLibPath)\FFXIVClientStructs.dll</HintPath>
+			<Private>false</Private>
+			<HintPath>$(DalamudLibPath)\FFXIVClientStructs.dll</HintPath>
+		</Reference>
+		<Reference Include="InteropGenerator.Runtime">
+			<Private>false</Private>
+			<HintPath>$(DalamudLibPath)\InteropGenerator.Runtime.dll</HintPath>
 		</Reference>
         <Reference Include="Newtonsoft.Json">
             <Private>false</Private>

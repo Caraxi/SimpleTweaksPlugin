@@ -1,15 +1,15 @@
 ﻿using System;
-using Dalamud;
+using Dalamud.Game;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
+using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks.Chat; 
+namespace SimpleTweaksPlugin.Tweaks.Chat;
 
+[TweakName("Reply Channel Switch")]
+[TweakDescription("Allow typing /r to set active chat channel to Tell.")]
 public class ReplyChannelSwitch : ChatTweaks.SubTweak {
-    public override string Name => "Reply Channel Switch";
-    public override string Description => "Allow typing /r to set active chat channel to Tell.";
-
     private string searchString = string.Empty;
 
     protected override void Enable() {
@@ -22,19 +22,14 @@ public class ReplyChannelSwitch : ChatTweaks.SubTweak {
         };
 
         Service.Chat.CheckMessageHandled += CheckMesssage;
-        base.Enable();
     }
 
-    private void CheckMesssage(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
+    private void CheckMesssage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled) {
         if (type != XivChatType.ErrorMessage) return;
-        if (message.TextValue == searchString) {
-            ChatHelper.SendMessage("/t <r>");
-            isHandled = true;
-        }
+        if (message.TextValue != searchString) return;
+        ChatHelper.SendMessage("/t <r>");
+        isHandled = true;
     }
 
-    protected override void Disable() {
-        Service.Chat.CheckMessageHandled -= CheckMesssage;
-        base.Disable();
-    }
+    protected override void Disable() => Service.Chat.CheckMessageHandled -= CheckMesssage;
 }

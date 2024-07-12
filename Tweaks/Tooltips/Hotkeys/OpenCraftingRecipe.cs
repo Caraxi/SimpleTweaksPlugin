@@ -4,11 +4,11 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Sheets;
 
-namespace SimpleTweaksPlugin.Tweaks.Tooltips.Hotkeys; 
+namespace SimpleTweaksPlugin.Tweaks.Tooltips.Hotkeys;
 
 public unsafe class OpenCraftingRecipe : ItemHotkey {
-    public override string Name => "Open Crafting Recipe";
-    protected override VirtualKey[] DefaultKeyCombo => new[] { VirtualKey.CONTROL, VirtualKey.R};
+    protected override string Name => "Open Crafting Recipe";
+    protected override VirtualKey[] DefaultKeyCombo => [VirtualKey.CONTROL, VirtualKey.R];
 
     public override void OnTriggered(ExtendedItem item) {
         var recipes = Service.Data.Excel.GetSheet<Recipe>()?.Where(r => r.ItemResult.Row == item.RowId).ToList();
@@ -22,7 +22,7 @@ public unsafe class OpenCraftingRecipe : ItemHotkey {
 
     private bool doShowCache;
     private uint doShowCacheId;
-    
+
     public override bool DoShow(ExtendedItem item) {
         if (doShowCacheId == item.RowId) return doShowCache;
         doShowCacheId = item.RowId;
@@ -30,4 +30,3 @@ public unsafe class OpenCraftingRecipe : ItemHotkey {
         return doShowCache;
     }
 }
-

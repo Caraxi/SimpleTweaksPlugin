@@ -4,40 +4,36 @@ using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using SimpleTweaksPlugin.Enums;
+using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks.Chat; 
+namespace SimpleTweaksPlugin.Tweaks.Chat;
 
+[TweakName("Clickable Links in Chat")]
+[TweakDescription("Parses links posted in chat and allows them to be clicked.")]
 class ClickableLinks : ChatTweaks.SubTweak {
-    public override string Name => "Clickable Links in Chat";
-    public override string Description => "Parses links posted in chat and allows them to be clicked.";
-
     protected override void Enable() {
-        urlLinkPayload = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.OpenUrlLink, UrlLinkHandle);
+        urlLinkPayload = PluginInterface.AddChatLinkHandler((uint)LinkHandlerId.OpenUrlLink, UrlLinkHandle);
         Service.Chat.ChatMessage += OnChatMessage;
         base.Enable();
     }
 
     private void UrlLinkHandle(uint id, SeString message) {
-        var url = message.TextValue
-            .Replace($"{(char) 0x00A0}", "");
+        var url = message.TextValue.Replace($"{(char)0x00A0}", "");
         Common.OpenBrowser(url);
     }
 
     protected override void Disable() {
         if (!Enabled) return;
         Service.Chat.ChatMessage -= OnChatMessage;
-        PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.OpenUrlLink);
+        PluginInterface.RemoveChatLinkHandler((uint)LinkHandlerId.OpenUrlLink);
         base.Disable();
     }
 
-    private readonly Regex urlRegex =
-        new Regex(@"(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?",
-            RegexOptions.Compiled);
-
+    private readonly Regex urlRegex = new Regex(@"(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?", RegexOptions.Compiled);
 
     private DalamudLinkPayload urlLinkPayload;
-    
+
     private static bool IsBattleType(XivChatType type) {
         var channel = ((int)type & 0x7F);
         switch (channel) {
@@ -57,15 +53,15 @@ class ClickableLinks : ChatTweaks.SubTweak {
         }
     }
 
-    private void OnChatMessage(XivChatType type, uint senderid, ref SeString sender, ref SeString message, ref bool ishandled) {
+    private void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool ishandled) {
         if (IsBattleType(type)) {
-            return;   
+            return;
         }
-        
+
         var isModified = false;
         var payloads = new List<Payload>();
         var cLinkDepth = 0;
-            
+
         message.Payloads.ForEach(p => {
             // Don't create links inside other links.
 
@@ -76,14 +72,15 @@ class ClickableLinks : ChatTweaks.SubTweak {
             }
 
             if (cLinkDepth == 0 && p is TextPayload textPayload) {
-                var match = urlRegex.Match(textPayload.Text);
-                if (urlRegex.IsMatch(textPayload.Text)) {
+                var match = urlRegex.Match(textPayload.Text ?? string.Empty);
+                if (urlRegex.IsMatch(textPayload.Text ?? string.Empty)) {
                     var i = 0;
                     do {
                         if (match.Index > i) {
-                            payloads.Add(new TextPayload(textPayload.Text.Substring(i, match.Index - i)));
+                            payloads.Add(new TextPayload(textPayload.Text?.Substring(i, match.Index - i)));
                             i = match.Index;
                         }
+
                         payloads.Add(urlLinkPayload);
                         payloads.Add(new TextPayload($"{match.Value}"));
                         payloads.Add(RawPayload.LinkTerminator);
@@ -91,9 +88,10 @@ class ClickableLinks : ChatTweaks.SubTweak {
                         match = match.NextMatch();
                     } while (match.Success);
 
-                    if (i < textPayload.Text.Length) {
+                    if (i < textPayload.Text?.Length) {
                         payloads.Add(new TextPayload(textPayload.Text.Substring(i)));
                     }
+
                     isModified = true;
                 } else {
                     payloads.Add(p);

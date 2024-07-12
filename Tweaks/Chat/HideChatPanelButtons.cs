@@ -1,22 +1,17 @@
 ﻿using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Events;
+using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks.Chat; 
+namespace SimpleTweaksPlugin.Tweaks.Chat;
 
+[TweakName("Hide Chat Panel Buttons")]
+[TweakDescription("Hide the chat log name and close button on panels that have been split from the main window.")]
 public unsafe class HideChatPanelButtons : ChatTweaks.SubTweak {
-    public override string Name => "Hide Chat Panel Buttons";
-    public override string Description => "Hide the chat log name and close button on panels that have been split from the main window.";
+    private readonly string[] panels = ["ChatLogPanel_1", "ChatLogPanel_2", "ChatLogPanel_3"];
+    protected override void Enable() => ToggleButtons(false);
 
-    private readonly string[] panels = { "ChatLogPanel_1", "ChatLogPanel_2", "ChatLogPanel_3" };
-
-    protected override void Enable() {
-        ToggleButtons(false);
-        base.Enable();
-    }
-
-    [TerritoryChanged]
-    private void TerritoryChange(ushort territory) => ToggleButtons(false);
+    [TerritoryChanged] private void TerritoryChange(ushort territory) => ToggleButtons(false);
 
     private void ToggleButtons(AtkUnitBase* atkUnitBase, bool visible) {
         if (atkUnitBase == null) return;
@@ -33,8 +28,5 @@ public unsafe class HideChatPanelButtons : ChatTweaks.SubTweak {
         }
     }
 
-    protected override void Disable() {
-        ToggleButtons(true);
-        base.Disable();
-    }
+    protected override void Disable() => ToggleButtons(true);
 }

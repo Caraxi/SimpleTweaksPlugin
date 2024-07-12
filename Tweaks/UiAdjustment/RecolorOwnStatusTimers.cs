@@ -7,12 +7,12 @@ using Vector4 = System.Numerics.Vector4;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
+[TweakName("Recolor Own Status Timers")]
+[TweakDescription("Allows the recoloring of the personal status timers color.")]
+[TweakAuthor("Aireil")]
 public unsafe class RecolorOwnStatusTimers : UiAdjustments.SubTweak {
-    public override string Name => "Recolor Own Status Timers";
-    public override string Description => "Allows the recoloring of the personal status timers color.";
-    protected override string Author => "Aireil";
-
     private delegate byte GetUiColor(uint colorIndex, ByteColor* color, ByteColor* edgeColor);
+
     private HookWrapper<GetUiColor> getUiColorHook;
 
     public class Configs : TweakConfig {
@@ -22,7 +22,7 @@ public unsafe class RecolorOwnStatusTimers : UiAdjustments.SubTweak {
 
     public Configs Config { get; private set; }
 
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+    protected void DrawConfig(ref bool hasChanged) {
         hasChanged |= ImGui.ColorEdit4("Color##colorEditStatusTimers", ref Config.OwnStatusColor);
         hasChanged |= ImGui.ColorEdit4("Edge Color##edgeColorEditStatusTimers", ref Config.OwnStatusEdgeColor);
 
@@ -31,18 +31,19 @@ public unsafe class RecolorOwnStatusTimers : UiAdjustments.SubTweak {
 
         ImGui.SameLine();
         ImGui.PushFont(UiBuilder.IconFont);
-        if (ImGui.Button($"{(char) FontAwesomeIcon.CircleNotch}##resetStatusTimerColors")) {
+        if (ImGui.Button($"{(char)FontAwesomeIcon.CircleNotch}##resetStatusTimerColors")) {
             Config.OwnStatusColor = new Vector4(201, 255, 228, 255) / 255f;
             Config.OwnStatusEdgeColor = new Vector4(10, 95, 36, 255) / 255f;
             hasChanged = true;
         }
+
         ImGui.PopFont();
-    };
+    }
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
 
-        getUiColorHook ??= Common.Hook<GetUiColor>("83 F9 0A 73 26", GetUiColorDetour);
+        getUiColorHook ??= Common.Hook<GetUiColor>("83 F9 0A 73 24", GetUiColorDetour);
         getUiColorHook?.Enable();
         base.Enable();
     }
