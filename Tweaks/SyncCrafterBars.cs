@@ -10,9 +10,9 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
+[TweakName("Sync Crafter Bars")]
+[TweakDescription("Keeps DoH job bars in sync")]
 public class SyncCrafterBars : Tweak {
-    public override string Name => "Sync Crafter Bars";
-    public override string Description => "Keeps DoH job bars in sync";
 
     public class Configs : TweakConfig {
         public bool[] StandardBars = new bool[10];
@@ -29,7 +29,7 @@ public class SyncCrafterBars : Tweak {
         return false;
     }
     
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
+    private void DrawConfig(ref bool _) {
         if (Config.StandardBars.Length != 10) Config.StandardBars = new bool[10];
         if (Config.CrossBars.Length != 8) Config.CrossBars = new bool[8];
 
@@ -81,7 +81,7 @@ public class SyncCrafterBars : Tweak {
         }
         ImGui.Columns(1);
         ImGui.Unindent();
-    };
+    }
 
     private readonly uint[] crafterJobs = { 8, 9, 10, 11, 12, 13, 14, 15 };
     private uint currentClassJob;
