@@ -12,6 +12,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("Sync Crafter Bars")]
 [TweakDescription("Keeps DoH job bars in sync")]
+[TweakCategory(TweakCategory.QoL)]
 public class SyncCrafterBars : Tweak {
 
     public class Configs : TweakConfig {
