@@ -14,7 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakName("Print Search Comment")]
 [TweakDescription("Prints the Search Comment of people, that get inspected, into the chat.")]
 [TweakAuthor("Infi")]
-[TweakReleaseVersion("0.0.0.0")]
+[TweakReleaseVersion(UnreleasedVersion)]
 public class PrintSearchComment : ChatTweaks.SubTweak {
     [TweakHook]
     private HookWrapper<AgentInspect.Delegates.ReceiveSearchComment>? receiveSearchComment;
