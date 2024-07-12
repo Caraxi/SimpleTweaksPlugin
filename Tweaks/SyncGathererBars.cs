@@ -10,9 +10,9 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
+[TweakName("Sync Gatherer Bars")]
+[TweakDescription("Keeps miner and botanist hotbars in sync.")]
 public unsafe class SyncGathererBars : Tweak {
-    public override string Name => "Sync Gatherer Bars";
-    public override string Description => "Keeps miner and botanist hotbars in sync.";
 
     private readonly Dictionary<uint, uint>[] actionSwaps = {new() {
         { 227, 210 }, { 210, 227 }, { 228, 211 }, { 211, 228 },
@@ -49,7 +49,7 @@ public unsafe class SyncGathererBars : Tweak {
         return false;
     }
     
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
+    protected void DrawConfig(ref bool _) {
         if (Config.StandardBars.Length != 10) Config.StandardBars = new bool[10];
         if (Config.CrossBars.Length != 8) Config.CrossBars = new bool[8];
 
@@ -100,7 +100,7 @@ public unsafe class SyncGathererBars : Tweak {
         ImGui.Columns(1);
         ImGui.Unindent();
 
-    };
+    }
 
     private int checkBar = -1;
     private bool onGatherer;
@@ -128,7 +128,8 @@ public unsafe class SyncGathererBars : Tweak {
             return;
         }
 
-        var hotbarModule = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUiModule()->GetRaptureHotbarModule();
+        var hotbarModule =
+            FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->UIModule->GetRaptureHotbarModule();
         if (Service.ClientState.LocalPlayer == null) return;
         var currentId = (int)Service.ClientState.LocalPlayer.ClassJob.Id;
         if (currentId is not (16 or 17)) return;
@@ -138,17 +139,17 @@ public unsafe class SyncGathererBars : Tweak {
         var otherId = currentId is 16 ? 17 : 16;
 
         var swapDict = actionSwaps[currentId is 16 ? 0 : 1];
-        var current = hotbarModule->SavedHotBarsSpan.GetPointer(currentId);
-        var other = hotbarModule->SavedHotBarsSpan.GetPointer(otherId);
+        var current = hotbarModule->SavedHotbars.GetPointer(currentId);
+        var other = hotbarModule->SavedHotbars.GetPointer(otherId);
 
-        var cBar = current->HotBarsSpan.GetPointer(checkBar);
-        var oBar = other->HotBarsSpan.GetPointer(checkBar);
+        var cBar = current->Hotbars.GetPointer(checkBar);
+        var oBar = other->Hotbars.GetPointer(checkBar);
 
         for (var i = 0; i < 16; i++) {
-            var cSlot = cBar->SlotsSpan.GetPointer(i);
-            var oSlot = oBar->SlotsSpan.GetPointer(i);
+            var cSlot = cBar->Slots.GetPointer(i);
+            var oSlot = oBar->Slots.GetPointer(i);
             oSlot->CommandType = cSlot->CommandType;
-            if (cSlot->CommandType == HotbarSlotType.Action) {
+            if (cSlot->CommandType == RaptureHotbarModule.HotbarSlotType.Action) {
                 if (swapDict.ContainsKey(cSlot->CommandId)) {
                     oSlot->CommandId = swapDict[cSlot->CommandId];
                 } else {
