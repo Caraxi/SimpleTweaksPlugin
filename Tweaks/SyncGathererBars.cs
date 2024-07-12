@@ -12,6 +12,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("Sync Gatherer Bars")]
 [TweakDescription("Keeps miner and botanist hotbars in sync.")]
+[TweakCategory(TweakCategory.QoL)]
 public unsafe class SyncGathererBars : Tweak {
 
     private readonly Dictionary<uint, uint>[] actionSwaps = {new() {
