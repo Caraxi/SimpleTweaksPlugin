@@ -63,7 +63,6 @@
         <Compile Remove="Tweaks\SanctuarySprintReplacer.cs"/>
         <Compile Remove="Tweaks\ScreenshotFileName.cs"/>
         <Compile Remove="Tweaks\SetOptionCommand.cs"/>
-        <Compile Remove="Tweaks\SmartStrafe.cs"/>
         <Compile Remove="Tweaks\SyncCrafterBars.cs"/>
         <Compile Remove="Tweaks\SyncGathererBars.cs"/>
         <Compile Remove="Tweaks\SystemConfigInGroupPose.cs"/>
