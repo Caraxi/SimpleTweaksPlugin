@@ -81,6 +81,7 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
     protected override void Setup() {
         AddChangelog("1.8.5.1", "Added additional protections to attempt to reduce crashing. Please report any crashes you believe may be related to tooltips.");
         AddChangelog("1.8.6.1", "Yet another attempt at fixing crashes.");
+        base.Setup();
     }
 
     protected override unsafe void Enable() {
