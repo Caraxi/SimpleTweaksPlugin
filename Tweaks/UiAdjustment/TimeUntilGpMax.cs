@@ -44,9 +44,8 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
 
     public Configs Config { get; private set; }
 
-    public override void Setup() {
+    protected override void Setup() {
         AddChangelog("1.8.2.0", "Added an option to display time in Eorzean Hours").Author("peterberbec");
-        base.Setup();
     }
 
     protected override void Enable() {

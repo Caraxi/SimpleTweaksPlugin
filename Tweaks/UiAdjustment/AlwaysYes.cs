@@ -106,9 +106,8 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         }
     }
 
-    public override void Setup() {
+    protected override void Setup() {
         AddChangelog("1.8.5.0", "Added an option to default cursor to the checkbox when one exists.");
-        base.Setup();
     }
 
     protected override void Enable() {

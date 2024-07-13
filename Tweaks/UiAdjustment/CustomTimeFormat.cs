@@ -209,10 +209,6 @@ public unsafe class CustomTimeFormat : UiAdjustments.SubTweak {
         }
     }
 
-    public override void Setup() {
-        base.Setup();
-    }
-
     private string[] GetClockIcons() =>
         Service.ClientState.ClientLanguage switch {
             ClientLanguage.German => [$"{(char)SeIconChar.EorzeaTimeDe}", $"{(char)SeIconChar.LocalTimeDe}", $"{(char)SeIconChar.ServerTimeDe}"],

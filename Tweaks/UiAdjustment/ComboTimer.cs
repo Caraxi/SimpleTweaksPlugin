@@ -16,7 +16,9 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Shows a countdown for combo actions.")]
 [TweakAutoConfig]
 public unsafe class ComboTimer : UiAdjustments.SubTweak {
-    private readonly Dictionary<uint, byte> comboActions = new();
+    private readonly Dictionary<uint, byte> comboActions = new() {
+        [7526] = 80,
+    };
     private bool usingScreenText;
 
     public class Configs : TweakConfig {
@@ -50,11 +52,6 @@ public unsafe class ComboTimer : UiAdjustments.SubTweak {
     }
 
     public Configs Config { get; private set; }
-
-    public override void Setup() {
-        comboActions.Add(7526, 80); // Verholy to Scorch Combo
-        base.Setup();
-    }
 
     protected override void Disable() {
         Update(true);

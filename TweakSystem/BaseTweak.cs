@@ -11,6 +11,7 @@ using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using InteropGenerator.Runtime;
 using Newtonsoft.Json;
@@ -493,7 +494,8 @@ public abstract class BaseTweak {
         Plugin.Error(this, new Exception("Failed to set DrawConfig function. Invalid parameters."), true);
     }
 
-    public virtual void Setup() {
+    internal void SetupInternal() {
+        Setup();
         hasPreviewImage = File.Exists(Path.Join(PluginInterface.AssemblyLocation.DirectoryName, "TweakPreviews", $"{Key}.png"));
 
         foreach (var c in GetType().GetCustomAttributes<ChangelogAttribute>()) {
@@ -509,6 +511,8 @@ public abstract class BaseTweak {
         AttemptDrawConfigSetup();
         Ready = true;
     }
+    
+    protected virtual void Setup() { }
 
     private bool signatureHelperInitialized = false;
 

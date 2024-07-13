@@ -55,10 +55,9 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
 
     private bool inPVP = false;
 
-    public override void Setup() {
+    protected override void Setup() {
         AddChangelog("1.8.1.2", "Fixed positioning of HP bar.");
         AddChangelog("1.8.1.1", "Added option to center HP bar when MP bar is hidden.");
-        base.Setup();
     }
 
     protected override void Enable() {
