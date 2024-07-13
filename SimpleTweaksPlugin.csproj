@@ -61,7 +61,6 @@
         <Compile Remove="Tweaks\SanctuarySprintReplacer.cs"/>
         <Compile Remove="Tweaks\ScreenshotFileName.cs"/>
         <Compile Remove="Tweaks\SetOptionCommand.cs"/>
-        <Compile Remove="Tweaks\SyncGathererBars.cs"/>
         <Compile Remove="Tweaks\SystemConfigInGroupPose.cs"/>
         <Compile Remove="Tweaks\TreasureHuntTargets.cs"/>
         <Compile Remove="Tweaks\TryOnCorrectItem.cs"/>
