@@ -6,7 +6,7 @@ using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using System.Numerics;
 
-namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [TweakName("Casting Text Visibility")]
 [TweakDescription("Change the font size, color, and background of the casting text.")]
@@ -15,12 +15,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakReleaseVersion("1.9.3.0")]
 [Changelog("1.9.6.0", "Fixed tweak not working with a split primary target window")]
 internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
-    private uint focusTargetImageNodeid => CustomNodes.Get(this, "CTVFocus");
-    private uint targetImageNodeid => CustomNodes.Get(this, "CTVTarget");
+    private uint FocusTargetImageNodeId => CustomNodes.Get(this, "CTVFocus");
+    private uint TargetImageNodeId => CustomNodes.Get(this, "CTVTarget");
 
-    private readonly uint focusTargetTextNodeId = 5;
-    private readonly uint targetTextNodeId = 12;
-    private readonly uint splitTargetTextNodeId = 4;
+    private const uint FocusTargetTextNodeId = 5;
+    private const uint TargetTextNodeId = 12;
+    private const uint SplitTargetTextNodeId = 4;
 
     private Configuration Config { get; set; } = null!;
 
@@ -45,7 +45,7 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
         public bool TargetAutoAdjustWidth = true;
     }
 
-    private void DrawConfig() {
+    protected void DrawConfig() {
         ImGui.Checkbox("Focus Target", ref Config.UseCustomFocusColor);
 
         if (Config.UseCustomFocusColor) {
@@ -88,18 +88,18 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
         var addon = (AtkUnitBase*)args.Addon;
         switch (args.AddonName) {
             case "_FocusTargetInfo" when addon->IsVisible:
-                UpdateAddOn(addon, focusTargetTextNodeId, focusTargetImageNodeid, Config.UseCustomFocusColor, Config.FocusTextColor, Config.FocusEdgeColor, Config.FocusFontSize, DrawFocusTargetBackground);
+                UpdateAddOn(addon, FocusTargetTextNodeId, FocusTargetImageNodeId, Config.UseCustomFocusColor, Config.FocusTextColor, Config.FocusEdgeColor, Config.FocusFontSize, DrawFocusTargetBackground);
                 break;
             case "_TargetInfo" when addon->IsVisible:
-                UpdateAddOn(addon, targetTextNodeId, targetImageNodeid, Config.UseCustomTargetColor, Config.TargetTextColor, Config.TargetEdgeColor, Config.TargetFontSize, DrawTargetBackground);
+                UpdateAddOn(addon, TargetTextNodeId, TargetImageNodeId, Config.UseCustomTargetColor, Config.TargetTextColor, Config.TargetEdgeColor, Config.TargetFontSize, DrawTargetBackground);
                 break;
             case "_TargetInfoCastBar" when addon->IsVisible:
-                UpdateAddOn(addon, splitTargetTextNodeId, targetImageNodeid, Config.UseCustomTargetColor, Config.TargetTextColor, Config.TargetEdgeColor, Config.TargetFontSize, DrawTargetBackground);
+                UpdateAddOn(addon, SplitTargetTextNodeId, TargetImageNodeId, Config.UseCustomTargetColor, Config.TargetTextColor, Config.TargetEdgeColor, Config.TargetFontSize, DrawTargetBackground);
                 break;
         }
     }
 
-    unsafe delegate void DrawBackgroundAction(AtkTextNode* textNode, AtkImageNode* imageNode);
+    delegate void DrawBackgroundAction(AtkTextNode* textNode, AtkImageNode* imageNode);
 
     private void UpdateAddOn(AtkUnitBase* ui, uint textNodeId, uint imageNodeId, bool useCustomColor, Vector4 textColor, Vector4 edgeColor, int fontSize, DrawBackgroundAction drawBackground) {
         var textNode = Common.GetNodeByID<AtkTextNode>(&ui->UldManager, textNodeId);
@@ -147,27 +147,21 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
     }
 
     private void ResetTextNodes() {
-        var fui = Common.GetUnitBase("_FocusTargetInfo", 1);
-        var tui = Common.GetUnitBase("_TargetInfo", 1);
-        var stui = Common.GetUnitBase("_TargetInfoCastBar", 1);
-        var ftext = Common.GetNodeByID<AtkTextNode>(&fui->UldManager, focusTargetTextNodeId);
-        var ttext = Common.GetNodeByID<AtkTextNode>(&tui->UldManager, targetTextNodeId);
-        var sttext = Common.GetNodeByID<AtkTextNode>(&stui->UldManager, splitTargetTextNodeId);
-        if (fui != null) ResetText(ftext);
-        if (tui != null) ResetText(ttext);
-        if (sttext != null) ResetText(sttext);
+        if (Common.GetUnitBase("_FocusTargetInfo", out var fui) && Common.GetNodeById(&fui->UldManager, FocusTargetTextNodeId, out AtkTextNode* fText)) ResetText(fText);
+        if (Common.GetUnitBase("_TargetInfo", out var tui) && Common.GetNodeById(&tui->UldManager, TargetTextNodeId, out AtkTextNode* ttext)) ResetText(ttext);
+        if (Common.GetUnitBase("_TargetInfoCastBar", out var stui) && Common.GetNodeById(&stui->UldManager, SplitTargetTextNodeId, out AtkTextNode* sttext)) ResetText(sttext);
     }
 
     private void DrawFocusTargetBackground(AtkTextNode* textNode, AtkImageNode* imageNode) {
-        var offsetBaseX = 18;
-        var offsetBaseY = 24;
+        const int offsetBaseX = 18;
+        const int offsetBaseY = 24;
 
         DrawBackground(imageNode, textNode, offsetBaseX, offsetBaseY, Config.FocusFontSize, Config.FocusBackgroundHeight, Config.FocusBackgroundWidth, Config.FocusAutoAdjustWidth, Config.FocusBackgroundColor);
     }
 
     private void DrawTargetBackground(AtkTextNode* textNode, AtkImageNode* imageNode) {
-        var offsetBaseX = 256;
-        var offsetBaseY = 14;
+        const int offsetBaseX = 256;
+        const int offsetBaseY = 14;
 
         DrawBackground(imageNode, textNode, offsetBaseX, offsetBaseY, Config.TargetFontSize, Config.TargetBackgroundHeight, Config.TargetBackgroundWidth, Config.TargetAutoAdjustWidth, Config.TargetBackgroundColor);
     }
@@ -209,7 +203,7 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
         //return (int)(0.7 * textLength * textNode->FontSize + 1);
 
         var text = textNode->NodeText.ToString();
-        if (text.Length == 0) return 0; 
+        if (text.Length == 0) return 0;
         var length = 4;
         foreach (var c in text) length += GetPixelWidthOfChar(c);
         return (int)((1.0 * textNode->FontSize / 22) * length + 4);
@@ -253,9 +247,9 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak {
         var addonFocusTargetInfo = Common.GetUnitBase("_FocusTargetInfo");
         var addonTargetInfoCastBar = Common.GetUnitBase("_TargetInfoCastBar");
 
-        TryFreeImageNode(addonTargetInfo, targetImageNodeid);
-        TryFreeImageNode(addonFocusTargetInfo, focusTargetImageNodeid);
-        TryFreeImageNode(addonTargetInfoCastBar, targetImageNodeid);
+        TryFreeImageNode(addonTargetInfo, TargetImageNodeId);
+        TryFreeImageNode(addonFocusTargetInfo, FocusTargetImageNodeId);
+        TryFreeImageNode(addonTargetInfoCastBar, TargetImageNodeId);
     }
 
     private void TryFreeImageNode(AtkUnitBase* addon, uint nodeId) {
