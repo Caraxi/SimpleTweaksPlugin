@@ -10,9 +10,10 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
+[TweakName("Sync Gatherer Bars")]
+[TweakDescription("Keeps miner and botanist hotbars in sync.")]
+[TweakCategory(TweakCategory.QoL)]
 public unsafe class SyncGathererBars : Tweak {
-    public override string Name => "Sync Gatherer Bars";
-    public override string Description => "Keeps miner and botanist hotbars in sync.";
 
     private readonly Dictionary<uint, uint>[] actionSwaps = {new() {
         { 227, 210 }, { 210, 227 }, { 228, 211 }, { 211, 228 },
@@ -22,7 +23,7 @@ public unsafe class SyncGathererBars : Tweak {
         { 241, 224 }, { 238, 221 }, { 221, 238 }, { 240, 815 },
         { 22182, 22186 }, { 22183, 22187 }, { 22184, 22188 }, { 22185, 22189 },
         { 25589, 25590 }, { 4081, 4095 }, { 272, 273 }, { 4589, 4590 },
-        { 21203, 21204 }, { 21205, 21206 }, { 26521, 26522 },
+        { 21203, 21204 }, { 21205, 21206 }, { 26521, 26522 }, {34871, 34872},
     }, new() {
         { 210, 227 }, { 227, 210 }, { 211, 228 }, { 228, 211 },
         { 218, 235 }, { 290, 291 }, { 291, 290 }, { 220, 237 },
@@ -31,7 +32,7 @@ public unsafe class SyncGathererBars : Tweak {
         { 224, 241 }, { 221, 238 }, { 238, 221 }, { 815, 240 },
         { 22186, 22182 }, { 22187, 22183 }, { 22188, 22184 }, { 22189, 22185 },
         { 25590, 25589 }, { 4095, 4081 }, { 273, 272 }, { 4590, 4589 },
-        { 21204, 21203 }, { 21206, 21205 }, { 26522, 26521 },
+        { 21204, 21203 }, { 21206, 21205 }, { 26522, 26521 }, {34872, 34871},
     }};
 
     public class Configs : TweakConfig {
@@ -49,7 +50,7 @@ public unsafe class SyncGathererBars : Tweak {
         return false;
     }
     
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
+    protected void DrawConfig(ref bool _) {
         if (Config.StandardBars.Length != 10) Config.StandardBars = new bool[10];
         if (Config.CrossBars.Length != 8) Config.CrossBars = new bool[8];
 
@@ -100,7 +101,7 @@ public unsafe class SyncGathererBars : Tweak {
         ImGui.Columns(1);
         ImGui.Unindent();
 
-    };
+    }
 
     private int checkBar = -1;
     private bool onGatherer;
@@ -128,7 +129,8 @@ public unsafe class SyncGathererBars : Tweak {
             return;
         }
 
-        var hotbarModule = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->GetUiModule()->GetRaptureHotbarModule();
+        var hotbarModule =
+            FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->UIModule->GetRaptureHotbarModule();
         if (Service.ClientState.LocalPlayer == null) return;
         var currentId = (int)Service.ClientState.LocalPlayer.ClassJob.Id;
         if (currentId is not (16 or 17)) return;
@@ -138,17 +140,17 @@ public unsafe class SyncGathererBars : Tweak {
         var otherId = currentId is 16 ? 17 : 16;
 
         var swapDict = actionSwaps[currentId is 16 ? 0 : 1];
-        var current = hotbarModule->SavedHotBarsSpan.GetPointer(currentId);
-        var other = hotbarModule->SavedHotBarsSpan.GetPointer(otherId);
+        var current = hotbarModule->SavedHotbars.GetPointer(currentId);
+        var other = hotbarModule->SavedHotbars.GetPointer(otherId);
 
-        var cBar = current->HotBarsSpan.GetPointer(checkBar);
-        var oBar = other->HotBarsSpan.GetPointer(checkBar);
+        var cBar = current->Hotbars.GetPointer(checkBar);
+        var oBar = other->Hotbars.GetPointer(checkBar);
 
         for (var i = 0; i < 16; i++) {
-            var cSlot = cBar->SlotsSpan.GetPointer(i);
-            var oSlot = oBar->SlotsSpan.GetPointer(i);
+            var cSlot = cBar->Slots.GetPointer(i);
+            var oSlot = oBar->Slots.GetPointer(i);
             oSlot->CommandType = cSlot->CommandType;
-            if (cSlot->CommandType == HotbarSlotType.Action) {
+            if (cSlot->CommandType == RaptureHotbarModule.HotbarSlotType.Action) {
                 if (swapDict.ContainsKey(cSlot->CommandId)) {
                     oSlot->CommandId = swapDict[cSlot->CommandId];
                 } else {
