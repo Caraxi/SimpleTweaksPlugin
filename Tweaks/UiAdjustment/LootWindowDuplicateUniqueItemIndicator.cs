@@ -34,7 +34,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     private enum ItemStatus {
         Unobtainable,
         AlreadyUnlocked,
-        Normal
+        Normal,
     }
     
     private class Config : TweakConfig {
@@ -102,9 +102,9 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
             if (listComponentNode is null || listComponentNode->Component is null) return;
             
             // For each possible item slot, get the item info
-            foreach (var index in Enumerable.Range(0, callingAddon->ItemsSpan.Length)) {
+            foreach (var index in Enumerable.Range(0, callingAddon->Items.Length)) {
                 // If this data slot doesn't have an item id, skip.
-                var itemInfo = callingAddon->ItemsSpan[index];
+                var itemInfo = callingAddon->Items[index];
                 if (itemInfo.ItemId is 0) continue;
 
                 var adjustedItemId = itemInfo.ItemId > 1_000_000 ? itemInfo.ItemId - 1_000_000 : itemInfo.ItemId;
