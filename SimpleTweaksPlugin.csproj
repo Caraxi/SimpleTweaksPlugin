@@ -77,7 +77,6 @@
         <Compile Remove="Tweaks\UiAdjustment\ColoredDutyRoulette.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\CustomDefaultQuantity.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\CustomFreeCompanyTags.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\DutyListBackground.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ExpandedCurrencyDisplay.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\FadeUnavailableActions.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\FastSearch.cs"/>
