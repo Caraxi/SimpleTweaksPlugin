@@ -85,7 +85,6 @@
         <Compile Remove="Tweaks\UiAdjustment\HideGuildhestObjectivePopup.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideQualityWhenNoHQ.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ImprovedDutyFinderSettings.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\ImprovedInterruptableCastbars.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ImprovedWorldVisit.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\LootWindowDuplicateUniqueItemIndicator.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\LootWindowSelectNext.cs"/>
