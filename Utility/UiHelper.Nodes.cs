@@ -91,6 +91,17 @@ public static unsafe partial class UiHelper
         parent->UldManager.UpdateDrawNodeList();
     }
 
+    public static void LinkNodeAtEnd(AtkResNode* imageNode, AtkComponentBase* parent) {
+        var node = parent->UldManager.RootNode;
+        while (node->PrevSiblingNode != null) node = node->PrevSiblingNode;
+
+        node->PrevSiblingNode = imageNode;
+        imageNode->NextSiblingNode = node;
+        imageNode->ParentNode = node->ParentNode;
+        
+        parent->UldManager.UpdateDrawNodeList();
+    }
+
     public static void LinkNodeAtEnd<T>(T* atkNode, AtkResNode* parentNode, AtkUnitBase* addon) where T : unmanaged {
         var node = (AtkResNode*)atkNode;
         var endNode = parentNode->ChildNode;
