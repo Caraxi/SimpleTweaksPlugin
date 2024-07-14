@@ -1,5 +1,5 @@
 ﻿using System;
-using Dalamud;
+using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
@@ -9,17 +9,15 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
+[TweakName("Open loot window when items are added")]
+[TweakDescription("Open the loot rolling window when new items are added to be rolled on.")]
 public unsafe class AutoOpenLootWindow : Tweak {
-    public override string Name => "Open loot window when items are added.";
-
-    public override string Description => "Open the loot rolling window when new items are added to be rolled on.";
-
     protected override void Enable() {
         Service.Chat.CheckMessageHandled += HandleChat;
         base.Enable();
     }
 
-    private void HandleChat(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
+    private void HandleChat(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled) {
         try {
             if ((ushort)type != 2105) return;
             if (message.TextValue == Service.ClientState.ClientLanguage switch
