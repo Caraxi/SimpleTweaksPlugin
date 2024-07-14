@@ -63,7 +63,6 @@
         <Compile Remove="Tweaks\TreasureHuntTargets.cs"/>
         <Compile Remove="Tweaks\TryOnCorrectItem.cs"/>
         <Compile Remove="Tweaks\UseCollectionCommand.cs"/>
-        <Compile Remove="Tweaks\Chat\EchoPartyFinder.cs"/>
         <Compile Remove="Tweaks\Chat\EchoStorySelection.cs"/>
         <Compile Remove="Tweaks\Chat\HideChat.cs"/>
         <Compile Remove="Tweaks\Chat\HideChatAuto.cs"/>

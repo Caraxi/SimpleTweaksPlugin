@@ -31,16 +31,15 @@ public unsafe class EchoPartyFinder : ChatTweaks.SubTweak {
     public Config TweakConfig { get; private set; } = null!;
 
     [TweakHook]
-    private HookWrapper<ReceiveEventDelegate>? onLookingForGroupEventHook;
-    private delegate nint ReceiveEventDelegate(AgentInterface* agent, nint rawData, AtkValue* args, uint argCount, ulong sender);
+    private HookWrapper<AgentLookingForGroup.Delegates.ReceiveEvent>? onLookingForGroupEventHook;
 
     private bool listenerActive;
     private string? partyDescription;
     private string? partyLeader;
     private uint? targetTerritoryId;
 
-    public override void Setup() {
-        onLookingForGroupEventHook ??= Common.Hook(AgentModule.Instance()->GetAgentByInternalId(AgentId.LookingForGroup)->VTable->ReceiveEvent, new ReceiveEventDelegate(OnLookingForGroupReceiveEvent));
+    protected override void Setup() {
+        onLookingForGroupEventHook ??= Common.Hook<AgentLookingForGroup.Delegates.ReceiveEvent>(AgentModule.Instance()->GetAgentByInternalId(AgentId.LookingForGroup)->VirtualTable->ReceiveEvent, OnLookingForGroupReceiveEvent);
     }
     
     [TerritoryChanged]
@@ -49,7 +48,7 @@ public unsafe class EchoPartyFinder : ChatTweaks.SubTweak {
         if (TweakConfig.ShowUponEnteringInstance) PrintListing();
     }
     
-    private nint OnLookingForGroupReceiveEvent(AgentInterface* agent, nint rawData, AtkValue* args, uint argCount, ulong sender) {
+    private AtkValue* OnLookingForGroupReceiveEvent(AgentLookingForGroup* agent, AtkValue* rawData, AtkValue* args, uint argCount, ulong sender) {
         var result = onLookingForGroupEventHook!.Original(agent, rawData, args, argCount, sender);
 
         try {
