@@ -7,44 +7,35 @@ using SimpleTweaksPlugin.TweakSystem;
 namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakCategory(TweakCategory.Command)]
+[TweakReleaseVersion("1.8.3.0")]
+[TweakName("SystemConfig in Group Pose")]
+[TweakDescription("Allows the use of the /systemconfig command while in gpose.")]
 public unsafe class SystemConfigInGroupPose : Tweak {
-    public override string Name => "SystemConfig in Group Pose";
-    public override string Description => "Allows the use of the /systemconfig command while in gpose.";
-    
-    private readonly string[] commands = {
+    private readonly string[] commands = [
         // EN
         "The command “/systemconfig” is unavailable at this time.",
         "The command “/sconfig” is unavailable at this time.",
-        
+
         // DE
         "„/systemconfig“ wurde als Textkommando nicht richtig verwendet.",
         "„/sconfig“ wurde als Textkommando nicht richtig verwendet.",
         "„/systemkonfig“ wurde als Textkommando nicht richtig verwendet.",
         "„/skon“ wurde als Textkommando nicht richtig verwendet.",
-        
+
         // FR
         "La commande texte “/systemconfig” ne peut pas être utilisée de cette façon.",
         "La commande texte “/sconfig” ne peut pas être utilisée de cette façon.",
         "La commande texte “/confs” ne peut pas être utilisée de cette façon.",
         "La commande texte “/configsys” ne peut pas être utilisée de cette façon.",
-        
+
         // JA
         "そのコマンドは現在使用できません。： /systemconfig",
-        "そのコマンドは現在使用できません。： /sconfig",
-    };
-    
-    
-    public override void Setup() {
-        AddChangelogNewTweak("1.8.3.0");
-        base.Setup();
-    }
+        "そのコマンドは現在使用できません。： /sconfig"
+    ];
 
-    protected override void Enable() {
-        Service.Chat.CheckMessageHandled += OnChatMessage;
-        base.Enable();
-    }
+    protected override void Enable() => Service.Chat.CheckMessageHandled += OnChatMessage;
 
-    private void OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled) {
+    private void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled) {
         if (type != XivChatType.ErrorMessage) return;
         if (!Service.ClientState.IsGPosing) return;
         if (commands.Contains(message.TextValue)) {
@@ -54,8 +45,5 @@ public unsafe class SystemConfigInGroupPose : Tweak {
         }
     }
 
-    protected override void Disable() {
-        Service.Chat.CheckMessageHandled -= OnChatMessage;
-        base.Disable();
-    }
+    protected override void Disable() => Service.Chat.CheckMessageHandled -= OnChatMessage;
 }
