@@ -19,9 +19,7 @@ public unsafe class UseCollectionCommand : CommandTweak {
     protected override string HelpMessage => "Use a Collection item by name or ID. Use without parameters to list available items and IDs.";
     protected override string Command => "usecollection";
 
-    private static readonly Dictionary<string, uint> McGuffin = Service.Data.GetExcelSheet<McGuffin>()!
-        .Where(a => a.UIData.Value is { RowId: > 0 })
-        .ToDictionary(b => b.UIData.Value.Name.ToString().ToLower(), b => b.RowId);
+    private static readonly Dictionary<string, uint> McGuffin = Service.Data.GetExcelSheet<McGuffin>()!.Where(a => a.UIData.Value is { RowId: > 0 }).ToDictionary(b => b.UIData.Value.Name.ToString().ToLower(), b => b.RowId);
 
     private delegate byte UseMcGuffinDelegate(IntPtr module, uint id);
 
@@ -37,12 +35,13 @@ public unsafe class UseCollectionCommand : CommandTweak {
                     Service.Chat.Print($"  {uiData.Name} (ID: {row.RowId})");
                 }
             }
+
             return;
         }
 
         if (!uint.TryParse(args, out var mcGuffinId) && !McGuffin.TryGetValue(args.ToLower(), out mcGuffinId)) return;
         if (McGuffin.ContainsValue(mcGuffinId) && UIState.Instance()->PlayerState.IsMcGuffinUnlocked(mcGuffinId)) {
-            var module = (nint) AgentModule.Instance()->GetAgentByInternalId(AgentId.McGuffin);
+            var module = (nint)AgentModule.Instance()->GetAgentByInternalId(AgentId.McGuffin);
             useMcGuffin(module, mcGuffinId);
         }
     }

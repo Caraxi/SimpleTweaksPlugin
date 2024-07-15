@@ -59,7 +59,6 @@
         <Compile Remove="Tweaks\SetOptionCommand.cs"/>
         <Compile Remove="Tweaks\TreasureHuntTargets.cs"/>
         <Compile Remove="Tweaks\TryOnCorrectItem.cs"/>
-        <Compile Remove="Tweaks\UseCollectionCommand.cs"/>
         <Compile Remove="Tweaks\Chat\HideChat.cs"/>
         <Compile Remove="Tweaks\Chat\HideChatAuto.cs"/>
         <Compile Remove="Tweaks\Chat\ImprovedFontSizes.cs"/>
