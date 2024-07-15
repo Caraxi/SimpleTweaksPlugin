@@ -35,9 +35,7 @@
         <Compile Remove="Tweaks\DisableClickTargeting.cs"/>
         <Compile Remove="Tweaks\DisableMountVolumeChange.cs"/>
         <Compile Remove="Tweaks\DisableMouseCameraControl.cs"/>
-        <Compile Remove="Tweaks\DutyTimer.cs"/>
         <Compile Remove="Tweaks\EquipFromHotbar.cs"/>
-        <Compile Remove="Tweaks\ExitGame.cs"/>
         <Compile Remove="Tweaks\FixedShadowDistance.cs"/>
         <Compile Remove="Tweaks\FurnitureClocksCustomTime.cs"/>
         <Compile Remove="Tweaks\GearsetSaveCurrent.cs"/>
@@ -63,13 +61,10 @@
         <Compile Remove="Tweaks\TreasureHuntTargets.cs"/>
         <Compile Remove="Tweaks\TryOnCorrectItem.cs"/>
         <Compile Remove="Tweaks\UseCollectionCommand.cs"/>
-        <Compile Remove="Tweaks\Chat\EchoPartyFinder.cs"/>
-        <Compile Remove="Tweaks\Chat\EchoStorySelection.cs"/>
         <Compile Remove="Tweaks\Chat\HideChat.cs"/>
         <Compile Remove="Tweaks\Chat\HideChatAuto.cs"/>
         <Compile Remove="Tweaks\Chat\ImprovedFontSizes.cs"/>
         <Compile Remove="Tweaks\Chat\RenameChatTabs.cs"/>
-        <Compile Remove="Tweaks\Chat\StickyChat.cs"/>
         <Compile Remove="Tweaks\Chat\ZoomedChatCustomization.cs"/>
         <Compile Remove="Tweaks\JokeTweak\Fools2023.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\BattleTalkAdjustments.cs"/>
@@ -77,7 +72,6 @@
         <Compile Remove="Tweaks\UiAdjustment\ColoredDutyRoulette.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\CustomDefaultQuantity.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\CustomFreeCompanyTags.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\DutyListBackground.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ExpandedCurrencyDisplay.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\FadeUnavailableActions.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\FastSearch.cs"/>
@@ -85,9 +79,7 @@
         <Compile Remove="Tweaks\UiAdjustment\HideGuildhestObjectivePopup.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideQualityWhenNoHQ.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ImprovedDutyFinderSettings.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\ImprovedInterruptableCastbars.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ImprovedWorldVisit.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\LootWindowDuplicateUniqueItemIndicator.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\MarketEnhancements.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\MoveCutsceneTalk.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\NamePlateIconSpacing.cs"/>
@@ -97,7 +89,6 @@
         <Compile Remove="Tweaks\UiAdjustment\ShiftTargetCastBarText.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\SmartNameplates.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\SubmarineDestinationLetters.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\TargetCastbarCountdown.cs"/>
         <Compile Remove="Tweaks\NoCharacterNotFoundWarning.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\AddNumberSeparators.cs" />
     </ItemGroup>
