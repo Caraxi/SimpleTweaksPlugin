@@ -19,7 +19,7 @@ using static Dalamud.Game.Text.XivChatType;
 namespace SimpleTweaksPlugin.Tweaks.Chat;
 
 [TweakName("Chat Name Colours")]
-[TweakDescription("Gives players a random colour in chat, or set th e name manually.")]
+[TweakDescription("Gives players a random colour in chat, or set the name manually.")]
 public class ChatNameColours : ChatTweaks.SubTweak {
     public class ForcedColour {
         public ushort ColourKey; // Legacy

@@ -1,9 +1,10 @@
 ﻿#nullable enable
 using System;
-using System.Text;
 using System.Text.RegularExpressions;
-using Dalamud.Hooking;
-using Dalamud.Utility.Signatures;
+using FFXIVClientStructs.FFXIV.Client.System.String;
+using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Client.UI.Shell;
+using FFXIVClientStructs.FFXIV.Component.Shell;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -14,10 +15,8 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakAuthor("MidoriKami")]
 [TweakReleaseVersion("1.8.2.0")]
 public unsafe partial class StickyChat : ChatTweaks.SubTweak {
-    private delegate byte ProcessChatInputDelegate(nint uiModule, byte** message, nint a3);
-
-    [TweakHook, Signature("E8 ?? ?? ?? ?? FE 86 ?? ?? ?? ?? C7 86 ?? ?? ?? ?? ?? ?? ?? ??", DetourName = nameof(ProcessChatInputDetour))]
-    private readonly HookWrapper<ProcessChatInputDelegate>? processChatInputHook = null;
+    [TweakHook(typeof(ShellCommandModule), nameof(ShellCommandModule.ExecuteCommandInner), nameof(OnExecuteCommand))]
+    private readonly HookWrapper<ShellCommandModule.Delegates.ExecuteCommandInner>? executeCommandHook;
 
     [GeneratedRegex("^\\/cwl[1-8] .+")]
     private static partial Regex CrossWorldLinkshellShort();
@@ -31,77 +30,75 @@ public unsafe partial class StickyChat : ChatTweaks.SubTweak {
     [GeneratedRegex("^\\/linkshell[1-8] .+")]
     private static partial Regex LinkshellLong();
     
-    private byte ProcessChatInputDetour(nint uiModule, byte** message, nint a3) {
-        var result = processChatInputHook!.Original(uiModule, message, a3);
-        
+    private void OnExecuteCommand(ShellCommandModule* commandModule, Utf8String* command, UIModule* uiModule) {
         try {
-            var stringSize = StringLength(message);
-            var inputString = Encoding.UTF8.GetString(*message, stringSize);
+            var inputString = command->ToString();
 
             switch (inputString) {
                 case not null when inputString.StartsWith("/party "):
                 case not null when inputString.StartsWith("/p "):
-                    ChatHelper.SendMessage("/party");
+                    RaptureShellModule.Instance()->ChatType = 2;
                     break;
                 
                 case not null when inputString.StartsWith("/say "):
                 case not null when inputString.StartsWith("/s "):
-                    ChatHelper.SendMessage("/say");
+                    RaptureShellModule.Instance()->ChatType = 1;
                     break;
                 
                 case not null when inputString.StartsWith("/alliance "):
                 case not null when inputString.StartsWith("/a "):
-                    ChatHelper.SendMessage("/alliance");
+                    RaptureShellModule.Instance()->ChatType = 3;
                     break;
                 
                 case not null when inputString.StartsWith("/freecompany "):
                 case not null when inputString.StartsWith("/fc "):
-                    ChatHelper.SendMessage("/freecompany");
+                    RaptureShellModule.Instance()->ChatType = 6;
                     break;
                 
                 case not null when inputString.StartsWith("/novice "):
+                case not null when inputString.StartsWith("/beginner "):
                 case not null when inputString.StartsWith("/n "):
-                    ChatHelper.SendMessage("/novice");
+                    RaptureShellModule.Instance()->ChatType = 8;
                     break;
                 
                 case not null when inputString.StartsWith("/yell "):
                 case not null when inputString.StartsWith("/y "):
-                    ChatHelper.SendMessage("/yell");
+                    RaptureShellModule.Instance()->ChatType = 4;
                     break;
 
-                case not null when CrossWorldLinkshellLong().IsMatch(inputString) && inputString.Length > 12:
-                    ChatHelper.SendMessage($"/cwlinkshell{inputString[12]}");
+                case not null when CrossWorldLinkshellLong().IsMatch(inputString) && inputString.Length > 12: {
+                    if (int.TryParse(inputString[12..13], out var result)) {
+                        RaptureShellModule.Instance()->ChatType = result + 8;
+                    }
                     break;
-                
-                case not null when CrossWorldLinkshellShort().IsMatch(inputString) && inputString.Length > 4:
-                    ChatHelper.SendMessage($"/cwl{inputString[4]}");
+                }
+
+                case not null when CrossWorldLinkshellShort().IsMatch(inputString) && inputString.Length > 4: {
+                    if (int.TryParse(inputString[4..5], out var result)) {
+                        RaptureShellModule.Instance()->ChatType = result + 8;
+                    }
                     break;
+                }
                     
-                case not null when LinkshellLong().IsMatch(inputString) && inputString.Length > 10:
-                    ChatHelper.SendMessage($"/linkshell{inputString[10]}");
+                case not null when LinkshellLong().IsMatch(inputString) && inputString.Length > 10: {
+                    if (int.TryParse(inputString[10..11], out var result)) {
+                        RaptureShellModule.Instance()->ChatType = result + 18;
+                    }
                     break;
+                }
                 
-                case not null when LinkshellShort().IsMatch(inputString) && inputString.Length > 2:
-                    ChatHelper.SendMessage($"/l{inputString[2]}");
+                case not null when LinkshellShort().IsMatch(inputString) && inputString.Length > 2: {
+                    if (int.TryParse(inputString[2..3], out var result)) {
+                        RaptureShellModule.Instance()->ChatType = result + 18;
+                    }
                     break;
+                }
             }
         }
         catch (Exception e) {
             SimpleLog.Error(e, "Something went wrong in StickyChat, let MidoriKami know!");
         }
 
-        return result;
-    }
-
-    private static int StringLength(byte** message) {
-        var byteCount = 0;
-        for (var i = 0; i <= 500; i++) {
-            if (*(*message + i) != 0) continue;
-            
-            byteCount = i;
-            break;
-        }
-
-        return byteCount;
+        executeCommandHook!.Original(commandModule, command, uiModule);
     }
 }
