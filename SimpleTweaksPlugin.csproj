@@ -98,7 +98,6 @@
         <Compile Remove="Tweaks\UiAdjustment\ShiftTargetCastBarText.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\SmartNameplates.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\SubmarineDestinationLetters.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\TargetCastbarCountdown.cs"/>
         <Compile Remove="Tweaks\NoCharacterNotFoundWarning.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\AddNumberSeparators.cs" />
     </ItemGroup>

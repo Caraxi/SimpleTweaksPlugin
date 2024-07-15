@@ -125,12 +125,12 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         }
     }
 
-    private void UpdateAddon(AtkUnitBase* addon, uint visibilityNodeId, uint positioningNodeId, GameObject? target, bool focusTarget = false) {
+    private void UpdateAddon(AtkUnitBase* addon, uint visibilityNodeId, uint positioningNodeId, IGameObject? target, bool focusTarget = false) {
         var interruptNode = Common.GetNodeByID<AtkImageNode>(&addon->UldManager, visibilityNodeId);
         var castBarNode = Common.GetNodeByID(&addon->UldManager, positioningNodeId);
         if (interruptNode is not null && castBarNode is not null) {
             TryMakeNodes(addon);
-            UpdateIcons(interruptNode->AtkResNode.IsVisible, addon, target, castBarNode, focusTarget);
+            UpdateIcons(interruptNode->IsVisible(), addon, target, castBarNode, focusTarget);
         }
     }
 
@@ -139,13 +139,13 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         if (textNode is null) MakeTextNode(parent, CastBarTextNodeId);
     }
     
-    private void UpdateIcons(bool castBarVisible, AtkUnitBase* parent, GameObject? target, AtkResNode* positioningNode, bool focusTarget) {
+    private void UpdateIcons(bool castBarVisible, AtkUnitBase* parent, IGameObject? target, AtkResNode* positioningNode, bool focusTarget) {
         var textNode = Common.GetNodeByID<AtkTextNode>(&parent->UldManager, CastBarTextNodeId);
         if (textNode is null) return;
         
-        if (target is BattleChara targetInfo && castBarVisible && targetInfo.AdjustedTotalCastTime > targetInfo.CurrentCastTime) {
+        if (target is IBattleChara targetInfo && castBarVisible && targetInfo.TotalCastTime > targetInfo.CurrentCastTime) {
             textNode->AtkResNode.ToggleVisibility(true);
-            textNode->SetText($"{targetInfo.AdjustedTotalCastTime - targetInfo.CurrentCastTime:00.00}");
+            textNode->SetText($"{targetInfo.TotalCastTime - targetInfo.CurrentCastTime:00.00}");
             textNode->FontSize = (byte) Math.Clamp(focusTarget ? TweakConfig.FocusFontSize : TweakConfig.FontSize, 8, 30);
             
             var nodePosition = (focusTarget ? TweakConfig.FocusTargetPosition : TweakConfig.CastbarPosition) switch {
@@ -168,9 +168,9 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
     private void MakeTextNode(AtkUnitBase* parent, uint nodeId) {
         var textNode = UiHelper.MakeTextNode(nodeId);
         
-        textNode->AtkResNode.NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.AnchorTop | NodeFlags.AnchorLeft;
-        textNode->AtkResNode.DrawFlags = 2;
-        textNode->AtkResNode.Alpha_2 = 255;
+        textNode->NodeFlags = NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.AnchorTop | NodeFlags.AnchorLeft;
+        textNode->DrawFlags = 2;
+        textNode->Alpha_2 = 255;
         
         textNode->TextColor = textColor;
         textNode->EdgeColor = edgeColor;
@@ -180,8 +180,8 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         textNode->FontSize = 20;
         textNode->TextFlags = (byte) TextFlags.Edge;
         
-        textNode->AtkResNode.SetWidth(80);
-        textNode->AtkResNode.SetHeight(22);
+        textNode->SetWidth(80);
+        textNode->SetHeight(22);
 
         UiHelper.LinkNodeAtEnd((AtkResNode*) textNode, parent);
     }
