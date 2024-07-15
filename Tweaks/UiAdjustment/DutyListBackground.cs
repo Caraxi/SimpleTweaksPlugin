@@ -33,7 +33,7 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak {
     private void OnAddonSetup(AtkUnitBase* unitBase) {
         if (unitBase == null || unitBase->RootNode == null) return;
         var imageNode = UiHelper.MakeImageNode(CustomNodes.Get(nameof(DutyListBackground)), new UiHelper.PartInfo(0, 0, 0, 0));
-        imageNode->AtkResNode.NodeFlags = NodeFlags.Enabled | NodeFlags.AnchorLeft | NodeFlags.Visible;
+        imageNode->NodeFlags = NodeFlags.Enabled | NodeFlags.AnchorLeft | NodeFlags.Visible;
         imageNode->WrapMode = 1;
         imageNode->Flags = 0;
         UiHelper.LinkNodeAtEnd(&imageNode->AtkResNode, unitBase);
@@ -60,22 +60,22 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak {
             var imageNode = GetImageNode(namePlate);
             if (imageNode is not null) {
                 if (unitBase == null || unitBase->RootNode == null) {
-                    imageNode->AtkResNode.ToggleVisibility(false);
+                    imageNode->ToggleVisibility(false);
                     return;
                 }
 
                 var padding = new Vector2(5.0f, 5.0f);
-                imageNode->AtkResNode.ToggleVisibility(unitBase->IsVisible && unitBase->RootNode->IsVisible && (unitBase->VisibilityFlags & 1) == 0);
-                imageNode->AtkResNode.SetWidth((ushort)(unitBase->GetScaledWidth(true) + padding.X * 2.0f));
-                imageNode->AtkResNode.SetHeight((ushort)(unitBase->GetScaledHeight(true) + padding.Y * 2.0f));
-                imageNode->AtkResNode.SetPositionFloat(unitBase->X - padding.X, unitBase->Y - padding.Y);
-                imageNode->AtkResNode.Color.A = (byte)(TweakConfig.BackgroundColor.W * 255);
-                imageNode->AtkResNode.AddRed = (byte)(TweakConfig.BackgroundColor.X * 255);
-                imageNode->AtkResNode.AddGreen = (byte)(TweakConfig.BackgroundColor.Y * 255);
-                imageNode->AtkResNode.AddBlue = (byte)(TweakConfig.BackgroundColor.Z * 255);
+                imageNode->ToggleVisibility(unitBase->IsVisible && unitBase->RootNode->IsVisible() && (unitBase->VisibilityFlags & 1) == 0);
+                imageNode->SetWidth((ushort)(unitBase->GetScaledWidth(true) + padding.X * 2.0f));
+                imageNode->SetHeight((ushort)(unitBase->GetScaledHeight(true) + padding.Y * 2.0f));
+                imageNode->SetPositionFloat(unitBase->X - padding.X, unitBase->Y - padding.Y);
+                imageNode->Color.A = (byte)(TweakConfig.BackgroundColor.W * 255);
+                imageNode->AddRed = (byte)(TweakConfig.BackgroundColor.X * 255);
+                imageNode->AddGreen = (byte)(TweakConfig.BackgroundColor.Y * 255);
+                imageNode->AddBlue = (byte)(TweakConfig.BackgroundColor.Z * 255);
 
-                if (TweakConfig.HideInDuties && Service.Condition.Any(ConditionFlag.BoundByDuty, ConditionFlag.BoundByDuty95, ConditionFlag.BoundToDuty97)) {
-                    imageNode->AtkResNode.ToggleVisibility(false);
+                if (TweakConfig.HideInDuties && Service.Condition.Any(ConditionFlag.BoundByDuty, ConditionFlag.BoundByDuty95, ConditionFlag.BoundByDuty56)) {
+                    imageNode->ToggleVisibility(false);
                 }
             }
         }
@@ -88,7 +88,7 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak {
         } else if (Common.GetUnitBase("NamePlate", out var namePlate)) {
             var imageNode = GetImageNode(namePlate);
             if (imageNode != null) {
-                imageNode->AtkResNode.ToggleVisibility(false);
+                imageNode->ToggleVisibility(false);
             }
         }
     }
@@ -107,6 +107,6 @@ public unsafe class DutyListBackground : UiAdjustments.SubTweak {
 
     public class Config : TweakConfig {
         public Vector4 BackgroundColor = new(0.0f, 0.0f, 0.0f, 0.40f);
-        public bool HideInDuties = false;
+        public bool HideInDuties;
     }
 }
