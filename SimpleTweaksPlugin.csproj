@@ -35,7 +35,6 @@
         <Compile Remove="Tweaks\DisableClickTargeting.cs"/>
         <Compile Remove="Tweaks\DisableMountVolumeChange.cs"/>
         <Compile Remove="Tweaks\DisableMouseCameraControl.cs"/>
-        <Compile Remove="Tweaks\DutyTimer.cs"/>
         <Compile Remove="Tweaks\EquipFromHotbar.cs"/>
         <Compile Remove="Tweaks\ExitGame.cs"/>
         <Compile Remove="Tweaks\FixedShadowDistance.cs"/>
