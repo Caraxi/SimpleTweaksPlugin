@@ -6,6 +6,7 @@ using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
+using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Events;
@@ -27,6 +28,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [Changelog("1.9.6.0", "Fixed disable on primary and focus target")]
 public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
     private uint CastBarTextNodeId => CustomNodes.Get(this, "Countdown");
+    private Utf8String* stringBuffer = Utf8String.CreateEmpty();
 
     private readonly ByteColor textColor = new() { R = 255, G = 255, B = 255, A = 255 };
     private readonly ByteColor edgeColor = new() { R = 142, G = 106, B = 12, A = 255 };
@@ -104,6 +106,11 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         FreeAllNodes();
     }
 
+    public override void Dispose() {
+        stringBuffer->Dtor(true);
+        base.Dispose();
+    }
+
     [AddonPreDraw("_TargetInfoCastBar", "_TargetInfo", "_FocusTargetInfo")]
     private void OnAddonPreDraw(AddonArgs args) {
         if (Service.ClientState.IsPvP) return;
@@ -145,7 +152,8 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         
         if (target is IBattleChara targetInfo && castBarVisible && targetInfo.TotalCastTime > targetInfo.CurrentCastTime) {
             textNode->AtkResNode.ToggleVisibility(true);
-            textNode->SetText($"{targetInfo.TotalCastTime - targetInfo.CurrentCastTime:00.00}");
+            stringBuffer->SetString($"{targetInfo.TotalCastTime - targetInfo.CurrentCastTime:00.00}");
+            textNode->SetText(stringBuffer->StringPtr);
             textNode->FontSize = (byte) Math.Clamp(focusTarget ? TweakConfig.FocusFontSize : TweakConfig.FontSize, 8, 30);
             
             var nodePosition = (focusTarget ? TweakConfig.FocusTargetPosition : TweakConfig.CastbarPosition) switch {
