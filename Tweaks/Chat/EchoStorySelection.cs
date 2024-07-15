@@ -19,7 +19,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakReleaseVersion("1.8.3.2")]
 [TweakAutoConfig]
 public unsafe class EchoStorySelection : ChatTweaks.SubTweak {
-    private readonly List<string> options = new();
+    private readonly List<string> options = [];
     
     public class Config : TweakConfig {
         [TweakConfigOption("Display Character Name")]
@@ -27,7 +27,6 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak {
     }
 
     public Config TweakConfig { get; private set; } = null!;
-    
     
     [AddonPostSetup("CutSceneSelectString", "SelectString")]
     private void OnAddonSetup(AddonSetupArgs obj) {
@@ -83,7 +82,7 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak {
             .AddText(options[selectedItem])
             .Build();
 
-        var playerName = Common.ReadString(PlayerState.Instance()->CharacterName);
+        var playerName = PlayerState.Instance()->CharacterNameString;
             
         var name = new SeStringBuilder()
             .AddUiForeground(TweakConfig.DisplayCharacterName ? playerName : "Story Selection", 62)
