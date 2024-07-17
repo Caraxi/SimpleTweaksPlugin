@@ -9,28 +9,27 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
+[TweakCategory(TweakCategory.Command)]
+[TweakName("Hide Mouse Cursor After Inactivity")]
+[TweakDescription("Hides the mouse cursor after a period of inactivity like video players do.")]
+[TweakAutoConfig]
+[Changelog("1.8.3.0", "Fixed tweak not working in french.", Author = "Anna")]
 public unsafe class HideMouseAfterInactivity : Tweak {
-    public override string Name => "Hide Mouse Cursor After Inactivity";
-    public override string Description => "Hides the mouse cursor after a period of inactivity like video players do.";
-    protected override string Author => "Anna";
 
     public class Config : TweakConfig {
-        public float InactiveSeconds = 3.0f;
+        [TweakConfigOption("Hide after (seconds)")]
+        public float InactiveSeconds = 0.1f;
+        [TweakConfigOption("Don't hide in cutscenes")]
         public bool NoHideInCutscenes;
+        [TweakConfigOption("Don't hide in combat")]
         public bool NoHideInCombat = true;
+        [TweakConfigOption("Don't hide in instances")]
         public bool NoHideInInstance = true;
+        [TweakConfigOption("Don't hide while on interactable")]
         public bool NoHideWhileHovering = true;
     }
 
     public Config TweakConfig { get; private set; }
-
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool change) => {
-        change |= ImGui.InputFloat("Hide after (seconds)", ref TweakConfig.InactiveSeconds, 0.1f);
-        change |= ImGui.Checkbox("Don't hide in cutscenes", ref TweakConfig.NoHideInCutscenes);
-        change |= ImGui.Checkbox("Don't hide in combat", ref TweakConfig.NoHideInCombat);
-        change |= ImGui.Checkbox("Don't hide in instances", ref TweakConfig.NoHideInInstance);
-        change |= ImGui.Checkbox("Don't hide while on interactable", ref TweakConfig.NoHideWhileHovering);
-    };
 
     private static class Signatures {
         internal const string MouseButtonHoldState = "8B 05 ?? ?? ?? ?? 48 89 5C 24 ?? 41 8B DF 38 1D";
@@ -73,7 +72,7 @@ public unsafe class HideMouseAfterInactivity : Tweak {
         if (TweakConfig.NoHideInCutscenes && Service.Condition.Cutscene()) return;
         if (TweakConfig.NoHideInCombat && Service.Condition[ConditionFlag.InCombat]) return;
         if (TweakConfig.NoHideInInstance && Service.Condition.Duty()) return;
-        var stage = AtkStage.GetSingleton();
+        var stage = AtkStage.Instance();
         if (TweakConfig.NoHideWhileHovering && stage->AtkCursor.Type != AtkCursor.CursorType.Arrow && !Service.Condition.Cutscene()) return;
 
         if (lastMoved.Elapsed > TimeSpan.FromSeconds(TweakConfig.InactiveSeconds)) {
