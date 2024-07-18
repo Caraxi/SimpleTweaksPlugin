@@ -38,7 +38,6 @@
         <Compile Remove="Tweaks\FixedShadowDistance.cs"/>
         <Compile Remove="Tweaks\FurnitureClocksCustomTime.cs"/>
         <Compile Remove="Tweaks\GearsetSaveCurrent.cs"/>
-        <Compile Remove="Tweaks\HideMouseAfterInactivity.cs"/>
         <Compile Remove="Tweaks\HighResScreenshots.cs"/>
         <Compile Remove="Tweaks\HouseLightCommand.cs"/>
         <Compile Remove="Tweaks\JokeTweaks.cs"/>
