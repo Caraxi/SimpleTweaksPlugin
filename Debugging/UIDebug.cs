@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -694,6 +694,9 @@ public unsafe class UIDebug : DebugHelper {
                 case NodeType.Counter:
                     DebugManager.PrintOutObject(*(AtkCounterNode*)node, (ulong)node, []);
                     break;
+                case NodeType.ClippingMask:
+                    DebugManager.PrintOutObject(*(AtkClippingMaskNode*)node, (ulong)node, []);
+                    break;
                 default:
                     DebugManager.PrintOutObject(*node, (ulong)node, []);
                     break;
@@ -792,93 +795,30 @@ public unsafe class UIDebug : DebugHelper {
 
                     break;
                 case NodeType.NineGrid:
+                    var ngNode = (AtkNineGridNode*)node;
+                    ImGui.Text($"NineGrid Offsets:\tTop: {ngNode->TopOffset} Bottom: {ngNode->BottomOffset} Left: {ngNode->LeftOffset} Right: {ngNode->RightOffset}");
+                    PrintTextureParts(ngNode->PartsList, ngNode->PartId);
+                    break;
                 case NodeType.Image:
                     var iNode = (AtkImageNode*)node;
                     ImGui.Text($"wrap: {iNode->WrapMode}, flags: {iNode->Flags}");
-                    if (iNode->PartsList != null) {
-                        if (iNode->PartId > iNode->PartsList->PartCount) {
-                            ImGui.Text($"part id({iNode->PartId}) > part count({iNode->PartsList->PartCount})?");
-                        } else {
-                            var part = iNode->PartsList->Parts[iNode->PartId];
-                            var textureInfo = part.UldAsset;
-                            var texType = textureInfo->AtkTexture.TextureType;
-                            ImGui.Text($"texture type: {texType} part_id={iNode->PartId} part_id_count={iNode->PartsList->PartCount}");
-                            if (texType == TextureType.Resource) {
-                                var texFileNamePtr = textureInfo->AtkTexture.Resource->TexFileResourceHandle->ResourceHandle.FileName;
-                                var texString = Marshal.PtrToStringAnsi(new IntPtr(texFileNamePtr.BufferPtr));
-                                var isHighResolution = texString?.Contains("_hr1") ?? false;
-                                ImGui.Text($"texture path: {texString}");
-                                var kernelTexture = textureInfo->AtkTexture.Resource->KernelTextureObject;
+                    PrintTextureParts(iNode->PartsList, iNode->PartId);
 
-                                if (ImGui.TreeNode($"Texture##{(ulong)kernelTexture->D3D11ShaderResourceView:X}")) {
-                                    var textureSize = new Vector2(kernelTexture->Width, kernelTexture->Height);
-                                    ImGui.Image(new IntPtr(kernelTexture->D3D11ShaderResourceView), new Vector2(kernelTexture->Width, kernelTexture->Height));
-
-                                    if (ImGui.TreeNode($"Parts##{(ulong)kernelTexture->D3D11ShaderResourceView:X}")) {
-                                        ImGui.BeginTable($"partsTable##{(ulong)kernelTexture->D3D11ShaderResourceView:X}", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg);
-                                        ImGui.TableSetupColumn("Part ID", ImGuiTableColumnFlags.WidthFixed, 80);
-                                        ImGui.TableSetupColumn("Switch", ImGuiTableColumnFlags.WidthFixed, 45);
-                                        ImGui.TableSetupColumn("Part Texture");
-                                        ImGui.TableHeadersRow();
-                                        for (ushort i = 0; i < iNode->PartsList->PartCount; i++) {
-                                            ImGui.TableNextColumn();
-
-                                            if (i == iNode->PartId) ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0, 1, 0, 1));
-                                            ImGui.Text($"#{i.ToString().PadLeft(iNode->PartsList->PartCount.ToString().Length, '0')}");
-                                            if (i == iNode->PartId) ImGui.PopStyleColor(1);
-                                            ImGui.TableNextColumn();
-
-                                            if (ImGui.Button($"Switch##{(ulong)kernelTexture->D3D11ShaderResourceView:X}p{i}", new Vector2(-1, 23))) {
-                                                iNode->PartId = i;
-                                            }
-
-                                            ImGui.TableNextColumn();
-                                            var tPart = iNode->PartsList->Parts[i];
-                                            var u = isHighResolution ? tPart.U * 2.0f : tPart.U;
-                                            var v = isHighResolution ? tPart.V * 2.0f : tPart.V;
-                                            var width = isHighResolution ? tPart.Width * 2.0f : tPart.Width;
-                                            var height = isHighResolution ? tPart.Height * 2.0f : tPart.Height;
-
-                                            if (ImGui.GetIO().KeyShift) {
-                                                ImGui.Text($"[U1: {u / kernelTexture->Width}  V1: {v / kernelTexture->Height}  U2: {(u + width) / kernelTexture->Width}  V2: {(v + height) / kernelTexture->Height}]");
-                                                if (ImGui.IsItemClicked()) {
-                                                    ImGui.SetClipboardText($"new Vector2({u / kernelTexture->Width:F4}f, {v / kernelTexture->Height:F4}f), new Vector2({(u + width) / kernelTexture->Width:F4}f, {(v + height) / kernelTexture->Height:F4}f),");
-                                                }
-                                            } else {
-                                                ImGui.Text($"[U: {u}  V: {v}  W: {width}  H: {height}]");
-                                            }
-
-                                            ImGui.Image(new IntPtr(kernelTexture->D3D11ShaderResourceView), new Vector2(width, height), new Vector2(u, v) / textureSize, new Vector2(u + width, v + height) / textureSize);
-                                        }
-
-                                        ImGui.EndTable();
-                                        ImGui.TreePop();
-                                    }
-
-                                    ImGui.TreePop();
-                                }
-                            } else if (texType == TextureType.KernelTexture) {
-                                if (ImGui.TreeNode($"Texture##{(ulong)textureInfo->AtkTexture.KernelTexture->D3D11ShaderResourceView:X}")) {
-                                    ImGui.Image(new IntPtr(textureInfo->AtkTexture.KernelTexture->D3D11ShaderResourceView), new Vector2(textureInfo->AtkTexture.KernelTexture->Width, textureInfo->AtkTexture.KernelTexture->Height));
-                                    ImGui.TreePop();
-                                }
-                            }
-                        }
-                    } else {
-                        ImGui.Text("no texture loaded");
-                    }
-
-                    if (node->Type != NodeType.Image) break;
+                    if (iNode->Type != NodeType.Image) return;
                     ImGui.SetNextItemWidth(150);
-                    ImGui.InputInt($"###inputIconId__{(ulong)node:X}", ref loadImageId);
+                    ImGui.InputInt($"###inputIconId__{(ulong)iNode:X}", ref loadImageId);
                     ImGui.SameLine();
                     ImGui.SetNextItemWidth(150);
-                    ImGui.InputInt($"###inputIconVersion__{(ulong)node:X}", ref loadImageVersion);
+                    ImGui.InputInt($"###inputIconVersion__{(ulong)iNode:X}", ref loadImageVersion);
                     ImGui.SameLine();
-                    if (ImGui.SmallButton("Load Icon")) {
+                    if (ImGui.SmallButton("Load Icon"))
+                    {
                         iNode->LoadIconTexture((uint)loadImageId, loadImageVersion);
                     }
-
+                    break;
+                case NodeType.ClippingMask:
+                    var cmNode = (AtkClippingMaskNode*)node;
+                    PrintTextureParts(cmNode->PartsList, cmNode->PartId);
                     break;
             }
 
@@ -887,6 +827,110 @@ public unsafe class UIDebug : DebugHelper {
 
         if (isVisible && !popped && !textOnly)
             ImGui.PopStyleColor();
+    }
+
+    private static void PrintTextureParts(AtkUldPartsList* partsList, uint partId)
+    {
+        if (partsList != null)
+        {
+            if (partId > partsList->PartCount)
+            {
+                ImGui.Text($"part id({partId}) > part count({partsList->PartCount})?");
+            }
+            else
+            {
+                var part = partsList->Parts[partId];
+                var textureInfo = part.UldAsset;
+                var texType = textureInfo->AtkTexture.TextureType;
+                ImGui.Text($"texture type: {texType} part_id={partId} part_id_count={partsList->PartCount}");
+                if (texType == TextureType.Resource)
+                {
+                    var texFileNamePtr = textureInfo->AtkTexture.Resource->TexFileResourceHandle->ResourceHandle.FileName;
+                    var texString = Marshal.PtrToStringAnsi(new IntPtr(texFileNamePtr.BufferPtr));
+                    var isHighResolution = texString?.Contains("_hr1") ?? false;
+                    ImGui.Text($"texture path: {texString}");
+                    var kernelTexture = textureInfo->AtkTexture.Resource->KernelTextureObject;
+
+                    if (ImGui.TreeNode($"Texture##{(ulong)kernelTexture->D3D11ShaderResourceView:X}"))
+                    {
+                        var textureSize = new Vector2(kernelTexture->Width, kernelTexture->Height);
+                        ImGui.Image(new IntPtr(kernelTexture->D3D11ShaderResourceView),
+                            new Vector2(kernelTexture->Width, kernelTexture->Height));
+
+                        if (ImGui.TreeNode($"Parts##{(ulong)kernelTexture->D3D11ShaderResourceView:X}"))
+                        {
+                            ImGui.BeginTable($"partsTable##{(ulong)kernelTexture->D3D11ShaderResourceView:X}", 3,
+                                ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg);
+                            ImGui.TableSetupColumn("Part ID", ImGuiTableColumnFlags.WidthFixed, 80);
+                            ImGui.TableSetupColumn("Switch", ImGuiTableColumnFlags.WidthFixed, 45);
+                            ImGui.TableSetupColumn("Part Texture");
+                            ImGui.TableHeadersRow();
+                            for (ushort i = 0; i < partsList->PartCount; i++)
+                            {
+                                ImGui.TableNextColumn();
+
+                                if (i == partId) ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0, 1, 0, 1));
+                                ImGui.Text($"#{i.ToString().PadLeft(partsList->PartCount.ToString().Length, '0')}");
+                                if (i == partId) ImGui.PopStyleColor(1);
+                                ImGui.TableNextColumn();
+
+                                if (ImGui.Button($"Switch##{(ulong)kernelTexture->D3D11ShaderResourceView:X}p{i}",
+                                        new Vector2(-1, 23)))
+                                {
+                                    partId = i;
+                                }
+
+                                ImGui.TableNextColumn();
+                                var tPart = partsList->Parts[i];
+                                var u = isHighResolution ? tPart.U * 2.0f : tPart.U;
+                                var v = isHighResolution ? tPart.V * 2.0f : tPart.V;
+                                var width = isHighResolution ? tPart.Width * 2.0f : tPart.Width;
+                                var height = isHighResolution ? tPart.Height * 2.0f : tPart.Height;
+
+                                if (ImGui.GetIO().KeyShift)
+                                {
+                                    ImGui.Text(
+                                        $"[U1: {u / kernelTexture->Width}  V1: {v / kernelTexture->Height}  U2: {(u + width) / kernelTexture->Width}  V2: {(v + height) / kernelTexture->Height}]");
+                                    if (ImGui.IsItemClicked())
+                                    {
+                                        ImGui.SetClipboardText(
+                                            $"new Vector2({u / kernelTexture->Width:F4}f, {v / kernelTexture->Height:F4}f), new Vector2({(u + width) / kernelTexture->Width:F4}f, {(v + height) / kernelTexture->Height:F4}f),");
+                                    }
+                                }
+                                else
+                                {
+                                    ImGui.Text($"[U: {u}  V: {v}  W: {width}  H: {height}]");
+                                }
+
+                                ImGui.Image(new IntPtr(kernelTexture->D3D11ShaderResourceView), new Vector2(width, height),
+                                    new Vector2(u, v) / textureSize, new Vector2(u + width, v + height) / textureSize);
+                            }
+
+                            ImGui.EndTable();
+                            ImGui.TreePop();
+                        }
+
+                        ImGui.TreePop();
+                    }
+                }
+                else if (texType == TextureType.KernelTexture)
+                {
+                    if (ImGui.TreeNode(
+                            $"Texture##{(ulong)textureInfo->AtkTexture.KernelTexture->D3D11ShaderResourceView:X}"))
+                    {
+                        ImGui.Image(new IntPtr(textureInfo->AtkTexture.KernelTexture->D3D11ShaderResourceView),
+                            new Vector2(textureInfo->AtkTexture.KernelTexture->Width,
+                                textureInfo->AtkTexture.KernelTexture->Height));
+                        ImGui.TreePop();
+                    }
+                }
+            }
+        }
+        else
+        {
+            ImGui.Text("no texture loaded");
+        }
+
     }
 
     private static void PrintComponentNode(AtkResNode* node, string treePrefix, bool textOnly = false) {
