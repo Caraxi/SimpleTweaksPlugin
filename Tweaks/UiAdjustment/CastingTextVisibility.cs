@@ -1,4 +1,5 @@
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Dalamud.Interface.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Events;
@@ -29,6 +30,7 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak
 
     private readonly uint focusCastBarId = 8;
     private readonly uint targetCastBarId = 15;
+    private readonly uint splitTargetCastBarId = 7;
 
 
     private Configuration Config { get; set; } = null!;
@@ -78,15 +80,15 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak
             ImGui.DragInt("Height Padding##FocusTarget", ref Config.FocusBackgroundHeightPadding, 0.6f, -10, 30);
             ImGui.DragInt("Font Size##FocusTarget", ref Config.FocusFontSize, 0.4f, 12, 80);
 
-            ImGui.VSliderFloat("##FocusTargetY", new Vector2(20, 160), ref Config.FocusPosition.Y, -80f, 80f, "");
-            ImGui.SetNextItemWidth(160);
+            ImGui.VSliderFloat("##FocusTargetY", new Vector2(20, 160) * ImGuiHelpers.GlobalScale, ref Config.FocusPosition.Y, -80f, 80f, "");
+            ImGui.SetNextItemWidth(160 * ImGuiHelpers.GlobalScale);
             ImGui.SameLine();
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() - 6);
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 69);
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 69 * ImGuiHelpers.GlobalScale);
             ImGui.SliderFloat("Position##FocusTargetX", ref Config.FocusPosition.X, -120f, 220f, "", ImGuiSliderFlags.NoInput);
             ImGui.SameLine();
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() - 200);
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 20);
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() - 200 * ImGuiHelpers.GlobalScale);
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 20 * ImGuiHelpers.GlobalScale);
             ImGui.Checkbox("Right Align##FocusAlign", ref Config.FocusRightAlign);
 
             ImGui.Unindent();
@@ -105,15 +107,15 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak
             ImGui.DragInt("Height Padding##Target", ref Config.TargetBackgroundHeightPadding, 0.6f, -10, 30);
             ImGui.DragInt("Font Size##Target", ref Config.TargetFontSize, 0.4f, 12, 80);
 
-            ImGui.VSliderFloat("##TargetY", new Vector2(20, 160), ref Config.TargetPosition.Y, -80f, 120f, "");
-            ImGui.SetNextItemWidth(160);
+            ImGui.VSliderFloat("##TargetY", new Vector2(20, 160) * ImGuiHelpers.GlobalScale, ref Config.TargetPosition.Y, -80f, 120f, "");
+            ImGui.SetNextItemWidth(160 * ImGuiHelpers.GlobalScale);            
             ImGui.SameLine();
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() - 6);
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 69);
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() - 6 );
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 69 * ImGuiHelpers.GlobalScale);
             ImGui.SliderFloat("Position##TargetX", ref Config.TargetPosition.X, -180f, 460f, "", ImGuiSliderFlags.NoInput);
             ImGui.SameLine();
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() - 200);
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 20);
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() - 200 * ImGuiHelpers.GlobalScale);
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 20 * ImGuiHelpers.GlobalScale);
             ImGui.Checkbox("Right Align##TargetAlign", ref Config.TargetRightAlign);
 
             ImGui.Unindent();
@@ -143,7 +145,7 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak
                     Config.TargetTextColor, Config.TargetEdgeColor, Config.TargetFontSize, Config.TargetPosition, UpdateTargetNodes);
                 break;
             case "_TargetInfoCastBar" when addon->IsVisible:
-                UpdateAddOn(addon, splitTargetTextNodeId, targetCastBarId, targetImageNodeid, targetCustomTextNodeid, Config.UseCustomTargetColor,
+                UpdateAddOn(addon, splitTargetTextNodeId, splitTargetCastBarId, targetImageNodeid, targetCustomTextNodeid, Config.UseCustomTargetColor,
                     Config.TargetTextColor, Config.TargetEdgeColor, Config.TargetFontSize, Config.TargetPosition, UpdateTargetNodes);
                 break;
         }
@@ -163,7 +165,7 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak
             textNode->AtkResNode.ToggleVisibility(false);
             TryMakeNode(ui, imageNodeId, NodeType.Image);
             TryMakeNode(ui, customTextNodeId, NodeType.Text);
-            //ToggleNodeVisibility(true, &ui->UldManager, textNodeId);           
+               
             ToggleNodeVisibility(castBarNode->AtkResNode.IsVisible(), &ui->UldManager, imageNodeId);
             ToggleNodeVisibility(castBarNode->AtkResNode.IsVisible(), &ui->UldManager, customTextNodeId);
 
