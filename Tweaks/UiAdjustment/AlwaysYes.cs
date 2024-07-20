@@ -14,11 +14,13 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakName("Always Yes")]
 [TweakDescription("Sets the default action in dialog boxes to yes when using confirm (num 0).")]
 [TweakAuthor("Aireil")]
+[Changelog(UnreleasedVersion, "Added a setting to ignore checkbox if it is ticked and fixed the tweak not working with desynthesis")]
 [Changelog("1.10.0.0", "Added support for automatic aetherial reduction.")]
 [Changelog("1.9.2.1", "Added support for Blunderville exit dialog.")]
 public unsafe class AlwaysYes : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
         public bool SelectCheckBox = true;
+        public bool IgnoreTickedCheckBox = true;
         public bool YesNo = true;
         public bool DutyConfirmation = true;
         public bool CardsShop = true;
@@ -42,6 +44,12 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
 
     protected void DrawConfig(ref bool hasChanged) {
         hasChanged |= ImGui.Checkbox("Default cursor to the checkbox when one exists", ref Config.SelectCheckBox);
+        ImGui.BeginDisabled(!Config.SelectCheckBox);
+        ImGui.Indent();
+        hasChanged |= ImGui.Checkbox("Ignore the previous setting if the checkbox is ticked", ref Config.IgnoreTickedCheckBox);
+        ImGui.Unindent();
+        ImGui.EndDisabled();
+
         ImGui.Text("Enable for:");
         ImGui.Indent();
 
@@ -148,7 +156,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 if (Config.GlamourDispels) SetFocusYes(args.Addon, 15);
                 return;
             case "SalvageDialog":
-                if (Config.Desynthesis) SetFocusYes(args.Addon, 24, null, 23);
+                if (Config.Desynthesis) DelayedSetFocusYes(args.AddonName, 24, null, 23);
                 return;
             case "PurifyResult":
                 if (Config.AutomaticAetherialReduction) SetFocusYes(args.Addon, 19);
@@ -171,9 +179,9 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         }
     }
 
-    private void DelayedSetFocusYes(string addon, uint yesButtonId, int delay = 0) {
+    private void DelayedSetFocusYes(string addon, uint yesButtonId, uint? yesHoldButtonId = null, uint? checkBoxId = null, int delay = 0) {
         Service.Framework.RunOnTick(() => {
-            if (Common.GetUnitBase(addon, out var unitBase)) SetFocusYes((nint)unitBase, yesButtonId);
+            if (Common.GetUnitBase(addon, out var unitBase)) SetFocusYes((nint)unitBase, yesButtonId, yesHoldButtonId, checkBoxId);
         }, delayTicks: delay);
     }
 
@@ -188,8 +196,12 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         uint collisionId;
         AtkResNode* targetNode;
         var checkBox = checkBoxId != null ? (AtkComponentNode*)unitBase->UldManager.SearchNodeById(checkBoxId.Value) : null;
+        var checkBoxTick = checkBox != null && checkBox->Component != null && checkBox->Component->UldManager.LoadedState == AtkLoadState.Loaded ? (AtkTextNode*)checkBox->Component->UldManager.SearchNodeById(3) : null;
         var textCheckBox = checkBox != null && checkBox->Component != null && checkBox->Component->UldManager.LoadedState == AtkLoadState.Loaded ? (AtkTextNode*)checkBox->Component->UldManager.SearchNodeById(2) : null;
-        if (Config.SelectCheckBox && checkBox != null && checkBox->AtkResNode.IsVisible() && textCheckBox != null && !textCheckBox->NodeText.ToString().IsNullOrWhitespace()) {
+        var isCheckBoxVisible = checkBox != null && checkBox->AtkResNode.IsVisible();
+        var isCheckBoxTicked = checkBoxTick != null && checkBoxTick->IsVisible();
+        var isCheckBoxTextNotEmpty = textCheckBox != null && !textCheckBox->NodeText.ToString().IsNullOrWhitespace();
+        if (Config.SelectCheckBox && isCheckBoxVisible && (!Config.IgnoreTickedCheckBox || !isCheckBoxTicked) && isCheckBoxTextNotEmpty) {
             collisionId = 5;
             targetNode = &checkBox->AtkResNode;
         } else {
