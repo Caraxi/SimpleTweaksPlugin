@@ -9,7 +9,6 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks; 
 
-[TweakCategory(TweakCategory.Command)]
 [TweakName("Hide Mouse Cursor After Inactivity")]
 [TweakDescription("Hides the mouse cursor after a period of inactivity like video players do.")]
 [TweakAutoConfig]
@@ -17,8 +16,8 @@ namespace SimpleTweaksPlugin.Tweaks;
 public unsafe class HideMouseAfterInactivity : Tweak {
 
     public class Config : TweakConfig {
-        [TweakConfigOption("Hide after (seconds)")]
-        public float InactiveSeconds = 0.1f;
+        [TweakConfigOption("Hide after (milliseconds)", IntMin = 100, IntMax = 5000, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EditorSize = 150)]
+        public int InactiveMillieconds = 100;
         [TweakConfigOption("Don't hide in cutscenes")]
         public bool NoHideInCutscenes;
         [TweakConfigOption("Don't hide in combat")]
@@ -75,7 +74,7 @@ public unsafe class HideMouseAfterInactivity : Tweak {
         var stage = AtkStage.Instance();
         if (TweakConfig.NoHideWhileHovering && stage->AtkCursor.Type != AtkCursor.CursorType.Arrow && !Service.Condition.Cutscene()) return;
 
-        if (lastMoved.Elapsed > TimeSpan.FromSeconds(TweakConfig.InactiveSeconds)) {
+        if (lastMoved.Elapsed > TimeSpan.FromMilliseconds(TweakConfig.InactiveMillieconds)) {
             stage->AtkCursor.Hide();
         }
     }
