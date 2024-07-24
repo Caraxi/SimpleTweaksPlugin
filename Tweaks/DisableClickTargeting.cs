@@ -17,6 +17,9 @@ namespace SimpleTweaksPlugin {
 }
 
 namespace SimpleTweaksPlugin.Tweaks {
+    [TweakName("Disable Click Targeting")]
+    [TweakDescription("Allows disabling of the target function on left and right mouse clicks.")]
+    [TweakAutoConfig]
     public unsafe class DisableClickTargeting : Tweak {
 
         public class NameFilter {
@@ -38,7 +41,9 @@ namespace SimpleTweaksPlugin.Tweaks {
 
         private string nameFilterNew = string.Empty;
         
-        protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+        protected void DrawConfig()
+        {
+            bool hasChanged = false;
 
             if (!Config.UseNameFilter) {
                 hasChanged |= ImGui.Checkbox(LocString("SimpleDisableRightClick","Disable Right Click Targeting"), ref Config.DisableRightClick);
@@ -135,10 +140,7 @@ namespace SimpleTweaksPlugin.Tweaks {
                 Disable();
                 Enable();
             }
-        };
-
-        public override string Name => "Disable Click Targeting";
-        public override string Description => "Allows disabling of the target function on left and right mouse clicks.";
+        }
 
         private delegate void* ClickTarget(void** a1, byte* a2, bool a3);
         private HookWrapper<ClickTarget> rightClickTargetHook;
@@ -147,8 +149,8 @@ namespace SimpleTweaksPlugin.Tweaks {
         protected override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.DisableClickTargeting ?? new Configs();
             
-            rightClickTargetHook ??= Common.Hook(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 48 85 C0 74 1B"), new ClickTarget(RightClickTargetDetour));
-            leftClickTargetHook ??= Common.Hook(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? BA ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 84 C0 74 16"), new ClickTarget(LeftClickTargetDetour));
+            rightClickTargetHook ??= Common.Hook(Service.SigScanner.ScanText("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 41 0F B6 F8 48 8B DA 48 8B F1 45 84 C0 74 4B 8B 05 ?? ?? ?? ?? 85 C0 74 15 83 F8 03 75 3C 48 8B 05 ?? ?? ?? ?? F6 80 ?? ?? ?? ?? ?? 74 2C 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 1B 48 85 DB 74 16 4C 8B C3 48 8B D0 48 8B CE E8 ?? ?? ?? ?? 33 C9 84 C0 48 0F 44 D9 44 0F B6 C7 48 8B D3 48 8B CE 48 8B 5C 24 ?? 48 8B 74 24 ?? 48 83 C4 20 5F E9 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC 48 89 6C 24 ??"), new ClickTarget(RightClickTargetDetour));
+            leftClickTargetHook ??= Common.Hook(Service.SigScanner.ScanText("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 41 0F B6 F8 48 8B DA 48 8B F1 45 84 C0 74 4B 8B 05 ?? ?? ?? ?? 85 C0 74 15 83 F8 03 75 3C 48 8B 05 ?? ?? ?? ?? F6 80 ?? ?? ?? ?? ?? 74 2C 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 1B 48 85 DB 74 16 4C 8B C3 48 8B D0 48 8B CE E8 ?? ?? ?? ?? 33 C9 84 C0 48 0F 44 D9 44 0F B6 C7 48 8B D3 48 8B CE 48 8B 5C 24 ?? 48 8B 74 24 ?? 48 83 C4 20 5F E9 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC 48 89 5C 24 ??"), new ClickTarget(LeftClickTargetDetour));
             if (Config.DisableRightClick || Config.UseNameFilter) rightClickTargetHook?.Enable();
             if (Config.DisableLeftClick || Config.UseNameFilter) leftClickTargetHook?.Enable();
             base.Enable();
