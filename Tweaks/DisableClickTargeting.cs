@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Utility;
@@ -142,15 +144,15 @@ namespace SimpleTweaksPlugin.Tweaks {
             }
         }
 
-        private delegate void* ClickTarget(void** a1, byte* a2, bool a3);
+        private delegate void* ClickTarget(Int64 a1, Int64 a2, char a3);
         private HookWrapper<ClickTarget> rightClickTargetHook;
         private HookWrapper<ClickTarget> leftClickTargetHook;
 
         protected override void Enable() {
             Config = LoadConfig<Configs>() ?? PluginConfig.DisableClickTargeting ?? new Configs();
             
-            rightClickTargetHook ??= Common.Hook(Service.SigScanner.ScanText("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 41 0F B6 F8 48 8B DA 48 8B F1 45 84 C0 74 4B 8B 05 ?? ?? ?? ?? 85 C0 74 15 83 F8 03 75 3C 48 8B 05 ?? ?? ?? ?? F6 80 ?? ?? ?? ?? ?? 74 2C 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 1B 48 85 DB 74 16 4C 8B C3 48 8B D0 48 8B CE E8 ?? ?? ?? ?? 33 C9 84 C0 48 0F 44 D9 44 0F B6 C7 48 8B D3 48 8B CE 48 8B 5C 24 ?? 48 8B 74 24 ?? 48 83 C4 20 5F E9 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC 48 89 6C 24 ??"), new ClickTarget(RightClickTargetDetour));
-            leftClickTargetHook ??= Common.Hook(Service.SigScanner.ScanText("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 41 0F B6 F8 48 8B DA 48 8B F1 45 84 C0 74 4B 8B 05 ?? ?? ?? ?? 85 C0 74 15 83 F8 03 75 3C 48 8B 05 ?? ?? ?? ?? F6 80 ?? ?? ?? ?? ?? 74 2C 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 1B 48 85 DB 74 16 4C 8B C3 48 8B D0 48 8B CE E8 ?? ?? ?? ?? 33 C9 84 C0 48 0F 44 D9 44 0F B6 C7 48 8B D3 48 8B CE 48 8B 5C 24 ?? 48 8B 74 24 ?? 48 83 C4 20 5F E9 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC 48 89 5C 24 ??"), new ClickTarget(LeftClickTargetDetour));
+            rightClickTargetHook ??= Common.Hook(Service.SigScanner.ScanText("48 8B CF E8 ?? ?? ?? ?? 48 8B CD E8 ?? ?? ?? ?? 48 85 C0"), new ClickTarget(RightClickTargetDetour));
+            leftClickTargetHook ??= Common.Hook(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 4C 8B BC 24 ?? ?? ?? ?? 4C 8B B4 24 ?? ?? ?? ?? 48 8B B4 24 ?? ?? ?? ?? 48 8B 9C 24 ?? ?? ?? ??"), new ClickTarget(LeftClickTargetDetour));
             if (Config.DisableRightClick || Config.UseNameFilter) rightClickTargetHook?.Enable();
             if (Config.DisableLeftClick || Config.UseNameFilter) leftClickTargetHook?.Enable();
             base.Enable();
@@ -170,17 +172,18 @@ namespace SimpleTweaksPlugin.Tweaks {
             base.Dispose();
         }
 
-        private void* RightClickTargetDetour(void** a1, byte* a2, bool a3) {
-            if (a2 != null && a2 == a1[16]) return rightClickTargetHook.Original(a1, a2, a3);
+        private void* RightClickTargetDetour(Int64 a1, Int64 a2, char a3) {
+            if (a2 != 0) return rightClickTargetHook.Original(a1, a2, a3);
             
-            if (a2 != null && Config.UseNameFilter) {
+            if (Config.UseNameFilter) {
                 int l;
+                byte* b2 = (byte*)a2;
                 for (l = 0; l < 60; l++) {
-                    if (a2[0x30 + l] == 0) break;
+                    if (b2[0x30 + l] == 0) break;
                 }
 
                 if (l > 0) {
-                    var actorName = Encoding.UTF8.GetString(a2 + 0x30, l).Trim();
+                    var actorName = Encoding.UTF8.GetString(b2 + 0x30, l).Trim();
                     var nf = Config.NameFilters.FirstOrDefault(a => a.Name == actorName);
                     if (nf != default) {
                         if ((nf.OnlyInCombat && !Service.Condition[ConditionFlag.InCombat]) || (!nf.DisableRight)) return rightClickTargetHook.Original(a1, a2, a3);
@@ -195,17 +198,19 @@ namespace SimpleTweaksPlugin.Tweaks {
             return null;
         }
         
-        private void* LeftClickTargetDetour(void** a1, byte* a2, bool a3) {
-            if (a2 != null && a2 == a1[16]) return leftClickTargetHook.Original(a1, a2, a3);
+        private void* LeftClickTargetDetour(Int64 a1, Int64 a2, char a3) {
+            if (a2 != 0) return leftClickTargetHook.Original(a1, a2, a3);
             
-            if (a2 != null && Config.UseNameFilter) {
+            if (Config.UseNameFilter) {
                 int l;
-                for (l = 0; l < 60; l++) {
-                    if (a2[0x30 + l] == 0) break;
+                byte* b2 = (byte*)a2;
+                for (l = 0; l < 60; l++)
+                {
+                    if (b2[0x30 + l] == 0) break;
                 }
 
                 if (l > 0) {
-                    var actorName = Encoding.UTF8.GetString(a2 + 0x30, l).Trim();
+                    var actorName = Encoding.UTF8.GetString(b2 + 0x30, l).Trim();
                     var nf = Config.NameFilters.FirstOrDefault(a => a.Name == actorName);
                     if (nf != default) {
                         if ((nf.OnlyInCombat && !Service.Condition[ConditionFlag.InCombat]) || (!nf.DisableLeft)) return leftClickTargetHook.Original(a1, a2, a3);
