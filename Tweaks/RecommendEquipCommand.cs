@@ -14,7 +14,7 @@ public unsafe class RecommendEquipCommand : CommandTweak {
     
     protected override void OnCommand(string args) {
         if (Module == null) return;
-        Module->SetupRecommendedGear();
+        Module->SetupFromPlayerState();
         Common.FrameworkUpdate += DoEquip;
     }
 

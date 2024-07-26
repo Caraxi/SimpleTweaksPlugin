@@ -12,10 +12,10 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
+[TweakName("Improved Crafting Action Tooltips")]
+[TweakDescription("Adds calculated efficiency of crafting actions to tooltips.")]
+[TweakAutoConfig]
 public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
-    public override string Name => "Improved Crafting Action Tooltips";
-    public override string Description => "Adds calculated efficiency of crafting actions to tooltips.";
-
     public class Configs : TweakConfig {
         [TweakConfigOption("Show Results Preview")]
         public bool ShowResultsPreview = false;
@@ -23,15 +23,12 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
 
     public Configs Config { get; private set; }
 
-    public override bool UseAutoConfig => true;
-
     private DalamudLinkPayload? identifier;
     private string progressString;
     private string qualityString;
     
-    public override void Setup() {
+    protected override void Setup() {
         AddChangelog("1.8.1.1", "Fixed tweak not disabling correctly.");
-        base.Setup();
     }
 
     protected override void Enable() {
@@ -85,7 +82,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
 
                 newGhostBar->AtkResNode.Type = NodeType.NineGrid;
                 newGhostBar->PartsList = mainBar->PartsList;
-                newGhostBar->PartID = mainBar->PartID;
+                newGhostBar->PartId = mainBar->PartId;
                 newGhostBar->TopOffset = mainBar->TopOffset;
                 newGhostBar->BottomOffset = mainBar->BottomOffset;
                 newGhostBar->LeftOffset = mainBar->LeftOffset;
@@ -93,7 +90,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
                 newGhostBar->BlendMode = mainBar->BlendMode;
                 newGhostBar->PartsTypeRenderType = mainBar->PartsTypeRenderType;
 
-                newGhostBar->AtkResNode.NodeID = CustomNodes.CraftingGhostBar;
+                newGhostBar->AtkResNode.NodeId = CustomNodes.CraftingGhostBar;
                 newGhostBar->AtkResNode.SetPositionShort(0, 2);
                 newGhostBar->AtkResNode.ScaleX = 1;
                 newGhostBar->AtkResNode.ScaleY = 1;
@@ -142,7 +139,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
                 newGhostText->TextFlags = (byte) ((TextFlags)textNode->TextFlags | TextFlags.Edge);
                 newGhostText->TextFlags2 = 0;
 
-                newGhostText->AtkResNode.NodeID = CustomNodes.CraftingGhostText;
+                newGhostText->AtkResNode.NodeId = CustomNodes.CraftingGhostText;
 
                 newGhostText->AtkResNode.Color.A = 0xFF;
                 newGhostText->AtkResNode.Color.R = 0xFF;
@@ -230,24 +227,22 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
         var quality = 0U;
         
         // Find Progress
-        var p = (ProgressEfficiencyCalculation*) agent->Progress;
-        for (var i = 0; i < sizeof(ProgressEfficiencyCalculations) / sizeof(ProgressEfficiencyCalculation); i++) {
-            if (p == null) break;
-            if (p->ActionId == id) {
-                progress = p->ProgressIncrease;
+        foreach (var p in agent->Progress)
+        {
+            if (p.ActionId == id)
+            {
+                progress = p.ProgressIncrease;
                 break;
             }
-            p++;
         }
-        
-        var q = (QualityEfficiencyCalculation*) agent->Quality;
-        for (var i = 0; i < sizeof(QualityEfficiencyCalculations) / sizeof(QualityEfficiencyCalculation); i++) {
-            if (q == null) break;
-            if (q->ActionId == id) {
-                quality = q->QualityIncrease;
+
+        foreach (var q in agent->Quality)
+        {
+            if (q.ActionId == id)
+            {
+                quality = q.QualityIncrease;
                 break;
             }
-            q++;
         }
 
         return (progress, quality);

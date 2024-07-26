@@ -6,7 +6,8 @@ using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
-using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
@@ -16,11 +17,10 @@ using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 namespace SimpleTweaksPlugin.Tweaks;
 
 [Changelog("1.9.7.1", "Re-added 'Use ReShade' option")]
+[TweakName("Screenshot Improvements")]
+[TweakDescription("Allows taking higher resolution screenshots, Hiding Dalamud & Game UIs and removing the copyright notice from screenshots.")]
+[TweakAuthor("NotNite")]
 public unsafe class HighResScreenshots : Tweak {
-    public override string Name => "Screenshot Improvements";
-    public override string Description => "Allows taking higher resolution screenshots, Hiding Dalamud & Game UIs and removing the copyright notice from screenshots.";
-    protected override string Author => "NotNite";
-
     private nint copyrightShaderAddress;
 
     public class Configs : TweakConfig {
@@ -29,6 +29,10 @@ public unsafe class HighResScreenshots : Tweak {
         public bool HideDalamudUi;
         public bool HideGameUi;
         public bool RemoveCopyright;
+
+        public bool UseCustom;
+        public int CustomWidth = 1920;
+        public int CustomHeight = 1080;
         
         public bool UseReShade;
         public VirtualKey ReShadeMainKey = VirtualKey.SNAPSHOT;
@@ -48,7 +52,7 @@ public unsafe class HighResScreenshots : Tweak {
 
     private bool updatingReShadeKeybind = false;
     
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+    protected void DrawConfig(ref bool hasChanged) {
         ImGui.TextWrapped(
             "This tweak will increase the resolution of screenshots taken in game. It will NOT increase the scale of your HUD/plugin windows.");
         ImGui.TextWrapped("Your HUD will appear smaller while the screenshot is processing.");
@@ -63,12 +67,21 @@ public unsafe class HighResScreenshots : Tweak {
         ImGui.TextWrapped("The game WILL crash if you set the scale too high.");
         ImGui.PopStyleColor();
 
-        ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale * 100);
-        hasChanged |= ImGui.InputInt("Scale", ref Config.Scale);
+        hasChanged |= ImGui.Checkbox("Use Fixed Resolution", ref Config.UseCustom);
 
-        ImGui.SameLine();
-        var device = Device.Instance();
-        ImGui.TextDisabled($"{device->Width*Config.Scale}x{device->Height*Config.Scale}");
+        if (Config.UseCustom) {
+
+            hasChanged |= ImGui.InputInt("Width", ref Config.CustomWidth);
+            hasChanged |= ImGui.InputInt("Height", ref Config.CustomHeight);
+
+        } else {
+            ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale * 100);
+            hasChanged |= ImGui.InputInt("Scale", ref Config.Scale);
+
+            ImGui.SameLine();
+            var device = Device.Instance();
+            ImGui.TextDisabled($"{device->Width*Config.Scale}x{device->Height*Config.Scale}");
+        }
         
         ImGui.SetNextItemWidth(ImGuiHelpers.GlobalScale * 100);
         hasChanged |= ImGui.InputFloat("Delay", ref Config.Delay);
@@ -131,9 +144,9 @@ public unsafe class HighResScreenshots : Tweak {
             ImGui.Unindent();
             ImGui.Unindent();
         }
-    };
+    }
 
-    public override void Setup() {
+    protected override void Setup() {
         AddChangelogNewTweak("1.8.2.0");
         AddChangelog("1.8.3.0", "Added option to hide dalamud UI for screenshot.");
         AddChangelog("1.8.5.0", "Added option to hide game UI for screenshots.");
@@ -146,12 +159,12 @@ public unsafe class HighResScreenshots : Tweak {
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
 
-        if (!Service.SigScanner.TryScanText("49 8B 57 30 45 33 C9", out copyrightShaderAddress)) {
+        if (!Service.SigScanner.TryScanText("48 8B 57 ?? 45 33 C9 48 8B 06 45 33 C0 48 8B CE 48 8B 52 ?? FF 50 ?? 48 8B 06 4C 8D 4C 24", out copyrightShaderAddress)) {
             copyrightShaderAddress = 0;
         }
-        
+
         isInputIDClickedHook ??=
-            Common.Hook<IsInputIDClickedDelegate>("E9 ?? ?? ?? ?? 83 7F 44 02", IsInputIDClickedDetour);
+            Common.Hook<IsInputIDClickedDelegate>("E9 ?? ?? ?? ?? 83 7F ?? ?? 0F 8F ?? ?? ?? ?? BA ?? ?? ?? ?? 48 8B CB", IsInputIDClickedDetour);
         isInputIDClickedHook?.Enable();
 
         base.Enable();
@@ -162,13 +175,16 @@ public unsafe class HighResScreenshots : Tweak {
     private uint oldHeight;
     private bool isRunning;
 
-    const int ScreenshotButton = 543;
+    const int ScreenshotButton = 546;
     public bool originalUiVisibility;
     byte[] originalCopyrightBytes = null;
     // IsInputIDClicked is called from Client::UI::UIInputModule.CheckScreenshotState, which is polled
     // We change the res when the button is pressed and tell it to take a screenshot the next time it is polled
     private byte IsInputIDClickedDetour(nint a1, int a2) {
+        if (a2 == ScreenshotButton && Config.UseReShade && Framework.Instance()->WindowInactive) return 0;
+        
         var orig = isInputIDClickedHook.Original(a1, a2);
+        if (AgentModule.Instance()->GetAgentByInternalId(AgentId.Configkey)->IsAgentActive()) return orig;
 
         if (orig == 1 && a2 == ScreenshotButton && !shouldPress && !isRunning) {
             isRunning = true;
@@ -176,15 +192,27 @@ public unsafe class HighResScreenshots : Tweak {
             oldWidth = device->Width;
             oldHeight = device->Height;
 
-            if (Config.Scale > 1) {
-                device->NewWidth = oldWidth * (uint)Config.Scale;
-                device->NewHeight = oldHeight * (uint)Config.Scale;
-                device->RequestResolutionChange = 1;
+            if (Config.UseCustom) {
+                var w = Math.Clamp((uint)Config.CustomWidth, 1280, ushort.MaxValue);
+                var h = Math.Clamp((uint)Config.CustomHeight, 720, ushort.MaxValue);
+                if (device->Width != w || device->Height != h) {
+                    device->NewWidth = w;
+                    device->NewHeight = h;
+                    device->RequestResolutionChange = 1;
+                }
+            } else {
+                if (Config.Scale > 1) {
+                    device->NewWidth = oldWidth * (uint)Config.Scale;
+                    device->NewHeight = oldHeight * (uint)Config.Scale;
+                    device->RequestResolutionChange = 1;
+                }
             }
+            
+            
 
             if (Config.HideGameUi) {
-                var raptureAtkModule = Framework.Instance()->GetUiModule()->GetRaptureAtkModule();
-                originalUiVisibility = !raptureAtkModule->RaptureAtkUnitManager.Flags.HasFlag(RaptureAtkModuleFlags.UiHidden);
+                var raptureAtkModule = Framework.Instance()->GetUIModule()->GetRaptureAtkModule();
+                originalUiVisibility = !raptureAtkModule->RaptureAtkUnitManager.Flags.HasFlag(AtkUnitManagerFlags.UiHidden);
                 if (originalUiVisibility) {
                     raptureAtkModule->SetUiVisibility(false);
                 }
@@ -209,8 +237,8 @@ public unsafe class HighResScreenshots : Tweak {
             Service.Framework.RunOnTick(() => {
                 UIDebug.FreeExclusiveDraw();
                 if (Config.HideGameUi) {
-                    var raptureAtkModule = Framework.Instance()->GetUiModule()->GetRaptureAtkModule();
-                    if (originalUiVisibility && raptureAtkModule->RaptureAtkUnitManager.Flags.HasFlag(RaptureAtkModuleFlags.UiHidden)) {
+                    var raptureAtkModule = Framework.Instance()->GetUIModule()->GetRaptureAtkModule();
+                    if (originalUiVisibility && raptureAtkModule->RaptureAtkUnitManager.Flags.HasFlag(AtkUnitManagerFlags.UiHidden)) {
                         raptureAtkModule->SetUiVisibility(true);
                     }
                 }

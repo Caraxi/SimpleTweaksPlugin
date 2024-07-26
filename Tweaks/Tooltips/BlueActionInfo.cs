@@ -4,12 +4,13 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
+[TweakName("Improved Blue Mage Action Tooltips")]
+[TweakDescription("Adds Damage Type, Aspect and Rank to blue mage actions.")]
 public unsafe class BlueActionInfo : TooltipTweaks.SubTweak {
-    public override string Name => "Improved Blue Mage Action Tooltips";
-    public override string Description => "Adds Damage Type, Aspect and Rank to blue mage actions.";
     public override void OnGenerateActionTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         var aozAction = Service.Data.Excel.GetSheet<AozAction>()?.FirstOrDefault(a => a.Action.Row == Action.Id);
         if (aozAction?.Action?.Value == null) return;
@@ -17,10 +18,10 @@ public unsafe class BlueActionInfo : TooltipTweaks.SubTweak {
         if (aozActionTransient?.Stats == null) return;
         var descriptionString = GetTooltipString(stringArrayData, TooltipTweaks.ActionTooltipField.Description);
         if (descriptionString.TextValue.Contains(Service.ClientState.ClientLanguage switch {
-                Dalamud.ClientLanguage.English => "Rank: ★",
-                Dalamud.ClientLanguage.German => "Rang: ★",
-                Dalamud.ClientLanguage.French => "Rang: ★",
-                Dalamud.ClientLanguage.Japanese => "ランク：★",
+                Dalamud.Game.ClientLanguage.English => "Rank: ★",
+                Dalamud.Game.ClientLanguage.German => "Rang: ★",
+                Dalamud.Game.ClientLanguage.French => "Rang: ★",
+                Dalamud.Game.ClientLanguage.Japanese => "ランク：★",
                 _ => "Rank: ★" })) return; // Don't append when it already exists.
         var infoStr = aozActionTransient.Stats.ToDalamudString();
         descriptionString.Append(NewLinePayload.Payload);

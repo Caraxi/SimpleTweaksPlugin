@@ -6,20 +6,18 @@ using ImGuiNET;
 using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks.Tooltips.Hotkeys; 
+namespace SimpleTweaksPlugin.Tweaks.Tooltips.Hotkeys;
 
 public class ViewOnTeamcraft : ItemHotkey {
-
     public class HotkeyConfig : ItemHotkeyConfig {
-        public bool ForceBrowser = false;
+        public bool ForceBrowser;
     }
-    
-    public new HotkeyConfig Config => base.Config as HotkeyConfig;
-    
-    public override string Name => "View on Teamcraft";
-    protected override VirtualKey[] DefaultKeyCombo => new[] { VirtualKey.CONTROL, VirtualKey.T};
 
-    
+    public new HotkeyConfig Config => base.Config as HotkeyConfig;
+
+    protected override string Name => "View on Teamcraft";
+    protected override VirtualKey[] DefaultKeyCombo => [VirtualKey.CONTROL, VirtualKey.T];
+
     private bool teamcraftLocalFailed;
 
     public override void DrawExtraConfig() {
@@ -32,6 +30,7 @@ public class ViewOnTeamcraft : ItemHotkey {
             Common.OpenBrowser($"https://ffxivteamcraft.com/db/en/item/{item.RowId}");
             return;
         }
+
         Task.Run(async () => {
             using var timeoutSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
             try {
@@ -51,4 +50,3 @@ public class ViewOnTeamcraft : ItemHotkey {
         });
     }
 }
-

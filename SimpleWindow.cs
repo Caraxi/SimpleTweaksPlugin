@@ -7,7 +7,7 @@ public abstract class SimpleWindow : Window {
     private bool isCollapsed;
 
     protected SimpleWindow(string name) : base(name) {
-        
+
     }
     
     public void UnCollapseOrToggle() {

@@ -1,18 +1,25 @@
 ﻿using System;
 using System.Diagnostics;
+using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 
-namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [TweakName("Timer on Duty Waiting")]
 [TweakDescription("Shows the 45 second countdown after readying for a duty.")]
 public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
+    private readonly Utf8String* timeRemainingString = Utf8String.CreateEmpty();
     private readonly string prefix = Service.Data.GetExcelSheet<Addon>()?.GetRow(2780)?.Text?.RawString ?? "Checking member status...";
     private Stopwatch stopwatch = new();
     private TimeSpan timeOffset = TimeSpan.Zero;
+
+    public override void Dispose() {
+        timeRemainingString->Dtor(true);
+        base.Dispose();
+    }
 
     [AddonPostRequestedUpdate("ContentsFinderConfirm")]
     private void OnPostSetup(AtkUnitBase* addon) {
@@ -27,6 +34,7 @@ public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
         var timeRemaining = timeOffset.Seconds - stopwatch.Elapsed.Seconds;
         if (timeRemaining <= 0) return;
 
-        addon->GetTextNodeById(3)->SetText($"{prefix} ({timeRemaining})");
+        timeRemainingString->SetString($"{prefix} ({timeRemaining})");
+        addon->GetTextNodeById(3)->SetText(timeRemainingString->StringPtr);
     }
 }

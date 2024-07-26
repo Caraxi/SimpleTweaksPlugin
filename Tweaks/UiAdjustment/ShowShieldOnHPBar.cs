@@ -7,41 +7,22 @@ using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
-public unsafe class ShowShieldOnHPBar: UiAdjustments.SubTweak
-{
-    public override string Name => "Shield on HP Bar";
-    public override string Description => "Show approximate shield on the HP Bar.";
-
-    protected override string Author => "Chivalrik";
-
-    public override void Setup() {
-        AddChangelog("1.8.9.0", "Fixed tweak not working after relogging.");
-        base.Setup();
-    }
-
+[TweakName("Shield on HP Bar")]
+[TweakDescription("Show approximate shield on the HP Bar.")]
+[TweakAuthor("Chivalrik")]
+[TweakAutoConfig]
+public unsafe class ShowShieldOnHPBar : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Shield Colour", "Color")]
         public Vector3 ShieldColour = Common.UiColorToVector3(0xFFFF00);
     }
 
     public Configs Config { get; private set; }
-    public override bool UseAutoConfig => true;
 
-    protected override void Enable()
-    {
-        Config = LoadConfig<Configs>() ?? new Configs();
-        Common.FrameworkUpdate += FrameworkUpdate;
-        base.Enable();
-    }
-
-    protected override void Disable()
-    {
-        SaveConfig(Config);
-        Common.FrameworkUpdate -= FrameworkUpdate;
+    protected override void Disable() {
         Finalize(Common.GetUnitBase("_ParameterWidget"));
-        base.Disable();
     }
 
     private readonly uint shieldGridID = CustomNodes.Get("ShieldOnHP");
@@ -69,17 +50,15 @@ public unsafe class ShowShieldOnHPBar: UiAdjustments.SubTweak
             overShieldGrid->Destroy(true);
         }
     }
-    
-    
-    private void FrameworkUpdate()
-    {           
-        try
-        {
+
+    [FrameworkUpdate]
+    private void FrameworkUpdate() {
+        try {
             var parameterWidget = Common.GetUnitBase("_ParameterWidget");
             if (parameterWidget == null) return;
             if (parameterWidget->UldManager.LoadedState != AtkLoadState.Loaded) return;
             if (!parameterWidget->IsVisible) return;
-            
+
             var hpGaugeBarNode = parameterWidget->GetNodeById(3);
             if (hpGaugeBarNode == null) return;
             var hpGaugeBar = hpGaugeBarNode->GetAsAtkComponentNode();
@@ -88,13 +67,13 @@ public unsafe class ShowShieldOnHPBar: UiAdjustments.SubTweak
             var shieldGrid = Common.GetNodeByID<AtkNineGridNode>(&hpGaugeBar->Component->UldManager, shieldGridID);
             var overShieldGrid = Common.GetNodeByID<AtkNineGridNode>(&hpGaugeBar->Component->UldManager, overShieldGridID);
             var hpNineGrid = Common.GetNodeByID<AtkNineGridNode>(&hpGaugeBar->Component->UldManager, 5);
-            
+
             if (hpNineGrid == null) return;
 
             void CreateBar(uint id) {
                 var bar = IMemorySpace.GetUISpace()->Create<AtkNineGridNode>();
                 bar->AtkResNode.Type = NodeType.NineGrid;
-                bar->AtkResNode.NodeID = id;
+                bar->AtkResNode.NodeId = id;
                 bar->PartsList = hpNineGrid->PartsList;
                 bar->TopOffset = 0;
                 bar->BottomOffset = 0;
@@ -102,7 +81,7 @@ public unsafe class ShowShieldOnHPBar: UiAdjustments.SubTweak
                 bar->RightOffset = 7;
                 bar->BlendMode = 0;
                 bar->PartsTypeRenderType = 0;
-                bar->PartID = 2;
+                bar->PartId = 2;
                 bar->AtkResNode.MultiplyRed = 255;
                 bar->AtkResNode.MultiplyGreen = 255;
                 bar->AtkResNode.MultiplyBlue = 0;
@@ -117,21 +96,21 @@ public unsafe class ShowShieldOnHPBar: UiAdjustments.SubTweak
                 bar->AtkResNode.ToggleVisibility(true);
                 UiHelper.LinkNodeAfterTargetNode(&bar->AtkResNode, hpGaugeBar, &hpNineGrid->AtkResNode);
             }
-            
+
             if (shieldGrid == null) {
                 CreateBar(shieldGridID);
                 return;
             }
-            
+
             if (overShieldGrid == null) {
                 CreateBar(overShieldGridID);
                 return;
             }
-            
+
             var player = Service.ClientState.LocalPlayer;
             if (player == null) return;
 
-            var shieldRawPercentage = ((Character*) player.Address)->CharacterData.ShieldValue / 100f;
+            var shieldRawPercentage = ((Character*)player.Address)->CharacterData.ShieldValue / 100f;
             var playerHpPercentage = (float)player.CurrentHp / player.MaxHp;
             var playerHpDownPercentage = 1f - playerHpPercentage;
             var shieldOverPercentage = shieldRawPercentage - playerHpDownPercentage;
@@ -141,22 +120,20 @@ public unsafe class ShowShieldOnHPBar: UiAdjustments.SubTweak
 
             shieldGrid->AtkResNode.ToggleVisibility(shieldPercentage > 0);
             overShieldGrid->AtkResNode.ToggleVisibility(shieldOverPercentage > 0);
-            
+
             shieldGrid->AtkResNode.X = playerHpPercentage * 148;
             shieldGrid->AtkResNode.SetWidth(shieldPercentage > 0 ? (ushort)(shieldPercentage * 148 + 12 + 0.5f) : (ushort)0);
             shieldGrid->AtkResNode.DrawFlags |= 1;
             overShieldGrid->AtkResNode.SetWidth(shieldOverPercentage > 0 ? (ushort)(shieldOverPercentage * 148 + 12 + 0.5f) : (ushort)0);
 
-            shieldGrid->AtkResNode.MultiplyRed = (byte) (255 * Config.ShieldColour.X);
-            shieldGrid->AtkResNode.MultiplyGreen = (byte) (255 * Config.ShieldColour.Y);
-            shieldGrid->AtkResNode.MultiplyBlue = (byte) (255 * Config.ShieldColour.Z);
+            shieldGrid->AtkResNode.MultiplyRed = (byte)(255 * Config.ShieldColour.X);
+            shieldGrid->AtkResNode.MultiplyGreen = (byte)(255 * Config.ShieldColour.Y);
+            shieldGrid->AtkResNode.MultiplyBlue = (byte)(255 * Config.ShieldColour.Z);
 
-            overShieldGrid->AtkResNode.MultiplyRed = (byte) (255 * Config.ShieldColour.X);
-            overShieldGrid->AtkResNode.MultiplyGreen = (byte) (255 * Config.ShieldColour.Y);
-            overShieldGrid->AtkResNode.MultiplyBlue = (byte) (255 * Config.ShieldColour.Z);
-        }
-        catch (Exception ex)
-        {
+            overShieldGrid->AtkResNode.MultiplyRed = (byte)(255 * Config.ShieldColour.X);
+            overShieldGrid->AtkResNode.MultiplyGreen = (byte)(255 * Config.ShieldColour.Y);
+            overShieldGrid->AtkResNode.MultiplyBlue = (byte)(255 * Config.ShieldColour.Z);
+        } catch (Exception ex) {
             SimpleLog.Error(ex);
         }
     }

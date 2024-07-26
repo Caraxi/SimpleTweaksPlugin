@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.10.0.1
+***General Changes***
+- Updated more tweaks for Dawntrail
+
+***Tweak Changes***
+- **`Parameter Bar Adjustments`** - Hide MP bar on Viper
+
+- **`Show Experience Percentage`** - Added option to move EXP or Chain Bonus above the EXP bar.
+
+
 ## 1.9.7.1
 ***Tweak Changes***
 - **`Screenshot Improvements`** - Re-added 'Use ReShade' option

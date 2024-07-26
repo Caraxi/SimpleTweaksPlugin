@@ -1,7 +1,7 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using ImGuiNET;
 
-namespace SimpleTweaksPlugin.Debugging; 
+namespace SimpleTweaksPlugin.Debugging;
 
 public unsafe class FrameworkInspector : DebugHelper {
     public override string Name => "Framework Inspector";

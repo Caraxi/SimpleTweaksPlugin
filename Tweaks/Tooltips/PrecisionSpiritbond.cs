@@ -5,16 +5,15 @@ using SimpleTweaksPlugin.TweakSystem;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltipField;
 
-namespace SimpleTweaksPlugin.Tweaks.Tooltips; 
+namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
+[TweakName("Precise Spiritbond")]
+[TweakDescription("Show partial percentages for Spiritbond.")]
 public class PrecisionSpiritbond : SubTweak {
-    public override string Name => "Precise Spiritbond";
-    public override string Description => "Show partial percentages for Spiritbond.";
-
     public class Configs : TweakConfig {
         public bool TrailingZero = true;
     }
-        
+
     public Configs Config { get; private set; }
 
     protected override void Enable() {
@@ -35,10 +34,9 @@ public class PrecisionSpiritbond : SubTweak {
         } catch (Exception ex) {
             Plugin.Error(this, ex);
         }
-        
     }
 
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+    protected void DrawConfig(ref bool hasChanged) {
         hasChanged |= ImGui.Checkbox(LocString("Trailing Zeros") + $"###{GetType().Name}TrailingZeros", ref Config.TrailingZero);
-    };
+    }
 }

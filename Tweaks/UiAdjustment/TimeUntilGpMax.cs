@@ -7,28 +7,29 @@ using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
+[TweakName("Time Until GP Max")]
+[TweakDescription("Shows a countdown when playing Gathering classes to estimate the time until their GP is capped.")]
 public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
-    public override string Name => "Time Until GP Max";
-    public override string Description => "Shows a countdown when playing Gathering classes to estimate the time until their GP is capped.";
-        
     private readonly Stopwatch lastGpChangeStopwatch = new();
     private readonly Stopwatch lastUpdate = new();
     private uint lastGp = uint.MaxValue;
     private int gpPerTick = 5;
     private float timePerTick = 3f;
     private int forceVisible = 0;
+
     public delegate void UpdateParamDelegate(uint a1, uint* a2, byte a3);
+
     private HookWrapper<UpdateParamDelegate> updateParamHook;
-        
+
     public class Configs : TweakConfig {
         public int GpGoal = -1;
         public Vector2 PositionOffset = new(0);
         public bool EorzeaTime;
     }
 
-    protected override DrawConfigDelegate DrawConfigTree => ((ref bool hasChanged) => {
+    protected void DrawConfig(ref bool hasChanged) {
         ImGui.Checkbox(LocString("EorzeaTime", "Display Eorzea Time"), ref Config.EorzeaTime);
         ImGui.SetNextItemWidth(200 * ImGui.GetIO().FontGlobalScale);
         hasChanged |= ImGui.SliderInt("Target GP##timeUntilGpMax", ref Config.GpGoal, -1, 1000);
@@ -39,19 +40,18 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
         }
 
         if (hasChanged) Update();
-    });
+    }
 
     public Configs Config { get; private set; }
 
-    public override void Setup() {
+    protected override void Setup() {
         AddChangelog("1.8.2.0", "Added an option to display time in Eorzean Hours").Author("peterberbec");
-        base.Setup();
     }
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         lastUpdate.Restart();
-        updateParamHook ??= Common.Hook<UpdateParamDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC 20 83 3D ?? ?? ?? ?? ?? 41 0F B6 E8 48 8B DA 8B F1 0F 84 ?? ?? ?? ?? 48 89 7C 24", UpdateParamDetour);
+        updateParamHook ??= Common.Hook<UpdateParamDelegate>("48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC ?? 83 3D ?? ?? ?? ?? ?? 41 0F B6 E8 48 8B DA 8B F1 0F 84 ?? ?? ?? ?? 48 89 7C 24", UpdateParamDetour);
         updateParamHook.Enable();
         Common.FrameworkUpdate += FrameworkUpdate;
         base.Enable();
@@ -65,7 +65,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
                 lastGpChangeStopwatch.Restart();
             } else {
                 if (Service.ClientState.LocalPlayer.CurrentGp > lastGp && lastGpChangeStopwatch.ElapsedMilliseconds is > 1000 and < 4000) {
-                    var diff = (int) Service.ClientState.LocalPlayer.CurrentGp - (int) lastGp;
+                    var diff = (int)Service.ClientState.LocalPlayer.CurrentGp - (int)lastGp;
                     if (diff < 20) {
                         gpPerTick = diff;
                         lastGp = Service.ClientState.LocalPlayer.CurrentGp;
@@ -117,16 +117,17 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
 
         var gatheringWidget = Common.GetUnitBase("Gathering");
         if (gatheringWidget == null) gatheringWidget = Common.GetUnitBase("GatheringMasterpiece");
-            
+
         AtkTextNode* textNode = null;
         for (var i = 0; i < paramWidget->UldManager.NodeListCount; i++) {
             if (paramWidget->UldManager.NodeList[i] == null) continue;
-            if (paramWidget->UldManager.NodeList[i]->NodeID == CustomNodes.TimeUntilGpMax) {
+            if (paramWidget->UldManager.NodeList[i]->NodeId == CustomNodes.TimeUntilGpMax) {
                 textNode = (AtkTextNode*)paramWidget->UldManager.NodeList[i];
                 if (reset) {
                     paramWidget->UldManager.NodeList[i]->ToggleVisibility(false);
                     continue;
                 }
+
                 break;
             }
         }
@@ -134,14 +135,10 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
         if (textNode == null && reset) return;
 
         if (textNode == null) {
-
             var newTextNode = IMemorySpace.GetUISpace()->Create<AtkTextNode>();
             if (newTextNode != null) {
-
                 var lastNode = paramWidget->RootNode;
                 if (lastNode == null) return;
-
-
 
                 textNode = newTextNode;
 
@@ -158,7 +155,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
                 newTextNode->TextFlags = (byte)(TextFlags.Edge);
                 newTextNode->TextFlags2 = 0;
 
-                newTextNode->AtkResNode.NodeID = CustomNodes.TimeUntilGpMax;
+                newTextNode->AtkResNode.NodeId = CustomNodes.TimeUntilGpMax;
 
                 newTextNode->AtkResNode.Color.A = 0xFF;
                 newTextNode->AtkResNode.Color.R = 0xFF;
@@ -173,7 +170,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
 
                     newTextNode->AtkResNode.NextSiblingNode = lastNode;
                     newTextNode->AtkResNode.ParentNode = paramWidget->RootNode;
-                    lastNode->PrevSiblingNode = (AtkResNode*) newTextNode;
+                    lastNode->PrevSiblingNode = (AtkResNode*)newTextNode;
                 } else {
                     lastNode->ChildNode = (AtkResNode*)newTextNode;
                     newTextNode->AtkResNode.ParentNode = lastNode;

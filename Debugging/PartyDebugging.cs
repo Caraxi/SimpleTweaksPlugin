@@ -1,68 +1,51 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using Dalamud.Game.ClientState.Objects.SubKinds;
+﻿using System.Collections.Generic;
 using FFXIVClientStructs.FFXIV.Client.Game.Group;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using FFXIVClientStructs.Interop;
 using ImGuiNET;
-using PartyMember = FFXIVClientStructs.FFXIV.Client.Game.Group.PartyMember;
 
-namespace SimpleTweaksPlugin.Debugging; 
+namespace SimpleTweaksPlugin.Debugging;
 
 public unsafe class PartyDebugging : DebugHelper {
     public override string Name => "Party Debugging";
 
-    private GroupManager* groupManager;
-        
     public override void Draw() {
+        var groupManager = GroupManager.Instance();
 
-        if (groupManager == null) {
-            groupManager = (GroupManager*) Service.SigScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? 44 8B E7");
-        }
-            
-        DebugManager.ClickToCopyText($"{(ulong) groupManager:X}"); ImGui.SameLine();
-            
-        DebugManager.PrintOutObject(*groupManager, (ulong) groupManager, new List<string>());
+        DebugManager.ClickToCopyText($"{(ulong)groupManager:X}");
+        ImGui.SameLine();
 
+        DebugManager.PrintOutObject(*groupManager, (ulong)groupManager, new List<string>());
 
-        if (groupManager->MemberCount < 1) {
+        if (groupManager->MainGroup.MemberCount < 1) {
             ImGui.Text("Not in a party");
         } else {
+            ImGui.Text($"Party Member Count: {groupManager->MainGroup.MemberCount}");
+            for (var i = 0; i < 8 && i < groupManager->MainGroup.PartyMembers.Length && i < groupManager->MainGroup.MemberCount; i++) {
+                var partyMember = groupManager->MainGroup.PartyMembers.GetPointer(i);
+                if (partyMember->EntityId == 0xE0000000) continue;
+                var name = partyMember->NameString;
+
+                DebugManager.ClickToCopy(partyMember);
+                ImGui.SameLine();
+                ImGui.Text($"{partyMember->NameString}");
+                ImGui.SameLine();
+                ImGui.Text($"Lv{partyMember->Level}");
+                ImGui.SameLine();
+                DebugManager.ClickToCopyText($"{partyMember->EntityId:X}");
                 
-            ImGui.Text($"Party Member Count: {groupManager->MemberCount}");
-
-            var partyMembers = (PartyMember*) groupManager->PartyMembers;
-
-            for (var i = 0; i < 8 && i < groupManager->MemberCount; i++) {
-                var partyMember = partyMembers[i];
-                var name = Marshal.PtrToStringAnsi(new IntPtr(partyMember.Name));
-                ImGui.Text($"[{(ulong)&partyMember:X}] Lv {partyMember.Level}, {partyMember.ObjectID:X}, {name}");
-
-                PlayerCharacter chara = null;
-
-                for (var a = 0; a < Service.Objects.Length; a += 2) {
-                    var actor = Service.Objects[a];
-                    if (actor == null) continue;
-                    if ((uint)actor.ObjectId == partyMember.ObjectID && actor is PlayerCharacter pc) {
-                        chara = pc;
+                if (partyMember->EntityId != 0) {
+                    var chara = GameObjectManager.Instance()->Objects.GetObjectByEntityId(partyMember->EntityId);
+                    if (chara != null) {
+                        ImGui.SameLine();
+                        DebugManager.PrintOutObject(chara);
                     }
                 }
+                
+                ImGui.Spacing();
 
-                if (chara != null) {
-                    DebugManager.PrintOutObject(chara, (ulong) chara.Address.ToInt64(), new List<string>());
-                }
-                    
-
-
+                
             }
-                
-                
-                
         }
-            
-            
-            
-
     }
-
-        
 }

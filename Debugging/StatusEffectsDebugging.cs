@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Linq;
+using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Memory;
 using Dalamud.Utility;
-using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using FFXIVClientStructs.Interop;
 using ImGuiNET;
 
-namespace SimpleTweaksPlugin.Debugging; 
+namespace SimpleTweaksPlugin.Debugging;
 
 public unsafe class StatusEffectsDebugging : DebugHelper {
     public override string Name => "Status Effects Debugging";
@@ -19,21 +20,19 @@ public unsafe class StatusEffectsDebugging : DebugHelper {
         ImGui.SameLine();
         DebugManager.ClickToCopyText($"{(ulong)battleChara:X}");
         ImGui.SameLine();
-        DebugManager.PrintOutObject(*battleChara, (ulong) battleChara);
+        DebugManager.PrintOutObject(*battleChara, (ulong)battleChara);
 
         ImGui.Separator();
 
-        var statusManager = battleChara->GetStatusManager;
+        var statusManager = battleChara->GetStatusManager();
         ImGui.Text($"Status Manager:");
         ImGui.SameLine();
-        DebugManager.ClickToCopyText($"{(ulong)statusManager:X}");
+        DebugManager.ClickToCopy(statusManager);
         ImGui.SameLine();
-        DebugManager.PrintOutObject(*statusManager, (ulong) statusManager);
+        DebugManager.PrintOutObject(statusManager);
         ImGui.Separator();
-        var status = (Status*) battleChara->GetStatusManager->Status;
 
         if (ImGui.BeginTable("statusTable", 7)) {
-
             ImGui.TableSetupColumn("Index", ImGuiTableColumnFlags.WidthFixed, 50);
             ImGui.TableSetupColumn("ID", ImGuiTableColumnFlags.WidthFixed, 60);
             ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthFixed, 200);
@@ -42,17 +41,17 @@ public unsafe class StatusEffectsDebugging : DebugHelper {
             ImGui.TableSetupColumn("Source", ImGuiTableColumnFlags.WidthFixed, 150);
             ImGui.TableSetupColumn("Object");
 
-
             ImGui.TableHeadersRow();
 
             var sheet = Service.Data.Excel.GetSheet<Lumina.Excel.GeneratedSheets.Status>();
 
-            for (var i = 0; i < 30; i++) {
-                var s = sheet?.GetRow(status->StatusID);
+            for (var i = 0; i < statusManager->Status.Length; i++) {
+                var status = statusManager->Status.GetPointer(i);
+                var s = sheet?.GetRow(status->StatusId);
                 ImGui.TableNextColumn();
                 ImGui.Text($"{i}");
                 ImGui.TableNextColumn();
-                ImGui.Text($"{status->StatusID}");
+                ImGui.Text($"{status->StatusId}");
                 ImGui.TableNextColumn();
                 if (s != null) {
                     var statusName = s.Name.ToDalamudString().TextValue;
@@ -71,46 +70,38 @@ public unsafe class StatusEffectsDebugging : DebugHelper {
 
                 ImGui.TableNextColumn();
 
-                if (status->SourceID == 0xE0000000 || status->SourceID == 0) {
+                if (status->SourceId == 0xE0000000 || status->SourceId == 0) {
                     ImGui.Text("None");
                 } else {
-                    var sourceObj = CharacterManager.Instance()->LookupBattleCharaByObjectId(status->SourceID);
+                    var sourceObj = CharacterManager.Instance()->LookupBattleCharaByEntityId(status->SourceId);
                     if (sourceObj == null) {
-                        DebugManager.ClickToCopyText($"0x{status->SourceID:X}");
+                        DebugManager.ClickToCopyText($"0x{status->SourceId:X}");
                     } else {
-                        var sourceName = MemoryHelper.ReadSeStringNullTerminated(new IntPtr(sourceObj->Character.GameObject.Name));
-                        DebugManager.ClickToCopyText($"{sourceName.TextValue}", $"0x{status->SourceID:X}");
+                        var sourceName = SeString.Parse(sourceObj->Name);
+                        DebugManager.ClickToCopyText($"{sourceName.TextValue}", $"0x{status->SourceId:X}");
                     }
-
                 }
 
-
                 ImGui.TableNextColumn();
-                DebugManager.PrintOutObject(*status, (ulong) status);
-                status++;
+                DebugManager.PrintOutObject(status);
             }
 
             ImGui.EndTable();
         }
-
-
-
-
-
     }
 
-    private byte[] battleCharaKinds = { 1, 2 };
+    private readonly ObjectKind[] battleCharaKinds = [ObjectKind.Pc, ObjectKind.BattleNpc];
 
     public override void Draw() {
-
         if (ImGui.BeginTabBar($"statusExplorerTabs")) {
             if (ImGui.BeginTabItem($"Self")) {
-                var selfObject = GameObjectManager.GetGameObjectByIndex(0);
-                if (selfObject == null || selfObject->ObjectKind != 1) {
+                var selfObject = GameObjectManager.Instance()->Objects.IndexSorted[0].Value;
+                if (selfObject == null || selfObject->ObjectKind != ObjectKind.Pc) {
                     ImGui.Text("Self Not Found");
                 } else {
-                    DrawStatusExplorer((BattleChara*) selfObject);
+                    DrawStatusExplorer((BattleChara*)selfObject);
                 }
+
                 ImGui.EndTabItem();
             }
 
@@ -118,35 +109,33 @@ public unsafe class StatusEffectsDebugging : DebugHelper {
                 if (Service.Targets?.Target == null) {
                     ImGui.Text("No Target");
                 } else {
-                    var targetObject = (GameObject*) Service.Targets?.Target?.Address;
+                    var targetObject = (GameObject*)Service.Targets?.Target?.Address;
                     if (targetObject == null || !battleCharaKinds.Contains(targetObject->ObjectKind)) {
                         ImGui.Text($"Unsupported Target Kind: {targetObject->ObjectKind}");
                     } else {
-                        DrawStatusExplorer((BattleChara*) targetObject);
+                        DrawStatusExplorer((BattleChara*)targetObject);
                     }
                 }
 
                 ImGui.EndTabItem();
             }
+
             if (ImGui.BeginTabItem($"Focus Target")) {
                 if (Service.Targets?.FocusTarget == null) {
                     ImGui.Text("No Focus Target");
                 } else {
-                    var targetObject = (GameObject*) Service.Targets?.FocusTarget?.Address;
+                    var targetObject = (GameObject*)Service.Targets?.FocusTarget?.Address;
                     if (targetObject == null || !battleCharaKinds.Contains(targetObject->ObjectKind)) {
                         ImGui.Text($"Unsupported Target Kind: {targetObject->ObjectKind}");
                     } else {
-                        DrawStatusExplorer((BattleChara*) targetObject);
+                        DrawStatusExplorer((BattleChara*)targetObject);
                     }
                 }
 
                 ImGui.EndTabItem();
             }
 
-
             ImGui.EndTabBar();
         }
-
-
     }
 }

@@ -1,13 +1,11 @@
 namespace SimpleTweaksPlugin.TweakSystem; 
 
 public class BlacklistedTweak : BaseTweak, IDisabledTweak {
-    public override string Name { get; }
     public override string Key { get; }
     public string DisabledMessage { get; }
     
-    public BlacklistedTweak(string key, string name, string disabledMessage) {
+    public BlacklistedTweak(string key, string name, string disabledMessage) : base(name) {
         Key = key;
-        Name = name;
         DisabledMessage = disabledMessage;
     }
 }

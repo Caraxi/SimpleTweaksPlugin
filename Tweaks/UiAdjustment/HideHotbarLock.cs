@@ -11,25 +11,25 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [Changelog("1.8.9.2", "Added an option to change which keys show the lock")]
 [TweakCategory(TweakCategory.UI)]
+[TweakName("Hide Hotbar Lock")]
+[TweakDescription("Hides the hotbar lock button, with an option to make it visible while holding a modifier combo.")]
 public unsafe class HideHotbarLock : Tweak {
-    public override string Name => "Hide Hotbar Lock";
-    public override string Description => "Hides the hotbar lock button, with an option to make it visible while holding a modifier combo.";
-
     public class Configs : TweakConfig {
-        public bool ShowWhileHoldingShift = false;
+        public bool ShowWhileHoldingShift;
         public bool Shift = true;
-        public bool Ctrl = false;
-        public bool Alt = false;
+        public bool Ctrl;
+        public bool Alt;
     }
 
     public Configs Config { get; private set; }
-    
+
     private Vector2 boxSize = Vector2.Zero;
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+
+    protected void DrawConfig(ref bool hasChanged) {
         ImGui.BeginGroup();
         var s2 = ImGui.CalcTextSize("Show while holding");
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
-        
+
         ImGui.Dummy(new Vector2(boxSize.Y / 2 - s2.Y / 2));
         ImGui.Checkbox("Show while holding ", ref Config.ShowWhileHoldingShift);
         ImGui.PopStyleVar();
@@ -45,20 +45,17 @@ public unsafe class HideHotbarLock : Tweak {
         var min = ImGui.GetItemRectMin();
         var max = ImGui.GetItemRectMax();
         ImGui.GetWindowDrawList().AddRect(min - ImGui.GetStyle().ItemSpacing, max + ImGui.GetStyle().ItemSpacing, 0x99999999);
-    };
+    }
 
     protected override void ConfigChanged() {
         Common.FrameworkUpdate -= OnFrameworkUpdate;
         if (Config.ShowWhileHoldingShift) Common.FrameworkUpdate += OnFrameworkUpdate;
-        base.ConfigChanged();
     }
-    
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
         SetLockVisible();
         ConfigChanged();
-        base.Enable();
     }
 
     [AddonPostRequestedUpdate("_ActionBar")]
@@ -72,11 +69,10 @@ public unsafe class HideHotbarLock : Tweak {
         }
     }
 
-    [FrameworkUpdate]
-    private void OnFrameworkUpdate() => SetLockVisible();
-    
+    [FrameworkUpdate] private void OnFrameworkUpdate() => SetLockVisible();
+
     private bool LockVisible => Config.ShowWhileHoldingShift && (Service.KeyState[VirtualKey.SHIFT] || !Config.Shift) && (Service.KeyState[VirtualKey.CONTROL] || !Config.Ctrl) && (Service.KeyState[VirtualKey.MENU] || !Config.Alt);
-    
+
     private void SetLockVisible(bool? visible = null) {
         var unitBase = Common.GetUnitBase("_ActionBar");
         if (unitBase == null) return;
@@ -91,6 +87,5 @@ public unsafe class HideHotbarLock : Tweak {
         Common.FrameworkUpdate -= OnFrameworkUpdate;
         SetLockVisible(true);
         SaveConfig(Config);
-        base.Disable();
     }
 }

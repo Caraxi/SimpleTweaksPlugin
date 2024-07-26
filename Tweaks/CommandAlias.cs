@@ -2,41 +2,45 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Text;
+using FFXIVClientStructs.FFXIV.Client.System.String;
+using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Component.Shell;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks; 
+namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakCategory(TweakCategory.Command)]
+[TweakName("Command Alias")]
+[TweakDescription("Allows replacing commands typed into chat box with other commands.")]
+[TweakAutoConfig]
 public class CommandAlias : Tweak {
     #region Config
+
     public class Config : TweakConfig {
         public override int Version { get; set; } = 2;
         public List<AliasEntry> AliasList = new();
     }
-        
+
     public Config TweakConfig { get; private set; }
-        
 
     public class AliasEntry {
-        public static readonly string[] NoOverwrite = { "xlplugins", "xlsettings", "xldclose", "xldev", "tweaks" };
+        public static readonly string[] NoOverwrite = ["xlplugins", "xlsettings", "xldclose", "xldev", "tweaks"];
         public bool Enabled = true;
         public string Input = string.Empty;
         public string Output = string.Empty;
         [NonSerialized] public bool Delete;
         [NonSerialized] public int UniqueId;
+
         public bool IsValid() {
             if (NoOverwrite.Contains(Input)) return false;
             if (Input.Contains(' ')) return false;
             return !(string.IsNullOrWhiteSpace(Input) || string.IsNullOrWhiteSpace(Output));
         }
-
     }
 
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool change) => {
+    protected void DrawConfig(ref bool change) {
         ImGui.Text(LocString("Instruction", "Add list of command alias. Do not start command with the '/'\nThese aliases, by design, do not work with macros."));
         if (ImGui.IsItemHovered()) {
             ImGui.SetNextWindowSize(new Vector2(280, -1));
@@ -44,12 +48,13 @@ public class CommandAlias : Tweak {
             ImGui.TextWrapped(LocString("MacroHelp", "Aliases are not supported in macros to prevent them from being sent to the server in the event you back them up on server.\nPlease use the original command in your macros.", "Macro Help Tooltip"));
             ImGui.EndTooltip();
         }
+
         ImGui.Separator();
         ImGui.Columns(4);
         var s = ImGui.GetIO().FontGlobalScale;
-        ImGui.SetColumnWidth(0, 60 * s );
-        ImGui.SetColumnWidth(1, 150 * s );
-        ImGui.SetColumnWidth(2, 150 * s );
+        ImGui.SetColumnWidth(0, 60 * s);
+        ImGui.SetColumnWidth(1, 150 * s);
+        ImGui.SetColumnWidth(2, 150 * s);
         ImGui.Text(LocString("Enabled"));
         ImGui.NextColumn();
         ImGui.Text(LocString("Input Command"));
@@ -58,9 +63,8 @@ public class CommandAlias : Tweak {
         ImGui.NextColumn();
         ImGui.NextColumn();
         ImGui.Separator();
-            
-        foreach (var aliasEntry in TweakConfig.AliasList) {
 
+        foreach (var aliasEntry in TweakConfig.AliasList) {
             if (aliasEntry.UniqueId == 0) {
                 aliasEntry.UniqueId = TweakConfig.AliasList.Max(a => a.UniqueId) + 1;
             }
@@ -71,6 +75,7 @@ public class CommandAlias : Tweak {
             } else {
                 ImGui.Text("Invalid");
             }
+
             ImGui.NextColumn();
             ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
             ImGui.Text("/");
@@ -86,7 +91,7 @@ public class CommandAlias : Tweak {
             change |= ImGui.InputText($"###aliasOutput{aliasEntry.UniqueId}", ref aliasEntry.Output, 500) || change;
             ImGui.PopStyleVar();
             ImGui.NextColumn();
-                
+
             if (AliasEntry.NoOverwrite.Contains(aliasEntry.Input)) {
                 var f = LocString("ProtectedCommandError", "'/{0}' is a protected command.");
                 ImGui.TextColored(new Vector4(1, 0, 0, 1), string.Format(f, aliasEntry.Input));
@@ -127,63 +132,20 @@ public class CommandAlias : Tweak {
             TweakConfig.AliasList.Add(newEntry);
             change = true;
         }
-            
+
         ImGui.Columns(1);
-    };
+    }
+
     #endregion
 
-    public override string Name => "Command Alias";
-    public override string Description => "Allows replacing commands typed into chat box with other commands.";
+    [TweakHook(typeof(ShellCommandModule), nameof(ShellCommandModule.ExecuteCommandInner), nameof(ProcessChatInputDetour))]
+    private HookWrapper<ShellCommandModule.Delegates.ExecuteCommandInner> processChatInputHook;
 
-    private nint processChatInputAddress;
-    private unsafe delegate byte ProcessChatInputDelegate(nint uiModule, byte** a2, nint a3);
-
-    private HookWrapper<ProcessChatInputDelegate> processChatInputHook;
-
-    public override void Setup() {
-        if (Ready) return;
+    private unsafe void ProcessChatInputDetour(ShellCommandModule* shellCommandModule, Utf8String* message, UIModule* uiModule) {
         try {
-            processChatInputAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? FE 86 ?? ?? ?? ?? C7 86 ?? ?? ?? ?? ?? ?? ?? ??");
-            Ready = true;
-        } catch {
-            SimpleLog.Log("Failed to find address for ProcessChatInput");
-        }
-    }
-
-    protected override unsafe void Enable() {
-        if (!Ready) return;
-        TweakConfig = LoadConfig<Config>() ?? new Config();
-
-        if (TweakConfig.Version == 1) {
-            // To avoid breaking old aliases that relied on the space, automatically add it when we would have removed it.
-            foreach(var alias in TweakConfig.AliasList) {
-                if (alias.Output.Contains(' ')) alias.Output = $"{alias.Output} ";
-            }
-            TweakConfig.Version = 2;
-            SaveConfig(TweakConfig);
-        }
-
-        processChatInputHook ??= Common.Hook(processChatInputAddress, new ProcessChatInputDelegate(ProcessChatInputDetour));
-        processChatInputHook?.Enable();
-        Enabled = true;
-    }
-
-    private unsafe byte ProcessChatInputDetour(nint uiModule, byte** message, nint a3) {
-        try {
-            var bc = 0;
-            for (var i = 0; i <= 500; i++) {
-                if (*(*message + i) != 0) continue;
-                bc = i;
-                break;
-            }
-            if (bc < 2 || bc > 500) {
-                return processChatInputHook.Original(uiModule, message, a3);
-            }
-                
-            var inputString = Encoding.UTF8.GetString(*message, bc);
-            if (inputString.StartsWith("/")) {
+            if (message->GetCharAt(0) == '/') {
+                var inputString = message->ToString();
                 var splitString = inputString.Split(' ');
-
                 if (splitString.Length > 0 && splitString[0].Length >= 2) {
                     var alias = TweakConfig.AliasList.FirstOrDefault(a => {
                         if (!a.Enabled) return false;
@@ -191,50 +153,24 @@ public class CommandAlias : Tweak {
                         return splitString[0] == $"/{a.Input}";
                     });
                     if (alias != null) {
-                        // https://git.sr.ht/~jkcclemens/CCMM/tree/master/Custom%20Commands%20and%20Macro%20Macros/GameFunctions.cs#L44
                         var commandExtra = inputString[(alias.Input.Length + 1)..];
                         if (commandExtra.StartsWith(' ')) commandExtra = commandExtra[1..];
                         var newStr = alias.Output.Contains(' ') ? $"/{alias.Output}{commandExtra}" : $"/{alias.Output} {commandExtra}";
                         if (newStr.Length <= 500) {
-                            SimpleLog.Verbose($"Aliasing Command: {inputString} -> {newStr}");
-                            var bytes = Encoding.UTF8.GetBytes(newStr);
-                            var mem1 = Marshal.AllocHGlobal(400);
-                            var mem2 = Marshal.AllocHGlobal(bytes.Length + 30);
-                            Marshal.Copy(bytes, 0, mem2, bytes.Length);
-                            Marshal.WriteByte(mem2 + bytes.Length, 0);
-                            Marshal.WriteInt64(mem1, mem2.ToInt64());
-                            Marshal.WriteInt64(mem1 + 8, 64);
-                            Marshal.WriteInt64(mem1 + 8 + 8, bytes.Length + 1);
-                            Marshal.WriteInt64(mem1 + 8 + 8 + 8, 0);
-                            var r = processChatInputHook.Original(uiModule, (byte**) mem1.ToPointer(), a3);
-                            Marshal.FreeHGlobal(mem1);
-                            Marshal.FreeHGlobal(mem2);
-                            return r;
+                            var str = Utf8String.FromString(newStr);
+                            processChatInputHook.Original(shellCommandModule, str, uiModule);
+                            str->Dtor(true);
+                            return;
                         }
 
-                        Service.Chat.PrintError("[Simple Tweaks] " +  LocString("CommandTooLongError", "Command alias result is longer than the maximum of 500 characters. The command could not be executed.", "Error: Command is too long"));
-                        return 0;
+                        Service.Chat.PrintError("[Simple Tweaks] " + LocString("CommandTooLongError", "Command alias result is longer than the maximum of 500 characters. The command could not be executed.", "Error: Command is too long"));
                     }
                 }
             }
         } catch (Exception ex) {
             Plugin.Error(this, ex);
         }
-            
-        return processChatInputHook.Original(uiModule, message, a3);
-    }
 
-    protected override void Disable() {
-        SaveConfig(TweakConfig);
-        processChatInputHook?.Disable();
-        Enabled = false;
-    }
-
-    public override void Dispose() {
-        if (!Ready) return;
-        processChatInputHook?.Disable();
-        processChatInputHook?.Dispose();
-        Ready = false;
-        Enabled = false;
+        processChatInputHook.Original(shellCommandModule, message, uiModule);
     }
 }

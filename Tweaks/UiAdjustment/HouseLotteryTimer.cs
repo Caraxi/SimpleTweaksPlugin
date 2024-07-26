@@ -23,11 +23,9 @@ public unsafe class HouseLotteryTimer : UiAdjustments.SubTweak {
 
     private LotteryTimeInfo GetLotteryTimeInfo(DateTime? forUtcDate = null) {
         forUtcDate ??= DateTime.UtcNow;
-        
         var isEntryPeriod = FirstPeriodEntry;
         var currentPeriodStarted = new DateTime(scheduleStartTime.Ticks);
-        var nextPeriodBegins = new DateTime(scheduleStartTime.Ticks) + TimeSpan.FromDays(isEntryPeriod ? EntryPeriodDays : ResultsPeriodDays);
-
+        var nextPeriodBegins = new DateTime(scheduleStartTime.Ticks) + TimeSpan.FromDays(EntryPeriodDays);
         while (nextPeriodBegins < forUtcDate) {
             currentPeriodStarted = nextPeriodBegins;
             isEntryPeriod = !isEntryPeriod;
@@ -36,7 +34,7 @@ public unsafe class HouseLotteryTimer : UiAdjustments.SubTweak {
 
         return new LotteryTimeInfo(currentPeriodStarted, nextPeriodBegins, isEntryPeriod);
     }
-    
+
     [AddonPreRefresh("ContentsInfo")]
     private void AddonRefresh(AddonRefreshArgs refreshArgs) {
         try {
@@ -52,13 +50,11 @@ public unsafe class HouseLotteryTimer : UiAdjustments.SubTweak {
                 var timespan = lotteryPeriod.NextPeriodBegins;
                 displayString += "  ";
                 displayString += $"{(int)timespan.TotalHours}:{timespan.Minutes:00}";
-                atkValue->SetString(displayString);
+                atkValue->SetManagedString(displayString);
                 break;
             }
         } catch (Exception ex) {
             SimpleLog.Error(ex);
-            //
         }
     }
 }
-

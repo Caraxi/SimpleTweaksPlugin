@@ -18,18 +18,17 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
+[TweakName("Item Hotkeys")]
+[TweakDescription("Adds hotkeys for various actions when the item detail window is visible.")]
 public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
-    public override string Name => "Item Hotkeys";
-    public override string Description => "Adds hotkeys for various actions when the item detail window is visible.";
-
     public class Configs : TweakConfig {
         public bool HideHotkeysOnTooltip;
         public bool HasLoadedOld;
     }
 
-    public List<ItemHotkey> Hotkeys = new();
+    public List<ItemHotkey> Hotkeys = [];
 
-    private readonly string weirdTabChar = Encoding.UTF8.GetString(new byte[] {0xE3, 0x80, 0x80});
+    private readonly string weirdTabChar = Encoding.UTF8.GetString([0xE3, 0x80, 0x80]);
 
     public override void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         if (Config.HideHotkeysOnTooltip) return;
@@ -43,9 +42,9 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
         } else {
             item = Service.Data.Excel.GetSheet<ExtendedItem>()?.GetRow((uint)(Service.GameGui.HoveredItem % 500000));
         }
-        
+
         if (item == null) return;
-        
+
         var seStr = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ControlsDisplay);
         if (seStr == null) return;
         if (seStr.TextValue.Contains('\n')) return;
@@ -56,7 +55,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
         }
 
         var v = 0;
-        
+
         foreach (var hk in Hotkeys) {
             if (!hk.Enabled) continue;
             if (hk.Config.HideFromTooltip) continue;
@@ -72,14 +71,13 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
                 v++;
             }
         }
-        
+
         if (v > 0) {
             try {
                 SetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ControlsDisplay, seStr);
             } catch (Exception ex) {
                 Plugin.Error(this, ex);
             }
-            
         }
     }
 
@@ -88,7 +86,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
     private string settingKey;
     private string focused;
     private readonly List<VirtualKey> newKeys = new();
-    
+
     public void DrawHotkeyConfig(ItemHotkey hotkey) {
         ImGui.PushID(hotkey.Key);
         while (ImGui.GetColumnIndex() != 0) ImGui.NextColumn();
@@ -102,6 +100,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
                 hotkey.Disable();
             }
         }
+
         ImGui.NextColumn();
         var strKeybind = string.Join("+", hotkey.Hotkey.Select(k => k.GetKeyName()));
 
@@ -111,11 +110,10 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
             if (ImGui.GetIO().KeyAlt && !newKeys.Contains(VirtualKey.MENU)) newKeys.Add(VirtualKey.MENU);
             if (ImGui.GetIO().KeyShift && !newKeys.Contains(VirtualKey.SHIFT)) newKeys.Add(VirtualKey.SHIFT);
             if (ImGui.GetIO().KeyCtrl && !newKeys.Contains(VirtualKey.CONTROL)) newKeys.Add(VirtualKey.CONTROL);
-            
+
             for (var k = 0; k < ImGui.GetIO().KeysDown.Count && k < 160; k++) {
                 if (ImGui.GetIO().KeysDown[k]) {
                     if (!newKeys.Contains((VirtualKey)k)) {
-
                         if ((VirtualKey)k == VirtualKey.ESCAPE) {
                             settingKey = null;
                             newKeys.Clear();
@@ -140,7 +138,6 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
         ImGui.InputText($"###{GetType().Name}hotkeyDisplay{hotkey.Key}", ref strKeybind, 100, ImGuiInputTextFlags.ReadOnly);
         var active = ImGui.IsItemActive();
         if (settingKey == hotkey.Key) {
-
             ImGui.PopStyleColor(1);
             ImGui.PopStyleVar();
 
@@ -168,46 +165,38 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
                 settingKey = hotkey.Key;
             }
         }
-        
+
         ImGui.SameLine();
         if (ImGui.Checkbox("Hide From Tooltip", ref hotkey.Config.HideFromTooltip)) {
             hotkey.SaveConfig();
         }
-        
-        
+
         hotkey.DrawExtraConfig();
-        
+
         ImGui.PopID();
     }
-    
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
 
-
+    protected void DrawConfig(ref bool hasChanged) {
         ImGui.Columns(2);
         ImGui.SetColumnWidth(0, 180 * ImGui.GetIO().FontGlobalScale);
         foreach (var h in Hotkeys) {
             DrawHotkeyConfig(h);
             ImGui.Separator();
         }
-        
-        
+
         ImGui.Columns();
         ImGui.Dummy(new Vector2(5 * ImGui.GetIO().FontGlobalScale));
 
         hasChanged |= ImGui.Checkbox(LocString("NoHelpText", "Don't show hotkey help on Tooltip"), ref Config.HideHotkeysOnTooltip);
-    };
+    }
 
-    public override void Setup() {
-
+    protected override void Setup() {
         foreach (var t in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(ItemHotkey)))) {
-            var h = (ItemHotkey) Activator.CreateInstance(t);
+            var h = (ItemHotkey)Activator.CreateInstance(t);
             if (h != null) {
                 Hotkeys.Add(h);
             }
-            
         }
-
-        base.Setup();
     }
 
     protected override void Enable() {
@@ -215,7 +204,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
         foreach (var h in Hotkeys) {
             h.Enable(true);
         }
-        
+
         Common.FrameworkUpdate += OnFrameworkUpdate;
         base.Enable();
     }
@@ -223,10 +212,10 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
     [AddonPostRequestedUpdate("ItemDetail")]
     private void AddonItemDetailOnUpdate(AtkUnitBase* atkUnitBase) {
         if (Config.HideHotkeysOnTooltip) return;
-        var textNineGridComponentNode = (AtkComponentNode*) atkUnitBase->GetNodeById(3);
+        var textNineGridComponentNode = (AtkComponentNode*)atkUnitBase->GetNodeById(3);
         if (textNineGridComponentNode == null) return;
-        var textNode = (AtkTextNode*) textNineGridComponentNode->Component->UldManager.SearchNodeById(2);
-        var nineGrid = (AtkNineGridNode*) textNineGridComponentNode->Component->UldManager.SearchNodeById(3);
+        var textNode = (AtkTextNode*)textNineGridComponentNode->Component->UldManager.SearchNodeById(2);
+        var nineGrid = (AtkNineGridNode*)textNineGridComponentNode->Component->UldManager.SearchNodeById(3);
         if (textNode == null || nineGrid == null) return;
         ushort textWidth = 0;
         ushort textHeight = 0;
@@ -244,24 +233,25 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
                 if (Service.KeyState[vk]) return false;
             }
         }
+
         return true;
     }
-    
+
     private void OnFrameworkUpdate() {
         try {
             if (Service.GameGui.HoveredItem == 0) return;
-            
+
             var id = Service.GameGui.HoveredItem;
 
             ExcelRow item;
             if (id >= 2000000) {
                 item = Service.Data.Excel.GetSheet<EventItem>()?.GetRow((uint)id);
             } else {
-                item = Service.Data.Excel.GetSheet<ExtendedItem>()?.GetRow((uint) (id % 500000)) ;
+                item = Service.Data.Excel.GetSheet<ExtendedItem>()?.GetRow((uint)(id % 500000));
             }
 
             if (item == null) return;
-            
+
             foreach (var h in Hotkeys) {
                 if (!h.Enabled) continue;
                 if (!(id >= 2000000 ? h.DoShow(item as EventItem) : h.DoShow(item as ExtendedItem))) continue;
@@ -271,24 +261,24 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
                     } else {
                         h.OnTriggered(item as ExtendedItem);
                     }
+
                     foreach (var k in h.Hotkey) {
-                        Service.KeyState[(int) k] = false;
+                        Service.KeyState[(int)k] = false;
                     }
+
                     break;
                 }
             }
         } catch (Exception ex) {
             SimpleLog.Error(ex);
         }
-        
-        
     }
 
     protected override void Disable() {
         foreach (var h in Hotkeys) {
             h.Disable(true);
         }
-        
+
         SaveConfig(Config);
         base.Disable();
     }
@@ -297,8 +287,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
         foreach (var h in Hotkeys) {
             h.Dispose();
         }
-        
+
         base.Dispose();
     }
 }
-

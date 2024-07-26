@@ -14,9 +14,7 @@ using System.Text;
 using Dalamud;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Memory;
-using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.String;
-using FFXIVClientStructs.Interop.Attributes;
 using Lumina.Excel;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
@@ -248,7 +246,7 @@ namespace SimpleTweaksPlugin.Debugging {
         private static unsafe bool GetNodeVisible(AtkResNode* node) {
             if (node == null) return false;
             while (node != null) {
-                if (!node->IsVisible) return false;
+                if (!node->IsVisible()) return false;
                 node = node->ParentNode;
             }
             return true;
@@ -325,8 +323,6 @@ namespace SimpleTweaksPlugin.Debugging {
                 
                 var valueParser = member.GetCustomAttribute(typeof(ValueParser));
                 var fixedBuffer = (FixedBufferAttribute) member.GetCustomAttribute(typeof(FixedBufferAttribute));
-                var fixedArray = (FixedArrayAttribute)member.GetCustomAttribute(typeof(FixedArrayAttribute));
-                var fixedSizeArray = member.GetCustomAttribute(typeof(FixedSizeArrayAttribute<>));
                 
                 if (valueParser is ValueParser vp) {
                     vp.ImGuiPrint(type, value, member, addr);
@@ -373,133 +369,58 @@ namespace SimpleTweaksPlugin.Debugging {
 
 
                     } else if (fixedBuffer != null) {
-                        if (fixedSizeArray != null) {
-                            var fixedType = fixedSizeArray.GetType().GetGenericArguments()[0];
-                            var size = (int) fixedSizeArray.GetType().GetProperty("Count").GetValue(fixedSizeArray);
-
-                            if (ImGui.TreeNode($"Fixed {ParseTypeName(fixedType)} Array##{member.Name}-{addr}-{string.Join("-", path)}")) {
-                                if ($"{fixedType.Namespace}.{fixedType.Name}" == "FFXIVClientStructs.Interop.Pointer`1") {
-                                    var pointerType = fixedType.GetGenericArguments()[0];
-                                    var arrAddr = (void**)addr;
-                                    if (arrAddr != null) {
-                                        for (var i = 0; i < size; i++) {
-                                            if (arrAddr[i] == null) {
-                                                if (ImGui.GetIO().KeyAlt) ImGui.Text($"[{i}] null");
-                                                continue;
-                                            }
-                                            var arrObj = SafeMemory.PtrToStructure(new IntPtr(arrAddr[i]), pointerType);
-                                            if (arrObj == null) {
-                                                if (ImGui.GetIO().KeyAlt) ImGui.Text($"[{i}] error");
-                                                continue;
-                                            }
-                                            PrintOutObject(arrObj, (ulong)arrAddr[i], new List<string>(path) { $"_arrValue_{i}" }, false, $"[{i}] {arrObj}");
-                                        }
-                                    } else {
-                                        ImGui.Text("Null Pointer");
-                                    }
-                                    
-                                }  else if (fixedType.IsGenericType) {
-                                    ImGui.Text($"Unable to display generic types.");
-                                } else {
-                                    var arrAddr = (IntPtr) addr;
-                                    for (var i = 0; i < size; i++) {
-                                        var arrObj = SafeMemory.PtrToStructure(arrAddr, fixedType);
-                                        PrintOutObject(arrObj, (ulong)arrAddr.ToInt64(), new List<string>(path) { $"_arrValue_{i}" }, false, $"[{i}] {arrObj}");
-                                        arrAddr += Marshal.SizeOf(fixedType);
-                                    }
-                                }
-                                
-                                ImGui.TreePop();
+                        if (ImGui.TreeNode($"Fixed {ParseTypeName(fixedBuffer.ElementType)} Buffer##{member.Name}-{addr}-{string.Join("-", path)}")) {
+                            var display = true;
+                            var child = false;
+                            if (fixedBuffer.ElementType == typeof(byte) && fixedBuffer.Length > 0x80) {
+                                display = ImGui.BeginChild($"scrollBuffer##{member.Name}-{addr}-{string.Join("-", path)}", new Vector2(ImGui.GetTextLineHeight() * 30, ImGui.GetTextLineHeight() * 8), true);
+                                child = true;
                             }
-                        } else
-                        if (fixedArray != null) {
 
-
-                            if (fixedArray.Type == typeof(string) && fixedArray.Count == 1) {
-
-                                
-                                var text = Marshal.PtrToStringUTF8((IntPtr)addr);
-                                if (text != null) {
-                                    ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 0));
-                                    ImGui.TextDisabled("\"");
-                                    ImGui.SameLine();
-                                    ImGui.Text(text);
-                                    ImGui.SameLine();
-                                    ImGui.PopStyleVar();
-                                    
-                                    ImGui.TextDisabled("\"");
-                                } else {
-                                    ImGui.TextDisabled("null");
-                                }
-                            } else {
-                                if (ImGui.TreeNode($"Fixed {ParseTypeName(fixedArray.Type)} Array##{member.Name}-{addr}-{string.Join("-", path)}")) {
-
-                                    var arrAddr = (IntPtr) addr;
-                                    for (var i = 0; i < fixedArray.Count; i++) {
-                                        var arrObj = SafeMemory.PtrToStructure(arrAddr, fixedArray.Type);
-                                        PrintOutObject(arrObj, (ulong)arrAddr.ToInt64(), new List<string>(path) { $"_arrValue_{i}" }, false, $"[{i}] {arrObj}");
-                                        arrAddr += Marshal.SizeOf(fixedArray.Type);
+                            if (display) {
+                                var sX = ImGui.GetCursorPosX();
+                                for (uint i = 0; i < fixedBuffer.Length; i += 1) {
+                                    if (fixedBuffer.ElementType == typeof(byte)) {
+                                        var v = *(byte*)(addr + i);
+                                        if (i != 0 && i % 16 != 0) ImGui.SameLine();
+                                        ImGui.SetCursorPosX(sX + ImGui.CalcTextSize(ImGui.GetIO().KeyShift?"0000":"000").X * (i % 16));
+                                        ImGui.Text(ImGui.GetIO().KeyShift ? $"{v:000}" : $"{v:X2}");
+                                    } else if (fixedBuffer.ElementType == typeof(short)) {
+                                        var v = *(short*)(addr + i * 2);
+                                        if (i != 0 && i % 8 != 0) ImGui.SameLine();
+                                        ImGui.Text(ImGui.GetIO().KeyShift ? $"{v:000000}" : $"{v:X4}");
+                                    } else if (fixedBuffer.ElementType == typeof(ushort)) {
+                                        var v = *(ushort*)(addr + i * 2);
+                                        if (i != 0 && i % 8 != 0) ImGui.SameLine();
+                                        ImGui.Text(ImGui.GetIO().KeyShift ? $"{v:00000}" : $"{v:X4}");
+                                    }  else if (fixedBuffer.ElementType == typeof(int)) {
+                                        var v = *(int*)(addr + i * 4);
+                                        if (i != 0 && i % 4 != 0) ImGui.SameLine();
+                                        ImGui.Text(ImGui.GetIO().KeyShift ? $"{v:0000000000}" : $"{v:X8}");
+                                    }  else if (fixedBuffer.ElementType == typeof(uint)) {
+                                        var v = *(uint*)(addr + i * 4);
+                                        if (i != 0 && i % 4 != 0) ImGui.SameLine();
+                                        ImGui.Text(ImGui.GetIO().KeyShift ? $"{v:000000000}" : $"{v:X8}");
+                                    } else if (fixedBuffer.ElementType == typeof(long)) {
+                                        var v = *(long*)(addr + i * 8);
+                                        ImGui.Text(ImGui.GetIO().KeyShift ? $"{v}" : $"{v:X16}");
+                                    } else if (fixedBuffer.ElementType == typeof(ulong)) {
+                                        var v = *(ulong*)(addr + i * 8);
+                                        ImGui.Text(ImGui.GetIO().KeyShift ? $"{v}" : $"{v:X16}");
+                                    } else {
+                                        var v = *(byte*)(addr + i);
+                                        if (i != 0 && i % 16 != 0) ImGui.SameLine();
+                                        ImGui.TextDisabled(ImGui.GetIO().KeyShift ? $"{v:000}" : $"{v:X2}");
                                     }
-
-                                    ImGui.TreePop();
+      
                                 }
+                            }
+
+                            if (child) {
+                                ImGui.EndChild();
                             }
                             
-                        } else {
-                        
-                            if (ImGui.TreeNode($"Fixed {ParseTypeName(fixedBuffer.ElementType)} Buffer##{member.Name}-{addr}-{string.Join("-", path)}")) {
-                                var display = true;
-                                var child = false;
-                                if (fixedBuffer.ElementType == typeof(byte) && fixedBuffer.Length > 0x80) {
-                                    display = ImGui.BeginChild($"scrollBuffer##{member.Name}-{addr}-{string.Join("-", path)}", new Vector2(ImGui.GetTextLineHeight() * 30, ImGui.GetTextLineHeight() * 8), true);
-                                    child = true;
-                                }
-
-                                if (display) {
-                                    var sX = ImGui.GetCursorPosX();
-                                    for (uint i = 0; i < fixedBuffer.Length; i += 1) {
-                                        if (fixedBuffer.ElementType == typeof(byte)) {
-                                            var v = *(byte*)(addr + i);
-                                            if (i != 0 && i % 16 != 0) ImGui.SameLine();
-                                            ImGui.SetCursorPosX(sX + ImGui.CalcTextSize(ImGui.GetIO().KeyShift?"0000":"000").X * (i % 16));
-                                            ImGui.Text(ImGui.GetIO().KeyShift ? $"{v:000}" : $"{v:X2}");
-                                        } else if (fixedBuffer.ElementType == typeof(short)) {
-                                            var v = *(short*)(addr + i * 2);
-                                            if (i != 0 && i % 8 != 0) ImGui.SameLine();
-                                            ImGui.Text(ImGui.GetIO().KeyShift ? $"{v:000000}" : $"{v:X4}");
-                                        } else if (fixedBuffer.ElementType == typeof(ushort)) {
-                                            var v = *(ushort*)(addr + i * 2);
-                                            if (i != 0 && i % 8 != 0) ImGui.SameLine();
-                                            ImGui.Text(ImGui.GetIO().KeyShift ? $"{v:00000}" : $"{v:X4}");
-                                        }  else if (fixedBuffer.ElementType == typeof(int)) {
-                                            var v = *(int*)(addr + i * 4);
-                                            if (i != 0 && i % 4 != 0) ImGui.SameLine();
-                                            ImGui.Text(ImGui.GetIO().KeyShift ? $"{v:0000000000}" : $"{v:X8}");
-                                        }  else if (fixedBuffer.ElementType == typeof(uint)) {
-                                            var v = *(uint*)(addr + i * 4);
-                                            if (i != 0 && i % 4 != 0) ImGui.SameLine();
-                                            ImGui.Text(ImGui.GetIO().KeyShift ? $"{v:000000000}" : $"{v:X8}");
-                                        } else if (fixedBuffer.ElementType == typeof(long)) {
-                                            var v = *(long*)(addr + i * 8);
-                                            ImGui.Text(ImGui.GetIO().KeyShift ? $"{v}" : $"{v:X16}");
-                                        } else if (fixedBuffer.ElementType == typeof(ulong)) {
-                                            var v = *(ulong*)(addr + i * 8);
-                                            ImGui.Text(ImGui.GetIO().KeyShift ? $"{v}" : $"{v:X16}");
-                                        } else {
-                                            var v = *(byte*)(addr + i);
-                                            if (i != 0 && i % 16 != 0) ImGui.SameLine();
-                                            ImGui.TextDisabled(ImGui.GetIO().KeyShift ? $"{v:000}" : $"{v:X2}");
-                                        }
-          
-                                    }
-                                }
-
-                                if (child) {
-                                    ImGui.EndChild();
-                                }
-                                
-                                ImGui.TreePop();
-                            }
+                            ImGui.TreePop();
                         }
                     } else if (!type.IsPrimitive) {
                         switch (value) {
@@ -657,24 +578,9 @@ namespace SimpleTweaksPlugin.Debugging {
                         
                         var fixedBuffer = (FixedBufferAttribute) f.GetCustomAttribute(typeof(FixedBufferAttribute));
                         if (fixedBuffer != null) {
-                            var fixedArray = (FixedArrayAttribute)f.GetCustomAttribute(typeof(FixedArrayAttribute));
-                            var fixedSizeArray = f.GetCustomAttribute(typeof(FixedSizeArrayAttribute<>));
                             ImGui.Text($"fixed");
                             ImGui.SameLine();
-                            if (fixedSizeArray != null) {
-                                var fixedType = fixedSizeArray.GetType().GetGenericArguments()[0];
-                                var size = (int) fixedSizeArray.GetType().GetProperty("Count").GetValue(fixedSizeArray);
-                                ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{ParseTypeName(fixedType)}[{size}]");
-                            } else if (fixedArray != null) {
-                                if (fixedArray.Type == typeof(string) && fixedArray.Count == 1) {
-                                    ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{fixedArray.Type.Name}");
-                                } else {
-                                    ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{fixedArray.Type.Name}[{fixedArray.Count:X}]");
-                                }
-                                
-                            } else {
-                                ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{fixedBuffer.ElementType.Name}[0x{fixedBuffer.Length:X}]");
-                            }
+                            ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{fixedBuffer.ElementType.Name}[0x{fixedBuffer.Length:X}]");
                         } else {
                             
                             if (f.FieldType.IsArray) {

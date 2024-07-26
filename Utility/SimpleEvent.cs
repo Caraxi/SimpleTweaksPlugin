@@ -43,13 +43,13 @@ public unsafe class SimpleEvent : IDisposable {
     private static readonly HookWrapper<GlobalEventDelegate> GlobalEventHook;
     
     static SimpleEvent() {
-        GlobalEventHook = Common.Hook<GlobalEventDelegate>("48 89 5C 24 ?? 48 89 7C 24 ?? 55 41 56 41 57 48 8B EC 48 83 EC 50 44 0F B7 F2", GlobalEventDetour);
+        GlobalEventHook = Common.Hook<GlobalEventDelegate>("48 89 5C 24 ?? 48 89 7C 24 ?? 55 41 54 41 57", GlobalEventDetour);
         GlobalEventHook?.Enable();
     }
     
     private static void* GlobalEventDetour(AtkUnitBase* atkUnitBase, AtkEventType eventType, uint eventParam, AtkResNode** eventData, uint* a5) {
         if (EventHandlers.ContainsKey(eventParam)) {
-            SimpleLog.Debug($"Simple Event #{eventParam:X} [{eventType}] on {MemoryHelper.ReadString(new IntPtr(atkUnitBase->Name), 0x20)} ({(ulong)eventData[0]:X})");
+            SimpleLog.Debug($"Simple Event #{eventParam:X} [{eventType}] on {atkUnitBase->NameString} ({(ulong)eventData[0]:X})");
             try {
                 EventHandlers[eventParam].Action(eventType, atkUnitBase, eventData[0]);
                 return null;

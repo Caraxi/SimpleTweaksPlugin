@@ -9,14 +9,14 @@ using System.Net;
 using System.Net.Http;
 using System.Numerics;
 using System.Reflection;
-using System.Threading.Tasks;
-using Dalamud;
-using Dalamud.Interface.Internal.Notifications;
+using Dalamud.Game;
+using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Utility;
+using Task = System.Threading.Tasks.Task;
 #if DEBUG
 using System.Runtime.CompilerServices;
 #endif
@@ -28,8 +28,6 @@ namespace SimpleTweaksPlugin {
         public SimpleTweaksPluginConfig PluginConfig { get; private set; }
 
         public List<TweakProvider> TweakProviders = new();
-
-        public IconManager IconManager { get; private set; }
 
         public string AssemblyLocation { get; private set; } = Assembly.GetExecutingAssembly().Location;
         
@@ -87,7 +85,7 @@ namespace SimpleTweaksPlugin {
 
         public int UpdateFrom = -1;
 
-        public SimpleTweaksPlugin(DalamudPluginInterface pluginInterface) {
+        public SimpleTweaksPlugin(IDalamudPluginInterface pluginInterface) {
             Plugin = this;
             pluginInterface.Create<Service>();
             pluginInterface.Create<SimpleLog>();
@@ -98,18 +96,12 @@ namespace SimpleTweaksPlugin {
             
 #if DEBUG
             SimpleLog.SetupBuildPath();
-            Task.Run(() => {
-                FFXIVClientStructs.Interop.Resolver.GetInstance.SetupSearchSpace(Service.SigScanner.SearchBase);
-                FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
-                UpdateBlacklist();
-                Service.Framework.RunOnFrameworkThread(Initialize);
-            });
-#else
-            Task.Run(() => {
-                UpdateBlacklist();
-                Service.Framework.RunOnFrameworkThread(Initialize);
-            });
 #endif
+            Task.Run(() => {
+                UpdateBlacklist();
+                Service.Framework.RunOnFrameworkThread(Initialize);
+            });
+
         }
 
 
@@ -136,9 +128,6 @@ namespace SimpleTweaksPlugin {
         }
         
         private void Initialize() {
-
-            IconManager = new IconManager();
-
             SetupLocalization();
 
             UiHelper.Setup(Service.SigScanner);
@@ -240,14 +229,14 @@ namespace SimpleTweaksPlugin {
                                     if (PluginConfig.EnabledTweaks.Contains(tweak.Key)) {
                                         PluginConfig.EnabledTweaks.Remove(tweak.Key);
                                     }
-                                    Service.PluginInterface.UiBuilder.AddNotification($"Disabled {tweak.Name}", "Simple Tweaks", NotificationType.Info);
+
+                                    Service.NotificationManager.AddNotification(new Notification { Content = $"Disabled {tweak.Name}", Title = "Simple Tweaks", Type = NotificationType.Info });
                                 } else {
                                     tweak.InternalEnable();
                                     if (!PluginConfig.EnabledTweaks.Contains(tweak.Key)) {
                                         PluginConfig.EnabledTweaks.Add(tweak.Key);
                                     }
-                                    Service.PluginInterface.UiBuilder.AddNotification($"Enabled {tweak.Name}", "Simple Tweaks", NotificationType.Info);
-                                }
+                                    Service.NotificationManager.AddNotification(new Notification { Content = $"Enabled {tweak.Name}", Title = "Simple Tweaks", Type = NotificationType.Info });}
                                 PluginConfig.Save();
                                 return;
                             }
@@ -268,7 +257,7 @@ namespace SimpleTweaksPlugin {
                                     if (!PluginConfig.EnabledTweaks.Contains(tweak.Key)) {
                                         PluginConfig.EnabledTweaks.Add(tweak.Key);
                                     }
-                                    Service.PluginInterface.UiBuilder.AddNotification($"Enabled {tweak.Name}", "Simple Tweaks", NotificationType.Info);
+                                    Service.NotificationManager.AddNotification(new Notification { Content = $"Enabled {tweak.Name}", Title = "Simple Tweaks", Type = NotificationType.Info });
                                     PluginConfig.Save();
                                 }
                                 return;
@@ -290,7 +279,7 @@ namespace SimpleTweaksPlugin {
                                     if (PluginConfig.EnabledTweaks.Contains(tweak.Key)) {
                                         PluginConfig.EnabledTweaks.Remove(tweak.Key);
                                     }
-                                    Service.PluginInterface.UiBuilder.AddNotification($"Disabled {tweak.Name}", "Simple Tweaks", NotificationType.Info);
+                                    Service.NotificationManager.AddNotification(new Notification { Content = $"Disabled {tweak.Name}", Title = "Simple Tweaks", Type = NotificationType.Info });
                                     PluginConfig.Save();
                                 }
                                 return;
@@ -321,7 +310,7 @@ namespace SimpleTweaksPlugin {
                                 tweak.HandleBasicCommand(splitArgString.Skip(1).ToArray());
                                 return;
                             }
-
+                            
                             Service.Chat.PrintError($"\"{splitArgString[1]}\" is not a valid tweak id.");
                             return;
                         }
@@ -380,7 +369,7 @@ namespace SimpleTweaksPlugin {
             foreach (var e in ErrorList.Where(e => e.IsNew && e.Tweak != null)) {
                 e.IsNew = false;
                 e.Tweak.InternalDisable();
-                Service.PluginInterface.UiBuilder.AddNotification($"{e.Tweak.Name} has been disabled due to an error.", "Simple Tweaks", NotificationType.Error, 5000);
+                Service.NotificationManager.AddNotification(new Notification { Content = $"{e.Tweak.Name} has been disabled due to an error.", Title = "Simple Tweaks", Type = NotificationType.Error }); 
             }
 
             WindowSystem.Draw();

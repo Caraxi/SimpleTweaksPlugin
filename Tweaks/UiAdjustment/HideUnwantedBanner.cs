@@ -1,7 +1,6 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
-using Dalamud.Hooking;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
@@ -42,13 +41,13 @@ public unsafe class HideUnwantedBanner : UiAdjustments.SubTweak {
         new BannerSetting(121081, "Tribal Quest Accepted"),
         new BannerSetting(121082, "Tribal Quest Complete"),
     };
-    
+
     private class Config : TweakConfig {
         public readonly List<int> HiddenBanners = new();
     }
 
     private Config TweakConfig { get; set; } = null!;
-    
+
     protected void DrawConfig() {
         foreach (var banner in banners) {
             var enabled = TweakConfig.HiddenBanners.Contains(banner.Id);
@@ -56,23 +55,20 @@ public unsafe class HideUnwantedBanner : UiAdjustments.SubTweak {
                 if (TweakConfig.HiddenBanners.Contains(banner.Id) && !enabled) {
                     TweakConfig.HiddenBanners.Remove(banner.Id);
                     SaveConfig(TweakConfig);
-
-                }
-                else if(!TweakConfig.HiddenBanners.Contains(banner.Id) && enabled) {
+                } else if (!TweakConfig.HiddenBanners.Contains(banner.Id) && enabled) {
                     TweakConfig.HiddenBanners.Add(banner.Id);
                     SaveConfig(TweakConfig);
                 }
             }
         }
     }
-    
+
     private void OnSetImageTexture(AtkUnitBase* addon, int bannerId, int a3, int soundEffectId) {
         var skipOriginal = false;
-        
+
         try {
             skipOriginal = TweakConfig.HiddenBanners.Contains(bannerId);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             SimpleLog.Error(e, "Something went wrong in HideUnwantedBanners, let MidoriKami know!");
         }
 
