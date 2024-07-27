@@ -63,7 +63,6 @@
         <Compile Remove="Tweaks\UiAdjustment\MarketEnhancements.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\MoveCutsceneTalk.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\NamePlateIconSpacing.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\ShiftTargetCastBarText.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\SmartNameplates.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\SubmarineDestinationLetters.cs"/>
         <Compile Remove="Tweaks\NoCharacterNotFoundWarning.cs"/>
