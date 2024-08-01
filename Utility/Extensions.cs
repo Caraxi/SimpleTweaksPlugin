@@ -12,6 +12,7 @@ using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
+using SimpleTweaksPlugin.TweakSystem;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace SimpleTweaksPlugin.Utility; 
@@ -161,6 +162,13 @@ public static class Extensions {
 
     internal static IEnumerable<(FieldInfo Field, TAttribute Attribute)> GetFieldsWithAttribute<TAttribute>(this object obj, BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) where TAttribute : Attribute {
         return obj.GetType().GetFields(flags).Select(f => (f, f.GetCustomAttribute<TAttribute>())).Where(f => f.Item2 != null);
+    }
+
+    internal static TweakHookAttribute<T> GetTweakHookAttribute<T>(this MethodInfo method) where T : Delegate {
+        foreach (var a in method.GetCustomAttributes()) {
+            if (a is TweakHookAttribute<T> th) return th;
+        }
+        return null;
     }
     
     public static unsafe string ValueString(this AtkValue v) {
