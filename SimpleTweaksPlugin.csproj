@@ -37,7 +37,6 @@
         <Compile Remove="Tweaks\EquipFromHotbar.cs"/>
         <Compile Remove="Tweaks\FixedShadowDistance.cs"/>
         <Compile Remove="Tweaks\FurnitureClocksCustomTime.cs"/>
-        <Compile Remove="Tweaks\GearsetSaveCurrent.cs"/>
         <Compile Remove="Tweaks\HouseLightCommand.cs"/>
         <Compile Remove="Tweaks\JokeTweaks.cs"/>
         <Compile Remove="Tweaks\KeyInterrupt.cs"/>
