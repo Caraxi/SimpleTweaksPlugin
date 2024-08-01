@@ -50,10 +50,8 @@
         <Compile Remove="Tweaks\RefreshMarketPrices.cs"/>
         <Compile Remove="Tweaks\RememberQuickGathering.cs"/>
         <Compile Remove="Tweaks\RememberSelectedWorld.cs"/>
-        <Compile Remove="Tweaks\RemoveClientLimit.cs"/>
         <Compile Remove="Tweaks\SanctuarySprintReplacer.cs"/>
         <Compile Remove="Tweaks\ScreenshotFileName.cs"/>
-        <Compile Remove="Tweaks\SetOptionCommand.cs"/>
         <Compile Remove="Tweaks\TreasureHuntTargets.cs"/>
         <Compile Remove="Tweaks\TryOnCorrectItem.cs"/>
         <Compile Remove="Tweaks\Chat\HideChat.cs"/>
