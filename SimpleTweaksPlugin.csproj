@@ -39,7 +39,6 @@
         <Compile Remove="Tweaks\FurnitureClocksCustomTime.cs"/>
         <Compile Remove="Tweaks\HouseLightCommand.cs"/>
         <Compile Remove="Tweaks\JokeTweaks.cs"/>
-        <Compile Remove="Tweaks\LeaveDutyCommand.cs"/>
         <Compile Remove="Tweaks\LongVeil.cs"/>
         <Compile Remove="Tweaks\MinionAway.cs"/>
         <Compile Remove="Tweaks\QuickSellItems.cs"/>
