@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
@@ -511,7 +512,7 @@ public abstract class BaseTweak {
         AttemptDrawConfigSetup();
         Ready = true;
     }
-    
+
     protected virtual void Setup() { }
 
     private bool signatureHelperInitialized = false;
@@ -648,6 +649,13 @@ public abstract class BaseTweak {
             }
         }
 
+        foreach (var m in this.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)) {
+            var attributes = m.GetCustomAttributes();
+            foreach (var a in attributes) {
+                if (a is TweakHookMethodAttribute th) th.Setup(this, m);
+            }
+        }
+
         Enabled = true;
     }
 
@@ -662,6 +670,13 @@ public abstract class BaseTweak {
             SimpleLog.Verbose($"Disable Tweak Hook: [{Name}] {field.Name}");
             if (field.GetValue(this) is IHookWrapper h) {
                 h.Disable();
+            }
+        }
+
+        foreach (var m in this.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)) {
+            var attributes = m.GetCustomAttributes();
+            foreach (var a in attributes) {
+                if (a is TweakHookMethodAttribute th) th.GetWrappedHook(this, m)?.Disable();
             }
         }
 
@@ -683,7 +698,27 @@ public abstract class BaseTweak {
             }
         }
 
+        foreach (var m in this.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)) {
+            var attributes = m.GetCustomAttributes();
+            foreach (var a in attributes) {
+                if (a is TweakHookMethodAttribute th) th.GetWrappedHook(this, m)?.Disable();
+            }
+        }
+
         Ready = false;
+    }
+
+    private readonly Dictionary<(Type, string), IHookWrapper> originalHooks = new();
+
+    protected T Original<T>([CallerMemberName] string methodName = "") where T : Delegate {
+        lock (originalHooks) {
+            if (originalHooks.TryGetValue((typeof(T), methodName), out var d)) return (d as HookWrapper<T>)?.Original;
+            var methodInfo = GetType().GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            var wrapper = methodInfo?.GetTweakHookAttribute<T>().GetWrappedHook(this, methodInfo);
+            if (wrapper is not HookWrapper<T> hookWrapper) return null;
+            originalHooks.Add((typeof(T), methodName), hookWrapper);
+            return hookWrapper.Original;
+        }
     }
 
     internal void InternalDispose() {

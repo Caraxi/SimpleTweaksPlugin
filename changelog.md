@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.10.0.4
+***Tweak Changes***
+- **`Always Yes`** - Added a setting to ignore checkbox if it is ticked and fixed the tweak not working with desynthesis
+
+
 ## 1.10.0.1
 ***General Changes***
 - Updated more tweaks for Dawntrail
