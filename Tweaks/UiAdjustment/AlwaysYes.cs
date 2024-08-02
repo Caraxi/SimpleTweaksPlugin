@@ -14,7 +14,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakName("Always Yes")]
 [TweakDescription("Sets the default action in dialog boxes to yes when using confirm (num 0).")]
 [TweakAuthor("Aireil")]
-[Changelog("1.10.0.4", "Added a setting to ignore checkbox if it is ticked and fixed the tweak not working with desynthesis")]
+[Changelog(UnreleasedVersion, "Added support for dyes.")]
+[Changelog("1.10.0.4", "Added a setting to ignore checkbox if it is ticked and fixed the tweak not working with desynthesis.")]
 [Changelog("1.10.0.0", "Added support for automatic aetherial reduction.")]
 [Changelog("1.9.2.1", "Added support for Blunderville exit dialog.")]
 public unsafe class AlwaysYes : UiAdjustments.SubTweak {
@@ -30,6 +31,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         public bool MateriaExtractions = true;
         public bool MateriaRetrievals = true;
         public bool GlamourDispels = true;
+        public bool Dyes = true;
         public bool Desynthesis = true;
         public bool AutomaticAetherialReduction = true;
         public bool Lobby = true;
@@ -101,6 +103,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         hasChanged |= ImGui.Checkbox("Materia extractions", ref Config.MateriaExtractions);
         hasChanged |= ImGui.Checkbox("Materia retrievals", ref Config.MateriaRetrievals);
         hasChanged |= ImGui.Checkbox("Glamour dispels", ref Config.GlamourDispels);
+        hasChanged |= ImGui.Checkbox("Dyes", ref Config.Dyes);
         hasChanged |= ImGui.Checkbox("Desynthesis", ref Config.Desynthesis);
         hasChanged |= ImGui.Checkbox("Automatic aetherial reduction", ref Config.AutomaticAetherialReduction);
         hasChanged |= ImGui.Checkbox("Character selection dialogs", ref Config.Lobby);
@@ -154,6 +157,9 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 return;
             case "MiragePrismRemove":
                 if (Config.GlamourDispels) SetFocusYes(args.Addon, 15);
+                return;
+            case "MiragePrismMiragePlateConfirm":
+                if (Config.Dyes) SetFocusYes(args.Addon, 6);
                 return;
             case "SalvageDialog":
                 if (Config.Desynthesis) DelayedSetFocusYes(args.AddonName, 24, null, 23);
