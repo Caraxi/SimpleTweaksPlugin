@@ -31,7 +31,6 @@
         <Compile Remove="Tweaks\ChrDirCommand.cs"/>
         <Compile Remove="Tweaks\ContentsFinderConfirmClassSwitch.cs"/>
         <Compile Remove="Tweaks\CutsceneCommands.cs"/>
-        <Compile Remove="Tweaks\DataCentreOnTitleScreen.cs"/>
         <Compile Remove="Tweaks\DisableClickTargeting.cs"/>
         <Compile Remove="Tweaks\DisableMouseCameraControl.cs"/>
         <Compile Remove="Tweaks\EquipFromHotbar.cs"/>
