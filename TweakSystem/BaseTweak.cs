@@ -647,11 +647,14 @@ public abstract class BaseTweak {
                 SimpleLog.Warning($"Skipped enabling Tweak Hook [{Name}] {field.Name} - Hook not created");
             }
         }
+        
+        AfterEnable();
 
         Enabled = true;
     }
 
     protected virtual void Enable() { }
+    protected virtual void AfterEnable() { }
 
     internal void InternalDisable() {
         Unloading = true;
@@ -670,10 +673,13 @@ public abstract class BaseTweak {
             AutoSaveConfig();
         }
 
+        AfterDisable();
+
         Enabled = false;
     }
 
     protected virtual void Disable() { }
+    protected virtual void AfterDisable() { }
 
     public virtual void Dispose() {
         foreach (var (field, _) in this.GetFieldsWithAttribute<TweakHookAttribute>()) {

@@ -50,7 +50,6 @@
         <Compile Remove="Tweaks\TryOnCorrectItem.cs"/>
         <Compile Remove="Tweaks\Chat\HideChat.cs"/>
         <Compile Remove="Tweaks\Chat\HideChatAuto.cs"/>
-        <Compile Remove="Tweaks\Chat\ImprovedFontSizes.cs"/>
         <Compile Remove="Tweaks\Chat\RenameChatTabs.cs"/>
         <Compile Remove="Tweaks\Chat\ZoomedChatCustomization.cs"/>
         <Compile Remove="Tweaks\JokeTweak\Fools2023.cs"/>
