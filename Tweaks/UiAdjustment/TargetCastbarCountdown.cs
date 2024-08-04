@@ -152,7 +152,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         
         if (target is IBattleChara targetInfo && castBarVisible && targetInfo.TotalCastTime > targetInfo.CurrentCastTime) {
             textNode->AtkResNode.ToggleVisibility(true);
-            stringBuffer->SetString($"{targetInfo.TotalCastTime - targetInfo.CurrentCastTime:00.00}");
+            stringBuffer->SetString((targetInfo.TotalCastTime - targetInfo.CurrentCastTime).ToString("00.00", Culture));
             textNode->SetText(stringBuffer->StringPtr);
             textNode->FontSize = (byte) Math.Clamp(focusTarget ? TweakConfig.FocusFontSize : TweakConfig.FontSize, 8, 30);
             
