@@ -8,11 +8,11 @@ using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks; 
+namespace SimpleTweaksPlugin.Tweaks;
 
+[TweakName("Try On Correct Item")]
+[TweakDescription("Show the correct item when trying on a glamoured item.")]
 public class TryOnCorrectItem : Tweak {
-    public override string Name => "Try On Correct Item";
-    public override string Description => "Show the correct item when trying on a glamoured item.";
 
     private delegate byte TryOn(uint unknownCanEquip, uint itemBaseId, ulong stainColor, uint itemGlamourId, byte unknownByte);
     private HookWrapper<TryOn> tryOnHook;
@@ -35,7 +35,7 @@ public class TryOnCorrectItem : Tweak {
 
     public Configs Config { get; private set; }
 
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool changed) => {
+    protected void DrawConfig(ref bool changed) {
         
         if (ImGui.BeginTable("tryOnCorrectItemSettings", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.NoBordersInBody)) {
             
@@ -92,17 +92,14 @@ public class TryOnCorrectItem : Tweak {
                     }
                     ImGui.EndCombo();
                 }
-            }
-            
+            }   
             ImGui.EndTable();
         }
-
-
-    };
+    }
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        tryOnHook ??= Common.Hook<TryOn>("E8 ?? ?? ?? ?? EB 35 BA", TryOnDetour);
+        tryOnHook ??= Common.Hook<TryOn>("E8 ?? ?? ?? ?? EB 5B 48 8B 49 10", TryOnDetour);
         tryOnHook?.Enable();
         base.Enable();
     }
@@ -120,9 +117,14 @@ public class TryOnCorrectItem : Tweak {
         }
 
         if (addonId is 0 or > ushort.MaxValue) return Config.Default;
-        var addon = AtkStage.GetSingleton()->RaptureAtkUnitManager->GetAddonById((ushort)addonId);
+        var addon = AtkStage.Instance()->RaptureAtkUnitManager->GetAddonById((ushort)addonId);
         if (addon == null) return Config.Default;
-        var addonName = MemoryHelper.ReadString(new IntPtr(addon->Name), 0x20);
+
+        string addonName;
+        fixed (byte* ptr = addon->Name) {
+            addonName = MemoryHelper.ReadString(new IntPtr(ptr), 0x20);
+        }
+
         if (string.IsNullOrEmpty(addonName)) return Config.Default;
         SimpleLog.Log($"Try on from : {addonName}");
         if (Config.WindowSettings.ContainsKey(addonName)) return Config.WindowSettings[addonName];
