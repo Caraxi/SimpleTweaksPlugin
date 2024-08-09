@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
@@ -12,7 +13,7 @@ public unsafe class OpenGlamourDresserToCurrentJob : UiAdjustments.SubTweak {
     [AddonPreSetup("MiragePrismPrismBox")]
     private void OnMiragePrismBoxOpen(AtkUnitBase* atkUnitBase) {
         if (Service.ClientState is { LocalPlayer.ClassJob.Id: var playerJob }) {
-            *((byte*) atkUnitBase + 400) = (byte)playerJob;
+            Marshal.WriteByte((nint)atkUnitBase, 416, (byte)playerJob);
         }
     }
 }
