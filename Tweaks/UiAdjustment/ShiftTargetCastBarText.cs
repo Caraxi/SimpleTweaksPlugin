@@ -4,18 +4,13 @@ using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Enums;
-using SimpleTweaksPlugin.Tweaks.UiAdjustment;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin {
-    public partial class UiAdjustmentsConfig {
-        public bool ShouldSerializeShiftTargetCastBarText() => ShiftTargetCastBarText != null;
-        public ShiftTargetCastBarText.Config ShiftTargetCastBarText = null;
-    }
-}
-
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
+    [TweakName("Reposition Target Castbar Text")]
+    [TweakDescription("Moves the text on target castbars to make it easier to read")]
     public unsafe class ShiftTargetCastBarText : UiAdjustments.SubTweak {
 
         public class Config : TweakConfig {
@@ -24,55 +19,67 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
         
         public Config LoadedConfig { get; private set; }
-        
-        public override string Name => "Reposition Target Castbar Text";
-        public override string Description => "Moves the text on target castbars to make it easier to read";
+
         
         private readonly Vector2 buttonSize = new Vector2(26, 22);
 
-        protected override DrawConfigDelegate DrawConfigTree => (ref bool changed) => {
-            var bSize = buttonSize * ImGui.GetIO().FontGlobalScale;
-            ImGui.SetNextItemWidth(90 * ImGui.GetIO().FontGlobalScale);
-            if (ImGui.InputInt($"###{GetType().Name}_Offset", ref LoadedConfig.Offset)) {
-                if (LoadedConfig.Offset > MaxOffset) LoadedConfig.Offset = MaxOffset;
-                if (LoadedConfig.Offset < MinOffset) LoadedConfig.Offset = MinOffset;
-                changed = true;
-            }
-            ImGui.SameLine();
-            ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(2));
-            ImGui.PushFont(UiBuilder.IconFont);
-            if (ImGui.Button($"{(char)FontAwesomeIcon.ArrowUp}", bSize)) {
-                LoadedConfig.Offset = 8;
-                changed = true;
-            }
-            ImGui.PopFont();
-            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Above progress bar");
+        protected void DrawConfig(ref bool changed)
+        {
+            {
+                var bSize = buttonSize * ImGui.GetIO().FontGlobalScale;
+                ImGui.SetNextItemWidth(90 * ImGui.GetIO().FontGlobalScale);
+                if (ImGui.InputInt($"###{GetType().Name}_Offset", ref LoadedConfig.Offset))
+                {
+                    if (LoadedConfig.Offset > MaxOffset) LoadedConfig.Offset = MaxOffset;
+                    if (LoadedConfig.Offset < MinOffset) LoadedConfig.Offset = MinOffset;
+                    changed = true;
+                }
 
-            ImGui.SameLine();
-            ImGui.PushFont(UiBuilder.IconFont);
-            if (ImGui.Button($"{(char) FontAwesomeIcon.CircleNotch}", bSize)) {
-                LoadedConfig.Offset = 24;
-                changed = true;
+                ImGui.SameLine();
+                ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(2));
+                ImGui.PushFont(UiBuilder.IconFont);
+                if (ImGui.Button($"{(char)FontAwesomeIcon.ArrowUp}", bSize))
+                {
+                    LoadedConfig.Offset = 8;
+                    changed = true;
+                }
+
+                ImGui.PopFont();
+                if (ImGui.IsItemHovered()) ImGui.SetTooltip("Above progress bar");
+
+                ImGui.SameLine();
+                ImGui.PushFont(UiBuilder.IconFont);
+                if (ImGui.Button($"{(char)FontAwesomeIcon.CircleNotch}", bSize))
+                {
+                    LoadedConfig.Offset = 24;
+                    changed = true;
+                }
+
+                ImGui.PopFont();
+                if (ImGui.IsItemHovered()) ImGui.SetTooltip("Original Position");
+
+
+                ImGui.SameLine();
+                ImGui.PushFont(UiBuilder.IconFont);
+                if (ImGui.Button($"{(char)FontAwesomeIcon.ArrowDown}", bSize))
+                {
+                    LoadedConfig.Offset = 32;
+                    changed = true;
+                }
+
+                ImGui.PopFont();
+                if (ImGui.IsItemHovered()) ImGui.SetTooltip("Below progress bar");
+                ImGui.PopStyleVar();
+                ImGui.SameLine();
+                ImGui.Text("Ability name vertical offset");
+
+                changed |= ImGuiExt.HorizontalAlignmentSelector("Ability Name Alignment",
+                    ref LoadedConfig.NameAlignment, VerticalAlignment.Bottom);
             }
-            ImGui.PopFont();
-            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Original Position");
+        }
 
-            
-            ImGui.SameLine();
-            ImGui.PushFont(UiBuilder.IconFont);
-            if (ImGui.Button($"{(char)FontAwesomeIcon.ArrowDown}", bSize)) {
-                LoadedConfig.Offset = 32;
-                changed = true;
-            }
-            ImGui.PopFont();
-            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Below progress bar");
-            ImGui.PopStyleVar();
-            ImGui.SameLine();
-            ImGui.Text("Ability name vertical offset");
 
-            changed |= ImGuiExt.HorizontalAlignmentSelector("Ability Name Alignment", ref LoadedConfig.NameAlignment, VerticalAlignment.Bottom);
-        };
-
+        [FrameworkUpdate]
         public void OnFrameworkUpdate() {
             try {
                 HandleBars();
@@ -124,23 +131,19 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
         protected override void Enable() {
             if (Enabled) return;
-            LoadedConfig = LoadConfig<Config>() ?? PluginConfig.UiAdjustments.ShiftTargetCastBarText ?? new Config();
-            Common.FrameworkUpdate += OnFrameworkUpdate;
+            LoadedConfig = LoadConfig<Config>() ?? new Config();
             Enabled = true;
         }
 
         protected override void Disable() {
             if (!Enabled) return;
             SaveConfig(LoadedConfig);
-            PluginConfig.UiAdjustments.ShiftTargetCastBarText = null;
-            Common.FrameworkUpdate -= OnFrameworkUpdate;
             SimpleLog.Debug($"[{GetType().Name}] Reset");
             HandleBars(true);
             Enabled = false;
         }
 
         public override void Dispose() {
-            Common.FrameworkUpdate -= OnFrameworkUpdate;
             Enabled = false;
             Ready = false;
         }
