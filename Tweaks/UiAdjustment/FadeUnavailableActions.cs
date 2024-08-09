@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI;
-using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -28,12 +27,26 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
     private delegate void UpdateHotBarSlotDelegate(AddonActionBarBase* addon, ActionBarSlot* uiData, NumberArrayData* numberArray, StringArrayData* stringArray, int numberArrayIndex, int stringArrayIndex);
     
-    [TweakHook, Signature("E8 ?? ?? ?? ?? 49 81 C6 ?? ?? ?? ?? 83 C7 10", DetourName = nameof(OnHotBarSlotUpdate))]
-    private readonly HookWrapper<UpdateHotBarSlotDelegate>? onHotBarSlotUpdateHook = null!;
+    [TweakHook, Signature("E8 ?? ?? ?? ?? 49 81 C7 ?? ?? ?? ?? 83 C7 11", DetourName = nameof(OnHotBarSlotUpdate))]
+    private readonly HookWrapper<UpdateHotBarSlotDelegate>? onHotBarSlotUpdateHook;
 
-    private readonly Dictionary<uint, Action?> actionCache = new();
+    private readonly Dictionary<uint, Action?> actionCache = [];
 
-    private readonly List<string> addonActionBarNames = new() { "_ActionBar", "_ActionBar01", "_ActionBar02", "_ActionBar03", "_ActionBar04", "_ActionBar05", "_ActionBar06", "_ActionBar07", "_ActionBar08", "_ActionBar09", "_ActionCross", "_ActionDoubleCrossR", "_ActionDoubleCrossL" };
+    private readonly List<string> addonActionBarNames = [
+        "_ActionBar",
+        "_ActionBar01",
+        "_ActionBar02",
+        "_ActionBar03",
+        "_ActionBar04",
+        "_ActionBar05",
+        "_ActionBar06",
+        "_ActionBar07",
+        "_ActionBar08",
+        "_ActionBar09",
+        "_ActionCross",
+        "_ActionDoubleCrossR",
+        "_ActionDoubleCrossL",
+    ];
     
     public class Config : TweakConfig {
         [TweakConfigOption("Fade Percentage", IntMax = 90, IntMin = 0, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EditorSize = 150)]
@@ -60,17 +73,17 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
     
     private void ResetAllHotBars() {
         foreach (var addonName in addonActionBarNames) {
-            var addon = (AddonActionBarBase*) Common.GetUnitBase(addonName);
+            var addon = Common.GetUnitBase<AddonActionBarBase>(addonName);
             if (addon is null) continue;
 
-            foreach (var slot in addon->ActionBarSlotVector.Span) {
+            foreach (var slot in addon->ActionBarSlotVector) {
                 if (slot.Icon is not null) {
                     var iconComponent = (AtkComponentIcon*) slot.Icon->Component;
                     if (iconComponent is not null) {
-                        iconComponent->IconImage->AtkResNode.Color.A = 0xFF;
-                        iconComponent->IconImage->AtkResNode.Color.R = 0xFF;
-                        iconComponent->IconImage->AtkResNode.Color.G = 0xFF;
-                        iconComponent->IconImage->AtkResNode.Color.B = 0xFF;
+                        iconComponent->IconImage->Color.A = 0xFF;
+                        iconComponent->IconImage->Color.R = 0xFF;
+                        iconComponent->IconImage->Color.G = 0xFF;
+                        iconComponent->IconImage->Color.B = 0xFF;
                         iconComponent->Frame->Color.A = 0xFF;
                     }
                 }
@@ -137,7 +150,8 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         return action;
     }
 
-    private bool ShouldFadeAction(NumberArrayStruct* numberArrayData) => !(numberArrayData->ActionAvailable_1 && numberArrayData->ActionAvailable_2);
+    private bool ShouldFadeAction(NumberArrayStruct* numberArrayData) 
+        => !(numberArrayData->ActionAvailable_1 && numberArrayData->ActionAvailable_2);
     
     private void ApplyReddening(ActionBarSlot* hotBarSlotData, bool redden) {
         if (hotBarSlotData is null) return;
@@ -148,14 +162,14 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         if (iconComponent->Frame is null) return;
 
         if (TweakConfig.ReddenOutOfRange && redden) {
-            iconComponent->IconImage->AtkResNode.Color.R = 0xFF;
-            iconComponent->IconImage->AtkResNode.Color.G = (byte)(0xFF * ((100 - TweakConfig.ReddenPercentage) / 100.0f));
-            iconComponent->IconImage->AtkResNode.Color.B = (byte)(0xFF * ((100 - TweakConfig.ReddenPercentage) / 100.0f));
+            iconComponent->IconImage->Color.R = 0xFF;
+            iconComponent->IconImage->Color.G = (byte)(0xFF * ((100 - TweakConfig.ReddenPercentage) / 100.0f));
+            iconComponent->IconImage->Color.B = (byte)(0xFF * ((100 - TweakConfig.ReddenPercentage) / 100.0f));
         }
         else {
-            iconComponent->IconImage->AtkResNode.Color.R = 0xFF;
-            iconComponent->IconImage->AtkResNode.Color.G = 0xFF;
-            iconComponent->IconImage->AtkResNode.Color.B = 0xFF;
+            iconComponent->IconImage->Color.R = 0xFF;
+            iconComponent->IconImage->Color.G = 0xFF;
+            iconComponent->IconImage->Color.B = 0xFF;
         }
     }
     
@@ -168,11 +182,11 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         if (iconComponent->Frame is null) return;
 
         if (fade) {
-            iconComponent->IconImage->AtkResNode.Color.A = (byte)(0xFF * ((100 - TweakConfig.FadePercentage) / 100.0f));
+            iconComponent->IconImage->Color.A = (byte)(0xFF * ((100 - TweakConfig.FadePercentage) / 100.0f));
             if(TweakConfig.ApplyToFrame) iconComponent->Frame->Color.A = (byte)(0xFF * ((100 - TweakConfig.FadePercentage) / 100.0f));
         }
         else {
-            iconComponent->IconImage->AtkResNode.Color.A = 0xFF;
+            iconComponent->IconImage->Color.A = 0xFF;
             iconComponent->Frame->Color.A = 0xFF;
         }
     }
@@ -185,39 +199,13 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         [FieldOffset(0x18)] public bool ActionAvailable_2;
         [FieldOffset(0x20)] public int CooldownPercent;
         [FieldOffset(0x28)] public int ManaCost;
-        [FieldOffset(0x3C)] public bool TargetInRange;
+        [FieldOffset(0x40)] public bool TargetInRange;
     }
 
-    private enum NumberArrayActionType: uint
-    {
-        Empty = 0x0,
-        Macro = 0x2C,
-        Action = 0x2D,
-        Emote = 0x2E,
-        Item = 0x2F,
-        EventItem = 0x31, // Starting from EventItem, all values are HotbarSlotType.SomeType + 0x2C
-        Marker = 0x34,
-        CraftAction = 0x35,
-        GeneralAction = 0x36,
-        BuddyAction = 0x37,
-        MainCommand = 0x38,
-        Companion = 0x39,
-        GearSet = 0x3A,
-        PetAction = 0x3B,
-        Mount = 0x3C,
-        FieldMarker = 0x3D,
-        Recipe = 0x3E,
-        ChocoboRaceAbility = 0x3F, // Untested
-        ChocoboRaceItem = 0x40, // Untested
-        Unk_0x17 = 0x41, // Untested
-        ExtraCommand = 0x42,
-        PvPQuickChat = 0x43,
-        PvPCombo = 0x44,
-        BgcArmyAction = 0x45,
-        Unk_0x1C = 0x46, // Untested
-        PerformanceInstrument = 0x47, // Untested
-        Collection = 0x48,
-        Ornament = 0x49,
-        LostFindsItem = 0x4A // Untested
+    private enum NumberArrayActionType: uint {
+        Action = 0x2E,
+        CraftAction = 0x36,
+        
+        // Note, 7.0 added new a new type before 0x2E, and potentially more after, unused values were removed.
     }
 }
