@@ -57,7 +57,6 @@
         <Compile Remove="Tweaks\UiAdjustment\ColoredDutyRoulette.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\CustomDefaultQuantity.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\CustomFreeCompanyTags.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\FadeUnavailableActions.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\FastSearch.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideGuildhestObjectivePopup.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideQualityWhenNoHQ.cs"/>
