@@ -902,8 +902,10 @@ public unsafe class UIDebug : DebugHelper {
                                     ImGui.Text($"[U: {u}  V: {v}  W: {width}  H: {height}]");
                                 }
 
-                                ImGui.Image(new IntPtr(kernelTexture->D3D11ShaderResourceView), new Vector2(width, height),
-                                    new Vector2(u, v) / textureSize, new Vector2(u + width, v + height) / textureSize);
+                                if (tPart.UldAsset is not null && tPart.UldAsset->AtkTexture.Resource is not null && tPart.UldAsset->AtkTexture.Resource->KernelTextureObject is not null) {
+                                    ImGui.Image(new IntPtr(tPart.UldAsset->AtkTexture.Resource->KernelTextureObject->D3D11ShaderResourceView), new Vector2(width, height),
+                                        new Vector2(u, v) / textureSize, new Vector2(u + width, v + height) / textureSize);   
+                                }
                             }
 
                             ImGui.EndTable();

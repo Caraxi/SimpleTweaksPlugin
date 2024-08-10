@@ -5,7 +5,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
@@ -512,7 +511,7 @@ public abstract class BaseTweak {
         AttemptDrawConfigSetup();
         Ready = true;
     }
-
+    
     protected virtual void Setup() { }
 
     private bool signatureHelperInitialized = false;
@@ -648,18 +647,14 @@ public abstract class BaseTweak {
                 SimpleLog.Warning($"Skipped enabling Tweak Hook [{Name}] {field.Name} - Hook not created");
             }
         }
-
-        foreach (var m in this.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)) {
-            var attributes = m.GetCustomAttributes();
-            foreach (var a in attributes) {
-                if (a is TweakHookMethodAttribute th) th.Setup(this, m);
-            }
-        }
+        
+        AfterEnable();
 
         Enabled = true;
     }
 
     protected virtual void Enable() { }
+    protected virtual void AfterEnable() { }
 
     internal void InternalDisable() {
         Unloading = true;
@@ -673,22 +668,18 @@ public abstract class BaseTweak {
             }
         }
 
-        foreach (var m in this.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)) {
-            var attributes = m.GetCustomAttributes();
-            foreach (var a in attributes) {
-                if (a is TweakHookMethodAttribute th) th.GetWrappedHook(this, m)?.Disable();
-            }
-        }
-
         // Auto Save Config
         if (UseAutoConfig && TweakAutoConfigAttribute is not NoAutoConfig && TweakAutoConfigAttribute.AutoSaveLoad) {
             AutoSaveConfig();
         }
 
+        AfterDisable();
+
         Enabled = false;
     }
 
     protected virtual void Disable() { }
+    protected virtual void AfterDisable() { }
 
     public virtual void Dispose() {
         foreach (var (field, _) in this.GetFieldsWithAttribute<TweakHookAttribute>()) {
@@ -698,27 +689,7 @@ public abstract class BaseTweak {
             }
         }
 
-        foreach (var m in this.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)) {
-            var attributes = m.GetCustomAttributes();
-            foreach (var a in attributes) {
-                if (a is TweakHookMethodAttribute th) th.GetWrappedHook(this, m)?.Disable();
-            }
-        }
-
         Ready = false;
-    }
-
-    private readonly Dictionary<(Type, string), IHookWrapper> originalHooks = new();
-
-    protected T Original<T>([CallerMemberName] string methodName = "") where T : Delegate {
-        lock (originalHooks) {
-            if (originalHooks.TryGetValue((typeof(T), methodName), out var d)) return (d as HookWrapper<T>)?.Original;
-            var methodInfo = GetType().GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            var wrapper = methodInfo?.GetTweakHookAttribute<T>().GetWrappedHook(this, methodInfo);
-            if (wrapper is not HookWrapper<T> hookWrapper) return null;
-            originalHooks.Add((typeof(T), methodName), hookWrapper);
-            return hookWrapper.Original;
-        }
     }
 
     internal void InternalDispose() {
