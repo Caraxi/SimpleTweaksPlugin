@@ -94,6 +94,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
     }
 
     [AddonPostRequestedUpdate("NeedGreed")]
+    [AddonPostRefresh("NeedGreed")]
     private void OnNeedGreedRequestedUpdate(AddonNeedGreed* callingAddon) {
         try {
             var listComponentNode = (AtkComponentNode*) callingAddon->AtkUnitBase.GetNodeById(6);
