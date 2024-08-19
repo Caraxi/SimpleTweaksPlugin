@@ -1,33 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using Dalamud.Game.ClientState.Keys;
-using Dalamud.Memory;
+﻿using Dalamud.Game.ClientState.Keys;
+using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
+using System.Collections.Generic;
 
-namespace SimpleTweaksPlugin.Tweaks; 
+namespace SimpleTweaksPlugin.Tweaks;
 
+[TweakName("Try On Correct Item")]
+[TweakDescription("Show the correct item when trying on a glamoured item.")]
+[TweakAutoConfig]
 public class TryOnCorrectItem : Tweak {
-    public override string Name => "Try On Correct Item";
-    public override string Description => "Show the correct item when trying on a glamoured item.";
+    [TweakHook(typeof(AgentTryon), nameof(AgentTryon.TryOn), nameof(TryOnDetour))]
+    private HookWrapper<AgentTryon.Delegates.TryOn> tryOnHook;
 
-    private delegate byte TryOn(uint unknownCanEquip, uint itemBaseId, ulong stainColor, uint itemGlamourId, byte unknownByte);
-    private HookWrapper<TryOn> tryOnHook;
-    private List<string> newWindows = new();
-    
+    private List<string> newWindows = [];
+
     public enum TryOnItem {
         Original,
         Glamoured,
     }
-    
+
     public class TryOnWindowSettings {
         public TryOnItem NoModifier = TryOnItem.Glamoured;
         public TryOnItem HoldingShift = TryOnItem.Original;
     }
-    
+
     public class Configs : TweakConfig {
         public TryOnWindowSettings Default = new();
         public Dictionary<string, TryOnWindowSettings> WindowSettings = new();
@@ -35,76 +35,90 @@ public class TryOnCorrectItem : Tweak {
 
     public Configs Config { get; private set; }
 
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool changed) => {
-        
-        if (ImGui.BeginTable("tryOnCorrectItemSettings", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.NoBordersInBody)) {
-            
-            
-            ImGui.TableSetupColumn("Window", ImGuiTableColumnFlags.WidthFixed, 180 * ImGui.GetIO().FontGlobalScale);
-            ImGui.TableSetupColumn("No Modifier", ImGuiTableColumnFlags.WidthFixed, 130 * ImGui.GetIO().FontGlobalScale);
-            ImGui.TableSetupColumn("Holding Shift", ImGuiTableColumnFlags.WidthFixed, 130 * ImGui.GetIO().FontGlobalScale);
-            
-            ImGui.TableHeadersRow();
+    protected void DrawConfig(ref bool hasChanged) {
+        using var table = ImRaii.Table("tryOnCorrectItemSettings", 4,
+            ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.NoBordersInBody);
+        if (!table) return;
 
-            void Editor(string name, TryOnWindowSettings settings) {
-                ImGui.PushID($"tryOnCorrectWindowSettings_{name}");
-                ImGui.TableNextColumn();
-                ImGui.Text(name);
-                ImGui.TableNextColumn();
+        List<string> removalQueue = [];
 
-                void ValueEditor(string key, ref TryOnItem value) {
-                    ImGui.SetNextItemWidth(-1);
-                    if (ImGui.BeginCombo($"##{key}", $"{value}", ImGuiComboFlags.None)) {
-                        if (ImGui.Selectable($"{TryOnItem.Original}", value == TryOnItem.Original)) {value = TryOnItem.Original;}
-                        if (ImGui.Selectable($"{TryOnItem.Glamoured}", value == TryOnItem.Glamoured)) value = TryOnItem.Glamoured;
-                        ImGui.EndCombo();
-                    }
-                }
-                
-                ValueEditor("No Modifier", ref settings.NoModifier);
-                ImGui.TableNextColumn();
-                ValueEditor("Holding Shift", ref settings.HoldingShift);
-                
-                ImGui.PopID();
-            }
-            
-            Editor("Default", Config.Default);
-            foreach (var (name, settings) in Config.WindowSettings) {
-                Editor(name, settings);
-            }
+        ImGui.TableSetupColumn("Window", ImGuiTableColumnFlags.WidthFixed, 180 * ImGui.GetIO().FontGlobalScale);
+        ImGui.TableSetupColumn("No Modifier", ImGuiTableColumnFlags.WidthFixed, 130 * ImGui.GetIO().FontGlobalScale);
+        ImGui.TableSetupColumn("Holding Shift", ImGuiTableColumnFlags.WidthFixed, 130 * ImGui.GetIO().FontGlobalScale);
+        ImGui.TableSetupColumn("Manage", ImGuiTableColumnFlags.WidthFixed, 80 * ImGui.GetIO().FontGlobalScale);
 
-            
-            if (newWindows.Count > 0) {
-                ImGui.TableNextColumn();
+        ImGui.TableHeadersRow();
+
+        bool Editor(string name, TryOnWindowSettings settings)
+        {
+            var editorChanged = true;
+
+            ImGui.PushID($"tryOnCorrectWindowSettings_{name}");
+            ImGui.TableNextColumn();
+            ImGui.Text(name);
+            ImGui.TableNextColumn();
+
+            void ValueEditor(string key, ref TryOnItem value)
+            {
                 ImGui.SetNextItemWidth(-1);
-                if (ImGui.BeginCombo("##tryOnCorrectItemSettings_newWindow", "Select Window to Add...", ImGuiComboFlags.None)) {
-                    foreach (var window in newWindows) {
-                        if (ImGui.Selectable(window, false)) {
-                            if (!Config.WindowSettings.ContainsKey(window)) {
-                                Config.WindowSettings.Add(window, new TryOnWindowSettings() {
-                                    HoldingShift = Config.Default.HoldingShift,
-                                    NoModifier = Config.Default.NoModifier,
-                                });
-                            }
-                            newWindows.Remove(window);
-                            break;
-                        }
-                    }
-                    ImGui.EndCombo();
+                using var combo = ImRaii.Combo($"##{key}", $"{value}", ImGuiComboFlags.None);
+                if (!combo) return;
+                if (ImGui.Selectable($"{TryOnItem.Original}", value == TryOnItem.Original)) {
+                    value = TryOnItem.Original;
+                    editorChanged = true;
+                }
+                if (ImGui.Selectable($"{TryOnItem.Glamoured}", value == TryOnItem.Glamoured)) {
+                    value = TryOnItem.Glamoured;
+                    editorChanged = true;
                 }
             }
-            
-            ImGui.EndTable();
+
+            ValueEditor("No Modifier", ref settings.NoModifier);
+            ImGui.TableNextColumn();
+            ValueEditor("Holding Shift", ref settings.HoldingShift);
+
+            ImGui.TableNextColumn();
+            if (name != "Default") {
+                if (ImGui.Button("Remove")) {
+                    removalQueue.Add(name);
+                }
+            }
+
+            ImGui.PopID();
+
+            return editorChanged;
         }
 
+        hasChanged |= Editor("Default", Config.Default);
+        foreach (var (name, settings) in Config.WindowSettings) {
+            hasChanged |= Editor(name, settings);
+        }
 
-    };
+        if (newWindows.Count > 0) {
+            ImGui.TableNextColumn();
+            ImGui.SetNextItemWidth(-1);
+            using var combo = ImRaii.Combo("##tryOnCorrectItemSettings_newWindow", "Select Window to Add...",
+                ImGuiComboFlags.None);
+            if (combo) {
+                foreach (var window in newWindows) {
+                    if (ImGui.Selectable(window, false)) {
+                        if (!Config.WindowSettings.ContainsKey(window)) {
+                            Config.WindowSettings.Add(window, new TryOnWindowSettings
+                            {
+                                HoldingShift = Config.Default.HoldingShift,
+                                NoModifier = Config.Default.NoModifier,
+                            });
+                        }
+                        newWindows.Remove(window);
+                        break;
+                    }
+                }
+            }
+        }
 
-    protected override void Enable() {
-        Config = LoadConfig<Configs>() ?? new Configs();
-        tryOnHook ??= Common.Hook<TryOn>("E8 ?? ?? ?? ?? EB 35 BA", TryOnDetour);
-        tryOnHook?.Enable();
-        base.Enable();
+        foreach (var name in removalQueue) {
+            Config.WindowSettings.Remove(name);
+        }
     }
 
     private unsafe TryOnWindowSettings GetActiveWindowSettings() {
@@ -120,36 +134,24 @@ public class TryOnCorrectItem : Tweak {
         }
 
         if (addonId is 0 or > ushort.MaxValue) return Config.Default;
-        var addon = AtkStage.GetSingleton()->RaptureAtkUnitManager->GetAddonById((ushort)addonId);
+        var addon = AtkStage.Instance()->RaptureAtkUnitManager->GetAddonById((ushort)addonId);
         if (addon == null) return Config.Default;
-        var addonName = MemoryHelper.ReadString(new IntPtr(addon->Name), 0x20);
+        var addonName = addon->NameString;
         if (string.IsNullOrEmpty(addonName)) return Config.Default;
         SimpleLog.Log($"Try on from : {addonName}");
-        if (Config.WindowSettings.ContainsKey(addonName)) return Config.WindowSettings[addonName];
-
+        if (Config.WindowSettings.TryGetValue(addonName, out var settings)) return settings;
         if (!newWindows.Contains(addonName)) {
             newWindows.Add(addonName);
         }
 
         return Config.Default;
     }
-    
-    private byte TryOnDetour(uint unknownCanEquip, uint itemBaseId, ulong stainColor, uint itemGlamourId, byte unknownByte) {
+
+    private bool TryOnDetour(uint openerAddonId, uint itemId, byte stain0Id, byte stain1Id, uint glamourItemId, bool applyCompanyCrest)
+    {
         var c = GetActiveWindowSettings();
         var i = c.NoModifier;
         if (Service.KeyState[VirtualKey.SHIFT]) i = c.HoldingShift;
-        if (i == TryOnItem.Original) return tryOnHook.Original(unknownCanEquip, itemBaseId, stainColor, 0, unknownByte);
-        return tryOnHook.Original(unknownCanEquip, itemGlamourId != 0 ? itemGlamourId : itemBaseId, stainColor, 0, unknownByte);
-    }
-
-    protected override void Disable() {
-        SaveConfig(Config);
-        tryOnHook?.Disable();
-        base.Disable();
-    }
-
-    public override void Dispose() {
-        tryOnHook?.Dispose();
-        base.Dispose();
+        return tryOnHook.Original(openerAddonId, itemId, stain0Id, stain1Id, i == TryOnItem.Original ? itemId : glamourItemId, applyCompanyCrest);
     }
 }
