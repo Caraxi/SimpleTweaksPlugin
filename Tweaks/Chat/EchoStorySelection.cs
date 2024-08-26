@@ -24,6 +24,8 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak {
     public class Config : TweakConfig {
         [TweakConfigOption("Display Character Name")]
         public bool DisplayCharacterName = false;
+        [TweakConfigOption("Don't include Aethernet")]
+        public bool ExcludeAethernet = false;
     }
 
     public Config TweakConfig { get; private set; } = null!;
@@ -77,6 +79,8 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak {
 
         var selectedItem = list->SelectedItemIndex;
         if (selectedItem < 0 || selectedItem >= options.Count) return;
+
+        if (TweakConfig.ExcludeAethernet && options[selectedItem] == " Aethernet.") return;
 
         var message = new SeStringBuilder()
             .AddText(options[selectedItem])
