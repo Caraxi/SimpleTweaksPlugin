@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.10.0.5
+***New Tweaks***
+- **`Preview Unlockable Items`** - Show a preview image for mounts, minions and hairstyles.
+
+
+***Tweak Changes***
+- **`Always Yes`** - Added support for dyes.
+
+
 ## 1.10.0.4
 ***Tweak Changes***
 - **`Always Yes`** - Added a setting to ignore checkbox if it is ticked and fixed the tweak not working with desynthesis

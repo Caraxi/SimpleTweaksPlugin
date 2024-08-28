@@ -123,7 +123,7 @@
 
 - **Estate List Command**
 
-  Adds a command to open the estate list of one of your friends. (/estatelist)
+  Adds a command to open the estate list of one of your friends.
 
 
 - **Extended Macro Icons**
@@ -203,7 +203,7 @@
 
 - **Main Command Command**
 
-  Adds the command '/maincommand [name]' to allow using any Main Command from chat or macro.
+  Adds a command to allow using any Main Command from chat or macro.
 
 
 - **No Sell List**
@@ -216,12 +216,12 @@
   Adds a command to open adventurer plates.
 
 
-- **Open commendation window automatically**
+- **Open Commendation Window Automatically**
 
   Open the commendation window upon completion of a duty.
 
 
-- **Open loot window when items are added.**
+- **Open loot window when items are added**
 
   Open the loot rolling window when new items are added to be rolled on.
 
@@ -273,7 +273,7 @@
 
 - **Show process id Command**
 
-  Adds the command '/pid' to show current process id.
+  Adds a command to show the current process id.
 
 
 - **Smart Strafe**
@@ -372,7 +372,7 @@
   Hide the chat log name and close button on panels that have been split from the main window.
 
 
-- **Improved Font Sizes**
+- **Improved Chat Font Sizes**
 
   Allows you to change the font size for the chat windows beyond the default limits, and allows docked chat tabs to keep their font size separate from the main tab.
 
@@ -415,12 +415,12 @@
 
 - **Extra Information for Tooltips**
 
-  Adds extra information to item tooltips
+  Adds extra information to item tooltips.
 
 
 - **Hide Tooltips in Combat**
 
-  Allows hiding Action and/or Item tooltips while in combat.
+  Allow hiding action and/or Item tooltips while in combat. 
 
 
 - **Improved Blue Mage Action Tooltips**
@@ -455,6 +455,11 @@
 - **Precise Spiritbond**
 
   Show partial percentages for Spiritbond.
+
+
+- **Preview Unlockable Items**
+
+  Show a preview image for mounts, minions and hairstyles.
 
 
 - **Show Desynthesis Skill**
@@ -512,12 +517,12 @@
 
 - **Adjust Equipment Positions**
 
-  Repositions equipment positions in character menu and inspect to give a less gross layout.
+  Repositions equipment positions in character menu and inspect to improve appearance.
 
 
 - **Adjust Large Cooldown Counter**
 
-  Increases the size of cooldown counters on hotbars.
+  Make adjustmenmts to the cooldown counter when using the large option.
 
 
 - **Always Yes**
@@ -537,7 +542,7 @@
 
 - **Cast Bar Adjustments**
 
-  Allows hiding or moving specific parts of the castbar.
+  Allow hiding or moving specific parts of the castbar.
 
 
 - **Casting Text Visibility**
@@ -686,7 +691,7 @@
 
 - **Limit Break Adjustments**
 
-  Simple customization of the limit break bars
+  Simple customization of the limit break bars.
 
 
 - **Lock Window Positions**
@@ -719,9 +724,9 @@
   Allows moving or hiding of the notifications that appears in the middle of the screen at various times.
 
 
-- **Old Nameplates Tweak**
+- **Old Nameplates**
 
-  Reverts the change to nameplates.
+  Use the old font for nameplates.
 
 
 - **Open Glamour Dresser to Current Job**

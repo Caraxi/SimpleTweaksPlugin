@@ -16,7 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
 [TweakName("Preview Unlockable Items")]
 [TweakDescription("Show a preview image for mounts, minions and hairstyles.")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.0.5")]
 public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
     private string lastImage;
 
