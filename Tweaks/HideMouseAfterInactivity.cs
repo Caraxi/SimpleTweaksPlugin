@@ -2,12 +2,14 @@
 using System.Diagnostics;
 using System.Numerics;
 using Dalamud.Game.ClientState.Conditions;
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks; 
+namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakCategory(TweakCategory.Command)]
 [TweakName("Hide Mouse Cursor After Inactivity")]
@@ -15,58 +17,38 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakAutoConfig]
 [Changelog("1.8.3.0", "Fixed tweak not working in french.", Author = "Anna")]
 public unsafe class HideMouseAfterInactivity : Tweak {
-
     public class Config : TweakConfig {
-        [TweakConfigOption("Hide after (seconds)")]
-        public float InactiveSeconds = 0.1f;
+        public float InactiveSeconds = 3f;
+
         [TweakConfigOption("Don't hide in cutscenes")]
         public bool NoHideInCutscenes;
+
         [TweakConfigOption("Don't hide in combat")]
         public bool NoHideInCombat = true;
+
         [TweakConfigOption("Don't hide in instances")]
         public bool NoHideInInstance = true;
+
         [TweakConfigOption("Don't hide while on interactable")]
         public bool NoHideWhileHovering = true;
     }
 
-    public Config TweakConfig { get; private set; }
-
-    private static class Signatures {
-        internal const string MouseButtonHoldState = "8B 05 ?? ?? ?? ?? 48 89 5C 24 ?? 41 8B DF 38 1D";
+    protected void DrawConfig() {
+        ImGui.InputFloat("Hide after (seconds)", ref TweakConfig.InactiveSeconds, 0.1f);
     }
 
-    private IntPtr mouseButtonHoldState = IntPtr.Zero;
+    public Config TweakConfig { get; private set; }
+
     private Vector2 lastPosition = Vector2.Zero;
     private readonly Stopwatch lastMoved = new();
 
-    protected override void Enable() {
-        this.TweakConfig = LoadConfig<Config>() ?? new Config();
-
-        if (mouseButtonHoldState == IntPtr.Zero) {
-            Service.SigScanner.TryGetStaticAddressFromSig(Signatures.MouseButtonHoldState, out mouseButtonHoldState);
-        }
-
-        Common.FrameworkUpdate += HideMouse;
-
-        base.Enable();
-    }
-
-    protected override void Disable() {
-        Common.FrameworkUpdate -= HideMouse;
-        SaveConfig(TweakConfig);
-
-        base.Disable();
-    }
-
     private void GetInfo() {
-        var mouseDown = mouseButtonHoldState != IntPtr.Zero && *(byte*) mouseButtonHoldState > 0;
-        if (ImGui.GetMousePos() != lastPosition || mouseDown) {
-            this.lastMoved.Restart();
-        }
-
-        this.lastPosition = ImGui.GetMousePos();
+        var mouseDown = *InputManager.GetMouseButtonHoldState() > 0;
+        if (ImGui.GetMousePos() != lastPosition || mouseDown) lastMoved.Restart();
+        lastPosition = ImGui.GetMousePos();
     }
 
+    [FrameworkUpdate]
     private void HideMouse() {
         GetInfo();
         if (TweakConfig.NoHideInCutscenes && Service.Condition.Cutscene()) return;
