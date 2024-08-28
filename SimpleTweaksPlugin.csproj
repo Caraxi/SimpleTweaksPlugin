@@ -28,7 +28,6 @@
     <ItemGroup Label="Tweaks Needing Update">
         <Compile Remove="Tweaks\BaitCommand.cs"/>
         <Compile Remove="Tweaks\CharaViewIncreasedZoom.cs"/>
-        <Compile Remove="Tweaks\ContentsFinderConfirmClassSwitch.cs"/>
         <Compile Remove="Tweaks\CutsceneCommands.cs"/>
         <Compile Remove="Tweaks\DisableClickTargeting.cs"/>
         <Compile Remove="Tweaks\DisableMouseCameraControl.cs"/>
@@ -52,7 +51,6 @@
         <Compile Remove="Tweaks\Chat\ZoomedChatCustomization.cs"/>
         <Compile Remove="Tweaks\JokeTweak\Fools2023.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ChangeMapAreaColors.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\ColoredDutyRoulette.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\CustomDefaultQuantity.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\FastSearch.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideGuildhestObjectivePopup.cs"/>
