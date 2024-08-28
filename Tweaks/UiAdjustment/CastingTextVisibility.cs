@@ -7,6 +7,7 @@ using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using System;
 using System.Numerics;
+using Dalamud.Interface.Utility.Raii;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
@@ -59,12 +60,12 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak
         public bool TargetRightAlign = true;
     }
 
-    private void DrawConfig()
+    protected void DrawConfig()
     {
-        ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(64 / 255f, 128 / 255f, 100 / 255f, 1));
-        ImGui.PushStyleColor(ImGuiCol.FrameBgHovered, new Vector4(51 / 255f, 128 / 255f, 95 / 255f, 1));
-        ImGui.PushStyleColor(ImGuiCol.FrameBgActive, new Vector4(38 / 255f, 128 / 255f, 89 / 255f, 1));
-        ImGui.PushStyleColor(ImGuiCol.SliderGrab, new Vector4(23 / 255f, 230 / 255f, 141 / 255f, 1));
+        using var frameBgHovered = ImRaii.PushColor(ImGuiCol.FrameBgHovered, new Vector4(51 / 255f, 128 / 255f, 95 / 255f, 1));
+        using var frameBgActive = ImRaii.PushColor(ImGuiCol.FrameBgActive, new Vector4(38 / 255f, 128 / 255f, 89 / 255f, 1));
+        using var sliderGrab = ImRaii.PushColor(ImGuiCol.SliderGrab, new Vector4(23 / 255f, 230 / 255f, 141 / 255f, 1));
+        using var frameBg = ImRaii.PushColor(ImGuiCol.FrameBg, new Vector4(64 / 255f, 128 / 255f, 100 / 255f, 1));
 
         ImGui.Checkbox("Focus Target", ref Config.UseCustomFocusColor);
         if (Config.UseCustomFocusColor)
@@ -121,7 +122,6 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak
             ImGui.Unindent();
             ImGui.NewLine();
         }
-        ImGui.PopStyleColor(4);
     }
 
     protected override void Disable()
