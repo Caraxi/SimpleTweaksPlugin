@@ -48,7 +48,7 @@ public abstract class BaseTweak {
     public string Description => TweakDescriptionAttribute?.Description;
     protected string Author => TweakAuthorAttribute?.Author;
     public virtual bool Experimental => false;
-    public virtual IEnumerable<string> Tags { get; } = new string[0];
+    public IEnumerable<string> Tags => TweakTagsAttribute?.Tags ?? [];
     internal bool ForceOpenConfig { private get; set; }
 
     public TweakProvider TweakProvider { get; private set; } = null;
@@ -749,6 +749,16 @@ public abstract class BaseTweak {
             if (tweakAutoConfigAttribute != null) return tweakAutoConfigAttribute;
             tweakAutoConfigAttribute = GetType().GetCustomAttribute<TweakAutoConfigAttribute>() ?? NoAutoConfig.Singleton;
             return tweakAutoConfigAttribute;
+        }
+    }
+
+    private TweakTagsAttribute tweakTagsAttribute;
+
+    protected TweakTagsAttribute TweakTagsAttribute {
+        get {
+            if (tweakDescriptionAttribute != null) return tweakTagsAttribute;
+            tweakTagsAttribute = GetType().GetCustomAttribute<TweakTagsAttribute>() ?? new TweakTagsAttribute();
+            return tweakTagsAttribute;
         }
     }
 

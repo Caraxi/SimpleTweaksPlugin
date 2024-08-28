@@ -17,9 +17,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Allows hiding or moving specific parts of the parameter bar (HP and mana bars).")]
 [TweakAuthor("Aireil")]
 [Changelog("1.10.0.1", "Hide MP bar on Viper")]
+[TweakTags("parameter", "hp", "mana", "bar")]
 public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
-    public override IEnumerable<string> Tags => new[] { "parameter", "hp", "mana", "bar" };
-
     public class Configs : TweakConfig {
         public HideAndOffsetConfig TargetCycling = new() { OffsetX = 100, OffsetY = 1 };
 
