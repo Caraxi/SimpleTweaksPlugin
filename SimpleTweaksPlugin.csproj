@@ -46,7 +46,6 @@
         <Compile Remove="Tweaks\SanctuarySprintReplacer.cs"/>
         <Compile Remove="Tweaks\ScreenshotFileName.cs"/>
         <Compile Remove="Tweaks\TreasureHuntTargets.cs"/>
-        <Compile Remove="Tweaks\TryOnCorrectItem.cs"/>
         <Compile Remove="Tweaks\Chat\HideChat.cs"/>
         <Compile Remove="Tweaks\Chat\HideChatAuto.cs"/>
         <Compile Remove="Tweaks\Chat\RenameChatTabs.cs"/>
