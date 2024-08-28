@@ -3,29 +3,28 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
-using System.Text;
+using Dalamud.Game.Gui.NamePlate;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
-using FFXIVClientStructs.FFXIV.Client.Game.Object;
-using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.TweakSystem;
-using static FFXIVClientStructs.FFXIV.Client.UI.RaptureAtkModule;
-using FFXIVClientStructs.FFXIV.Client.UI;
 using SimpleTweaksPlugin.ExtraPayloads;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks.UiAdjustment; 
+namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
+[TweakName("Custom Free Company Tags")]
+[TweakDescription("Allows hiding or customizing Free Company and Wanderer tags.")]
+[TweakAutoConfig]
 public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
         public Dictionary<string, TagCustomization> FcCustomizations = new();
         public TagCustomization DefaultCustomization = new();
-        public TagCustomization WandererCustomization = new() { Enabled = false, Replacement = "<crossworldicon><homeworld>"};
-        public TagCustomization TravellerCustomization;
+        public TagCustomization WandererCustomization = new() { Enabled = false, Replacement = "<crossworldicon><homeworld>" };
+        public TagCustomization TravellerCustomization = new() { Enabled = false, Replacement = "<crossworldicon><homeworld>" };
     }
 
     public class TagCustomization {
@@ -37,280 +36,272 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
 
     public Configs Config { get; private set; }
 
-    private delegate void* UpdateNameplateDelegate(RaptureAtkModule* raptureAtkModule, NamePlateInfo* namePlateInfo, NumberArrayData* numArray, StringArrayData* stringArray, GameObject* gameObject, int numArrayIndex, int stringArrayIndex);
-    private HookWrapper<UpdateNameplateDelegate> updateNameplateHook;
-        
-    public override string Name => "Custom Free Company Tags";
-    public override string Description => "Allows hiding or customizing Free Company and Wanderer tags.";
-
-    public override void Setup() {
+    protected override void Setup() {
         AddChangelog("1.8.7.0", "Added option to display FC tags on a separate line to character name.");
         AddChangelog("1.8.7.2", "Removed 'Hide in Duty' option from Wanderer. This is now a vanilla game option.");
         AddChangelog("1.8.9.0", "Added support for full RGB colours.");
         AddChangelog("1.8.9.0", "Added an icon viewer for supported icons.");
         AddChangelog("1.8.9.1", "Fix some issues with glow colours.");
         AddChangelog("1.8.9.2", "Fixed icon-only tags not displaying.");
-        base.Setup();
     }
 
     protected override void Enable() {
-        if (Enabled) return;
-        Config = LoadConfig<Configs>() ?? new Configs();
-        Config.TravellerCustomization ??= new TagCustomization() { Enabled = Config.WandererCustomization.Enabled, Replacement = Config.WandererCustomization.Replacement };
-        updateNameplateHook ??= Common.Hook<UpdateNameplateDelegate>("40 55 56 57 41 56 48 81 EC ?? ?? ?? ?? 48 8B 84 24", UpdateNameplatesDetour);
-        updateNameplateHook?.Enable();
-        base.Enable();
+        Service.NamePlateGui.OnDataUpdate += NamePlateGuiOnOnDataUpdate;
+    }
+
+    private void NamePlateGuiOnOnDataUpdate(INamePlateUpdateContext context, IReadOnlyList<INamePlateUpdateHandler> handlers) {
+        SimpleLog.Debug("Update NamePlate Data");
+        foreach (var h in handlers) {
+            if (h.PlayerCharacter == null) continue;
+
+            var battleChara = (BattleChara*)h.PlayerCharacter.Address;
+            try {
+                var customization = Config.DefaultCustomization;
+                string companyTag = string.Empty;
+                if (battleChara->Character.HomeWorld != battleChara->Character.CurrentWorld) {
+                    // Wanderer
+                    var w = Service.Data.Excel.GetSheet<World>()?.GetRow(battleChara->Character.HomeWorld);
+                    if (w == null || w.DataCenter.Row == Service.ClientState.LocalPlayer?.CurrentWorld?.GameData?.DataCenter?.Row) {
+                        customization = Config.WandererCustomization;
+                    } else {
+                        customization = Config.TravellerCustomization;
+                    }
+                } else {
+                    companyTag = battleChara->Character.FreeCompanyTagString;
+
+                    customization = companyTag.Length switch {
+                        <= 0 => null,
+                        > 0 when Config.FcCustomizations.ContainsKey(companyTag) => Config.FcCustomizations[companyTag],
+                        _ => customization
+                    };
+                }
+
+                if (customization is { Enabled: true }) {
+                    if (customization.Replacement.Trim().Length == 0) {
+                        h.RemoveFreeCompanyTag();
+                    } else {
+                        var payloads = new List<Payload>();
+                        if (customization.OwnLine)
+                            payloads.Add(new NewLinePayload());
+                        if (!customization.HideQuoteMarks)
+                            payloads.Add(new TextPayload(" «"));
+
+                        var cText = string.Empty;
+
+                        var resetForeground = false;
+                        var resetGlow = false;
+                        var resetItalic = false;
+
+                        var resetHexForegrond = false;
+                        var resetHexGlow = false;
+                        Vector3? hexGlow = null;
+
+                        foreach (var t in customization.Replacement) {
+                            switch (t) {
+                                case '<': {
+                                    if (cText.Length > 0) {
+                                        payloads.Add(new TextPayload(cText));
+                                    }
+
+                                    cText = "<";
+                                    break;
+                                }
+                                case '>' when cText.Length > 0 && cText[0] == '<': {
+                                    cText += '>';
+                                    switch (cText.ToLower()) {
+                                        case "<crossworldicon>": {
+                                            payloads.Add(new IconPayload(BitmapFontIcon.CrossWorld));
+                                            break;
+                                        }
+                                        case "<homeworld>": {
+                                            var world = Service.Data.Excel.GetSheet<World>().GetRow(battleChara->Character.HomeWorld);
+
+                                            payloads.Add(new TextPayload(world?.Name ?? $"UnknownWorld#{battleChara->Character.HomeWorld}"));
+                                            break;
+                                        }
+                                        case "<level>": {
+                                            payloads.Add(new TextPayload(battleChara->Character.CharacterData.Level.ToString()));
+                                            break;
+                                        }
+                                        case "<fctag>": {
+                                            payloads.Add(new TextPayload(companyTag));
+                                            break;
+                                        }
+                                        case "<i>": {
+                                            payloads.Add(new EmphasisItalicPayload(true));
+                                            resetItalic = true;
+                                            break;
+                                        }
+                                        case "</i>": {
+                                            payloads.Add(new EmphasisItalicPayload(false));
+                                            resetItalic = false;
+                                            break;
+                                        }
+                                        case "</color>":
+                                        case "</colour>": {
+                                            if (resetHexForegrond) {
+                                                if (hexGlow != null) {
+                                                    payloads.Add(new GlowEndPayload().AsRaw());
+                                                }
+
+                                                payloads.Add(new ColorEndPayload().AsRaw());
+                                                if (hexGlow != null) {
+                                                    payloads.Add(new GlowPayload(hexGlow.Value).AsRaw());
+                                                }
+
+                                                resetHexForegrond = false;
+                                            }
+
+                                            if (resetForeground) {
+                                                payloads.Add(new UIForegroundPayload(0));
+                                                resetForeground = false;
+                                            }
+
+                                            break;
+                                        }
+                                        case "</glow>": {
+                                            if (resetHexGlow) {
+                                                payloads.Add(new GlowEndPayload().AsRaw());
+                                                resetHexGlow = false;
+                                                hexGlow = null;
+                                            }
+
+                                            if (resetGlow) {
+                                                payloads.Add(new UIGlowPayload(0));
+                                                resetGlow = false;
+                                            }
+
+                                            break;
+                                        }
+                                        case { } s when s.StartsWith("<color:"): {
+                                            var k = s.Substring(7, s.Length - 8);
+
+                                            if (TryGetColorFromHex(k, out var hexColor)) {
+                                                if (resetHexForegrond) {
+                                                    payloads.Add(new ColorEndPayload().AsRaw());
+                                                }
+
+                                                payloads.Add(new ColorPayload(hexColor).AsRaw());
+                                                resetHexForegrond = true;
+                                            } else {
+                                                if (ushort.TryParse(k, out var colorKey)) {
+                                                    payloads.Add(new UIForegroundPayload(colorKey));
+                                                    resetForeground = colorKey != 0;
+                                                } else {
+                                                    payloads.Add(new TextPayload(cText));
+                                                }
+                                            }
+
+                                            break;
+                                        }
+                                        case { } s when s.StartsWith("<colour:"): {
+                                            var k = s.Substring(8, s.Length - 9);
+                                            if (TryGetColorFromHex(k, out var hexColor)) {
+                                                if (hexGlow != null) {
+                                                    payloads.Add(new GlowEndPayload().AsRaw());
+                                                }
+
+                                                if (resetHexForegrond) {
+                                                    payloads.Add(new ColorEndPayload().AsRaw());
+                                                }
+
+                                                payloads.Add(new ColorPayload(hexColor).AsRaw());
+                                                if (hexGlow != null) {
+                                                    payloads.Add(new GlowPayload(hexGlow.Value).AsRaw());
+                                                }
+
+                                                resetHexForegrond = true;
+                                            } else {
+                                                if (ushort.TryParse(k, out var colorKey)) {
+                                                    payloads.Add(new UIForegroundPayload(colorKey));
+                                                    resetForeground = colorKey != 0;
+                                                } else {
+                                                    payloads.Add(new TextPayload(cText));
+                                                }
+                                            }
+
+                                            break;
+                                        }
+                                        case { } s when s.StartsWith("<glow:"): {
+                                            var k = s.Substring(6, s.Length - 7);
+                                            if (TryGetColorFromHex(k, out var hexColor)) {
+                                                if (resetHexGlow) {
+                                                    payloads.Add(new GlowEndPayload().AsRaw());
+                                                }
+
+                                                hexGlow = hexColor;
+                                                payloads.Add(new GlowPayload(hexColor).AsRaw());
+                                                resetHexGlow = true;
+                                            } else {
+                                                if (ushort.TryParse(k, out var colorKey)) {
+                                                    payloads.Add(new UIGlowPayload(colorKey));
+                                                    resetGlow = colorKey != 0;
+                                                } else {
+                                                    payloads.Add(new TextPayload(cText));
+                                                }
+                                            }
+
+                                            break;
+                                        }
+                                        case { } s when s.StartsWith("<icon:"): {
+                                            var k = s.Substring(6, s.Length - 7);
+                                            if (uint.TryParse(k, out var iconKey)) {
+                                                payloads.Add(new IconPayload((BitmapFontIcon)iconKey));
+                                                resetGlow = iconKey != 0;
+                                            } else {
+                                                payloads.Add(new TextPayload(cText));
+                                            }
+
+                                            break;
+                                        }
+                                        default: {
+                                            payloads.Add(new TextPayload(cText));
+                                            break;
+                                        }
+                                    }
+
+                                    cText = string.Empty;
+                                    break;
+                                }
+                                default: {
+                                    cText += t;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(cText)) {
+                            payloads.Add(new TextPayload(cText));
+                        }
+
+                        if (resetForeground) payloads.Add(new UIForegroundPayload(0));
+                        if (resetGlow) payloads.Add(new UIGlowPayload(0));
+                        if (resetItalic) payloads.Add(new EmphasisItalicPayload(false));
+                        if (resetHexForegrond) payloads.Add(new ColorEndPayload());
+                        if (resetHexGlow) payloads.Add(new GlowEndPayload());
+
+                        if (!customization.HideQuoteMarks)
+                            payloads.Add(new TextPayload("»"));
+
+                        var seString = new SeString(payloads);
+                        if (string.IsNullOrWhiteSpace(seString.TextValue) && !payloads.Any(p => p is IconPayload)) {
+                            h.RemoveFreeCompanyTag();
+                        } else {
+                            h.FreeCompanyTag = seString;
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                if (!errored) {
+                    errored = true;
+                    Plugin.Error(this, ex, true);
+                }
+            }
+        }
     }
 
     protected override void Disable() {
-        SaveConfig(Config);
-        updateNameplateHook?.Disable();
-        base.Disable();
-    }
-
-    public override void Dispose() {
-        updateNameplateHook?.Dispose();
-        base.Dispose();
-    }
-
-    private void* UpdateNameplatesDetour(RaptureAtkModule* raptureAtkModule, NamePlateInfo* namePlateInfo, NumberArrayData* numArray, StringArrayData* stringArray, GameObject* gameObject, int numArrayIndex, int stringArrayIndex) {
-        if (gameObject->ObjectKind != 1) goto ReturnOriginal;
-        var battleChara = (BattleChara*) gameObject;
-        try {
-            var customization = Config.DefaultCustomization;
-            string companyTag = string.Empty;
-            if (battleChara->Character.HomeWorld != battleChara->Character.CurrentWorld) {
-                // Wanderer
-                var w = Service.Data.Excel.GetSheet<World>()?.GetRow(battleChara->Character.HomeWorld);
-                if (w == null || w.DataCenter.Row == Service.ClientState.LocalPlayer?.CurrentWorld?.GameData?.DataCenter?.Row) {
-                    customization = Config.WandererCustomization;
-                } else {
-                    customization = Config.TravellerCustomization;
-                }
-            } else {
-                companyTag = Encoding.UTF8.GetString(battleChara->Character.FreeCompanyTag, 6).Trim('\0', ' ');
-
-                customization = companyTag.Length switch {
-                    <= 0 => null,
-                    > 0 when Config.FcCustomizations.ContainsKey(companyTag) => Config.FcCustomizations[companyTag],
-                    _ => customization
-                };
-            }
-
-            if (customization != null && customization.Enabled) {
-                if (customization.Replacement.Trim().Length == 0) {
-                    namePlateInfo->FcName.StringPtr[0] = 0;
-                } else {
-                    var payloads = new List<Payload>();
-                    if (customization.OwnLine)
-                        payloads.Add(new NewLinePayload());
-                    if (!customization.HideQuoteMarks) 
-                        payloads.Add(new TextPayload(" «"));
-
-                    var cText = string.Empty;
-
-                    var resetForeground = false;
-                    var resetGlow = false;
-                    var resetItalic = false;
-
-                    var resetHexForegrond = false;
-                    var resetHexGlow = false;
-                    Vector3? hexGlow = null;
-
-                    foreach (var t in customization.Replacement) {
-                        switch (t) {
-                            case '<': {
-                                if (cText.Length > 0) {
-                                    payloads.Add(new TextPayload(cText));
-                                }
-
-                                cText = "<";
-                                break;
-                            }
-                            case '>' when cText.Length > 0 && cText[0] == '<' : {
-                                cText += '>';
-                                switch (cText.ToLower()) {
-                                    case "<crossworldicon>": {
-                                        payloads.Add(new IconPayload(BitmapFontIcon.CrossWorld));
-                                        break;
-                                    }
-                                    case "<homeworld>": {
-                                        var world = Service.Data.Excel.GetSheet<World>().GetRow(battleChara->Character.HomeWorld);
-                                        
-                                        payloads.Add(new TextPayload(world?.Name ?? $"UnknownWorld#{battleChara->Character.HomeWorld}"));
-                                        break;
-                                    }
-                                    case "<level>": {
-                                        payloads.Add(new TextPayload(battleChara->Character.CharacterData.Level.ToString()));
-                                        break;
-                                    }
-                                    case "<fctag>": {
-                                        payloads.Add(new TextPayload(companyTag));
-                                        break;
-                                    }
-                                    case "<i>": {
-                                        payloads.Add(new EmphasisItalicPayload(true));
-                                        resetItalic = true;
-                                        break;
-                                    }
-                                    case "</i>": {
-                                        payloads.Add(new EmphasisItalicPayload(false));
-                                        resetItalic = false;
-                                        break;
-                                    }
-                                    case "</color>":
-                                    case "</colour>": {
-                                        if (resetHexForegrond) {
-                                            if (hexGlow != null) {
-                                                payloads.Add(new GlowEndPayload().AsRaw());
-                                            }
-                                            payloads.Add(new ColorEndPayload().AsRaw());
-                                            if (hexGlow != null) {
-                                                payloads.Add(new GlowPayload(hexGlow.Value).AsRaw());
-                                            }
-                                            resetHexForegrond = false;
-                                        }
-
-                                        if (resetForeground) {
-                                            payloads.Add(new UIForegroundPayload(0));
-                                            resetForeground = false;
-                                        }
-                                        break;
-                                    }
-                                    case "</glow>": {
-                                        if (resetHexGlow) {
-                                            payloads.Add(new GlowEndPayload().AsRaw());
-                                            resetHexGlow = false;
-                                            hexGlow = null;
-                                        }
-
-                                        if (resetGlow) {
-                                            payloads.Add(new UIGlowPayload(0));
-                                            resetGlow = false;
-                                        }
-                                        break;
-                                    }
-                                    case { } s when s.StartsWith("<color:"): {
-                                        var k = s.Substring(7, s.Length - 8);
-
-                                        if (TryGetColorFromHex(k, out var hexColor)) {
-                                            if (resetHexForegrond) {
-                                                payloads.Add(new ColorEndPayload().AsRaw());
-                                            }
-                                            payloads.Add(new ColorPayload(hexColor).AsRaw());
-                                            resetHexForegrond = true;
-                                        } else {
-                                            if (ushort.TryParse(k, out var colorKey)) {
-                                                payloads.Add(new UIForegroundPayload(colorKey));
-                                                resetForeground = colorKey != 0;
-                                            } else {
-                                                payloads.Add(new TextPayload(cText));
-                                            }
-                                        }
-                                        
-                                        break;
-                                    }
-                                    case { } s when s.StartsWith("<colour:"): {
-                                        var k = s.Substring(8, s.Length - 9);
-                                        if (TryGetColorFromHex(k, out var hexColor)) {
-                                            if (hexGlow != null) {
-                                                payloads.Add(new GlowEndPayload().AsRaw());
-                                            }
-                                            if (resetHexForegrond) {
-                                                payloads.Add(new ColorEndPayload().AsRaw());
-                                            }
-                                            payloads.Add(new ColorPayload(hexColor).AsRaw());
-                                            if (hexGlow != null) {
-                                                payloads.Add(new GlowPayload(hexGlow.Value).AsRaw());
-                                            }
-                                            resetHexForegrond = true;
-                                        } else {
-                                            if (ushort.TryParse(k, out var colorKey)) {
-                                                payloads.Add(new UIForegroundPayload(colorKey));
-                                                resetForeground = colorKey != 0;
-                                            } else {
-                                                payloads.Add(new TextPayload(cText));
-                                            }
-                                        }
-
-                                        break;
-                                    }
-                                    case { } s when s.StartsWith("<glow:"): {
-                                        var k = s.Substring(6, s.Length - 7);
-                                        if (TryGetColorFromHex(k, out var hexColor)) {
-                                            if (resetHexGlow) {
-                                                payloads.Add(new GlowEndPayload().AsRaw());
-                                            }
-                                            hexGlow = hexColor;
-                                            payloads.Add(new GlowPayload(hexColor).AsRaw());
-                                            resetHexGlow = true;
-                                        } else {
-                                            if (ushort.TryParse(k, out var colorKey)) {
-                                                payloads.Add(new UIGlowPayload(colorKey));
-                                                resetGlow = colorKey != 0;
-                                            } else {
-                                                payloads.Add(new TextPayload(cText));
-                                            }
-                                        }
-                                        break;
-                                    }
-                                    case { } s when s.StartsWith("<icon:"): {
-                                        var k = s.Substring(6, s.Length - 7);
-                                        if (uint.TryParse(k, out var iconKey)) {
-                                            payloads.Add(new IconPayload((BitmapFontIcon) iconKey));
-                                            resetGlow = iconKey != 0;
-                                        } else {
-                                            payloads.Add(new TextPayload(cText));
-                                        }
-                                        break;
-                                    }
-                                    default: {
-                                        payloads.Add(new TextPayload(cText));
-                                        break;
-                                    }
-                                }
-                                cText = string.Empty;
-                                break;
-                            }
-                            default: {
-                                cText += t;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(cText)) {
-                        payloads.Add(new TextPayload(cText));
-                    }
-
-                    if (resetForeground) payloads.Add(new UIForegroundPayload(0));
-                    if (resetGlow) payloads.Add(new UIGlowPayload(0));
-                    if (resetItalic) payloads.Add(new EmphasisItalicPayload(false));
-                    if (resetHexForegrond) payloads.Add(new ColorEndPayload());
-                    if (resetHexGlow) payloads.Add(new GlowEndPayload());
-                        
-                    if (!customization.HideQuoteMarks) 
-                        payloads.Add(new TextPayload("»"));
-
-                    var seString = new SeString(payloads);
-                    if (string.IsNullOrWhiteSpace(seString.TextValue) && !payloads.Any(p => p is IconPayload)) {
-                        namePlateInfo->FcName.SetString(string.Empty);
-                    } else {
-                        var bytes = seString.Encode();
-                        namePlateInfo->FcName.SetString(bytes);
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            if (!errored) {
-                errored = true;
-                Plugin.Error(this, ex, true);
-            }
-        }
-
-        ReturnOriginal:
-        var original = updateNameplateHook.Original(raptureAtkModule, namePlateInfo, numArray, stringArray, gameObject, numArrayIndex, stringArrayIndex);
-        return original;
+        Service.NamePlateGui.OnDataUpdate -= NamePlateGuiOnOnDataUpdate;
     }
 
     private bool TryGetColorFromHex(string str, out Vector3 hexColor) {
@@ -319,32 +310,30 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
         if (str[0] != '#') return false;
         if (str.Contains(' ')) return false;
 
-        if (!byte.TryParse(str.AsSpan(1, 2), NumberStyles.HexNumber, NumberFormatInfo.InvariantInfo, out var r) 
-            || !byte.TryParse(str.AsSpan(3, 2), NumberStyles.HexNumber, NumberFormatInfo.InvariantInfo, out var g) 
-            || !byte.TryParse(str.AsSpan(5, 2), NumberStyles.HexNumber, NumberFormatInfo.InvariantInfo, out var b)) return false;
-        
+        if (!byte.TryParse(str.AsSpan(1, 2), NumberStyles.HexNumber, NumberFormatInfo.InvariantInfo, out var r) || !byte.TryParse(str.AsSpan(3, 2), NumberStyles.HexNumber, NumberFormatInfo.InvariantInfo, out var g) || !byte.TryParse(str.AsSpan(5, 2), NumberStyles.HexNumber, NumberFormatInfo.InvariantInfo, out var b)) return false;
+
         hexColor = new Vector3(r / 255f, g / 255f, b / 255f);
         return true;
     }
 
     private bool errored;
-        
+
     private string defaultString = "Default (FC)";
     private string wandererString = "Wanderer";
     private string travellerString = "Traveller";
     private string newFcName = string.Empty;
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
 
+    protected void DrawConfig() {
         if (ImGui.BeginTable("fcList#noFreeCompanyOnNamePlate", 4)) {
             ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed, 28 * ImGui.GetIO().FontGlobalScale);
             ImGui.TableSetupColumn(LocString("Replace"), ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoClip, 50 * ImGui.GetIO().FontGlobalScale);
-            ImGui.TableSetupColumn(LocString("FC Tag"), ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoClip, 75* ImGui.GetIO().FontGlobalScale);
+            ImGui.TableSetupColumn(LocString("FC Tag"), ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoClip, 75 * ImGui.GetIO().FontGlobalScale);
             ImGui.TableSetupColumn(LocString("Replacement"), ImGuiTableColumnFlags.NoClip);
             ImGui.TableHeadersRow();
-            
+
             string deleteKey = null;
             string renameKey = null;
-                
+
             foreach (var fc in Config.FcCustomizations.OrderBy(k => k.Key)) {
                 var k = fc.Key;
                 var edit = TagCustomizationEditor(ref k, fc.Value);
@@ -361,19 +350,20 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
             if (!string.IsNullOrEmpty(deleteKey)) {
                 if (!string.IsNullOrEmpty(renameKey)) {
                     Config.FcCustomizations.Add(renameKey, Config.FcCustomizations[deleteKey]);
-                } 
+                }
+
                 Config.FcCustomizations.Remove(deleteKey);
             }
-                
+
             TagCustomizationEditor(ref wandererString, Config.WandererCustomization, false);
             TagCustomizationEditor(ref travellerString, Config.TravellerCustomization, false);
             TagCustomizationEditor(ref defaultString, Config.DefaultCustomization, false);
             // TagCustomizationEditor(ref noCompanyString, Config.NoCompanyCustomization, false);
-                
+
             ImGui.TableNextColumn();
             ImGui.TableNextColumn();
             ImGui.Text("Add FC:");
-                
+
             ImGui.TableNextColumn();
             ImGui.SetNextItemWidth(-1);
             var addNew = ImGui.InputText($"##fcList#{GetType().Name}_new_name", ref newFcName, 5, ImGuiInputTextFlags.EnterReturnsTrue);
@@ -394,11 +384,10 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
             }
 
             ImGui.EndTable();
-            
+
             if (ImGui.CollapsingHeader("Supported Icons")) {
                 if (ImGui.BeginTable("iconViewer", 1 + (int)(ImGui.GetContentRegionAvail().X / 100))) {
-
-                    foreach (var i in Plugin.IconManager.FontIcons.Icons) {
+                    foreach (var i in GraphicFont.FontIcons.Icons) {
                         if (i.IsValid()) {
                             ImGui.TableNextColumn();
                             i.Draw();
@@ -408,7 +397,6 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                                 ImGui.Separator();
                                 i.DrawScaled(new Vector2(2));
                                 ImGui.EndTooltip();
-                                
                             }
 
                             if (ImGui.IsItemClicked()) {
@@ -416,36 +404,37 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                             }
                         }
                     }
-                    
+
                     ImGui.EndTable();
                 }
             }
-
         }
-    };
+    }
 
     private enum ChangeType {
         None,
         Delete,
         Rename,
     }
-        
+
     private ChangeType TagCustomizationEditor(ref string name, TagCustomization tc, bool canChange = true) {
         ImGui.TableNextColumn();
 
         var changeType = ChangeType.None;
-            
+
         if (canChange) {
             if (ImGui.Button($"X##fcList#{GetType().Name}_delete_{name}", new Vector2(-1, 24 * ImGui.GetIO().FontGlobalScale))) {
                 changeType = ChangeType.Delete;
             }
+
             if (ImGui.IsItemHovered()) ImGui.SetTooltip($"Remove {name}");
         }
+
         ImGui.TableNextColumn();
         ImGui.Checkbox($"##fcList#{GetType().Name}_enable_{name}", ref tc.Enabled);
-            
+
         ImGui.TableNextColumn();
-            
+
         ImGui.SetNextItemWidth(-1);
         var isEditingName = false;
         if (canChange) {
@@ -468,20 +457,18 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
             } else {
                 ImGui.TextDisabled(LocString("SaveMessage", "Press ENTER to save FC Tag."));
             }
-                
         } else {
             ImGui.SetNextItemWidth(-180 * ImGui.GetIO().FontGlobalScale);
-            
+
             if (tc.Enabled) {
                 ImGui.InputTextWithHint($"##fcList#{GetType().Name}_replacement_{name}", "Hidden", ref tc.Replacement, 200);
                 if (ImGui.IsItemFocused() && ImGui.IsItemActive()) {
-                        
                     ImGui.SetNextWindowPos(new Vector2(ImGui.GetCursorScreenPos().X + ImGui.GetItemRectSize().X - placeholderTooltipSize.X, ImGui.GetCursorScreenPos().Y));
                     ImGui.BeginTooltip();
                     if (ImGui.BeginTable("placeholdersTable", 2, ImGuiTableFlags.Borders)) {
                         ImGui.TableSetupColumn("Placeholders", ImGuiTableColumnFlags.WidthFixed, 190 * ImGui.GetIO().FontGlobalScale);
                         ImGui.TableSetupColumn("Description");
-                            
+
                         ImGui.TableHeadersRow();
 
                         ImGui.TableNextColumn();
@@ -492,17 +479,17 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                         ImGui.Text("<fctag>");
                         ImGui.TableNextColumn();
                         ImGui.Text("The character's existing FC tag.");
-                        
+
                         ImGui.TableNextColumn();
                         ImGui.Text("<level>");
                         ImGui.TableNextColumn();
                         ImGui.Text("The character's current job level.");
-                            
+
                         ImGui.TableNextColumn();
                         ImGui.Text("<homeworld>");
                         ImGui.TableNextColumn();
                         ImGui.Text("The name of the character's homeworld.");
-                            
+
                         ImGui.TableNextColumn();
                         ImGui.Text("<crossworldicon>");
                         ImGui.TableNextColumn();
@@ -533,7 +520,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
             ImGui.SetCursorPosX((ImGui.GetWindowContentRegionMax().X - 80 * ImGui.GetIO().FontGlobalScale) + ImGui.GetStyle().ItemSpacing.X);
             ImGui.Checkbox($"Hide «»##{GetType().Name}_hideQuotes_{name}", ref tc.HideQuoteMarks);
         }
-            
+
         return changeType;
     }
 
