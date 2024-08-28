@@ -8,6 +8,8 @@ public class AddonEventAttribute : EventAttribute {
     public AddonEvent[] Event { get; }
     public string[] AddonNames { get; }
 
+    public bool AutoEnable { get; init; } = true;
+
     public AddonEventAttribute(AddonEvent @event, params string[] addonNames) {
         Event = new[] { @event };
         AddonNames = addonNames.Length == 0 ? new []{ "ALL_ADDONS" } : addonNames;

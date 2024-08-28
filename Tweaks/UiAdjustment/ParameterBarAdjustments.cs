@@ -19,9 +19,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakAuthor("Aireil")]
 [Changelog("1.10.0.1", "Hide MP bar on Viper")]
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+[TweakTags("parameter", "hp", "mana", "bar")]
 public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
-    public override IEnumerable<string> Tags => new[] { "parameter", "hp", "mana", "bar" };
-
     public class Configs : TweakConfig {
         public HideAndOffsetConfig TargetCycling = new() { OffsetX = 100, OffsetY = 1 };
 

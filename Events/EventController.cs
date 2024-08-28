@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
@@ -32,6 +33,8 @@ public static unsafe class EventController {
         public uint NthTick { get; init; }
         private uint tick;
 
+        public bool Enabled { get; set; } = true;
+        
         public static EventSubscriber CreateFrameworkSubscriber(BaseTweak tweak, MethodInfo method, uint nthTick) {
             var s = new EventSubscriber {
                 Tweak = tweak, Method = method, Kind = SubscriberKind.Framework, NthTick = nthTick,
@@ -162,6 +165,7 @@ public static unsafe class EventController {
         }
 
         public void Invoke(object args) {
+            if (!Enabled) return;
             if (NthTick > 1) {
                 if (++tick < NthTick) return;
                 tick = 0;
@@ -245,7 +249,7 @@ public static unsafe class EventController {
 
             foreach (var attr in method.GetCustomAttributes<AddonEventAttribute>()) {
                 foreach (var addon in attr.AddonNames) {
-                    var subscriber = new EventSubscriber { Tweak = tweak, Method = method };
+                    var subscriber = new EventSubscriber { Tweak = tweak, Method = method, Enabled = attr.AutoEnable };
 
                     foreach (var e in attr.Event) {
                         if (e is AddonEvent.PreReceiveEvent or AddonEvent.PostReceiveEvent && addon == "ALL_ADDONS") {
@@ -277,6 +281,26 @@ public static unsafe class EventController {
         }
     }
 
+    public static void DisableEvent(BaseTweak tweak, AddonEvent eventType, string addon, string methodName) {
+        if (tweak == null) return;
+        if (!AddonEventSubscribers.TryGetValue(eventType, out var addonSubscriberDict)) return;
+        if (!addonSubscriberDict.TryGetValue(addon, out var addonSubscriberList)) return;
+        foreach (var s in addonSubscriberList.Where(s => s.Tweak == tweak && s.Method.Name == methodName && s.Enabled)) {
+            SimpleLog.Verbose($"[EventController] {tweak.Name} disabled event '{eventType}' on method '{methodName}' for addon '{addon}'");
+            s.Enabled = false;
+        }
+    }
+    
+    public static void EnableEvent(BaseTweak tweak, AddonEvent eventType, string addon, string methodName) {
+        if (tweak == null) return;
+        if (!AddonEventSubscribers.TryGetValue(eventType, out var addonSubscriberDict)) return;
+        if (!addonSubscriberDict.TryGetValue(addon, out var addonSubscriberList)) return;
+        foreach (var s in addonSubscriberList.Where(s => s.Tweak == tweak && s.Method.Name == methodName && !s.Enabled)) {
+            SimpleLog.Verbose($"[EventController] {tweak.Name} enabled event '{eventType}' on method '{methodName}' for addon '{addon}'");
+            s.Enabled = true;
+        }
+    }
+    
     private static void HandleFrameworkUpdate(IFramework framework) {
         foreach (var fwSubscriber in FrameworkUpdateSubscribers) {
             fwSubscriber.Invoke(null);
