@@ -18,7 +18,7 @@
     </PropertyGroup>
     <PropertyGroup Label="Feature">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>1.10.0.5</Version>
+        <Version>1.10.0.6</Version>
     </PropertyGroup>
 	<PropertyGroup>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
