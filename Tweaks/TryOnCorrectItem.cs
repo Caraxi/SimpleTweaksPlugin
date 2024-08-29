@@ -152,7 +152,7 @@ public class TryOnCorrectItem : Tweak {
         var c = GetActiveWindowSettings();
         var i = c.NoModifier;
         if (Service.KeyState[VirtualKey.SHIFT]) i = c.HoldingShift;
-        if (i == TryOnItem.Original) return tryOnHook.Original(openerAddonId, itemId, stain0Id, stain1Id, itemId, applyCompanyCrest);
-        return tryOnHook.Original(openerAddonId, glamourItemId, stain0Id, stain1Id, glamourItemId, applyCompanyCrest);
+        if (i == TryOnItem.Original) return tryOnHook.Original(openerAddonId, itemId, stain0Id, stain1Id, 0, applyCompanyCrest);
+        return tryOnHook.Original(openerAddonId, glamourItemId != 0 ? glamourItemId : itemId, stain0Id, stain1Id, 0, applyCompanyCrest);
     }
 }
