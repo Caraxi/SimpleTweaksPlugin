@@ -60,33 +60,6 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
 
     private record ImageSize(float Width = 0, float Height = 0, float Scale = 1);
 
-    protected void DrawConfig() {
-        var character = (Character*)(Service.ClientState.LocalPlayer?.Address ?? 0);
-        if (character == null) return;
-        var tribeId = character->DrawData.CustomizeData.Tribe;
-        var sex = character->DrawData.CustomizeData.Sex;
-        if (character->DrawObject != null && character->DrawObject->Object.GetObjectType() == ObjectType.CharacterBase) {
-            var cb = (CharacterBase*)character->DrawObject;
-            if (cb->GetModelType() == CharacterBase.ModelType.Human) {
-                var human = (Human*)cb;
-                tribeId = human->Customize.Tribe;
-                sex = human->Customize.Sex;
-            }
-        }
-
-        var type = Service.Data.GetExcelSheet<HairMakeTypeExt>()?.FirstOrDefault(t => t.Tribe.Row == tribeId && t.Gender == sex);
-        if (type != null) {
-            foreach (var h in type.HairStyles) {
-                if (ImGui.GetContentRegionAvail().X < 128) ImGui.NewLine();
-                var icon = Service.TextureProvider.GetFromGameIcon(h.Value!.Icon).GetWrapOrEmpty();
-                ImGui.Image(icon.ImGuiHandle, new Vector2(128, 128));
-                ImGui.SameLine();
-            }
-
-            ImGui.NewLine();
-        }
-    }
-
     [AddonPostRequestedUpdate("ItemDetail")]
     private void AfterItemDetailUpdate(AtkUnitBase* atkUnitBase) {
         if (atkUnitBase == null) return;
