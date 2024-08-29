@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using FFXIVClientStructs.FFXIV.Client.System.String;
@@ -30,6 +31,7 @@ public class CommandAlias : Tweak {
         public bool Enabled = true;
         public string Input = string.Empty;
         public string Output = string.Empty;
+        public bool Resend = false;
         [NonSerialized] public bool Delete;
         [NonSerialized] public int UniqueId;
 
@@ -39,7 +41,9 @@ public class CommandAlias : Tweak {
             return !(string.IsNullOrWhiteSpace(Input) || string.IsNullOrWhiteSpace(Output));
         }
     }
-
+    
+    private Stopwatch resendSafety = Stopwatch.StartNew();
+    
     protected void DrawConfig(ref bool change) {
         ImGui.Text(LocString("Instruction", "Add list of command alias. Do not start command with the '/'\nThese aliases, by design, do not work with macros."));
         if (ImGui.IsItemHovered()) {
@@ -50,16 +54,22 @@ public class CommandAlias : Tweak {
         }
 
         ImGui.Separator();
-        ImGui.Columns(4);
+        ImGui.Columns(5);
         var s = ImGui.GetIO().FontGlobalScale;
         ImGui.SetColumnWidth(0, 60 * s);
         ImGui.SetColumnWidth(1, 150 * s);
         ImGui.SetColumnWidth(2, 150 * s);
-        ImGui.Text(LocString("Enabled"));
+        ImGui.SetColumnWidth(3, 50 * s);
+        ImGui.Text(LocString("\nEnabled"));
         ImGui.NextColumn();
-        ImGui.Text(LocString("Input Command"));
+        ImGui.Text(LocString("\nInput Command"));
         ImGui.NextColumn();
-        ImGui.Text(LocString("Output Command"));
+        ImGui.Text(LocString("\nOutput Command"));
+        ImGui.NextColumn();
+        ImGui.Text(LocString("Alt\nMode"));
+        if (ImGui.IsItemHovered()) {
+            ImGui.SetTooltip("Use an alternative method to send the alias.");
+        }
         ImGui.NextColumn();
         ImGui.NextColumn();
         ImGui.Separator();
@@ -92,6 +102,9 @@ public class CommandAlias : Tweak {
             ImGui.PopStyleVar();
             ImGui.NextColumn();
 
+            ImGui.Checkbox($"###altMode{aliasEntry.UniqueId}", ref aliasEntry.Resend);
+            
+            ImGui.NextColumn();
             if (AliasEntry.NoOverwrite.Contains(aliasEntry.Input)) {
                 var f = LocString("ProtectedCommandError", "'/{0}' is a protected command.");
                 ImGui.TextColored(new Vector4(1, 0, 0, 1), string.Format(f, aliasEntry.Input));
@@ -157,6 +170,16 @@ public class CommandAlias : Tweak {
                         if (commandExtra.StartsWith(' ')) commandExtra = commandExtra[1..];
                         var newStr = alias.Output.Contains(' ') ? $"/{alias.Output}{commandExtra}" : $"/{alias.Output} {commandExtra}";
                         if (newStr.Length <= 500) {
+                            if (alias.Resend) {
+                                if (resendSafety.ElapsedMilliseconds >= 1000) {
+                                    resendSafety.Restart();
+                                    ChatHelper.SendMessage(newStr);
+                                } else {
+                                    Service.Chat.PrintError("[Simple Tweaks] Something went wrong... You seem to have a command loop");
+                                }
+                                return;
+                            }
+                            
                             var str = Utf8String.FromString(newStr);
                             processChatInputHook.Original(shellCommandModule, str, uiModule);
                             str->Dtor(true);
