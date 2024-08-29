@@ -50,7 +50,6 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
     }
 
     private void NamePlateGuiOnOnDataUpdate(INamePlateUpdateContext context, IReadOnlyList<INamePlateUpdateHandler> handlers) {
-        SimpleLog.Debug("Update NamePlate Data");
         foreach (var h in handlers) {
             if (h.PlayerCharacter == null) continue;
 
