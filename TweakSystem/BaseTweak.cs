@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
@@ -45,7 +46,38 @@ public abstract class BaseTweak {
 
     public string LocalizedName => LocString("Name", Name, "Tweak Name");
 
-    public string Description => TweakDescriptionAttribute?.Description;
+
+    private string cachedDescription;
+    
+    private readonly Regex descriptionTemplate = new(@"\$\[(?<field>\w+)\]", RegexOptions.Compiled);
+    
+    public string Description {
+        get {
+            if (cachedDescription != null) return cachedDescription;
+            var description = TweakDescriptionAttribute?.Description;
+            if (description == null) return null;
+            
+            var parsedTemplate = descriptionTemplate.Replace(description, match => {
+                if (match.Groups["field"].Success) {
+                    try {
+                        var m = GetType().GetMember(match.Groups["field"].Value, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                        if (m.Length == 0) return $"InvalidTemplate.NoMatches({match.Groups["field"].Value})";
+                        if (m.Length > 1) return $"InvalidTemplate.MultipleMatches({match.Groups["field"].Value})";
+                        if (m[0] is MethodInfo) return $"InvalidTemplate.MethodMatch({match.Groups["field"].Value})";
+                        if (m[0] is PropertyInfo pi) return pi.GetValue(this)?.ToString();
+                        if (m[0] is FieldInfo fi) return fi.GetValue(this)?.ToString();
+                    } catch (Exception ex) {
+                        return $"InvalidTemplate.Error({match.Groups["field"].Value}): {ex.Message}";
+                    }
+                    
+                }
+                return string.Empty;
+            });
+
+            return cachedDescription = parsedTemplate;
+        }
+    }
+    
     protected string Author => TweakAuthorAttribute?.Author;
     public virtual bool Experimental => false;
     public IEnumerable<string> Tags => TweakTagsAttribute?.Tags ?? [];
