@@ -37,7 +37,7 @@ public abstract class BaseTweak {
 
     public bool IsDisposed { get; private set; }
 
-    public virtual string Key => GetType().Name;
+    public virtual string Key => TweakKeyAttribute?.Key ?? GetType().Name;
 
     public string Name => TweakNameAttribute?.Name ?? GetType().Name;
 
@@ -709,6 +709,16 @@ public abstract class BaseTweak {
             if (tweakNameAttribute != null) return tweakNameAttribute;
             tweakNameAttribute = GetType().GetCustomAttribute<TweakNameAttribute>() ?? new TweakNameAttribute($"{GetType().Name}");
             return tweakNameAttribute;
+        }
+    }
+    
+    private TweakKeyAttribute tweakKeyAttribute;
+
+    protected TweakKeyAttribute TweakKeyAttribute {
+        get {
+            if (tweakNameAttribute != null) return tweakKeyAttribute;
+            tweakKeyAttribute = GetType().GetCustomAttribute<TweakKeyAttribute>() ?? new TweakKeyAttribute($"{GetType().Name}");
+            return tweakKeyAttribute;
         }
     }
 
