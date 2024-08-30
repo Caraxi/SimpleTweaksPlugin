@@ -13,7 +13,7 @@ namespace SimpleTweaksPlugin.Tweaks.AbstractTweaks;
 [TweakCategory(TweakCategory.Command)]
 public abstract class CommandTweak : Tweak {
     protected abstract string Command { get; }
-    protected string CustomOrDefaultCommand => customMainCommand.IsNullOrEmpty() ? Command : customMainCommand.TrimStart('/');
+    protected string CustomOrDefaultCommand => customMainCommand.IsNullOrEmpty() ? Command.TrimStart('/') : customMainCommand.TrimStart('/');
     protected virtual string[] Alias => [];
     protected virtual string HelpMessage => $"[{Plugin.Name} {Name}";
     protected virtual bool ShowInHelp => true;
