@@ -113,8 +113,6 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
 
     [AddonPreDraw("_TargetInfoCastBar", "_TargetInfo", "_FocusTargetInfo")]
     private void OnAddonPreDraw(AddonArgs args) {
-        if (Service.ClientState.IsPvP) return;
-        
         var addon = (AtkUnitBase*) args.Addon;
 
         switch (args.AddonName) {
@@ -150,7 +148,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         var textNode = Common.GetNodeByID<AtkTextNode>(&parent->UldManager, CastBarTextNodeId);
         if (textNode is null) return;
         
-        if (target is IBattleChara targetInfo && castBarVisible && targetInfo.TotalCastTime > targetInfo.CurrentCastTime) {
+        if (target is IBattleChara targetInfo && castBarVisible && targetInfo.TotalCastTime > targetInfo.CurrentCastTime && !Service.ClientState.IsPvP) {
             textNode->AtkResNode.ToggleVisibility(true);
             stringBuffer->SetString((targetInfo.TotalCastTime - targetInfo.CurrentCastTime).ToString("00.00", Culture));
             textNode->SetText(stringBuffer->StringPtr);
