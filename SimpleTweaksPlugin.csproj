@@ -45,7 +45,6 @@
         <Compile Remove="Tweaks\SanctuarySprintReplacer.cs"/>
         <Compile Remove="Tweaks\ScreenshotFileName.cs"/>
         <Compile Remove="Tweaks\TreasureHuntTargets.cs"/>
-        <Compile Remove="Tweaks\Chat\HideChatAuto.cs"/>
         <Compile Remove="Tweaks\Chat\RenameChatTabs.cs"/>
         <Compile Remove="Tweaks\Chat\ZoomedChatCustomization.cs"/>
         <Compile Remove="Tweaks\JokeTweak\Fools2023.cs"/>
