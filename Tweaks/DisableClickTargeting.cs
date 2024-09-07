@@ -10,14 +10,14 @@ using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using SimpleTweaksPlugin.Debugging;
-using Dalamud.Plugin.Services;
+using Dalamud.Utility.Signatures;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("Disable Click Targeting")]
 [TweakDescription("Allows disabling of the target function on left and right mouse clicks.")]
+[Changelog(UnreleasedVersion, "Added option to only disable targeting players.", Author = "OTCompa")]
 [TweakAutoConfig]
-
 public unsafe class DisableClickTargeting : Tweak {
     public class Configs : TweakConfig {
         public bool DisableRightClick = true;
@@ -25,7 +25,7 @@ public unsafe class DisableClickTargeting : Tweak {
         public bool OnlyDisableInCombat;
         public bool OnlyDisablePlayers;
         public bool UseNameFilter;
-        public List<NameFilter> NameFilters = new();
+        public List<NameFilter> NameFilters = [];
     }
 
     public class NameFilter {
@@ -57,12 +57,10 @@ public unsafe class DisableClickTargeting : Tweak {
         }
 
         if (TweakConfig.UseNameFilter) {
-
             ImGui.Text(LocString("NameFiltersLabel", "Name Filters:"));
             ImGui.SameLine();
             ImGui.TextDisabled(LocString("NameFiltersHelp", "Per actor options for "));
             var i = 0;
-
 
             if (ImGui.BeginTable("nameFilterTable", 6)) {
                 ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed, 28 * ImGui.GetIO().FontGlobalScale);
@@ -79,6 +77,7 @@ public unsafe class DisableClickTargeting : Tweak {
                     if (ImGui.Button($"X##namefilter_delete_{++i}", new Vector2(-1, 24 * ImGui.GetIO().FontGlobalScale))) {
                         deleteNf = nf;
                     }
+
                     if (ImGui.IsItemHovered()) ImGui.SetTooltip(LocString("RemoveTooltip", "Remove {0}").Format(nf.Name));
                     ImGui.TableNextColumn();
                     ImGui.Text(nf.Name);
@@ -104,13 +103,13 @@ public unsafe class DisableClickTargeting : Tweak {
                 ImGui.TableNextColumn();
                 if (ImGui.Button(LocString("AddButton", "Add"))) {
                     if (TweakConfig.NameFilters.All(nf => nf.Name != nameFilterNew)) {
-                        TweakConfig.NameFilters.Add(new NameFilter() {
-                            Name = nameFilterNew
-                        });
+                        TweakConfig.NameFilters.Add(new NameFilter() { Name = nameFilterNew });
                         hasChanged = true;
                     }
+
                     nameFilterNew = string.Empty;
                 }
+
                 ImGui.TableNextColumn();
                 var target = Service.Targets.SoftTarget ?? Service.Targets.Target;
                 if (target != null) {
@@ -135,96 +134,63 @@ public unsafe class DisableClickTargeting : Tweak {
                 ImGui.EndTable();
             }
         }
-
-        if (hasChanged && Enabled) {
-            Disable();
-            Enable();
-        }
     }
 
-    private delegate char GetInputStatusDelegate(InputManager* a1, int a2);
+    private delegate byte GetInputStatusDelegate(InputManager* a1, int a2);
+
+    [TweakHook, Signature("E8 ?? ?? ?? ?? 84 C0 44 8B C3", DetourName = nameof(GetInputStatusDetour))]
     private HookWrapper<GetInputStatusDelegate> getInputStatusHook;
 
     private delegate GameObject* GetMouseOverObjectDelegate(TargetSystem* a1, int a2, int a3, GameObjectArray* a4, Camera* camera);
+
+    [TweakHook, Signature("E8 ?? ?? ?? ?? 48 8B D8 48 85 C0 74 50 48 8B CB", DetourName = nameof(GetMouseOverObjectDetour))]
     private HookWrapper<GetMouseOverObjectDelegate> getMouseOverObjectHook;
 
-    private const int LMB = 11;
-    private const int RMB = 4;
+    [Signature("E8 ?? ?? ?? ?? 84 C0 44 8B C3")]
+    private GetInputStatusDelegate getInputStatus;
 
-    protected override void Enable() {
-        TweakConfig = LoadConfig<Configs>() ?? new Configs();
-        getInputStatusHook ??= Common.Hook(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 84 C0 74 6E 48 8B 87 ?? ?? ?? ?? 48 8B F3 48 85 C0 41 0F 95 C6"), new GetInputStatusDelegate(GetInputStatusDetour));
-        getMouseOverObjectHook ??= Common.Hook(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 8B D8 48 85 C0 74 50 48 8B CB"), new GetMouseOverObjectDelegate(GetMouseOverObjectDetour));
-        if (TweakConfig.DisableLeftClick || TweakConfig.DisableLeftClick || TweakConfig.UseNameFilter) {
-            getInputStatusHook?.Enable();
-            getMouseOverObjectHook?.Enable();
-        }
-        base.Enable();
-    }
+    private const int LeftMouse = 11;
+    private const int RightMouse = 4;
 
-    protected override void Disable() {
-        getMouseOverObjectHook?.Disable();
-        getInputStatusHook?.Disable();
+    private bool NameFilterCheck(NameFilter nf, int key) => (nf.OnlyInCombat && !Service.Condition[ConditionFlag.InCombat]) || (key != LeftMouse && key != RightMouse) || (!nf.DisableLeft && key == LeftMouse) || (!nf.DisableRight && key == RightMouse);
 
-        SaveConfig(TweakConfig);
-        base.Disable();
-    }
+    private bool NonNameFilterCheck(GameObject* actor, int key) => actor == null || (TweakConfig.OnlyDisableInCombat && !Service.Condition[ConditionFlag.InCombat]) || (key != LeftMouse && key != RightMouse) || (!TweakConfig.DisableLeftClick && key == LeftMouse) || (!TweakConfig.DisableRightClick && key == RightMouse) || (TweakConfig.OnlyDisablePlayers && actor->GetObjectKind() != ObjectKind.Pc);
 
-    public override void Dispose() {
-        getMouseOverObjectHook?.Dispose();
-        getInputStatusHook?.Dispose();
-        base.Dispose();
-    }
+    private byte GetInputStatusDetour(InputManager* a1, int a2) {
+        using var _ = PerformanceMonitor.Run();
+        var status = getInputStatusHook.Original(a1, a2);
+        if (status == 0) return status;
+        if (a2 != LeftMouse && status != RightMouse) return status;
 
-    private bool NameFilterCheck(NameFilter* nf, int key) {
-        return (nf->OnlyInCombat && !Service.Condition[ConditionFlag.InCombat]) ||
-            (
-                (key != LMB && key != RMB) ||
-                (!nf->DisableLeft && key == LMB) ||
-                (!nf->DisableRight && key == RMB)
-            );
-    }
-
-    private bool NonNameFilterCheck(GameObject* actor, int key) {
-        return (TweakConfig.OnlyDisableInCombat && !Service.Condition[ConditionFlag.InCombat]) ||
-            (
-                (key != LMB && key != RMB) ||
-                (!TweakConfig.DisableLeftClick && key == LMB) ||
-                (!TweakConfig.DisableRightClick && key == RMB)
-            ) ||
-            (actor == null) ||
-            (TweakConfig.OnlyDisablePlayers && actor->GetObjectKind() != ObjectKind.Pc);
-    }
-
-    private char GetInputStatusDetour(InputManager* a1, int a2) {
         var actor = TargetSystem.Instance()->MouseOverNameplateTarget;
+        if (actor == TargetSystem.Instance()->GetTargetObject()) return status;
+
         if (actor != null && TweakConfig.UseNameFilter) {
             var actorName = actor->NameString;
-            var nf = TweakConfig.NameFilters.FirstOrDefault(a => a.Name == actorName);
-            if (nf != default) {
-                if (NameFilterCheck(&nf, a2)) return getInputStatusHook.Original(a1, a2);
-                return (char)0;
-            }
+            var nf = TweakConfig.NameFilters.FirstOrDefault(a => a.Name == actorName, null);
+            if (nf != null) return NameFilterCheck(nf, a2) ? status : (byte)0;
         }
-        if (NonNameFilterCheck(actor, a2)) return getInputStatusHook.Original(a1, a2);
-        return (char)0;
+
+        return NonNameFilterCheck(actor, a2) ? status : (byte)0;
     }
 
     private GameObject* GetMouseOverObjectDetour(TargetSystem* a1, int a2, int a3, GameObjectArray* a4, Camera* a5) {
+        using var _ = PerformanceMonitor.Run();
         var actor = getMouseOverObjectHook.Original(a1, a2, a3, a4, a5);
+        if (actor == null) return null;
+        if (actor == TargetSystem.Instance()->GetTargetObject()) return actor;
         var pressed = 0;
-        if (getInputStatusHook.Original(InputManager.Instance(), LMB) == 1) pressed = LMB;
-        if (getInputStatusHook.Original(InputManager.Instance(), RMB) == 1) pressed = RMB;
 
-        if (actor != null && TweakConfig.UseNameFilter && pressed != 0) {
+        if (getInputStatusHook.Original(InputManager.Instance(), LeftMouse) != 0) pressed = LeftMouse;
+        if (getInputStatusHook.Original(InputManager.Instance(), RightMouse) != 0) pressed = RightMouse;
+        if (pressed == 0) return actor;
+
+        if (TweakConfig.UseNameFilter) {
             var actorName = actor->NameString;
-            var nf = TweakConfig.NameFilters.FirstOrDefault(a => a.Name == actorName);
-            if (nf != default) {
-                if (NameFilterCheck(&nf, pressed)) return getMouseOverObjectHook.Original(a1, a2, a3, a4, a5);
-                return null;
-            }
+            var nf = TweakConfig.NameFilters.FirstOrDefault(a => a.Name == actorName, null);
+            if (nf != null) return NameFilterCheck(nf, pressed) ? actor : null;
         }
-        if (NonNameFilterCheck(actor, pressed)) return getMouseOverObjectHook.Original(a1, a2, a3, a4, a5);
-        return null;
+
+        return NonNameFilterCheck(actor, pressed) ? actor : null;
     }
 }
