@@ -50,7 +50,6 @@
         <Compile Remove="Tweaks\UiAdjustment\FastSearch.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideGuildhestObjectivePopup.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideQualityWhenNoHQ.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\ImprovedWorldVisit.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\MarketEnhancements.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\NamePlateIconSpacing.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\SmartNameplates.cs"/>
