@@ -29,7 +29,6 @@
         <Compile Remove="Tweaks\BaitCommand.cs"/>
         <Compile Remove="Tweaks\CharaViewIncreasedZoom.cs"/>
         <Compile Remove="Tweaks\CutsceneCommands.cs"/>
-        <Compile Remove="Tweaks\DisableClickTargeting.cs"/>
         <Compile Remove="Tweaks\DisableMouseCameraControl.cs"/>
         <Compile Remove="Tweaks\EquipFromHotbar.cs"/>
         <Compile Remove="Tweaks\FixedShadowDistance.cs"/>
