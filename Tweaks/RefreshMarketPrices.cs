@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using Dalamud;
+using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using SimpleTweaksPlugin.TweakSystem;
@@ -8,48 +10,33 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
-public unsafe class RefreshMarketPrices : Tweak
-{
-    public override string Name => "Refresh Market Prices";
-    public override uint Version => 2;
-
-    public override string Description =>
-        "Retries to get prices upon receiving the 'Please wait and try your search again' message";
-
-    protected override string Author => "Chalkos";
-
+[TweakName("Refresh Market Prices")]
+[TweakDescription("Retries to get prices upon receiving the 'Please wait and try your search again' message")]
+[TweakVersion(2)]
+[TweakAuthor("Chalkos")]
+public unsafe class RefreshMarketPrices : Tweak {
+    [TweakHook, Signature("E8 ?? ?? ?? ?? 8B 3F 85 FF", DetourName = nameof(HandlePricesDetour))]
     private HookWrapper<HandlePrices> handlePricesHook;
 
-    private delegate long HandlePrices(void* unk1, void* unk2, void* unk3, void* unk4, void* unk5, void* unk6,
-        void* unk7);
+    [Signature("BA CE 07 00 00 E8 ?? ?? ?? ?? 4C 8B C0 BA ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 45 33 C9")]
+    private readonly nint waitMessageCodeChangeAddress = IntPtr.Zero;
+    
+    private delegate long HandlePrices(void* unk1, void* unk2, void* unk3, void* unk4, void* unk5, void* unk6, void* unk7);
 
-    private IntPtr waitMessageCodeChangeAddress = IntPtr.Zero;
     private byte[] waitMessageCodeOriginalBytes = new byte[5];
-    private bool waitMessageCodeErrored = false;
+    private bool waitMessageCodeErrored;
 
-    private CancellationTokenSource cancelSource = null;
+    private CancellationTokenSource cancelSource;
 
-    protected override void Enable()
-    {
-        if (Enabled) return;
-
-        handlePricesHook ??= Common.Hook<HandlePrices>("E8 ?? ?? ?? ?? 8B 5B 04 85 DB", HandlePricesDetour);
-        handlePricesHook?.Enable();
-
+    protected override void Enable() {
         waitMessageCodeErrored = false;
-        waitMessageCodeChangeAddress =
-            Service.SigScanner.ScanText(
-                "BA ?? ?? ?? ?? E8 ?? ?? ?? ?? 4C 8B C0 BA ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 45 33 C9");
-        if (SafeMemory.ReadBytes(waitMessageCodeChangeAddress, 5, out waitMessageCodeOriginalBytes))
-        {
-            if (!SafeMemory.WriteBytes(waitMessageCodeChangeAddress, new byte[] { 0xBA, 0xB9, 0x1A, 0x00, 0x00 }))
-            {
+        if (SafeMemory.ReadBytes(waitMessageCodeChangeAddress, 5, out waitMessageCodeOriginalBytes)) {
+            if (!waitMessageCodeOriginalBytes.SequenceEqual(new byte[] { 0xBA, 0xCE, 0x07, 0x00, 0x00 })) throw new Exception("Unexpected original instruction.");
+            if (!SafeMemory.WriteBytes(waitMessageCodeChangeAddress, [0xBA, 0xB9, 0x1A, 0x00, 0x00])) {
                 waitMessageCodeErrored = true;
                 SimpleLog.Error("Failed to write new instruction");
             }
-        }
-        else
-        {
+        } else {
             waitMessageCodeErrored = true;
             SimpleLog.Error("Failed to read original instruction");
         }
@@ -57,11 +44,10 @@ public unsafe class RefreshMarketPrices : Tweak
         base.Enable();
     }
 
-    private int failCount = 0;
-    private int maxFailCount = 0;
+    private int failCount;
+    private int maxFailCount;
 
-    private long HandlePricesDetour(void* unk1, void* unk2, void* unk3, void* unk4, void* unk5, void* unk6, void* unk7)
-    {
+    private long HandlePricesDetour(void* unk1, void* unk2, void* unk3, void* unk4, void* unk5, void* unk6, void* unk7) {
         cancelSource?.Cancel();
         cancelSource?.Dispose();
         cancelSource = new CancellationTokenSource();
@@ -70,11 +56,8 @@ public unsafe class RefreshMarketPrices : Tweak
 
         if (result != 1) {
             maxFailCount = Math.Max(++failCount, maxFailCount);
-            Service.Framework.RunOnTick(() =>
-            {
-                if (Common.GetUnitBase<AddonItemSearchResult>(out var addonItemSearchResult)
-                    && AddonItemSearchResultThrottled(addonItemSearchResult))
-                {
+            Service.Framework.RunOnTick(() => {
+                if (Common.GetUnitBase<AddonItemSearchResult>(out var addonItemSearchResult) && AddonItemSearchResultThrottled(addonItemSearchResult)) {
                     Service.Framework.RunOnTick(RefreshPrices, TimeSpan.FromSeconds(2f + (0.5f * maxFailCount - 1)), 0, cancelSource.Token);
                 }
             });
@@ -85,8 +68,7 @@ public unsafe class RefreshMarketPrices : Tweak
         return result;
     }
 
-    private void RefreshPrices()
-    {
+    private void RefreshPrices() {
         var addonItemSearchResult = Common.GetUnitBase<AddonItemSearchResult>();
         if (!AddonItemSearchResultThrottled(addonItemSearchResult)) return;
         Common.SendEvent(AgentId.ItemSearch, 2, 0, 0);
@@ -94,27 +76,16 @@ public unsafe class RefreshMarketPrices : Tweak
 
     private bool AddonItemSearchResultThrottled(AddonItemSearchResult* addon) => addon != null
         && addon->ErrorMessage != null
-        && addon->ErrorMessage->AtkResNode.IsVisible
+        && addon->ErrorMessage->AtkResNode.IsVisible()
         && addon->HitsMessage != null
-        && !addon->HitsMessage->AtkResNode.IsVisible;
+        && !addon->HitsMessage->AtkResNode.IsVisible();
 
-    protected override void Disable()
-    {
-        if (!Enabled) return;
-        if (!waitMessageCodeErrored && !SafeMemory.WriteBytes(waitMessageCodeChangeAddress, waitMessageCodeOriginalBytes))
-        {
+    protected override void Disable() {
+        if (!waitMessageCodeErrored && !SafeMemory.WriteBytes(waitMessageCodeChangeAddress, waitMessageCodeOriginalBytes)) {
             SimpleLog.Error("Failed to write original instruction");
         }
 
-        handlePricesHook?.Disable();
         cancelSource?.Cancel();
         cancelSource?.Dispose();
-        base.Disable();
-    }
-
-    public override void Dispose()
-    {
-        Disable();
-        base.Dispose();
     }
 }
