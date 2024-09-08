@@ -29,7 +29,6 @@
         <Compile Remove="Tweaks\CharaViewIncreasedZoom.cs"/>
         <Compile Remove="Tweaks\CutsceneCommands.cs"/>
         <Compile Remove="Tweaks\DisableMouseCameraControl.cs"/>
-        <Compile Remove="Tweaks\EquipFromHotbar.cs"/>
         <Compile Remove="Tweaks\FixedShadowDistance.cs"/>
         <Compile Remove="Tweaks\FurnitureClocksCustomTime.cs"/>
         <Compile Remove="Tweaks\HouseLightCommand.cs"/>
