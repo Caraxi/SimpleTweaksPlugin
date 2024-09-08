@@ -1,10 +1,12 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks; 
+namespace SimpleTweaksPlugin.Tweaks;
 
+[TweakName("Long Veil")]
+[TweakDescription("Replaces the wedding veils with their long variants that are usually only shown in the sanctum of the twelve.")]
 public unsafe class LongVeil : Tweak {
     [StructLayout(LayoutKind.Sequential, Size = 4)]
     public struct EquipData {
@@ -16,8 +18,8 @@ public unsafe class LongVeil : Tweak {
     private delegate bool FlagSlotUpdateDelegate(IntPtr a1, uint a2, EquipData* a3);
     private HookWrapper<FlagSlotUpdateDelegate> flagSlotUpdateHook;
         
-    public override string Name => "Long Veil";
-    public override string Description => "Replaces the wedding veils with their long variants that are usually only shown in the sanctum of the twelve.";
+    //public override string Name => "Long Veil";
+    //public override string Description => "Replaces the wedding veils with their long variants that are usually only shown in the sanctum of the twelve.";
 
     protected override void Enable() {
         flagSlotUpdateHook ??= Common.Hook(
