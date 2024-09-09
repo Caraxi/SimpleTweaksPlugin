@@ -35,7 +35,6 @@
         <Compile Remove="Tweaks\JokeTweaks.cs"/>
         <Compile Remove="Tweaks\MinionAway.cs"/>
         <Compile Remove="Tweaks\RecommendEquipCommand.cs"/>
-        <Compile Remove="Tweaks\RememberSelectedWorld.cs"/>
         <Compile Remove="Tweaks\ScreenshotFileName.cs"/>
         <Compile Remove="Tweaks\TreasureHuntTargets.cs"/>
         <Compile Remove="Tweaks\Chat\ZoomedChatCustomization.cs"/>
