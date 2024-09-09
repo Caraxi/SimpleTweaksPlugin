@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Game.ClientState.Conditions;
@@ -16,7 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("Disable Click Targeting")]
 [TweakDescription("Allows disabling of the target function on left and right mouse clicks.")]
-[Changelog(UnreleasedVersion, "Added option to only disable targeting players.", Author = "OTCompa")]
+[Changelog("1.10.1.0", "Added option to only disable targeting players.", Author = "OTCompa")]
 [TweakAutoConfig]
 public unsafe class DisableClickTargeting : Tweak {
     public class Configs : TweakConfig {

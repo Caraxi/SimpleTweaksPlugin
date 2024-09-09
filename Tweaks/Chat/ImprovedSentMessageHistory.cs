@@ -1,4 +1,4 @@
-﻿using Dalamud.Interface.Components;
+using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.System.String;
@@ -15,7 +15,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakName("Improved Sent Message History")]
 [TweakDescription("Recover messages after accidentally pressing up in the chat, and increase the amount of history retained.")]
 [TweakCategory(TweakCategory.Chat)]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.1.0")]
 public unsafe class ImprovedSentMessageHistory : Tweak {
     public class Configs : TweakConfig {
         public int MaxHistory = 10;

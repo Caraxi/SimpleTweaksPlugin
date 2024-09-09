@@ -1,5 +1,36 @@
 # Changelog
 
+## 1.10.1.0
+***New Tweaks***
+- **`Improved Sent Message History`** - Recover messages after accidentally pressing up in the chat, and increase the amount of history retained.
+
+
+***Tweak Changes***
+- **`Disable Click Targeting`** - Added option to only disable targeting players. *(OTCompa)*
+- **`Item Hotkeys`** - Added hotkey option for opening Console Games Wiki page. *(Aly Smith)*
+
+
+***Returning Tweaks***
+- `Hide 'Character not found' Message`
+- `Hide Chat`
+- `Hide Chat Automatically`
+- `Rename Chat Tabs`
+- `Disable Click Targeting`
+- `Bait Command`
+- `Cleaner World Visit Menu`
+- `Market Enhancements`
+- `Refresh Market Prices`
+- `Sanctuary Sprint Replacer`
+- `Long Veil`
+- `Equip From Hotbar`
+- `Remember Quick Gathering`
+- `Remember Selected World`
+- `Block Targeting Hunt Enemies`
+- `Customize default deposit and withdraw quantity`
+- `Fast Item Search`
+- `Change Map Area Colors`
+- `Hide quality bar while crafting NO-HQ item`
+
 ## 1.10.0.5
 ***New Tweaks***
 - **`Preview Unlockable Items`** - Show a preview image for mounts, minions and hairstyles.
