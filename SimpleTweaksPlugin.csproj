@@ -38,7 +38,6 @@
         <Compile Remove="Tweaks\ScreenshotFileName.cs"/>
         <Compile Remove="Tweaks\Chat\ZoomedChatCustomization.cs"/>
         <Compile Remove="Tweaks\JokeTweak\Fools2023.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\ChangeMapAreaColors.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideGuildhestObjectivePopup.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\HideQualityWhenNoHQ.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\NamePlateIconSpacing.cs"/>
