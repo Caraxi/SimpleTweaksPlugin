@@ -36,7 +36,6 @@
         <Compile Remove="Tweaks\MinionAway.cs"/>
         <Compile Remove="Tweaks\RecommendEquipCommand.cs"/>
         <Compile Remove="Tweaks\ScreenshotFileName.cs"/>
-        <Compile Remove="Tweaks\TreasureHuntTargets.cs"/>
         <Compile Remove="Tweaks\Chat\ZoomedChatCustomization.cs"/>
         <Compile Remove="Tweaks\JokeTweak\Fools2023.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\ChangeMapAreaColors.cs"/>
