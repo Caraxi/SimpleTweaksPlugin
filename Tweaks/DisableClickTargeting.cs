@@ -160,7 +160,7 @@ public unsafe class DisableClickTargeting : Tweak {
         using var _ = PerformanceMonitor.Run();
         var status = getInputStatusHook.Original(a1, a2);
         if (status == 0) return status;
-        if (a2 != LeftMouse && status != RightMouse) return status;
+        if (a2 != LeftMouse && a2 != RightMouse) return status;
 
         var actor = TargetSystem.Instance()->MouseOverNameplateTarget;
         if (actor == TargetSystem.Instance()->GetTargetObject()) return status;
