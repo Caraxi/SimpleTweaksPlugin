@@ -91,7 +91,7 @@ public class RenameChatTabs : ChatTweaks.SubTweak {
 
     public unsafe void ResetName() {
         if (Common.GetUnitBase("ChatLog", out var chatLog)) DoRename(chatLog, true);
-        if (Common.GetUnitBase("ChatLogPanel_1", out var chatLogPanel)) DoRename(chatLogPanel, true);
+        if (Common.GetUnitBase("ChatLogPanel_1", out var chatLogPanel)) DoRenamePanel(chatLogPanel, true);
     }
 
     public string DefaultName0 =>
