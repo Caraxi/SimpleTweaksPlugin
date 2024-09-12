@@ -190,8 +190,6 @@ public unsafe class ImprovedCraftingLog : Tweak {
         var ready = GetCraftReadyState(out _);
         if (ready == CraftReadyState.NotReady) return;
 
-
-
         var buttonText = ready switch {
             CraftReadyState.Ready => Service.Data.Excel.GetSheet<Addon>()?.GetRow(1404)?.Text?.ToDalamudString(),
             CraftReadyState.WrongClass => GetWrongClassButtonText(),
@@ -235,10 +233,8 @@ public unsafe class ImprovedCraftingLog : Tweak {
         Service.Commands.RemoveHandler("/stopcrafting");
     }
 
-    private string GetWrongClassButtonText()
-    {
-        switch (Service.ClientState.ClientLanguage)
-        {
+    private string GetWrongClassButtonText() {
+        switch (Service.ClientState.ClientLanguage) {
             case ClientLanguage.Japanese:
                 return "スイッチ・ジョブ";
             case ClientLanguage.English:
