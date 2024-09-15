@@ -566,12 +566,33 @@ namespace SimpleTweaksPlugin.Debugging {
                 }
 
                 if (isOpen) {
-                    if (f.FieldType.GenericTypeArguments[0].FullName!.StartsWith("FFXIVClientStructs.Interop.Pointer`1")) {
+                    if (f.FieldType.GenericTypeArguments[0].IsPrimitive) {
+                        var typeSize = (uint)Marshal.SizeOf(f.FieldType.GenericTypeArguments[0]);
+                        for (var i = 0U; i < fixedSizeArraySize; i++) {
+                            var vAddr = addr + offsetAddress + i * typeSize;
+                            var s = Marshal.PtrToStructure((nint)vAddr, f.FieldType.GenericTypeArguments[0]);
+
+                            using (ImRaii.PushColor(ImGuiCol.Text, ImGui.GetColorU32(ImGuiCol.TextDisabled))) {
+                                ClickToCopyText($"[{i.ToString().PadLeft((fixedSizeArraySize - 1).ToString().Length, '0')}]", $"{vAddr:X}");
+                            }
+
+                            ImGui.SameLine();
+                            ImGui.Text($"{s}");
+                        }
+                    } else if (f.FieldType.GenericTypeArguments[0].FullName!.StartsWith("FFXIVClientStructs.Interop.Pointer`1")) {
                         for (var i = 0U; i < fixedSizeArraySize; i++) {
                             var vAddr = addr + offsetAddress + i * 8;
                             var ptr = *(ulong*)vAddr;
                             var s = Marshal.PtrToStructure((nint)ptr, f.FieldType.GenericTypeArguments[0].GenericTypeArguments[0]);
-                            PrintAddress((void*)ptr);
+                            using (ImRaii.PushColor(ImGuiCol.Text, ImGui.GetColorU32(ImGuiCol.TextDisabled))) {
+                                ClickToCopyText($"[{i.ToString().PadLeft((fixedSizeArraySize - 1).ToString().Length, '0')}]", $"{vAddr:X}");
+                            }
+
+                            ImGui.SameLine();
+                            using (ImRaii.PushColor(ImGuiCol.Text, ImGuiColors.DalamudOrange)) {
+                                PrintAddress((void*)ptr);
+                            }
+
                             ImGui.SameLine();
                             PrintOutObject(s, ptr, [..path, $"{i}"], false, $"[{i}] {ParseTypeName(f.FieldType.GenericTypeArguments[0].GenericTypeArguments[0])}");
                         }
@@ -580,7 +601,12 @@ namespace SimpleTweaksPlugin.Debugging {
                         for (var i = 0U; i < fixedSizeArraySize; i++) {
                             var vAddr = addr + offsetAddress + i * typeSize;
                             var s = Marshal.PtrToStructure((nint)vAddr, f.FieldType.GenericTypeArguments[0]);
-                            PrintOutObject(s, vAddr, [..path, $"{i}"], false, $"[{i}] {ParseTypeName(f.FieldType.GenericTypeArguments[0])}");
+                            using (ImRaii.PushColor(ImGuiCol.Text, ImGui.GetColorU32(ImGuiCol.TextDisabled))) {
+                                ClickToCopyText($"[{i.ToString().PadLeft((fixedSizeArraySize - 1).ToString().Length - 1, '0')}]", $"{vAddr:X}");
+                            }
+
+                            ImGui.SameLine();
+                            PrintOutObject(s, vAddr, [..path, $"{i}"]);
                         }
                     }
 
