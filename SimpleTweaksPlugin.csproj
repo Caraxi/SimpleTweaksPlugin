@@ -41,7 +41,6 @@
         <Compile Remove="Tweaks\UiAdjustment\HideGuildhestObjectivePopup.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\NamePlateIconSpacing.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\SmartNameplates.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\AddNumberSeparators.cs" />
     </ItemGroup>
     
     <ItemGroup>
