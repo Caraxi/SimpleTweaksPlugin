@@ -748,7 +748,7 @@ public abstract class BaseTweak {
 
     protected TweakKeyAttribute TweakKeyAttribute {
         get {
-            if (tweakNameAttribute != null) return tweakKeyAttribute;
+            if (tweakKeyAttribute != null) return tweakKeyAttribute;
             tweakKeyAttribute = GetType().GetCustomAttribute<TweakKeyAttribute>() ?? new TweakKeyAttribute($"{GetType().Name}");
             return tweakKeyAttribute;
         }
