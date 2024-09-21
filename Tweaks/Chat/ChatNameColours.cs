@@ -19,7 +19,7 @@ using static Dalamud.Game.Text.XivChatType;
 namespace SimpleTweaksPlugin.Tweaks.Chat;
 
 [TweakName("Chat Name Colours")]
-[TweakDescription("Gives players a random colour in chat, or set th e name manually.")]
+[TweakDescription("Gives players a random colour in chat, or set the name manually.")]
 public class ChatNameColours : ChatTweaks.SubTweak {
     public class ForcedColour {
         public ushort ColourKey; // Legacy
@@ -103,7 +103,7 @@ public class ChatNameColours : ChatTweaks.SubTweak {
     private ExcelSheet<UIColor> uiColorSheet;
     private ExcelSheet<World> worldSheet;
 
-    public override void Setup() {
+    protected override void Setup() {
         AddChangelog("1.8.8.1", "Fixed Chat2 exploding with new colour system. Tweak will still not work in Chat2, but it will not explode.");
         AddChangelog("1.8.8.0", "Fixed colour display when in party.");
         AddChangelog("1.8.8.0", "Extended range of possible colours.");
@@ -126,8 +126,6 @@ public class ChatNameColours : ChatTweaks.SubTweak {
         Regions = new List<Region>() {
             GetRegion(1, "JP"), GetRegion(2, "NA"), GetRegion(3, "EU"), GetRegion(4, "OCE"),
         };
-
-        base.Setup();
     }
 
     private float serverListPopupWidth = 0;

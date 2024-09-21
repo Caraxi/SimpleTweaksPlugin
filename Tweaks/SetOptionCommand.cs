@@ -8,28 +8,26 @@ using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
 using SimpleTweaksPlugin.TweakSystem;
 
-namespace SimpleTweaksPlugin.Tweaks; 
+namespace SimpleTweaksPlugin.Tweaks;
 
 [Changelog("1.9.4.0", "Added support for changing the cutscene audio language.")]
 [Changelog("1.9.4.0", "Added support for changing title display options.", Author = "Gehock")]
 [Changelog("1.9.4.0", "Added support for 'Small' and 'Smallest' for nameplate size options.", Author = "Gehock")]
 [Changelog("1.9.7.0", "Added support for cutscene skipping options.", Author = "Gehock")]
+[TweakName("Set Option Command")]
+[TweakDescription("Adds commands to change various settings.")]
 public unsafe class SetOptionCommand : CommandTweak {
-
-    public override string Name => "Set Option Command";
-    public override string Description => "Adds commands to change various settings.";
     protected override string Command => "setoption";
     protected override string HelpMessage => "Usage: /setoption <option> <value>";
     protected override string[] Alias => new[] { "setopt" };
 
-    public override void Setup() {
+    protected override void Setup() {
         AddChangelog("1.8.3.2", "Improved reliability through patches");
         AddChangelog("1.8.4.0", "Fixed issues when using gamepad mode");
         AddChangelog("1.8.4.0", "Re-added accidentally remove gamepad mode option");
         AddChangelog("1.8.4.0", "Added 'LimitMouseToGameWindow' and 'CharacterDisplayLimit'");
         AddChangelog("1.8.4.0", "Fixed 'DisplayNameSize' using incorrect values");
         AddChangelog("1.8.9.1", "Fixed toggle options not working.");
-        base.Setup();
     }
 
     public enum OptionGroup {
@@ -43,19 +41,19 @@ public unsafe class SetOptionCommand : CommandTweak {
         public string ID { get; }
         public OptionGroup OptionGroup { get; }
         public string[] Alias { get; }
-        
+
         public bool AllowToggle { get; }
-        
+
         public IEnumerable<string> ValueNames { get; }
         public IEnumerable<string> AliasValueNames { get; }
     }
-    
+
     public class OptionDefinition<T> : IOptionDefinition {
         public string Name { get; }
         public string ID { get; }
         public OptionGroup OptionGroup { get; }
         public string[] Alias { get; }
-        
+
         public bool AllowToggle { get; set; }
 
         private readonly Lazy<(Dictionary<string, T> main, Dictionary<string, T> alias)> values;
@@ -64,6 +62,7 @@ public unsafe class SetOptionCommand : CommandTweak {
         public Dictionary<string, T> ValueAlias => values.Value.alias;
         public IEnumerable<string> ValueNames => Values.Keys;
         public IEnumerable<string> AliasValueNames => ValueAlias.Keys;
+
         public OptionDefinition(string name, string id, OptionGroup group, Func<(Dictionary<string, T>, Dictionary<string, T>)> valuesFunc, params string[] alias) {
             this.Name = name;
             this.ID = id;
@@ -71,30 +70,20 @@ public unsafe class SetOptionCommand : CommandTweak {
             this.Alias = alias;
             values = new Lazy<(Dictionary<string, T> main, Dictionary<string, T> alias)>(valuesFunc);
         }
-
     }
 
     private static class ValueType {
         public static (Dictionary<string, uint>, Dictionary<string, uint>) Boolean() {
-            var main = new Dictionary<string, uint>() {
-                ["off"] = 0, 
-                ["on"] = 1
-            };
+            var main = new Dictionary<string, uint>() { ["off"] = 0, ["on"] = 1 };
             var alias = new Dictionary<string, uint>() {
-                ["false"] = 0,
-                ["0"] = 0,
-                ["true"] = 1,
-                ["1"] = 1,
+                ["false"] = 0, ["0"] = 0, ["true"] = 1, ["1"] = 1,
             };
             return (main, alias);
         }
 
         public static (Dictionary<string, uint>, Dictionary<string, uint>) NamePlateDisplay() {
             var main = new Dictionary<string, uint> {
-                ["always"] = 0,
-                ["battle"] = 1,
-                ["targeted"] = 2,
-                ["never"] = 3,
+                ["always"] = 0, ["battle"] = 1, ["targeted"] = 2, ["never"] = 3,
             };
             var alias = new Dictionary<string, uint> {
                 ["a"] = 0,
@@ -105,6 +94,7 @@ public unsafe class SetOptionCommand : CommandTweak {
             };
             return (main, alias);
         }
+
         public static (Dictionary<string, uint>, Dictionary<string, uint>) AudioLanguage() {
             var main = new Dictionary<string, uint> {
                 ["auto"] = uint.MaxValue,
@@ -131,7 +121,7 @@ public unsafe class SetOptionCommand : CommandTweak {
             return (main, alias);
         }
     }
-    
+
     private readonly List<IOptionDefinition> optionDefinitions = new() {
         new OptionDefinition<uint>("GamepadMode", "PadMode", OptionGroup.UiConfig, ValueType.Boolean, "gp") { AllowToggle = true },
         new OptionDefinition<uint>("ItemTooltips", "ItemDetailDisp", OptionGroup.UiControl, ValueType.Boolean, "itt") { AllowToggle = true },
@@ -139,47 +129,48 @@ public unsafe class SetOptionCommand : CommandTweak {
         new OptionDefinition<uint>("LegacyMovement", "MoveMode", OptionGroup.UiControl, ValueType.Boolean, "lm") { AllowToggle = true },
         new OptionDefinition<uint>("HideUnassignedHotbarSlots", "HotbarEmptyVisible", OptionGroup.UiConfig, ValueType.Boolean, "huhs") { AllowToggle = true },
         new OptionDefinition<uint>("LimitMouseToGameWindow", "MouseOpeLimit", OptionGroup.System, ValueType.Boolean, "lmtgw") { AllowToggle = true },
-
         new OptionDefinition<uint>("OwnDisplayName", "NamePlateDispTypeSelf", OptionGroup.UiConfig, ValueType.NamePlateDisplay, "odn") { AllowToggle = true },
         new OptionDefinition<uint>("PartyDisplayName", "NamePlateDispTypeParty", OptionGroup.UiConfig, ValueType.NamePlateDisplay, "pdn") { AllowToggle = true },
         new OptionDefinition<uint>("AllianceDisplayName", "NamePlateDispTypeAlliance", OptionGroup.UiConfig, ValueType.NamePlateDisplay, "adn") { AllowToggle = true },
         new OptionDefinition<uint>("OtherPlayerDisplayName", "NamePlateDispTypeOther", OptionGroup.UiConfig, ValueType.NamePlateDisplay, "opcdn") { AllowToggle = true },
         new OptionDefinition<uint>("FriendDisplayName", "NamePlateDispTypeFriend", OptionGroup.UiConfig, ValueType.NamePlateDisplay, "fdn") { AllowToggle = true },
-        
         new OptionDefinition<uint>("SelfNameTitle", "NamePlateNameTitleTypeSelf", OptionGroup.UiConfig, ValueType.Boolean, "snt") { AllowToggle = true },
         new OptionDefinition<uint>("PartyNameTitle", "NamePlateNameTitleTypeParty", OptionGroup.UiConfig, ValueType.Boolean, "pnt") { AllowToggle = true },
         new OptionDefinition<uint>("AllianceNameTitle", "NamePlateNameTitleTypeAlliance", OptionGroup.UiConfig, ValueType.Boolean, "ant") { AllowToggle = true },
         new OptionDefinition<uint>("OtherNameTitle", "NamePlateNameTitleTypeOther", OptionGroup.UiConfig, ValueType.Boolean, "ont") { AllowToggle = true },
         new OptionDefinition<uint>("FriendNameTitle", "NamePlateNameTitleTypeFriend", OptionGroup.UiConfig, ValueType.Boolean, "fnt") { AllowToggle = true },
-        
         new OptionDefinition<uint>("CutsceneAudioLanguage", "CutsceneMovieVoice", OptionGroup.System, ValueType.AudioLanguage, "cl"),
-
         new OptionDefinition<uint>("SkipTransportCutscenes", "CutsceneSkipIsShip", OptionGroup.UiConfig, ValueType.Boolean, "stc") { AllowToggle = true },
         new OptionDefinition<uint>("SkipScenarioCutscenes", "CutsceneSkipIsContents", OptionGroup.UiConfig, ValueType.Boolean, "scc") { AllowToggle = true },
         new OptionDefinition<uint>("SkipHousingCutscenes", "CutsceneSkipIsHousing", OptionGroup.UiConfig, ValueType.Boolean, "shc") { AllowToggle = true },
-
         new OptionDefinition<uint>("DisplayNameSize", "NamePlateDispSize", OptionGroup.UiConfig, () => {
-            return (
-                new() { ["maximum"] = 2, ["large"] = 1, ["standard"] = 0, ["small"] = 3, ["smallest"] = 4 },
-                new() { ["m"] = 2, ["max"] = 2, ["l"] = 1, ["s"] = 0, }
-            );
+            return (new() {
+                ["maximum"] = 2,
+                ["large"] = 1,
+                ["standard"] = 0,
+                ["small"] = 3,
+                ["smallest"] = 4
+            }, new() {
+                ["m"] = 2, ["max"] = 2, ["l"] = 1, ["s"] = 0,
+            });
         }, "dns") { AllowToggle = true },
-        
         new OptionDefinition<uint>("CharacterDisplayLimit", "DisplayObjectLimitType", OptionGroup.System, () => {
-            return (
-                new() { ["maximum"] = 0, ["high"] = 1, ["normal"] = 2, ["low"] = 3, ["minimum"] = 4 },
-                new() { ["max"] = 0, ["min"] = 4 }
-            );
+            return (new() {
+                ["maximum"] = 0,
+                ["high"] = 1,
+                ["normal"] = 2,
+                ["low"] = 3,
+                ["minimum"] = 4
+            }, new() { ["max"] = 0, ["min"] = 4 });
         }, "cdl") { AllowToggle = true },
         new OptionDefinition<uint>("DirectChat", "DirectChat", OptionGroup.UiControl, ValueType.Boolean, "dc") { AllowToggle = true },
     };
 
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
+    protected void DrawConfig() {
         ImGui.TextDisabled("/setopt list");
         ImGui.TextDisabled("/setopt [option] [value]");
 
         if (ImGui.TreeNode(LocString("Available Options") + "##optionListTree")) {
-                    
             ImGui.Columns(3);
             ImGui.Text(LocString("option"));
             ImGui.NextColumn();
@@ -201,13 +192,15 @@ public unsafe class SetOptionCommand : CommandTweak {
                     sb.Append(a);
                     sb.Append(' ');
                 }
+
                 ImGui.Text(sb.ToString());
             }
 
             ImGui.Columns();
             ImGui.TreePop();
         }
-    };
+    }
+
     protected override void OnCommand(string arguments) {
         var configModule = ConfigModule.Instance();
         if (configModule == null) return;
@@ -215,24 +208,20 @@ public unsafe class SetOptionCommand : CommandTweak {
         var argList = arguments.ToLower().Split(' ');
 
         if (argList[0] == "list") {
-
             var sb = new StringBuilder();
 
             foreach (var o in optionDefinitions) {
                 sb.Append($"{o.Name} ");
             }
+
             Service.Chat.Print($"Options:\n{sb}");
 
             return;
         }
-            
+
         var optionKind = argList[0];
 
-        var optionDefinition =
-            optionDefinitions.FirstOrDefault(o =>
-                string.Equals(o.Name, optionKind, StringComparison.InvariantCultureIgnoreCase)) ??
-            optionDefinitions.FirstOrDefault(o =>
-                o.Alias.Any(a => string.Equals(a, optionKind, StringComparison.InvariantCultureIgnoreCase)));
+        var optionDefinition = optionDefinitions.FirstOrDefault(o => string.Equals(o.Name, optionKind, StringComparison.InvariantCultureIgnoreCase)) ?? optionDefinitions.FirstOrDefault(o => o.Alias.Any(a => string.Equals(a, optionKind, StringComparison.InvariantCultureIgnoreCase)));
 
         if (optionDefinition == null) {
             Service.Chat.PrintError("Unknown Option");
@@ -251,19 +240,17 @@ public unsafe class SetOptionCommand : CommandTweak {
             OptionGroup.UiControl => Service.GameConfig.UiControl,
             _ => throw new ArgumentOutOfRangeException()
         };
-        
+
         var inputValue = optionValue.ToLowerInvariant();
 
-
         if (optionDefinition.AllowToggle && inputValue is "t" or "toggle") {
-
             switch (optionDefinition) {
                 case OptionDefinition<uint> i: {
                     if (!optionSection.TryGetProperties(optionDefinition.ID, out UIntConfigProperties properties) || properties == null) {
                         Plugin.Error(this, new Exception($"Failed to get option detail for {optionDefinition.Name}"), allowContinue: true);
                         return;
                     }
-                    
+
                     var toggleValue = optionSection.GetUInt(optionDefinition.ID);
                     toggleValue += 1;
 
@@ -279,7 +266,7 @@ public unsafe class SetOptionCommand : CommandTweak {
                 }
             }
         }
-        
+
         if (optionDefinition.ValueNames.Contains(inputValue)) {
             switch (optionDefinition) {
                 case OptionDefinition<uint> i: {

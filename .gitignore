@@ -5,3 +5,4 @@ Publish
 .vs/
 .idea/
 SimpleTweaksPlugin.json
+*.sln.DotSettings.user

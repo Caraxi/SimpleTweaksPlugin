@@ -43,7 +43,7 @@ public class DesynthesisSkill : TooltipTweaks.SubTweak {
     private const ushort Green = 45; //42;
     private uint maxDesynthLevel = 590;
 
-    public override void Setup() {
+    protected override void Setup() {
         foreach (var i in Service.Data.Excel.GetSheet<Item>()) {
             if (i.Desynth > 0 && i.LevelItem.Row > maxDesynthLevel) maxDesynthLevel = i.LevelItem.Row;
         }

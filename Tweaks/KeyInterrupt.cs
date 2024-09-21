@@ -1,11 +1,10 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Keys;
+using Dalamud.Interface.Colors;
 using ImGuiNET;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -17,13 +16,12 @@ using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
+[TweakName("Keyboard Gaming Mode")]
+[TweakAuthor("KazWolfe")]
+[TweakDescription("Block Alt-Tab and other keys to keep you in the game.")]
+[TweakAutoConfig]
 public partial class KeyInterrupt : Tweak {
-    public override string Name => "Keyboard Gaming Mode";
-    protected override string Author => "KazWolfe";
-    public override string Description => "Block Alt-Tab and other keys to keep you in the game.";
-    public override bool Experimental => true;
-
-    private class KeyInterruptConfig : TweakConfig {
+    public class Configs : TweakConfig {
         public bool InCombatOnly = true;
 
         public bool BlockAltTab = true;
@@ -92,7 +90,7 @@ public partial class KeyInterrupt : Tweak {
     [LibraryImport("user32.dll")]
     private static partial short GetAsyncKeyState(int vKey);
 
-    private KeyInterruptConfig _config = null!;
+    public Configs Config { get; private set; }
 
     private nint _keyboardHookId;
     private Thread? _thread;
@@ -103,14 +101,12 @@ public partial class KeyInterrupt : Tweak {
 
     private CancellationTokenSource? _cts;
 
-    public override void Setup() {
+    protected override void Setup() {
         AddChangelogNewTweak("1.8.3.0");
         base.Setup();
     }
 
     protected override void Enable() {
-        this._config = this.LoadConfig<KeyInterruptConfig>() ?? new KeyInterruptConfig();
-
         this._delegate = this.OnKeystroke;
         this._cts = new CancellationTokenSource();
 
@@ -150,7 +146,6 @@ public partial class KeyInterrupt : Tweak {
 
         this._cts?.Cancel();
         
-        this.SaveConfig(this._config);
         base.Disable();
     }
 
@@ -160,42 +155,52 @@ public partial class KeyInterrupt : Tweak {
         base.Dispose();
     }
 
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-        if (ImGui.Checkbox("Block Alt-Tab", ref this._config.BlockAltTab)) {
+    protected void DrawConfig(ref bool hasChanged) {
+        ImGui.TextColored(ImGuiColors.DalamudRed, "WARNING: ");
+        ImGui.SameLine();
+        ImGui.TextWrapped("This Tweak will allow FFXIV to read all keystrokes from your computer while it is " +
+                          "running. While care has been taken to ensure that this is done safely (and the game does " +
+                          "nothing when it's not in focus), this may trigger certain antivirus or security software. " +
+                          "In rare conditions, this Tweak may also cause input lag in other applications while FFXIV " +
+                          "is open.");
+        
+        ImGui.Spacing();
+        
+        if (ImGui.Checkbox("Block Alt-Tab", ref this.Config.BlockAltTab)) {
             hasChanged = true;
         }
 
-        if (ImGui.Checkbox("Block Windows Key", ref this._config.BlockWinKey)) {
+        if (ImGui.Checkbox("Block Windows Key", ref this.Config.BlockWinKey)) {
             hasChanged = true;
         }
 
-        if (ImGui.Checkbox("Block Ctrl-Esc", ref this._config.BlockCtrlEsc)) {
+        if (ImGui.Checkbox("Block Ctrl-Esc", ref this.Config.BlockCtrlEsc)) {
             hasChanged = true;
         }
 
         ImGui.Spacing();
 
-        if (ImGui.Checkbox("Only Apply In Combat", ref this._config.InCombatOnly)) {
+        if (ImGui.Checkbox("Only Apply In Combat", ref this.Config.InCombatOnly)) {
             hasChanged = true;
         }
-    };
+    }
 
     private nint OnKeystroke(int nCode, nint wParam, ref KeyInfoStruct lParam) {
         // DANGER: This method is *highly sensitive* to performance impacts! Keep it light!!
         // When this tweak runs, this method runs on *every keyboard event across the entire system*. As such, if this
         // takes too long, it *will* be noticeable to the user, including if/when they're not in the game. Yes, this
-        // does in fact turn FFXIV into a de facto key logger. We have to do this to capture certain keys.
+        // does in fact turn FFXIV into a de facto keylogger. We have to do this to capture certain keys.
 
         if (!TryFindGameWindow(out var handle)) goto ORIGINAL;
         if (GetForegroundWindow() != handle) goto ORIGINAL;
 
-        if (this._config.InCombatOnly && !Service.Condition[ConditionFlag.InCombat]) goto ORIGINAL;
+        if (this.Config.InCombatOnly && !Service.Condition[ConditionFlag.InCombat]) goto ORIGINAL;
 
         switch ((VirtualKey) lParam.vkCode) {
-            case VirtualKey.TAB when lParam.flags == KeyInfoFlags.LLKHF_ALTDOWN && this._config.BlockAltTab:
+            case VirtualKey.TAB when lParam.flags == KeyInfoFlags.LLKHF_ALTDOWN && this.Config.BlockAltTab:
             case VirtualKey.F4 when lParam.flags == KeyInfoFlags.LLKHF_ALTDOWN:
-            case VirtualKey.ESCAPE when IsKeyDown(VirtualKey.CONTROL) && this._config.BlockCtrlEsc:
-            case VirtualKey.LWIN or VirtualKey.RWIN when this._config.BlockWinKey:
+            case VirtualKey.ESCAPE when IsKeyDown(VirtualKey.CONTROL) && this.Config.BlockCtrlEsc:
+            case VirtualKey.LWIN or VirtualKey.RWIN when this.Config.BlockWinKey:
                 // Send this keystroke to the game directly so it can be used as a keybind 
                 SendMessageW(handle, lParam.flags == KeyInfoFlags.LLKHF_UP ? WM_KEYUP : WM_KEYDOWN, lParam.vkCode, 0);
                 return 1;

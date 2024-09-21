@@ -16,22 +16,21 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakReleaseVersion("1.9.4.0")]
 [TweakCategory(TweakCategory.UI)]
 public unsafe class CustomDefaultQuantity : Tweak {
-    
     public class ModeConfig {
         public bool Enable;
         public bool UsePercentage;
         public int Quantity = 1;
         public int Percentage = 50;
     }
-    
+
     public class Configs : TweakConfig {
         public ModeConfig Withdraw = new();
         public ModeConfig Deposit = new();
     }
-    
+
     public Configs Config { get; private set; }
-    
-    private void DrawConfig() {
+
+    protected void DrawConfig() {
         void DrawModeConfig(ModeConfig modeConfig, string label) {
             ImGui.Checkbox($"Apply to '{label}'", ref modeConfig.Enable);
             if (modeConfig.Enable) {
@@ -51,31 +50,31 @@ public unsafe class CustomDefaultQuantity : Tweak {
                 }
             }
         }
-        
+
         DrawModeConfig(Config.Withdraw, "Retrieve Quantity");
         DrawModeConfig(Config.Deposit, "Entrust Quantity");
     }
 
     private readonly string textWithdraw = Service.Data.GetExcelSheet<Addon>()?.GetRow(914)?.Text?.RawString ?? "Select amount to withdraw.";
     private readonly string textDeposit = Service.Data.GetExcelSheet<Addon>()?.GetRow(915)?.Text?.RawString ?? "Select amount to deposit.";
-    
+
     [AddonPreSetup("InputNumeric")]
     public void AddonSetup(AtkUnitBase* atkUnitBase) {
         if (atkUnitBase == null) return;
         if (atkUnitBase->AtkValuesCount < 7) return;
-        
+
         var textValue = atkUnitBase->AtkValues + 6;
         if (textValue->Type != ValueType.String) return;
         var text = Common.ReadSeString(textValue->String)?.TextValue;
         if (string.IsNullOrEmpty(text)) return;
-        
+
         var mode = text.Equals(textWithdraw) ? Config.Withdraw : text.Equals(textDeposit) ? Config.Deposit : null;
         if (mode is not { Enable: true }) return;
-        
+
         var minValue = atkUnitBase->AtkValues + 2;
         var maxValue = atkUnitBase->AtkValues + 3;
         var defaultValue = atkUnitBase->AtkValues + 4;
-        
+
         if (minValue->Type != ValueType.UInt || maxValue->Type != ValueType.UInt || defaultValue->Type != ValueType.UInt) return;
 
         var min = minValue->UInt;

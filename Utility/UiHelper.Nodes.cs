@@ -91,6 +91,17 @@ public static unsafe partial class UiHelper
         parent->UldManager.UpdateDrawNodeList();
     }
 
+    public static void LinkNodeAtEnd(AtkResNode* imageNode, AtkComponentBase* parent) {
+        var node = parent->UldManager.RootNode;
+        while (node->PrevSiblingNode != null) node = node->PrevSiblingNode;
+
+        node->PrevSiblingNode = imageNode;
+        imageNode->NextSiblingNode = node;
+        imageNode->ParentNode = node->ParentNode;
+        
+        parent->UldManager.UpdateDrawNodeList();
+    }
+
     public static void LinkNodeAtEnd<T>(T* atkNode, AtkResNode* parentNode, AtkUnitBase* addon) where T : unmanaged {
         var node = (AtkResNode*)atkNode;
         var endNode = parentNode->ChildNode;
@@ -116,13 +127,15 @@ public static unsafe partial class UiHelper
 
     public static void LinkNodeAfterTargetNode(AtkResNode* node, AtkComponentNode* parent, AtkResNode* targetNode)
     {
-        var prev = targetNode->PrevSiblingNode;
         node->ParentNode = targetNode->ParentNode;
 
-        targetNode->PrevSiblingNode = node;
-        prev->NextSiblingNode = node;
+        // We have a node that will be after us
+        if (targetNode->PrevSiblingNode is not null) {
+            targetNode->PrevSiblingNode->NextSiblingNode = node;
+            node->PrevSiblingNode = targetNode->PrevSiblingNode;
+        }
 
-        node->PrevSiblingNode = prev;
+        targetNode->PrevSiblingNode = node;
         node->NextSiblingNode = targetNode;
 
         parent->Component->UldManager.UpdateDrawNodeList();

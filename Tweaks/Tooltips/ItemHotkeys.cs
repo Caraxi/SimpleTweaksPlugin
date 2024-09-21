@@ -190,15 +190,13 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
         hasChanged |= ImGui.Checkbox(LocString("NoHelpText", "Don't show hotkey help on Tooltip"), ref Config.HideHotkeysOnTooltip);
     }
 
-    public override void Setup() {
+    protected override void Setup() {
         foreach (var t in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(ItemHotkey)))) {
             var h = (ItemHotkey)Activator.CreateInstance(t);
             if (h != null) {
                 Hotkeys.Add(h);
             }
         }
-
-        base.Setup();
     }
 
     protected override void Enable() {

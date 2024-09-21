@@ -1,32 +1,22 @@
 ﻿using System.Runtime.InteropServices;
+using Dalamud.Utility.Signatures;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks; 
+namespace SimpleTweaksPlugin.Tweaks;
 
+[TweakName("Increased zoom on character previews")]
+[TweakDescription("Allows zooming in near infinitely on character preview views, such as Try On and Examine.")]
 public unsafe class CharaViewIncreasedZoom : Tweak {
-    public override string Name => "Increased zoom on character previews.";
-    public override string Description => "Allows zooming in near infinitely on character preview views, such as Try On and Examine.";
-
     private delegate void CharaViewZoom(CharaView* charaView, float delta);
+
+    [TweakHook, Signature("48 8B 41 20 48 85 C0 74 4C", DetourName = nameof(ZoomDetour))]
     private HookWrapper<CharaViewZoom> charaViewZoomHook;
 
-    protected override void Enable() {
-        charaViewZoomHook ??= Common.Hook<CharaViewZoom>("48 8B 41 20 48 85 C0 74 4C", ZoomDetour);
-        charaViewZoomHook?.Enable();
-        base.Enable();
-    }
-
-
-    [StructLayout(LayoutKind.Explicit, Size = 0xC8)]
-    public struct CharaView {
-        [FieldOffset(0x20)] public Camera* Camera;
-        [FieldOffset(0xC4)] public float ZoomRatio;
-    }
-
-    [StructLayout(LayoutKind.Explicit, Size = 0xEF)]
-    public struct Camera {
-        [FieldOffset(0xB8)] public float Zoom;
+    [StructLayout(LayoutKind.Explicit)]
+    private struct Camera {
+        [FieldOffset(0x1F8)] public float Zoom;
         [FieldOffset(0xE0)] public Camera* AnotherCamera;
     }
 
@@ -34,20 +24,10 @@ public unsafe class CharaViewIncreasedZoom : Tweak {
     private const float MaxZoom = 5f;
 
     private void ZoomDetour(CharaView* charaView, float delta) {
-        if (charaView->Camera != null && charaView->Camera->AnotherCamera != null) {
-            charaView->Camera->AnotherCamera->Zoom += delta * (charaView->Camera->AnotherCamera->Zoom / 24);
-            if (charaView->Camera->AnotherCamera->Zoom < MinZoom) charaView->Camera->AnotherCamera->Zoom = MinZoom;
-            if (charaView->Camera->AnotherCamera->Zoom > MaxZoom) charaView->Camera->AnotherCamera->Zoom = MaxZoom;
-        }
-    }
-
-    protected override void Disable() {
-        charaViewZoomHook?.Disable();
-        base.Disable();
-    }
-
-    public override void Dispose() {
-        charaViewZoomHook?.Dispose();
-        base.Dispose();
+        var camera = (Camera*)charaView->Camera;
+        if (camera == null || camera->AnotherCamera == null) return;
+        camera->AnotherCamera->Zoom += delta * (camera->AnotherCamera->Zoom / 24);
+        if (camera->AnotherCamera->Zoom < MinZoom) camera->AnotherCamera->Zoom = MinZoom;
+        if (camera->AnotherCamera->Zoom > MaxZoom) camera->AnotherCamera->Zoom = MaxZoom;
     }
 }

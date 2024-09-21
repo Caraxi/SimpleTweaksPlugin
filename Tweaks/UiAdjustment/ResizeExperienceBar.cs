@@ -1,16 +1,16 @@
 ﻿using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
-using System;
 using SimpleTweaksPlugin.Events;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
+[TweakName("Change Size Experience Bar")]
+[TweakDescription("Changes the horizontal scale of the experience bar without affecting the text scale.")]
+[TweakAuthor("dlpoc")]
+[TweakAutoConfig]
+[TweakReleaseVersion("1.9.0.0")]
 public unsafe class ResizeExperienceBar : UiAdjustments.SubTweak
 {
-    public override string Name => "Change Size Experience Bar";
-    public override string Description => "Changes the horizontal scale of the experience bar without affecting the text scale.";
-    protected override string Author => "dlpoc";
-
     public class Configs : TweakConfig
     {
         [TweakConfigOption("Scale %", EditorSize = 140, IntMin = 0, IntMax = 100, IntType = TweakConfigOptionAttribute.IntEditType.Slider)]
@@ -21,31 +21,21 @@ public unsafe class ResizeExperienceBar : UiAdjustments.SubTweak
     }
 
     public Configs Config { get; private set; }
-    public override bool UseAutoConfig => true;
-    
 
-    protected override void Enable()
-    {
-        Config = LoadConfig<Configs>() ?? new Configs();
-        Common.FrameworkUpdate += OnFrameworkUpdate;
-        base.Enable();
-    }
-    
+    protected override void Enable() => UpdateAddon();
+    protected override void Disable() => RevertAddon();
+    protected override void ConfigChanged() => UpdateAddon();
+
     [AddonPostRequestedUpdate("_Exp")]
-    private void AfterAddonUpdate()
+    private void AfterAddonUpdate() => UpdateAddon();
+
+    private void RevertAddon()
     {
-        try
-        {
-            ResizeExpBar(Config.Scale);
-            AlignImageNodes(Config.LeftAlignIcons);
-        }
-        catch (Exception ex)
-        {
-            Plugin.Error(this, ex);
-        }
+        ResizeExpBar(100);
+        AlignImageNodes(false);
     }
 
-    private void OnFrameworkUpdate()
+    private void UpdateAddon()
     {
         ResizeExpBar(Config.Scale);
         AlignImageNodes(Config.LeftAlignIcons);
@@ -70,45 +60,36 @@ public unsafe class ResizeExperienceBar : UiAdjustments.SubTweak
         if (moonNode == null) return;
         if (leftAlign)
         {
-            moonNode->AtkResNode.SetPositionShort(-25, 17);
+            moonNode->SetPositionShort(-25, 17);
         }
         else
         {
-            moonNode->AtkResNode.SetPositionShort(482, 17);
+            moonNode->SetPositionShort(482, 17);
         }
 
         var daggerNode = unitBase->GetImageNodeById(2);
         if (daggerNode == null) return;
         if (leftAlign)
         {
-            if (!moonNode->AtkResNode.IsVisible)
+            if (!moonNode->IsVisible())
             {
-                daggerNode->AtkResNode.SetPositionShort(-25, 17);
+                daggerNode->SetPositionShort(-25, 17);
             }
             else
             {
-                daggerNode->AtkResNode.SetPositionShort(-49, 17);
+                daggerNode->SetPositionShort(-49, 17);
             }
         }
         else
         {
-            if (!moonNode->AtkResNode.IsVisible)
+            if (!moonNode->IsVisible())
             {
-                daggerNode->AtkResNode.SetPositionShort(482, 17);
+                daggerNode->SetPositionShort(482, 17);
             }
             else
             {
-                daggerNode->AtkResNode.SetPositionShort(506, 17);
+                daggerNode->SetPositionShort(506, 17);
             }
         }
-    }
-
-    protected override void Disable()
-    {
-        ResizeExpBar(100);
-        AlignImageNodes(false);
-        SaveConfig(Config);
-        Common.FrameworkUpdate -= OnFrameworkUpdate;
-        base.Disable();
     }
 }

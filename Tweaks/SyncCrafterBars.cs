@@ -3,17 +3,18 @@ using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using ImGuiNET;
-using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin.Tweaks; 
+namespace SimpleTweaksPlugin.Tweaks;
 
+[TweakName("Sync Crafter Bars")]
+[TweakDescription("Keeps DoH job bars in sync")]
+[TweakCategory(TweakCategory.QoL)]
+[TweakAutoConfig]
 public class SyncCrafterBars : Tweak {
-    public override string Name => "Sync Crafter Bars";
-    public override string Description => "Keeps DoH job bars in sync";
-
     public class Configs : TweakConfig {
         public bool[] StandardBars = new bool[10];
         public bool[] CrossBars = new bool[8];
@@ -22,27 +23,23 @@ public class SyncCrafterBars : Tweak {
     public Configs Config { get; private set; }
 
     public bool IsShared(int number, bool cross) {
-        var name = $"Hotbar{(cross ? "Cross" : "")}Common{number + 1:00}";
-        if (Service.GameConfig.UiConfig.TryGetBool(name, out var v)) {
-            return v;
-        }
-        return false;
+        return Service.GameConfig.UiConfig.TryGetBool($"Hotbar{(cross ? "Cross" : "")}Common{number + 1:00}", out var v) && v;
     }
-    
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
+
+    protected void DrawConfig() {
         if (Config.StandardBars.Length != 10) Config.StandardBars = new bool[10];
         if (Config.CrossBars.Length != 8) Config.CrossBars = new bool[8];
 
         ImGui.Text("Select bars to sync between jobs.");
         ImGui.Indent();
 
-        var columns = (int) (ImGuiExt.GetWindowContentRegionSize().X / (150f * ImGui.GetIO().FontGlobalScale));
+        var columns = (int)(ImGuiExt.GetWindowContentRegionSize().X / (150f * ImGui.GetIO().FontGlobalScale));
 
         ImGui.Columns(columns, "hotbarColumns", false);
         for (var i = 0; i < Config.StandardBars.Length; i++) {
             var isShared = IsShared(i, false);
             using (ImRaii.Disabled(isShared)) {
-                ImGui.Checkbox($"Hotbar {i+1}##syncBar_{i}", ref Config.StandardBars[i]);
+                ImGui.Checkbox($"Hotbar {i + 1}##syncBar_{i}", ref Config.StandardBars[i]);
             }
 
             if (isShared && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) {
@@ -55,37 +52,38 @@ public class SyncCrafterBars : Tweak {
                     ImGuiComponents.HelpMarker("Shared Hotbars will not be synced");
                 }
             }
-            
+
             ImGui.NextColumn();
         }
+
         ImGui.Columns(1);
         ImGui.Columns(columns, "crosshotbarColumns", false);
         for (var i = 0; i < Config.CrossBars.Length; i++) {
             var isShared = IsShared(i, true);
             using (ImRaii.Disabled(isShared)) {
-                ImGui.Checkbox($"Cross Hotbar {i+1}##syncCrossBar_{i}", ref Config.CrossBars[i]);
+                ImGui.Checkbox($"Cross Hotbar {i + 1}##syncCrossBar_{i}", ref Config.CrossBars[i]);
             }
-            
+
             if (isShared && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) {
                 ImGui.SetTooltip("Shared Cross Hotbars will not be synced");
             }
-            
+
             if (isShared && Config.CrossBars[i]) {
                 using (ImRaii.PushColor(ImGuiCol.TextDisabled, ImGuiColors.DalamudYellow)) {
                     ImGui.SameLine();
                     ImGuiComponents.HelpMarker("Shared Cross Hotbars will not be synced");
                 }
             }
-            
+
             ImGui.NextColumn();
         }
+
         ImGui.Columns(1);
         ImGui.Unindent();
-    };
+    }
 
-    private readonly uint[] crafterJobs = { 8, 9, 10, 11, 12, 13, 14, 15 };
+    private readonly uint[] crafterJobs = [8, 9, 10, 11, 12, 13, 14, 15];
     private uint currentClassJob;
-    private ExcelSheet<ClassJob> classJobSheet;
 
     public void ExecuteCommand(string command) {
         SimpleLog.Log($"Execute Command: {command}");
@@ -96,6 +94,11 @@ public class SyncCrafterBars : Tweak {
         if (Service.ClientState.LocalPlayer == null) return;
         if (Service.ClientState.IsPvP) return;
         if (!crafterJobs.Contains(copyFrom)) return;
+        var classJobSheet = Service.Data.GetExcelSheet<ClassJob>();
+        if (classJobSheet == null) {
+            SimpleLog.Error("ClassJob is null?");
+            return;
+        }
         var copyJob = classJobSheet.GetRow(copyFrom);
         if (copyJob == null) return;
 
@@ -107,38 +110,21 @@ public class SyncCrafterBars : Tweak {
             for (var i = 0; i < 10; i++) {
                 if (IsShared(i, false)) continue;
                 if (Config.StandardBars[i]) {
-                    ExecuteCommand($"/hotbar copy {copyJob.Abbreviation.RawString} {i+1} {job.Abbreviation.RawString} {i+1}");
+                    ExecuteCommand($"/hotbar copy {copyJob.Abbreviation.RawString} {i + 1} {job.Abbreviation.RawString} {i + 1}");
                 }
             }
+
             for (var i = 0; i < 8; i++) {
                 if (IsShared(i, true)) continue;
                 if (Config.CrossBars[i]) {
-                    ExecuteCommand($"/crosshotbar copy {copyJob.Abbreviation.RawString} {i+1} {job.Abbreviation.RawString} {i+1}");
+                    ExecuteCommand($"/crosshotbar copy {copyJob.Abbreviation.RawString} {i + 1} {job.Abbreviation.RawString} {i + 1}");
                 }
             }
         }
     }
 
-    protected override void Enable() {
-        classJobSheet = Service.Data.Excel.GetSheet<ClassJob>();
-        if (classJobSheet == null) {
-            SimpleLog.Error("ClassJob sheet is null");
-            Ready = false;
-            return;
-        }
-
-        Common.FrameworkUpdate += FrameworkOnUpdate;
-
-        Config = LoadConfig<Configs>() ?? new Configs();
-        base.Enable();
-    }
-
-    private byte t = 0;
-
+    [FrameworkUpdate(NthTick = 20)]
     private void FrameworkOnUpdate() {
-        if (t++ < 20) return;
-        t = 0;
-
         if (Service.ClientState.LocalPlayer == null) {
             currentClassJob = 0;
             return;
@@ -148,16 +134,10 @@ public class SyncCrafterBars : Tweak {
         if (cj == currentClassJob) return;
 
         if (currentClassJob != 0 && crafterJobs.Contains(currentClassJob)) {
-            SimpleLog.Log($"Switched Job from {currentClassJob}");
+            SimpleLog.Debug($"Switched Job from {currentClassJob}");
             PerformCrafterBarSync(currentClassJob);
         }
 
         currentClassJob = cj;
-    }
-
-    protected override void Disable() {
-        Common.FrameworkUpdate -= FrameworkOnUpdate;
-        SaveConfig(Config);
-        base.Disable();
     }
 }

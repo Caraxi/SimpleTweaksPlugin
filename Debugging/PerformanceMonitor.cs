@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Dalamud.Utility;
 using ImGuiNET;
 
 namespace SimpleTweaksPlugin.Debugging; 
@@ -51,6 +52,8 @@ public class PerformanceMonitor : DebugHelper {
         
         ImGui.Text($"{text}");
     }
+
+    private string searchText = string.Empty;
     
     public override void Draw() {
         ImGui.Separator();
@@ -66,9 +69,14 @@ public class PerformanceMonitor : DebugHelper {
 
         Begin("PerformanceMonitor.Draw");
 
-        if (ImGui.SmallButton("Reset All")) {
+        if (ImGui.Button("Reset All")) {
             ClearAll();
         }
+        
+        ImGui.SameLine();
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+        ImGui.InputTextWithHint("##search", "Search...", ref searchText, 128);
+        
 
         if (ImGui.BeginTable("performanceTable", 8, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollX)) {
             ImGui.TableSetupColumn("Reset");
@@ -83,6 +91,7 @@ public class PerformanceMonitor : DebugHelper {
             ImGui.TableHeadersRow();
 
             foreach (var log in Logs) {
+                if (!searchText.IsNullOrWhitespace() && !log.Key.Contains(searchText, StringComparison.InvariantCultureIgnoreCase)) continue;
                 if (log.Value.Count == 0) continue;
                 ImGui.TableNextColumn();
                 if (ImGui.SmallButton($"Reset##{log.Key}")) log.Value.Clear();

@@ -20,7 +20,7 @@ public unsafe class SimplifiedClassJobDisplay : TooltipTweaks.SubTweak {
 
     private string TooltipClassJobNameDisplay(ClassJob cj) => Service.ClientState.ClientLanguage == ClientLanguage.Japanese ? cj.Name.RawString : cj.Abbreviation.RawString;
 
-    public override void Setup() {
+    protected override void Setup() {
         abbrToClassJob = Service.Data.Excel.GetSheet<ClassJob>()!.Where(cj => cj.ClassJobCategory.Row != 0).ToDictionary(TooltipClassJobNameDisplay);
         replaceGroup = new Dictionary<string, (ClassJob, ClassJob)>();
         foreach (var cj in abbrToClassJob.Values) {
@@ -28,8 +28,6 @@ public unsafe class SimplifiedClassJobDisplay : TooltipTweaks.SubTweak {
                 replaceGroup.Add($"{TooltipClassJobNameDisplay(cj.ClassJobParent.Value)} {TooltipClassJobNameDisplay(cj)}", (cj.ClassJobParent.Value!, cj));
             }
         }
-
-        base.Setup();
     }
 
     public override void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {

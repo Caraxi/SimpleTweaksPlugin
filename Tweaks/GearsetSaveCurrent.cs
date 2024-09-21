@@ -25,8 +25,7 @@ public unsafe class GearsetSaveCurrent : CommandTweak {
             Service.Chat.PrintError("Active gearset class does not match current class.");
             return;
         }
-        
+
         module->UpdateGearset(module->CurrentGearsetIndex);
     }
 }
-

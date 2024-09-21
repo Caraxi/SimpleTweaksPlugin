@@ -1,20 +1,21 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
+using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
+[TweakName("Equip Recommended Command")]
+[TweakDescription("Adds a command to equip recommended gear.")]
 public unsafe class RecommendEquipCommand : CommandTweak {
-    public override string Name => "Equip Recommended Command";
-    public override string Description => $"Adds /{Command} to equip recommended gear.";
     protected override string HelpMessage => "Equips recommended gear.";
     protected override string Command => "equiprecommended";
-    private static RecommendEquipModule* Module => Framework.Instance()->GetUiModule()->GetRecommendEquipModule();
-    
+    private static RecommendEquipModule* Module => Framework.Instance()->GetUIModule()->GetRecommendEquipModule();
+
     protected override void OnCommand(string args) {
         if (Module == null) return;
-        Module->SetupFromPlayerState();
+        Module->SetupForClassJob((byte)(Service.ClientState.LocalPlayer?.ClassJob.Id ?? 0));
         Common.FrameworkUpdate += DoEquip;
     }
 
@@ -23,11 +24,11 @@ public unsafe class RecommendEquipCommand : CommandTweak {
             Common.FrameworkUpdate -= DoEquip;
             return;
         }
+
         Module->EquipRecommendedGear();
     }
 
-    protected override void Disable() {
+    protected override void DisableCommand() {
         Common.FrameworkUpdate -= DoEquip;
-        base.Disable();
     }
 }

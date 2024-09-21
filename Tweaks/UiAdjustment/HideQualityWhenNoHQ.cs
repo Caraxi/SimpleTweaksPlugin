@@ -2,20 +2,16 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Events;
+using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
+[TweakName("Hide quality bar while crafting NO-HQ item.")]
+[TweakDescription("Hides the quality bar in the Synthesis window while crafting an item that can not be HQ or Collectable.")]
+[TweakReleaseVersion("1.8.4.0")]
+[Changelog("1.8.9.0", "Show quality bar for expert recipes.")]
 public unsafe class HideQualityWhenNoHQ : UiAdjustments.SubTweak {
-    public override string Name => "Hide quality bar while crafting NO-HQ item.";
-    public override string Description => "Hides the quality bar in the Synthesis window while crafting an item that can not be HQ or Collectable.";
-
-    public override void Setup() {
-        AddChangelogNewTweak("1.8.4.0");
-        AddChangelog("1.8.9.0", "Show quality bar for expert recipes.");
-        base.Setup();
-    }
-    
     [AddonPostSetup("Synthesis")]
     private void CommonOnAddonSetup(AtkUnitBase* addon) {
         var agent = AgentRecipeNote.Instance();
@@ -28,13 +24,9 @@ public unsafe class HideQualityWhenNoHQ : UiAdjustments.SubTweak {
     }
 
     protected override void Disable() {
-        // Immediately reshow
-        var addon = Common.GetUnitBase("Synthesis");
-        if (addon != null) {
+        if (Common.GetUnitBase("Synthesis", out var addon)) {
             var qualityNode = addon->GetNodeById(58);
             if (qualityNode != null) qualityNode->ToggleVisibility(true);
         }
-
-        base.Disable();
     }
 }

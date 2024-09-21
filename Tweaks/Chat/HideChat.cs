@@ -1,68 +1,45 @@
-﻿using Dalamud.Game.Command;
-using FFXIVClientStructs.FFXIV.Component.GUI;
+﻿using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Utility;
 using System;
+using SimpleTweaksPlugin.Events;
+using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
+using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks.Chat;
 
-public unsafe class HideChat : ChatTweaks.SubTweak
-{
-    public override string Name => "Hide Chat";
-    public override string Description => $"Provides commands to hide the chat. ({Command} show|hide|toggle)";
-
-    protected override string Author => "@dookssh @VariableVixen";
-
-    // Note that since this is a chat SubTweak, we cannot inherit from CommandTweak
-    private string Command = "/chatvis";
-    private string HelpMessage => $"[{Plugin.Name} {Name}";
-    private bool ShowInHelp = true;
+[TweakName("Hide Chat")]
+[TweakDescription("Provides commands to hide the chat. (/$[CustomOrDefaultCommand] show|hide|toggle)")]
+[TweakAuthor("@dookssh @VariableVixen")]
+[TweakKey($"{nameof(ChatTweaks)}@{nameof(HideChat)}")]
+[TweakCategory(TweakCategory.Chat)]
+public unsafe class HideChat : CommandTweak {
+    protected override string Command => "/chatvis";
 
     // If the plugin is failing, most likely you will need to update these IDs
-    private readonly uint TextInputNodeID = 5;
-    private readonly uint TextInputCursorID = 2;
-    private readonly string[] ChatLogNodeNames = { "ChatLog", "ChatLogPanel_0", "ChatLogPanel_1", "ChatLogPanel_2", "ChatLogPanel_3" };
+    private const uint TextInputNodeID = 5;
+    private const uint TextInputCursorID = 2;
+    private readonly string[] chatLogNodeNames = ["ChatLog", "ChatLogPanel_0", "ChatLogPanel_1", "ChatLogPanel_2", "ChatLogPanel_3"];
 
-    protected override void Enable()
-    {
-        Service.Commands.AddHandler(Command, new CommandInfo(OnCommand)
-        {
-            HelpMessage = HelpMessage,
-            ShowInHelp = ShowInHelp
-        });
-
-        Common.FrameworkUpdate += FrameworkUpdate;
-        base.Enable();
-    }
-
-    protected override void Disable()
-    {
-        Service.Commands.RemoveHandler(Command);
-        Common.FrameworkUpdate -= FrameworkUpdate;
+    protected override void DisableCommand() {
         SetVisibility(true);
-        base.Disable();
     }
 
-    private void FrameworkUpdate()
-    {
-        try
-        {
+    [FrameworkUpdate]
+    private void FrameworkUpdate() {
+        try {
             // Always show chat when actively typing
             var inputCursorNode = GetChatInputCursorNode();
             if (inputCursorNode == null) return;
-            if (inputCursorNode->IsVisible) SetVisibility(true);
-        }
-        catch (Exception ex)
-        {
+            if (inputCursorNode->IsVisible()) SetVisibility(true);
+        } catch (Exception ex) {
             SimpleLog.Error(ex);
         }
     }
 
-    private void OnCommand(string command, string args)
-    {
+    protected override void OnCommand(string args) {
         var argList = args.ToLower().Split(" ");
 
-        switch (argList[0])
-        {
+        switch (argList[0]) {
             case "show":
                 SetVisibility(true);
                 break;
@@ -73,18 +50,14 @@ public unsafe class HideChat : ChatTweaks.SubTweak
 
             case "toggle":
                 var baseNode = Common.GetUnitBase("ChatLog");
-                var isVisible = baseNode->RootNode->IsVisible;
+                var isVisible = baseNode->RootNode->IsVisible();
 
                 SetVisibility(!isVisible);
-                break;
-
-            default:
                 break;
         }
     }
 
-    private AtkResNode* GetChatInputCursorNode()
-    {
+    private AtkResNode* GetChatInputCursorNode() {
         var baseNode = Common.GetUnitBase("ChatLog");
         if (baseNode == null) return null;
 
@@ -93,19 +66,14 @@ public unsafe class HideChat : ChatTweaks.SubTweak
 
         var textInputBaseNode = textInputComponentNode->Component;
         if (textInputBaseNode == null) return null;
-
-        AtkUldManager uldManager = textInputBaseNode->UldManager;
-
-        return Common.GetNodeByID(&uldManager, TextInputCursorID);
+        return Common.GetNodeByID(&textInputBaseNode->UldManager, TextInputCursorID);
     }
 
-    private void SetVisibility(bool visibility)
-    {
-        foreach (string name in ChatLogNodeNames)
-        {
-            AtkUnitBase* node = Common.GetUnitBase(name);
-            if (node == null) continue;
-            node->RootNode->ToggleVisibility(visibility);
-        };
+    private void SetVisibility(bool visibility) {
+        foreach (string name in chatLogNodeNames) {
+            var unitBase = Common.GetUnitBase(name);
+            if (unitBase == null || unitBase->RootNode == null) continue;
+            unitBase->RootNode->ToggleVisibility(visibility);
+        }
     }
 }

@@ -8,20 +8,20 @@ using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using ImGuiNET;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
+using SimpleTweaksPlugin.TweakSystem;
+
 namespace SimpleTweaksPlugin.Tweaks; 
 
+[TweakName("Character Directory Command")]
+[TweakDescription("Adds a command to open the directory where client side character data is stored.")]
 public class ChrDirCommand : CommandTweak {
-    public override string Name => "Character Directory Command";
-    public override string Description => "Adds a command to open the directory where client side character data is stored.";
     protected override string Command => "chrdir";
     protected override string HelpMessage => "Print your character save directory to chat. '/chrdir open' to open the directory in explorer.";
 
     private DalamudLinkPayload linkPayload;
 
-    protected override void Enable() {
-        if (Enabled) return;
+    protected override void EnableCommand() {
         linkPayload = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.OpenFolderLink, OpenFolder);
-        base.Enable();
     }
 
     private void OpenFolder(uint arg1, SeString arg2) {
@@ -30,7 +30,7 @@ public class ChrDirCommand : CommandTweak {
     }
 
     protected override unsafe void OnCommand(string arguments) {
-        var saveDir = Path.Combine(Framework.Instance()->UserPath, $"FFXIV_CHR{Service.ClientState.LocalContentId:X16}").Replace('/', '\\');
+        var saveDir = Path.Combine(Framework.Instance()->UserPathString, $"FFXIV_CHR{Service.ClientState.LocalContentId:X16}").Replace('/', '\\');
         if (arguments == "open") {
             Process.Start("explorer.exe", saveDir);
             return;
@@ -48,13 +48,12 @@ public class ChrDirCommand : CommandTweak {
         });
     }
 
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool _) => {
-        ImGui.TextDisabled($"/{Command}");
-        ImGui.TextDisabled($"/{Command} open");
-    };
+    protected void DrawConfig() {
+        ImGui.TextDisabled($"{CustomOrDefaultCommand}");
+        ImGui.TextDisabled($"{CustomOrDefaultCommand} open");
+    }
 
-    protected override void Disable() {
+    protected override void DisableCommand() {
         PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.OpenFolderLink);
-        base.Disable();
     }
 }

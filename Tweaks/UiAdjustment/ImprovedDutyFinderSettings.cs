@@ -4,8 +4,8 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Utility;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Events;
@@ -36,13 +36,13 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         private SimpleEvent eventManager;
 
         private void HideTooltip(AtkUnitBase* unitBase) {
-            AtkStage.GetSingleton()->TooltipManager.HideTooltip(unitBase->ID);
+            AtkStage.Instance()->TooltipManager.HideTooltip(unitBase->Id);
         }
 
         private void ShowTooltip(AtkUnitBase* unitBase, AtkResNode* node) {
             var tooltipId = GetTooltip();
             var tooltip = Service.Data.GetExcelSheet<Addon>()?.GetRow(tooltipId)?.Text.ToDalamudString()?.TextValue ?? $"{Setting}";
-            AtkStage.GetSingleton()->TooltipManager.ShowTooltip(unitBase->ID, node, tooltip);
+            AtkStage.Instance()->TooltipManager.ShowTooltip(unitBase->Id, node, tooltip);
         }
 
         public SimpleEvent Event {
@@ -128,9 +128,9 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         var container = IMemorySpace.GetUISpace()->Create<AtkResNode>();
         container->SetWidth(defaultContainer->GetWidth());
         container->SetHeight(defaultContainer->GetHeight());
-        container->SetPositionFloat(defaultContainer->GetX(), defaultContainer->GetY());
+        container->SetPositionFloat(defaultContainer->GetXFloat(), defaultContainer->GetYFloat());
         container->SetScale(1, 1);
-        container->NodeID = CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Container");
+        container->NodeId = CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Container");
         container->Type = NodeType.Res;
         container->ToggleVisibility(true);
         UiHelper.LinkNodeAfterTargetNode(container, unitBase, defaultContainer);
@@ -144,7 +144,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
             var imgNode = UiHelper.MakeImageNode(CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Icon_{settingDetail.Setting}"), new UiHelper.PartInfo(0, 0, 24, 24));
             UiHelper.LinkNodeAtEnd(imgNode, container, unitBase);
 
-            imgNode->AtkResNode.SetPositionFloat(basedOn->GetX(), basedOn->GetY());
+            imgNode->AtkResNode.SetPositionFloat(basedOn->GetXFloat(), basedOn->GetYFloat());
             imgNode->AtkResNode.SetWidth(basedOn->GetWidth());
             imgNode->AtkResNode.SetHeight(basedOn->GetHeight());
 
@@ -290,7 +290,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         LimitedLevelingRoulette = 11,
     }
     
-    [Signature("E8 ?? ?? ?? ?? 48 8B 07 33 F6")]
+    [Signature("E8 ?? ?? ?? ?? 49 8B 06 33 ED")]
     private static delegate* unmanaged<byte*, nint, void> _setContentsFinderSettings;
 
     private static byte GetCurrentSettingValue(DutyFinderSetting dutyFinderSetting) {
@@ -314,8 +314,8 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
 
     private void ToggleSetting(DutyFinderSetting setting) {
         // block setting change if queued for a duty
-        if (Service.Condition[ConditionFlag.BoundToDuty97]) {
-            var condition = Service.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Condition>()?.GetRow((uint)ConditionFlag.BoundToDuty97)?.LogMessage?.Value?.Text?.ToDalamudString();
+        if (Service.Condition[ConditionFlag.InDutyQueue]) {
+            var condition = Service.Data.GetExcelSheet<Condition>()?.GetRow((uint)ConditionFlag.InDutyQueue)?.LogMessage?.Value?.Text?.ToDalamudString();
             Service.Toasts.ShowError(condition ?? "Unable to execute command while bound by duty.");
             return;
         }
@@ -348,7 +348,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         }
 
         fixed (byte* arrayPtr = array) {
-            _setContentsFinderSettings(arrayPtr, (nint)Framework.Instance()->GetUiModule());
+            _setContentsFinderSettings(arrayPtr, (nint)UIModule.Instance());
         }
     }
 

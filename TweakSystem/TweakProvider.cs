@@ -41,8 +41,8 @@ public class TweakProvider : IDisposable {
                     }
 
                     if (tweak is not IDisabledTweak) {
-                        tweak.Setup();
-                        if (tweak.Ready && (SimpleTweaksPlugin.Plugin.PluginConfig.EnabledTweaks.Contains(t.Name) || tweak is SubTweakManager {AlwaysEnabled: true})) {
+                        tweak.SetupInternal();
+                        if (tweak.Ready && (SimpleTweaksPlugin.Plugin.PluginConfig.EnabledTweaks.Contains(tweak.Key) || tweak is SubTweakManager {AlwaysEnabled: true})) {
                             SimpleLog.Debug($"Enable: {t.Name}");
                             try {
                                 tweak.InternalEnable();

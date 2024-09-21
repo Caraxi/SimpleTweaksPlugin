@@ -3,6 +3,7 @@ using System;
 using System.Numerics;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Events;
@@ -15,6 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Displays an icon next to interruptable castbars.")]
 [TweakAuthor("MidoriKami")]
 [TweakReleaseVersion("1.8.3.0")]
+[TweakAutoConfig]
 public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
     private uint InterjectImageNodeId => CustomNodes.Get(this, "Interject");
     private uint HeadGrazeImageNodeId => CustomNodes.Get(this, "HeadGraze");
@@ -28,36 +30,26 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
     private enum NodePosition {
         Left,
         Right,
-        TopLeft
+        TopLeft,
     }
 
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool configChanged) => {
+    private void DrawConfig() {
         ImGui.TextUnformatted("Select which direction relative to Cast Bar to show interrupt icon");
         
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 3.0f);
-        if (ImGui.BeginCombo("Direction", TweakConfig.Position.ToString())) {
-            foreach (var direction in Enum.GetValues<NodePosition>()) {
-                if (ImGui.Selectable(direction.ToString(), TweakConfig.Position == direction)) {
-                    TweakConfig.Position = direction;
-                    configChanged = true;
-                }
+        using var combo = ImRaii.Combo("Direction", TweakConfig.Position.ToString());
+        if (!combo) return;
+        
+        foreach (var direction in Enum.GetValues<NodePosition>()) {
+            if (ImGui.Selectable(direction.ToString(), TweakConfig.Position == direction)) {
+                TweakConfig.Position = direction;
+                SaveConfig(TweakConfig);
+                FreeAllNodes();
             }
-            
-            ImGui.EndCombo();
         }
-    };
-
-    protected override void ConfigChanged() {
-        SaveConfig(TweakConfig);
-        FreeAllNodes();
-    }
-
-    protected override void Enable() {
-        TweakConfig = LoadConfig<Config>() ?? new Config();
     }
 
     protected override void Disable() {
-        SaveConfig(TweakConfig);
         FreeAllNodes();
     }
 
@@ -80,12 +72,12 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
         }
     }
 
-    private void UpdateAddon(AtkUnitBase* addon, uint interruptNodeId, uint positioningNodeId, GameObject? target) {
+    private void UpdateAddon(AtkUnitBase* addon, uint interruptNodeId, uint positioningNodeId, IGameObject? target) {
         var interruptNode = Common.GetNodeByID<AtkImageNode>(&addon->UldManager, interruptNodeId);
         var castBarNode = Common.GetNodeByID(&addon->UldManager, positioningNodeId);
         if (interruptNode is not null && castBarNode is not null) {
             TryMakeNodes(addon, castBarNode);
-            UpdateIcons(interruptNode->AtkResNode.IsVisible, addon, target);
+            UpdateIcons(interruptNode->IsVisible(), addon, target);
         }
     }
     
@@ -97,42 +89,42 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
         if(headGraze is null) MakeImageNode(parent, HeadGrazeImageNodeId, 848, positionNode);
     }
     
-    private void UpdateIcons(bool castBarVisible, AtkUnitBase* parent, GameObject? target) {
+    private void UpdateIcons(bool castBarVisible, AtkUnitBase* parent, IGameObject? target) {
         var interject = Common.GetNodeByID<AtkImageNode>(&parent->UldManager, InterjectImageNodeId);
         var headGraze = Common.GetNodeByID<AtkImageNode>(&parent->UldManager, HeadGrazeImageNodeId);
     
         if (interject is null || headGraze is null) return;
         
-        if (target as BattleChara is { IsCasting: true, IsCastInterruptible: true } && castBarVisible) {
+        if (target as IBattleChara is { IsCasting: true, IsCastInterruptible: true } && castBarVisible) {
             switch (Service.ClientState.LocalPlayer) {
                 case { ClassJob.GameData.Role: 1, Level: >= 18 }: // Tank
-                    interject->AtkResNode.ToggleVisibility(true);
-                    headGraze->AtkResNode.ToggleVisibility(false);
+                    interject->ToggleVisibility(true);
+                    headGraze->ToggleVisibility(false);
                     break;
     
                 case { ClassJob.GameData.UIPriority: >= 30 and <= 39, Level: >= 24 }: // Physical Ranged
-                    interject->AtkResNode.ToggleVisibility(false);
-                    headGraze->AtkResNode.ToggleVisibility(true);
+                    interject->ToggleVisibility(false);
+                    headGraze->ToggleVisibility(true);
                     break;
             }
         }
         else {
-            interject->AtkResNode.ToggleVisibility(false);
-            headGraze->AtkResNode.ToggleVisibility(false);
+            interject->ToggleVisibility(false);
+            headGraze->ToggleVisibility(false);
         }
     }
     
     private void MakeImageNode(AtkUnitBase* parent, uint nodeId, int icon, AtkResNode* positioningNode) {
         var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(0, 0, 36, 36));
-        imageNode->AtkResNode.NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorTop | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents;
+        imageNode->NodeFlags = NodeFlags.AnchorLeft | NodeFlags.AnchorTop | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents;
         imageNode->WrapMode = 1;
         imageNode->Flags = (byte) ImageNodeFlags.AutoFit;
         
-        imageNode->LoadIconTexture(icon, 0);
-        imageNode->AtkResNode.ToggleVisibility(true);
+        imageNode->LoadIconTexture((uint)icon, 0);
+        imageNode->ToggleVisibility(true);
 
-        imageNode->AtkResNode.SetWidth(36);
-        imageNode->AtkResNode.SetHeight(36);
+        imageNode->SetWidth(36);
+        imageNode->SetHeight(36);
 
         var position = TweakConfig.Position switch {
             NodePosition.Left => new Vector2(positioningNode->X - 36, positioningNode->Y - 8),
@@ -141,7 +133,7 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
             _ => Vector2.Zero,
         };
         
-        imageNode->AtkResNode.SetPositionFloat(position.X, position.Y);
+        imageNode->SetPositionFloat(position.X, position.Y);
         
         UiHelper.LinkNodeAtEnd((AtkResNode*) imageNode, parent);
     }

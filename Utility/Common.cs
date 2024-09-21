@@ -22,17 +22,20 @@ using FFXIVClientStructs.Interop;
 using SimpleTweaksPlugin.Debugging;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
-namespace SimpleTweaksPlugin.Utility; 
+namespace SimpleTweaksPlugin.Utility;
 
 public unsafe class Common {
     [PluginService] private static IGameInteropProvider ImNotGonnaCallItThat { get; set; } = null!;
-    
+
     private static IntPtr LastCommandAddress;
-    
+
     public static Utf8String* LastCommand { get; private set; }
-    
+
+    public static uint ClientStructsVersion => CsVersion.Value;
+    private static readonly Lazy<uint> CsVersion = new(() => uint.TryParse(FFXIVClientStructs.ThisAssembly.Git.Commits, out var v) ? v : 0);
+
     public static event Action FrameworkUpdate;
-    
+
     public static void InvokeFrameworkUpdate() {
         if (!PerformanceMonitor.DoFrameworkMonitor) {
             FrameworkUpdate?.Invoke();
@@ -46,12 +49,12 @@ public unsafe class Common {
             PerformanceMonitor.End($"[FrameworkUpdate]{updateDelegate.Target?.GetType().Name}.{updateDelegate.Method.Name}");
         }
     }
-    public static void* ThrowawayOut { get; private set; } = (void*) Marshal.AllocHGlobal(1024);
-    
-    
+
+    public static void* ThrowawayOut { get; private set; } = (void*)Marshal.AllocHGlobal(1024);
+
     public static void Setup() {
         LastCommandAddress = Service.SigScanner.GetStaticAddressFromSig("4C 8D 05 ?? ?? ?? ?? 41 B1 01 49 8B D4 E8 ?? ?? ?? ?? 83 EB 06");
-        LastCommand = (Utf8String*) (LastCommandAddress);
+        LastCommand = (Utf8String*)(LastCommandAddress);
 
         updateCursorHook = Hook<AtkModuleUpdateCursor>("48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 20 4C 8B F1 E8 ?? ?? ?? ?? 49 8B CE", UpdateCursorDetour);
         updateCursorHook?.Enable();
@@ -59,44 +62,43 @@ public unsafe class Common {
 
     public static UIModule* UIModule => Framework.Instance()->GetUIModule();
 
-
     public static bool GetUnitBase(string name, out AtkUnitBase* unitBase, int index = 1) {
         unitBase = GetUnitBase(name, index);
         return unitBase != null;
     }
-    
+
     public static AtkUnitBase* GetUnitBase(string name, int index = 1) {
-        return (AtkUnitBase*) Service.GameGui.GetAddonByName(name, index);
+        return (AtkUnitBase*)Service.GameGui.GetAddonByName(name, index);
     }
 
     public static T* GetUnitBase<T>(string name = null, int index = 1) where T : unmanaged {
         if (string.IsNullOrEmpty(name)) {
-            var attr = (Addon) typeof(T).GetCustomAttribute(typeof(Addon));
+            var attr = (Addon)typeof(T).GetCustomAttribute(typeof(Addon));
             if (attr != null) {
                 name = attr.AddonIdentifiers.FirstOrDefault();
             }
         }
 
         if (string.IsNullOrEmpty(name)) return null;
-            
-        return (T*) Service.GameGui.GetAddonByName(name, index);
+
+        return (T*)Service.GameGui.GetAddonByName(name, index);
     }
 
-    public static bool GetUnitBase<T>(out T* unitBase, string name=null, int index = 1) where T : unmanaged {
+    public static bool GetUnitBase<T>(out T* unitBase, string name = null, int index = 1) where T : unmanaged {
         unitBase = null;
         if (string.IsNullOrEmpty(name)) {
-            var attr = (Addon) typeof(T).GetCustomAttribute(typeof(Addon));
+            var attr = (Addon)typeof(T).GetCustomAttribute(typeof(Addon));
             if (attr != null) {
                 name = attr.AddonIdentifiers.FirstOrDefault();
             }
         }
 
         if (string.IsNullOrEmpty(name)) return false;
-            
-        unitBase = (T*) Service.GameGui.GetAddonByName(name, index);
+
+        unitBase = (T*)Service.GameGui.GetAddonByName(name, index);
         return unitBase != null;
     }
-    
+
     public static void WriteSeString(byte** startPtr, IntPtr alloc, SeString seString) {
         if (startPtr == null) return;
         var start = *(startPtr);
@@ -120,8 +122,10 @@ public unsafe class Common {
             if (b == 0) {
                 break;
             }
+
             offset += 1;
         }
+
         var bytes = new byte[offset];
         Marshal.Copy(new IntPtr(ptr), bytes, 0, offset);
         return SeString.Parse(bytes);
@@ -132,6 +136,7 @@ public unsafe class Common {
         for (var i = 0; i < bytes.Length; i++) {
             *(dst + i) = bytes[i];
         }
+
         *(dst + bytes.Length) = 0;
     }
 
@@ -145,6 +150,7 @@ public unsafe class Common {
             *(xivString.StringPtr + i) = bytes[i];
             xivString.BufUsed++;
         }
+
         *(xivString.StringPtr + i) = 0;
     }
 
@@ -157,7 +163,7 @@ public unsafe class Common {
     }
 
     public static HookWrapper<T> Hook<T>(void* address, T detour) where T : Delegate {
-        var h =  ImNotGonnaCallItThat.HookFromAddress(new nint(address), detour);
+        var h = ImNotGonnaCallItThat.HookFromAddress(new nint(address), detour);
         var wh = new HookWrapper<T>(h);
         HookList.Add(wh);
         return wh;
@@ -176,15 +182,15 @@ public unsafe class Common {
         HookList.Add(wh);
         return wh;
     }
-    
+
     public static List<IHookWrapper> HookList = new();
 
     public static void OpenBrowser(string url) {
-        Process.Start(new ProcessStartInfo {FileName = url, UseShellExecute = true});
+        Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
     }
 
     public static AtkValue* CreateAtkValueArray(params object[] values) {
-        var atkValues = (AtkValue*) Marshal.AllocHGlobal(values.Length * sizeof(AtkValue));
+        var atkValues = (AtkValue*)Marshal.AllocHGlobal(values.Length * sizeof(AtkValue));
         if (atkValues == null) return null;
         try {
             for (var i = 0; i < values.Length; i++) {
@@ -204,7 +210,7 @@ public unsafe class Common {
                         break;
                     case bool boolValue:
                         atkValues[i].Type = ValueType.Bool;
-                        atkValues[i].Byte = (byte) (boolValue ? 1 : 0);
+                        atkValues[i].Byte = (byte)(boolValue ? 1 : 0);
                         break;
                     case string stringValue: {
                         atkValues[i].Type = ValueType.String;
@@ -225,7 +231,7 @@ public unsafe class Common {
 
         return atkValues;
     }
-    
+
     public static void GenerateCallback(AtkUnitBase* unitBase, params object[] values) {
         var atkValues = CreateAtkValueArray(values);
         if (atkValues == null) return;
@@ -237,11 +243,10 @@ public unsafe class Common {
                     Marshal.FreeHGlobal(new IntPtr(atkValues[i].String));
                 }
             }
+
             Marshal.FreeHGlobal(new IntPtr(atkValues));
         }
     }
-
-
 
     public static AtkValue* SendEvent(AgentId agentId, ulong eventKind, params object[] eventparams) {
         var agent = AgentModule.Instance()->GetAgentByInternalId(agentId);
@@ -252,7 +257,7 @@ public unsafe class Common {
         var eventObject = stackalloc AtkValue[1];
         return SendEvent(agentInterface, eventObject, eventKind, eventParams);
     }
-    
+
     public static AtkValue* SendEvent(AgentInterface* agentInterface, AtkValue* eventObject, ulong eventKind, params object[] eventParams) {
         var atkValues = CreateAtkValueArray(eventParams);
         if (atkValues == null) return eventObject;
@@ -265,6 +270,7 @@ public unsafe class Common {
                     Marshal.FreeHGlobal(new IntPtr(atkValues[i].String));
                 }
             }
+
             Marshal.FreeHGlobal(new IntPtr(atkValues));
         }
     }
@@ -287,14 +293,32 @@ public unsafe class Common {
     public static AtkResNode* GetNodeByID(AtkUnitBase* unitBase, uint nodeId, NodeType? type = null) => GetNodeByID(&unitBase->UldManager, nodeId, type);
     public static AtkResNode* GetNodeByID(AtkComponentBase* component, uint nodeId, NodeType? type = null) => GetNodeByID(&component->UldManager, nodeId, type);
     public static AtkResNode* GetNodeByID(AtkUldManager* uldManager, uint nodeId, NodeType? type = null) => GetNodeByID<AtkResNode>(uldManager, nodeId, type);
+
     public static T* GetNodeByID<T>(AtkUldManager* uldManager, uint nodeId, NodeType? type = null) where T : unmanaged {
+        if (uldManager == null) return null;
         if (uldManager->NodeList == null) return null;
         for (var i = 0; i < uldManager->NodeListCount; i++) {
             var n = uldManager->NodeList[i];
             if (n == null || n->NodeId != nodeId || type != null && n->Type != type.Value) continue;
             return (T*)n;
         }
+
         return null;
+    }
+
+    public static bool GetNodeById(AtkUldManager* uldManager, uint nodeId, out AtkResNode* node) {
+        node = GetNodeByID<AtkResNode>(uldManager, nodeId, NodeType.Res);
+        return node != null;
+    }
+
+    public static bool GetNodeById(AtkUldManager* uldManager, uint nodeId, out AtkTextNode* node) {
+        node = GetNodeByID<AtkTextNode>(uldManager, nodeId, NodeType.Text);
+        return node != null;
+    }
+
+    public static bool GetNodeById(AtkUldManager* uldManager, uint nodeId, out AtkImageNode* node) {
+        node = GetNodeByID<AtkImageNode>(uldManager, nodeId, NodeType.Image);
+        return node != null;
     }
 
     public static void Shutdown() {
@@ -309,6 +333,7 @@ public unsafe class Common {
     }
 
     public const int UnitListCount = 18;
+
     public static AtkUnitBase* GetAddonByID(uint id) {
         var unitManagers = &AtkStage.Instance()->RaptureAtkUnitManager->AtkUnitManager.DepthLayerOneList;
         for (var i = 0; i < UnitListCount; i++) {
@@ -339,18 +364,19 @@ public unsafe class Common {
         return (T*)GetAgent(attr.Id);
     }
 
-
     private delegate void* AtkModuleUpdateCursor(RaptureAtkModule* module);
+
     private static HookWrapper<AtkModuleUpdateCursor> updateCursorHook;
 
     private static AtkCursor.CursorType _lockedCursorType = AtkCursor.CursorType.Arrow;
-    
+
     private static void* UpdateCursorDetour(RaptureAtkModule* module) {
         if (_lockedCursorType != AtkCursor.CursorType.Arrow) {
             var cursor = AtkStage.Instance()->AtkCursor;
             if (cursor.Type != _lockedCursorType) {
                 AtkStage.Instance()->AtkCursor.SetCursorType(_lockedCursorType, 1);
             }
+
             return null;
         }
 
@@ -362,6 +388,7 @@ public unsafe class Common {
             UnforceMouseCursor();
             return;
         }
+
         _lockedCursorType = cursorType;
         AtkStage.Instance()->AtkCursor.SetCursorType(cursorType);
         updateCursorHook?.Enable();
@@ -371,7 +398,7 @@ public unsafe class Common {
         _lockedCursorType = AtkCursor.CursorType.Arrow;
         updateCursorHook?.Disable();
     }
-    
+
     public static string GetTexturePath(AtkImageNode* imageNode) {
         if (imageNode == null) return null;
         var partList = imageNode->PartsList;
@@ -387,7 +414,7 @@ public unsafe class Common {
         if (handle == null) return null;
         return handle->ResourceHandle.FileName.ToString();
     }
-    
+
     public static string ReadString(byte* b, int maxLength = 0, bool nullIsEmpty = true) {
         if (b == null) return nullIsEmpty ? string.Empty : null;
         if (maxLength > 0) return Encoding.UTF8.GetString(b, maxLength).Split('\0')[0];
@@ -398,20 +425,16 @@ public unsafe class Common {
 
     private static HttpClient httpClient;
     private static HappyEyeballsCallback happyEyeballsCallback;
+
     public static HttpClient HttpClient {
         get {
             if (httpClient != null) return httpClient;
             happyEyeballsCallback = new HappyEyeballsCallback();
-            httpClient = new HttpClient(new SocketsHttpHandler
-            {
-                AutomaticDecompression = DecompressionMethods.All,
-                ConnectCallback = happyEyeballsCallback.ConnectCallback,
-            });
+            httpClient = new HttpClient(new SocketsHttpHandler { AutomaticDecompression = DecompressionMethods.All, ConnectCallback = happyEyeballsCallback.ConnectCallback, });
 
             return httpClient;
         }
     }
-
 
     public static Extensions.PointerReadOnlySpanUnboxer<AtkResNode> GetNodeList(AtkUldManager* uldManager) => new ReadOnlySpan<Pointer<AtkResNode>>(uldManager->NodeList, uldManager->NodeListCount).Unbox();
     public static Extensions.PointerReadOnlySpanUnboxer<AtkResNode> GetNodeList(AtkUnitBase* unitBase) => GetNodeList(&unitBase->UldManager);

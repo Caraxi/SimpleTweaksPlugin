@@ -6,8 +6,8 @@ using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
-using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
@@ -17,11 +17,10 @@ using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 namespace SimpleTweaksPlugin.Tweaks;
 
 [Changelog("1.9.7.1", "Re-added 'Use ReShade' option")]
+[TweakName("Screenshot Improvements")]
+[TweakDescription("Allows taking higher resolution screenshots, Hiding Dalamud & Game UIs and removing the copyright notice from screenshots.")]
+[TweakAuthor("NotNite")]
 public unsafe class HighResScreenshots : Tweak {
-    public override string Name => "Screenshot Improvements";
-    public override string Description => "Allows taking higher resolution screenshots, Hiding Dalamud & Game UIs and removing the copyright notice from screenshots.";
-    protected override string Author => "NotNite";
-
     private nint copyrightShaderAddress;
 
     public class Configs : TweakConfig {
@@ -53,7 +52,7 @@ public unsafe class HighResScreenshots : Tweak {
 
     private bool updatingReShadeKeybind = false;
     
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
+    protected void DrawConfig(ref bool hasChanged) {
         ImGui.TextWrapped(
             "This tweak will increase the resolution of screenshots taken in game. It will NOT increase the scale of your HUD/plugin windows.");
         ImGui.TextWrapped("Your HUD will appear smaller while the screenshot is processing.");
@@ -145,9 +144,9 @@ public unsafe class HighResScreenshots : Tweak {
             ImGui.Unindent();
             ImGui.Unindent();
         }
-    };
+    }
 
-    public override void Setup() {
+    protected override void Setup() {
         AddChangelogNewTweak("1.8.2.0");
         AddChangelog("1.8.3.0", "Added option to hide dalamud UI for screenshot.");
         AddChangelog("1.8.5.0", "Added option to hide game UI for screenshots.");
@@ -160,12 +159,12 @@ public unsafe class HighResScreenshots : Tweak {
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
 
-        if (!Service.SigScanner.TryScanText("49 8B 57 30 45 33 C9", out copyrightShaderAddress)) {
+        if (!Service.SigScanner.TryScanText("48 8B 57 ?? 45 33 C9 48 8B 06 45 33 C0 48 8B CE 48 8B 52 ?? FF 50 ?? 48 8B 06 4C 8D 4C 24", out copyrightShaderAddress)) {
             copyrightShaderAddress = 0;
         }
-        
+
         isInputIDClickedHook ??=
-            Common.Hook<IsInputIDClickedDelegate>("E9 ?? ?? ?? ?? 83 7F 44 02", IsInputIDClickedDetour);
+            Common.Hook<IsInputIDClickedDelegate>("E9 ?? ?? ?? ?? 83 7F ?? ?? 0F 8F ?? ?? ?? ?? BA ?? ?? ?? ?? 48 8B CB", IsInputIDClickedDetour);
         isInputIDClickedHook?.Enable();
 
         base.Enable();
@@ -176,7 +175,7 @@ public unsafe class HighResScreenshots : Tweak {
     private uint oldHeight;
     private bool isRunning;
 
-    const int ScreenshotButton = 543;
+    const int ScreenshotButton = 546;
     public bool originalUiVisibility;
     byte[] originalCopyrightBytes = null;
     // IsInputIDClicked is called from Client::UI::UIInputModule.CheckScreenshotState, which is polled
@@ -212,8 +211,8 @@ public unsafe class HighResScreenshots : Tweak {
             
 
             if (Config.HideGameUi) {
-                var raptureAtkModule = Framework.Instance()->GetUiModule()->GetRaptureAtkModule();
-                originalUiVisibility = !raptureAtkModule->RaptureAtkUnitManager.Flags.HasFlag(RaptureAtkModuleFlags.UiHidden);
+                var raptureAtkModule = Framework.Instance()->GetUIModule()->GetRaptureAtkModule();
+                originalUiVisibility = !raptureAtkModule->RaptureAtkUnitManager.Flags.HasFlag(AtkUnitManagerFlags.UiHidden);
                 if (originalUiVisibility) {
                     raptureAtkModule->SetUiVisibility(false);
                 }
@@ -238,8 +237,8 @@ public unsafe class HighResScreenshots : Tweak {
             Service.Framework.RunOnTick(() => {
                 UIDebug.FreeExclusiveDraw();
                 if (Config.HideGameUi) {
-                    var raptureAtkModule = Framework.Instance()->GetUiModule()->GetRaptureAtkModule();
-                    if (originalUiVisibility && raptureAtkModule->RaptureAtkUnitManager.Flags.HasFlag(RaptureAtkModuleFlags.UiHidden)) {
+                    var raptureAtkModule = Framework.Instance()->GetUIModule()->GetRaptureAtkModule();
+                    if (originalUiVisibility && raptureAtkModule->RaptureAtkUnitManager.Flags.HasFlag(AtkUnitManagerFlags.UiHidden)) {
                         raptureAtkModule->SetUiVisibility(true);
                     }
                 }

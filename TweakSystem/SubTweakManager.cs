@@ -25,8 +25,7 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
         return $"{GetType().Name}@{t.GetType().Name}";
     }
 
-    public override void Setup() {
-
+    protected override void Setup() {
         var tweakList = new List<BaseTweak>();
 
         foreach (var t in GetType().Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(T)))) {
@@ -49,7 +48,7 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
                 }
                 tweak.InterfaceSetup(this.Plugin, this.PluginInterface, this.PluginConfig, this.TweakProvider, this);
                 if (tweak is not IDisabledTweak) {
-                    tweak.Setup();
+                    tweak.SetupInternal();
                 }
                 tweakList.Add(tweak);
             } catch (Exception ex) {
@@ -58,8 +57,6 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
         }
 
         SubTweaks = tweakList.OrderBy(t => t.Name).ToList();
-
-        Ready = true;
     }
 
     public override void RequestSaveConfig() {
