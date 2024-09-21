@@ -16,7 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Add separators for various numbers shown in the UI")]
 [TweakAuthor("Anna")]
 [TweakAutoConfig]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.2.0")]
 public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
         public bool FlyText = true;

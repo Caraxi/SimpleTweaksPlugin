@@ -1,5 +1,36 @@
 # Changelog
 
+## 1.10.2.0
+***New Tweaks***
+- **`Add Number Separators`** - Add separators for various numbers shown in the UI *(Anna)*
+
+
+***Tweak Changes***
+- **`Rename Chat Tabs`** - Fixed issue causing tabs to become incorrectly sized.
+
+- **`Screenshot File Name`**
+  - Added ability to use folders in screenshot path.
+  - Added ability to use character name and location in screenshot path.
+
+
+***Returning Tweaks***
+- `Submarine Destination Letters`
+- `Name Plate Icon Spacing`
+- `Dismiss Minion Command`
+- `Disable Mouse Camera Control`
+- `Equip Recommended Command`
+- `Screenshot File Name`
+- `Zoomed Chat Customization`
+- `Hide Guildhest Objective Popup`
+- `House Lights Command`
+- `Custom Time for Funtiture Clocks`
+- `Smart Nameplates`
+- `Chara View Increased Zoom`
+
+This update is the last of the dawntrail fixes. 
+Thank you to all the simple tweaks users who were patient and allowed me to enjoy the game while slowly working on updating the plugin. 
+
+
 ## 1.10.1.0
 ***New Tweaks***
 - **`Improved Sent Message History`** - Recover messages after accidentally pressing up in the chat, and increase the amount of history retained.

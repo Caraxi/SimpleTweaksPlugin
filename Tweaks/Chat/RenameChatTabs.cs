@@ -1,4 +1,4 @@
-﻿using Dalamud.Utility;
+using Dalamud.Utility;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -12,7 +12,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakName("Rename Chat Tabs")]
 [TweakDescription("Allows renaming the General and Battle tabs in the chat window.")]
 [TweakAutoConfig]
-[Changelog(UnreleasedVersion, "Fixed issue causing tabs to become incorrectly sized.")]
+[Changelog("1.10.2.0", "Fixed issue causing tabs to become incorrectly sized.")]
 public unsafe class RenameChatTabs : ChatTweaks.SubTweak {
     private delegate void SetChatTabName(RaptureLogModule* raptureLogModule, int tabIndex, Utf8String* tabName);
 

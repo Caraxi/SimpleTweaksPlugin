@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,8 +16,8 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakName("Screenshot File Name")]
 [TweakDescription("Change the file name format for screenshots.")]
 [TweakAutoConfig]
-[Changelog(UnreleasedVersion, "Added ability to use folders in screenshot path.")]
-[Changelog(UnreleasedVersion, "Added ability to use character name and location in screenshot path.")]
+[Changelog("1.10.2.0", "Added ability to use folders in screenshot path.")]
+[Changelog("1.10.2.0", "Added ability to use character name and location in screenshot path.")]
 public unsafe class ScreenshotFileName : Tweak {
     public class Configs : TweakConfig {
         public string DateFormatString = "ffxiv_%Y-%m-%d_%H%M%S";

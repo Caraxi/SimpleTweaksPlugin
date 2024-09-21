@@ -51,11 +51,6 @@
   Allows setting a custom amount to deposit or withdraw when using the 'Retrieve Quantity' and 'Entrust Quantity' options.
 
 
-- **Cutscene commands**
-
-  Enable the use of certain commands in cutscenes
-
-
 - **Data Centre on Title Screen**
 
   Shows the current Data Centre on the Title Screen
@@ -73,7 +68,7 @@
 
 - **Disable Mouse Camera Control**
 
-  Disable all control of the camera using the mouse.
+  Disables all control of the camera using the mouse.
 
 
 - **Disable Title Screen Movie**
@@ -83,7 +78,7 @@
 
 - **Dismiss Minion Command**
 
-  Adds a command to dismiss your current minion. /minionaway
+  Adds a command to dismiss your current minion.
 
 
 - **Duty Ready Class Switching**
@@ -118,7 +113,7 @@
 
 - **Equip Recommended Command**
 
-  Adds /equiprecommended to equip recommended gear.
+  Adds a command to equip recommended gear.
 
 
 - **Estate List Command**
@@ -136,11 +131,6 @@
   Allows using the default '/target' command for targeting players or NPCs by their names.
 
 
-- **Fixed Shadow Distance**
-
-  Sets a fixed value for the shadow rendering, preventing it from changing when flying.
-
-
 - **Gearset Update Command**
 
   Updates the active gearset with your current equipment.
@@ -149,6 +139,11 @@
 - **Hide 'Character not found' Message**
 
   Prevent the game from displaying the "The character you last logged out with could not be found on the current data center." message.
+
+
+- **Hide Chat**
+
+  Provides commands to hide the chat. (/chatvis show|hide|toggle)
 
 
 - **Hide Hotbar Lock**
@@ -171,7 +166,12 @@
   Modifies the Synthesize button in the Crafting Log to switch job or stand up from the crafting position, allowing you to stop crafting without closing the crafting log.
 
 
-- **Increased zoom on character previews.**
+- **Improved Sent Message History**
+
+  Recover messages after accidentally pressing up in the chat, and increase the amount of history retained.
+
+
+- **Increased zoom on character previews**
 
   Allows zooming in near infinitely on character preview views, such as Try On and Examine.
 
@@ -357,11 +357,6 @@
   When given multiple choices during quests, print the selected option to chat.
 
 
-- **Hide Chat**
-
-  Provides commands to hide the chat. (/chatvis show|hide|toggle)
-
-
 - **Hide Chat Automatically**
 
   Hides chat automatically except when typing.
@@ -409,7 +404,7 @@
   Allows customization of the size and position of the zoomed chat view.
 
 
-### Tooltip Tweaks
+### TooltipTweaks
 
 ---
 
@@ -515,6 +510,11 @@
   Show live countdowns to venture completion on the retainer list.
 
 
+- **Add Number Separators**
+
+  Add separators for various numbers shown in the UI
+
+
 - **Adjust Equipment Positions**
 
   Repositions equipment positions in character menu and inspect to improve appearance.
@@ -550,7 +550,7 @@
   Change the font size, color, and background of the casting text.
 
 
-- **Change Map Area Colors**
+- **Change Map Area Colours**
 
   Allows players to change the color of map areas like quest targets and FATEs.
 
