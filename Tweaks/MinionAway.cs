@@ -1,26 +1,21 @@
-﻿using System;
-using FFXIVClientStructs.FFXIV.Client.Game;
+﻿using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
+using SimpleTweaksPlugin.TweakSystem;
 
-namespace SimpleTweaksPlugin.Tweaks; 
+namespace SimpleTweaksPlugin.Tweaks;
 
+[TweakName("Dismiss Minion Command")]
+[TweakDescription($"Adds a command to dismiss your current minion.")]
+[TweakReleaseVersion("1.8.2.0")]
 public unsafe class MinionAway : CommandTweak {
-    public override string Name => "Dismiss Minion Command";
-    public override string Description => $"Adds a command to dismiss your current minion. /{Command}";
-
-    public override void Setup() {
-        AddChangelogNewTweak("1.8.2.0");
-        base.Setup();
-    }
-
     protected override void OnCommand(string args) {
-        var c = (Character*)(Service.ClientState.LocalPlayer?.Address ?? IntPtr.Zero);
+        var c = (Character*)(Service.ClientState.LocalPlayer?.Address ?? nint.Zero);
         if (c == null) return;
-        var minion = c->Companion.CompanionObject;
+        var minion = c->CompanionData.CompanionObject;
         if (minion == null) return;
-        if (minion->Character.GameObject.DataID == 0) return;
-        ActionManager.Instance()->UseAction((ActionType) 8, minion->Character.GameObject.DataID);
+        if (minion->Character.BaseId == 0) return;
+        ActionManager.Instance()->UseAction((ActionType)8, minion->Character.BaseId);
     }
 
     protected override string Command => "minionaway";

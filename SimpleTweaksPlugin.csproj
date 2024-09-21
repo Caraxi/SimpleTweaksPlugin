@@ -33,7 +33,6 @@
         <Compile Remove="Tweaks\FurnitureClocksCustomTime.cs"/>
         <Compile Remove="Tweaks\HouseLightCommand.cs"/>
         <Compile Remove="Tweaks\JokeTweaks.cs"/>
-        <Compile Remove="Tweaks\MinionAway.cs"/>
         <Compile Remove="Tweaks\RecommendEquipCommand.cs"/>
         <Compile Remove="Tweaks\ScreenshotFileName.cs"/>
         <Compile Remove="Tweaks\Chat\ZoomedChatCustomization.cs"/>
@@ -41,11 +40,6 @@
         <Compile Remove="Tweaks\UiAdjustment\HideGuildhestObjectivePopup.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\SmartNameplates.cs"/>
     </ItemGroup>
-    
-    <ItemGroup>
-        <Compile Remove="Debugging\BattleCharaDebug.cs"/>
-    </ItemGroup>
-    
     <ItemGroup>
       <None Update="images\icon.png">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
