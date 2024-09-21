@@ -29,7 +29,6 @@
         <Compile Remove="Tweaks\CharaViewIncreasedZoom.cs"/>
         <Compile Remove="Tweaks\FurnitureClocksCustomTime.cs"/>
         <Compile Remove="Tweaks\HouseLightCommand.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\HideGuildhestObjectivePopup.cs"/>
         <Compile Remove="Tweaks\UiAdjustment\SmartNameplates.cs"/>
     </ItemGroup>
     <ItemGroup>
