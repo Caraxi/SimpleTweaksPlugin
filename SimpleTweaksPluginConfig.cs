@@ -685,7 +685,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                                         try {
                                             t.InternalEnable();
                                             if (t.Enabled) {
-                                                EnabledTweaks.Add(t.GetType().Name);
+                                                EnabledTweaks.Add(t.Key);
                                             }
                                         } catch (Exception ex) {
                                             plugin.Error(t, ex, false, $"Error in Enable for '{t.Name}'");
@@ -697,7 +697,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                                         } catch (Exception ex) {
                                             plugin.Error(t, ex, true, $"Error in Disable for '{t.Name}'");
                                         }
-                                        EnabledTweaks.RemoveAll(a => a == t.GetType().Name);
+                                        EnabledTweaks.RemoveAll(a => a == t.Key);
                                     }
                                     Save();
                                 }
