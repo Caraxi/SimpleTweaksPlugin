@@ -20,16 +20,18 @@ public unsafe class FurnitureClocksCustomTime : Tweak {
         [Description("Custom Timezone")] Custom,
         [Description("Fixed Time")] Fixed,
     }
-    
+
     public class Configs : TweakConfig {
-        [TweakConfigOption("Mode", EditorSize = 200)] public TimeMode Mode = TimeMode.Local;
+        [TweakConfigOption("Mode", EditorSize = 200)]
+        public TimeMode Mode = TimeMode.Local;
+
         public int CustomTimeOffset;
         public int FixedTime;
     }
 
-    public Configs Config { get; set; } = null!;
-    
-    private void DrawConfig() {
+    [TweakConfig] public Configs Config { get; set; } = null!;
+
+    protected void DrawConfig() {
         if (Config.Mode == TimeMode.Fixed) {
             var h = Config.FixedTime / 60;
             var m = Config.FixedTime % 60;
@@ -45,7 +47,6 @@ public unsafe class FurnitureClocksCustomTime : Tweak {
                 while (h > 12) h -= 12;
                 Config.FixedTime = h * 60 + m;
             }
-
         } else if (Config.Mode == TimeMode.Custom) {
             ImGui.InputInt("Offset (minutes)", ref Config.CustomTimeOffset, 15);
         } else {
@@ -53,14 +54,14 @@ public unsafe class FurnitureClocksCustomTime : Tweak {
             ImGui.InputText("Offset (minutes)", ref o, 15, ImGuiInputTextFlags.ReadOnly);
         }
     }
-    
+
     private delegate void* UpdateClockTime(void* a1);
 
-    [TweakHook, Signature("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B F1", DetourName = nameof(UpdateTimeDetour))]
+    [TweakHook, Signature("48 8B C4 57 48 83 EC 70 83 79 18 0B", DetourName = nameof(UpdateTimeDetour))]
     private readonly HookWrapper<UpdateClockTime> updateTimeHook = null!;
 
     private float GetTime() {
-        return (float) (Config.Mode switch {
+        return (float)(Config.Mode switch {
             TimeMode.Local => DateTime.Now.TimeOfDay.TotalSeconds,
             TimeMode.Server => DateTime.UtcNow.TimeOfDay.TotalSeconds,
             TimeMode.Custom => DateTime.UtcNow.TimeOfDay.TotalSeconds + 60 * Config.CustomTimeOffset,
@@ -72,7 +73,7 @@ public unsafe class FurnitureClocksCustomTime : Tweak {
     private void* UpdateTimeDetour(void* a1) {
         var envManager = EnvManager.Instance();
         if (envManager == null) return updateTimeHook!.Original(a1);
-        
+
         var resetTime = envManager->DayTimeSeconds;
         envManager->DayTimeSeconds = GetTime();
         try {
@@ -82,4 +83,3 @@ public unsafe class FurnitureClocksCustomTime : Tweak {
         }
     }
 }
-
