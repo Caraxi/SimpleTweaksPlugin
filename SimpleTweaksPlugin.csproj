@@ -28,7 +28,6 @@
     <ItemGroup Label="Tweaks Needing Update">
         <Compile Remove="Tweaks\CharaViewIncreasedZoom.cs"/>
         <Compile Remove="Tweaks\CutsceneCommands.cs"/>
-        <Compile Remove="Tweaks\FixedShadowDistance.cs"/>
         <Compile Remove="Tweaks\FurnitureClocksCustomTime.cs"/>
         <Compile Remove="Tweaks\HouseLightCommand.cs"/>
         <Compile Remove="Tweaks\JokeTweaks.cs"/>
