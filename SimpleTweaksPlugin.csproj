@@ -25,9 +25,6 @@
         <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
         <AssemblyName>SimpleTweaksPlugin</AssemblyName>
     </PropertyGroup>
-    <ItemGroup Label="Tweaks Needing Update">
-        <Compile Remove="Tweaks\CharaViewIncreasedZoom.cs"/>
-    </ItemGroup>
     <ItemGroup>
       <None Update="images\icon.png">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
