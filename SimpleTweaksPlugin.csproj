@@ -44,7 +44,6 @@
     
     <ItemGroup>
         <Compile Remove="Debugging\BattleCharaDebug.cs"/>
-        <Compile Remove="Debugging\ExcelSheetDebugging.cs"/>
     </ItemGroup>
     
     <ItemGroup>
