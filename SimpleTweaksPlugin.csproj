@@ -27,7 +27,6 @@
     </PropertyGroup>
     <ItemGroup Label="Tweaks Needing Update">
         <Compile Remove="Tweaks\CharaViewIncreasedZoom.cs"/>
-        <Compile Remove="Tweaks\UiAdjustment\SmartNameplates.cs"/>
     </ItemGroup>
     <ItemGroup>
       <None Update="images\icon.png">
