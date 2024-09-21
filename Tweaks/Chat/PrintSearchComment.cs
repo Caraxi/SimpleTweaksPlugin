@@ -3,8 +3,6 @@ using System;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -19,7 +17,7 @@ public class PrintSearchComment : ChatTweaks.SubTweak {
     [TweakHook]
     private HookWrapper<AgentInspect.Delegates.ReceiveSearchComment>? receiveSearchComment;
 
-    public override unsafe void Setup()
+    protected override unsafe void Setup()
     {
         base.Setup();
 
@@ -33,23 +31,27 @@ public class PrintSearchComment : ChatTweaks.SubTweak {
 
         try
         {
-            var searchInfo = MemoryHelper.ReadSeStringNullTerminated((nint) searchComment);
+            var searchInfo = SeString.Parse(searchComment);
 
             var obj = Service.Objects.SearchById(entityId);
             if (obj == null || !obj.IsValid()) {
-                SimpleLog.Debug("Unable to find ObjectID.");
+                SimpleLog.Debug("Unable to find EntityID.");
             }
             else if (searchInfo.Payloads.Count > 0 && obj is IPlayerCharacter { ObjectKind: ObjectKind.Player } character)
             {
-                var builder = new SeStringBuilder();
-                builder.AddUiForeground(45);
-                builder.AddText("Search Info from <");
-                builder.Add(new PlayerPayload(character.Name.TextValue, character.HomeWorld.Id));
-                builder.AddText(">");
-                builder.AddUiForegroundOff();
-                builder.AddText("\u000D"); // carriage return creates a new line
-                builder.Append(searchInfo);
-                Service.Chat.Print(builder.BuiltString);
+                var builder = new Lumina.Text.SeStringBuilder()
+                    .PushColorType(45)
+                    .Append("Search Info from <")
+                    .PushLinkCharacter(character.Name.TextValue, character.HomeWorld.Id)
+                    .Append(character.Name.TextValue)
+                    .PopLink()
+                    .Append(">")
+                    .PopColorType()
+                    .Append("\r")
+                    .Append(searchInfo)
+                    .ToArray();
+
+                Service.Chat.Print(SeString.Parse(builder));
             }
         }
         catch (Exception ex) {
