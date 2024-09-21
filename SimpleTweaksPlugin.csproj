@@ -43,10 +43,8 @@
     </ItemGroup>
     
     <ItemGroup>
-        <Compile Remove="Debugging\ArrayDataBrowser.cs"/>
         <Compile Remove="Debugging\BattleCharaDebug.cs"/>
         <Compile Remove="Debugging\ExcelSheetDebugging.cs"/>
-        <Compile Remove="Debugging\InventoryDebug.cs"/>
     </ItemGroup>
     
     <ItemGroup>
