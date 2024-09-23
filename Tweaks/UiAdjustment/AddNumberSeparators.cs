@@ -7,6 +7,7 @@ using Dalamud;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
+using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -17,6 +18,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakAuthor("Anna")]
 [TweakAutoConfig]
 [TweakReleaseVersion("1.10.2.0")]
+[Changelog(UnreleasedVersion, "Fixed issue causing custom separators to be lost when logging in.")]
 public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
         public bool FlyText = true;
@@ -26,8 +28,7 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
         public char? CustomSeparator;
     }
 
-    [TweakConfig]
-    public Configs Config { get; protected set; }
+    [TweakConfig] public Configs Config { get; protected set; }
 
     protected void DrawConfig(ref bool hasChanged) {
         hasChanged |= ImGui.Checkbox("Add separators to damage/healing numbers", ref Config.FlyText);
@@ -36,10 +37,14 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
         hasChanged |= ImGui.Checkbox("Add separators to ability costs in tooltips", ref Config.AbilityTooltip);
 
         var custom = Config.CustomSeparator?.ToString() ?? string.Empty;
-        if (ImGui.InputText("Custom separator", ref custom, 1)) {
+        if (ImGui.InputText("Custom separator", ref custom, 1, ImGuiInputTextFlags.CallbackAlways, cb => {
+                cb->SelectionStart = 0;
+                cb->SelectionEnd = 1;
+                return 0;
+            })) {
             hasChanged = true;
-            Config.CustomSeparator = string.IsNullOrEmpty(custom) ? null : custom[0];
-            SetSeparator(Config.CustomSeparator);
+            Config.CustomSeparator = string.IsNullOrEmpty(custom) || !char.IsAscii(custom[0]) || char.IsControl(custom[0]) ? null : custom[0];
+            SetSeparatorDetour();
         }
 
         if (hasChanged) ConfigureInstructions();
@@ -52,10 +57,12 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
         internal const string HotbarManaStringify = "45 33 C0 48 8B CE 44 88 64 24 ?? 42 8B 54 B8 ?? E8 ?? ?? ?? ?? EB 21";
         internal const string PartyListStringify = "45 33 C0 C6 44 24 20 00 41 8B D6 E8 ?? ?? ?? ?? 49 8B";
         internal const string Separator = "44 0F B6 05 ?? ?? ?? ?? 45 84 C0 74 36 F6 87";
+        internal const string SetSeparatorCharacter = "E8 ?? ?? ?? ?? 48 8B 4F 18 48 8B 01 FF 50 18 48 8B C8";
     }
 
     private Dictionary<nint, byte[]> OldBytes { get; } = new();
-    private byte OriginalSeparator { get; set; }
+
+    [Signature(Signatures.Separator, ScanType = ScanType.StaticAddress)]
     private nint SeparatorPtr { get; set; }
 
     private delegate void ShowFlyTextDelegate(nint addon, uint actorIndex, uint messageMax, nint numbers, int offsetNum, int offsetNumMax, nint strings, int offsetStr, int offsetStrMax, int a10);
@@ -68,38 +75,44 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
     [TweakHook, Signature(Signatures.SprintfNumber, DetourName = nameof(SprintfNumberDetour))]
     private HookWrapper<SprintfNumberDelegate>? sprintfNumberHook;
 
+    private delegate byte SetSeparator(uint* languageCode);
+
+    [TweakHook, Signature(Signatures.SetSeparatorCharacter, DetourName = nameof(SetSeparatorDetour))]
+    private HookWrapper<SetSeparator> setSeparatorHook;
+
     private static readonly byte[] ThirdArgOne = [
         0x41, 0xB0, 0x01,
     ];
 
-    protected override void Setup() {
-        if (Service.SigScanner.TryGetStaticAddressFromSig(Signatures.Separator, out var separatorPtr)) {
-            SeparatorPtr = separatorPtr;
-            OriginalSeparator = *(byte*)separatorPtr;
-        }
-    }
-
-    protected override void Enable() {
+    protected override void AfterEnable() {
         ConfigureInstructions();
-        SetSeparator(Config.CustomSeparator);
+        SetSeparatorDetour();
     }
 
     protected override void Disable() {
         RestoreAllBytes();
-        SetSeparator(null);
+
+        var languageCode = stackalloc uint[1];
+        languageCode[0] = (uint)Service.ClientState.ClientLanguage;
+        setSeparatorHook.Original(languageCode);
+
+        if (SeparatorPtr != nint.Zero) SimpleLog.Verbose($"Set Separator Character - Value: '{(char)*(byte*)SeparatorPtr}' @ {DebugManager.GetAddressString(SeparatorPtr.ToPointer())}");
     }
 
-    private void SetSeparator(char? sep) {
-        if (SeparatorPtr == 0) {
-            return;
+    private byte SetSeparatorDetour(uint* languageCode = null) {
+        if (languageCode == null) {
+            var lc = stackalloc uint[1];
+            lc[0] = (uint)Service.ClientState.ClientLanguage;
+            return SetSeparatorDetour(lc);
         }
 
-        var separator = (byte?)sep ?? OriginalSeparator;
-        if (separator == 0) {
-            separator = (byte)',';
+        try {
+            var separator = (byte?)Config.CustomSeparator;
+            if (SeparatorPtr == nint.Zero || separator is null or 0) return setSeparatorHook.Original(languageCode);
+            return *(byte*)SeparatorPtr = separator.Value;
+        } finally {
+            if (SeparatorPtr != nint.Zero) SimpleLog.Verbose($"Set Separator Character - Value: '{(char)*(byte*)SeparatorPtr}' @ {DebugManager.GetAddressString(SeparatorPtr.ToPointer())}");
         }
-
-        *(byte*)SeparatorPtr = separator;
     }
 
     internal void ConfigureInstructions() {
