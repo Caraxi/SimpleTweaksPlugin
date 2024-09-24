@@ -321,6 +321,37 @@ public unsafe class Common {
         return node != null;
     }
 
+    public static AtkResNode* GetNodeByIDChain(AtkResNode* node, params int[] ids)
+    {
+        if (node == null || ids.Length <= 0)
+            return null;
+
+        if (node->NodeId == ids[0]) {
+            if (ids.Length == 1)
+                return node;
+
+            var newList = new List<int>(ids);
+            newList.RemoveAt(0);
+
+            var childNode = node->ChildNode;
+            if (childNode != null)
+                return GetNodeByIDChain(childNode, [.. newList]);
+
+            if ((int)node->Type >= 1000) {
+                var componentNode = node->GetAsAtkComponentNode();
+                var component = componentNode->Component;
+                var uldManager = component->UldManager;
+                childNode = uldManager.NodeList[0];
+                return childNode == null ? null : GetNodeByIDChain(childNode, [.. newList]);
+            }
+
+            return null;
+        }
+
+        var sibNode = node->PrevSiblingNode;
+        return sibNode != null ? GetNodeByIDChain(sibNode, ids) : null;
+    }
+
     public static void Shutdown() {
         if (ThrowawayOut != null) {
             Marshal.FreeHGlobal(new IntPtr(ThrowawayOut));
