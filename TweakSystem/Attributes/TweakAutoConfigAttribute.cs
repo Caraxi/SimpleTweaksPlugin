@@ -5,9 +5,12 @@ namespace SimpleTweaksPlugin.TweakSystem;
 public class TweakAutoConfigAttribute : Attribute {
     public bool AutoSaveLoad { get; }
     public string ConfigKey { get; init; } = null;
-    
-    public TweakAutoConfigAttribute(bool autoSaveLoad = true) {
+
+    public bool SaveOnChange { get; init; } = false;
+
+    public TweakAutoConfigAttribute(bool autoSaveLoad = true, bool saveOnChange = false) {
         AutoSaveLoad = autoSaveLoad;
+        SaveOnChange = saveOnChange;
     }
 }
 

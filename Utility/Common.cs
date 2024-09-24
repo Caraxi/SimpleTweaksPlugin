@@ -470,4 +470,6 @@ public unsafe class Common {
     public static Extensions.PointerReadOnlySpanUnboxer<AtkResNode> GetNodeList(AtkUldManager* uldManager) => new ReadOnlySpan<Pointer<AtkResNode>>(uldManager->NodeList, uldManager->NodeListCount).Unbox();
     public static Extensions.PointerReadOnlySpanUnboxer<AtkResNode> GetNodeList(AtkUnitBase* unitBase) => GetNodeList(&unitBase->UldManager);
     public static Extensions.PointerReadOnlySpanUnboxer<AtkResNode> GetNodeList(AtkComponentBase* component) => GetNodeList(&component->UldManager);
+
+    public static string DefaultStringIfEmptyOrWhitespace(string str, string defaultString = "") => string.IsNullOrWhiteSpace(str) ? defaultString : str;
 }

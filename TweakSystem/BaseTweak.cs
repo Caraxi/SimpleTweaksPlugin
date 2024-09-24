@@ -285,7 +285,12 @@ public abstract class BaseTweak {
             DrawCommon();
         }
 
-        if (hasChanged && Enabled) ConfigChanged();
+        if (hasChanged && Enabled) {
+            ConfigChanged();
+            if (TweakAutoConfigAttribute is not NoAutoConfig && TweakAutoConfigAttribute.AutoSaveLoad && TweakAutoConfigAttribute.SaveOnChange) {
+                AutoSaveConfig();
+            }
+        }
         return configTreeOpen;
     }
 
