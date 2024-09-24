@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
@@ -14,31 +13,19 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakAuthor("Infi")]
 [TweakReleaseVersion(UnreleasedVersion)]
 public class PrintSearchComment : ChatTweaks.SubTweak {
-    [TweakHook]
+    [TweakHook(typeof(AgentInspect), nameof(AgentInspect.ReceiveSearchComment), nameof(ReceiveSearchCommentDetour))]
     private HookWrapper<AgentInspect.Delegates.ReceiveSearchComment>? receiveSearchComment;
 
-    protected override unsafe void Setup()
-    {
-        base.Setup();
-
-        receiveSearchComment ??= Common.Hook<AgentInspect.Delegates.ReceiveSearchComment>(AgentInspect.MemberFunctionPointers.ReceiveSearchComment, ReceiveSearchCommentDetour);
-        receiveSearchComment?.Enable();
-    }
-
-    private unsafe void ReceiveSearchCommentDetour(AgentInspect* agent, uint entityId, byte* searchComment)
-    {
+    private unsafe void ReceiveSearchCommentDetour(AgentInspect* agent, uint entityId, byte* searchComment) {
         receiveSearchComment!.Original(agent, entityId, searchComment);
 
-        try
-        {
+        try {
             var searchInfo = SeString.Parse(searchComment);
 
             var obj = Service.Objects.SearchById(entityId);
             if (obj == null || !obj.IsValid()) {
                 SimpleLog.Debug("Unable to find EntityID.");
-            }
-            else if (searchInfo.Payloads.Count > 0 && obj is IPlayerCharacter { ObjectKind: ObjectKind.Player } character)
-            {
+            } else if (searchInfo.Payloads.Count > 0 && obj is IPlayerCharacter { ObjectKind: ObjectKind.Player } character) {
                 var builder = new Lumina.Text.SeStringBuilder()
                     .PushColorType(45)
                     .Append("Search Info from <")
@@ -53,8 +40,7 @@ public class PrintSearchComment : ChatTweaks.SubTweak {
 
                 Service.Chat.Print(SeString.Parse(builder));
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             SimpleLog.Error(ex, $"Error in {GetType().Name} hook");
         }
     }
