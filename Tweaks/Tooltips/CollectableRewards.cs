@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 [TweakDescription("Shows rewards when viewing a collectable delivery item.")]
 [TweakAuthor("Orphis")]
 [TweakAutoConfig]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.3.0")]
 public class CollectableRewards : TooltipTweaks.SubTweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Colour scrip values", HelpText = "Colour the script values or spell out the scrip colour name for visually impaired people.")]

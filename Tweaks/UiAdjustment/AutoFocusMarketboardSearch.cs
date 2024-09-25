@@ -7,7 +7,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakName("Auto Focus Market Board Item Search")]
 [TweakDescription("Automatically focus the item search when opening the market board.")]
 [TweakAuthor("croizat")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.3.0")]
 public unsafe class AutoFocusMarketboardSearch : UiAdjustments.SubTweak {
     [AddonPostSetup("ItemSearch")]
     private void AddonSetup(AtkUnitBase* atkUnitBase) {

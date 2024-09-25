@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.10.3.0
+***New Tweaks***
+- **`Auto Focus Market Board Item Search`** - Automatically focus the item search when opening the market board. *(croizat)*
+
+- **`Leveling Dungeon Command`** - Adds a command to open the highest level leveling dungeon available for your level. *(LuminaSapphira)*
+
+- **`Print Search Comment`** - Prints the Search Comment of people, that get inspected, into the chat. *(Infi)*
+
+- **`Rename Free Company Chest Tabs`** - Allows renaming of each tab in the Free Company chest. *(croizat)*
+
+
+***Tweak Changes***
+- **`Add Number Separators`** - Fixed issue causing custom separators to be lost when logging in.
+
+- **`Rename Chat Tabs`** - Fixed tabs not being named on login.
+
+
 ## 1.10.2.0
 ***New Tweaks***
 - **`Add Number Separators`** - Add separators for various numbers shown in the UI *(Anna)*

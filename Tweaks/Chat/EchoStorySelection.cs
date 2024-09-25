@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
@@ -23,7 +23,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakAuthor("MidoriKami")]
 [TweakReleaseVersion("1.8.3.2")]
 [TweakAutoConfig]
-[Changelog(UnreleasedVersion, "Added option to hide some choices.")]
+[Changelog("1.10.3.0", "Added option to hide some choices.")]
 public unsafe class EchoStorySelection : ChatTweaks.SubTweak {
     public class Config : TweakConfig {
         [TweakConfigOption("Display Character Name")]

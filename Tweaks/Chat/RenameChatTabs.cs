@@ -15,7 +15,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakDescription("Allows renaming the General and Battle tabs in the chat window.")]
 [TweakAutoConfig]
 [Changelog("1.10.2.0", "Fixed issue causing tabs to become incorrectly sized.")]
-[Changelog(UnreleasedVersion, "Fixed tabs not being named on login.")]
+[Changelog("1.10.3.0", "Fixed tabs not being named on login.")]
 public unsafe class RenameChatTabs : ChatTweaks.SubTweak {
     private delegate void SetChatTabName(RaptureLogModule* raptureLogModule, int tabIndex, Utf8String* tabName);
 

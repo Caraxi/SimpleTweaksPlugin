@@ -11,7 +11,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("Leveling Dungeon Command")]
 [TweakDescription("Adds a command to open the highest level leveling dungeon available for your level.")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.3.0")]
 [TweakAuthor("LuminaSapphira")]
 public class LevelingDungeonCommand : CommandTweak
 {

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Dalamud.Game.Text;
 using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
@@ -14,7 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Allows renaming of each tab in the Free Company chest.")]
 [TweakAuthor("croizat")]
 [TweakAutoConfig(SaveOnChange = true)]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.3.0")]
 public unsafe class RenameFreeCompanyChestTabs : UiAdjustments.SubTweak {
     [TweakConfig] public Configuration Config { get; set; } = null!;
 
