@@ -636,7 +636,10 @@ namespace SimpleTweaksPlugin.Debugging {
             }
 
             if (layoutKind == LayoutKind.Sequential && f.IsStatic == false) {
-                offsetAddress += (ulong)Marshal.SizeOf(f.FieldType);
+                if (!f.FieldType.IsGenericType) {
+                    offsetAddress += (ulong)Marshal.SizeOf(f.FieldType);
+                }
+                
             }
         }
 
