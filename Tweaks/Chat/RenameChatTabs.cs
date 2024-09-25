@@ -5,7 +5,9 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Chat;
 
@@ -13,6 +15,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakDescription("Allows renaming the General and Battle tabs in the chat window.")]
 [TweakAutoConfig]
 [Changelog("1.10.2.0", "Fixed issue causing tabs to become incorrectly sized.")]
+[Changelog(UnreleasedVersion, "Fixed tabs not being named on login.")]
 public unsafe class RenameChatTabs : ChatTweaks.SubTweak {
     private delegate void SetChatTabName(RaptureLogModule* raptureLogModule, int tabIndex, Utf8String* tabName);
 
@@ -49,10 +52,7 @@ public unsafe class RenameChatTabs : ChatTweaks.SubTweak {
         ImGui.SetNextItemWidth(90 * ImGui.GetIO().FontGlobalScale);
         hasChanged |= ImGui.InputTextWithHint(LocString("TabLabel", "Tab {0}").Format(2) + "###nameTab1", defaultNames[1], ref TweakConfig.ChatTab1Name, 16);
 
-        if (hasChanged) {
-            Disable();
-            Enable();
-        }
+        if (hasChanged) Update();
     }
 
     private void SetName(byte tab, string name) {
@@ -64,12 +64,19 @@ public unsafe class RenameChatTabs : ChatTweaks.SubTweak {
         updateTabName(AgentChatLog.Instance(), tab, storedName);
     }
 
+    private void Update() {
+        Disable();
+        Enable();
+    }
+
     protected override void Enable() {
+        Service.ClientState.Login += Update;
         if (TweakConfig.DoRenameTab0 && !string.IsNullOrEmpty(TweakConfig.ChatTab0Name)) SetName(0, TweakConfig.ChatTab0Name);
         if (TweakConfig.DoRenameTab1 && !string.IsNullOrEmpty(TweakConfig.ChatTab1Name)) SetName(1, TweakConfig.ChatTab1Name);
     }
 
     protected override void Disable() {
+        Service.ClientState.Login -= Update;
         SetName(0, defaultNames[0]);
         SetName(1, defaultNames[1]);
     }
