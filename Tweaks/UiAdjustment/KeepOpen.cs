@@ -12,6 +12,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Prevents certain windows from hiding under specific circumstances.")]
 [TweakReleaseVersion("1.8.2.1")]
 [TweakAutoConfig]
+[Changelog(UnreleasedVersion, "Added option for 'Raw Material List'")]
 public unsafe class KeepOpen : Tweak {
     private delegate void* HideUnitBase(AtkUnitBase* atkUnitBase, byte a2, byte a3, int a4);
 
@@ -52,6 +53,7 @@ public unsafe class KeepOpen : Tweak {
         ["RecipeTree"] = "Recipe Tree",
         ["ContentsInfoDetail"] = "Timer Details",
         ["ContentsInfo"] = "Timers",
+        ["RecipeMaterialList"] = "Raw Material List",
         ["Character"] = new("Character Window", true),
     };
 
