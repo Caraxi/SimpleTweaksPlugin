@@ -74,7 +74,6 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
         var itemAction = item?.ItemAction.Value;
         if (itemAction == null) return;
 
-        SimpleLog.Log($"ItemID: {itemId} Item Action: {itemAction.Type}");
         var (imagePath, size) = itemAction.Type switch {
             1322 => (GetMountImagePath(itemAction.Data[0]), new ImageSize(190, 234, 0.8f)),
             853 => (GetMinionImagePath(itemAction.Data[0]), new ImageSize(100, 100, 0.8f)),
@@ -85,7 +84,7 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
 
         if (imagePath == string.Empty) return;
 
-        SimpleLog.Log($"Image Path: {imagePath}");
+        SimpleLog.Debug($"Image Path: {imagePath}");
 
         var insertNode = atkUnitBase->GetNodeById(2);
         if (insertNode == null) return;
@@ -94,7 +93,7 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
         if (anchorNode == null) return;
 
         if (imageNode == null) {
-            SimpleLog.Log($"Create Image Node");
+            SimpleLog.Debug($"Create Image Node");
 
             imageNode = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
             imageNode->AtkResNode.Type = NodeType.Image;
@@ -162,7 +161,7 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
         imageNode->AtkResNode.ToggleVisibility(true);
 
         if (imagePath != lastImage) {
-            SimpleLog.Log($"Load Texture: {imagePath}");
+            SimpleLog.Debug($"Load Texture: {imagePath}");
             if (imagePath != string.Empty) {
                 imageNode->LoadTexture(imagePath);
             } else {
