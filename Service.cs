@@ -30,4 +30,5 @@ public class Service {
     [PluginService] public static IDutyState DutyState { get; private set; }
     [PluginService] public static INotificationManager NotificationManager { get; private set; }
     [PluginService] public static IContextMenu ContextMenu { get; private set; }
+    [PluginService] public static INamePlateGui NamePlateGui { get; private set; }
 }

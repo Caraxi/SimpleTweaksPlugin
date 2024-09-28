@@ -64,6 +64,7 @@ namespace SimpleTweaksPlugin {
 
         public void Dispose() {
             SimpleLog.Debug("Dispose");
+            SaveAllConfig();
             Service.Framework.Update -= FrameworkOnUpdate;
             Service.PluginInterface.UiBuilder.Draw -= this.BuildUI;
             RemoveCommands();

@@ -13,9 +13,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [TweakName("Cast Bar Adjustments")]
 [TweakDescription("Allow hiding or moving specific parts of the castbar.")]
+[TweakTags("SlideCast", "Slide Cast")]
 public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
-    public override IEnumerable<string> Tags => new[] { "SlideCast", "Slide Cast" };
-
     public class Configs : TweakConfig {
         public bool RemoveCastingText;
         public bool RemoveIcon;

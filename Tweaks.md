@@ -51,11 +51,6 @@
   Allows setting a custom amount to deposit or withdraw when using the 'Retrieve Quantity' and 'Entrust Quantity' options.
 
 
-- **Cutscene commands**
-
-  Enable the use of certain commands in cutscenes
-
-
 - **Data Centre on Title Screen**
 
   Shows the current Data Centre on the Title Screen
@@ -73,7 +68,7 @@
 
 - **Disable Mouse Camera Control**
 
-  Disable all control of the camera using the mouse.
+  Disables all control of the camera using the mouse.
 
 
 - **Disable Title Screen Movie**
@@ -83,7 +78,7 @@
 
 - **Dismiss Minion Command**
 
-  Adds a command to dismiss your current minion. /minionaway
+  Adds a command to dismiss your current minion.
 
 
 - **Duty Ready Class Switching**
@@ -118,12 +113,12 @@
 
 - **Equip Recommended Command**
 
-  Adds /equiprecommended to equip recommended gear.
+  Adds a command to equip recommended gear.
 
 
 - **Estate List Command**
 
-  Adds a command to open the estate list of one of your friends. (/estatelist)
+  Adds a command to open the estate list of one of your friends.
 
 
 - **Extended Macro Icons**
@@ -136,11 +131,6 @@
   Allows using the default '/target' command for targeting players or NPCs by their names.
 
 
-- **Fixed Shadow Distance**
-
-  Sets a fixed value for the shadow rendering, preventing it from changing when flying.
-
-
 - **Gearset Update Command**
 
   Updates the active gearset with your current equipment.
@@ -149,6 +139,11 @@
 - **Hide 'Character not found' Message**
 
   Prevent the game from displaying the "The character you last logged out with could not be found on the current data center." message.
+
+
+- **Hide Chat**
+
+  Provides commands to hide the chat. (/chatvis show|hide|toggle)
 
 
 - **Hide Hotbar Lock**
@@ -171,7 +166,12 @@
   Modifies the Synthesize button in the Crafting Log to switch job or stand up from the crafting position, allowing you to stop crafting without closing the crafting log.
 
 
-- **Increased zoom on character previews.**
+- **Improved Sent Message History**
+
+  Recover messages after accidentally pressing up in the chat, and increase the amount of history retained.
+
+
+- **Increased zoom on character previews**
 
   Allows zooming in near infinitely on character preview views, such as Try On and Examine.
 
@@ -196,6 +196,11 @@
   Adds a command to leave the currenty duty. /leaveduty
 
 
+- **Leveling Dungeon Command**
+
+  Adds a command to open the highest level leveling dungeon available for your level.
+
+
 - **Long Veil**
 
   Replaces the wedding veils with their long variants that are usually only shown in the sanctum of the twelve.
@@ -203,7 +208,7 @@
 
 - **Main Command Command**
 
-  Adds the command '/maincommand [name]' to allow using any Main Command from chat or macro.
+  Adds a command to allow using any Main Command from chat or macro.
 
 
 - **No Sell List**
@@ -216,12 +221,12 @@
   Adds a command to open adventurer plates.
 
 
-- **Open commendation window automatically**
+- **Open Commendation Window Automatically**
 
   Open the commendation window upon completion of a duty.
 
 
-- **Open loot window when items are added.**
+- **Open loot window when items are added**
 
   Open the loot rolling window when new items are added to be rolled on.
 
@@ -273,7 +278,7 @@
 
 - **Show process id Command**
 
-  Adds the command '/pid' to show current process id.
+  Adds a command to show the current process id.
 
 
 - **Smart Strafe**
@@ -357,11 +362,6 @@
   When given multiple choices during quests, print the selected option to chat.
 
 
-- **Hide Chat**
-
-  Provides commands to hide the chat. (/chatvis show|hide|toggle)
-
-
 - **Hide Chat Automatically**
 
   Hides chat automatically except when typing.
@@ -372,9 +372,14 @@
   Hide the chat log name and close button on panels that have been split from the main window.
 
 
-- **Improved Font Sizes**
+- **Improved Chat Font Sizes**
 
   Allows you to change the font size for the chat windows beyond the default limits, and allows docked chat tabs to keep their font size separate from the main tab.
+
+
+- **Print Search Comment**
+
+  Prints the Search Comment of people, that get inspected, into the chat.
 
 
 - **Rename Chat Tabs**
@@ -409,18 +414,18 @@
   Allows customization of the size and position of the zoomed chat view.
 
 
-### Tooltip Tweaks
+### TooltipTweaks
 
 ---
 
 - **Extra Information for Tooltips**
 
-  Adds extra information to item tooltips
+  Adds extra information to item tooltips.
 
 
 - **Hide Tooltips in Combat**
 
-  Allows hiding Action and/or Item tooltips while in combat.
+  Allow hiding action and/or Item tooltips while in combat. 
 
 
 - **Improved Blue Mage Action Tooltips**
@@ -455,6 +460,11 @@
 - **Precise Spiritbond**
 
   Show partial percentages for Spiritbond.
+
+
+- **Preview Unlockable Items**
+
+  Show a preview image for mounts, minions and hairstyles.
 
 
 - **Show Desynthesis Skill**
@@ -510,19 +520,29 @@
   Show live countdowns to venture completion on the retainer list.
 
 
+- **Add Number Separators**
+
+  Add separators for various numbers shown in the UI
+
+
 - **Adjust Equipment Positions**
 
-  Repositions equipment positions in character menu and inspect to give a less gross layout.
+  Repositions equipment positions in character menu and inspect to improve appearance.
 
 
 - **Adjust Large Cooldown Counter**
 
-  Increases the size of cooldown counters on hotbars.
+  Make adjustmenmts to the cooldown counter when using the large option.
 
 
 - **Always Yes**
 
   Sets the default action in dialog boxes to yes when using confirm (num 0).
+
+
+- **Auto Focus Market Board Item Search**
+
+  Automatically focus the item search when opening the market board.
 
 
 - **Auto Focus Recipe Search**
@@ -537,7 +557,7 @@
 
 - **Cast Bar Adjustments**
 
-  Allows hiding or moving specific parts of the castbar.
+  Allow hiding or moving specific parts of the castbar.
 
 
 - **Casting Text Visibility**
@@ -545,7 +565,7 @@
   Change the font size, color, and background of the casting text.
 
 
-- **Change Map Area Colors**
+- **Change Map Area Colours**
 
   Allows players to change the color of map areas like quest targets and FATEs.
 
@@ -686,7 +706,7 @@
 
 - **Limit Break Adjustments**
 
-  Simple customization of the limit break bars
+  Simple customization of the limit break bars.
 
 
 - **Lock Window Positions**
@@ -719,9 +739,9 @@
   Allows moving or hiding of the notifications that appears in the middle of the screen at various times.
 
 
-- **Old Nameplates Tweak**
+- **Old Nameplates**
 
-  Reverts the change to nameplates.
+  Use the old font for nameplates.
 
 
 - **Open Glamour Dresser to Current Job**
@@ -757,6 +777,11 @@
 - **Remove Quest Marker Limit**
 
   Allow the map and minimap to display markers for more than 5 active quests.
+
+
+- **Rename Free Company Chest Tabs**
+
+  Allows renaming of each tab in the Free Company chest.
 
 
 - **Reposition Target Castbar Text**

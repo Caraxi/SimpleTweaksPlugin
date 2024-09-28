@@ -1,5 +1,98 @@
 # Changelog
 
+## 1.10.3.0
+***New Tweaks***
+- **`Auto Focus Market Board Item Search`** - Automatically focus the item search when opening the market board. *(croizat)*
+
+- **`Leveling Dungeon Command`** - Adds a command to open the highest level leveling dungeon available for your level. *(LuminaSapphira)*
+
+- **`Print Search Comment`** - Prints the Search Comment of people, that get inspected, into the chat. *(Infi)*
+
+- **`Rename Free Company Chest Tabs`** - Allows renaming of each tab in the Free Company chest. *(croizat)*
+
+
+***Tweak Changes***
+- **`Add Number Separators`** - Fixed issue causing custom separators to be lost when logging in.
+
+- **`Rename Chat Tabs`** - Fixed tabs not being named on login.
+
+
+## 1.10.2.0
+***New Tweaks***
+- **`Add Number Separators`** - Add separators for various numbers shown in the UI *(Anna)*
+
+
+***Tweak Changes***
+- **`Rename Chat Tabs`** - Fixed issue causing tabs to become incorrectly sized.
+
+- **`Screenshot File Name`**
+  - Added ability to use folders in screenshot path.
+  - Added ability to use character name and location in screenshot path.
+
+
+***Returning Tweaks***
+- `Submarine Destination Letters`
+- `Name Plate Icon Spacing`
+- `Dismiss Minion Command`
+- `Disable Mouse Camera Control`
+- `Equip Recommended Command`
+- `Screenshot File Name`
+- `Zoomed Chat Customization`
+- `Hide Guildhest Objective Popup`
+- `House Lights Command`
+- `Custom Time for Funtiture Clocks`
+- `Smart Nameplates`
+- `Chara View Increased Zoom`
+
+This update is the last of the dawntrail fixes. 
+Thank you to all the simple tweaks users who were patient and allowed me to enjoy the game while slowly working on updating the plugin. 
+
+
+## 1.10.1.0
+***New Tweaks***
+- **`Improved Sent Message History`** - Recover messages after accidentally pressing up in the chat, and increase the amount of history retained.
+
+
+***Tweak Changes***
+- **`Disable Click Targeting`** - Added option to only disable targeting players. *(OTCompa)*
+- **`Item Hotkeys`** - Added hotkey option for opening Console Games Wiki page. *(Aly Smith)*
+
+
+***Returning Tweaks***
+- `Hide 'Character not found' Message`
+- `Hide Chat`
+- `Hide Chat Automatically`
+- `Rename Chat Tabs`
+- `Disable Click Targeting`
+- `Bait Command`
+- `Cleaner World Visit Menu`
+- `Market Enhancements`
+- `Refresh Market Prices`
+- `Sanctuary Sprint Replacer`
+- `Long Veil`
+- `Equip From Hotbar`
+- `Remember Quick Gathering`
+- `Remember Selected World`
+- `Block Targeting Hunt Enemies`
+- `Customize default deposit and withdraw quantity`
+- `Fast Item Search`
+- `Change Map Area Colors`
+- `Hide quality bar while crafting NO-HQ item`
+
+## 1.10.0.5
+***New Tweaks***
+- **`Preview Unlockable Items`** - Show a preview image for mounts, minions and hairstyles.
+
+
+***Tweak Changes***
+- **`Always Yes`** - Added support for dyes.
+
+
+## 1.10.0.4
+***Tweak Changes***
+- **`Always Yes`** - Added a setting to ignore checkbox if it is ticked and fixed the tweak not working with desynthesis
+
+
 ## 1.10.0.1
 ***General Changes***
 - Updated more tweaks for Dawntrail

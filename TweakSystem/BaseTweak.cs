@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
@@ -37,7 +38,7 @@ public abstract class BaseTweak {
 
     public bool IsDisposed { get; private set; }
 
-    public virtual string Key => GetType().Name;
+    public virtual string Key => TweakKeyAttribute?.Key ?? GetType().Name;
 
     public string Name => TweakNameAttribute?.Name ?? GetType().Name;
 
@@ -45,10 +46,41 @@ public abstract class BaseTweak {
 
     public string LocalizedName => LocString("Name", Name, "Tweak Name");
 
-    public string Description => TweakDescriptionAttribute?.Description;
+
+    private string cachedDescription;
+    
+    private readonly Regex descriptionTemplate = new(@"\$\[(?<field>\w+)\]", RegexOptions.Compiled);
+    
+    public string Description {
+        get {
+            if (cachedDescription != null) return cachedDescription;
+            var description = TweakDescriptionAttribute?.Description;
+            if (description == null) return null;
+            
+            var parsedTemplate = descriptionTemplate.Replace(description, match => {
+                if (match.Groups["field"].Success) {
+                    try {
+                        var m = GetType().GetMember(match.Groups["field"].Value, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                        if (m.Length == 0) return $"InvalidTemplate.NoMatches({match.Groups["field"].Value})";
+                        if (m.Length > 1) return $"InvalidTemplate.MultipleMatches({match.Groups["field"].Value})";
+                        if (m[0] is MethodInfo) return $"InvalidTemplate.MethodMatch({match.Groups["field"].Value})";
+                        if (m[0] is PropertyInfo pi) return pi.GetValue(this)?.ToString();
+                        if (m[0] is FieldInfo fi) return fi.GetValue(this)?.ToString();
+                    } catch (Exception ex) {
+                        return $"InvalidTemplate.Error({match.Groups["field"].Value}): {ex.Message}";
+                    }
+                    
+                }
+                return string.Empty;
+            });
+
+            return cachedDescription = parsedTemplate;
+        }
+    }
+    
     protected string Author => TweakAuthorAttribute?.Author;
     public virtual bool Experimental => false;
-    public virtual IEnumerable<string> Tags { get; } = new string[0];
+    public IEnumerable<string> Tags => TweakTagsAttribute?.Tags ?? [];
     internal bool ForceOpenConfig { private get; set; }
 
     public TweakProvider TweakProvider { get; private set; } = null;
@@ -253,7 +285,12 @@ public abstract class BaseTweak {
             DrawCommon();
         }
 
-        if (hasChanged && Enabled) ConfigChanged();
+        if (hasChanged && Enabled) {
+            ConfigChanged();
+            if (TweakAutoConfigAttribute is not NoAutoConfig && TweakAutoConfigAttribute.AutoSaveLoad && TweakAutoConfigAttribute.SaveOnChange) {
+                AutoSaveConfig();
+            }
+        }
         return configTreeOpen;
     }
 
@@ -647,11 +684,14 @@ public abstract class BaseTweak {
                 SimpleLog.Warning($"Skipped enabling Tweak Hook [{Name}] {field.Name} - Hook not created");
             }
         }
+        
+        AfterEnable();
 
         Enabled = true;
     }
 
     protected virtual void Enable() { }
+    protected virtual void AfterEnable() { }
 
     internal void InternalDisable() {
         Unloading = true;
@@ -670,10 +710,13 @@ public abstract class BaseTweak {
             AutoSaveConfig();
         }
 
+        AfterDisable();
+
         Enabled = false;
     }
 
     protected virtual void Disable() { }
+    protected virtual void AfterDisable() { }
 
     public virtual void Dispose() {
         foreach (var (field, _) in this.GetFieldsWithAttribute<TweakHookAttribute>()) {
@@ -703,6 +746,16 @@ public abstract class BaseTweak {
             if (tweakNameAttribute != null) return tweakNameAttribute;
             tweakNameAttribute = GetType().GetCustomAttribute<TweakNameAttribute>() ?? new TweakNameAttribute($"{GetType().Name}");
             return tweakNameAttribute;
+        }
+    }
+    
+    private TweakKeyAttribute tweakKeyAttribute;
+
+    protected TweakKeyAttribute TweakKeyAttribute {
+        get {
+            if (tweakKeyAttribute != null) return tweakKeyAttribute;
+            tweakKeyAttribute = GetType().GetCustomAttribute<TweakKeyAttribute>() ?? new TweakKeyAttribute($"{GetType().Name}");
+            return tweakKeyAttribute;
         }
     }
 
@@ -743,6 +796,16 @@ public abstract class BaseTweak {
             if (tweakAutoConfigAttribute != null) return tweakAutoConfigAttribute;
             tweakAutoConfigAttribute = GetType().GetCustomAttribute<TweakAutoConfigAttribute>() ?? NoAutoConfig.Singleton;
             return tweakAutoConfigAttribute;
+        }
+    }
+
+    private TweakTagsAttribute tweakTagsAttribute;
+
+    protected TweakTagsAttribute TweakTagsAttribute {
+        get {
+            if (tweakDescriptionAttribute != null) return tweakTagsAttribute;
+            tweakTagsAttribute = GetType().GetCustomAttribute<TweakTagsAttribute>() ?? new TweakTagsAttribute();
+            return tweakTagsAttribute;
         }
     }
 

@@ -14,6 +14,7 @@ using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
+using InstanceContent = FFXIVClientStructs.FFXIV.Client.Game.UI.InstanceContent;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
@@ -72,7 +73,7 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak {
         }
     }
     
-    public override void Setup() {
+    protected override void Setup() {
         foreach (var entry in Service.Data.GetExcelSheet<ContentRoulette>()!.Where(roulette => roulette.Name != string.Empty)) {
             var filteredName = Alphanumeric().Replace(entry.Category.ToString().ToLower(), string.Empty);
             rouletteIdDictionary.TryAdd(filteredName, entry.RowId);
@@ -88,7 +89,7 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak {
     private void OnContentsFinderRefresh(AddonRefreshArgs args) {
         var addon = (AddonContentsFinder*) args.Addon;
 
-        foreach (var itemRenderer in addon->DutyList->Items.Span) {
+        foreach (var itemRenderer in addon->DutyList->Items.AsSpan()) {
             var componentNode = itemRenderer.Value->Renderer->AtkDragDropInterface.ComponentNode;
             if (componentNode is null) continue;
 
@@ -108,7 +109,7 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak {
                 continue;
             }
 
-            switch (RouletteController.Instance()->IsRouletteComplete((byte) rouletteId)) {
+            switch (InstanceContent.Instance()->IsRouletteComplete((byte) rouletteId)) {
                 case true when TweakConfig.ColorCompleteRoulette && TweakConfig.EnabledRoulettes.Contains(rouletteId):
                     SetNodeColor(textNode, TweakConfig.CompleteColor);
                     break;
@@ -130,7 +131,7 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak {
         if (!UiHelper.IsAddonReady((AtkUnitBase*)addon)) return;
         if (addon->DutyList is null) return;
         
-        foreach (var itemRenderer in addon->DutyList->Items.Span) {
+        foreach (var itemRenderer in addon->DutyList->Items.AsSpan()) {
             var componentNode = itemRenderer.Value->Renderer->AtkDragDropInterface.ComponentNode;
             if (componentNode is null) continue;
 

@@ -22,7 +22,11 @@ public static unsafe partial class UiHelper {
         if (y >= short.MinValue && x <= short.MaxValue) atkUnitBase->Y = (short) y.Value;
     }
 
-    public static void SetWindowSize(AtkComponentNode* windowNode, ushort? width, ushort? height) {
+    public static void SetWindowSize(AtkUnitBase* unitBase, ushort? width, ushort? height) {
+        if (unitBase == null) return;
+        var windowNode = unitBase->WindowNode;
+        if (windowNode == null) return;
+        if (windowNode->Component == null) return;
         if (((AtkUldComponentInfo*) windowNode->Component->UldManager.Objects)->ComponentType != ComponentType.Window) return;
 
         width ??= windowNode->AtkResNode.Width;
@@ -30,6 +34,11 @@ public static unsafe partial class UiHelper {
 
         if (width < 64) width = 64;
         if (height < 16) height = 16;
+
+        if (unitBase->RootNode != null) {
+            unitBase->RootNode->SetWidth((ushort)width);
+            unitBase->RootNode->SetHeight((ushort)height);
+        }
 
         SetSize(windowNode, width, height);  // Window
         var n = windowNode->Component->UldManager.RootNode;

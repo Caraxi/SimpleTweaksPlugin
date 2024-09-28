@@ -28,9 +28,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     [TweakName("Target Status Adjustments")]
     [TweakDescription("Allows the filtering of specific status effects on your target as well as limiting the number of them.")]
     [TweakAuthor("Aireil")]
+    [TweakTags("Buffs", "Debuffs", "Limit", "Filter", "Effects")]
     public unsafe class LimitTargetStatusEffects : UiAdjustments.SubTweak {
-        public override IEnumerable<string> Tags => new[] { "Buffs", "Debuffs", "Limit", "Filter", "Effects" };
-
         public class Configs : TweakConfig {
             public int NbStatusEffects = 30;
             public bool LimitOnlyInCombat;

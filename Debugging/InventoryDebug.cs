@@ -43,7 +43,7 @@ public unsafe class InventoryDebug : DebugHelper {
                             var item = container->GetInventorySlot(i);
                             DebugManager.ClickToCopy(item);
                             ImGui.SameLine();
-                            var itemName = item->ItemID == 0 ? string.Empty : Service.Data.Excel.GetSheet<Item>()?.GetRow(item->ItemID)?.Name?.RawString;
+                            var itemName = item->ItemId == 0 ? string.Empty : Service.Data.Excel.GetSheet<Item>()?.GetRow(item->ItemId)?.Name?.RawString;
                             DebugManager.PrintOutObject(*item, (ulong) item, new List<string> {$"Items[{i}]"},false, $"[{i:00}] {itemName ?? "<Not Found>"}" );
                         }
                         ImGui.TreePop();

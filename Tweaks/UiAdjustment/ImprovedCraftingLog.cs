@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Diagnostics;
+using Dalamud.Game;
 using Dalamud.Game.Command;
 using Dalamud.Utility;
 using Dalamud.Utility.Signatures;
@@ -191,7 +192,7 @@ public unsafe class ImprovedCraftingLog : Tweak {
 
         var buttonText = ready switch {
             CraftReadyState.Ready => Service.Data.Excel.GetSheet<Addon>()?.GetRow(1404)?.Text?.ToDalamudString(),
-            CraftReadyState.WrongClass => "Switch Job",
+            CraftReadyState.WrongClass => GetWrongClassButtonText(),
             CraftReadyState.AlreadyCrafting => Service.Data.Excel.GetSheet<Addon>()?.GetRow(643)?.Text?.ToDalamudString(),
             _ => null
         };
@@ -230,5 +231,20 @@ public unsafe class ImprovedCraftingLog : Tweak {
         }
 
         Service.Commands.RemoveHandler("/stopcrafting");
+    }
+
+    private string GetWrongClassButtonText() {
+        switch (Service.ClientState.ClientLanguage) {
+            case ClientLanguage.Japanese:
+                return "スイッチ・ジョブ";
+            case ClientLanguage.English:
+                return "Switch Job";
+            case ClientLanguage.German:
+                return "Job wechseln";
+            case ClientLanguage.French:
+                return "Changer de Job";
+            default:
+                return "Switch Job";
+        }
     }
 }

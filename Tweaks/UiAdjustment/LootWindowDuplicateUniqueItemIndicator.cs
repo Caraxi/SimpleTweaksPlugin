@@ -189,8 +189,8 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         
         imageNode->ToggleVisibility(true);
 
-        var targetTextNode = parent->Component->UldManager.SearchNodeById(11);
-        UiHelper.LinkNodeAfterTargetNode((AtkResNode*) imageNode, parent, targetTextNode);
+        var targetImageNode = parent->Component->UldManager.SearchNodeById(12);
+        UiHelper.LinkNodeAfterTargetNode((AtkResNode*) imageNode, parent, targetImageNode);
     }
 
     private void MakePadlockNode(uint nodeId, AtkComponentNode* parent) {
@@ -208,8 +208,8 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         
         imageNode->ToggleVisibility(true);
         
-        var targetTextNode = parent->Component->UldManager.SearchNodeById(11);
-        UiHelper.LinkNodeAfterTargetNode((AtkResNode*) imageNode, parent, targetTextNode);
+        var targetImageNode = parent->Component->UldManager.SearchNodeById(12);
+        UiHelper.LinkNodeAfterTargetNode((AtkResNode*) imageNode, parent, targetImageNode);
     }
 
     private bool PlayerHasItem(uint itemId) {

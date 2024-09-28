@@ -6,7 +6,7 @@ using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using Lumina.Excel.GeneratedSheets;
 
-namespace SimpleTweaksPlugin.Tweaks; 
+namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("Remember Selected World")]
 [TweakDescription("Remembers which world was selected for each datacentre.")]
@@ -20,7 +20,7 @@ public unsafe class RememberSelectedWorld : Tweak {
     private Configs? Config { get; set; }
     private uint setting = uint.MaxValue;
     private bool isSetting;
-    
+
     [AddonPreSetup("CharaSelect")]
     private void AddonSetup() {
         isSetting = true;
@@ -54,19 +54,18 @@ public unsafe class RememberSelectedWorld : Tweak {
         Config.DataCenterWorldSelect[lobby->DataCenter] = lobby->WorldId;
         SaveConfig(Config);
     }
-    
-    
+
     private void SelectWorld(uint worldId) {
         if (!Common.GetUnitBase("_CharaSelectWorldServer", out var addon)) return;
-        
-        var stringArray = AtkStage.GetSingleton()->GetStringArrayData()[1];
+
+        var stringArray = AtkStage.Instance()->GetStringArrayData()[1];
         if (stringArray == null) return;
 
         var world = Service.Data.Excel.GetSheet<World>()?.GetRow(worldId);
         if (world is not { IsPublic: true }) return;
 
         SimpleLog.Debug($"Attempting to Select World: {world.Name.RawString}");
-        
+
         var checkedWorldCount = 0;
 
         for (var i = 0; i < 16; i++) {
@@ -79,8 +78,9 @@ public unsafe class RememberSelectedWorld : Tweak {
                 SimpleLog.Verbose($"'{s}' != '{world.Name.RawString}'");
                 continue;
             }
-            Common.GenerateCallback(addon, 10, 0, i);
-            Common.GenerateCallback(addon, 6, 0, 0);
+
+            Common.GenerateCallback(addon, 25, 0, i);
+            Common.GenerateCallback(addon, 21, 0, 0);
             return;
         }
 

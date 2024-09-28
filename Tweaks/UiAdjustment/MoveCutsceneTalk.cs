@@ -27,13 +27,13 @@ public unsafe class MoveCutsceneTalk : Tweak {
         public PositionKind HorizontalPositionKind = PositionKind.FromCentre;
         public PositionKind VerticalPositionKind = PositionKind.FromMax;
     }
-    
+
     public enum PositionKind {
         FromMin,
         FromCentre,
         FromMax
     }
-    
+
     public Config TweakConfig { get; private set; }
 
     protected override void Enable() {
@@ -54,47 +54,35 @@ public unsafe class MoveCutsceneTalk : Tweak {
     private void UpdateAddonPosition(AtkUnitBase* addon, AddonConfig addonConfig) {
         // Only change the position of cutscene Talk, others are movable manually
         if (!Service.Condition.Any(ConditionFlag.WatchingCutscene, ConditionFlag.WatchingCutscene78, ConditionFlag.OccupiedInCutSceneEvent)) return;
-        
-        var position = new Vector2(
-            addonConfig.HorizontalPositionKind switch {
-                PositionKind.FromMin => addonConfig.Position.X,
-                PositionKind.FromCentre => Device.Instance()->Width / 2f - addon->GetScaledWidth(true) / 2f + addonConfig.Position.X,
-                PositionKind.FromMax => Device.Instance()->Width - addon->GetScaledWidth(true) + addonConfig.Position.X,
-                _ => 0
-            },
-            addonConfig.VerticalPositionKind switch {
-                PositionKind.FromMin => addonConfig.Position.Y,
-                PositionKind.FromCentre => Device.Instance()->Height / 2f - addon->GetScaledHeight(true) / 2f + addonConfig.Position.Y,
-                PositionKind.FromMax => Device.Instance()->Height - addon->GetScaledHeight(true) + addonConfig.Position.Y,
-                _ => 0
-            }
-        );
-        
-        SimpleLog.Verbose($"Update {Common.ReadString(addon->Name)} Position: [{addon->X}, {addon->Y}] -> [{(short)position.X}, {(short)position.Y}]");
+
+        var position = new Vector2(addonConfig.HorizontalPositionKind switch {
+            PositionKind.FromMin => addonConfig.Position.X,
+            PositionKind.FromCentre => Device.Instance()->Width / 2f - addon->GetScaledWidth(true) / 2f + addonConfig.Position.X,
+            PositionKind.FromMax => Device.Instance()->Width - addon->GetScaledWidth(true) + addonConfig.Position.X,
+            _ => 0
+        }, addonConfig.VerticalPositionKind switch {
+            PositionKind.FromMin => addonConfig.Position.Y,
+            PositionKind.FromCentre => Device.Instance()->Height / 2f - addon->GetScaledHeight(true) / 2f + addonConfig.Position.Y,
+            PositionKind.FromMax => Device.Instance()->Height - addon->GetScaledHeight(true) + addonConfig.Position.Y,
+            _ => 0
+        });
+
+        SimpleLog.Verbose($"Update {addon->NameString} Position: [{addon->X}, {addon->Y}] -> [{(short)position.X}, {(short)position.Y}]");
         addon->SetPosition((short)position.X, (short)position.Y);
     }
 
-    private readonly Dictionary<PositionKind, string> horizontalPositionKindLabels = new() {
-        [PositionKind.FromMin] = "From Left Side",
-        [PositionKind.FromCentre] = "From Center",
-        [PositionKind.FromMax] = "From Right Side",
-    };
-    
-    private readonly Dictionary<PositionKind, string> verticalPositionKindLabels = new() {
-        [PositionKind.FromMin] = "From Top",
-        [PositionKind.FromCentre] = "From Center",
-        [PositionKind.FromMax] = "From Bottom",
-    };
-    
-    
-    private void DrawConfig() {
+    private readonly Dictionary<PositionKind, string> horizontalPositionKindLabels = new() { [PositionKind.FromMin] = "From Left Side", [PositionKind.FromCentre] = "From Center", [PositionKind.FromMax] = "From Right Side", };
+
+    private readonly Dictionary<PositionKind, string> verticalPositionKindLabels = new() { [PositionKind.FromMin] = "From Top", [PositionKind.FromCentre] = "From Center", [PositionKind.FromMax] = "From Bottom", };
+
+    protected void DrawConfig() {
         var anyChange = false;
-        
+
         void PositionEditor(string label, ref float offset, ref PositionKind positionKind, Dictionary<PositionKind, string> labels, uint max) {
             ImGui.SetNextItemWidth(200 * ImGuiHelpers.GlobalScale);
             anyChange |= ImGui.DragFloat($"##position{label}", ref offset);
             ImGui.SameLine();
-            
+
             labels.TryGetValue(positionKind, out var previewText);
             ImGui.SetNextItemWidth(200 * ImGuiHelpers.GlobalScale);
             if (ImGui.BeginCombo($"##combo{label}", string.IsNullOrWhiteSpace(previewText) ? $"{positionKind}" : previewText)) {
@@ -105,21 +93,20 @@ public unsafe class MoveCutsceneTalk : Tweak {
                         anyChange = true;
                     }
                 }
-                
+
                 ImGui.EndCombo();
             }
-            
+
             ImGui.SameLine();
-            
+
             ImGui.TextDisabled($"({offset / max * 100:F0}%%)");
             ImGui.SameLine();
             ImGui.Text(label);
         }
-        
-        
+
         PositionEditor("Horizontal", ref TweakConfig.AddonTalkConfig.Position.X, ref TweakConfig.AddonTalkConfig.HorizontalPositionKind, horizontalPositionKindLabels, Device.Instance()->Width);
         PositionEditor("Vertical", ref TweakConfig.AddonTalkConfig.Position.Y, ref TweakConfig.AddonTalkConfig.VerticalPositionKind, verticalPositionKindLabels, Device.Instance()->Height);
-        
+
         if (anyChange) Enable();
     }
 }

@@ -4,6 +4,7 @@ using Dalamud.Game.Config;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Utility;
+using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
@@ -16,33 +17,32 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Chat;
 
+[TweakName("Improved Chat Font Sizes")]
+[TweakDescription("Allows you to change the font size for the chat windows beyond the default limits, and allows docked chat tabs to keep their font size separate from the main tab.")]
+[TweakAutoConfig]
 public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
-    
     public const byte MinimumFontSize = 8; // Game crashes below 8
     public const byte MaximumFontSize = 80;
-    
-    public override string Name => "Improved Font Sizes";
-    public override string Description => "Allows you to change the font size for the chat windows beyond the default limits, and allows docked chat tabs to keep their font size separate from the main tab.";
 
     public class Configs : TweakConfig {
         public int[] FontSize;
     }
 
     private delegate void SetFontSizeDelegate(byte* chatLogPanelWithOffset, byte fontSize);
+
+    [TweakHook, Signature("40 53 48 83 EC 30 48 8B D9 88 51 48", DetourName = nameof(SetFontSizeDetour))]
     private HookWrapper<SetFontSizeDelegate> setFontSizeHook;
 
-    private delegate void* ShowLogMessageDelegate(RaptureLogModule* logModule, uint logMessage);
-    private HookWrapper<ShowLogMessageDelegate> showLogMessageHook;
+    [TweakHook(typeof(RaptureLogModule), nameof(RaptureLogModule.ShowLogMessage), nameof(ShowLogMessageDetour), AutoEnable = false)]
+    private HookWrapper<RaptureLogModule.Delegates.ShowLogMessage> showLogMessageHook;
 
     public Configs Config { get; private set; }
 
-    private readonly uint[] originalFontSize = new uint[4] { 12, 12, 12, 12 };
+    private readonly uint[] originalFontSize = [12, 12, 12, 12];
 
     private void RefreshFontSizes(bool restoreOriginal = false) {
         try {
             showLogMessageHook?.Enable();
-            var a = Common.GetAgent(AgentId.ConfigCharacter);
-            var c = ConfigModule.Instance();
 
             for (var i = 0; i < 4; i++) {
                 var configOption = i switch {
@@ -60,7 +60,7 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
                         if (v > 36) v = 12;
                     }
                 }
-                
+
                 Service.GameConfig.Set(configOption, v);
             }
         } finally {
@@ -68,20 +68,18 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
         }
     }
 
-    protected override DrawConfigDelegate DrawConfigTree => (ref bool hasChanged) => {
-        if (Config.FontSize is not { Length: 4 }) Config.FontSize = new int[4] { 12, 12, 12, 12 };
+    protected void DrawConfig(ref bool hasChanged) {
+        if (Config.FontSize is not { Length: 4 }) Config.FontSize = [12, 12, 12, 12];
 
-        if (Common.GetUnitBase("ConfigCharacter", out var configCharacter)) {
+        if (Common.GetUnitBase("ConfigCharacter", out _)) {
             ImGui.Text("Please close the character config window to make changes to this tweak.");
             if (ImGui.Button("Close It")) {
-                Service.Framework.RunOnFrameworkThread(() => {
-                    AgentModule.Instance()->GetAgentByInternalId(AgentId.ConfigCharacter)->Hide();
-                });
+                Service.Framework.RunOnFrameworkThread(() => { AgentModule.Instance()->GetAgentByInternalId(AgentId.ConfigCharacter)->Hide(); });
             }
+
             return;
         }
-        
-        
+
         if (ImGui.BeginTable("extendedChatSettingsTable", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg)) {
             ImGui.TableSetupColumn("Panel", ImGuiTableColumnFlags.WidthFixed, 120 * ImGui.GetIO().FontGlobalScale);
             ImGui.TableSetupColumn("Font Size", ImGuiTableColumnFlags.WidthFixed, 180 * ImGui.GetIO().FontGlobalScale);
@@ -98,16 +96,15 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
                     RefreshFontSizes();
                     hasChanged = true;
                 }
+
                 ImGui.TableNextColumn();
             }
 
             ImGui.EndTable();
         }
-    };
+    }
 
-    protected override void Enable() {
-        Config = LoadConfig<Configs>() ?? new Configs();
-
+    protected override void AfterEnable() {
         for (var i = 0; i < 4; i++) {
             var configOption = i switch {
                 1 => UiConfigOption.LogFontSizeLog2,
@@ -119,21 +116,15 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
             Plugin.Error(this, new Exception("Failed to load config values."));
             return;
         }
-        
-        setFontSizeHook = Common.Hook<SetFontSizeDelegate>("40 53 48 83 EC 30 48 8B D9 88 51 48", SetFontSizeDetour);
-        setFontSizeHook?.Enable();
-
-        showLogMessageHook = Common.Hook<ShowLogMessageDelegate>("E8 ?? ?? ?? ?? 44 03 FB", ShowLogMessageDetour);
 
         if (Common.GetUnitBase("ConfigCharaChatLogDetail", out var unitBase)) ToggleFontSizeConfigDropDowns(unitBase, false);
         RefreshFontSizes();
-        base.Enable();
     }
 
-    private void* ShowLogMessageDetour(RaptureLogModule* logModule, uint logMessage) {
+    private void ShowLogMessageDetour(RaptureLogModule* logModule, uint logMessage) {
         // No toast spam please
-        if (logMessage == 801) return null;
-        return showLogMessageHook.Original(logModule, logMessage);
+        if (logMessage == 801) return;
+        showLogMessageHook.Original(logModule, logMessage);
     }
 
     private void ToggleFontSizeConfigDropDowns(AtkUnitBase* unitBase, bool toggle) {
@@ -160,20 +151,17 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
                 TooltipManager.RemoveTooltip(unitBase, &tnc->AtkResNode);
                 tnc->SetText(txt.RawData);
             } else {
-                var str = txt.ToDalamudString().Append(new List<Payload>() {
-                    new UIForegroundPayload(3),
-                    new TextPayload(" (Managed by Simple Tweaks)"),
-                    new UIForegroundPayload(0)
-                });
+                var str = txt.ToDalamudString().Append(new List<Payload>() { new UIForegroundPayload(3), new TextPayload(" (Managed by Simple Tweaks)"), new UIForegroundPayload(0) });
                 TooltipManager.AddTooltip(unitBase, &tnc->AtkResNode, $"Setting managed by Simple Tweak:\n  - {LocalizedName}");
                 tnc->SetText(str.Encode());
             }
+
             tnc->ResizeNodeForCurrentText();
-            
+
             ddc->SetEnabledState(toggle);
         }
     }
-    
+
     [AddonPostSetup("ConfigCharaChatLogDetail")]
     private void OnAddonSetup(AtkUnitBase* addon) {
         ToggleFontSizeConfigDropDowns(addon, false);
@@ -182,37 +170,27 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
     private void SetFontSizeDetour(byte* chatLogPanelWithOffset, byte fontSize) {
         try {
             if (Config.FontSize is { Length: 4 }) {
-                var chatLogPanel = (AddonChatLogPanel*)(chatLogPanelWithOffset - 0x268);
+                var chatLogPanel = (AddonChatLogPanel*)(chatLogPanelWithOffset - 0x278);
                 if (Config.FontSize != null) {
                     for (var i = 0; i < 4; i++) {
                         var panel = Common.GetUnitBase<AddonChatLogPanel>($"ChatLogPanel_{i}");
                         if (panel == null) continue;
                         if (panel == chatLogPanel) {
-                            fontSize = (byte) Math.Clamp(Config.FontSize[i], MinimumFontSize, MaximumFontSize);
+                            fontSize = (byte)Math.Clamp(Config.FontSize[i], MinimumFontSize, MaximumFontSize);
                             break;
                         }
                     }
                 }
             }
+
+            setFontSizeHook.Original(chatLogPanelWithOffset, fontSize);
         } catch (Exception ex) {
             SimpleLog.Error(ex);
         }
-        setFontSizeHook.Original(chatLogPanelWithOffset, fontSize);
     }
 
-    protected override void Disable() {
-        setFontSizeHook?.Disable();
-        showLogMessageHook?.Disable();
+    protected override void AfterDisable() {
         if (Common.GetUnitBase("ConfigCharaChatLogDetail", out var unitBase)) ToggleFontSizeConfigDropDowns(unitBase, true);
-        SaveConfig(Config);
         RefreshFontSizes(true);
-        base.Disable();
-    }
-
-    public override void Dispose() {
-        setFontSizeHook?.Dispose();
-        showLogMessageHook?.Dispose();
-        base.Dispose();
     }
 }
-
