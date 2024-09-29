@@ -88,7 +88,7 @@ public unsafe class BufflistVerticalGrowth : UiAdjustments.SubTweak
                 maxNumberOfBuffs = 8;
                 break;
             default:
-                PluginLog.Log($"Wrong index value, should be 0, 1, 2 or 3, got {index}");
+                SimpleLog.Log($"Wrong index value, should be 0, 1, 2 or 3, got {index}");
                 return;
         }
         if (getConfigBool)
