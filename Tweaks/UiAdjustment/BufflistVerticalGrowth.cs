@@ -9,8 +9,8 @@ using System;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
-[TweakName("Buff List Vertical Growth")]
-[TweakDescription("Allow to change the buff/debuff vertical justification, enabling the list to grow from bottom to top.")]
+[TweakName("Grow Buff List Vertically")]
+[TweakDescription("Allows you to change the buff/debuff vertical justification, enabling the list to grow from bottom to top.")]
 [TweakAuthor("LINKAD0")]
 [TweakAutoConfig]
 
@@ -18,16 +18,16 @@ public unsafe class BufflistVerticalGrowth : UiAdjustments.SubTweak
 {
     public class Configs : TweakConfig
     {
-        [TweakConfigOption("Justify Buff List to the bottom")]
+        [TweakConfigOption("Buff List", HelpText = "Group 1: Status Info (Enhancements)")]
         public bool buffListBool = false;
 
-        [TweakConfigOption("Justify Debuff List to the bottom")]
+        [TweakConfigOption("Debuff List", HelpText = "Group 3: Status Info (Enfeeblements)")]
         public bool debuffListBool = false;
 
-        [TweakConfigOption("Justify Auras List to the bottom")]
+        [TweakConfigOption("Food/FC Buffs List", HelpText = "Group 4: Status Info (Others)")]
         public bool aurasListBool = false;
 
-        [TweakConfigOption("Justify Conditional Buff List to the bottom")]
+        [TweakConfigOption("Conditional Buff List", HelpText = "Group 2: Status Info (Conditional Enhancements)")]
         public bool ConditionalBuffListBool = false;
 
     }
