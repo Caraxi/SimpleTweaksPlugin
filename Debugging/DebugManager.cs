@@ -44,6 +44,8 @@ namespace SimpleTweaksPlugin.Debugging {
 
         public virtual void Dispose() { }
 
+        public virtual void Reload() { }
+
         public string FullName {
             get {
                 if (TweakProvider is CustomTweakProvider ctp) {
@@ -94,12 +96,16 @@ namespace SimpleTweaksPlugin.Debugging {
                 foreach (var t in tp.Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(DebugHelper)) && !t.IsAbstract)) {
                     if (DebugHelpers.Any(h => h.GetType() == t)) continue;
                     var debugger = (DebugHelper)Activator.CreateInstance(t);
-                    debugger.TweakProvider = tp;
-                    debugger.Plugin = _plugin;
-                    RegisterDebugPage(debugger.FullName, debugger.Draw);
-                    DebugHelpers.Add(debugger);
+                    if (debugger != null) {
+                        debugger.TweakProvider = tp;
+                        debugger.Plugin = _plugin;
+                        RegisterDebugPage(debugger.FullName, debugger.Draw);
+                        DebugHelpers.Add(debugger);
+                    }
                 }
             }
+            
+            DebugHelpers.ForEach(dh => dh.Reload());
         }
 
         private static SimpleTweaksPlugin _plugin;
