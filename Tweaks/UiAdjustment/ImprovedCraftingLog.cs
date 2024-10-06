@@ -186,6 +186,7 @@ public unsafe class ImprovedCraftingLog : Tweak {
 
     [AddonPostRequestedUpdate("RecipeNote")]
     private void CraftingLogUpdated(AddonRecipeNote* addon) {
+        SimpleLog.Verbose("Updating");
         var ready = GetCraftReadyState(out _);
         if (ready == CraftReadyState.NotReady) return;
 
