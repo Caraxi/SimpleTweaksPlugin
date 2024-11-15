@@ -4,7 +4,7 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -18,7 +18,7 @@ public unsafe class BaitCommand : CommandTweak {
     protected override string Command => "bait";
 
     private static readonly Dictionary<string, uint> Bait = Service.Data.GetExcelSheet<Item>()!
-        .Where(i => i.ItemSearchCategory.Row == 30)
+        .Where(i => i.ItemSearchCategory.RowId == 30)
         .ToDictionary(b => b.Name.ToString().ToLower(), b => b.RowId);
     
     private delegate byte ExecuteCommandDelegate(int id, int unk1, uint baitId, int unk2, int unk3);

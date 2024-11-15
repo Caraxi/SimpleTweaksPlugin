@@ -18,7 +18,6 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using InteropGenerator.Runtime.Attributes;
-using Lumina.Excel;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -62,7 +61,7 @@ namespace SimpleTweaksPlugin.Debugging {
     public static class DebugManager {
         private static Dictionary<string, Action> debugPages = new();
 
-        private static float sidebarSize = 0;
+        private static float sidebarSize;
 
         public static void RegisterDebugPage(string key, Action action) {
             if (debugPages.ContainsKey(key)) {
@@ -110,7 +109,7 @@ namespace SimpleTweaksPlugin.Debugging {
 
         private static SimpleTweaksPlugin _plugin;
 
-        private static bool _setupDebugHelpers = false;
+        private static bool _setupDebugHelpers;
 
         private static readonly List<DebugHelper> DebugHelpers = new List<DebugHelper>();
 
@@ -294,10 +293,10 @@ namespace SimpleTweaksPlugin.Debugging {
                             break;
                         }
 
-                        var r = (c.UIColor.UIForeground >> 0x18) & 0xFF;
-                        var g = (c.UIColor.UIForeground >> 0x10) & 0xFF;
-                        var b = (c.UIColor.UIForeground >> 0x08) & 0xFF;
-                        var a = (c.UIColor.UIForeground >> 0x00) & 0xFF;
+                        var r = (c.UIColor.Value.UIForeground >> 0x18) & 0xFF;
+                        var g = (c.UIColor.Value.UIForeground >> 0x10) & 0xFF;
+                        var b = (c.UIColor.Value.UIForeground >> 0x08) & 0xFF;
+                        var a = (c.UIColor.Value.UIForeground >> 0x00) & 0xFF;
 
                         ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(r / 255f, g / 255f, b / 255f, 1));
                         pushColorCount++;
@@ -313,8 +312,8 @@ namespace SimpleTweaksPlugin.Debugging {
             if (pushColorCount > 0) ImGui.PopStyleColor(pushColorCount);
         }
 
-        private static ulong beginModule = 0;
-        private static ulong endModule = 0;
+        private static ulong beginModule;
+        private static ulong endModule;
 
         private static unsafe void PrintOutValue(ulong addr, List<string> path, Type type, object value, MemberInfo member) {
             try {
@@ -422,19 +421,6 @@ namespace SimpleTweaksPlugin.Debugging {
                         }
                     } else if (!type.IsPrimitive) {
                         switch (value) {
-                            case ILazyRow ilr:
-                                var p = ilr.GetType().GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
-                                if (p != null) {
-                                    var getter = p.GetGetMethod();
-                                    if (getter != null) {
-                                        var rowValue = getter.Invoke(ilr, new object?[] { });
-                                        PrintOutObject(rowValue, addr, new List<string>(path));
-                                        break;
-                                    }
-                                }
-
-                                PrintOutObject(value, addr, new List<string>(path));
-                                break;
                             case Lumina.Text.SeString seString:
                                 ImGui.Text($"{seString.RawString}");
                                 break;

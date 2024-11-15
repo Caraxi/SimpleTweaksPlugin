@@ -7,7 +7,7 @@ namespace SimpleTweaksPlugin.TweakSystem;
 
 public class TweakProvider : IDisposable {
 
-    public bool IsDisposed { get; protected set; } = false;
+    public bool IsDisposed { get; protected set; }
     public List<BaseTweak> Tweaks { get; } = new();
 
     public Assembly Assembly { get; init; } = null!;

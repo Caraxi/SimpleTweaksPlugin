@@ -17,7 +17,7 @@ public unsafe class ResizeExperienceBar : UiAdjustments.SubTweak
         public int Scale = 100;
 
         [TweakConfigOption("Left align icons")]
-        public bool LeftAlignIcons = false;
+        public bool LeftAlignIcons;
     }
 
     public Configs Config { get; private set; }

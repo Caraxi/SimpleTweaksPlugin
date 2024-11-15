@@ -46,7 +46,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private readonly ushort[] removedStatus = new ushort[60 * 2];
         private uint removedStatusIndex;
         private readonly HashSet<ushort> filteredStatus = new();
-        private static Dictionary<ushort, Lumina.Excel.GeneratedSheets.Status> statusSheet;
+        private static Dictionary<ushort, Lumina.Excel.Sheets.Status> statusSheet;
         private readonly TargetSystem* targetSystem = TargetSystem.Instance();
 
         private delegate long UpdateTargetStatusDelegate(void* agentHud, void* numberArray, void* stringArray, StatusManager* statusManager, GameObject* target, void* isLocalPlayerAndRollPlaying);
@@ -336,7 +336,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                         continue;
                     }
 
-                    var name = $"#{id} {row.Name.RawString}";
+                    var name = $"#{id} {row.Name.ExtractText()}";
                     if (isSearching && !name.Contains(statusSearch, StringComparison.CurrentCultureIgnoreCase)) {
                         continue;
                     }

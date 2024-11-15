@@ -4,7 +4,7 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -18,22 +18,22 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakReleaseVersion("1.9.0.0")]
 public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
 
-    private ScenarioTree finalScenario;
+    private ScenarioTree? finalScenario;
     private readonly Dictionary<uint, ScenarioTree> expansionBegins = new();
     private readonly Dictionary<uint, ScenarioTree> expansionEnds = new();
 
     public class Config : TweakConfig {
         [TweakConfigOption("Show for current expansion", 1)]
-        public bool UseCurrentExpansion = false;
+        public bool UseCurrentExpansion;
 
         [TweakConfigOption("Show percentage before quest", 2)]
-        public bool ShowBeforeQuest = false;
+        public bool ShowBeforeQuest;
 
         [TweakConfigOption("Percentage Accuracy", 2, IntMin = 0, IntMax = 3, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EnforcedLimit = true, EditorSize = 100)]
         public int Accuracy = 1;
     }
 
-    public Config TweakConfig { get; private set; }
+    [TweakConfig] public Config TweakConfig { get; private set; }
 
     protected override void Enable() => UpdateAddon(Common.GetUnitBase("ScenarioTree"));
     protected override void Disable() => UpdateAddon(Common.GetUnitBase("ScenarioTree"));
@@ -42,52 +42,53 @@ public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
     private float GetScenarioCompletionForCurrentExpansion() {
         var current = GetCurrentScenarioTreeEntry();
         if (current == null) return 0;
-        var quest = Service.Data.GetExcelSheet<Quest>()?.GetRow(current.RowId);
-        if (quest == null) return 0;
+        if (!Service.Data.GetExcelSheet<Quest>().TryGetRow(current.Value.RowId, out var quest)) return 0;
         return GetScenarioCompletion(quest.Expansion.Value);
     }
 
-    private float GetScenarioCompletion(ExVersion expansion = null) {
+    private float GetScenarioCompletion(ExVersion? expansion = null) {
         var current = GetCurrentScenarioTreeEntry();
         if (current == null) return 0;
         
         if (finalScenario == null) {
             foreach (var st in Service.Data.GetExcelSheet<ScenarioTree>()!) {
-                var quest = Service.Data.GetExcelSheet<Quest>()?.GetRow(st.RowId);
-                if (quest?.Expansion.Value == null) continue;
+                if (!Service.Data.GetExcelSheet<Quest>().TryGetRow(st.RowId, out var quest)) continue;
+                if (!quest.Expansion.IsValid) continue;
 
-                if (finalScenario == null || st.Unknown1 > finalScenario.Unknown1) finalScenario = st;
-                if (!expansionEnds.ContainsKey(quest.Expansion.Row)) expansionEnds.Add(quest.Expansion.Row, st);
-                if (!expansionBegins.ContainsKey(quest.Expansion.Row)) expansionBegins.Add(quest.Expansion.Row, st);
+                if (finalScenario == null || st.Unknown1 > finalScenario.Value.Unknown1) finalScenario = st;
+                expansionEnds.TryAdd(quest.Expansion.Value.RowId, st);
+                expansionBegins.TryAdd(quest.Expansion.Value.RowId, st);
 
-                if (st.Unknown1 > expansionEnds[quest.Expansion.Row].Unknown1) {
-                    expansionEnds[quest.Expansion.Row] = st;
+                if (st.Unknown1 > expansionEnds[quest.Expansion.Value.RowId].Unknown1) {
+                    expansionEnds[quest.Expansion.Value.RowId] = st;
                 }
 
-                if (st.Unknown1 < expansionBegins[quest.Expansion.Row].Unknown1) {
-                    expansionBegins[quest.Expansion.Row] = st;
+                if (st.Unknown1 < expansionBegins[quest.Expansion.Value.RowId].Unknown1) {
+                    expansionBegins[quest.Expansion.Value.RowId] = st;
                 }
             }
         }
+
+        if (finalScenario == null) return 0;
 
         ScenarioTree begin;
         ScenarioTree end;
         if (expansion == null) {
             begin = expansionBegins[0];
-            end = finalScenario;
+            end = finalScenario.Value;
         } else {
-            begin = expansionBegins[expansion.RowId];
-            end = expansionEnds[expansion.RowId];
+            begin = expansionBegins[expansion.Value.RowId];
+            end = expansionEnds[expansion.Value.RowId];
         }
 
-        var complete = current.Unknown1 - (float)begin.Unknown1;
+        var complete = current.Value.Unknown1 - (float)begin.Unknown1;
         var total = 1 + (end.Unknown1 - (float)begin.Unknown1);
 
-        if (QuestManager.IsQuestComplete(current.RowId)) complete += 1;
+        if (QuestManager.IsQuestComplete(current.Value.RowId)) complete += 1;
         return complete / total;
     }
 
-    private ScenarioTree GetCurrentScenarioTreeEntry() {
+    private ScenarioTree? GetCurrentScenarioTreeEntry() {
         var agent = AgentScenarioTree.Instance();
         if (agent == null) return null;
         if (agent->Data == null) return null;
@@ -97,7 +98,7 @@ public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
         }
 
         if (index == 0) return null;
-        var result = Service.Data.GetExcelSheet<ScenarioTree>()?.GetRow(index | 0x10000U);
+        var result = Service.Data.GetExcelSheet<ScenarioTree>().GetRow(index | 0x10000U);
         return result;
     }
 

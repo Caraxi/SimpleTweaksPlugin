@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 
 namespace SimpleTweaksPlugin.Debugging; 
 
@@ -43,8 +43,12 @@ public unsafe class InventoryDebug : DebugHelper {
                             var item = container->GetInventorySlot(i);
                             DebugManager.ClickToCopy(item);
                             ImGui.SameLine();
-                            var itemName = item->ItemId == 0 ? string.Empty : Service.Data.Excel.GetSheet<Item>()?.GetRow(item->ItemId)?.Name?.RawString;
-                            DebugManager.PrintOutObject(*item, (ulong) item, new List<string> {$"Items[{i}]"},false, $"[{i:00}] {itemName ?? "<Not Found>"}" );
+                            if (Service.Data.Excel.GetSheet<Item>().TryGetRow(item->ItemId, out var itemRow)) {
+                                var itemName = item->ItemId == 0 ? string.Empty : itemRow.Name.ExtractText();
+                                DebugManager.PrintOutObject(*item, (ulong) item, new List<string> {$"Items[{i}]"},false, $"[{i:00}] {itemName}" );
+                            } else {
+                                ImGui.Text("Unknown item");
+                            }
                         }
                         ImGui.TreePop();
                     }

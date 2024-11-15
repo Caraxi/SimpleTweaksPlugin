@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets2;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -38,8 +37,8 @@ public unsafe class ImprovedWorldVisit : UiAdjustments.SubTweak {
         currentWorldNode->SetHeight(24);
         currentWorldNode->SetXShort(25);
 
-        var orderedWorlds = Service.Data.GetExcelSheet<World>()!.Where(w => w.DataCenter.Row == currentDc && w.IsPublic).OrderBy(w => w.Name.RawString).Select(w => w.Name.RawString).ToList();
-        var currentIndex = orderedWorlds.IndexOf(currentWorld.Name.RawString);
+        var orderedWorlds = Service.Data.GetExcelSheet<World>()!.Where(w => w.DataCenter.Row == currentDc && w.IsPublic).OrderBy(w => w.Name.ExtractText()).Select(w => w.Name.ExtractText()).ToList();
+        var currentIndex = orderedWorlds.IndexOf(currentWorld.Name.ExtractText());
         var pY = -26 + 24 * currentIndex;
         currentWorldNode->SetYFloat(pY);
         currentWorldIcon->SetYFloat(pY);

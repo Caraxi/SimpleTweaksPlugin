@@ -3,7 +3,6 @@ using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.STD;
-using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using System;
@@ -11,9 +10,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud.Utility.Signatures;
 using Dalamud.Memory;
-using LuminaAddon = Lumina.Excel.GeneratedSheets.Addon;
 using System.Text;
 using FFXIVClientStructs.FFXIV.Client.UI;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
@@ -91,7 +90,7 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
     }
 
     private void AgentItemSearchUpdateAtkValuesDetour(AgentItemSearch* a1, uint a2, byte* a3, bool a4) {
-        var partialString = Service.Data.GetExcelSheet<LuminaAddon>()?.GetRow(3136)?.Text.RawString;
+        var partialString = Service.Data.GetExcelSheet<LuminaAddon>()?.GetRow(3136)?.Text.ExtractText();
         var isPartial = MemoryHelper.ReadStringNullTerminated((nint)a3).Equals(partialString, StringComparison.Ordinal);
         if (isPartial) {
             var newText = Encoding.UTF8.GetBytes(Config.UseFuzzySearch ? "Fuzzy Item Search" : "Fast Item Search");

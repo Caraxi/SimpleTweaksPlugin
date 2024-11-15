@@ -4,7 +4,7 @@ using System.Linq;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -37,8 +37,6 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
         if (!IsHoveredItemOrchestrion(out var luminaItem)) {
            return isItemActionUnlockedHookWrapper!.Original(uiState, item);
         }
-        
-        if (luminaItem == null) return 4;
 
         var areAllUnlocked = GetRollsCraftedWithItem(luminaItem)
             .TrueForAll(o => UIState.Instance()->PlayerState.IsOrchestrionRollUnlocked(o.AdditionalData));
@@ -82,13 +80,10 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
     private static List<Item> GetRollsCraftedWithItem(Item item) {
         return Service.Data.Excel.GetSheet<Recipe>()!
             .Where(r => r.UnkData5.Any(i => i.ItemIngredient == item.RowId))
+            .Where(r => r.ItemResult.IsValid)
             .Select(r => r.ItemResult.Value)
-            .Where(r => r != null)
             .ToList()!;
     }
 
-    private static bool IsHoveredItemOrchestrion(out Item? item) {
-        item = Service.Data.GetExcelSheet<Item>()!.GetRow(Item.ItemId);
-        return item is { FilterGroup: 12, ItemUICategory.Row: 94, LevelItem.Row: 1 };
-    }
+    private static bool IsHoveredItemOrchestrion(out Item item) => Service.Data.GetExcelSheet<Item>().TryGetRow(Item.ItemId, out item) && item is { FilterGroup: 12, ItemUICategory.RowId: 94, LevelItem.RowId: 1 };
 }

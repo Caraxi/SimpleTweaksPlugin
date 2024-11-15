@@ -9,7 +9,6 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.ExtraPayloads;
 using SimpleTweaksPlugin.Utility;

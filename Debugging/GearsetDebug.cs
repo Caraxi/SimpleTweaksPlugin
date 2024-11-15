@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ImGuiNET;
 using SimpleTweaksPlugin.Utility;

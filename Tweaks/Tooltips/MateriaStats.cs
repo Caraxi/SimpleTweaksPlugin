@@ -7,8 +7,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.Sheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips;
@@ -69,14 +68,14 @@ public class MateriaStats : TooltipTweaks.SubTweak {
         yield return TooltipTweaks.ItemTooltipField.Param5;
     }
 
-    private ExcelSheet<ExtendedItem> itemSheet;
-    private ExcelSheet<ExtendedItemLevel> itemLevelSheet;
+    private ExcelSheet<Item> itemSheet;
+    private ExcelSheet<ItemLevel> itemLevelSheet;
     private ExcelSheet<ExtendedBaseParam> bpSheet;
     private ExcelSheet<Materia> materiaSheet;
 
     protected override void Enable() {
-        itemSheet = Service.Data.Excel.GetSheet<ExtendedItem>();
-        itemLevelSheet = Service.Data.Excel.GetSheet<ExtendedItemLevel>();
+        itemSheet = Service.Data.Excel.GetSheet<Item>();
+        itemLevelSheet = Service.Data.Excel.GetSheet<ItemLevel>();
         bpSheet = Service.Data.Excel.GetSheet<ExtendedBaseParam>();
         materiaSheet = Service.Data.Excel.GetSheet<Materia>();
         if (itemSheet == null || itemLevelSheet == null || bpSheet == null || materiaSheet == null) return;
@@ -92,10 +91,9 @@ public class MateriaStats : TooltipTweaks.SubTweak {
     public override unsafe void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         if (!(Config.Delta || Config.Total == false)) Config.Total = true; // Config invalid check
         try {
-            var item = itemSheet.GetRow(Item.ItemId);
-            if (item == null) return;
+            if (!itemSheet.TryGetRow(Item.ItemId, out var item)) return;
             if (item.MateriaSlotCount == 0) return;
-            var itemLevel = itemLevelSheet.GetRow(item.LevelItem.Row);
+            var itemLevel = itemLevelSheet.GetRow(item.LevelItem.RowId);
             if (itemLevel == null) return;
             var baseParams = new Dictionary<uint, ExtendedBaseParam>();
             var baseParamDeltas = new Dictionary<uint, int>();

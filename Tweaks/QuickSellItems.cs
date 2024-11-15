@@ -6,7 +6,7 @@ using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
@@ -78,11 +78,11 @@ public unsafe class QuickSellItems : Tweak {
     private string retainerSellText = "Have Retainer Sell Items";
 
     protected override void Enable() {
-        var sellRow = Service.Data.Excel.GetSheet<Addon>()?.GetRow(93);
-        if (sellRow != null) sellText = sellRow.Text?.RawString ?? "Sell";
+        var sellRow = Service.Data.Excel.GetSheet<Addon>().GetRowOrNull(93);
+        if (sellRow != null) sellText = sellRow.Value.Text.ExtractText();
 
-        var retainerSellRow = Service.Data.Excel.GetSheet<Addon>()?.GetRow(5480);
-        if (retainerSellRow != null) retainerSellText = retainerSellRow.Text?.RawString ?? "Have Retainer Sell Items";
+        var retainerSellRow = Service.Data.Excel.GetSheet<Addon>().GetRowOrNull(5480);
+        if (retainerSellRow != null) retainerSellText = retainerSellRow.Value.Text.ExtractText();
     }
 
     private bool HotkeyIsHeld => (Service.KeyState[VirtualKey.SHIFT] || !Config.Shift) && (Service.KeyState[VirtualKey.CONTROL] || !Config.Ctrl) && (Service.KeyState[VirtualKey.MENU] || !Config.Alt) && (Config.Ctrl || Config.Shift || Config.Alt);
@@ -97,7 +97,7 @@ public unsafe class QuickSellItems : Tweak {
                 var itemSlot = inventory->GetInventorySlot(slot);
                 if (itemSlot == null) return false;
                 var itemId = itemSlot->ItemId;
-                var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(itemId);
+                var item = Service.Data.Excel.GetSheet<Item>()?.GetRowOrNull(itemId);
                 if (item == null) return false;
                 var agentAddonId = agent->AgentInterface.GetAddonId();
                 if (agentAddonId == 0) return false;

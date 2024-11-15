@@ -6,7 +6,7 @@ public class TweakAutoConfigAttribute : Attribute {
     public bool AutoSaveLoad { get; }
     public string ConfigKey { get; init; } = null;
 
-    public bool SaveOnChange { get; init; } = false;
+    public bool SaveOnChange { get; init; }
 
     public TweakAutoConfigAttribute(bool autoSaveLoad = true, bool saveOnChange = false) {
         AutoSaveLoad = autoSaveLoad;

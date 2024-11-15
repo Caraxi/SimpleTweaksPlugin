@@ -15,7 +15,7 @@ public class TweakConfigOptionAttribute : Attribute {
 
     public string HelpText { get; init; } = string.Empty;
     
-    public int Priority { get; } = 0;
+    public int Priority { get; }
     public int EditorSize { get; set; } = int.MinValue;
 
     public bool SameLine { get; set; } = false;

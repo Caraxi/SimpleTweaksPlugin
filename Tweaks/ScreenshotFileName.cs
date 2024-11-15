@@ -7,9 +7,9 @@ using Dalamud.Memory;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using ImGuiNET;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
-using Lumina.Excel.GeneratedSheets;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
@@ -118,6 +118,6 @@ public unsafe class ScreenshotFileName : Tweak {
         new("M", () => "Two-digit minute", () => DateTime.Now.ToString("mm")),
         new("S", () => "Two-digit second", () => DateTime.Now.ToString("ss")),
         new("ChrName", () => "Current character name", () => UIState.Instance()->PlayerState.CharacterNameString),
-        new("Location", () => "Current location name", () => Service.Data.GetExcelSheet<TerritoryType>()?.GetRow(Service.ClientState.TerritoryType)?.PlaceName.Value?.Name.RawString ?? "Unknown Location"),
+        new("Location", () => "Current location name", () => Service.Data.GetExcelSheet<TerritoryType>()?.GetRowOrNull(Service.ClientState.TerritoryType)?.PlaceName.Value.Name.ExtractText() ?? "Unknown Location"),
     ];
 }

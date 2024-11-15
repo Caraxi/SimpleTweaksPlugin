@@ -1,5 +1,5 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
 using SimpleTweaksPlugin.TweakSystem;
 

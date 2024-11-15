@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
-using Lumina.Excel.GeneratedSheets;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
@@ -61,10 +61,10 @@ public unsafe class RememberSelectedWorld : Tweak {
         var stringArray = AtkStage.Instance()->GetStringArrayData()[1];
         if (stringArray == null) return;
 
-        var world = Service.Data.Excel.GetSheet<World>()?.GetRow(worldId);
+        var world = Service.Data.Excel.GetSheet<World>().GetRowOrNull(worldId);
         if (world is not { IsPublic: true }) return;
 
-        SimpleLog.Debug($"Attempting to Select World: {world.Name.RawString}");
+        SimpleLog.Debug($"Attempting to Select World: {world.Value.Name.ExtractText()}");
 
         var checkedWorldCount = 0;
 
@@ -74,8 +74,8 @@ public unsafe class RememberSelectedWorld : Tweak {
             var s = Common.ReadString(n);
             if (s.Trim().Length == 0) continue;
             checkedWorldCount++;
-            if (s != world.Name.RawString) {
-                SimpleLog.Verbose($"'{s}' != '{world.Name.RawString}'");
+            if (s != world.Value.Name.ExtractText()) {
+                SimpleLog.Verbose($"'{s}' != '{world.Value.Name.ExtractText()}'");
                 continue;
             }
 
@@ -85,7 +85,7 @@ public unsafe class RememberSelectedWorld : Tweak {
         }
 
         if (checkedWorldCount > 0) {
-            SimpleLog.Warning($"World '{world.Name.RawString}' not found.");
+            SimpleLog.Warning($"World '{world.Value.Name.ExtractText()}' not found.");
             isSetting = false;
         }
     }

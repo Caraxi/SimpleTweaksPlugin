@@ -1,11 +1,9 @@
 
 using System.Numerics;
 using Dalamud.Interface.Colors;
-using Dalamud.Memory;
-using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using static FFXIVClientStructs.FFXIV.Client.UI.Info.InfoProxyCommonList.CharacterData;
 
 namespace SimpleTweaksPlugin.Debugging;
@@ -49,19 +47,17 @@ public unsafe class FriendListDebugging : DebugHelper {
 
 
                 ImGui.TableNextColumn();
-                var job = Service.Data.GetExcelSheet<ClassJob>()?.GetRow(friend->Job);
-                if (job == null) {
+                if (!Service.Data.GetExcelSheet<ClassJob>().TryGetRow(friend->Job, out var job)) {
                     ImGui.TextDisabled("Unknown");
-                } else if (job.RowId != 0) {
-                    ImGui.Text($"{job.Abbreviation.ToDalamudString().TextValue} ??");
+                } else {
+                    ImGui.Text($"{job.Abbreviation.ExtractText()}");
                 }
-                
+
                 ImGui.TableNextColumn();
-                var location = Service.Data.GetExcelSheet<TerritoryType>()?.GetRow(friend->Location);
-                if (location == null) {
+                if (!Service.Data.GetExcelSheet<TerritoryType>().TryGetRow(friend->Location, out var location)) {
                     ImGui.TextDisabled($"Unknown");
                 } else {
-                    ImGui.Text($"{location.PlaceName.Value?.Name.ToDalamudString().TextValue}");
+                    ImGui.Text($"{location.PlaceName.Value.Name.ExtractText()}");
                 }
                 
                 ImGui.TableNextColumn();

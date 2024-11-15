@@ -8,7 +8,6 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
-using Action = Lumina.Excel.GeneratedSheets.Action;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
@@ -22,10 +21,10 @@ public unsafe class ComboTimer : UiAdjustments.SubTweak {
     private bool usingScreenText;
 
     public class Configs : TweakConfig {
-        [TweakConfigOption("Always Visible")] public bool AlwaysVisible = false;
+        [TweakConfigOption("Always Visible")] public bool AlwaysVisible;
 
         [TweakConfigOption("Hide 'COMBO' Text")]
-        public bool NoComboText = false;
+        public bool NoComboText;
 
         [TweakConfigOption("Font Size", 1, IntMin = 6, IntMax = 255, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EditorSize = 150)]
         public int FontSize = 12;
@@ -48,7 +47,7 @@ public unsafe class ComboTimer : UiAdjustments.SubTweak {
         public int DecimalPlaces = 2;
 
         [TweakConfigOption("Alternative UI Attachment", 1)]
-        public bool UseScreenText = false;
+        public bool UseScreenText;
     }
 
     public Configs Config { get; private set; }

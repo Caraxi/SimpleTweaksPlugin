@@ -38,7 +38,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
 
     private class Config : TweakConfig {
         public bool PrimaryTargetEnabled = true;
-        public bool FocusTargetEnabled = false;
+        public bool FocusTargetEnabled;
         public NodePosition FocusTargetPosition = NodePosition.Left;
         public NodePosition CastbarPosition = NodePosition.BottomLeft;
         public int FontSize = 20;

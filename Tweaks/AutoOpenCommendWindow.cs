@@ -1,6 +1,5 @@
 ﻿using System;
 using Dalamud.Game.ClientState.Conditions;
-using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;

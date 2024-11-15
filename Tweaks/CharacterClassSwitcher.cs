@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets2;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -73,7 +73,7 @@ public unsafe class CharacterClassSwitcher : Tweak {
                         if (colNode != null) {
                             var evt = colNode->AtkResNode.AtkEventManager.Event;
                             while (evt != null) {
-                                if (evt->Type is AtkEventType.MouseClick or AtkEventType.InputReceived) {
+                                if (evt->State.EventType is AtkEventType.MouseClick or AtkEventType.InputReceived) {
                                     evt->Param = 0x53541000 + cjId;
                                     evt->Listener = (AtkEventListener*)atkUnitBase;
                                 }
@@ -136,16 +136,15 @@ public unsafe class CharacterClassSwitcher : Tweak {
         try {
             if (eventType is AtkEventType.MouseClick or AtkEventType.ButtonClick or AtkEventType.InputReceived && (eventParam & 0x53541000) == 0x53541000) {
                 var cjId = (uint)(eventParam - 0x53541000);
-                var classJob = Service.Data.Excel.GetSheet<ClassJob>()?.GetRow(cjId);
-                if (classJob == null) return;
-                SimpleLog.Debug($"Change Class: ClassJob#{cjId} ({classJob.Abbreviation.RawString})");
+                if (!Service.Data.Excel.GetSheet<ClassJob>().TryGetRow(cjId, out var classJob)) return;
+                SimpleLog.Debug($"Change Class: ClassJob#{cjId} ({classJob.Abbreviation.ExtractText()})");
 
                 var gearsetId = GetGearsetForClassJob(classJob);
                 if (gearsetId != null) {
                     SimpleLog.Log($"Send Command: /gearset change {gearsetId.Value + 1}");
                     ChatHelper.SendMessage($"/gearset change {gearsetId.Value + 1}");
                 } else {
-                    Service.Chat.PrintError($"No saved gearset for {classJob.Name.RawString}");
+                    Service.Chat.PrintError($"No saved gearset for {classJob.Name.ExtractText()}");
                 }
             }
         } catch (Exception ex) {
@@ -162,7 +161,7 @@ public unsafe class CharacterClassSwitcher : Tweak {
             if (!gearset->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists)) continue;
             if (gearset->Id != i) continue;
             if (gearset->ClassJob == cj.RowId) return gearset->Id;
-            if (backup == null && cj.ClassJobParent.Row != 0 && gearset->ClassJob == cj.ClassJobParent.Row) backup = gearset->Id;
+            if (backup == null && cj.ClassJobParent.RowId != 0 && gearset->ClassJob == cj.ClassJobParent.RowId) backup = gearset->Id;
         }
 
         return backup;

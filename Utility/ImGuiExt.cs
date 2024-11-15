@@ -4,7 +4,7 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Enums;
 
 namespace SimpleTweaksPlugin.Utility; 
@@ -81,8 +81,8 @@ public static class ImGuiExt {
         return changed;
     }
 
-    private static List<UIColor> uniqueSortedUiForeground = null;
-    private static List<UIColor> uniqueSortedUiGlow = null;
+    private static List<UIColor> uniqueSortedUiForeground;
+    private static List<UIColor> uniqueSortedUiGlow;
 
     private static void BuildUiColorLists() {
         uniqueSortedUiForeground = new List<UIColor>();
@@ -140,20 +140,13 @@ public static class ImGuiExt {
         var glowOnly = mode == ColorPickerMode.GlowOnly;
 
         var colorSheet = Service.Data.Excel.GetSheet<UIColor>();
-        if (colorSheet == null) {
-            var i = (int)colourKey;
-            if (ImGui.InputInt(label, ref i)) {
-                if (i >= ushort.MinValue && i <= ushort.MaxValue) {
-                    colourKey = (ushort)i;
-                    return true;
-                }
+
+        if (!colorSheet.TryGetRow(colourKey, out var currentColor)) {
+            if (!colorSheet.TryGetRow(0, out currentColor)) {
+                return false;
             }
-            return false;
         }
 
-        var currentColor = colorSheet.GetRow(colourKey);
-        if (currentColor == null) currentColor = colorSheet.GetRow(0)!;
-        if (currentColor == null) return false;
         var id = ImGui.GetID(label);
 
         ImGui.SetNextItemWidth(24 * ImGui.GetIO().FontGlobalScale);

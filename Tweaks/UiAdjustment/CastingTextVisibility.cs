@@ -5,7 +5,6 @@ using ImGuiNET;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
-using System;
 using System.Numerics;
 using Dalamud.Interface.Utility.Raii;
 
@@ -45,8 +44,8 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak
         public Vector4 FocusEdgeColor = new(115 / 255f, 85 / 255f, 15 / 255f, 1);
         public Vector4 FocusBackgroundColor = new(0);
         public int FocusFontSize = 14;
-        public int FocusBackgroundWidthPadding = 0;
-        public int FocusBackgroundHeightPadding = 0;
+        public int FocusBackgroundWidthPadding;
+        public int FocusBackgroundHeightPadding;
         public Vector2 FocusPosition = Vector2.One;
         public bool FocusRightAlign = true;
 
@@ -54,8 +53,8 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak
         public Vector4 TargetEdgeColor = new(157 / 255f, 131 / 255f, 91 / 255f, 1);
         public Vector4 TargetBackgroundColor = new(0);
         public int TargetFontSize = 14;
-        public int TargetBackgroundWidthPadding = 0;
-        public int TargetBackgroundHeightPadding = 0;
+        public int TargetBackgroundWidthPadding;
+        public int TargetBackgroundHeightPadding;
         public Vector2 TargetPosition = Vector2.One;
         public bool TargetRightAlign = true;
     }

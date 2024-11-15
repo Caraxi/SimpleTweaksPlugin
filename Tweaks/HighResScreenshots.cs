@@ -36,9 +36,9 @@ public unsafe class HighResScreenshots : Tweak {
         
         public bool UseReShade;
         public VirtualKey ReShadeMainKey = VirtualKey.SNAPSHOT;
-        public bool ReShadeCtrl = false;
-        public bool ReShadeShift = false;
-        public bool ReShadeAlt = false;
+        public bool ReShadeCtrl;
+        public bool ReShadeShift;
+        public bool ReShadeAlt;
     }
 
     public Configs Config { get; private set; }
@@ -50,7 +50,7 @@ public unsafe class HighResScreenshots : Tweak {
     private delegate byte ReShadeKeyTest(byte* a1, uint a2, byte a3, byte a4, byte a5, byte a6);
     private HookWrapper<ReShadeKeyTest> reShadeKeyTestHook;
 
-    private bool updatingReShadeKeybind = false;
+    private bool updatingReShadeKeybind;
     
     protected void DrawConfig(ref bool hasChanged) {
         ImGui.TextWrapped(
@@ -177,7 +177,7 @@ public unsafe class HighResScreenshots : Tweak {
 
     const int ScreenshotButton = 546;
     public bool originalUiVisibility;
-    byte[] originalCopyrightBytes = null;
+    byte[] originalCopyrightBytes;
     // IsInputIDClicked is called from Client::UI::UIInputModule.CheckScreenshotState, which is polled
     // We change the res when the button is pressed and tell it to take a screenshot the next time it is polled
     private byte IsInputIDClickedDetour(nint a1, int a2) {

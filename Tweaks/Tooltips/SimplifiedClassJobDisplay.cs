@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips;
@@ -18,13 +18,13 @@ public unsafe class SimplifiedClassJobDisplay : TooltipTweaks.SubTweak {
     private Dictionary<string, ClassJob> abbrToClassJob = new();
     private Dictionary<string, (ClassJob, ClassJob)> replaceGroup = new();
 
-    private string TooltipClassJobNameDisplay(ClassJob cj) => Service.ClientState.ClientLanguage == ClientLanguage.Japanese ? cj.Name.RawString : cj.Abbreviation.RawString;
+    private string TooltipClassJobNameDisplay(ClassJob cj) => Service.ClientState.ClientLanguage == ClientLanguage.Japanese ? cj.Name.ExtractText() : cj.Abbreviation.ExtractText();
 
     protected override void Setup() {
-        abbrToClassJob = Service.Data.Excel.GetSheet<ClassJob>()!.Where(cj => cj.ClassJobCategory.Row != 0).ToDictionary(TooltipClassJobNameDisplay);
+        abbrToClassJob = Service.Data.Excel.GetSheet<ClassJob>()!.Where(cj => cj.ClassJobCategory.RowId != 0).ToDictionary(TooltipClassJobNameDisplay);
         replaceGroup = new Dictionary<string, (ClassJob, ClassJob)>();
         foreach (var cj in abbrToClassJob.Values) {
-            if (cj.ClassJobParent.Row != 0 && cj.ClassJobParent.Value != null && cj.ExpArrayIndex == cj.ClassJobParent.Value.ExpArrayIndex) {
+            if (cj.ClassJobParent.Value.RowId != 0 && cj.ClassJobParent.IsValid && cj.ExpArrayIndex == cj.ClassJobParent.Value.ExpArrayIndex) {
                 replaceGroup.Add($"{TooltipClassJobNameDisplay(cj.ClassJobParent.Value)} {TooltipClassJobNameDisplay(cj)}", (cj.ClassJobParent.Value!, cj));
             }
         }
@@ -34,11 +34,11 @@ public unsafe class SimplifiedClassJobDisplay : TooltipTweaks.SubTweak {
         var str = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ClassJobCategory);
         if (str == null || str.Payloads.Count != 1 || str.Payloads.First() is not TextPayload textPayload || textPayload.Text == null) return;
         var split = textPayload.Text.Split(' ');
-        var classJobs = split.Select(s => abbrToClassJob.GetValueOrDefault(s)).Where(cj => cj is not null).OrderBy(cj => cj.ExpArrayIndex).ThenBy(cj => cj.RowId).ToList();
+        var classJobs = split.Select(s => abbrToClassJob.GetValueOrDefault(s)).Where(cj => cj.RowId != 0).OrderBy(cj => cj.ExpArrayIndex).ThenBy(cj => cj.RowId).ToList();
         if (classJobs.Count != split.Length) return;
         var newStr = string.Join(' ', classJobs.Select(TooltipClassJobNameDisplay));
         foreach (var (key, (baseClass, job)) in replaceGroup) {
-            newStr = newStr.Replace(key, QuestManager.IsQuestComplete(job.UnlockQuest.Row) ? TooltipClassJobNameDisplay(job) : TooltipClassJobNameDisplay(baseClass));
+            newStr = newStr.Replace(key, QuestManager.IsQuestComplete(job.UnlockQuest.RowId) ? TooltipClassJobNameDisplay(job) : TooltipClassJobNameDisplay(baseClass));
         }
 
         try {

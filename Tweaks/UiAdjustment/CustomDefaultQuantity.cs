@@ -2,7 +2,7 @@ using System;
 using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -55,8 +55,8 @@ public unsafe class CustomDefaultQuantity : Tweak {
         DrawModeConfig(Config.Deposit, "Entrust Quantity");
     }
 
-    private readonly string textWithdraw = Service.Data.GetExcelSheet<Addon>()?.GetRow(914)?.Text?.RawString ?? "Select amount to withdraw.";
-    private readonly string textDeposit = Service.Data.GetExcelSheet<Addon>()?.GetRow(915)?.Text?.RawString ?? "Select amount to deposit.";
+    private readonly string textWithdraw = Service.Data.GetExcelSheet<Addon>()?.GetRow(914)?.Text?.ExtractText() ?? "Select amount to withdraw.";
+    private readonly string textDeposit = Service.Data.GetExcelSheet<Addon>()?.GetRow(915)?.Text?.ExtractText() ?? "Select amount to deposit.";
 
     [AddonPreSetup("InputNumeric")]
     public void AddonSetup(AtkUnitBase* atkUnitBase) {

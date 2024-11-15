@@ -6,7 +6,7 @@ using Dalamud.Game.Text;
 using Dalamud.Utility;
 using Dalamud.Utility.Signatures;
 using Lumina.Data;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -36,7 +36,7 @@ public unsafe class SubmarineDestinationLetters : UiAdjustments.SubTweak {
         foreach (var e in sheet) {
             var frRow = frSheet.GetRow(e.RowId);
             if (frRow == null) continue;
-            destinationNames.Add(e.RowId, $"{ToBoxedLetters(frRow.Location.RawString)} {e.Destination.ToDalamudString().TextValue}");
+            destinationNames.Add(e.RowId, $"{ToBoxedLetters(frRow.Location.ExtractText())} {e.Destination.ToDalamudString().TextValue}");
         }
     }
 

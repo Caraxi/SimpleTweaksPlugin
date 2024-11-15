@@ -8,6 +8,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -54,7 +55,7 @@ public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
                 var slot = container->GetInventorySlot(i);
                 if (slot == null) continue;
                 var id = slot->ItemId;
-                var item = Service.Data.Excel.GetSheet<Sheets.ExtendedItem>()?.GetRow(id);
+                var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(id);
                 if (item == null) continue;
                 if (ignoreCategory.Contains(item.ItemUICategory.Row)) {
                     if (i == 0) c -= 1;

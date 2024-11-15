@@ -14,11 +14,11 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 public class ShowItemID : TooltipTweaks.SubTweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Use Hexadecimal ID")]
-        public bool Hex = false;
+        public bool Hex;
 
         public bool ShouldShowBoth() => Hex;
         [TweakConfigOption("Show Both HEX and Decimal", 1, ConditionalDisplay = true, SameLine = true)]
-        public bool Both = false;
+        public bool Both;
         
         [TweakConfigOption("Show Resolved Action ID", 2)]
         public bool ShowResolvedActionId = true;

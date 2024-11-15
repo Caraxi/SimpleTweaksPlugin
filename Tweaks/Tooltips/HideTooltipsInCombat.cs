@@ -3,7 +3,7 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -18,21 +18,21 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Hide Action Tooltips in Combat", 1)]
-        public bool HideAction = false;
+        public bool HideAction;
         [TweakConfigOption("Hide Action Tooltips out of Combat", 2)]
-        public bool HideActionOoc = false;
+        public bool HideActionOoc;
         [TweakConfigOption("Hide Item Tooltips in Combat", 3)]
-        public bool HideItem = false;
+        public bool HideItem;
         [TweakConfigOption("Hide Item Tooltips out of Combat", 4)]
-        public bool HideItemOoc = false;
+        public bool HideItemOoc;
         [TweakConfigOption("Hide Pop-up Help in Combat", 5)]
-        public bool HidePopUp = false;
+        public bool HidePopUp;
         [TweakConfigOption("Hide Pop-up Help out of Combat", 6)]
-        public bool HidePopUpOoc = false;
+        public bool HidePopUpOoc;
         [TweakConfigOption("Hide Cross Bar Hints in Combat", 7)]
-        public bool HideCrossbarHints = false;
+        public bool HideCrossbarHints;
         [TweakConfigOption("Hide Cross Bar Hints out of Combat", 7)]
-        public bool HideCrossbarHintsOoc = false;
+        public bool HideCrossbarHintsOoc;
     }
 
     public bool OriginalAction;
@@ -40,7 +40,7 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
     public bool OriginalPopUp;
     public bool OriginalCrossbarHints;
     
-    public Configs Config { get; private set; }
+    [TweakConfig] public Configs Config { get; private set; }
 
     protected override void ConfigChanged() {
         OnConditionChange(ConditionFlag.InCombat, false);
@@ -101,9 +101,8 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
         if (textNode2 == null) return;
         var textNode = textNode2->GetAsAtkTextNode();
         if (textNode == null) return;
-
-        var text = Service.Data.GetExcelSheet<Addon>()?.GetRow(addonTextId);
-        if (text == null) return;
+        
+        if (!Service.Data.GetExcelSheet<Addon>().TryGetRow(addonTextId, out var text)) return;
 
         var seString = text.Text.ToDalamudString();
         if (!allowEditing) {
@@ -118,12 +117,12 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
         textNode->ResizeNodeForCurrentText();
     }
     
-    private unsafe void ToggleXhbConfigLock(AtkUnitBase* addon, bool allowEditing) {
+    private void ToggleXhbConfigLock(AtkUnitBase* addon, bool allowEditing) {
         if (addon == null) return;
         HandleCheckboxNode(addon, allowEditing, 11, 7791);
     }
 
-    private unsafe void ToggleConfigLock(AtkUnitBase* addon, bool allowEditing) {
+    private void ToggleConfigLock(AtkUnitBase* addon, bool allowEditing) {
         if (addon == null) return;
         HandleCheckboxNode(addon, allowEditing, 30, 7663);
         HandleCheckboxNode(addon, allowEditing, 43, 7665);

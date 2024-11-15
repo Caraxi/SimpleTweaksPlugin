@@ -7,6 +7,7 @@ using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -72,7 +73,7 @@ public static unsafe class EventController {
             if (!p.ParameterType.IsPointer) return false;
             var elementType = p.ParameterType.GetElementType();
             if (elementType == null || elementType.IsPointer) return false;
-            var addonAttribute = elementType.GetCustomAttribute<Addon>();
+            var addonAttribute = elementType.GetCustomAttribute<AddonAttribute>();
             if (addonAttribute == null) return false;
             return true;
         }

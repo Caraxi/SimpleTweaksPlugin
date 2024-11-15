@@ -8,7 +8,6 @@ using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
-using Action = Lumina.Excel.GeneratedSheets.Action;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
@@ -62,7 +61,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         public bool ReddenOutOfRange = true;
 
         [TweakConfigOption("Apply Only to Sync'd Actions")]
-        public bool ApplyToSyncActions = false;
+        public bool ApplyToSyncActions;
     }
     
     public Config TweakConfig { get; private set; } = null!;

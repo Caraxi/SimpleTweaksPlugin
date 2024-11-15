@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Keys;
 using ImGuiNET;
-using SimpleTweaksPlugin.Sheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips.Hotkeys;
@@ -25,7 +25,7 @@ public class ViewOnTeamcraft : ItemHotkey {
         if (ImGui.Checkbox("Browser Only", ref Config.ForceBrowser)) SaveConfig();
     }
 
-    public override void OnTriggered(ExtendedItem item) {
+    public override void OnTriggered(Item item) {
         if (teamcraftLocalFailed || Config.ForceBrowser) {
             Common.OpenBrowser($"https://ffxivteamcraft.com/db/en/item/{item.RowId}");
             return;

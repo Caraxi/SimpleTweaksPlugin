@@ -9,8 +9,7 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using ImGuiNET;
-using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.ExtraPayloads;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -38,7 +37,7 @@ public class ChatNameColours : ChatTweaks.SubTweak {
         public List<ForcedColour> ForcedColours = new();
         public bool RandomColours = true;
         public bool LegacyColours;
-        public bool ApplyDefaultColour = false;
+        public bool ApplyDefaultColour;
         public ushort DefaultColourKey = 1;
         public Vector3 DefaultColour = Vector3.One;
 
@@ -89,47 +88,48 @@ public class ChatNameColours : ChatTweaks.SubTweak {
     }
 
     private Vector3 LegacyToNew(ushort legacyColourId) {
-        var xivCol = Service.Data.Excel.GetSheet<UIColor>()?.GetRow(legacyColourId)?.UIForeground;
-        if (xivCol != null) {
-            var fb = (xivCol.Value >> 8) & 255;
-            var fg = (xivCol.Value >> 16) & 255;
-            var fr = (xivCol.Value >> 24) & 255;
+        
+        
+        
+        if (Service.Data.GetExcelSheet<UIColor>().TryGetRow(legacyColourId, out var xivCol)) {
+            var fb = (xivCol.UIForeground >> 8) & 255;
+            var fg = (xivCol.UIForeground >> 16) & 255;
+            var fr = (xivCol.UIForeground >> 24) & 255;
             return new Vector3(fr / 255f, fg / 255f, fb / 255f);
         }
 
         return Vector3.One;
     }
-
-    private ExcelSheet<UIColor> uiColorSheet;
-    private ExcelSheet<World> worldSheet;
-
+    
     protected override void Setup() {
         AddChangelog("1.8.8.1", "Fixed Chat2 exploding with new colour system. Tweak will still not work in Chat2, but it will not explode.");
         AddChangelog("1.8.8.0", "Fixed colour display when in party.");
         AddChangelog("1.8.8.0", "Extended range of possible colours.");
         AddChangelog("1.8.9.0", "Added option to give all undefined characters the same colour.");
         AddChangelog("1.8.9.0", "Added per channel configuration for colouring sender name and/or names in messages.");
-        this.uiColorSheet = Service.Data.Excel.GetSheet<UIColor>();
-        this.worldSheet = Service.Data.Excel.GetSheet<World>();
 
-        var dcSheet = Service.Data.Excel.GetSheet<WorldDCGroupType>();
+        Region GetRegion(byte regionId, string name) => new() {
+                Name = name, 
+                DataCentres = Service.Data.Excel.GetSheet<WorldDCGroupType>()
+                    .Where(dc => dc.Region == regionId)
+                    .Select(dc => new Region.DataCentre {
+                        Name = dc.Name.ExtractText(), 
+                        Worlds = Service.Data.Excel.GetSheet<World>().Where(w => 
+                            w.DataCenter.RowId == dc.RowId && w.IsPublic
+                        ).Select(w => w.Name.ExtractText()).ToList()
+                }).Where(dc => dc.Worlds.Count > 0).ToList()
+            };
 
-        if (uiColorSheet == null || worldSheet == null || dcSheet == null) {
-            Ready = false;
-            return;
-        }
-
-        Region GetRegion(byte regionId, string name) {
-            return new Region() { Name = name, DataCentres = dcSheet.Where(dc => dc.Region == regionId).Select(dc => new Region.DataCentre() { Name = dc.Name.RawString, Worlds = worldSheet.Where(w => w.DataCenter.Row == dc.RowId && w.IsPublic).Select(w => w.Name.RawString).ToList() }).Where(dc => dc.Worlds.Count > 0).ToList() };
-        }
-
-        Regions = new List<Region>() {
-            GetRegion(1, "JP"), GetRegion(2, "NA"), GetRegion(3, "EU"), GetRegion(4, "OCE"),
-        };
+        Regions = [
+            GetRegion(1, "JP"),
+            GetRegion(2, "NA"),
+            GetRegion(3, "EU"),
+            GetRegion(4, "OCE")
+        ];
     }
 
-    private float serverListPopupWidth = 0;
-    private bool comboOpen = false;
+    private float serverListPopupWidth;
+    private bool comboOpen;
 
     protected void DrawConfig() {
         var buttonSize = new Vector2(22, 22) * ImGui.GetIO().FontGlobalScale;
@@ -173,12 +173,11 @@ public class ChatNameColours : ChatTweaks.SubTweak {
                     fc.Color ??= LegacyToNew(fc.ColourKey);
                     fColor = new Vector4(fc.Color ?? Vector3.One, 1);
                 } else {
-                    var xivCol = Service.Data.Excel.GetSheet<UIColor>()?.GetRow(fc.ColourKey)?.UIForeground;
-                    if (xivCol != null) {
-                        var fa = xivCol.Value & 255;
-                        var fb = (xivCol.Value >> 8) & 255;
-                        var fg = (xivCol.Value >> 16) & 255;
-                        var fr = (xivCol.Value >> 24) & 255;
+                    if (Service.Data.Excel.GetSheet<UIColor>().TryGetRow(fc.ColourKey, out var xivCol)) {
+                        var fa = xivCol.UIForeground & 255;
+                        var fb = (xivCol.UIForeground >> 8) & 255;
+                        var fg = (xivCol.UIForeground >> 16) & 255;
+                        var fr = (xivCol.UIForeground >> 24) & 255;
 
                         fColor = new Vector4(fr / 255f, fg / 255f, fb / 255f, fa / 255f);
                     } else {
@@ -194,11 +193,10 @@ public class ChatNameColours : ChatTweaks.SubTweak {
                 ImGui.TableNextColumn();
                 if (!Config.LegacyColours) {
                     if (fc.Color == null) {
-                        var xivCol = Service.Data.Excel.GetSheet<UIColor>()?.GetRow(fc.ColourKey)?.UIForeground;
-                        if (xivCol != null) {
-                            var fb = (xivCol.Value >> 8) & 255;
-                            var fg = (xivCol.Value >> 16) & 255;
-                            var fr = (xivCol.Value >> 24) & 255;
+                        if (Service.Data.Excel.GetSheet<UIColor>().TryGetRow(fc.ColourKey, out var xivCol)) {
+                            var fb = (xivCol.UIForeground >> 8) & 255;
+                            var fg = (xivCol.UIForeground >> 16) & 255;
+                            var fr = (xivCol.UIForeground >> 24) & 255;
                             fc.Color = new Vector3(fr / 255f, fg / 255f, fb / 255f);
                         } else {
                             fc.Color = Vector3.One;
@@ -253,9 +251,8 @@ public class ChatNameColours : ChatTweaks.SubTweak {
 
                 ImGui.TableNextColumn();
 
-                var currentWorld = Service.ClientState.LocalPlayer.CurrentWorld.GameData?.Name.RawString;
+                var currentWorld = Service.ClientState.LocalPlayer.CurrentWorld.Value.Name.ExtractText();
                 var currentRegion = Regions.Find(r => r.DataCentres.Any(dc => dc.Worlds.Contains(currentWorld)));
-                var currentDc = currentRegion?.DataCentres?.Find(dc => dc.Worlds.Contains(currentWorld));
 
                 ImGui.SetNextItemWidth(-1);
                 ImGui.InputText("##inputNewPlayerName", ref inputNewPlayerName, 25);
@@ -306,13 +303,13 @@ public class ChatNameColours : ChatTweaks.SubTweak {
                 ImGui.TextColored(new Vector4(1, 0, 0, 1), addError);
 
                 var target = Service.Targets.SoftTarget ?? Service.Targets.Target;
-                if (target is IPlayerCharacter pc && !Config.ForcedColours.Any(f => f.PlayerName == pc.Name.TextValue && f.WorldName == pc.HomeWorld.GameData?.Name.RawString)) {
+                if (target is IPlayerCharacter pc && !Config.ForcedColours.Any(f => f.PlayerName == pc.Name.TextValue && f.WorldName == pc.HomeWorld.Value.Name.ExtractText())) {
                     ImGui.TableNextColumn();
                     ImGui.TableNextColumn();
                     if (ImGui.Button($"Add {pc.Name.TextValue}")) {
-                        var colourKey = GetColourKey(pc.Name.TextValue, pc.HomeWorld.GameData.Name.RawString, true) ?? 0;
+                        var colourKey = GetColourKey(pc.Name.TextValue, pc.HomeWorld.Value.Name.ExtractText(), true) ?? 0;
                         Config.ForcedColours.Add(new ForcedColour() {
-                            PlayerName = pc.Name.TextValue, WorldName = pc.HomeWorld.GameData.Name.RawString, ColourKey = colourKey, Color = Config.LegacyColours || ImGui.GetIO().KeyShift ? LegacyToNew(colourKey) : GetColor(pc.Name.TextValue, pc.HomeWorld.GameData.Name.RawString, true) ?? Vector3.One,
+                            PlayerName = pc.Name.TextValue, WorldName = pc.HomeWorld.Value.Name.ExtractText(), ColourKey = colourKey, Color = Config.LegacyColours || ImGui.GetIO().KeyShift ? LegacyToNew(colourKey) : GetColor(pc.Name.TextValue, pc.HomeWorld.Value.Name.ExtractText(), true) ?? Vector3.One,
                         });
                         SaveConfig(Config);
                     }
@@ -373,7 +370,7 @@ public class ChatNameColours : ChatTweaks.SubTweak {
             }
 
             ImGui.SameLine();
-            ImGui.Text(type.GetDetails()?.FancyName ?? $"{type}");
+            ImGui.Text(type.GetDetails().FancyName);
         }
 
         ImGui.TableNextColumn();
@@ -389,11 +386,11 @@ public class ChatNameColours : ChatTweaks.SubTweak {
         base.Enable();
     }
 
-    private readonly XivChatType[] chatTypes = { NoviceNetwork, TellIncoming, TellOutgoing, Say, Yell, Shout, Echo, Debug, Party, Alliance, CrossParty, PvPTeam, Ls1, Ls2, Ls3, Ls4, Ls5, Ls6, Ls7, Ls8, CrossLinkShell1, CrossLinkShell2, CrossLinkShell3, CrossLinkShell4, CrossLinkShell5, CrossLinkShell6, CrossLinkShell7, CrossLinkShell8, FreeCompany, CustomEmote, StandardEmote, };
+    private readonly XivChatType[] chatTypes = [NoviceNetwork, TellIncoming, TellOutgoing, Say, Yell, Shout, Echo, Debug, Party, Alliance, CrossParty, PvPTeam, Ls1, Ls2, Ls3, Ls4, Ls5, Ls6, Ls7, Ls8, CrossLinkShell1, CrossLinkShell2, CrossLinkShell3, CrossLinkShell4, CrossLinkShell5, CrossLinkShell6, CrossLinkShell7, CrossLinkShell8, FreeCompany, CustomEmote, StandardEmote];
 
-    private readonly ushort[] nameColours = { 9, 25, 32, 35, 37, 39, 41, 42, 45, 48, 52, 56, 57, 65, 500, 502, 504, 506, 508, 517, 522, 524, 527, 541, 573 };
+    private readonly ushort[] nameColours = [9, 25, 32, 35, 37, 39, 41, 42, 45, 48, 52, 56, 57, 65, 500, 502, 504, 506, 508, 517, 522, 524, 527, 541, 573];
 
-    private bool Parse(ref SeString seString) {
+    private void Parse(ref SeString seString) {
         var hasName = false;
         var newPayloads = new List<Payload>();
         PlayerPayload? waitingBegin = null;
@@ -407,8 +404,8 @@ public class ChatNameColours : ChatTweaks.SubTweak {
 
             if (payload is TextPayload tp && waitingBegin != null && tp.Text != null && tp.Text.Trim().Contains(' ')) {
                 if (!Config.LegacyColours) {
-                    var colour = GetColor(waitingBegin.PlayerName, waitingBegin.World.Name);
-                    var glow = GetGlow(waitingBegin.PlayerName, waitingBegin.World.Name);
+                    var colour = GetColor(waitingBegin.PlayerName, waitingBegin.World.Value.Name.ExtractText());
+                    var glow = GetGlow(waitingBegin.PlayerName, waitingBegin.World.Value.Name.ExtractText());
                     if (colour != null) {
                         hasName = true;
                         newPayloads.Add(new ColorPayload(colour.Value).AsRaw());
@@ -420,7 +417,7 @@ public class ChatNameColours : ChatTweaks.SubTweak {
                         newPayloads.Add(tp);
                     }
                 } else {
-                    var colourKey = GetColourKey(waitingBegin.PlayerName, waitingBegin.World.Name);
+                    var colourKey = GetColourKey(waitingBegin.PlayerName, waitingBegin.World.Value.Name.ExtractText());
                     if (colourKey != null) {
                         hasName = true;
                         newPayloads.Add(new UIForegroundPayload(colourKey.Value));
@@ -440,10 +437,7 @@ public class ChatNameColours : ChatTweaks.SubTweak {
 
         if (hasName) {
             seString = new SeString(newPayloads);
-            return true;
         }
-
-        return false;
     }
 
     private void HandleChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled) {

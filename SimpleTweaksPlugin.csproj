@@ -37,11 +37,11 @@
         </None>
     </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-      <PackageReference Include="DalamudPackager" Version="2.1.13" />
+      <PackageReference Include="System.Numerics.Vectors" Version="4.6.0" />
+      <PackageReference Include="DalamudPackager" Version="11.0.0" />
     </ItemGroup>
     <PropertyGroup>
-        <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+        <DalamudLibPath>C:\ffxiv\repo\Dalamud\bin\Release</DalamudLibPath>
     </PropertyGroup>
 	<ItemGroup>
 		<Reference Include="Dalamud">
@@ -83,5 +83,8 @@
     </ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Utility\FriendList" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Compile Remove="Tweaks\Tooltips\MateriaStats.cs" />
 	</ItemGroup>
 </Project>

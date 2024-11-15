@@ -5,7 +5,7 @@ using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -18,7 +18,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Show Results Preview")]
-        public bool ShowResultsPreview = false;
+        public bool ShowResultsPreview;
     }
 
     public Configs Config { get; private set; }
@@ -33,8 +33,8 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
-        progressString ??= Service.Data.Excel.GetSheet<Addon>()?.GetRow(213)?.Text?.RawString ?? "Progress";
-        qualityString ??= Service.Data.Excel.GetSheet<Addon>()?.GetRow(216)?.Text?.RawString ?? "Quality";
+        progressString ??= Service.Data.Excel.GetSheet<Addon>().GetRow(213).Text.ExtractText();
+        qualityString ??= Service.Data.Excel.GetSheet<Addon>().GetRow(216).Text.ExtractText();
         
         identifier = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.CraftingActionInfoIdentifier, (_, _) => { });
 

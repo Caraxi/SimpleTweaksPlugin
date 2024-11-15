@@ -8,7 +8,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets2;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
@@ -92,10 +92,9 @@ public unsafe class EquipFromHotbar : Tweak {
             if (!(a3 == 9999 && a4 == 0 && a5 == 0 && itemId < 1500000)) return retVal;
             var isHq = itemId > 1000000;
             var realId = itemId % 500000;
-            var item = Service.Data.GetExcelSheet<Item>()?.GetRow(realId);
-            if (item == null) return retVal;
-            if (item.EquipSlotCategory.Row == 0 || item.EquipSlotCategory.Value == null) return retVal;
-            if (item.ItemAction.Row != 0) return retVal;
+            if (!Service.Data.GetExcelSheet<Item>().TryGetRow(realId, out var item)) return retVal;
+            if (item.EquipSlotCategory.RowId == 0 || !item.EquipSlotCategory.IsValid) return retVal;
+            if (item.ItemAction.RowId != 0) return retVal;
 
             var itemOrderModule = ItemOrderModule.Instance();
             var esc = item.EquipSlotCategory.Value;

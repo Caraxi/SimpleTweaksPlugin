@@ -1,5 +1,5 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -12,30 +12,29 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 public unsafe class DisableAutoChatInputs : ChatTweaks.SubTweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Disable <item> when linking items.")]
-        public bool DisableItem = false;
+        public bool DisableItem;
 
         [TweakConfigOption("Disable <status> when linking a status.")]
-        public bool DisableStatus = false;
+        public bool DisableStatus;
 
         [TweakConfigOption("Disable <flag> when setting map flags.")]
-        public bool DisableFlag = false;
+        public bool DisableFlag;
 
         [TweakConfigOption("Disable <quest> when linking quests.")]
-        public bool DisableQuest = false;
+        public bool DisableQuest;
 
         [TweakConfigOption("Disable <pfinder> when linking party finder.")]
-        public bool DisablePartyFinder = false;
+        public bool DisablePartyFinder;
     }
 
-    public Configs Config { get; private set; }
+    [TweakConfig] public Configs Config { get; private set; }
 
     [TweakHook(typeof(AgentChatLog), nameof(AgentChatLog.InsertTextCommandParam), nameof(InsertTextCommandParamDetour))]
     private HookWrapper<AgentChatLog.Delegates.InsertTextCommandParam> insertTextCommandParamHook;
 
     private bool InsertTextCommandParamDetour(AgentChatLog* agentChatLog, uint textCommandParam, bool a3) {
-        var param = Service.Data.Excel.GetSheet<TextCommandParam>()?.GetRow(textCommandParam);
-        if (param == null) return false; // Sanity Check
-        var text = param.Param.RawString;
+        if (!Service.Data.Excel.GetSheet<TextCommandParam>().TryGetRow(textCommandParam, out var param)) return false;
+        var text = param.Param.ExtractText();
         return text switch {
             "<item>" when Config.DisableItem => false,
             "<flag>" when Config.DisableFlag => false,

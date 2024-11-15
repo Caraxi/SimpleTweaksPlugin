@@ -16,8 +16,8 @@ public unsafe class EventsDebugging : DebugHelper {
     private List<EventController.EventSubscriber> frameworkSubscribers;
     private List<EventController.EventSubscriber> territoryChangedSubscribers;
 
-    private bool viewingFramework = false;
-    private bool viewingTerritoryChanged = false;
+    private bool viewingFramework;
+    private bool viewingTerritoryChanged;
     private AddonEvent selectedType;
 
     public override void Draw() {

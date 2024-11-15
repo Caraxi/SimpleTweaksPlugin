@@ -15,7 +15,7 @@ public unsafe class RecommendEquipCommand : CommandTweak {
 
     protected override void OnCommand(string args) {
         if (Module == null) return;
-        Module->SetupForClassJob((byte)(Service.ClientState.LocalPlayer?.ClassJob.Id ?? 0));
+        Module->SetupForClassJob((byte)(Service.ClientState.LocalPlayer?.ClassJob.RowId ?? 0));
         Common.FrameworkUpdate += DoEquip;
     }
 

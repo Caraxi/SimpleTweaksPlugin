@@ -1,8 +1,7 @@
 ﻿using System;
 using Dalamud.Game.ClientState.Keys;
 using Lumina.Data;
-using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.Sheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips.Hotkeys;
@@ -13,10 +12,9 @@ public class ViewOnConsoleGamesWiki : ItemHotkey {
 
     public override bool AcceptsEventItem => false;
 
-    public override void OnTriggered(ExtendedItem item) {
-        var enItem = Service.Data.Excel.GetSheet<ExtendedItem>(Language.English)?.GetRow(item.RowId);
-        if (enItem == null) return;
-        var name = Uri.EscapeDataString(enItem.Name);
+    public override void OnTriggered(Item item) {
+        if (!Service.Data.Excel.GetSheet<Item>(Language.English).TryGetRow(item.RowId, out var enItem)) return;
+        var name = Uri.EscapeDataString(enItem.Name.ExtractText());
         Common.OpenBrowser($"https://ffxiv.consolegameswiki.com/mediawiki/index.php?search={name}");
     }
 }

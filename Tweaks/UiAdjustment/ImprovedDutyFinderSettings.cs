@@ -7,7 +7,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -174,7 +174,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         UpdateIcons(unitBase);
     }
 
-    private int frameworkTicksSinceUpdate = 0;
+    private int frameworkTicksSinceUpdate;
     
     private void UpdateIcons() {
         if (Common.GetUnitBase("ContentsFinder", out var unitBase)) UpdateIcons(unitBase); 

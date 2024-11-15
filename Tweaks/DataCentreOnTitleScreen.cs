@@ -1,8 +1,7 @@
 ﻿using Dalamud.Game.Config;
-using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -27,19 +26,21 @@ public unsafe class DataCentreOnTitleScreen : Tweak {
         if (Service.Condition.Any()) return;
         var addon = Common.GetUnitBase("_TitleMenu");
         if (addon == null) return;
-        var dc = Service.Data.Excel.GetSheet<WorldDCGroupType>()?.GetRow(AgentLobby.Instance()->DataCenter);
-        if (dc == null || dc.RowId == 0) {
+        if (!Service.Data.Excel.GetSheet<WorldDCGroupType>().TryGetRow(AgentLobby.Instance()->DataCenter, out var dc) || dc.RowId == 0) {
             var world = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->SystemConfig.GetLastWorldId();
-            dc = Service.Data.Excel.GetSheet<World>()?.GetRow(world)?.DataCenter?.Value;
+            if (Service.Data.Excel.GetSheet<World>().TryGetRow(world, out var worldRow)) {
+                dc = worldRow.DataCenter.Value;
+            } else {
+                return;
+            }
         }
-
-        if (dc == null) return;
+        
         var button = (AtkComponentNode*)addon->GetNodeById(5);
         if (button == null || (ushort)button->AtkResNode.Type < 1000) return;
         var text = (AtkTextNode*)button->Component->UldManager.SearchNodeById(3);
         if (text == null || text->AtkResNode.Type != NodeType.Text) return;
 
-        var displayText = $"{dc.Name.ToDalamudString().TextValue}";
+        var displayText = $"{dc.Name.ExtractText()}";
         if (Config.ShowServiceAccountIndex) {
             var selectedServiceIndex = AgentLobby.Instance()->ServiceAccountIndex;
             if (selectedServiceIndex < 0) {

@@ -33,7 +33,7 @@ namespace SimpleTweaksPlugin {
         
         public static SimpleTweaksPlugin Plugin { get; private set; }
 
-        private CultureInfo setCulture = null;
+        private CultureInfo setCulture;
 
         public bool LoadingTranslations { get; private set; } = false;
 
@@ -434,11 +434,11 @@ namespace SimpleTweaksPlugin {
 
 
         internal class CaughtError {
-            public BaseTweak Tweak = null;
-            public SubTweakManager Manager = null;
+            public BaseTweak Tweak;
+            public SubTweakManager Manager;
             public Exception Exception;
             public bool IsNew = true;
-            public bool Closed = false;
+            public bool Closed;
             public string Message = string.Empty;
             public ulong Count = 1;
             public override bool Equals(object obj) {
@@ -454,7 +454,7 @@ namespace SimpleTweaksPlugin {
             }
         }
 
-        internal bool ShowErrorWindow = false;
+        internal bool ShowErrorWindow;
 
         internal readonly List<CaughtError> ErrorList = new List<CaughtError>();
 #if DEBUG

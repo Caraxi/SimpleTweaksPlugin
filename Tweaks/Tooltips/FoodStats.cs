@@ -2,28 +2,28 @@
 using System.Collections.Generic;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.Sheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
 [TweakName("Show expected food and potion stats")]
 [TweakDescription("Calculates the stat results a consumable will have based on your current stats.")]
+[TweakAutoConfig]
 public unsafe class FoodStats : TooltipTweaks.SubTweak {
     public class Configs : TweakConfig {
         public bool Highlight;
     }
 
-    public Configs Config { get; private set; }
+    [TweakConfig] public Configs Config { get; private set; }
 
-    private ExcelSheet<ExtendedItem> itemSheet;
+    private ExcelSheet<Item> itemSheet;
     private ExcelSheet<ItemFood> foodSheet;
-    private ExcelSheet<BaseParam> bpSheet;
 
     private readonly TextPayload potionPercentPayload = new("??%");
     private readonly TextPayload potionMaxPayload = new("????");
@@ -33,11 +33,9 @@ public unsafe class FoodStats : TooltipTweaks.SubTweak {
     private SeString hpPotionCappedEffectString;
 
     protected override void Enable() {
-        itemSheet = Service.Data.Excel.GetSheet<ExtendedItem>();
+        itemSheet = Service.Data.Excel.GetSheet<Item>();
         foodSheet = Service.Data.Excel.GetSheet<ItemFood>();
-        bpSheet = Service.Data.Excel.GetSheet<BaseParam>();
-        if (itemSheet == null || foodSheet == null || bpSheet == null) return;
-        Config = LoadConfig<Configs>() ?? new Configs();
+        Service.Data.Excel.GetSheet<BaseParam>();
         BuildPotionEffectStrings();
     }
 
@@ -45,7 +43,7 @@ public unsafe class FoodStats : TooltipTweaks.SubTweak {
         hpPotionEffectString = new SeString();
         hpPotionCappedEffectString = new SeString();
 
-        var hpEffectString = (SeString)Service.Data.Excel.GetSheet<Addon>()?.GetRow(998)?.Text;
+        var hpEffectString = Service.Data.Excel.GetSheet<Addon>().GetRow(998).Text.ToDalamudString();
 
         var removePercent = false;
 
@@ -99,10 +97,6 @@ public unsafe class FoodStats : TooltipTweaks.SubTweak {
         }
     }
 
-    protected override void Disable() {
-        SaveConfig(Config);
-    }
-
     protected void DrawConfig(ref bool hasChanged) {
         hasChanged |= ImGui.Checkbox(LocString("Highlight Active"), ref Config.Highlight);
         if (hasChanged) BuildPotionEffectStrings();
@@ -114,9 +108,11 @@ public unsafe class FoodStats : TooltipTweaks.SubTweak {
         if (id >= 2000000) return;
         var hq = id >= 500000;
         id %= 500000;
-        var item = itemSheet.GetRow((uint)id);
-        if (item == null) return;
-        var action = item.ItemAction?.Value;
+        if (!itemSheet.TryGetRow((uint)id, out var item)) return;
+        if (item.ItemAction.RowId == 0) return;
+        
+        var action = item.ItemAction.Value;
+        
 
         if (action is { Type : 847 }) {
             // Healing Potion
@@ -142,27 +138,25 @@ public unsafe class FoodStats : TooltipTweaks.SubTweak {
 
         if (action is not { Type: 844 or 845 or 846 }) return;
 
-        var itemFood = foodSheet.GetRow(hq ? action.DataHQ[1] : action.Data[1]);
-        if (itemFood == null) return;
+        if (!foodSheet.TryGetRow(hq ? action.DataHQ[1] : action.Data[1], out var itemFood)) return;
         var payloads = new List<Payload>();
         var hasChange = false;
 
-        foreach (var bonus in itemFood.UnkData1) {
-            if (bonus.BaseParam == 0) continue;
-            var param = bpSheet.GetRow(bonus.BaseParam);
-            if (param == null) continue;
+        foreach (var bonus in itemFood.Params) {
+            if (bonus.BaseParam.RowId == 0) continue;
+            var param = bonus.BaseParam;
             var value = hq ? bonus.ValueHQ : bonus.Value;
             var max = hq ? bonus.MaxHQ : bonus.Max;
             if (bonus.IsRelative) {
                 hasChange = true;
 
-                var currentStat = PlayerState.Instance()->Attributes[bonus.BaseParam];
+                var currentStat = PlayerState.Instance()->Attributes[(int)bonus.BaseParam.RowId];
                 var relativeAdd = (short)(currentStat * (value / 100f));
                 var change = relativeAdd > max ? max : relativeAdd;
 
                 if (payloads.Count > 0) payloads.Add(new TextPayload("\n"));
 
-                payloads.Add(new TextPayload($"{param.Name} +"));
+                payloads.Add(new TextPayload($"{param.Value.Name} +"));
 
                 if (Config.Highlight && change < max) payloads.Add(new UIForegroundPayload(500));
                 payloads.Add(new TextPayload($"{value}%"));
@@ -182,7 +176,7 @@ public unsafe class FoodStats : TooltipTweaks.SubTweak {
                 payloads.Add(new TextPayload(")"));
             } else {
                 if (payloads.Count > 0) payloads.Add(new TextPayload("\n"));
-                payloads.Add(new TextPayload($"{param.Name} +{value}"));
+                payloads.Add(new TextPayload($"{param.Value.Name} +{value}"));
             }
         }
 

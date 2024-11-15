@@ -8,7 +8,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -51,7 +51,7 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
     private delegate nint UpdateItemDelegate(nint a1, uint index, nint a3, AtkComponentBase* listItemRenderer);
 
     [TweakHook, Signature("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 30 49 8B 38", DetourName = nameof(UpdateItemDetour))]
-    private readonly HookWrapper<UpdateItemDelegate>? updateItemHook = null!;
+    private readonly HookWrapper<UpdateItemDelegate>? updateItemHook;
 
     private nint UpdateItemDetour(nint a1, uint index, nint a3, AtkComponentBase* listItemRenderer) {
         try {

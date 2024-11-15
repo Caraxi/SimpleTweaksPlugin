@@ -24,10 +24,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
     [TweakAuthor("Aireil")]
     public unsafe class NotificationToastAdjustments : UiAdjustments.SubTweak {
         public class Configs : TweakConfig {
-            public bool Hide = false;
-            public bool ShowInCombat = false;
-            public int OffsetXPosition = 0;
-            public int OffsetYPosition = 0;
+            public bool Hide;
+            public bool ShowInCombat;
+            public int OffsetXPosition;
+            public int OffsetYPosition;
             public float Scale = 1;
             public readonly List<string> Exceptions = new List<string>();
         }

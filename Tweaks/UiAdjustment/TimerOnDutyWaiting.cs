@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -12,7 +12,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Shows the 45 second countdown after readying for a duty.")]
 public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
     private readonly Utf8String* timeRemainingString = Utf8String.CreateEmpty();
-    private readonly string prefix = Service.Data.GetExcelSheet<Addon>()?.GetRow(2780)?.Text?.RawString ?? "Checking member status...";
+    private readonly string prefix = Service.Data.GetExcelSheet<Addon>().GetRow(2780).Text.ExtractText();
     private Stopwatch stopwatch = new();
     private TimeSpan timeOffset = TimeSpan.Zero;
 

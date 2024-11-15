@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
 using Dalamud.Game.ClientState.Keys;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using Newtonsoft.Json;
-using SimpleTweaksPlugin.Sheets;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips.Hotkeys;
 
@@ -37,7 +36,7 @@ public abstract class ItemHotkey : IDisposable {
     public class ItemHotkeyConfig {
         public virtual int Version { get; set; } = 1;
 
-        public bool Enabled = false;
+        public bool Enabled;
         public bool HideFromTooltip = false;
         public VirtualKey[] Key;
     }
@@ -68,11 +67,12 @@ public abstract class ItemHotkey : IDisposable {
 
     protected virtual void OnDisable() { }
 
-    public virtual void OnTriggered(ExtendedItem item) { }
+    public virtual void OnTriggered(Item item) { }
     public virtual void OnTriggered(EventItem item) { }
 
-    public virtual bool DoShow(ExtendedItem item) => AcceptsNormalItem;
-    public virtual bool DoShow(EventItem item) => AcceptsEventItem;
+    public virtual bool DoShow(Item item) => AcceptsNormalItem;
+
+    public virtual bool DoShow(EventItem eventItem) => AcceptsEventItem;
 
     public virtual void DrawExtraConfig() { }
 
@@ -115,4 +115,15 @@ public abstract class ItemHotkey : IDisposable {
     public string LocString(string keyAndFallback) {
         return LocString(keyAndFallback, keyAndFallback);
     }
+
+    public void OnTriggered(EventItem? item) {
+        if (item != null) OnTriggered(item.Value);
+    }
+
+    public void OnTriggered(Item? item) {
+        if (item != null) OnTriggered(item.Value);
+    }
+
+    public bool DoShow(EventItem? item) => item != null && DoShow(item.Value);
+    public bool DoShow(Item? item) => item != null && DoShow(item.Value);
 }

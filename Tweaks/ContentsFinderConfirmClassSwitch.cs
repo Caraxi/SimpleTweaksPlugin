@@ -1,6 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -52,7 +52,7 @@ public unsafe class ContentsFinderConfirmClassSwitch : Tweak {
                 return;
             }
         }
-        Service.Chat.PrintError($"You have no gearset for {classJob.Name.RawString}");
+        Service.Chat.PrintError($"You have no gearset for {classJob.Value.Name.ExtractText()}");
     }
 
     [AddonPostSetup("ContentsFinderConfirm")]

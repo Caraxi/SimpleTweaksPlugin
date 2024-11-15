@@ -18,7 +18,7 @@ public unsafe class HideUnwantedBanner : UiAdjustments.SubTweak {
     private delegate void ImageSetImageTextureDelegate(AtkUnitBase* addon, int bannerId, int a3, int sfxId);
 
     [TweakHook, Signature("48 89 5C 24 ?? 57 48 83 EC 30 48 8B D9 89 91", DetourName = nameof(OnSetImageTexture))]
-    private readonly HookWrapper<ImageSetImageTextureDelegate>? setImageTextureHook = null!;
+    private readonly HookWrapper<ImageSetImageTextureDelegate>? setImageTextureHook;
 
     private record BannerSetting(int Id, string Label);
 

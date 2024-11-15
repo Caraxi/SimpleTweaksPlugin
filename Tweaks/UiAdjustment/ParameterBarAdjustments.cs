@@ -7,7 +7,7 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -101,7 +101,7 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
     private List<uint> doLIds = new();
     private List<uint> doHIds = new();
 
-    private bool inPVP = false;
+    private bool inPVP;
 
     protected override void Setup() {
         AddChangelog("1.8.1.2", "Fixed positioning of HP bar.");
