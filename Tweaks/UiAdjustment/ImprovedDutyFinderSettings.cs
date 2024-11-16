@@ -39,7 +39,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
 
         private void ShowTooltip(AtkUnitBase* unitBase, AtkResNode* node) {
             var tooltipId = GetTooltip();
-            var tooltip = Service.Data.GetExcelSheet<Addon>().GetRow(tooltipId).Text.ToDalamudString().TextValue;
+            var tooltip = Service.Data.GetExcelSheet<Addon>().GetRowOrNull(tooltipId)?.Text.ExtractText() ?? $"{Setting}";
             AtkStage.Instance()->TooltipManager.ShowTooltip(unitBase->Id, node, tooltip);
         }
 
