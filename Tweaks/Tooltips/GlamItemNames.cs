@@ -12,7 +12,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 [TweakDescription("Displays the glamoured item name underneath the real item name.")]
 [TweakReleaseVersion("1.9.3.0")]
 public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
-    private const uint ItemTooltipNameNodeID = 32;
+    private const uint ItemTooltipNameNodeID = 33;
     private const byte NameDefaultFontSize = 14;
 
     private const string GlamNameReplacementText = "GlamNameReplacementText";
