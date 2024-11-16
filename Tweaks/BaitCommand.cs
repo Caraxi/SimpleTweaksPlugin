@@ -23,7 +23,7 @@ public unsafe class BaitCommand : CommandTweak {
     
     private delegate byte ExecuteCommandDelegate(int id, int unk1, uint baitId, int unk2, int unk3);
     
-    [Signature("E8 ?? ?? ?? ?? 8D 43 0A")]
+    [Signature("E8 ?? ?? ?? ?? 8D 46 0A")]
     private ExecuteCommandDelegate executeCommand;
 
     protected override void OnCommand(string args) {

@@ -17,7 +17,7 @@ public unsafe class EmoteLogSubcommand : Tweak {
 
     private delegate void* ExecuteEmoteCommand(void* a1, EmoteCommandStruct* command, void* a3);
 
-    [TweakHook, Signature("4C 8B DC 53 55 57 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? 48 8B 2D", DetourName = nameof(ExecuteDetour))]
+    [TweakHook, Signature("4C 8B DC 56 57 41 56 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? 4C 8B 35", DetourName = nameof(ExecuteDetour))]
     private HookWrapper<ExecuteEmoteCommand> executeEmoteCommandHook;
 
     private bool EmoteTextType {

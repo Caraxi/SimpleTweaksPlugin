@@ -247,7 +247,7 @@ public unsafe class NoSellList : Tweak {
         sellItemFromRetainerHook = Common.Hook<SellItemFromRetainer>("48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 80 B9 ?? ?? ?? ?? ?? 41 8B F0", SellItemFromRetainerDetour);
         sellItemFromRetainerHook?.Enable();
 
-        sellItemFromInventoryHook = Common.Hook<SellItemFromInventory>("48 89 5C 24 10 48 89 6C 24 18 56 48 83 EC 20 8B E9", SellItemFromInventoryDetour);
+        sellItemFromInventoryHook = Common.Hook<SellItemFromInventory>("E8 ?? ?? ?? ?? 48 8B 5C 24 ?? 33 C0 89 06", SellItemFromInventoryDetour);
         sellItemFromInventoryHook?.Enable();
 
         base.Enable();
