@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface;
+using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel.Sheets;
@@ -36,59 +37,15 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
         public bool AutoHideMp;
         public bool CenterHpWithMpHidden;
 
-        // deprecated versions
-        public Vector4 HpColor;
-        public Vector4 MpColor;
-        public Vector4 GpColor;
-        public Vector4 CpColor;
-
-        // updated versions
         public Vector3 HpAddRgb = new(20 ,75 ,0);
         public Vector3 MpAddRgb = new(120, 0, 60);
         public Vector3 GpAddRgb = new(0, 70, 100);
         public Vector3 CpAddRgb = new(70, 10, 100);
 
-        public void TransferColorConfigs() // take deprecated configs if found, and convert them into the new format
-        {
-            TransferConfig(ref HpColor, ref HpAddRgb);
-            TransferConfig(ref MpColor, ref MpAddRgb);
-            TransferConfig(ref GpColor, ref GpAddRgb);
-            TransferConfig(ref CpColor, ref CpAddRgb);
-            return;
-
-            void TransferConfig(ref Vector4 color, ref Vector3 add)
-            {
-                if (color == default) return;
-                add = new Vector3(color.X, color.Y, color.Z) * 120f;
-                color = default;
-            }
-        }
+        public bool CancelDefaultTint;
     }
 
     public const float AddRange = 180f; // the +/- range of AddRGB values when using a color picker
-
-    private static Vector3 ConvertRgbToAdd(Vector3 rgb)
-    {
-        return (rgb * 2 * AddRange) - new Vector3(AddRange);
-    }
-
-    private static Vector3 ConvertAddToRgb(Vector3 add)
-    {
-        return (add + new Vector3(AddRange)) / (2 * AddRange);
-    }
-
-    private static bool AddRgbPicker(string label, ref Vector3 addVector)
-    {
-        var rgbVector = ConvertAddToRgb(addVector);
-
-        if (ImGui.ColorEdit3(label, ref rgbVector))
-        {
-            addVector = ConvertRgbToAdd(rgbVector);
-            return true;
-        }
-
-        return false;
-    }
 
     public class HideAndOffsetConfig {
         public bool Hide;
@@ -100,8 +57,8 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
 
     private static readonly Configs DefaultConfig = new();
 
-    private readonly List<uint> doLIds = [8, 9, 10, 11, 12, 13, 14, 15];
-    private readonly List<uint> doHIds = [16, 17, 18];
+    private readonly List<uint> doHIds = [8, 9, 10, 11, 12, 13, 14, 15];
+    private readonly List<uint> doLIds = [16, 17, 18];
 
     private bool inPvp;
 
@@ -111,7 +68,6 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
     }
 
     protected override void AfterEnable() {
-        Config.TransferColorConfigs();
         OnTerritoryChanged(Service.ClientState.TerritoryType);
     }
 
@@ -138,56 +94,95 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
 
     private bool VisibilityAndOffsetEditor(string label, ref HideAndOffsetConfig config, HideAndOffsetConfig defConfig) {
         var hasChanged = false;
-        var positionOffset = 185 * ImGui.GetIO().FontGlobalScale;
-        var resetOffset = 250 * ImGui.GetIO().FontGlobalScale;
 
         hasChanged |= ImGui.Checkbox(label, ref config.Hide);
+
         if (!config.Hide) {
+            var fontGlobalScale = ImGui.GetIO().FontGlobalScale;
+
             ImGui.SameLine();
-            ImGui.SetCursorPosX(positionOffset);
-            ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
+            ImGui.SetCursorPosX(185 * fontGlobalScale);
+            ImGui.SetNextItemWidth(100 * fontGlobalScale);
             hasChanged |= ImGui.InputInt($"##offsetX_{label}", ref config.OffsetX);
             ImGui.SameLine();
-            ImGui.SetCursorPosX(positionOffset + (105 * ImGui.GetIO().FontGlobalScale));
-            ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
+            ImGui.SetCursorPosX(290 * fontGlobalScale);
+            ImGui.SetNextItemWidth(100 * fontGlobalScale);
             hasChanged |= ImGui.InputInt($"Offset##offsetY_{label}", ref config.OffsetY);
             ImGui.SameLine();
-            ImGui.SetCursorPosX(positionOffset + (105 * ImGui.GetIO().FontGlobalScale) + resetOffset);
-            ImGui.PushFont(UiBuilder.IconFont);
-            if (ImGui.Button($"{(char)FontAwesomeIcon.CircleNotch}##resetOffset_{label}")) {
-                config.OffsetX = defConfig.OffsetX;
-                config.OffsetY = defConfig.OffsetY;
-                hasChanged = true;
-            }
+            ImGui.SetCursorPosX(540 * fontGlobalScale);
 
-            ImGui.PopFont();
+            using (ImRaii.PushFont(UiBuilder.IconFont))
+            {
+                if (ImGui.Button($"{(char)FontAwesomeIcon.CircleNotch}##resetOffset_{label}")) {
+                    config.OffsetX = defConfig.OffsetX;
+                    config.OffsetY = defConfig.OffsetY;
+                    hasChanged = true;
+                }
+            }
         }
 
         return hasChanged;
     }
 
+    private static bool AddRgbPicker(string label, ref Vector3 addVector, Vector3 resetColor)
+    {
+        var rgbVector = ConvertAddToRgb(addVector);
+        var fontGlobalScale = ImGui.GetIO().FontGlobalScale;
+
+        ImGui.SetNextItemWidth(375f * fontGlobalScale);
+        var result = false;
+        if (ImGui.ColorEdit3(label, ref rgbVector))
+        {
+            addVector = ConvertRgbToAdd(rgbVector);
+            result = true;
+        }
+
+        ImGui.SameLine();
+
+        ImGui.SetCursorPosX(540 * fontGlobalScale);
+
+        using (ImRaii.PushFont(UiBuilder.IconFont))
+        {
+            if (ImGui.Button($"{(char)FontAwesomeIcon.CircleNotch}##resetColor{label}"))
+            {
+                addVector = resetColor;
+                result = true;
+            }
+        }
+
+        return result;
+
+        static Vector3 ConvertRgbToAdd(Vector3 rgb) => (rgb * 2 * AddRange) - new Vector3(AddRange);
+        static Vector3 ConvertAddToRgb(Vector3 add) => (add + new Vector3(AddRange)) / (2 * AddRange);
+    }
+
     protected void DrawConfig(ref bool hasChanged) {
+
+        var fontGlobalScale = ImGui.GetIO().FontGlobalScale;
+
         hasChanged |= VisibilityAndOffsetEditor(LocString("Hide Target Cycling"), ref Config.TargetCycling, DefaultConfig.TargetCycling);
-        ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
+
+        ImGui.Dummy(new Vector2(5) * fontGlobalScale);
 
         hasChanged |= VisibilityAndOffsetEditor(LocString("Hide HP Bar"), ref Config.HpBar, DefaultConfig.HpBar);
         hasChanged |= ImGui.Checkbox(LocString("Hide 'HP' Text"), ref Config.HideHpTitle);
         hasChanged |= VisibilityAndOffsetEditor(LocString("Hide HP Value"), ref Config.HpValue, DefaultConfig.HpValue);
-        ImGui.Dummy(new Vector2(5) * ImGui.GetIO().FontGlobalScale);
+        ImGui.Dummy(new Vector2(5) * fontGlobalScale);
 
         hasChanged |= VisibilityAndOffsetEditor(LocString("Hide MP Bar"), ref Config.MpBar, DefaultConfig.MpBar);
         hasChanged |= ImGui.Checkbox(LocString("Hide 'MP' Text"), ref Config.HideMpTitle);
         hasChanged |= VisibilityAndOffsetEditor(LocString("Hide MP Value"), ref Config.MpValue, DefaultConfig.MpValue);
 
         hasChanged |= ImGui.Checkbox(LocString("AutoHideMp", "Hide MP Bar on jobs that don't use MP"), ref Config.AutoHideMp);
-        if (Config.AutoHideMp)
-            hasChanged |= ImGui.Checkbox(LocString("CenterHpWithMpHidden", "Center the HP Bar on jobs that don't use MP"), ref Config.CenterHpWithMpHidden);
+        if (Config.AutoHideMp) hasChanged |= ImGui.Checkbox(LocString("CenterHpWithMpHidden", "Center the HP Bar on jobs that don't use MP"), ref Config.CenterHpWithMpHidden);
 
 
-        hasChanged |= AddRgbPicker(LocString("HP Bar Color"), ref Config.HpAddRgb);
-        hasChanged |= AddRgbPicker(LocString("MP Bar Color"), ref Config.MpAddRgb);
-        hasChanged |= AddRgbPicker(LocString("GP Bar Color"), ref Config.GpAddRgb);
-        hasChanged |= AddRgbPicker(LocString("CP Bar Color"), ref Config.CpAddRgb);
+        hasChanged |= AddRgbPicker(LocString("HP Bar Color"), ref Config.HpAddRgb, DefaultConfig.HpAddRgb);
+        hasChanged |= AddRgbPicker(LocString("MP Bar Color"), ref Config.MpAddRgb, DefaultConfig.MpAddRgb);
+        hasChanged |= AddRgbPicker(LocString("GP Bar Color"), ref Config.GpAddRgb, DefaultConfig.GpAddRgb);
+        hasChanged |= AddRgbPicker(LocString("CP Bar Color"), ref Config.CpAddRgb, DefaultConfig.CpAddRgb);
+
+        hasChanged |= ImGui.Checkbox(LocString("CancelDefaultTint", "Remove default bar tint"),ref Config.CancelDefaultTint);
 
         if (hasChanged) UpdateParameterBar(true);
     }
@@ -242,15 +237,16 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
         Vector3 mpAdd;
         Vector3 mpMultiply;
         var classJobId = Service.ClientState?.LocalPlayer?.ClassJob.RowId;
+
         if (classJobId != null && doLIds.Contains(classJobId.Value)) {
             mpAdd = reset ? DefaultConfig.GpAddRgb : Config.GpAddRgb;
-            mpMultiply = reset ? new(75, 75, 80) : new(75);
+            mpMultiply = reset || !Config.CancelDefaultTint ? new(75, 75, 80) : new(75);
         } else if (classJobId != null && doHIds.Contains(classJobId.Value)) {
             mpAdd = reset ? DefaultConfig.CpAddRgb : Config.CpAddRgb;
-            mpMultiply = reset ? new(80, 75, 80) : new(75);
+            mpMultiply = reset || !Config.CancelDefaultTint ? new(80, 75, 80) : new(75);
         } else {
             mpAdd = reset ? DefaultConfig.MpAddRgb : Config.MpAddRgb;
-            mpMultiply = reset ? new(90, 75, 75) : new(75);
+            mpMultiply = reset || !Config.CancelDefaultTint ? new(90, 75, 75) : new(75);
         }
 
         var hideMp = !reset && Config.AutoHideMp && !inPvp && Service.Condition[ConditionFlag.RolePlaying] == false && classJobId != null && autoHideMpClassJobs.Contains(classJobId.Value);
@@ -260,7 +256,7 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
 
         // HP
         var hpNode = (AtkComponentNode*)parameterWidgetUnitBase->UldManager.SearchNodeById(3);
-        if (hpNode != null) UpdateParameter(hpNode, reset ? DefaultConfig.HpBar : Config.HpBar, reset ? DefaultConfig.HpValue : Config.HpValue, reset ? DefaultConfig.HpAddRgb : Config.HpAddRgb, reset ? new(80, 80, 40) : new(75), reset ? DefaultConfig.HideHpTitle : Config.HideHpTitle);
+        if (hpNode != null) UpdateParameter(hpNode, reset ? DefaultConfig.HpBar : Config.HpBar, reset ? DefaultConfig.HpValue : Config.HpValue, reset ? DefaultConfig.HpAddRgb : Config.HpAddRgb, reset || !Config.CancelDefaultTint ? new(80, 80, 40) : new(75), reset ? DefaultConfig.HideHpTitle : Config.HideHpTitle);
 
         var centerHpBar = hideMp && Config.CenterHpWithMpHidden;
         if (centerHpBar)
