@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -13,8 +13,8 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 [TweakName("Show ID")]
 [TweakDescription("Show the ID of actions and items on their tooltips.")]
 [TweakAutoConfig]
-[Changelog(UnreleasedVersion, "Added option to show original action ID alongside resolved.")]
-[Changelog(UnreleasedVersion, "Fixed ID being cut off on items with long category names, like BLM weapons.")]
+[Changelog("1.10.3.2", "Added option to show original action ID alongside resolved.")]
+[Changelog("1.10.3.2", "Fixed ID being cut off on items with long category names, like BLM weapons.")]
 public unsafe class ShowItemID : TooltipTweaks.SubTweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Use Hexadecimal ID")]

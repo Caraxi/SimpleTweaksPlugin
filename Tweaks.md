@@ -16,6 +16,11 @@
   Automatically locks action bars when certain conditions are met.
 
 
+- **Auto Refresh Material List**
+
+  Automatically refreshes the raw material list and recipe tree windows.
+
+
 - **Bait Command**
 
   Adds /bait to switch fishing baits.
@@ -193,7 +198,7 @@
 
 - **Leave Duty Command**
 
-  Adds a command to leave the currenty duty. /leaveduty
+  Adds a command to leave the current duty.
 
 
 - **Leveling Dungeon Command**
@@ -465,6 +470,11 @@
 - **Preview Unlockable Items**
 
   Show a preview image for mounts, minions and hairstyles.
+
+
+- **Show Collectable Rewards**
+
+  Shows rewards when viewing a collectable delivery item.
 
 
 - **Show Desynthesis Skill**
