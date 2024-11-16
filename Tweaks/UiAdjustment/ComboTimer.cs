@@ -8,6 +8,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
+using Action = Lumina.Excel.Sheets.Action;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
@@ -50,7 +51,7 @@ public unsafe class ComboTimer : UiAdjustments.SubTweak {
         public bool UseScreenText;
     }
 
-    public Configs Config { get; private set; }
+    [TweakConfig] public Configs Config { get; private set; }
 
     protected override void Disable() {
         Update(true);
@@ -159,7 +160,7 @@ public unsafe class ComboTimer : UiAdjustments.SubTweak {
         var combo = &ActionManager.Instance()->Combo;
 
         if (combo->Action != 0 && !comboActions.ContainsKey(combo->Action)) {
-            comboActions.Add(combo->Action, Service.Data.Excel.GetSheet<Action>()!.OrderBy(a => a.ClassJobLevel).FirstOrDefault(a => a.ActionCombo.Row == combo->Action)?.ClassJobLevel ?? 255);
+            comboActions.Add(combo->Action, Service.Data.Excel.GetSheet<Action>().OrderBy(a => a.ClassJobLevel).FirstOrNull(a => a.ActionCombo.RowId == combo->Action)?.ClassJobLevel ?? 255);
         }
 
         var comboAvailable = Service.ClientState?.LocalPlayer != null && combo->Timer > 0 && combo->Action != 0 && comboActions.ContainsKey(combo->Action) && comboActions[combo->Action] <= Service.ClientState.LocalPlayer.Level;

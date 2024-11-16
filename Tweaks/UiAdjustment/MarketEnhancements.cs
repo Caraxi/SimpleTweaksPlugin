@@ -30,7 +30,7 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
         public Vector4 LazyTaxColour = new(1, 0, 0, 1);
     }
 
-    public MarketEnhancementsConfig Config { get; private set; }
+    [TweakConfig] public MarketEnhancementsConfig Config { get; private set; }
 
     private delegate void UpdateResultDelegate(AtkUnitBase* addonItemSearchResult, uint a2, ulong* a3, void* a4);
 
@@ -84,17 +84,17 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
             if (agent == null) return;
 
             if (npcPriceId != agent->ResultItemId) {
-                var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(agent->ResultItemId);
+                var item = Service.Data.Excel.GetSheet<Item>().GetRowOrNull(agent->ResultItemId);
                 if (item == null) return;
                 npcPriceId = agent->ResultItemId;
                 npcBuyPrice = 0;
-                npcSellPrice = item.PriceLow;
-                if (item.ItemUICategory.Row is 58) {
+                npcSellPrice = item.Value.PriceLow;
+                if (item.Value.ItemUICategory.RowId is 58) {
                     npcSellPrice += (uint)MathF.Ceiling(npcSellPrice * 0.1f);
                 }
 
-                var gilShopItem = Service.Data.Excel.GetSheet<GilShopItem>()?.Where(a => a.Item.Row == agent->ResultItemId).ToList();
-                if (gilShopItem is { Count: > 0 }) npcBuyPrice = item.PriceMid;
+                var gilShopItem = Service.Data.Excel.GetSubrowSheet<GilShopItem>().Flatten().Where(a => a.Item.RowId == agent->ResultItemId).ToList();
+                if (gilShopItem is { Count: > 0 }) npcBuyPrice = item.Value.PriceMid;
             }
 
             for (var i = 0; i < 12 && i < component->ListLength; i++) {

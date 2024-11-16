@@ -21,19 +21,19 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
     private uint InterjectImageNodeId => CustomNodes.Get(this, "Interject");
     private uint HeadGrazeImageNodeId => CustomNodes.Get(this, "HeadGraze");
 
-    private Config TweakConfig { get; set; } = null!;
+    [TweakConfig] private Config TweakConfig { get; set; } = null!;
 
-    private class Config : TweakConfig {
+    public class Config : TweakConfig {
         public NodePosition Position = NodePosition.TopLeft;
     }
 
-    private enum NodePosition {
+    public enum NodePosition {
         Left,
         Right,
         TopLeft,
     }
 
-    private void DrawConfig() {
+    protected void DrawConfig() {
         ImGui.TextUnformatted("Select which direction relative to Cast Bar to show interrupt icon");
         
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X / 3.0f);
@@ -97,12 +97,12 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
         
         if (target as IBattleChara is { IsCasting: true, IsCastInterruptible: true } && castBarVisible) {
             switch (Service.ClientState.LocalPlayer) {
-                case { ClassJob.GameData.Role: 1, Level: >= 18 }: // Tank
+                case { ClassJob.Value.Role: 1, Level: >= 18 }: // Tank
                     interject->ToggleVisibility(true);
                     headGraze->ToggleVisibility(false);
                     break;
     
-                case { ClassJob.GameData.UIPriority: >= 30 and <= 39, Level: >= 24 }: // Physical Ranged
+                case { ClassJob.Value.UIPriority: >= 30 and <= 39, Level: >= 24 }: // Physical Ranged
                     interject->ToggleVisibility(false);
                     headGraze->ToggleVisibility(true);
                     break;

@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -13,9 +14,9 @@ public unsafe class ImprovedWorldVisit : UiAdjustments.SubTweak {
     [AddonPostRequestedUpdate("WorldTravelSelect")]
     private void SetupWorldTravelSelect(AtkUnitBase* unitBase) {
         SimpleLog.Log("Rebuild World Visit Menu");
-        var currentWorld = Service.ClientState.LocalPlayer?.CurrentWorld.GameData;
+        var currentWorld = Service.ClientState.LocalPlayer?.CurrentWorld.Value;
         if (currentWorld == null) return;
-        var currentDc = currentWorld.DataCenter.Row;
+        var currentDc = currentWorld.Value.DataCenter.RowId;
         var headerNode = unitBase->GetTextNodeById(13);
         var list = (AtkComponentList*)unitBase->GetComponentByNodeId(14);
         var currentWorldNode = unitBase->GetTextNodeById(12);
@@ -37,8 +38,8 @@ public unsafe class ImprovedWorldVisit : UiAdjustments.SubTweak {
         currentWorldNode->SetHeight(24);
         currentWorldNode->SetXShort(25);
 
-        var orderedWorlds = Service.Data.GetExcelSheet<World>()!.Where(w => w.DataCenter.Row == currentDc && w.IsPublic).OrderBy(w => w.Name.ExtractText()).Select(w => w.Name.ExtractText()).ToList();
-        var currentIndex = orderedWorlds.IndexOf(currentWorld.Name.ExtractText());
+        var orderedWorlds = Service.Data.GetExcelSheet<World>()!.Where(w => w.DataCenter.RowId == currentDc && w.IsPublic).OrderBy(w => w.Name.ExtractText()).Select(w => w.Name.ExtractText()).ToList();
+        var currentIndex = orderedWorlds.IndexOf(currentWorld.Value.Name.ExtractText());
         var pY = -26 + 24 * currentIndex;
         currentWorldNode->SetYFloat(pY);
         currentWorldIcon->SetYFloat(pY);

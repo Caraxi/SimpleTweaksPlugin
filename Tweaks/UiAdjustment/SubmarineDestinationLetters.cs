@@ -30,13 +30,11 @@ public unsafe class SubmarineDestinationLetters : UiAdjustments.SubTweak {
     protected override void Enable() {
         destinationNames.Clear();
         var frSheet = Service.Data.Excel.GetSheet<SubmarineExploration>(Language.French);
-        if (frSheet == null) return;
         var sheet = Service.Data.Excel.GetSheet<SubmarineExploration>();
-        if (sheet == null) return;
         foreach (var e in sheet) {
-            var frRow = frSheet.GetRow(e.RowId);
+            var frRow = frSheet.GetRowOrNull(e.RowId);
             if (frRow == null) continue;
-            destinationNames.Add(e.RowId, $"{ToBoxedLetters(frRow.Location.ExtractText())} {e.Destination.ToDalamudString().TextValue}");
+            destinationNames.Add(e.RowId, $"{ToBoxedLetters(frRow.Value.Location.ExtractText())} {e.Destination.ToDalamudString().TextValue}");
         }
     }
 

@@ -64,27 +64,27 @@ public unsafe class TrackGachaItems : TooltipTweaks.SubTweak {
         obtainedCount = 0;
         var allObtained = true;
         foreach (var i in gachaList) {
-            var gachaResultItem = Service.Data.Excel.GetSheet<Item>()?.GetRow(i);
-            if (gachaResultItem == null || gachaResultItem.ItemAction.Row == 0) continue;
+            var gachaResultItem = Service.Data.Excel.GetSheet<Item>().GetRowOrNull(i);
+            if (gachaResultItem == null || gachaResultItem.Value.ItemAction.RowId == 0) continue;
 
             var obtained = false;
-            var action = gachaResultItem.ItemAction.Value;
-            if (action == null) continue;
-            switch (action.Type) {
+            var action = gachaResultItem.Value.ItemAction;
+            if (!action.IsValid || action.RowId == 0) continue;
+            switch (action.Value.Type) {
                 case 1322:
                     // Mount
-                    obtained = UIState.Instance()->PlayerState.IsMountUnlocked(action.Data[0]);
+                    obtained = UIState.Instance()->PlayerState.IsMountUnlocked(action.Value.Data[0]);
                     break;
                 case 853:
                     // Minion
-                    obtained = UIState.Instance()->IsCompanionUnlocked(action.Data[0]);
+                    obtained = UIState.Instance()->IsCompanionUnlocked(action.Value.Data[0]);
                     break;
                 case 3357:
                     // Triad Card
-                    obtained = UIState.Instance()->IsTripleTriadCardUnlocked((ushort)gachaResultItem.AdditionalData);
+                    obtained = UIState.Instance()->IsTripleTriadCardUnlocked((ushort)gachaResultItem.Value.AdditionalData.RowId);
                     break;
                 default:
-                    Plugin.Error(this, new Exception($"Unhandled Item Action Type: {gachaResultItem?.ItemAction?.Value?.Type}"), true);
+                    Plugin.Error(this, new Exception($"Unhandled Item Action Type: {action.Value.Type}"), true);
                     break;
             }
 
@@ -128,8 +128,8 @@ public unsafe class TrackGachaItems : TooltipTweaks.SubTweak {
     }
 
     private long IsItemActionUnlockedDetour(UIState* uiState, void* item) {
-        var loadedItem = Service.Data.Excel.GetSheet<Item>()?.GetRow(LoadedItem);
-        if (loadedItem != null && Gachas.TryGetValue(loadedItem.RowId, out var gachaList)) {
+        var loadedItem = Service.Data.Excel.GetSheet<Item>().GetRowOrNull(LoadedItem);
+        if (loadedItem != null && Gachas.TryGetValue(loadedItem.Value.RowId, out var gachaList)) {
             return (byte)(IsGachaFullyObtained(gachaList, out _) ? 1 : 2);
         }
 

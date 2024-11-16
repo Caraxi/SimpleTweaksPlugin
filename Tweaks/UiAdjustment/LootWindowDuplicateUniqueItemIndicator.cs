@@ -35,7 +35,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         Normal,
     }
     
-    private class Config : TweakConfig {
+    public class Config : TweakConfig {
         [TweakConfigOption("Mark Un-obtainable Items")]
         public bool MarkUnobtainable = true;
 
@@ -43,7 +43,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
         public bool MarkAlreadyObtained = true;
     }
 
-    private Config TweakConfig { get; set; } = null!;
+    [TweakConfig] private Config TweakConfig { get; set; } = null!;
 
     [AddonPostSetup("NeedGreed")]
     private void OnAddonSetup(AtkUnitBase* addon) {
@@ -111,7 +111,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
                 var adjustedItemId = itemInfo.ItemId > 1_000_000 ? itemInfo.ItemId - 1_000_000 : itemInfo.ItemId;
                 
                 // If we can't match the item in lumina, skip.
-                var itemData = Service.Data.GetExcelSheet<Item>()!.GetRow(adjustedItemId);
+                var itemData = Service.Data.GetExcelSheet<Item>().GetRowOrNull(adjustedItemId);
                 if (itemData is null) continue;
 
                 // If we can't get the ui node, skip
@@ -120,11 +120,11 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
                 
                 switch (itemData) {
                     // Item is unique, and has no unlock action, and is unobtainable if we have any in our inventory
-                    case { IsUnique: true, ItemAction.Row: 0 } when PlayerHasItem(itemInfo.ItemId):
+                    case { IsUnique: true, ItemAction.RowId: 0 } when PlayerHasItem(itemInfo.ItemId):
                         
                     // Item is unobtainable if it's a minion/mount and already unlocked
-                    case { ItemUICategory.Row: MinionCategory } when IsItemAlreadyUnlocked(itemInfo.ItemId):
-                    case { ItemUICategory.Row: MountCategory, ItemSortCategory.Row: MountSubCategory } when IsItemAlreadyUnlocked(itemInfo.ItemId):
+                    case { ItemUICategory.RowId: MinionCategory } when IsItemAlreadyUnlocked(itemInfo.ItemId):
+                    case { ItemUICategory.RowId: MountCategory, ItemSortCategory.RowId: MountSubCategory } when IsItemAlreadyUnlocked(itemInfo.ItemId):
                         UpdateNodeVisibility(listItemRenderer, index, ItemStatus.Unobtainable);
                         break;
 

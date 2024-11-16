@@ -29,11 +29,11 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
         public bool UseFuzzySearch;
     }
 
-    public FastSearchConfig Config { get; private set; }
+    [TweakConfig] public FastSearchConfig Config { get; private set; }
 
     [Agent(AgentId.ItemSearch)]
     [StructLayout(LayoutKind.Explicit, Size = 0x37F0)]
-    public partial struct AgentItemSearch2 {
+    public struct AgentItemSearch2 {
         [FieldOffset(0x0000)] public AgentItemSearch AgentItemSearch;
         [FieldOffset(0x3858)] public uint* ItemBuffer;
         [FieldOffset(0x3860)] public uint ItemCount;
@@ -90,7 +90,7 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
     }
 
     private void AgentItemSearchUpdateAtkValuesDetour(AgentItemSearch* a1, uint a2, byte* a3, bool a4) {
-        var partialString = Service.Data.GetExcelSheet<LuminaAddon>()?.GetRow(3136)?.Text.ExtractText();
+        var partialString = Service.Data.GetExcelSheet<Addon>().GetRow(3136).Text.ExtractText();
         var isPartial = MemoryHelper.ReadStringNullTerminated((nint)a3).Equals(partialString, StringComparison.Ordinal);
         if (isPartial) {
             var newText = Encoding.UTF8.GetBytes(Config.UseFuzzySearch ? "Fuzzy Item Search" : "Fast Item Search");
@@ -107,9 +107,7 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
             return;
 
         var sheet = Service.Data.GetExcelSheet<Recipe>();
-        if (sheet == null) return;
-
-        var validRows = sheet.Where(r => r.RecipeLevelTable.Row != 0 && r.ItemResult.Row != 0);
+        var validRows = sheet.Where(r => r.RecipeLevelTable.RowId != 0 && r.ItemResult.RowId != 0);
         var matcher = new FuzzyMatcher(input.ToLowerInvariant(), Config.UseFuzzySearch ? MatchMode.FuzzyParts : MatchMode.Simple);
         var query = validRows.AsParallel().Select(i => (Item: i, Score: matcher.Matches(i.ItemResult.Value!.Name.ToDalamudString().ToString().ToLowerInvariant()))).Where(t => t.Score > 0).OrderByDescending(t => t.Score).ThenBy(t => t.Item.RowId).Select(t => t.Item.RowId);
 
@@ -120,8 +118,7 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
         if (string.IsNullOrWhiteSpace(input))
             return;
         var sheet = Service.Data.GetExcelSheet<Item>();
-        if (sheet == null) return;
-        var marketItems = sheet.Where(i => i.ItemSearchCategory.Row != 0);
+        var marketItems = sheet.Where(i => i.ItemSearchCategory.RowId != 0);
         var matcher = new FuzzyMatcher(input.ToLowerInvariant(), Config.UseFuzzySearch ? MatchMode.FuzzyParts : MatchMode.Simple);
         var query = marketItems.AsParallel().Select(i => (Item: i, Score: matcher.Matches(i.Name.ToDalamudString().ToString().ToLowerInvariant()))).Where(t => t.Score > 0).OrderByDescending(t => t.Score).ThenBy(t => t.Item.RowId).Select(t => t.Item.RowId);
         foreach (var item in query) {

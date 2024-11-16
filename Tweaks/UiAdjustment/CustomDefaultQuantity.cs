@@ -28,7 +28,7 @@ public unsafe class CustomDefaultQuantity : Tweak {
         public ModeConfig Deposit = new();
     }
 
-    public Configs Config { get; private set; }
+    [TweakConfig] public Configs Config { get; private set; }
 
     protected void DrawConfig() {
         void DrawModeConfig(ModeConfig modeConfig, string label) {
@@ -55,8 +55,8 @@ public unsafe class CustomDefaultQuantity : Tweak {
         DrawModeConfig(Config.Deposit, "Entrust Quantity");
     }
 
-    private readonly string textWithdraw = Service.Data.GetExcelSheet<Addon>()?.GetRow(914)?.Text?.ExtractText() ?? "Select amount to withdraw.";
-    private readonly string textDeposit = Service.Data.GetExcelSheet<Addon>()?.GetRow(915)?.Text?.ExtractText() ?? "Select amount to deposit.";
+    private readonly string textWithdraw = Service.Data.GetExcelSheet<Addon>().GetRow(914).Text.ExtractText();
+    private readonly string textDeposit = Service.Data.GetExcelSheet<Addon>().GetRow(915).Text.ExtractText();
 
     [AddonPreSetup("InputNumeric")]
     public void AddonSetup(AtkUnitBase* atkUnitBase) {

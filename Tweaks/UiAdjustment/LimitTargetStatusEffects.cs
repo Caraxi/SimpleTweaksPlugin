@@ -58,7 +58,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         private HookWrapper<UpdateFocusTargetDelegate> updateFocusTargetHook;
 
         protected void DrawConfig(ref bool hasChanged) {
-            statusSheet ??= Service.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Status>()?.ToDictionary(row => (ushort)row.RowId, row => row);
+            statusSheet ??= Service.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>().ToDictionary(row => (ushort)row.RowId, row => row);
 
             ImGui.Text("Limiting:");
             ImGui.SetNextItemWidth(100 * ImGui.GetIO().FontGlobalScale);
@@ -125,7 +125,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                     ImGui.TableNextColumn();
                     ImGui.AlignTextToFramePadding();
-                    ImGui.Text(statusSheet[statusId].Name);
+                    ImGui.Text(statusSheet[statusId].Name.ExtractText());
                     ImGui.TableNextColumn();
                     ImGui.PushFont(UiBuilder.IconFont);
                     if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString() + "##" + statusId)) {
@@ -389,7 +389,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
                     ImGui.TableNextColumn();
                     ImGui.AlignTextToFramePadding();
-                    ImGui.Text(statusSheet[statusId].Name);
+                    ImGui.Text(statusSheet[statusId].Name.ExtractText());
                 }
 
                 ImGui.EndTable();

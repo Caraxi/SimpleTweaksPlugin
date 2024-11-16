@@ -33,22 +33,20 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         public Func<int> GetIcon { get; init; }
         public Func<uint> GetTooltip { get; init; }
 
-        private SimpleEvent eventManager;
-
         private void HideTooltip(AtkUnitBase* unitBase) {
             AtkStage.Instance()->TooltipManager.HideTooltip(unitBase->Id);
         }
 
         private void ShowTooltip(AtkUnitBase* unitBase, AtkResNode* node) {
             var tooltipId = GetTooltip();
-            var tooltip = Service.Data.GetExcelSheet<Addon>()?.GetRow(tooltipId)?.Text.ToDalamudString()?.TextValue ?? $"{Setting}";
+            var tooltip = Service.Data.GetExcelSheet<Addon>().GetRow(tooltipId).Text.ToDalamudString().TextValue;
             AtkStage.Instance()->TooltipManager.ShowTooltip(unitBase->Id, node, tooltip);
         }
 
         public SimpleEvent Event {
             get {
-                if (eventManager != null) return eventManager;
-                eventManager = new SimpleEvent((type, unitBase, node) => {
+                if (field != null) return field;
+                field = new SimpleEvent((type, unitBase, node) => {
                     if (type == AtkEventType.MouseOver) {
                         ShowTooltip(unitBase, node);
                         Common.ForceMouseCursor(AtkCursor.CursorType.Clickable);
@@ -70,20 +68,21 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
                         ShowTooltip(unitBase, node);
                     }
                 });
-                return eventManager;
+                return field;
             }
         }
     };
 
-    private readonly List<DutyFinderSettingDisplay> dutyFinderSettingIcons = new() {
-        new DutyFinderSettingDisplay(DutyFinderSetting.JoinPartyInProgress, 60644, 2519),
-        new DutyFinderSettingDisplay(DutyFinderSetting.UnrestrictedParty, 60641, 10008),
-        new DutyFinderSettingDisplay(DutyFinderSetting.LevelSync, 60649, 12696),
-        new DutyFinderSettingDisplay(DutyFinderSetting.MinimumIl, 60642, 10010),
-        new DutyFinderSettingDisplay(DutyFinderSetting.SilenceEcho, 60647, 12691),
-        new DutyFinderSettingDisplay(DutyFinderSetting.ExplorerMode, 60648, 13038),
-        new DutyFinderSettingDisplay(DutyFinderSetting.LimitedLevelingRoulette, 60640, 13030),
-        new DutyFinderSettingDisplay(DutyFinderSetting.LootRule) {
+    private readonly List<DutyFinderSettingDisplay> dutyFinderSettingIcons = [
+        new(DutyFinderSetting.JoinPartyInProgress, 60644, 2519),
+        new(DutyFinderSetting.UnrestrictedParty, 60641, 10008),
+        new(DutyFinderSetting.LevelSync, 60649, 12696),
+        new(DutyFinderSetting.MinimumIl, 60642, 10010),
+        new(DutyFinderSetting.SilenceEcho, 60647, 12691),
+        new(DutyFinderSetting.ExplorerMode, 60648, 13038),
+        new(DutyFinderSetting.LimitedLevelingRoulette, 60640, 13030),
+
+        new(DutyFinderSetting.LootRule) {
             GetIcon = () => {
                 return GetCurrentSettingValue(DutyFinderSetting.LootRule) switch {
                     0 => 60645,
@@ -100,15 +99,16 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
                     _ => 0,
                 };
             }
-        },
-    };
+        }
 
-    private readonly List<DutyFinderSettingDisplay> languageButtons = new() {
-        new DutyFinderSettingDisplay(DutyFinderSetting.Ja, 0, 10),
-        new DutyFinderSettingDisplay(DutyFinderSetting.En, 0, 11),
-        new DutyFinderSettingDisplay(DutyFinderSetting.De, 0, 12),
-        new DutyFinderSettingDisplay(DutyFinderSetting.Fr, 0, 13),
-    };
+    ];
+
+    private readonly List<DutyFinderSettingDisplay> languageButtons = [
+        new(DutyFinderSetting.Ja, 0, 10),
+        new(DutyFinderSetting.En, 0, 11),
+        new(DutyFinderSetting.De, 0, 12),
+        new(DutyFinderSetting.Fr, 0, 13)
+    ];
 
     [AddonPostSetup("ContentsFinder", "RaidFinder")]
     protected void ContentsFinderSetup(AtkUnitBase* addonContentsFinder) {
@@ -185,8 +185,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
     private void UpdateIcons(AtkUnitBase* unitBase) {
         if (unitBase == null) return;
         frameworkTicksSinceUpdate = 0;
-        for (var i = 0; i < dutyFinderSettingIcons.Count; i++) {
-            var settingDetail = dutyFinderSettingIcons[i];
+        foreach (var settingDetail in dutyFinderSettingIcons) {
             var nodeId = CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Icon_{settingDetail.Setting}");
             var imgNode = Common.GetNodeByID<AtkImageNode>(&unitBase->UldManager, nodeId, NodeType.Image);
             if (imgNode == null) continue;
@@ -229,8 +228,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         vanillaIconContainer->ToggleVisibility(true);
         var container = Common.GetNodeByID(&unitBase->UldManager, CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Container"));
 
-        for (var i = 0; i < dutyFinderSettingIcons.Count; i++) {
-            var settingDetail = dutyFinderSettingIcons[i];
+        foreach (var settingDetail in dutyFinderSettingIcons) {
             var imgNode = Common.GetNodeByID<AtkImageNode>(&unitBase->UldManager, CustomNodes.Get($"{nameof(ImprovedDutyFinderSettings)}_Icon_{settingDetail.Setting}"), NodeType.Image);
             if (imgNode == null) continue;
 
@@ -315,8 +313,8 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
     private void ToggleSetting(DutyFinderSetting setting) {
         // block setting change if queued for a duty
         if (Service.Condition[ConditionFlag.InDutyQueue]) {
-            var condition = Service.Data.GetExcelSheet<Condition>()?.GetRow((uint)ConditionFlag.InDutyQueue)?.LogMessage?.Value?.Text?.ToDalamudString();
-            Service.Toasts.ShowError(condition ?? "Unable to execute command while bound by duty.");
+            var condition = Service.Data.GetExcelSheet<Condition>().GetRow((uint)ConditionFlag.InDutyQueue).LogMessage.Value.Text.ToDalamudString();
+            Service.Toasts.ShowError(condition);
             return;
         }
 

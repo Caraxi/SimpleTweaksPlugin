@@ -12,7 +12,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 public unsafe class HideGuildhestObjectivePopup : UiAdjustments.SubTweak {
     [AddonPreSetup("JournalAccept")]
     private void JournalAcceptPreSetup(AtkUnitBase* addon) {
-        if (Service.Data.GetExcelSheet<TerritoryType>()!.GetRow(Service.ClientState.TerritoryType) is not { TerritoryIntendedUse.Row: 3 }) return;
+        if (Service.Data.GetExcelSheet<TerritoryType>()!.GetRow(Service.ClientState.TerritoryType) is not { TerritoryIntendedUse.RowId: 3 }) return;
         addon->Hide(false, false, 1);
     }
 }

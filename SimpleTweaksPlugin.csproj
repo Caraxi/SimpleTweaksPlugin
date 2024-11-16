@@ -41,7 +41,7 @@
       <PackageReference Include="DalamudPackager" Version="11.0.0" />
     </ItemGroup>
     <PropertyGroup>
-        <DalamudLibPath>C:\ffxiv\repo\Dalamud\bin\Release</DalamudLibPath>
+        <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
     </PropertyGroup>
 	<ItemGroup>
 		<Reference Include="Dalamud">
