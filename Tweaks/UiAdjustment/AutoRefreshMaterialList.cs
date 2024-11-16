@@ -8,7 +8,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [TweakName("Auto Refresh Material List")]
 [TweakDescription("Automatically refreshes the raw material list and recipe tree windows.")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.3.1")]
 public unsafe class AutoRefreshMaterialList : Tweak {
     private const int Throttle = 100;
 
