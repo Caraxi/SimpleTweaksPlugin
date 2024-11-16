@@ -56,7 +56,7 @@ public class DesynthesisSkill : TooltipTweaks.SubTweak {
         if (id < 2000000) {
             id %= 500000;
 
-            var nullableItem = itemSheet.GetRowOrNull((uint)id);
+            var nullableItem = itemSheet.GetRowOrDefault((uint)id);
             if (nullableItem is { Desynth: > 0 }) {
                 var item = nullableItem.Value;
                 var desynthLevel = UIState.Instance()->PlayerState.GetDesynthesisLevel(item.ClassJobRepair.RowId);

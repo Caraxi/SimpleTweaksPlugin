@@ -78,10 +78,10 @@ public unsafe class QuickSellItems : Tweak {
     private string retainerSellText = "Have Retainer Sell Items";
 
     protected override void Enable() {
-        var sellRow = Service.Data.Excel.GetSheet<Addon>().GetRowOrNull(93);
+        var sellRow = Service.Data.Excel.GetSheet<Addon>().GetRowOrDefault(93);
         if (sellRow != null) sellText = sellRow.Value.Text.ExtractText();
 
-        var retainerSellRow = Service.Data.Excel.GetSheet<Addon>().GetRowOrNull(5480);
+        var retainerSellRow = Service.Data.Excel.GetSheet<Addon>().GetRowOrDefault(5480);
         if (retainerSellRow != null) retainerSellText = retainerSellRow.Value.Text.ExtractText();
     }
 
@@ -97,7 +97,7 @@ public unsafe class QuickSellItems : Tweak {
                 var itemSlot = inventory->GetInventorySlot(slot);
                 if (itemSlot == null) return false;
                 var itemId = itemSlot->ItemId;
-                var item = Service.Data.Excel.GetSheet<Item>()?.GetRowOrNull(itemId);
+                var item = Service.Data.Excel.GetSheet<Item>()?.GetRowOrDefault(itemId);
                 if (item == null) return false;
                 var agentAddonId = agent->AgentInterface.GetAddonId();
                 if (agentAddonId == 0) return false;

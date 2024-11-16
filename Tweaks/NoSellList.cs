@@ -126,7 +126,7 @@ public unsafe class NoSellList : Tweak {
 
                     var removeId = 0U;
                     foreach (var item in itemList) {
-                        var itemInfo = Service.Data.Excel.GetSheet<Item>().GetRowOrNull(item);
+                        var itemInfo = Service.Data.Excel.GetSheet<Item>().GetRowOrDefault(item);
                         if (string.IsNullOrEmpty(itemInfo?.Name.ExtractText())) continue;
                         ImGui.TableNextColumn();
                         ImGui.Text($"[{itemInfo.Value.RowId}] {itemInfo.Value.Name.ExtractText()}");
@@ -209,7 +209,7 @@ public unsafe class NoSellList : Tweak {
                 var slot = container->GetInventorySlot(slotIndex);
                 if (slot != null) {
                     if (Config.NoSellList.Any(i => i == slot->ItemId)) {
-                        var item = Service.Data.Excel.GetSheet<Item>().GetRowOrNull(slot->ItemId);
+                        var item = Service.Data.Excel.GetSheet<Item>().GetRowOrDefault(slot->ItemId);
                         if (item == null) return false;
                         if (!string.IsNullOrEmpty(item.Value.Name.ExtractText())) {
                             Service.Toasts.ShowError($"{item.Value.Name.ExtractText()} is locked by {Name} in {Plugin.Name}.");
@@ -219,7 +219,7 @@ public unsafe class NoSellList : Tweak {
 
                     var customListMatch = Config.CustomLists.FirstOrDefault(t => t.Enabled && t.NoSellList.Any(i => i == slot->ItemId));
                     if (customListMatch != null) {
-                        var item = Service.Data.Excel.GetSheet<Item>().GetRowOrNull(slot->ItemId);
+                        var item = Service.Data.Excel.GetSheet<Item>().GetRowOrDefault(slot->ItemId);
                         if (item == null) return false;
                         if (!string.IsNullOrEmpty(item.Value.Name.ExtractText())) {
                             Service.Toasts.ShowError(new SeString(new TextPayload(item.Value.Name.ExtractText()), new TextPayload(" is locked by "), new TextPayload(customListMatch.Name), new NewLinePayload(), new TextPayload(Name), new TextPayload(" in "), new TextPayload(Plugin.Name), new TextPayload(".")));

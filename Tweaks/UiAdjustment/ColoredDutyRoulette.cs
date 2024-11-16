@@ -40,9 +40,9 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak {
         public List<uint> EnabledRoulettes = new();
     }
     
-    private Config TweakConfig { get; set; } = null!;
+    [TweakConfig] private Config TweakConfig { get; set; } = null!;
 
-    private void DrawConfig() {
+    protected void DrawConfig() {
         if (ImGui.Checkbox("Recolor Completed Roulettes", ref TweakConfig.ColorCompleteRoulette)) SaveConfig(TweakConfig);
         if (ImGui.Checkbox("Recolor Incomplete Roulettes", ref TweakConfig.ColorIncompleteRoulette)) SaveConfig(TweakConfig);
         if (ImGui.ColorEdit4("Completed Color", ref TweakConfig.CompleteColor, ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaPreviewHalf)) SaveConfig(TweakConfig);

@@ -96,12 +96,12 @@ public class SyncCrafterBars : Tweak {
         if (!crafterJobs.Contains(copyFrom)) return;
         var classJobSheet = Service.Data.GetExcelSheet<ClassJob>();
         
-        var copyJob = classJobSheet.GetRowOrNull(copyFrom);
+        var copyJob = classJobSheet.GetRowOrDefault(copyFrom);
         if (copyJob == null) return;
 
         foreach (var jobId in crafterJobs) {
             if (jobId == copyJob.Value.RowId) continue;
-            var job = classJobSheet.GetRowOrNull(jobId);
+            var job = classJobSheet.GetRowOrDefault(jobId);
             if (job == null) continue;
 
             for (var i = 0; i < 10; i++) {

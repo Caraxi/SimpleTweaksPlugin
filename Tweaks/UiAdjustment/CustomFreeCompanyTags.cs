@@ -59,7 +59,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                 string companyTag = string.Empty;
                 if (battleChara->Character.HomeWorld != battleChara->Character.CurrentWorld) {
                     // Wanderer
-                    var w = Service.Data.Excel.GetSheet<World>().GetRowOrNull(battleChara->Character.HomeWorld);
+                    var w = Service.Data.Excel.GetSheet<World>().GetRowOrDefault(battleChara->Character.HomeWorld);
                     if (w == null || w.Value.RowId == 0 || w.Value.DataCenter.RowId == Service.ClientState.LocalPlayer.CurrentWorld.Value.DataCenter.RowId) {
                         customization = Config.WandererCustomization;
                     } else {
@@ -113,7 +113,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                                             break;
                                         }
                                         case "<homeworld>": {
-                                            var world = Service.Data.Excel.GetSheet<World>().GetRowOrNull(battleChara->Character.HomeWorld);
+                                            var world = Service.Data.Excel.GetSheet<World>().GetRowOrDefault(battleChara->Character.HomeWorld);
 
                                             payloads.Add(new TextPayload(world?.Name.ExtractText() ?? $"UnknownWorld#{battleChara->Character.HomeWorld}"));
                                             break;

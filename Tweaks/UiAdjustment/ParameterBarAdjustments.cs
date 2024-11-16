@@ -131,7 +131,7 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
 
     [TerritoryChanged]
     private void OnTerritoryChanged(ushort territoryType) {
-        var territory = Service.Data.Excel.GetSheet<TerritoryType>().GetRowOrNull(territoryType);
+        var territory = Service.Data.Excel.GetSheet<TerritoryType>().GetRowOrDefault(territoryType);
         if (territory == null) return;
         inPvp = territory.Value.IsPvpZone;
     }

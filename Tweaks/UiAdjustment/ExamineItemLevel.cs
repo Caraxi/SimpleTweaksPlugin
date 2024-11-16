@@ -55,7 +55,7 @@ public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
                 var slot = container->GetInventorySlot(i);
                 if (slot == null) continue;
                 var id = slot->ItemId;
-                var item = Service.Data.Excel.GetSheet<Item>().GetRowOrNull(id);
+                var item = Service.Data.Excel.GetSheet<Item>().GetRowOrDefault(id);
                 if (item == null) continue;
                 if (ignoreCategory.Contains(item.Value.ItemUICategory.RowId)) {
                     if (i == 0) c -= 1;

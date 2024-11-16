@@ -192,10 +192,4 @@ public static class Extensions {
 
         return null;
     }
-    
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public static T? GetRowOrNull<T>(this ExcelSheet<T> sheet, uint rowId) where T : struct, IExcelRow<T> {
-        if (sheet.TryGetRow(rowId, out var v)) return v;
-        return null;
-    }
 }

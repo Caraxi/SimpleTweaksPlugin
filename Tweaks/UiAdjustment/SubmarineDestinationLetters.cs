@@ -32,7 +32,7 @@ public unsafe class SubmarineDestinationLetters : UiAdjustments.SubTweak {
         var frSheet = Service.Data.Excel.GetSheet<SubmarineExploration>(Language.French);
         var sheet = Service.Data.Excel.GetSheet<SubmarineExploration>();
         foreach (var e in sheet) {
-            var frRow = frSheet.GetRowOrNull(e.RowId);
+            var frRow = frSheet.GetRowOrDefault(e.RowId);
             if (frRow == null) continue;
             destinationNames.Add(e.RowId, $"{ToBoxedLetters(frRow.Value.Location.ExtractText())} {e.Destination.ToDalamudString().TextValue}");
         }

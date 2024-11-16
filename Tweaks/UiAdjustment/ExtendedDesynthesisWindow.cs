@@ -70,7 +70,7 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
         var itemEntry = agent->ItemList + index;
         var inventoryItem = InventoryManager.Instance()->GetInventoryContainer(itemEntry->InventoryType)->GetInventorySlot((int)itemEntry->InventorySlot);
 
-        var itemData = Service.Data.GetExcelSheet<Item>().GetRowOrNull(inventoryItem->ItemId);
+        var itemData = Service.Data.GetExcelSheet<Item>().GetRowOrDefault(inventoryItem->ItemId);
         if (itemData == null) return;
         
         var skillText = (AtkTextNode*)Common.GetNodeByID(listItemRenderer, CustomNodes.Get(this, "Skill"), NodeType.Text);

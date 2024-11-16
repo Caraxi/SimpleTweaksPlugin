@@ -15,7 +15,7 @@ public unsafe class HideQualityWhenNoHQ : UiAdjustments.SubTweak {
     [AddonPostSetup("Synthesis")]
     private void CommonOnAddonSetup(AtkUnitBase* addon) {
         var agent = AgentRecipeNote.Instance();
-        var recipe = Service.Data.GetExcelSheet<Recipe>().GetRowOrNull(agent->ActiveCraftRecipeId);
+        var recipe = Service.Data.GetExcelSheet<Recipe>().GetRowOrDefault(agent->ActiveCraftRecipeId);
         if (recipe == null) return;
         if (recipe.Value.CanHq || recipe.Value.IsExpert) return;
         var qualityNode = addon->GetNodeById(58);

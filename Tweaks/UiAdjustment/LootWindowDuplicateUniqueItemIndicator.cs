@@ -111,7 +111,7 @@ public unsafe class LootWindowDuplicateUniqueItemIndicator : UiAdjustments.SubTw
                 var adjustedItemId = itemInfo.ItemId > 1_000_000 ? itemInfo.ItemId - 1_000_000 : itemInfo.ItemId;
                 
                 // If we can't match the item in lumina, skip.
-                var itemData = Service.Data.GetExcelSheet<Item>().GetRowOrNull(adjustedItemId);
+                var itemData = Service.Data.GetExcelSheet<Item>().GetRowOrDefault(adjustedItemId);
                 if (itemData is null) continue;
 
                 // If we can't get the ui node, skip

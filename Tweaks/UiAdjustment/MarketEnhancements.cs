@@ -84,7 +84,7 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
             if (agent == null) return;
 
             if (npcPriceId != agent->ResultItemId) {
-                var item = Service.Data.Excel.GetSheet<Item>().GetRowOrNull(agent->ResultItemId);
+                var item = Service.Data.Excel.GetSheet<Item>().GetRowOrDefault(agent->ResultItemId);
                 if (item == null) return;
                 npcPriceId = agent->ResultItemId;
                 npcBuyPrice = 0;

@@ -18,14 +18,14 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
     private string lastImage;
 
     private string GetMountImagePath(uint mountId, bool hr = true) {
-        var mount = Service.Data.GetExcelSheet<Mount>().GetRowOrNull(mountId);
+        var mount = Service.Data.GetExcelSheet<Mount>().GetRowOrDefault(mountId);
         if (mount == null) return string.Empty;
         var id = mount.Value.Icon + 64000U;
         return $"ui/icon/{id / 1000 * 1000:000000}/{id:000000}{(hr ? "_hr1.tex" : ".tex")}";
     }
 
     private string GetMinionImagePath(uint minionId, bool hr = true) {
-        var minion = Service.Data.GetExcelSheet<Companion>().GetRowOrNull(minionId);
+        var minion = Service.Data.GetExcelSheet<Companion>().GetRowOrDefault(minionId);
         if (minion == null) return string.Empty;
         var id = minion.Value.Icon + 64000U;
         return $"ui/icon/{id / 1000 * 1000:000000}/{id:000000}{(hr ? "_hr1.tex" : ".tex")}";
@@ -66,7 +66,7 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
         var itemId = (uint)Service.GameGui.HoveredItem;
         if (itemId is >= 2000000 or <= 0) return;
         itemId %= 500000;
-        var item = Service.Data.Excel.GetSheet<Item>().GetRowOrNull(itemId);
+        var item = Service.Data.Excel.GetSheet<Item>().GetRowOrDefault(itemId);
         var itemAction = item?.ItemAction.Value;
         if (itemAction == null) return;
 

@@ -145,7 +145,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
 
         if (actionCache.TryGetValue(adjustedActionId, out var action)) return action;
 
-        action = Service.Data.GetExcelSheet<Action>().GetRowOrNull(adjustedActionId);
+        action = Service.Data.GetExcelSheet<Action>().GetRowOrDefault(adjustedActionId);
         actionCache.Add(adjustedActionId, action);
         return action;
     }

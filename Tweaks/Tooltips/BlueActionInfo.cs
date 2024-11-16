@@ -13,7 +13,7 @@ public unsafe class BlueActionInfo : TooltipTweaks.SubTweak {
     public override void OnGenerateActionTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         var aozAction = Service.Data.Excel.GetSheet<AozAction>().FirstOrNull(a => a.Action.RowId == Action.Id);
         if (aozAction?.Action == null) return;
-        var aozActionTransient = Service.Data.Excel.GetSheet<AozActionTransient>().GetRowOrNull(aozAction.Value.RowId);
+        var aozActionTransient = Service.Data.Excel.GetSheet<AozActionTransient>().GetRowOrDefault(aozAction.Value.RowId);
         if (aozActionTransient?.Stats == null) return;
         var descriptionString = GetTooltipString(stringArrayData, TooltipTweaks.ActionTooltipField.Description);
         if (descriptionString.TextValue.Contains(Service.ClientState.ClientLanguage switch {

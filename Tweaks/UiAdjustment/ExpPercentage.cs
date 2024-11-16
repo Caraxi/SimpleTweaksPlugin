@@ -85,7 +85,7 @@ public unsafe class ExpPercentage : UiAdjustments.SubTweak {
             if (!str.TextValue.Contains("-/-")) percent = numberArray->IntArray[16] / (float)numberArray->IntArray[18];
             percent *= 100f;
             if (Config.PercentageOnly) {
-                var classJob = Service.Data.Excel.GetSheet<ClassJob>().GetRowOrNull((uint)numberArray->IntArray[26]);
+                var classJob = Service.Data.Excel.GetSheet<ClassJob>().GetRowOrDefault((uint)numberArray->IntArray[26]);
                 if (classJob != null) {
                     str.Payloads.Clear();
                     str.Append(classJob.Value.Abbreviation.ExtractText());

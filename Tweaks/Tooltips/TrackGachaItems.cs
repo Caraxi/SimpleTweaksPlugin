@@ -64,7 +64,7 @@ public unsafe class TrackGachaItems : TooltipTweaks.SubTweak {
         obtainedCount = 0;
         var allObtained = true;
         foreach (var i in gachaList) {
-            var gachaResultItem = Service.Data.Excel.GetSheet<Item>().GetRowOrNull(i);
+            var gachaResultItem = Service.Data.Excel.GetSheet<Item>().GetRowOrDefault(i);
             if (gachaResultItem == null || gachaResultItem.Value.ItemAction.RowId == 0) continue;
 
             var obtained = false;
@@ -128,7 +128,7 @@ public unsafe class TrackGachaItems : TooltipTweaks.SubTweak {
     }
 
     private long IsItemActionUnlockedDetour(UIState* uiState, void* item) {
-        var loadedItem = Service.Data.Excel.GetSheet<Item>().GetRowOrNull(LoadedItem);
+        var loadedItem = Service.Data.Excel.GetSheet<Item>().GetRowOrDefault(LoadedItem);
         if (loadedItem != null && Gachas.TryGetValue(loadedItem.Value.RowId, out var gachaList)) {
             return (byte)(IsGachaFullyObtained(gachaList, out _) ? 1 : 2);
         }

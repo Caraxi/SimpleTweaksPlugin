@@ -37,7 +37,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
         object? item;
 
         if (itemId >= 2000000) {
-            item = Service.Data.Excel.GetSheet<EventItem>().GetRowOrNull((uint)Service.GameGui.HoveredItem);
+            item = Service.Data.Excel.GetSheet<EventItem>().GetRowOrDefault((uint)Service.GameGui.HoveredItem);
         } else {
             item = Service.Data.Excel.GetSheet<Item>().GetRow((uint)(Service.GameGui.HoveredItem % 500000));
         }
@@ -244,9 +244,9 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
 
             object item;
             if (id >= 2000000) {
-                item = Service.Data.Excel.GetSheet<EventItem>().GetRowOrNull((uint)id);
+                item = Service.Data.Excel.GetSheet<EventItem>().GetRowOrDefault((uint)id);
             } else {
-                item = Service.Data.Excel.GetSheet<Item>().GetRowOrNull((uint)(id % 500000));
+                item = Service.Data.Excel.GetSheet<Item>().GetRowOrDefault((uint)(id % 500000));
             }
 
             if (item == null) return;

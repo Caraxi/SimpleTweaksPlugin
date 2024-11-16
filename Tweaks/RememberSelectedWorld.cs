@@ -61,7 +61,7 @@ public unsafe class RememberSelectedWorld : Tweak {
         var stringArray = AtkStage.Instance()->GetStringArrayData()[1];
         if (stringArray == null) return;
 
-        var world = Service.Data.Excel.GetSheet<World>().GetRowOrNull(worldId);
+        var world = Service.Data.Excel.GetSheet<World>().GetRowOrDefault(worldId);
         if (world is not { IsPublic: true }) return;
 
         SimpleLog.Debug($"Attempting to Select World: {world.Value.Name.ExtractText()}");
