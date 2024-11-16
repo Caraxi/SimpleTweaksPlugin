@@ -25,6 +25,8 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
     private static ImprovedDutyFinderSettings _tweak;
 
     private record DutyFinderSettingDisplay(DutyFinderSetting Setting) {
+        private SimpleEvent eventManager;
+
         public DutyFinderSettingDisplay(DutyFinderSetting setting, int icon, uint tooltip) : this(setting) {
             GetIcon = () => icon;
             GetTooltip = () => tooltip;
@@ -45,8 +47,8 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
 
         public SimpleEvent Event {
             get {
-                if (field != null) return field;
-                field = new SimpleEvent((type, unitBase, node) => {
+                if (eventManager != null) return eventManager;
+                eventManager = new SimpleEvent((type, unitBase, node) => {
                     if (type == AtkEventType.MouseOver) {
                         ShowTooltip(unitBase, node);
                         Common.ForceMouseCursor(AtkCursor.CursorType.Clickable);
@@ -68,7 +70,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
                         ShowTooltip(unitBase, node);
                     }
                 });
-                return field;
+                return eventManager;
             }
         }
     };
