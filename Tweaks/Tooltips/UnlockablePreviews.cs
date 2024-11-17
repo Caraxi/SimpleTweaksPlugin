@@ -86,7 +86,7 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
         var insertNode = atkUnitBase->GetNodeById(2);
         if (insertNode == null) return;
 
-        var anchorNode = atkUnitBase->GetNodeById(46);
+        var anchorNode = atkUnitBase->GetNodeById(47);
         if (anchorNode == null) return;
 
         if (imageNode == null) {
