@@ -35,10 +35,10 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
     [StructLayout(LayoutKind.Explicit, Size = 0x37F0)]
     public struct AgentItemSearch2 {
         [FieldOffset(0x0000)] public AgentItemSearch AgentItemSearch;
-        [FieldOffset(0x3858)] public uint* ItemBuffer;
-        [FieldOffset(0x3860)] public uint ItemCount;
-        [FieldOffset(0x386C)] public byte IsPartialSearching;
-        [FieldOffset(0x386D)] public byte IsItemPushPending;
+        [FieldOffset(0x3860)] public uint* ItemBuffer;
+        [FieldOffset(0x3868)] public uint ItemCount;
+        [FieldOffset(0x3874)] public byte IsPartialSearching;
+        [FieldOffset(0x3875)] public byte IsItemPushPending;
     }
 
     private delegate void RecipeNoteRecieveDelegate(AgentRecipeNote* a1, Utf8String* a2, bool a3, bool a4);
