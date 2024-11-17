@@ -13,7 +13,7 @@ public unsafe class OpenGlamourDresserToCurrentJob : UiAdjustments.SubTweak {
     [AddonPreSetup("MiragePrismPrismBox")]
     private void OnMiragePrismBoxOpen(AtkUnitBase* atkUnitBase) {
         if (Service.ClientState is { LocalPlayer.ClassJob.RowId: var playerJob }) {
-            Marshal.WriteByte((nint)atkUnitBase, 416, (byte)playerJob);
+            Marshal.WriteByte((nint)atkUnitBase, 0x1A8, (byte)playerJob);
         }
     }
 }
