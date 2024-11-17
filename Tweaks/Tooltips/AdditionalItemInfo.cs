@@ -4,6 +4,7 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
@@ -215,9 +216,7 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         if (!atkUnitBase->IsVisible) return;
         var textNode = Common.GetNodeByID<AtkTextNode>(&atkUnitBase->UldManager, CustomNodes.AdditionalInfo, NodeType.Text);
         if (textNode != null) textNode->AtkResNode.ToggleVisibility(false);
-        if (Service.GameGui.HoveredItem > uint.MaxValue) return;
-        
-        var lines = GetInfoLines((uint)Service.GameGui.HoveredItem);
+        var lines = GetInfoLines(AgentItemDetail.Instance()->ItemId);
         if (lines.Payloads.Count == 0) return;
 
         var insertNode = atkUnitBase->GetNodeById(2);

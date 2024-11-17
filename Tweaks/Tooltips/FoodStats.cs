@@ -4,6 +4,7 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel;
@@ -104,7 +105,7 @@ public unsafe class FoodStats : TooltipTweaks.SubTweak {
 
     public override void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         if (Service.ClientState.LocalPlayer == null) return;
-        var id = Service.GameGui.HoveredItem;
+        var id = AgentItemDetail.Instance()->ItemId;
         if (id >= 2000000) return;
         var hq = id >= 500000;
         id %= 500000;

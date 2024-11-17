@@ -21,7 +21,6 @@ public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
 
     public override void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         if (Service.ClientState.LocalPlayer == null) return;
-        if (Service.GameGui.HoveredItem > uint.MaxValue) return;
         AtkUnitBase* unitBase = Common.GetUnitBase("ItemDetail");
         if (unitBase == null) return;
 

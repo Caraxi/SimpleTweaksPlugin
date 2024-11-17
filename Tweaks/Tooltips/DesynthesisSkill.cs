@@ -2,6 +2,7 @@
 using System.Linq;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel;
@@ -52,7 +53,7 @@ public class DesynthesisSkill : TooltipTweaks.SubTweak {
     }
 
     public override unsafe void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
-        var id = Service.GameGui.HoveredItem;
+        var id = AgentItemDetail.Instance()->ItemId;
         if (id < 2000000) {
             id %= 500000;
 

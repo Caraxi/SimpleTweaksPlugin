@@ -1,6 +1,7 @@
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
@@ -63,7 +64,7 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
         var imageNode = (AtkImageNode*)Common.GetNodeByID(&atkUnitBase->UldManager, CustomNodes.Get(this), NodeType.Image);
         if (imageNode != null) imageNode->AtkResNode.ToggleVisibility(false);
 
-        var itemId = (uint)Service.GameGui.HoveredItem;
+        var itemId = AgentItemDetail.Instance()->ItemId;
         if (itemId is >= 2000000 or <= 0) return;
         itemId %= 500000;
         var item = Service.Data.Excel.GetSheet<Item>().GetRowOrDefault(itemId);

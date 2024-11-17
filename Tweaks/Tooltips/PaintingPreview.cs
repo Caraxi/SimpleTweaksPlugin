@@ -1,4 +1,5 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.System.Memory;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
@@ -19,7 +20,7 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
         var imageNode = (AtkImageNode*)Common.GetNodeByID(&atkUnitBase->UldManager, CustomNodes.PaintingPreview, NodeType.Image);
         if (imageNode != null) imageNode->AtkResNode.ToggleVisibility(false);
 
-        var itemId = (uint)Service.GameGui.HoveredItem;
+        var itemId = AgentItemDetail.Instance()->ItemId;
         if (itemId is >= 2000000 or <= 0) return;
         itemId %= 500000;
         if (!Service.Data.Excel.GetSheet<Item>().TryGetRow(itemId, out var item)) return;

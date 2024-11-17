@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel.Sheets;
@@ -32,14 +33,14 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
     public override void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         if (Config.HideHotkeysOnTooltip) return;
 
-        var itemId = Service.GameGui.HoveredItem;
+        var itemId = AgentItemDetail.Instance()->ItemId;
 
         object? item;
 
         if (itemId >= 2000000) {
-            item = Service.Data.Excel.GetSheet<EventItem>().GetRowOrDefault((uint)Service.GameGui.HoveredItem);
+            item = Service.Data.Excel.GetSheet<EventItem>().GetRowOrDefault(itemId);
         } else {
-            item = Service.Data.Excel.GetSheet<Item>().GetRow((uint)(Service.GameGui.HoveredItem % 500000));
+            item = Service.Data.Excel.GetSheet<Item>().GetRow(itemId % 500000);
         }
 
         if (item == null) return;
