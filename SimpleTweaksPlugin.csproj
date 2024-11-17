@@ -18,7 +18,7 @@
     </PropertyGroup>
     <PropertyGroup Label="Feature">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>1.10.3.2</Version>
+        <Version>1.10.3.3</Version>
     </PropertyGroup>
 	<PropertyGroup>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
@@ -83,8 +83,5 @@
     </ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Utility\FriendList" />
-	</ItemGroup>
-	<ItemGroup>
-	  <Compile Remove="Tweaks\Tooltips\MateriaStats.cs" />
 	</ItemGroup>
 </Project>

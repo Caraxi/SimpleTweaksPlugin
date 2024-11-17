@@ -6,7 +6,7 @@ using Lumina.Excel.Sheets;
 namespace SimpleTweaksPlugin.Sheets;
 
 [Sheet("HairMakeType")]
-public readonly unsafe struct HairMakeTypeExt : IExcelRow<HairMakeTypeExt> {
+public readonly unsafe struct HairMakeTypeExt : IRowExtension<HairMakeTypeExt, HairMakeType> {
     public uint RowId { get; }
     public RowRef<CharaMakeCustomize>[] HairStyles { get; }
     public HairMakeType HairMakeType { get; }
@@ -29,4 +29,5 @@ public readonly unsafe struct HairMakeTypeExt : IExcelRow<HairMakeTypeExt> {
     }
     
     public static HairMakeTypeExt Create(ExcelPage page, uint offset, uint row) => new(page, offset, row);
+    public static HairMakeTypeExt GetExtended(IExcelRow<HairMakeType> baseRow) => Service.Data.GetExcelSheet<HairMakeTypeExt>().GetRow(baseRow.RowId);
 }

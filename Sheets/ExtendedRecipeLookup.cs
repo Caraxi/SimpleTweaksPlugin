@@ -10,7 +10,7 @@ using Lumina.Excel.Sheets;
 namespace SimpleTweaksPlugin.Sheets; 
 
 [Sheet( "RecipeLookup")]
-readonly unsafe public struct ExtendedRecipeLookup(ExcelPage page, uint offset, uint row) : IExcelRow<ExtendedRecipeLookup> {
+readonly unsafe public struct ExtendedRecipeLookup(ExcelPage page, uint offset, uint row) : IRowExtension<ExtendedRecipeLookup, RecipeLookup> {
     public readonly RecipeLookup RecipeLookup => new RecipeLookup(page, offset, row);
     
     public readonly RowRef<Recipe>[] Recipes =>
@@ -23,5 +23,6 @@ readonly unsafe public struct ExtendedRecipeLookup(ExcelPage page, uint offset, 
     
     public static ExtendedRecipeLookup Create(ExcelPage page, uint offset, uint row) => new(page, offset, row);
     public uint RowId => row;
+    public static ExtendedRecipeLookup GetExtended(IExcelRow<RecipeLookup> baseRow) => Service.Data.GetExcelSheet<ExtendedRecipeLookup>().GetRow(baseRow.RowId);
 }
 
