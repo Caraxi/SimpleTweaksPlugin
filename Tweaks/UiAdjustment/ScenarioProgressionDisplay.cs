@@ -55,15 +55,15 @@ public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
                 if (!Service.Data.GetExcelSheet<Quest>().TryGetRow(st.RowId, out var quest)) continue;
                 if (!quest.Expansion.IsValid) continue;
 
-                if (finalScenario == null || st.Unknown1 > finalScenario.Value.Unknown1) finalScenario = st;
+                if (finalScenario == null || st.Unknown0 > finalScenario.Value.Unknown0) finalScenario = st;
                 expansionEnds.TryAdd(quest.Expansion.Value.RowId, st);
                 expansionBegins.TryAdd(quest.Expansion.Value.RowId, st);
 
-                if (st.Unknown1 > expansionEnds[quest.Expansion.Value.RowId].Unknown1) {
+                if (st.Unknown0 > expansionEnds[quest.Expansion.Value.RowId].Unknown0) {
                     expansionEnds[quest.Expansion.Value.RowId] = st;
                 }
 
-                if (st.Unknown1 < expansionBegins[quest.Expansion.Value.RowId].Unknown1) {
+                if (st.Unknown0 < expansionBegins[quest.Expansion.Value.RowId].Unknown0) {
                     expansionBegins[quest.Expansion.Value.RowId] = st;
                 }
             }
@@ -81,8 +81,8 @@ public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
             end = expansionEnds[expansion.Value.RowId];
         }
 
-        var complete = current.Value.Unknown1 - (float)begin.Unknown1;
-        var total = 1 + (end.Unknown1 - (float)begin.Unknown1);
+        var complete = current.Value.Unknown0 - (float)begin.Unknown0;
+        var total = 1 + (end.Unknown0 - (float)begin.Unknown0);
 
         if (QuestManager.IsQuestComplete(current.Value.RowId)) complete += 1;
         return complete / total;
