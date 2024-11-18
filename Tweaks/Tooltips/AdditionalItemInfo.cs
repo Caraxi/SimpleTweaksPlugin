@@ -222,7 +222,7 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         var insertNode = atkUnitBase->GetNodeById(2);
         if (insertNode == null) return;
 
-        var baseTextNode = atkUnitBase->GetTextNodeById(43);
+        var baseTextNode = atkUnitBase->GetTextNodeById(44);
         if (baseTextNode == null) return;
         
         if (textNode == null) {
