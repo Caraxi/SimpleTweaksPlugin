@@ -93,7 +93,7 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak {
             if (componentNode is null) continue;
 
             var textNode = (AtkTextNode*)componentNode->Component->GetTextNodeById(5);
-            var levelNode = (AtkTextNode*)componentNode->Component->GetTextNodeById(15);
+            var levelNode = (AtkTextNode*)componentNode->Component->GetTextNodeById(18);
             if (levelNode is null || textNode is null) continue;
 
             if (AgentContentsFinder.Instance()->SelectedTab is not 0) {
