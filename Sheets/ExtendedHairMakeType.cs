@@ -29,5 +29,4 @@ public readonly unsafe struct HairMakeTypeExt : IRowExtension<HairMakeTypeExt, H
     }
     
     public static HairMakeTypeExt Create(ExcelPage page, uint offset, uint row) => new(page, offset, row);
-    public static HairMakeTypeExt GetExtended(IExcelRow<HairMakeType> baseRow) => Service.Data.GetExcelSheet<HairMakeTypeExt>().GetRow(baseRow.RowId);
 }

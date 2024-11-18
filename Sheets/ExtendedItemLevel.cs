@@ -54,6 +54,4 @@ public readonly unsafe struct ExtendedItemLevel(ExcelPage page, uint offset, uin
         ImGui.EndTable();
     }
     #endregion
-
-    public static ExtendedItemLevel GetExtended(IExcelRow<ItemLevel> baseRow) => Service.Data.GetExcelSheet<ExtendedItemLevel>().GetRow(baseRow.RowId);
 }

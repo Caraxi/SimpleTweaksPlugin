@@ -49,8 +49,4 @@ public readonly unsafe struct ExtendedBaseParam(ExcelPage page, uint offset, uin
         ImGui.EndTable();
     }
     #endregion
-
-    public static ExtendedBaseParam GetExtended(IExcelRow<BaseParam> baseParam) {
-        return Service.Data.GetExcelSheet<ExtendedBaseParam>().GetRow(baseParam.RowId);
-    }
 }
