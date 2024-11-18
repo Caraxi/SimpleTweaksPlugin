@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.TweakSystem; 
 
@@ -38,6 +39,16 @@ public class TweakProvider : IDisposable {
                         blTweak.InterfaceSetup(SimpleTweaksPlugin.Plugin, Service.PluginInterface, SimpleTweaksPlugin.Plugin.PluginConfig, this);
                         Tweaks.Add(blTweak);
                         continue;
+                    }
+
+                    if (tweak.GetType().TryGetAttribute<RequiredClientStructsVersionAttribute>(out var csAttr)) {
+                        if (csAttr.MinVersion > Common.ClientStructsVersion || csAttr.MaxVersion < Common.ClientStructsVersion) {
+                            SimpleLog.Log($"Skipping tweak due to client structs version: {tweak.Key}");
+                            var blTweak = new BlacklistedTweak(tweak.Key, tweak.Name, "Disabled due to an unsupported version of FFXIVClientStructs.\nIt will automatically be re-enabled when Dalamud updateds to a supported version.");
+                            blTweak.InterfaceSetup(SimpleTweaksPlugin.Plugin, Service.PluginInterface, SimpleTweaksPlugin.Plugin.PluginConfig, this);
+                            Tweaks.Add(blTweak);
+                            continue;
+                        }
                     }
 
                     if (tweak is not IDisabledTweak) {

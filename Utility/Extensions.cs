@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -195,4 +196,9 @@ public static class Extensions {
     }
 
     public static TExtension GetExtension<TExtension, TBase>(this TBase row) where TExtension : struct, IExcelRow<TExtension>, IRowExtension<TExtension, TBase> where TBase : struct, IExcelRow<TBase> => TExtension.GetExtended(row);
+
+    public static bool TryGetAttribute<TAttribute>(this Type type, [NotNullWhen(true)] out TAttribute attribute) where TAttribute : Attribute {
+        attribute = type.GetCustomAttribute<TAttribute>();
+        return attribute != null;
+    }
 }

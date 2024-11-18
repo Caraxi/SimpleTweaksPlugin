@@ -34,7 +34,7 @@ public unsafe class Common {
     public static Utf8String* LastCommand { get; private set; }
 
     public static uint ClientStructsVersion => CsVersion.Value;
-    private static readonly Lazy<uint> CsVersion = new(() => uint.TryParse(FFXIVClientStructs.ThisAssembly.Git.Commits, out var v) ? v : 0);
+    private static readonly Lazy<uint> CsVersion = new(() => (uint?)typeof(FFXIVClientStructs.ThisAssembly).Assembly.GetName().Version?.Build ?? 0U);
 
     public static event Action FrameworkUpdate;
 

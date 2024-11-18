@@ -23,6 +23,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Modifies the Synthesize button in the Crafting Log to switch job or stand up from the crafting position, allowing you to stop crafting without closing the crafting log.")]
 [Changelog("1.8.2.1", "Fixed a potential crash in specific circumstances.")]
 [Changelog("1.9.1.0", "Made attempt to fix some issues", "Tweak has been disabled for everyone and marked as experimental.")]
+[RequiredClientStructsVersion(5193)]
 public unsafe class ImprovedCraftingLog : Tweak {
     private readonly Stopwatch removeFrameworkUpdateEventStopwatch = new();
     private bool standingUp;

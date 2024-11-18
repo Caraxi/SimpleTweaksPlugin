@@ -43,7 +43,7 @@ public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
             if (container == null) return;
             var examineWindow = (AddonCharacterInspect*)Common.GetUnitBase("CharacterInspect");
             if (examineWindow == null) return;
-            var previewComponent = Common.ClientStructsVersion < 4670 ? ((AtkComponentBase**)((ulong)examineWindow + 0x458))![0] : examineWindow->PreviewComponent;
+            var previewComponent = examineWindow->PreviewComponent;
             var compInfo = (AtkUldComponentInfo*)previewComponent->UldManager.Objects;
             if (compInfo == null || compInfo->ComponentType != ComponentType.Preview) return;
 
