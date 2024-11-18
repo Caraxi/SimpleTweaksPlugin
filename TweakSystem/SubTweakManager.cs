@@ -52,7 +52,7 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
                 if (tweak.GetType().TryGetAttribute<RequiredClientStructsVersionAttribute>(out var csAttr)) {
                     if (csAttr.MinVersion > Common.ClientStructsVersion || csAttr.MaxVersion < Common.ClientStructsVersion) {
                         SimpleLog.Log($"Skipping tweak due to client structs version: {tweak.Key}");
-                        var blTweak = new BlacklistedTweak(tweak.Key, tweak.Name, "Disabled due to an unsupported version of FFXIVClientStructs.\nIt will automatically be re-enabled when Dalamud updateds to a supported version.");
+                        var blTweak = new BlacklistedTweak(tweak.Key, tweak.Name, "Disabled due to an unsupported version of FFXIVClientStructs.\nIt will automatically be re-enabled when Dalamud updates to a supported version.");
                         blTweak.InterfaceSetup(SimpleTweaksPlugin.Plugin, Service.PluginInterface, SimpleTweaksPlugin.Plugin.PluginConfig, this.TweakProvider, this);
                         tweakList.Add(blTweak);
                         continue;
