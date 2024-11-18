@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Text.RegularExpressions;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using ImGuiNET;
 using Lumina.Excel.Sheets;
@@ -17,6 +18,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("No Sell List")]
 [TweakDescription("Allows you to define a list of items that can not be sold to a vendor.")]
+[TweakAutoConfig]
 public unsafe class NoSellList : Tweak {
     public class Configs : TweakConfig {
         public HashSet<uint> NoSellList = [];
@@ -30,7 +32,7 @@ public unsafe class NoSellList : Tweak {
         public HashSet<uint> NoSellList = [];
     }
 
-    public Configs Config { get; private set; }
+    [TweakConfig] public Configs Config { get; private set; }
 
     private string inputNewItemName = string.Empty;
     private string addItemError = string.Empty;
@@ -235,46 +237,37 @@ public unsafe class NoSellList : Tweak {
         return true;
     }
 
-    private delegate void SellItemFromRetainer(void* a1, int a2, InventoryType a3);
+    private delegate void SellItemFromVirtual(void* a1, int a2, InventoryType a3);
 
     private delegate void SellItemFromInventory(int a2, InventoryType a3);
 
-    private HookWrapper<SellItemFromRetainer> sellItemFromRetainerHook;
-    private HookWrapper<SellItemFromInventory> sellItemFromInventoryHook;
+    [TweakHook, Signature("48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 80 B9 ?? ?? ?? ?? ?? 41 8B F0", DetourName = nameof(SellItemFromRetainerDetour))]
+    private HookWrapper<SellItemFromVirtual> sellItemFromRetainerHook;
 
-    protected override void Enable() {
-        Config = LoadConfig<Configs>() ?? new Configs();
-        sellItemFromRetainerHook = Common.Hook<SellItemFromRetainer>("48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 80 B9 ?? ?? ?? ?? ?? 41 8B F0", SellItemFromRetainerDetour);
-        sellItemFromRetainerHook?.Enable();
-
-        sellItemFromInventoryHook = Common.Hook<SellItemFromInventory>("E8 ?? ?? ?? ?? 48 8B 5C 24 ?? 33 C0 89 06", SellItemFromInventoryDetour);
-        sellItemFromInventoryHook?.Enable();
-
-        base.Enable();
-    }
+    [TweakHook, Signature("48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 41 8B F0 8B EA E8", DetourName = nameof(SellItemFromInventoryVFuncDetour))]
+    private HookWrapper<SellItemFromVirtual> sellItemFromInventoryVFuncHook;
+    
+    [TweakHook, Signature("E8 ?? ?? ?? ?? 48 8B 5C 24 ?? 33 C0 89 06", DetourName = nameof(SellItemFromInventoryDetour))]
+    private HookWrapper<SellItemFromInventory> sellItemFromInventoryHook; // SE why is this still used for drag & drop selling?
 
     private void SellItemFromInventoryDetour(int slotIndex, InventoryType inventory) {
+        SimpleLog.Verbose($"Attempting to sell from {inventory}:{slotIndex} [Drag & Drop]");
         if (CanSell(slotIndex, inventory)) {
             sellItemFromInventoryHook.Original(slotIndex, inventory);
         }
     }
 
     private void SellItemFromRetainerDetour(void* a1, int slotIndex, InventoryType inventory) {
+        SimpleLog.Verbose($"Attempting to sell from {inventory}:{slotIndex} [Retainer]");
         if (CanSell(slotIndex, inventory)) {
             sellItemFromRetainerHook.Original(a1, slotIndex, inventory);
         }
     }
-
-    protected override void Disable() {
-        sellItemFromRetainerHook?.Disable();
-        sellItemFromInventoryHook?.Disable();
-        SaveConfig(Config);
-        base.Disable();
-    }
-
-    public override void Dispose() {
-        sellItemFromRetainerHook?.Dispose();
-        sellItemFromInventoryHook?.Dispose();
-        base.Dispose();
+    
+    private void SellItemFromInventoryVFuncDetour(void* a1, int slotIndex, InventoryType inventory) {
+        SimpleLog.Verbose($"Attempting to sell from {inventory}:{slotIndex} [Inventory]");
+        if (CanSell(slotIndex, inventory)) {
+            sellItemFromInventoryVFuncHook.Original(a1, slotIndex, inventory);
+        }
     }
 }
