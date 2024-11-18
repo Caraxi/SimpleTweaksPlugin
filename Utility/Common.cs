@@ -75,7 +75,7 @@ public unsafe class Common {
 
     public static T* GetUnitBase<T>(string name = null, int index = 1) where T : unmanaged {
         if (string.IsNullOrEmpty(name)) {
-            var attr = (AddonAttribute) typeof(T).GetCustomAttribute(typeof(Addon));
+            var attr = (AddonAttribute) typeof(T).GetCustomAttribute(typeof(AddonAttribute));
             if (attr != null) {
                 name = attr.AddonIdentifiers.FirstOrDefault();
             }
@@ -89,7 +89,7 @@ public unsafe class Common {
     public static bool GetUnitBase<T>(out T* unitBase, string name = null, int index = 1) where T : unmanaged {
         unitBase = null;
         if (string.IsNullOrEmpty(name)) {
-            var attr = (AddonAttribute) typeof(T).GetCustomAttribute(typeof(Addon));
+            var attr = (AddonAttribute) typeof(T).GetCustomAttribute(typeof(AddonAttribute));
             if (attr != null) {
                 name = attr.AddonIdentifiers.FirstOrDefault();
             }
