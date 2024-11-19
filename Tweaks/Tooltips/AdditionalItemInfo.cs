@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -156,8 +158,9 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         
         if (Config.AdditionalData) {
             if (item.AdditionalData.RowId > 0) {
+                var typeName = ((Type?) item.AdditionalData.GetType().GetField("<rowType>P", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(item.AdditionalData))?.Name ?? "Unknown";
                 str.Append(new UIForegroundPayload(5));
-                str.Append($"AdditionalData: {item.AdditionalData}");
+                str.Append($"AdditionalData: {typeName}#{item.AdditionalData.RowId}");
                 str.Append(UIForegroundPayload.UIForegroundOff);
                 str.AppendLine();
             }
