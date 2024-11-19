@@ -36,7 +36,7 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
     [TweakHook(typeof(RaptureLogModule), nameof(RaptureLogModule.ShowLogMessage), nameof(ShowLogMessageDetour), AutoEnable = false)]
     private HookWrapper<RaptureLogModule.Delegates.ShowLogMessage> showLogMessageHook;
 
-    public Configs Config { get; private set; }
+    [TweakConfig] public Configs Config { get; private set; }
 
     private readonly uint[] originalFontSize = [12, 12, 12, 12];
 
@@ -169,15 +169,20 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
     private void SetFontSizeDetour(byte* chatLogPanelWithOffset, byte fontSize) {
         try {
             if (Config.FontSize is { Length: 4 }) {
-                var chatLogPanel = (AddonChatLogPanel*)(chatLogPanelWithOffset - 0x278);
+                var chatLogPanel = (AddonChatLogPanel*)(chatLogPanelWithOffset - 0x280);
                 if (Config.FontSize != null) {
+                    var anyMatch = false;
                     for (var i = 0; i < 4; i++) {
                         var panel = Common.GetUnitBase<AddonChatLogPanel>($"ChatLogPanel_{i}");
                         if (panel == null) continue;
-                        if (panel == chatLogPanel) {
-                            fontSize = (byte)Math.Clamp(Config.FontSize[i], MinimumFontSize, MaximumFontSize);
-                            break;
-                        }
+                        if (panel != chatLogPanel) continue;
+                        fontSize = (byte)Math.Clamp(Config.FontSize[i], MinimumFontSize, MaximumFontSize);
+                        anyMatch = true;
+                        break;
+                    }
+
+                    if (!anyMatch) {
+                        Plugin.Error(this, new Exception("Invalid Panel Offset"));
                     }
                 }
             }
