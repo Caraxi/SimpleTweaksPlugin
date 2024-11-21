@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using FFXIVClientStructs.Attributes;
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -19,7 +18,7 @@ using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 namespace SimpleTweaksPlugin.Debugging;
 
 public unsafe class AgentDebug : DebugHelper {
-    private bool enableLogging = false;
+    private bool enableLogging;
 
     private delegate void* GetAgentByInternalIDDelegate(void* agentModule, AgentId agentId);
 
@@ -32,10 +31,11 @@ public unsafe class AgentDebug : DebugHelper {
 
     private List<(AgentId id, bool hasClass)> sortedAgentList;
     private float agentListWidth = 100f;
-    private bool agentListActiveOnly = false;
+    private bool agentListActiveOnly;
     private bool agentListKnownOnly = true;
-    private bool sortById = false;
+    private bool sortById;
     private Type selectedAgentType;
+    private Type[] selectedAgentTypes;
     private string agentSearch = string.Empty;
 
     private bool starting = true;
@@ -60,7 +60,11 @@ public unsafe class AgentDebug : DebugHelper {
             if (Disposed || agent != agentInterface) return hook.Original(agent, a2, values, atkValueCount, eventType);
 
             try {
-                var call = new EventCall() { EventType = eventType, UnknownPointer = a2, UnknownPointerData = *(ulong*)a2, };
+                var call = new EventCall() {
+                    EventType = eventType,
+                    UnknownPointer = a2,
+                    UnknownPointerData = *(ulong*)a2,
+                };
 
                 var v = values;
                 for (var i = 0UL; i < atkValueCount; i++) {
@@ -99,28 +103,71 @@ public unsafe class AgentDebug : DebugHelper {
 
     public Dictionary<AgentId, AgentEventHandlerHook> AgentEventHooks = new();
 
-    public override void Draw() {
-        if (sortedAgentList == null) {
-            var maxAgentId = 0U;
-            var l = new List<AgentId>();
+    public override void Reload() {
+        selectedAgentType = null;
+        selectedAgentTypes = null;
+        sortedAgentList = null;
+    }
 
-            var agentClasses = typeof(AgentInterface).Assembly.GetTypes().Select((t) => (t, t.GetCustomAttributes(typeof(AgentAttribute)).Cast<AgentAttribute>().ToArray())).Where(t => t.Item2.Length > 0).ToArray();
+    private (Type agentType, AgentId[] agentIds)[] GetAgentTypes() {
+        var agentTypes = new List<(Type, AgentId[])>();
 
-            foreach (var a in Enum.GetValues(typeof(AgentId)).Cast<AgentId>()) {
-                l.Add(a);
-                if ((uint)a > maxAgentId) {
-                    maxAgentId = (uint)a;
-                }
-            }
+        agentTypes.AddRange(typeof(AgentInterface).Assembly.GetTypes()
+            .Select((t) => (t, t.GetCustomAttributes(typeof(AgentAttribute))
+                .Cast<AgentAttribute>()
+                .Select(a => a.Id)
+                .ToArray()))
+            .Where(t => t.Item2.Length > 0));
 
-            sortedAgentList = l.Select((a) => { return (a, agentClasses.Any(t => t.Item2.Any(aa => aa.Id == a))); }).OrderBy(a => $"{a}").ToList();
+        foreach (var tp in Plugin.TweakProviders) {
+            agentTypes.AddRange(tp.Assembly.GetTypes()
+                .Select((t) => (t, t.GetCustomAttributes(typeof(AgentAttribute))
+                    .Cast<AgentAttribute>()
+                    .Select(a => a.Id)
+                    .ToArray()))
+                .Where(t => t.Item2.Length > 0));
+        }
 
-            for (var i = 0U; i < maxAgentId; i++) {
-                var a = (AgentId)i;
-                if (sortedAgentList.Any(aa => a == aa.id)) continue;
-                sortedAgentList.Add((a, false));
+        return agentTypes.ToArray();
+    }
+
+    private void BuildSortedAgentList() {
+        var maxAgentId = 0U;
+        var l = new List<AgentId>();
+
+        var agentClasses = GetAgentTypes();
+
+        foreach (var a in Enum.GetValues(typeof(AgentId))
+                     .Cast<AgentId>()) {
+            l.Add(a);
+            if ((uint)a > maxAgentId) {
+                maxAgentId = (uint)a;
             }
         }
+
+        sortedAgentList = l.Select((a) => { return (a, agentClasses.Any(t => t.Item2.Any(aa => aa == a))); })
+            .OrderBy(a => $"{a}")
+            .ToList();
+
+        for (var i = 0U; i < maxAgentId; i++) {
+            var a = (AgentId)i;
+            if (sortedAgentList.Any(aa => a == aa.id)) continue;
+            sortedAgentList.Add((a, false));
+        }
+
+        if (sortById) {
+            sortedAgentList = sortedAgentList.OrderBy(a => (uint)a.id)
+                .ToList();
+        } else {
+            sortedAgentList = sortedAgentList.OrderBy(a => Enum.IsDefined(a.id) ? 0 : 1)
+                .ThenBy(a => Enum.IsDefined(a.id) ? $"{a.id}" : $"{a.id}".PadLeft(16, '0'))
+                .ToList();
+        }
+    }
+
+    public override void Draw() {
+        if (sortedAgentList == null) BuildSortedAgentList();
+        if (sortedAgentList == null) return;
 
         if (starting) {
             try {
@@ -139,17 +186,12 @@ public unsafe class AgentDebug : DebugHelper {
                     ImGui.Checkbox("Active Only", ref agentListActiveOnly);
                     ImGui.SameLine();
                     ImGui.Checkbox("Known Only", ref agentListKnownOnly);
-                    if (ImGui.Checkbox("ID Order", ref sortById)) {
-                        if (sortById) {
-                            sortedAgentList = sortedAgentList.OrderBy(a => (uint)a.id).ToList();
-                        } else {
-                            sortedAgentList = sortedAgentList.OrderBy(a => $"{a}").ToList();
-                        }
-                    }
-
+                    if (ImGui.Checkbox("ID Order", ref sortById)) BuildSortedAgentList();
                     ImGui.Separator();
-                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail()
+                        .X);
                     ImGui.InputTextWithHint($"###agentSearch", "Search...", ref agentSearch, 60, ImGuiInputTextFlags.AutoSelectAll);
+                    ImGui.Separator();
                     ImGui.Separator();
                     if (ImGui.BeginChild("AgentListScroll", new Vector2(-1, -1), false)) {
                         foreach (var agent in sortedAgentList) {
@@ -162,7 +204,8 @@ public unsafe class AgentDebug : DebugHelper {
                                   $"{agent.id}".Contains(agentSearch, StringComparison.InvariantCultureIgnoreCase) || // Name Search
                                   $"{(uint)agent.id}" == agentSearch || // ID Search
                                   $"{(ulong)agentInterface:X16}".Contains(agentSearch, StringComparison.InvariantCultureIgnoreCase) // Address Search
-                                )) continue;
+                                ))
+                                continue;
 
                             ImGui.PushStyleColor(ImGuiCol.Text, agent.hasClass ? 0xFFFF5500 : 0x000000);
                             ImGui.PushFont(UiBuilder.IconFont);
@@ -179,10 +222,14 @@ public unsafe class AgentDebug : DebugHelper {
                             if (ImGui.Selectable($"{agent.id}", selectAgent == agent.id)) {
                                 selectAgent = agent.id;
                                 selectedAgentType = null;
+                                selectedAgentTypes = null;
                                 DebugManager.SetSavedValue($"{nameof(AgentDebug)}:{nameof(selectAgent)}", $"{agent.id}");
                             }
 
-                            var size = ImGui.CalcTextSize($"{agent}").X + ImGui.GetStyle().FramePadding.X * 2 + ImGui.GetStyle().ScrollbarSize * 2;
+                            var size = ImGui.CalcTextSize($"{agent}")
+                                .X + ImGui.GetStyle()
+                                .FramePadding.X * 2 + ImGui.GetStyle()
+                                .ScrollbarSize * 2;
                             if (size > agentListWidth) {
                                 agentListWidth = size;
                             }
@@ -199,16 +246,37 @@ public unsafe class AgentDebug : DebugHelper {
                 if (ImGui.BeginChild("AgentView", new Vector2(-1, -1), true)) {
                     var agentInterface = Framework.Instance()->GetUIModule()->GetAgentModule()->GetAgentByInternalId(selectAgent);
 
-                    var agentHook = AgentEventHooks.ContainsKey(selectAgent) ? AgentEventHooks[selectAgent] : null;
+                    AgentEventHooks.TryGetValue(selectAgent, out var agentHook);
 
-                    if (selectedAgentType == null) {
+                    if (selectedAgentTypes == null) {
                         try {
-                            var agentClasses = typeof(AgentInterface).Assembly.GetTypes().Select((t) => (t, t.GetCustomAttributes(typeof(AgentAttribute)).Cast<AgentAttribute>().ToArray())).Where(t => t.Item2.Length > 0).ToArray();
-                            selectedAgentType = agentClasses.FirstOrDefault(t => t.Item2.Any(aa => aa.Id == selectAgent)).t;
-                            selectedAgentType ??= typeof(AgentInterface);
+                            var agentClasses = GetAgentTypes();
+                            selectedAgentTypes = agentClasses.Where(a => a.Item2.Contains(selectAgent))
+                                .Select(a => a.agentType)
+                                .ToArray();
+                            var selectedType = DebugManager.GetSavedValue($"{nameof(AgentDebug)}:SelectedType:{selectAgent}", string.Empty);
+                            selectedAgentType = selectedAgentTypes.FirstOrDefault(t => t.FullName == selectedType, selectedAgentTypes.FirstOrDefault(typeof(AgentInterface)));
                         } catch {
-                            selectedAgentType = typeof(AgentInterface);
+                            selectedAgentTypes = [];
                         }
+                    }
+
+                    selectedAgentTypes ??= [];
+                    selectedAgentType ??= selectedAgentTypes.Length == 0 ? typeof(AgentInterface) : selectedAgentTypes[0];
+
+                    if (selectedAgentTypes.Length > 1) {
+                        if (ImGui.BeginCombo("###agentTypeSelection", "", ImGuiComboFlags.NoPreview)) {
+                            foreach (var t in selectedAgentTypes) {
+                                if (ImGui.Selectable($"{t.FullName}", selectedAgentType == t)) {
+                                    selectedAgentType = t;
+                                    DebugManager.SetSavedValue($"{nameof(AgentDebug)}:SelectedType:{selectAgent}", selectedAgentType.FullName);
+                                }
+                            }
+
+                            ImGui.EndCombo();
+                        }
+
+                        ImGui.SameLine();
                     }
 
                     ImGui.Text($"{selectedAgentType.FullName}");
@@ -222,8 +290,10 @@ public unsafe class AgentDebug : DebugHelper {
                         ImGui.SameLine();
                         DebugManager.ClickToCopyText($"{(ulong)agentInterface->AtkEventInterface.VirtualTable:X}");
 
-                        var beginModule = (ulong)Process.GetCurrentProcess().MainModule.BaseAddress.ToInt64();
-                        var endModule = (beginModule + (ulong)Process.GetCurrentProcess().MainModule.ModuleMemorySize);
+                        var beginModule = (ulong)Process.GetCurrentProcess()
+                            .MainModule.BaseAddress.ToInt64();
+                        var endModule = (beginModule + (ulong)Process.GetCurrentProcess()
+                            .MainModule.ModuleMemorySize);
                         if (beginModule > 0 && (ulong)agentInterface->AtkEventInterface.VirtualTable >= beginModule && (ulong)agentInterface->AtkEventInterface.VirtualTable <= endModule) {
                             ImGui.SameLine();
                             ImGui.PushStyleColor(ImGuiCol.Text, 0xffcbc0ff);
@@ -332,7 +402,8 @@ public unsafe class AgentDebug : DebugHelper {
                     var addr = (ulong*)(l.address);
                     if (addr != null) {
                         DebugManager.ClickToCopyText($"{addr[0]:X}");
-                        var baseAddr = (ulong)Process.GetCurrentProcess().MainModule.BaseAddress;
+                        var baseAddr = (ulong)Process.GetCurrentProcess()
+                            .MainModule.BaseAddress;
                         var offset = addr[0] - baseAddr;
                         ImGui.SameLine();
                         DebugManager.ClickToCopyText($"ffxiv_dx11.exe+{offset:X}");

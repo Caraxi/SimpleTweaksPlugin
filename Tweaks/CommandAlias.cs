@@ -31,7 +31,7 @@ public class CommandAlias : Tweak {
         public bool Enabled = true;
         public string Input = string.Empty;
         public string Output = string.Empty;
-        public bool Resend = false;
+        public bool Resend;
         [NonSerialized] public bool Delete;
         [NonSerialized] public int UniqueId;
 

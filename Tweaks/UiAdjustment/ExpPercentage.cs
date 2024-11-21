@@ -4,9 +4,8 @@ using Dalamud.Game;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Memory;
-using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -41,7 +40,7 @@ public unsafe class ExpPercentage : UiAdjustments.SubTweak {
         public bool ShouldShowNoExpPercentage() => PercentageOnly == false && ShowRestedExperience;
     }
 
-    public Configs Config { get; private set; }
+    [TweakConfig] public Configs Config { get; private set; }
 
     protected override void Enable() {
         ConfigChanged();
@@ -86,10 +85,10 @@ public unsafe class ExpPercentage : UiAdjustments.SubTweak {
             if (!str.TextValue.Contains("-/-")) percent = numberArray->IntArray[16] / (float)numberArray->IntArray[18];
             percent *= 100f;
             if (Config.PercentageOnly) {
-                var classJob = Service.Data.Excel.GetSheet<ClassJob>()?.GetRow((uint)numberArray->IntArray[26]);
+                var classJob = Service.Data.Excel.GetSheet<ClassJob>().GetRowOrDefault((uint)numberArray->IntArray[26]);
                 if (classJob != null) {
                     str.Payloads.Clear();
-                    str.Append(classJob.Abbreviation.ToDalamudString());
+                    str.Append(classJob.Value.Abbreviation.ExtractText());
 
                     var levelIcon = Service.ClientState.ClientLanguage switch {
                         ClientLanguage.French => SeIconChar.LevelFr,

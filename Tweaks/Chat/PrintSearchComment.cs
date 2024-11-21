@@ -29,7 +29,7 @@ public class PrintSearchComment : ChatTweaks.SubTweak {
                 var builder = new Lumina.Text.SeStringBuilder()
                     .PushColorType(45)
                     .Append("Search Info from <")
-                    .PushLinkCharacter(character.Name.TextValue, character.HomeWorld.Id)
+                    .PushLinkCharacter(character.Name.TextValue, character.HomeWorld.RowId)
                     .Append(character.Name.TextValue)
                     .PopLink()
                     .Append(">")

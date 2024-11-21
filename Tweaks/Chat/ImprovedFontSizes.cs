@@ -10,7 +10,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -36,7 +36,7 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
     [TweakHook(typeof(RaptureLogModule), nameof(RaptureLogModule.ShowLogMessage), nameof(ShowLogMessageDetour), AutoEnable = false)]
     private HookWrapper<RaptureLogModule.Delegates.ShowLogMessage> showLogMessageHook;
 
-    public Configs Config { get; private set; }
+    [TweakConfig] public Configs Config { get; private set; }
 
     private readonly uint[] originalFontSize = [12, 12, 12, 12];
 
@@ -130,8 +130,7 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
     private void ToggleFontSizeConfigDropDowns(AtkUnitBase* unitBase, bool toggle) {
         if (unitBase == null) return;
 
-        var txt = Service.Data.Excel.GetSheet<Addon>()?.GetRow(7802)?.Text;
-        if (txt == null) return;
+        var txt = Service.Data.Excel.GetSheet<Addon>().GetRow(7802).Text.ToDalamudString();
 
         for (var i = 0U; i < 4; i++) {
             var n = unitBase->GetNodeById(7U + i);
@@ -149,11 +148,11 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
 
             if (toggle) {
                 TooltipManager.RemoveTooltip(unitBase, &tnc->AtkResNode);
-                tnc->SetText(txt.RawData);
+                tnc->SetText(txt.EncodeWithNullTerminator());
             } else {
-                var str = txt.ToDalamudString().Append(new List<Payload>() { new UIForegroundPayload(3), new TextPayload(" (Managed by Simple Tweaks)"), new UIForegroundPayload(0) });
+                var str = txt.Append(new List<Payload>() { new UIForegroundPayload(3), new TextPayload(" (Managed by Simple Tweaks)"), new UIForegroundPayload(0) });
                 TooltipManager.AddTooltip(unitBase, &tnc->AtkResNode, $"Setting managed by Simple Tweak:\n  - {LocalizedName}");
-                tnc->SetText(str.Encode());
+                tnc->SetText(str.EncodeWithNullTerminator());
             }
 
             tnc->ResizeNodeForCurrentText();
@@ -170,15 +169,20 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
     private void SetFontSizeDetour(byte* chatLogPanelWithOffset, byte fontSize) {
         try {
             if (Config.FontSize is { Length: 4 }) {
-                var chatLogPanel = (AddonChatLogPanel*)(chatLogPanelWithOffset - 0x278);
+                var chatLogPanel = (AddonChatLogPanel*)(chatLogPanelWithOffset - 0x280);
                 if (Config.FontSize != null) {
+                    var anyMatch = false;
                     for (var i = 0; i < 4; i++) {
                         var panel = Common.GetUnitBase<AddonChatLogPanel>($"ChatLogPanel_{i}");
                         if (panel == null) continue;
-                        if (panel == chatLogPanel) {
-                            fontSize = (byte)Math.Clamp(Config.FontSize[i], MinimumFontSize, MaximumFontSize);
-                            break;
-                        }
+                        if (panel != chatLogPanel) continue;
+                        fontSize = (byte)Math.Clamp(Config.FontSize[i], MinimumFontSize, MaximumFontSize);
+                        anyMatch = true;
+                        break;
+                    }
+
+                    if (!anyMatch) {
+                        Plugin.Error(this, new Exception("Invalid Panel Offset"));
                     }
                 }
             }

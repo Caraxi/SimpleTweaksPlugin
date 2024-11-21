@@ -6,12 +6,11 @@ using System.Reflection;
 using System.Text;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
-using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.Tweaks.Tooltips.Hotkeys;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -20,6 +19,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
 [TweakName("Item Hotkeys")]
 [TweakDescription("Adds hotkeys for various actions when the item detail window is visible.")]
+[TweakAutoConfig]
 public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
     public class Configs : TweakConfig {
         public bool HideHotkeysOnTooltip;
@@ -33,14 +33,14 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
     public override void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         if (Config.HideHotkeysOnTooltip) return;
 
-        var itemId = Service.GameGui.HoveredItem;
+        var itemId = AgentItemDetail.Instance()->ItemId;
 
-        ExcelRow item;
+        object? item;
 
         if (itemId >= 2000000) {
-            item = Service.Data.Excel.GetSheet<EventItem>()?.GetRow((uint)Service.GameGui.HoveredItem);
+            item = Service.Data.Excel.GetSheet<EventItem>().GetRowOrDefault(itemId);
         } else {
-            item = Service.Data.Excel.GetSheet<ExtendedItem>()?.GetRow((uint)(Service.GameGui.HoveredItem % 500000));
+            item = Service.Data.Excel.GetSheet<Item>().GetRow(itemId % 500000);
         }
 
         if (item == null) return;
@@ -48,7 +48,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
         var seStr = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ControlsDisplay);
         if (seStr == null) return;
         if (seStr.TextValue.Contains('\n')) return;
-        var split = seStr.TextValue.Split(new[] { weirdTabChar }, StringSplitOptions.None);
+        var split = seStr.TextValue.Split([weirdTabChar], StringSplitOptions.None);
         if (split.Length > 0) {
             seStr.Payloads.Clear();
             seStr.Payloads.Add(new TextPayload(string.Join("\n", split)));
@@ -66,7 +66,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
                 if (!hk.AcceptsNormalItem) continue;
             }
 
-            if (itemId >= 2000000 ? hk.DoShow(item as EventItem) : hk.DoShow(item as ExtendedItem)) {
+            if (itemId >= 2000000 ? hk.DoShow(item as EventItem?) : hk.DoShow(item as Item?)) {
                 seStr.Payloads.Add(new TextPayload($"\n{string.Join("+", hk.Hotkey.Select(k => k.GetKeyName()))}  {hk.HintText}"));
                 v++;
             }
@@ -85,7 +85,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
 
     private string settingKey;
     private string focused;
-    private readonly List<VirtualKey> newKeys = new();
+    private readonly List<VirtualKey> newKeys = [];
 
     public void DrawHotkeyConfig(ItemHotkey hotkey) {
         ImGui.PushID(hotkey.Key);
@@ -243,31 +243,30 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
 
             var id = Service.GameGui.HoveredItem;
 
-            ExcelRow item;
+            object item;
             if (id >= 2000000) {
-                item = Service.Data.Excel.GetSheet<EventItem>()?.GetRow((uint)id);
+                item = Service.Data.Excel.GetSheet<EventItem>().GetRowOrDefault((uint)id);
             } else {
-                item = Service.Data.Excel.GetSheet<ExtendedItem>()?.GetRow((uint)(id % 500000));
+                item = Service.Data.Excel.GetSheet<Item>().GetRowOrDefault((uint)(id % 500000));
             }
 
             if (item == null) return;
 
             foreach (var h in Hotkeys) {
                 if (!h.Enabled) continue;
-                if (!(id >= 2000000 ? h.DoShow(item as EventItem) : h.DoShow(item as ExtendedItem))) continue;
-                if (CheckHotkeyState(h.Hotkey)) {
-                    if (id >= 2000000) {
-                        h.OnTriggered(item as EventItem);
-                    } else {
-                        h.OnTriggered(item as ExtendedItem);
-                    }
-
-                    foreach (var k in h.Hotkey) {
-                        Service.KeyState[(int)k] = false;
-                    }
-
-                    break;
+                if (!(id >= 2000000 ? h.DoShow(item as EventItem?) : h.DoShow(item as Item?))) continue;
+                if (!CheckHotkeyState(h.Hotkey)) continue;
+                if (id >= 2000000) {
+                    h.OnTriggered(item as EventItem?);
+                } else {
+                    h.OnTriggered(item as Item?);
                 }
+
+                foreach (var k in h.Hotkey) {
+                    Service.KeyState[(int)k] = false;
+                }
+
+                break;
             }
         } catch (Exception ex) {
             SimpleLog.Error(ex);

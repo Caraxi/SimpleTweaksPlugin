@@ -4,7 +4,7 @@ using System.Numerics;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
 using SimpleTweaksPlugin.TweakSystem;
 

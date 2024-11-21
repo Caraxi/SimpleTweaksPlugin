@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game.ClientState.Conditions;
@@ -12,6 +14,8 @@ using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
+using Lumina.Excel;
+using SimpleTweaksPlugin.Sheets;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace SimpleTweaksPlugin.Utility; 
@@ -175,5 +179,26 @@ public static class Extensions {
             ValueType.ManagedVector => "[Managed Vector]",
             _ => $"Unknown Type: {v.Type}"
         };
+    }
+    
+    /// <summary> Return the first object fulfilling the predicate or null for structs. </summary>
+    /// <param name="values"> The enumerable. </param>
+    /// <param name="predicate"> The predicate. </param>
+    /// <returns> The first object fulfilling the predicate, or a null-optional. </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static T? FirstOrNull<T>(this IEnumerable<T> values, Func<T, bool> predicate) where T : struct
+    {
+        foreach(var val in values)
+            if (predicate(val))
+                return val;
+
+        return null;
+    }
+
+    public static TExtension GetExtension<TExtension, TBase>(this TBase row) where TExtension : struct, IExcelRow<TExtension>, IRowExtension<TExtension, TBase> where TBase : struct, IExcelRow<TBase> => TExtension.GetExtended(row);
+
+    public static bool TryGetAttribute<TAttribute>(this Type type, [NotNullWhen(true)] out TAttribute attribute) where TAttribute : Attribute {
+        attribute = type.GetCustomAttribute<TAttribute>();
+        return attribute != null;
     }
 }

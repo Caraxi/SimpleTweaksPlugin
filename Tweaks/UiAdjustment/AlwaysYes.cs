@@ -129,7 +129,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
     private void OnAddonSetup(AddonSetupArgs args) {
         switch (args.AddonName) {
             case "SelectYesno":
-                if (Config.YesNo && !IsYesnoAnException(args.Addon)) SetFocusYes(args.Addon, 8, 9, 4);
+                if (Config.YesNo && !IsYesnoAnException(args.Addon)) DelayedSetFocusYes(args.AddonName, 8, 9, 4, 1);
                 return;
             case "ContentsFinderConfirm":
                 if (Config.DutyConfirmation) SetFocusYes(args.Addon, 63);

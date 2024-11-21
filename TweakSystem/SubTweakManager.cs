@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.TweakSystem; 
 
@@ -39,6 +40,7 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
                 
                 var blacklistKey = tweak.Key;
                 if (tweak.Version > 1) blacklistKey += $"::{tweak.Version}";
+                
                 if (PluginConfig.BlacklistedTweaks.Contains(blacklistKey)) {
                     SimpleLog.Log("Skipping blacklisted tweak: " + tweak.Key);
                     var blTweak = new BlacklistedTweak(tweak.Key, tweak.Name, "Disabled due to known issues.");
@@ -46,6 +48,17 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
                     tweakList.Add(blTweak);
                     continue;
                 }
+
+                if (tweak.GetType().TryGetAttribute<RequiredClientStructsVersionAttribute>(out var csAttr)) {
+                    if (csAttr.MinVersion > Common.ClientStructsVersion || csAttr.MaxVersion < Common.ClientStructsVersion) {
+                        SimpleLog.Log($"Skipping tweak due to client structs version: {tweak.Key}");
+                        var blTweak = new BlacklistedTweak(tweak.Key, tweak.Name, "Disabled due to an unsupported version of FFXIVClientStructs.\nIt will automatically be re-enabled when Dalamud updates to a supported version.");
+                        blTweak.InterfaceSetup(SimpleTweaksPlugin.Plugin, Service.PluginInterface, SimpleTweaksPlugin.Plugin.PluginConfig, this.TweakProvider, this);
+                        tweakList.Add(blTweak);
+                        continue;
+                    }
+                }
+
                 tweak.InterfaceSetup(this.Plugin, this.PluginInterface, this.PluginConfig, this.TweakProvider, this);
                 if (tweak is not IDisabledTweak) {
                     tweak.SetupInternal();

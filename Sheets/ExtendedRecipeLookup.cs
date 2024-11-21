@@ -1,20 +1,27 @@
 ﻿// ReSharper disable All
 
+using Lumina;
 using Lumina.Text;
 using Lumina.Data;
 using Lumina.Data.Structs.Excel;
+using Lumina.Excel;
+using Lumina.Excel.Sheets;
 
-namespace Lumina.Excel.GeneratedSheets
-{
-    [Sheet( "RecipeLookup")]
-    public class ExtendedRecipeLookup : RecipeLookup {
+namespace SimpleTweaksPlugin.Sheets; 
 
-        public LazyRow<Recipe>[] Recipes { get; private set; }
-
-        public override void PopulateData( RowParser parser, GameData gameData, Language language )
-        {
-            base.PopulateData( parser, gameData, language );
-            Recipes = new LazyRow<Recipe>[] { CRP, BSM, ARM, GSM, LTW, WVR, ALC, CUL };
-        }
-    }
+[Sheet( "RecipeLookup")]
+readonly unsafe public struct ExtendedRecipeLookup(ExcelPage page, uint offset, uint row) : IRowExtension<ExtendedRecipeLookup, RecipeLookup> {
+    public readonly RecipeLookup RecipeLookup => new RecipeLookup(page, offset, row);
+    
+    public readonly RowRef<Recipe>[] Recipes =>
+        new RowRef<Recipe>[] {
+            RecipeLookup.CRP, RecipeLookup.BSM,
+            RecipeLookup.ARM, RecipeLookup.GSM,
+            RecipeLookup.LTW, RecipeLookup.WVR,
+            RecipeLookup.ALC, RecipeLookup.CUL
+        };
+    
+    public static ExtendedRecipeLookup Create(ExcelPage page, uint offset, uint row) => new(page, offset, row);
+    public uint RowId => row; 
 }
+

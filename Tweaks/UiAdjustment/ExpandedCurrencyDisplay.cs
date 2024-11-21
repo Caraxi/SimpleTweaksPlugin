@@ -9,14 +9,13 @@ using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility;
-using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -411,8 +410,8 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak {
     private void UpdateSearch() {
         if (searchString != string.Empty) {
             searchedItems = Service.Data.GetExcelSheet<Item>()!
-                .OrderBy(item => item.ItemSortCategory.Row)
-                .Where(item => item.Name.ToDalamudString().TextValue.Contains(searchString, StringComparison.CurrentCultureIgnoreCase))
+                .OrderBy(item => item.ItemSortCategory.RowId)
+                .Where(item => item.Name.ExtractText().Contains(searchString, StringComparison.CurrentCultureIgnoreCase))
                 .Where(item => {
                     if (collectibleItemSearch) return item.IsCollectable;
                     if (hqItemSearch) return item.CanBeHq;
@@ -458,7 +457,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak {
                         TweakConfig.Currencies.Add(new CurrencyEntry {
                             IconId = item.Icon,
                             ItemId = hqItemSearch ? 1_000_000 + item.RowId : collectibleItemSearch ? 500_000 + item.RowId : item.RowId,
-                            Name = item.Name.ToDalamudString() + (hqItemSearch ? " HQ" : string.Empty) + (collectibleItemSearch ? $" {(char)SeIconChar.Collectible}" : string.Empty),
+                            Name = item.Name.ExtractText() + (hqItemSearch ? " HQ" : string.Empty) + (collectibleItemSearch ? $" {(char)SeIconChar.Collectible}" : string.Empty),
                             HqItem = hqItemSearch,
                             CollectibleItem = collectibleItemSearch
                         });
@@ -470,7 +469,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak {
                     ImGui.Image(icon.ImGuiHandle, new Vector2(23.0f, 23.0f));
                     ImGui.SameLine();
                     
-                    ImGui.TextUnformatted($"{item.RowId:D6} - {item.Name.ToDalamudString()}");
+                    ImGui.TextUnformatted($"{item.RowId:D6} - {item.Name.ExtractText()}");
                 }
             }
         }

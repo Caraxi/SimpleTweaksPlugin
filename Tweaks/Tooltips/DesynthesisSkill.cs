@@ -2,12 +2,13 @@
 using System.Linq;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.Sheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltipField;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips;
@@ -15,7 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 [TweakName("Show Desynthesis Skill")]
 [TweakDescription("Shows your current desynthesis level when viewing a desynthesizable item.")]
 public class DesynthesisSkill : TooltipTweaks.SubTweak {
-    private readonly uint[] desynthesisInDescription = { 46, 56, 65, 66, 67, 68, 69, 70, 71, 72 };
+    private readonly uint[] desynthesisInDescription = [46, 56, 65, 66, 67, 68, 69, 70, 71, 72];
 
     public class Configs : TweakConfig {
         public bool Delta;
@@ -24,10 +25,10 @@ public class DesynthesisSkill : TooltipTweaks.SubTweak {
 
     public Configs Config { get; private set; }
 
-    private ExcelSheet<ExtendedItem> itemSheet;
+    private ExcelSheet<Item> itemSheet;
 
     protected override void Enable() {
-        itemSheet = Service.Data.Excel.GetSheet<ExtendedItem>();
+        itemSheet = Service.Data.Excel.GetSheet<Item>();
         if (itemSheet == null) return;
         Config = LoadConfig<Configs>() ?? new Configs();
         base.Enable();
@@ -45,52 +46,53 @@ public class DesynthesisSkill : TooltipTweaks.SubTweak {
 
     protected override void Setup() {
         foreach (var i in Service.Data.Excel.GetSheet<Item>()) {
-            if (i.Desynth > 0 && i.LevelItem.Row > maxDesynthLevel) maxDesynthLevel = i.LevelItem.Row;
+            if (i.Desynth > 0 && i.LevelItem.RowId > maxDesynthLevel) maxDesynthLevel = i.LevelItem.RowId;
         }
 
         base.Setup();
     }
 
     public override unsafe void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
-        var id = Service.GameGui.HoveredItem;
+        var id = AgentItemDetail.Instance()->ItemId;
         if (id < 2000000) {
             id %= 500000;
 
-            var item = itemSheet.GetRow((uint)id);
-            if (item != null && item.Desynth > 0) {
-                var desynthLevel = UIState.Instance()->PlayerState.GetDesynthesisLevel(item.ClassJobRepair.Row);
-                var desynthDelta = item.LevelItem.Row - desynthLevel;
-                var useDescription = desynthesisInDescription.Contains(item.ItemSearchCategory.Row);
+            var nullableItem = itemSheet.GetRowOrDefault((uint)id);
+            if (nullableItem is { Desynth: > 0 }) {
+                var item = nullableItem.Value;
+                var desynthLevel = UIState.Instance()->PlayerState.GetDesynthesisLevel(item.ClassJobRepair.RowId);
+                var desynthDelta = item.LevelItem.RowId - desynthLevel;
+                var useDescription = desynthesisInDescription.Contains(item.ItemSearchCategory.RowId);
 
                 var seStr = GetTooltipString(stringArrayData, useDescription ? ItemDescription : ExtractableProjectableDesynthesizable);
 
                 ushort c = Red;
-                if (desynthLevel >= maxDesynthLevel || desynthLevel >= item.LevelItem.Row + 50) {
+                if (desynthLevel >= maxDesynthLevel || desynthLevel >= item.LevelItem.RowId + 50) {
                     c = Green;
-                } else if (desynthLevel > item.LevelItem.Row) {
+                } else if (desynthLevel > item.LevelItem.RowId) {
                     c = Yellow;
                 }
 
-                if (seStr != null && seStr.Payloads.Count > 0) {
+                if (seStr is { Payloads.Count: > 0 }) {
                     // Turns out .Last() is broken when mixed with AllaganTools for items where the Desynth value is in ItemDescription, as I think AT Adds to the payloads.
                     // And with the original change for colouring, we switched from a simple replace to adding payloads.
                     // For some reason this gets called twice, and with the above change, would result in us adding the desynth skill twice.
-                    var textPayload = seStr.Payloads.OfType<TextPayload>().Where(p => p.Text != null).LastOrDefault(p => p.Text.Contains($": {item.LevelItem.Row},00") || p.Text.Contains($": {item.LevelItem.Row}.00") || p.Text.Contains($":{item.LevelItem.Row}.00"));
+                    var textPayload = seStr.Payloads.OfType<TextPayload>().Where(p => p.Text != null).LastOrDefault(p => p.Text.Contains($": {item.LevelItem.RowId},00") || p.Text.Contains($": {item.LevelItem.RowId}.00") || p.Text.Contains($":{item.LevelItem.RowId}.00"));
                     if (textPayload != null) {
+                        textPayload.Text ??= string.Empty; // Shut rider up
                         // Until we fix AllaganTools, if we're in an ItemDescription, just Replace (and unfortunately don't colour)
                         if (useDescription) {
                             if (Config.Delta) {
-                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({desynthDelta:+#;-#;-0})");
-                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({desynthDelta:+#;-#;-0})");
+                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.RowId},00", $"{item.LevelItem.RowId} ({desynthDelta:+#;-#;-0})");
+                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.RowId}.00", $"{item.LevelItem.RowId} ({desynthDelta:+#;-#;-0})");
                             } else {
-                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} ({MathF.Floor(desynthLevel):F0})");
-                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} ({MathF.Floor(desynthLevel):F0})");
+                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.RowId},00", $"{item.LevelItem.RowId} ({MathF.Floor(desynthLevel):F0})");
+                                textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.RowId}.00", $"{item.LevelItem.RowId} ({MathF.Floor(desynthLevel):F0})");
                             }
                         } else {
-                            textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row},00", $"{item.LevelItem.Row} <split>");
-                            textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.Row}.00", $"{item.LevelItem.Row} <split>");
+                            textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.RowId},00", $"{item.LevelItem.RowId} <split>");
+                            textPayload.Text = textPayload.Text.Replace($"{item.LevelItem.RowId}.00", $"{item.LevelItem.RowId} <split>");
 
-                            // Since we're not doing a replace anymore, we need to split the string, as sometimes there's text after the skill level
                             var parts = textPayload.Text.Split("<split>");
                             textPayload.Text = parts[0];
 

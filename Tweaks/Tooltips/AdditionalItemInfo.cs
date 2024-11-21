@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Reflection;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
+using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -22,20 +23,20 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Craftable")]
-        public bool Craftable = false;
+        public bool Craftable;
         
         [TweakConfigOption("Grand Company Seal Value")]
-        public bool GrandCompanySealValue = false;
+        public bool GrandCompanySealValue;
         
         [TweakConfigOption("Gearsets")]
-        public bool Gearsets = false;
+        public bool Gearsets;
         
         [TweakConfigOption("No Sell List", ConditionalDisplay = true)]
-        public bool NoSellList = false;
+        public bool NoSellList;
         public bool ShouldShowNoSellList() => SimpleTweaksPlugin.Plugin.GetTweak<NoSellList>()?.Enabled ?? false;
         
         [TweakConfigOption("Additional Data", HelpText = "Shows the 'AdditionalData' field some items contain. This is likely only useful for developers.")]
-        public bool AdditionalData = false;
+        public bool AdditionalData;
     }
 
     public Configs Config { get; private set; }
@@ -72,17 +73,16 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         var str = new SeString();
 
         if (Config.Craftable) {
-            var recipes = Service.Data.Excel.GetSheet<ExtendedRecipeLookup>()?.GetRow(item.RowId);
-            if (recipes != null) {
+
+            if (Service.Data.GetExcelSheet<ExtendedRecipeLookup>().TryGetRow(item.RowId, out var recipes)) {
                 var j = new List<string>();
                 var c = new List<string>();
                 for (var i = 0U; i < recipes.Recipes.Length; i++) {
                     var r = recipes.Recipes[i];
-                    if (r == null || r.Row == 0 || r.Value?.CraftType?.Value?.Name == null) continue;
-                    var cj = Service.Data.Excel.GetSheet<ClassJob>()?.GetRow(8 + i);
-                    if (cj == null) continue;
-                    j.Add(r.Value.CraftType.Value.Name.ToDalamudString().TextValue);
-                    c.Add(cj.Abbreviation.ToDalamudString().TextValue);
+                    if (r.RowId == 0 || string.IsNullOrEmpty(r.Value.CraftType.Value.Name.ExtractText())) continue;
+                    var cj = Service.Data.Excel.GetSheet<ClassJob>().GetRow(8 + i);
+                    j.Add(r.Value.CraftType.Value.Name.ExtractText());
+                    c.Add(cj.Abbreviation.ExtractText());
                 }
 
                 str.AppendLine(j.Count == 8 ? $"Craftable - All" : j.Count >= 4 ? $"Craftable - {string.Join(",", c)}" : $"Craftable - {string.Join(", ", j)}");
@@ -90,8 +90,8 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         }
         
         if (Config.GrandCompanySealValue) {
-            if (item.Rarity > 1 && item.PriceLow > 0 && item.ClassJobCategory.Row > 0) {
-                var gcSealValue = Service.Data.Excel.GetSheet<GCSupplyDutyReward>()?.GetRow(item.LevelItem.Row);
+            if (item.Rarity > 1 && item is { PriceLow: > 0, ClassJobCategory.RowId: > 0 }) {
+                var gcSealValue = Service.Data.Excel.GetSheet<GCSupplyDutyReward>().GetRow(item.LevelItem.RowId);
                 if (gcSealValue is { SealsExpertDelivery: > 0 }) {
                     
                     str.Append(new IconPayload(UIState.Instance()->PlayerState.GrandCompany switch {
@@ -157,9 +157,10 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         }
         
         if (Config.AdditionalData) {
-            if (item.AdditionalData > 0) {
+            if (item.AdditionalData.RowId > 0) {
+                var typeName = ((Type?) item.AdditionalData.GetType().GetField("<rowType>P", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(item.AdditionalData))?.Name ?? "Unknown";
                 str.Append(new UIForegroundPayload(5));
-                str.Append($"AdditionalData: {item.AdditionalData}");
+                str.Append($"AdditionalData: {typeName}#{item.AdditionalData.RowId}");
                 str.Append(UIForegroundPayload.UIForegroundOff);
                 str.AppendLine();
             }
@@ -186,13 +187,11 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         var isHq = itemId is > 1000000 and < 1500000;
         
         if (!isEventItem) {
-            var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(itemId % 500000);
-            if (item != null) {
+            if (Service.Data.GetExcelSheet<Item>().TryGetRow(itemId % 500000, out var item)) {
                 return GetInfoLines(item, isHq, isCollectable);
             }
         } else {
-            var item = Service.Data.Excel.GetSheet<EventItem>()?.GetRow(itemId);
-            if (item != null) {
+            if (Service.Data.GetExcelSheet<EventItem>().TryGetRow(itemId, out var item)) {
                 return GetInfoLines(item);
             }
         }
@@ -220,15 +219,13 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         if (!atkUnitBase->IsVisible) return;
         var textNode = Common.GetNodeByID<AtkTextNode>(&atkUnitBase->UldManager, CustomNodes.AdditionalInfo, NodeType.Text);
         if (textNode != null) textNode->AtkResNode.ToggleVisibility(false);
-        if (Service.GameGui.HoveredItem > uint.MaxValue) return;
-        
-        var lines = GetInfoLines((uint)Service.GameGui.HoveredItem);
+        var lines = GetInfoLines(AgentItemDetail.Instance()->ItemId);
         if (lines.Payloads.Count == 0) return;
 
         var insertNode = atkUnitBase->GetNodeById(2);
         if (insertNode == null) return;
 
-        var baseTextNode = atkUnitBase->GetTextNodeById(43);
+        var baseTextNode = atkUnitBase->GetTextNodeById(44);
         if (baseTextNode == null) return;
         
         if (textNode == null) {

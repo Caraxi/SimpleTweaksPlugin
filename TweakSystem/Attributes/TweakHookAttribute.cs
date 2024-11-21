@@ -7,7 +7,7 @@ namespace SimpleTweaksPlugin.TweakSystem;
 [MeansImplicitUse(ImplicitUseKindFlags.Access | ImplicitUseKindFlags.Assign)]
 public class TweakHookAttribute : Attribute {
     public bool AutoEnable { get; init; } = true;
-    public Type AddressType { get; init; } = null;
+    public Type AddressType { get; init; }
     public string AddressName { get; init; } = string.Empty;
     public string DetourName { get; init; } = string.Empty;
     

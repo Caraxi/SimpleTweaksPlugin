@@ -4,7 +4,7 @@ using System.Linq;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
 using SimpleTweaksPlugin.TweakSystem;
 

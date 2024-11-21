@@ -8,7 +8,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -51,7 +51,7 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
     private delegate nint UpdateItemDelegate(nint a1, uint index, nint a3, AtkComponentBase* listItemRenderer);
 
     [TweakHook, Signature("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 30 49 8B 38", DetourName = nameof(UpdateItemDetour))]
-    private readonly HookWrapper<UpdateItemDelegate>? updateItemHook = null!;
+    private readonly HookWrapper<UpdateItemDelegate>? updateItemHook;
 
     private nint UpdateItemDetour(nint a1, uint index, nint a3, AtkComponentBase* listItemRenderer) {
         try {
@@ -70,7 +70,7 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
         var itemEntry = agent->ItemList + index;
         var inventoryItem = InventoryManager.Instance()->GetInventoryContainer(itemEntry->InventoryType)->GetInventorySlot((int)itemEntry->InventorySlot);
 
-        var itemData = Service.Data.GetExcelSheet<Item>()?.GetRow(inventoryItem->ItemId);
+        var itemData = Service.Data.GetExcelSheet<Item>().GetRowOrDefault(inventoryItem->ItemId);
         if (itemData == null) return;
         
         var skillText = (AtkTextNode*)Common.GetNodeByID(listItemRenderer, CustomNodes.Get(this, "Skill"), NodeType.Text);
@@ -80,15 +80,15 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
 
         
         
-        var desynthLevel = UIState.Instance()->PlayerState.GetDesynthesisLevel(itemData.ClassJobRepair.Row);
+        var desynthLevel = UIState.Instance()->PlayerState.GetDesynthesisLevel(itemData.Value.ClassJobRepair.RowId);
 
         ByteColor c;
 
         if (desynthLevel >= maxDesynthLevel) {
             c = Green;
         } else {
-            if (desynthLevel > itemData.LevelItem.Row) {
-                if (Config.YellowForSkillGain && desynthLevel < itemData.LevelItem.Row + 50) {
+            if (desynthLevel > itemData.Value.LevelItem.RowId) {
+                if (Config.YellowForSkillGain && desynthLevel < itemData.Value.LevelItem.RowId + 50) {
                     c = Yellow;
                 } else {
                     c = Green;
@@ -101,10 +101,10 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
         skillText->TextColor = c;
 
         if (Config.Delta) {
-            var desynthDelta = itemData.LevelItem.Row - desynthLevel;
-            skillText->SetText($"{itemData.LevelItem.Row} ({desynthDelta:+#;-#})");
+            var desynthDelta = itemData.Value.LevelItem.RowId - desynthLevel;
+            skillText->SetText($"{itemData.Value.LevelItem.RowId} ({desynthDelta:+#;-#})");
         } else {
-            skillText->SetText($"{desynthLevel:F0}/{itemData.LevelItem.Row}");
+            skillText->SetText($"{desynthLevel:F0}/{itemData.Value.LevelItem.RowId}");
         }
         
         
@@ -258,8 +258,8 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
 
     protected override void Enable() {
         if (maxDesynthLevel == 0) {
-            foreach (var i in Service.Data.Excel.GetSheet<Item>()!) {
-                if (i.Desynth > 0 && i.LevelItem.Row > maxDesynthLevel) maxDesynthLevel = i.LevelItem.Row;
+            foreach (var i in Service.Data.Excel.GetSheet<Item>()) {
+                if (i.Desynth > 0 && i.LevelItem.RowId > maxDesynthLevel) maxDesynthLevel = i.LevelItem.RowId;
             }
         }
         

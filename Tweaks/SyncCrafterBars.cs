@@ -3,7 +3,7 @@ using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -20,7 +20,7 @@ public class SyncCrafterBars : Tweak {
         public bool[] CrossBars = new bool[8];
     }
 
-    public Configs Config { get; private set; }
+    [TweakConfig] public Configs Config { get; private set; }
 
     public bool IsShared(int number, bool cross) {
         return Service.GameConfig.UiConfig.TryGetBool($"Hotbar{(cross ? "Cross" : "")}Common{number + 1:00}", out var v) && v;
@@ -95,29 +95,26 @@ public class SyncCrafterBars : Tweak {
         if (Service.ClientState.IsPvP) return;
         if (!crafterJobs.Contains(copyFrom)) return;
         var classJobSheet = Service.Data.GetExcelSheet<ClassJob>();
-        if (classJobSheet == null) {
-            SimpleLog.Error("ClassJob is null?");
-            return;
-        }
-        var copyJob = classJobSheet.GetRow(copyFrom);
+        
+        var copyJob = classJobSheet.GetRowOrDefault(copyFrom);
         if (copyJob == null) return;
 
         foreach (var jobId in crafterJobs) {
-            if (jobId == copyJob.RowId) continue;
-            var job = classJobSheet.GetRow(jobId);
+            if (jobId == copyJob.Value.RowId) continue;
+            var job = classJobSheet.GetRowOrDefault(jobId);
             if (job == null) continue;
 
             for (var i = 0; i < 10; i++) {
                 if (IsShared(i, false)) continue;
                 if (Config.StandardBars[i]) {
-                    ExecuteCommand($"/hotbar copy {copyJob.Abbreviation.RawString} {i + 1} {job.Abbreviation.RawString} {i + 1}");
+                    ExecuteCommand($"/hotbar copy {copyJob.Value.Abbreviation.ExtractText()} {i + 1} {job.Value.Abbreviation.ExtractText()} {i + 1}");
                 }
             }
 
             for (var i = 0; i < 8; i++) {
                 if (IsShared(i, true)) continue;
                 if (Config.CrossBars[i]) {
-                    ExecuteCommand($"/crosshotbar copy {copyJob.Abbreviation.RawString} {i + 1} {job.Abbreviation.RawString} {i + 1}");
+                    ExecuteCommand($"/crosshotbar copy {copyJob.Value.Abbreviation.ExtractText()} {i + 1} {job.Value.Abbreviation.ExtractText()} {i + 1}");
                 }
             }
         }
@@ -130,7 +127,7 @@ public class SyncCrafterBars : Tweak {
             return;
         }
 
-        var cj = Service.ClientState.LocalPlayer.ClassJob.Id;
+        var cj = Service.ClientState.LocalPlayer.ClassJob.RowId;
         if (cj == currentClassJob) return;
 
         if (currentClassJob != 0 && crafterJobs.Contains(currentClassJob)) {

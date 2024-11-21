@@ -10,9 +10,8 @@ using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.Interop;
 using ImGuiNET;
 using JetBrains.Annotations;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Utility;
-using Action = Lumina.Excel.GeneratedSheets.Action;
 
 namespace SimpleTweaksPlugin.Debugging;
 
@@ -58,11 +57,16 @@ public unsafe class ActionBarDebug : DebugHelper {
                 if (ImGui.BeginChild("savedBarsIndexSelect", new Vector2(150, -1) * ImGui.GetIO().FontGlobalScale, true)) {
                     for (byte i = 0; i < raptureHotbarModule->SavedHotbars.Length; i++) {
                         var classJobId = raptureHotbarModule->GetClassJobIdForSavedHotbarIndex(i);
-                        var jobName = classJobId == 0 ? "Shared" : classJobSheet.GetRow(classJobId)?.Abbreviation?.RawString;
-                        var isPvp = i >= classJobSheet.RowCount;
+                        
+                        var jobName = classJobId == 0 ? "Shared" : $"Unk#{classJobId}";
+                        if (classJobId != 0 && classJobSheet.TryGetRow(classJobId, out var cjRow)) {
+                            jobName = cjRow.Abbreviation.ExtractText();
+                        }
+                        
+                        var isPvp = i >= classJobSheet.Count;
 
                         // hack for unreleased jobs
-                        if (jobName.IsNullOrEmpty() || (i > classJobSheet.RowCount && classJobId == 0)) jobName = "Unknown";
+                        if (jobName.IsNullOrEmpty() || (i > classJobSheet.Count && classJobId == 0)) jobName = "Unknown";
 
                         if (ImGui.Selectable($"{i}: {(isPvp ? "[PVP]" : "")} {jobName}", selectedSavedIndex == i)) {
                             selectedSavedIndex = i;
@@ -279,8 +283,8 @@ public unsafe class ActionBarDebug : DebugHelper {
 
             switch (slot->CommandType) {
                 case RaptureHotbarModule.HotbarSlotType.Action: {
-                    var action = Service.Data.Excel.GetSheet<Action>()!.GetRow(adjustedId);
-                    if (action == null) {
+                   
+                    if (!Service.Data.Excel.GetSheet<Action>()!.TryGetRow(adjustedId, out var action)) {
                         ImGui.TextDisabled("Not Found");
                         break;
                     }
@@ -289,8 +293,8 @@ public unsafe class ActionBarDebug : DebugHelper {
                     break;
                 }
                 case RaptureHotbarModule.HotbarSlotType.Item: {
-                    var item = Service.Data.Excel.GetSheet<Item>()!.GetRow(slot->CommandId);
-                    if (item == null) {
+                    
+                    if (!Service.Data.Excel.GetSheet<Item>()!.TryGetRow(slot->CommandId, out _)) {
                         ImGui.TextDisabled("Not Found");
                         break;
                     }
@@ -301,14 +305,13 @@ public unsafe class ActionBarDebug : DebugHelper {
                     break;
                 }
                 case RaptureHotbarModule.HotbarSlotType.GeneralAction: {
-                    var action = Service.Data.Excel.GetSheet<GeneralAction>()!.GetRow(slot->CommandId);
-                    if (action?.Action == null) {
+                     if (!Service.Data.Excel.GetSheet<GeneralAction>()!.TryGetRow(adjustedId, out _)) {
                         ImGui.TextDisabled("Not Found");
                         break;
-                    }
+                     }
 
-                    cooldownGroup = ActionManager.Instance()->GetRecastGroup(5, slot->CommandId);
-                    break;
+                     cooldownGroup = ActionManager.Instance()->GetRecastGroup(5, slot->CommandId);
+                     break;
                 }
             }
 
@@ -354,62 +357,38 @@ public unsafe class ActionBarDebug : DebugHelper {
                 return false;
             }
             case RaptureHotbarModule.HotbarSlotType.Action: {
-                var action = Service.Data.Excel.GetSheet<Action>()!.GetRow(commandId);
-                if (action == null) {
-                    return false;
-                }
-
-                resolvedName = action.Name;
+                if (!Service.Data.Excel.GetSheet<Action>().TryGetRow(commandId, out var action)) return false;
+                resolvedName = action.Name.ExtractText();
                 return true;
             }
 
             case RaptureHotbarModule.HotbarSlotType.Item: {
-                var item = Service.Data.GetExcelSheet<Item>()!.GetRow(commandId % 500000);
-                if (item == null) {
-                    return false;
-                }
-
-                resolvedName = item.Name;
+                if (!Service.Data.Excel.GetSheet<Item>().TryGetRow(commandId % 500000, out var item)) return false;
+                resolvedName = item.Name.ExtractText();
                 return true;
             }
 
             case RaptureHotbarModule.HotbarSlotType.CraftAction: {
-                var action = Service.Data.GetExcelSheet<CraftAction>()!.GetRow(commandId);
-                if (action == null) {
-                    return false;
-                }
-
-                resolvedName = action.Name;
+                if (!Service.Data.Excel.GetSheet<CraftAction>().TryGetRow(commandId, out var action)) return false;
+                resolvedName = action.Name.ExtractText();
                 return true;
             }
 
             case RaptureHotbarModule.HotbarSlotType.GeneralAction: {
-                var action = Service.Data.GetExcelSheet<GeneralAction>()!.GetRow(commandId);
-                if (action == null) {
-                    return false;
-                }
-
-                resolvedName = action.Name;
+                if (!Service.Data.Excel.GetSheet<GeneralAction>().TryGetRow(commandId, out var action)) return false;
+                resolvedName = action.Name.ExtractText();
                 return true;
             }
 
             case RaptureHotbarModule.HotbarSlotType.MainCommand: {
-                var action = Service.Data.GetExcelSheet<MainCommand>()!.GetRow(commandId);
-                if (action == null) {
-                    return false;
-                }
-
-                resolvedName = action.Name;
+                if (!Service.Data.Excel.GetSheet<MainCommand>().TryGetRow(commandId, out var action)) return false;
+                resolvedName = action.Name.ExtractText();
                 return true;
             }
 
             case RaptureHotbarModule.HotbarSlotType.ExtraCommand: {
-                var exc = Service.Data.GetExcelSheet<ExtraCommand>()!.GetRow(commandId);
-                if (exc == null) {
-                    return false;
-                }
-
-                resolvedName = exc.Name;
+                if (!Service.Data.Excel.GetSheet<ExtraCommand>().TryGetRow(commandId, out var action)) return false;
+                resolvedName = action.Name.ExtractText();
                 return true;
             }
 
@@ -444,67 +423,43 @@ public unsafe class ActionBarDebug : DebugHelper {
             }
 
             case RaptureHotbarModule.HotbarSlotType.Emote: {
-                var m = Service.Data.GetExcelSheet<Emote>()!.GetRow(commandId);
-                if (m == null) {
-                    return false;
-                }
-
-                resolvedName = m.Name;
+                if (!Service.Data.Excel.GetSheet<Emote>().TryGetRow(commandId, out var emote)) return false;
+                resolvedName = emote.Name.ExtractText();
                 return true;
             }
 
             case RaptureHotbarModule.HotbarSlotType.EventItem: {
-                var item = Service.Data.GetExcelSheet<EventItem>()!.GetRow(commandId);
-                if (item == null) {
-                    return false;
-                }
-
-                resolvedName = $"{item.Name}";
+                if (!Service.Data.Excel.GetSheet<EventItem>().TryGetRow(commandId, out var item)) return false;
+                resolvedName = item.Name.ExtractText();
                 return true;
             }
 
             case RaptureHotbarModule.HotbarSlotType.Mount: {
-                var m = Service.Data.Excel.GetSheet<Mount>()!.GetRow(commandId);
-                if (m == null) {
-                    return false;
-                }
-
-                resolvedName = $"{m.Singular}";
+                if (!Service.Data.Excel.GetSheet<Mount>().TryGetRow(commandId, out var mount)) return false;
+                resolvedName = mount.Singular.ExtractText();
                 return true;
             }
 
             case RaptureHotbarModule.HotbarSlotType.Companion: {
-                var m = Service.Data.Excel.GetSheet<Companion>()!.GetRow(commandId);
-                if (m == null) {
-                    return false;
-                }
-
-                resolvedName = $"{m.Singular}";
+                if (!Service.Data.Excel.GetSheet<Companion>().TryGetRow(commandId, out var companion)) return false;
+                resolvedName = companion.Singular.ExtractText();
                 return true;
             }
 
             case RaptureHotbarModule.HotbarSlotType.McGuffin: {
-                var c = Service.Data.Excel.GetSheet<McGuffin>()!.GetRow(commandId);
-                if (c == null) {
-                    return false;
-                }
-
-                resolvedName = c.UIData.Value!.Name;
+                if (!Service.Data.Excel.GetSheet<McGuffin>().TryGetRow(commandId, out var mcGuffin)) return false;
+                resolvedName = mcGuffin.UIData.Value.Name.ExtractText();
                 return true;
             }
 
             case RaptureHotbarModule.HotbarSlotType.PetAction: {
-                var pa = Service.Data.GetExcelSheet<PetAction>()!.GetRow(commandId);
-                if (pa == null) {
-                    return false;
-                }
-
-                resolvedName = pa.Name;
+                if (!Service.Data.Excel.GetSheet<PetAction>().TryGetRow(commandId, out var action)) return false;
+                resolvedName = action.Name.ExtractText();
                 return true;
             }
 
             default: {
-                resolvedName = "Not Yet Supported";
+                resolvedName = $"Not Yet Supported ({type})";
                 return false;
             }
         }

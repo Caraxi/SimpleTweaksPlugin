@@ -2,11 +2,11 @@
 using System.Linq;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Memory;
-using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.Interop;
 using ImGuiNET;
+using Lumina.Excel.Sheets;
 
 namespace SimpleTweaksPlugin.Debugging;
 
@@ -43,18 +43,19 @@ public unsafe class StatusEffectsDebugging : DebugHelper {
 
             ImGui.TableHeadersRow();
 
-            var sheet = Service.Data.Excel.GetSheet<Lumina.Excel.GeneratedSheets.Status>();
+            var sheet = Service.Data.Excel.GetSheet<Status>();
 
             for (var i = 0; i < statusManager->Status.Length; i++) {
                 var status = statusManager->Status.GetPointer(i);
-                var s = sheet?.GetRow(status->StatusId);
+                
                 ImGui.TableNextColumn();
                 ImGui.Text($"{i}");
                 ImGui.TableNextColumn();
                 ImGui.Text($"{status->StatusId}");
                 ImGui.TableNextColumn();
-                if (s != null) {
-                    var statusName = s.Name.ToDalamudString().TextValue;
+
+                if (sheet.TryGetRow(status->StatusId, out var s)) {
+                    var statusName = s.Name.ExtractText();
                     ImGui.Text($"{statusName}");
                 }
 

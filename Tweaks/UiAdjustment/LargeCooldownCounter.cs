@@ -93,8 +93,8 @@ public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
 
         try {
             // E8 ?? ?? ?? ?? 49 8B CF E8 ?? ?? ?? ?? 48 8B 78 30 4C 3B 7F 08 75 3A
-            // This some cursed shit
-            var v7 = *(int*)(*(ulong*)(a3 + 0x20) + 4UL * a5 + 8);
+            // This some cursed shit. TODO: Work this out properly
+            var v7 = *(int*)(*(ulong*)(a3 + 0x28) + 4UL * a5 + 8);
             if (v7 == 5) {
                 var v8 = *(ulong*)(*(ulong*)(a2 + 136UL) + 248UL);
                 var cooldownTextNode = *(AtkTextNode**)(v8 + 248);

@@ -8,7 +8,7 @@ using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
-using Action = Lumina.Excel.GeneratedSheets.Action;
+using Action = Lumina.Excel.Sheets.Action;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
@@ -62,10 +62,10 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
         public bool ReddenOutOfRange = true;
 
         [TweakConfigOption("Apply Only to Sync'd Actions")]
-        public bool ApplyToSyncActions = false;
+        public bool ApplyToSyncActions;
     }
     
-    public Config TweakConfig { get; private set; } = null!;
+    [TweakConfig] public Config TweakConfig { get; private set; } = null!;
 
     protected override void Disable() {
         ResetAllHotBars();
@@ -119,7 +119,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
                 ApplyReddening(hotBarSlotData, false);
                 return;
             }
-            var actionLevel = action.ClassJobLevel;
+            var actionLevel = action.Value.ClassJobLevel;
             var playerLevel = Service.ClientState.LocalPlayer?.Level ?? 0;
 
             switch (action) {
@@ -145,7 +145,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
 
         if (actionCache.TryGetValue(adjustedActionId, out var action)) return action;
 
-        action = Service.Data.GetExcelSheet<Action>()!.GetRow(adjustedActionId);
+        action = Service.Data.GetExcelSheet<Action>().GetRowOrDefault(adjustedActionId);
         actionCache.Add(adjustedActionId, action);
         return action;
     }

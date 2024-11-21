@@ -1,8 +1,7 @@
 ﻿using Dalamud.Game.ClientState.Keys;
 using Dalamud.Utility;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.Sheets;
+using Lumina.Excel.Sheets;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips.Hotkeys;
 
@@ -12,7 +11,7 @@ public class CopyNameHotkey : ItemHotkey {
 
     public override bool AcceptsEventItem => true;
 
-    public override void OnTriggered(ExtendedItem item) {
+    public override void OnTriggered(Item item) {
         ImGui.SetClipboardText(item.Name.ToDalamudString().TextValue);
     }
 

@@ -6,15 +6,16 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
 [TweakName("Materia Stats")]
 [TweakDescription("Includes an item's attached materia when displaying the stats.")]
+[TweakAutoConfig]
 public class MateriaStats : TooltipTweaks.SubTweak {
     public class Configs : TweakConfig {
         public bool Total = true;
@@ -23,7 +24,7 @@ public class MateriaStats : TooltipTweaks.SubTweak {
         public bool SimpleCombined;
     }
 
-    public Configs Config { get; private set; }
+    [TweakConfig] public Configs Config { get; private set; }
 
     protected void DrawConfig(ref bool hasChanged) {
         ImGui.BeginGroup();
@@ -69,52 +70,35 @@ public class MateriaStats : TooltipTweaks.SubTweak {
         yield return TooltipTweaks.ItemTooltipField.Param5;
     }
 
-    private ExcelSheet<ExtendedItem> itemSheet;
-    private ExcelSheet<ExtendedItemLevel> itemLevelSheet;
-    private ExcelSheet<ExtendedBaseParam> bpSheet;
-    private ExcelSheet<Materia> materiaSheet;
-
-    protected override void Enable() {
-        itemSheet = Service.Data.Excel.GetSheet<ExtendedItem>();
-        itemLevelSheet = Service.Data.Excel.GetSheet<ExtendedItemLevel>();
-        bpSheet = Service.Data.Excel.GetSheet<ExtendedBaseParam>();
-        materiaSheet = Service.Data.Excel.GetSheet<Materia>();
-        if (itemSheet == null || itemLevelSheet == null || bpSheet == null || materiaSheet == null) return;
-        Config = LoadConfig<Configs>() ?? new Configs();
-        base.Enable();
-    }
-
-    protected override void Disable() {
-        SaveConfig(Config);
-        base.Disable();
-    }
-
     public override unsafe void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         if (!(Config.Delta || Config.Total == false)) Config.Total = true; // Config invalid check
         try {
-            var item = itemSheet.GetRow(Item.ItemId);
+            var item = Service.Data.Excel.GetSheet<Item>().GetRowOrDefault(Item.ItemId);
             if (item == null) return;
-            if (item.MateriaSlotCount == 0) return;
-            var itemLevel = itemLevelSheet.GetRow(item.LevelItem.Row);
+            if (item.Value.MateriaSlotCount == 0) return;
+            var itemLevel = Service.Data.Excel.GetSheet<ExtendedItemLevel>().GetRowOrDefault(item.Value.LevelItem.RowId);
             if (itemLevel == null) return;
             var baseParams = new Dictionary<uint, ExtendedBaseParam>();
             var baseParamDeltas = new Dictionary<uint, int>();
             var baseParamOriginal = new Dictionary<uint, int>();
             var baseParamLimits = new Dictionary<uint, int>();
-            foreach (var bp in item.BaseParam) {
-                if (bp.Value == 0 || bp.BaseParam.Row == 0) continue;
-                baseParamDeltas.Add(bp.BaseParam.Row, 0);
-                baseParamOriginal.Add(bp.BaseParam.Row, bp.Value);
-                if (bp.BaseParam.Value != null) {
-                    baseParamLimits.Add(bp.BaseParam.Row, (int)Math.Round(itemLevel.BaseParam[bp.BaseParam.Row] * (bp.BaseParam.Value.EquipSlotCategoryPct[item.EquipSlotCategory.Row] / 1000f), MidpointRounding.AwayFromZero));
-                    baseParams.Add(bp.BaseParam.Row, bp.BaseParam.Value);
-                }
+
+            for (var i = 0; i < item.Value.BaseParam.Count; i++) {
+                var bp = item.Value.BaseParam[i].Value.GetExtension<ExtendedBaseParam, BaseParam>();
+                var val = item.Value.BaseParamValue[i];
+                if (val == 0 || bp.RowId == 0) continue;
+                baseParams.Add(bp.RowId, bp);
+                baseParamDeltas.Add(bp.RowId, 0);
+                baseParamOriginal.Add(bp.RowId, val);
+                baseParamLimits.Add(bp.RowId, (int)Math.Round(itemLevel.Value.BaseParam[(int)bp.RowId] * (bp.EquipSlotCategoryPct[(int)item.Value.EquipSlotCategory.RowId] / 1000f), MidpointRounding.AwayFromZero));
             }
 
             if (Item.Flags.HasFlag(InventoryItem.ItemFlags.HighQuality)) {
-                foreach (var bp in item.BaseParamSpecial) {
-                    if (bp.Value == 0 || bp.BaseParam.Row == 0) continue;
-                    if (baseParamOriginal.ContainsKey(bp.BaseParam.Row)) baseParamOriginal[bp.BaseParam.Row] += bp.Value;
+                for (var i = 0; i < item.Value.BaseParamSpecial.Count; i++) {
+                    var bp = item.Value.BaseParamSpecial[i].Value.GetExtension<ExtendedBaseParam, BaseParam>();
+                    var val = item.Value.BaseParamValueSpecial[i];
+                    if (val == 0 || bp.RowId == 0) continue;
+                    if (baseParamOriginal.ContainsKey(bp.BaseParam.RowId)) baseParamOriginal[bp.BaseParam.RowId] += val;
                 }
             }
 
@@ -125,34 +109,35 @@ public class MateriaStats : TooltipTweaks.SubTweak {
             for (var i = 0; i < 5; i++) {
                 var materiaId = pItem.Materia[i];
 
-                var materia = materiaSheet.GetRow(materiaId);
+                var materia = Service.Data.Excel.GetSheet<Materia>().GetRowOrDefault(materiaId);
                 if (materia == null) continue;
                 var level = pItem.MateriaGrades[i];
-                if (level > materia.Value.Length) continue;
+                if (level > materia.Value.Value.Count) continue;
 
-                if (materia.BaseParam.Row == 0) continue;
-                if (materia.BaseParam.Value == null) continue;
-                if (!baseParamDeltas.ContainsKey(materia.BaseParam.Row)) {
-                    var bp = Service.Data.Excel.GetSheet<ExtendedBaseParam>()?.GetRow(materia.BaseParam.Row);
+                if (materia.Value.BaseParam.RowId == 0) continue;
+                if (materia.Value.BaseParam.ValueNullable == null) continue;
+                if (!baseParamDeltas.ContainsKey(materia.Value.BaseParam.RowId)) {
+                    var bp = Service.Data.Excel.GetSheet<ExtendedBaseParam>().GetRowOrDefault(materia.Value.BaseParam.RowId);
                     if (bp == null) continue;
-                    baseParams.Add(materia.BaseParam.Row, bp);
-                    baseParamDeltas.Add(materia.BaseParam.Row, materia.Value[level]);
-                    baseParamOriginal.Add(materia.BaseParam.Row, 0);
-                    baseParamLimits.Add(materia.BaseParam.Row, (int)Math.Round(itemLevel.BaseParam[materia.BaseParam.Row] * (bp.EquipSlotCategoryPct[item.EquipSlotCategory.Row] / 1000f), MidpointRounding.AwayFromZero));
+                    baseParams.Add(materia.Value.BaseParam.RowId, bp.Value);
+                    baseParamDeltas.Add(materia.Value.BaseParam.RowId, materia.Value.Value[level]);
+                    baseParamOriginal.Add(materia.Value.BaseParam.RowId, 0);
+                    baseParamLimits.Add(materia.Value.BaseParam.RowId, (int)Math.Round(itemLevel.Value.BaseParam[(int)materia.Value.BaseParam.RowId] * (bp.Value.EquipSlotCategoryPct[(int)item.Value.EquipSlotCategory.RowId] / 1000f), MidpointRounding.AwayFromZero));
                     continue;
                 }
 
-                baseParamDeltas[materia.BaseParam.Row] += materia.Value[level];
+                baseParamDeltas[materia.Value.BaseParam.RowId] += materia.Value.Value[level];
             }
 
             foreach (var bp in baseParamDeltas) {
+                
                 var param = baseParams[bp.Key];
                 if (bp.Value == 0) continue;
                 var hasApplied = false;
                 foreach (var field in Fields().Take(numberArrayData->IntArray[21])) {
                     var data = GetTooltipString(stringArrayData, field);
                     if (data == null) continue;
-                    if (data.TextValue.Contains(param.Name)) {
+                    if (data.TextValue.Contains(param.BaseParam.Name.ExtractText())) {
                         hasApplied = true;
                         if (data.TextValue.EndsWith("]")) continue;
                         ApplyMateriaDifference(data, baseParamDeltas[param.RowId], baseParamOriginal[param.RowId], baseParamLimits[param.RowId]);
@@ -168,7 +153,7 @@ public class MateriaStats : TooltipTweaks.SubTweak {
                     var baseParamLines = numberArrayData->IntArray[21];
                     if (baseParamLines < 8) {
                         var seString = new SeString();
-                        seString.Payloads.Add(new TextPayload(param.Name));
+                        seString.Payloads.Add(new TextPayload(param.BaseParam.Name.ExtractText()));
                         seString.Payloads.Add(new TextPayload($" +{baseParamOriginal[param.RowId]}"));
                         ApplyMateriaDifference(seString, baseParamDeltas[param.RowId], baseParamOriginal[param.RowId], baseParamLimits[param.RowId]);
 

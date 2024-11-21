@@ -5,7 +5,7 @@ using Dalamud.Game.Text.SeStringHandling;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -28,7 +28,7 @@ public unsafe class EchoPartyFinder : ChatTweaks.SubTweak {
         public bool ShowUponEnteringInstance = true;
     }
     
-    public Config TweakConfig { get; private set; } = null!;
+    [TweakConfig] public Config TweakConfig { get; private set; } = null!;
 
     [TweakHook]
     private HookWrapper<AgentLookingForGroup.Delegates.ReceiveEvent>? onLookingForGroupEventHook;
@@ -65,17 +65,11 @@ public unsafe class EchoPartyFinder : ChatTweaks.SubTweak {
     [AddonFinalize("LookingForGroupDetail")]
     private void OnAddonFinalize(AddonLookingForGroupDetail* addon) {
         if (!listenerActive) return;
-        
         partyDescription = addon->DescriptionString.ToString();
         partyLeader = addon->PartyLeaderTextNode->NodeText.ToString();
-        
-        targetTerritoryId = Service.Data.GetExcelSheet<ContentFinderCondition>()!
-            .FirstOrDefault(entry
-                => string.Equals(
-                    entry.Name.ToString(),
-                    addon->DutyNameTextNode->NodeText.ToString(),
-                    StringComparison.OrdinalIgnoreCase))?.TerritoryType.Row;
-        
+        var contentFinderCondition = Service.Data.GetExcelSheet<ContentFinderCondition>().Where(entry => string.Equals(entry.Name.ToString(), addon->DutyNameTextNode->NodeText.ToString(), StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (contentFinderCondition.Length == 0) return;
+        targetTerritoryId = contentFinderCondition.First().TerritoryType.RowId;
         if (TweakConfig.ShowOnJoin) PrintListing();
         listenerActive = false;
     }

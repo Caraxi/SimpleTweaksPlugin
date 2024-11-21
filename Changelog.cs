@@ -128,7 +128,7 @@ public class Changelog : Window {
     
     public Version CurrentVersion { get; }
 
-    public static bool HasNewChangelog { get; private set; } = false;
+    public static bool HasNewChangelog { get; private set; }
 
     public Changelog() : base("###simpleTweaksChangelog") {
         CurrentVersion = Assembly.GetExecutingAssembly().GetName().Version;

@@ -2,12 +2,13 @@ using System.Reflection;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using SimpleTweaksPlugin.Debugging;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin;
 
 public class DebugWindow : SimpleWindow {
     public DebugWindow() : base("SimpleTweaksPlugin - Debug") {
-        WindowName = $"SimpleTweaksPlugin - Debug [{Assembly.GetExecutingAssembly().GetName().Version}] - Client Structs Version#{FFXIVClientStructs.ThisAssembly.Git.Commits}###stDebugMenu";
+        WindowName = $"SimpleTweaksPlugin - Debug [{Assembly.GetExecutingAssembly().GetName().Version}] - Client Structs Version#{Common.ClientStructsVersion}###stDebugMenu";
         
         Size = ImGuiHelpers.ScaledVector2(500, 350);
         SizeCondition = ImGuiCond.FirstUseEver;

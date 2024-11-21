@@ -1,16 +1,14 @@
-using System.Linq;
-using System.Numerics;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
-using Lumina.Excel.GeneratedSheets2;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
-using Companion = Lumina.Excel.GeneratedSheets2.Companion;
+using Companion = Lumina.Excel.Sheets.Companion;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
@@ -21,16 +19,16 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
     private string lastImage;
 
     private string GetMountImagePath(uint mountId, bool hr = true) {
-        var mount = Service.Data.GetExcelSheet<Mount>()?.GetRow(mountId);
+        var mount = Service.Data.GetExcelSheet<Mount>().GetRowOrDefault(mountId);
         if (mount == null) return string.Empty;
-        var id = mount.Icon + 64000U;
+        var id = mount.Value.Icon + 64000U;
         return $"ui/icon/{id / 1000 * 1000:000000}/{id:000000}{(hr ? "_hr1.tex" : ".tex")}";
     }
 
     private string GetMinionImagePath(uint minionId, bool hr = true) {
-        var minion = Service.Data.GetExcelSheet<Companion>()?.GetRow(minionId);
+        var minion = Service.Data.GetExcelSheet<Companion>().GetRowOrDefault(minionId);
         if (minion == null) return string.Empty;
-        var id = minion.Icon + 64000U;
+        var id = minion.Value.Icon + 64000U;
         return $"ui/icon/{id / 1000 * 1000:000000}/{id:000000}{(hr ? "_hr1.tex" : ".tex")}";
     }
 
@@ -50,11 +48,10 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
             }
         }
 
-        var type = Service.Data.GetExcelSheet<HairMakeTypeExt>()?.FirstOrDefault(t => t.Tribe.Row == tribeId && t.Gender == sex);
-        var charaMakeCustomize = type?.HairStyles.FirstOrDefault(c => c.Value?.HintItem.Row == hairstyleItem);
+        var type = Service.Data.GetExcelSheet<HairMakeTypeExt>().FirstOrNull(t => t.Tribe.RowId == tribeId && t.Gender == sex);
+        var charaMakeCustomize = type?.HairStyles.FirstOrNull(c => c.IsValid && c.RowId != 0 && c.Value.HintItem.RowId == hairstyleItem);
         if (charaMakeCustomize?.Value == null) return string.Empty;
-
-        var id = charaMakeCustomize.Value.Icon;
+        var id = charaMakeCustomize.Value.Value.Icon;
         return $"ui/icon/{id / 1000 * 1000:000000}/{id:000000}{(hr ? "_hr1.tex" : ".tex")}";
     }
 
@@ -67,17 +64,16 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
         var imageNode = (AtkImageNode*)Common.GetNodeByID(&atkUnitBase->UldManager, CustomNodes.Get(this), NodeType.Image);
         if (imageNode != null) imageNode->AtkResNode.ToggleVisibility(false);
 
-        var itemId = (uint)Service.GameGui.HoveredItem;
+        var itemId = AgentItemDetail.Instance()->ItemId;
         if (itemId is >= 2000000 or <= 0) return;
         itemId %= 500000;
-        var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(itemId);
+        var item = Service.Data.Excel.GetSheet<Item>().GetRowOrDefault(itemId);
         var itemAction = item?.ItemAction.Value;
         if (itemAction == null) return;
 
-        SimpleLog.Log($"ItemID: {itemId} Item Action: {itemAction.Type}");
-        var (imagePath, size) = itemAction.Type switch {
-            1322 => (GetMountImagePath(itemAction.Data[0]), new ImageSize(190, 234, 0.8f)),
-            853 => (GetMinionImagePath(itemAction.Data[0]), new ImageSize(100, 100, 0.8f)),
+        var (imagePath, size) = itemAction.Value.Type switch {
+            1322 => (GetMountImagePath(itemAction.Value.Data[0]), new ImageSize(190, 234, 0.8f)),
+            853 => (GetMinionImagePath(itemAction.Value.Data[0]), new ImageSize(100, 100, 0.8f)),
             2633 => (GetHairstylePath(itemId), new ImageSize(100, 100, 0.8f)),
 
             _ => (string.Empty, new ImageSize()),
@@ -85,16 +81,16 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
 
         if (imagePath == string.Empty) return;
 
-        SimpleLog.Log($"Image Path: {imagePath}");
+        SimpleLog.Debug($"Image Path: {imagePath}");
 
         var insertNode = atkUnitBase->GetNodeById(2);
         if (insertNode == null) return;
 
-        var anchorNode = atkUnitBase->GetNodeById(46);
+        var anchorNode = atkUnitBase->GetNodeById(47);
         if (anchorNode == null) return;
 
         if (imageNode == null) {
-            SimpleLog.Log($"Create Image Node");
+            SimpleLog.Debug($"Create Image Node");
 
             imageNode = IMemorySpace.GetUISpace()->Create<AtkImageNode>();
             imageNode->AtkResNode.Type = NodeType.Image;
@@ -162,7 +158,7 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
         imageNode->AtkResNode.ToggleVisibility(true);
 
         if (imagePath != lastImage) {
-            SimpleLog.Log($"Load Texture: {imagePath}");
+            SimpleLog.Debug($"Load Texture: {imagePath}");
             if (imagePath != string.Empty) {
                 imageNode->LoadTexture(imagePath);
             } else {

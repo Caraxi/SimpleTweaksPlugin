@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Text;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Utility;

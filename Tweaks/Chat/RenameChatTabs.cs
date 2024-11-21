@@ -4,10 +4,8 @@ using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
-using SimpleTweaksPlugin.Events;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
-using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.Chat;
 
@@ -82,7 +80,7 @@ public unsafe class RenameChatTabs : ChatTweaks.SubTweak {
     }
 
     private readonly string[] defaultNames = [
-        Service.Data.GetExcelSheet<Addon>()?.GetRow(662)?.Text.RawString ?? "General",
-        Service.Data.GetExcelSheet<Addon>()?.GetRow(663)?.Text.RawString ?? "Battle"
+        Service.Data.GetExcelSheet<Addon>().GetRow(662).Text.ExtractText(),
+        Service.Data.GetExcelSheet<Addon>().GetRow(663).Text.ExtractText()
     ];
 }

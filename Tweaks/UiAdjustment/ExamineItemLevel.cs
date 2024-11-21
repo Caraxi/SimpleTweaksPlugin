@@ -8,6 +8,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -23,7 +24,7 @@ public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
         public bool ShowItemLevelIcon = true;
     }
 
-    public Config TweakConfig { get; private set; }
+    [TweakConfig] public Config TweakConfig { get; private set; }
 
     private readonly uint[] canHaveOffhand = [2, 6, 8, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32];
     private readonly uint[] ignoreCategory = [105];
@@ -42,7 +43,7 @@ public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
             if (container == null) return;
             var examineWindow = (AddonCharacterInspect*)Common.GetUnitBase("CharacterInspect");
             if (examineWindow == null) return;
-            var previewComponent = Common.ClientStructsVersion < 4670 ? ((AtkComponentBase**)((ulong)examineWindow + 0x458))![0] : examineWindow->PreviewComponent;
+            var previewComponent = examineWindow->PreviewComponent;
             var compInfo = (AtkUldComponentInfo*)previewComponent->UldManager.Objects;
             if (compInfo == null || compInfo->ComponentType != ComponentType.Preview) return;
 
@@ -54,21 +55,21 @@ public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
                 var slot = container->GetInventorySlot(i);
                 if (slot == null) continue;
                 var id = slot->ItemId;
-                var item = Service.Data.Excel.GetSheet<Sheets.ExtendedItem>()?.GetRow(id);
+                var item = Service.Data.Excel.GetSheet<Item>().GetRowOrDefault(id);
                 if (item == null) continue;
-                if (ignoreCategory.Contains(item.ItemUICategory.Row)) {
+                if (ignoreCategory.Contains(item.Value.ItemUICategory.RowId)) {
                     if (i == 0) c -= 1;
                     c -= 1;
                     continue;
                 }
 
-                if ((item.LevelSyncFlag & 2) == 2) inaccurate = true;
-                if (i == 0 && !canHaveOffhand.Contains(item.ItemUICategory.Row)) {
-                    sum += item.LevelItem.Row;
+                if (item.Value.SubStatCategory == 2) inaccurate = true;
+                if (i == 0 && !canHaveOffhand.Contains(item.Value.ItemUICategory.RowId)) {
+                    sum += item.Value.LevelItem.RowId;
                     i++;
                 }
 
-                sum += item.LevelItem.Row;
+                sum += item.Value.LevelItem.RowId;
             }
 
             var avgItemLevel = sum / c;

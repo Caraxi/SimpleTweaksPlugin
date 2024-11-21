@@ -34,7 +34,7 @@ public class PerformanceMonitor : DebugHelper {
         return new PerformanceLogger(k);
     }
     
-    public static bool DoFrameworkMonitor = false;
+    public static bool DoFrameworkMonitor;
 
     private enum DisplayType {
         Ticks,
@@ -131,7 +131,7 @@ public class PerformanceMonitor : DebugHelper {
 
         public long Average { get; private set; } = -1;
 
-        public long Count { get; private set; } = 0;
+        public long Count { get; private set; }
         public double HitsPerSecond => started.ElapsedTicks == 0 ? 0 : Count / started.Elapsed.TotalSeconds;
 
         public double AveragePerSecond => HitsPerSecond * Average;

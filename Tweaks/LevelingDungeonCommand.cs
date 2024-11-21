@@ -1,11 +1,11 @@
 using System.Linq;
-using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
+using InstanceContentType = FFXIVClientStructs.FFXIV.Client.Game.InstanceContent.InstanceContentType;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
@@ -33,8 +33,8 @@ public class LevelingDungeonCommand : CommandTweak
 
         var sheet = Service.Data.GetExcelSheet<ContentFinderCondition>();
         var row = sheet?
-            .Where(row => row.ContentType.Row == (uint)InstanceContentType.Dungeon)
-            .Where(row => UIState.IsInstanceContentUnlocked(row.Content))
+            .Where(row => row.ContentType.RowId == (uint)InstanceContentType.Dungeon)
+            .Where(row => UIState.IsInstanceContentUnlocked(row.Content.RowId))
             .Where(row => row.ClassJobLevelRequired <= UIState.Instance()->PlayerState.CurrentLevel)
             .Where(row => row.ClassJobLevelRequired % 10 != 0) // Only leveling dungeons
             .MaxBy(row => row.ClassJobLevelRequired);

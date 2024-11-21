@@ -1,6 +1,7 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.System.Memory;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets2;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -19,14 +20,12 @@ public unsafe class PaintingPreview : TooltipTweaks.SubTweak {
         var imageNode = (AtkImageNode*)Common.GetNodeByID(&atkUnitBase->UldManager, CustomNodes.PaintingPreview, NodeType.Image);
         if (imageNode != null) imageNode->AtkResNode.ToggleVisibility(false);
 
-        var itemId = (uint)Service.GameGui.HoveredItem;
+        var itemId = AgentItemDetail.Instance()->ItemId;
         if (itemId is >= 2000000 or <= 0) return;
         itemId %= 500000;
-        var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(itemId);
-        if (item == null) return;
-        if (item.ItemUICategory.Row != 95) return;
-        var picture = Service.Data.Excel.GetSheet<Picture>()?.GetRow(item.AdditionalData.Row);
-        if (picture == null) return;
+        if (!Service.Data.Excel.GetSheet<Item>().TryGetRow(itemId, out var item)) return;
+        if (item.ItemUICategory.RowId != 95) return;
+        if (!Service.Data.Excel.GetSheet<Picture>().TryGetRow(item.AdditionalData.RowId, out var picture)) return;
 
         var insertNode = atkUnitBase->GetNodeById(2);
         if (insertNode == null) return;

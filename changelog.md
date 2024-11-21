@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.10.3.2
+***Tweak Changes***
+- **`Show ID`**
+  - Added option to show original action ID alongside resolved.
+  - Fixed ID being cut off on items with long category names, like BLM weapons.
+
+
 ## 1.10.3.0
 ***New Tweaks***
 - **`Auto Focus Market Board Item Search`** - Automatically focus the item search when opening the market board. *(croizat)*

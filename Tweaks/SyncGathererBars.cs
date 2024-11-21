@@ -17,7 +17,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakAutoConfig]
 public unsafe class SyncGathererBars : Tweak {
     private readonly Dictionary<uint, uint>[] actionSwaps = [
-        new Dictionary<uint, uint> {
+        new() {
             { 227, 210 },
             { 210, 227 },
             { 228, 211 },
@@ -92,7 +92,7 @@ public unsafe class SyncGathererBars : Tweak {
         public bool[] CrossBars = new bool[8];
     }
 
-    public Configs Config { get; private set; }
+    [TweakConfig] public Configs Config { get; private set; }
 
     public bool IsShared(int number, bool cross) {
         var name = $"Hotbar{(cross ? "Cross" : "")}Common{number + 1:00}";
@@ -169,21 +169,21 @@ public unsafe class SyncGathererBars : Tweak {
         if (checkBar >= 10 && !Config.CrossBars[checkBar - 10]) return;
 
         if (onGatherer == false && checkBar == 0) {
-            if (Service.ClientState.LocalPlayer?.ClassJob.Id is 16 or 17) {
+            if (Service.ClientState.LocalPlayer?.ClassJob.RowId is 16 or 17) {
                 onGatherer = true;
             }
         }
 
         if (!onGatherer) return;
 
-        if (Service.ClientState.LocalPlayer?.ClassJob.Id is not (16 or 17)) {
+        if (Service.ClientState.LocalPlayer?.ClassJob.RowId is not (16 or 17)) {
             onGatherer = false;
             return;
         }
 
         var hotbarModule = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->UIModule->GetRaptureHotbarModule();
         if (Service.ClientState.LocalPlayer == null) return;
-        var currentId = (int)Service.ClientState.LocalPlayer.ClassJob.Id;
+        var currentId = (int)Service.ClientState.LocalPlayer.ClassJob.RowId;
         if (currentId is not (16 or 17)) return;
 
         if (IsShared(checkBar < 10 ? checkBar : checkBar - 10, checkBar >= 10)) return;

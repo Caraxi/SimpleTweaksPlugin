@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -18,7 +17,7 @@ public unsafe class AddonDebug : DebugHelper {
 
     private delegate void* FireCallbackDelegate(AtkUnitBase* atkUnitBase, int valueCount, AtkValue* atkValues, byte updateVisibility);
     private HookWrapper<FireCallbackDelegate> fireCallbackHook;
-    private bool enabled = false;
+    private bool enabled;
 
     public delegate void* OnSetupDelegate(AtkUnitBase* atkUnitBase, int valueCount, AtkValue* atkValues);
     private static Dictionary<string, SetupHook> setupHooks = new();

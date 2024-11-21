@@ -10,7 +10,7 @@ using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -23,11 +23,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Modifies the Synthesize button in the Crafting Log to switch job or stand up from the crafting position, allowing you to stop crafting without closing the crafting log.")]
 [Changelog("1.8.2.1", "Fixed a potential crash in specific circumstances.")]
 [Changelog("1.9.1.0", "Made attempt to fix some issues", "Tweak has been disabled for everyone and marked as experimental.")]
+[RequiredClientStructsVersion(5193)]
 public unsafe class ImprovedCraftingLog : Tweak {
     private readonly Stopwatch removeFrameworkUpdateEventStopwatch = new();
     private bool standingUp;
-
-    private delegate void* ClickSynthesisButton(AddonRecipeNote* a1, void* a2);
 
     private delegate*<RecipeNote*, void*> passThroughFunction;
 
@@ -129,7 +128,7 @@ public unsafe class ImprovedCraftingLog : Tweak {
                         return true;
                     }
 
-                    Service.Chat.PrintError($"You have no saved gearset for {Service.Data.Excel.GetSheet<ClassJob>()?.GetRow(requiredClass)?.Name?.RawString ?? $"{requiredClass}"}.");
+                    Service.Chat.PrintError($"You have no saved gearset for {Service.Data.Excel.GetSheet<ClassJob>().GetRow(requiredClass).Name.ExtractText()}.");
                     return true;
                 }
             }
@@ -177,23 +176,21 @@ public unsafe class ImprovedCraftingLog : Tweak {
         selectedRecipeId = selectedRecipe->RecipeId;
         if (selectedRecipe->CraftType >= 8) return CraftReadyState.NotReady;
         requiredClass = uiRecipeNote->Jobs[selectedRecipe->CraftType];
-        var requiredJob = Service.Data.Excel.GetSheet<ClassJob>()?.GetRow(requiredClass);
-        if (requiredJob == null) return CraftReadyState.NotReady;
-        if (Service.ClientState.LocalPlayer.ClassJob.Id == requiredClass) return CraftReadyState.Ready;
+        if (Service.ClientState.LocalPlayer.ClassJob.RowId == requiredClass) return CraftReadyState.Ready;
         var localPlayer = (Character*)Service.ClientState.LocalPlayer.Address;
         return localPlayer->Mode == CharacterModes.Crafting ? CraftReadyState.AlreadyCrafting : CraftReadyState.WrongClass;
     }
 
     [AddonPostRequestedUpdate("RecipeNote")]
     private void CraftingLogUpdated(AddonRecipeNote* addon) {
-        SimpleLog.Log("Updating");
+        SimpleLog.Verbose("Updating");
         var ready = GetCraftReadyState(out _);
         if (ready == CraftReadyState.NotReady) return;
 
         var buttonText = ready switch {
-            CraftReadyState.Ready => Service.Data.Excel.GetSheet<Addon>()?.GetRow(1404)?.Text?.ToDalamudString(),
+            CraftReadyState.Ready => Service.Data.Excel.GetSheet<Addon>().GetRow(1404).Text.ToDalamudString(),
             CraftReadyState.WrongClass => GetWrongClassButtonText(),
-            CraftReadyState.AlreadyCrafting => Service.Data.Excel.GetSheet<Addon>()?.GetRow(643)?.Text?.ToDalamudString(),
+            CraftReadyState.AlreadyCrafting => Service.Data.Excel.GetSheet<Addon>().GetRow(643).Text.ToDalamudString(),
             _ => null
         };
 
@@ -223,11 +220,9 @@ public unsafe class ImprovedCraftingLog : Tweak {
     protected override void Disable() {
         Common.FrameworkUpdate -= ForceUpdateFramework;
         if (Common.GetUnitBase<AddonRecipeNote>(out var addon)) {
-            var text = Service.Data.Excel.GetSheet<Addon>()?.GetRow(1404)?.Text?.ToDalamudString().Encode();
-            if (text != null) {
-                SimpleLog.Log($"Resetting Button Test: {(ulong)addon->SynthesizeButton->ButtonTextNode:X}");
-                addon->SynthesizeButton->ButtonTextNode->NodeText.SetString(text);
-            }
+            var text = Service.Data.Excel.GetSheet<Addon>().GetRow(1404).Text.ToDalamudString().Encode();
+            SimpleLog.Log($"Resetting Button Test: {(ulong)addon->SynthesizeButton->ButtonTextNode:X}");
+            addon->SynthesizeButton->ButtonTextNode->NodeText.SetString(text);
         }
 
         Service.Commands.RemoveHandler("/stopcrafting");

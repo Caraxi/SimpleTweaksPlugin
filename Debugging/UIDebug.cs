@@ -13,12 +13,12 @@ using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility;
 using Dalamud.Memory;
+using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using ImGuiScene;
 using SimpleTweaksPlugin.Utility;
 using Action = System.Action;
-using Addon = FFXIVClientStructs.Attributes.Addon;
 using AlignmentType = FFXIVClientStructs.FFXIV.Component.GUI.AlignmentType;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
@@ -494,8 +494,8 @@ public unsafe class UIDebug : DebugHelper {
                                     ImGui.Text($"{atkValue->Byte != 0}");
                                     break;
                                 }
-                                case ValueType.Texture: {
-                                    DebugManager.PrintOutObject(atkValue->Texture);
+                                case ValueType.Pointer: {
+                                    DebugManager.PrintAddress(atkValue->Pointer);
                                     break;
                                 }
                                 default: {
@@ -536,7 +536,7 @@ public unsafe class UIDebug : DebugHelper {
                 try {
                     foreach (var t in a.GetTypes()) {
                         if (!t.IsPublic) continue;
-                        var xivAddonAttr = (Addon)t.GetCustomAttribute(typeof(Addon), false);
+                        var xivAddonAttr = (AddonAttribute)t.GetCustomAttribute(typeof(AddonAttribute), false);
                         if (xivAddonAttr == null) continue;
                         if (!xivAddonAttr.AddonIdentifiers.Contains(addonName)) continue;
                         AddonMapping[addonName] = t;
@@ -853,9 +853,9 @@ public unsafe class UIDebug : DebugHelper {
 
                     if (ImGui.TreeNode($"Texture##{(ulong)kernelTexture->D3D11ShaderResourceView:X}"))
                     {
-                        var textureSize = new Vector2(kernelTexture->Width, kernelTexture->Height);
+                        var textureSize = new Vector2(kernelTexture->ActualWidth, kernelTexture->ActualHeight);
                         ImGui.Image(new IntPtr(kernelTexture->D3D11ShaderResourceView),
-                            new Vector2(kernelTexture->Width, kernelTexture->Height));
+                            new Vector2(kernelTexture->ActualWidth, kernelTexture->ActualHeight));
 
                         if (ImGui.TreeNode($"Parts##{(ulong)kernelTexture->D3D11ShaderResourceView:X}"))
                         {
@@ -890,11 +890,11 @@ public unsafe class UIDebug : DebugHelper {
                                 if (ImGui.GetIO().KeyShift)
                                 {
                                     ImGui.Text(
-                                        $"[U1: {u / kernelTexture->Width}  V1: {v / kernelTexture->Height}  U2: {(u + width) / kernelTexture->Width}  V2: {(v + height) / kernelTexture->Height}]");
+                                        $"[U1: {u / kernelTexture->ActualWidth}  V1: {v / kernelTexture->ActualHeight}  U2: {(u + width) / kernelTexture->ActualWidth}  V2: {(v + height) / kernelTexture->ActualHeight}]");
                                     if (ImGui.IsItemClicked())
                                     {
                                         ImGui.SetClipboardText(
-                                            $"new Vector2({u / kernelTexture->Width:F4}f, {v / kernelTexture->Height:F4}f), new Vector2({(u + width) / kernelTexture->Width:F4}f, {(v + height) / kernelTexture->Height:F4}f),");
+                                            $"new Vector2({u / kernelTexture->ActualWidth:F4}f, {v / kernelTexture->ActualHeight:F4}f), new Vector2({(u + width) / kernelTexture->ActualWidth:F4}f, {(v + height) / kernelTexture->ActualHeight:F4}f),");
                                     }
                                 }
                                 else
@@ -921,8 +921,8 @@ public unsafe class UIDebug : DebugHelper {
                             $"Texture##{(ulong)textureInfo->AtkTexture.KernelTexture->D3D11ShaderResourceView:X}"))
                     {
                         ImGui.Image(new IntPtr(textureInfo->AtkTexture.KernelTexture->D3D11ShaderResourceView),
-                            new Vector2(textureInfo->AtkTexture.KernelTexture->Width,
-                                textureInfo->AtkTexture.KernelTexture->Height));
+                            new Vector2(textureInfo->AtkTexture.KernelTexture->ActualWidth,
+                                textureInfo->AtkTexture.KernelTexture->ActualHeight));
                         ImGui.TreePop();
                     }
                 }
@@ -1227,13 +1227,13 @@ public unsafe class UIDebug : DebugHelper {
                         ImGui.TableNextColumn();
                         ImGui.Text($"{i++}");
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{evt->Type}");
+                        ImGui.Text($"{evt->State.EventType}");
                         ImGui.TableNextColumn();
                         ImGui.Text($"{evt->Param}");
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{evt->Flags}");
+                        ImGui.Text($"{evt->State.StateFlags}");
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{evt->Unk29}");
+                        ImGui.Text($"{evt->State.UnkFlags1}/{evt->State.UnkFlags3}");
                         ImGui.TableNextColumn();
                         DebugManager.PrintAddress(evt->Target);
                         ImGui.TableNextColumn();

@@ -17,7 +17,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
     private uint lastGp = uint.MaxValue;
     private int gpPerTick = 5;
     private float timePerTick = 3f;
-    private int forceVisible = 0;
+    private int forceVisible;
 
     public delegate void UpdateParamDelegate(uint a1, uint* a2, byte a3);
 
@@ -111,7 +111,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
     }
 
     private void Update(bool reset = false) {
-        if (Service.ClientState?.LocalPlayer?.ClassJob?.GameData?.ClassJobCategory?.Row != 32) reset = true;
+        if (Service.ClientState?.LocalPlayer?.ClassJob.Value.ClassJobCategory.RowId != 32) reset = true;
         var paramWidget = Common.GetUnitBase("_ParameterWidget");
         if (paramWidget == null) return;
 

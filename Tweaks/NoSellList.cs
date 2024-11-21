@@ -5,10 +5,10 @@ using System.Numerics;
 using System.Text.RegularExpressions;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Utility;
+using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Utility;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -18,6 +18,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("No Sell List")]
 [TweakDescription("Allows you to define a list of items that can not be sold to a vendor.")]
+[TweakAutoConfig]
 public unsafe class NoSellList : Tweak {
     public class Configs : TweakConfig {
         public HashSet<uint> NoSellList = [];
@@ -31,7 +32,7 @@ public unsafe class NoSellList : Tweak {
         public HashSet<uint> NoSellList = [];
     }
 
-    public Configs Config { get; private set; }
+    [TweakConfig] public Configs Config { get; private set; }
 
     private string inputNewItemName = string.Empty;
     private string addItemError = string.Empty;
@@ -61,13 +62,13 @@ public unsafe class NoSellList : Tweak {
                             foreach (var l in lines) {
                                 var teamcraftMatch = teamcraftRegex.Match(l);
                                 if (teamcraftMatch.Success) {
-                                    var i = Service.Data.Excel.GetSheet<Item>()?.Where(i => i.Name.RawString == teamcraftMatch.Groups[2].Value).FirstOrDefault();
+                                    var i = Service.Data.Excel.GetSheet<Item>().FirstOrNull(i => i.Name.ExtractText() == teamcraftMatch.Groups[2].Value);
                                     if (i == null) continue;
-                                    itemList.Add(i.RowId);
+                                    itemList.Add(i.Value.RowId);
                                 } else {
-                                    var i = Service.Data.Excel.GetSheet<Item>()?.Where(i => i.Name.RawString == l).FirstOrDefault();
+                                    var i = Service.Data.Excel.GetSheet<Item>().FirstOrNull(i => i.Name.ExtractText() == l);
                                     if (i == null) continue;
-                                    itemList.Add(i.RowId);
+                                    itemList.Add(i.Value.RowId);
                                 }
                             }
 
@@ -82,20 +83,26 @@ public unsafe class NoSellList : Tweak {
                             addItemError = string.Empty;
                             var idValid = uint.TryParse(inputNewItemName, out var id);
 
-                            var items = Service.Data.Excel.GetSheet<Item>()?.Where(a => {
+                            var items = Service.Data.Excel.GetSheet<Item>().Where(a => {
                                 if (idValid && a.RowId == id) return true;
-                                return string.Equals(a.Name?.RawString, inputNewItemName, StringComparison.CurrentCultureIgnoreCase);
+                                return string.Equals(a.Name.ExtractText(), inputNewItemName, StringComparison.CurrentCultureIgnoreCase);
                             }).ToArray();
 
-                            if (items == null || items.Length == 0) {
-                                addItemError = "No item found";
-                            } else if (items.Length > 1) {
-                                addItemError = "Multiple matches found. Please select one.";
-                                matchedItems = items;
-                            } else if (!itemList.Add(items[0].RowId)) {
-                                addItemError = "Item already in list";
-                            } else {
-                                inputNewItemName = string.Empty;
+                            switch (items.Length) {
+                                case 0: addItemError = "No item found"; break;
+                                case > 1:
+                                    addItemError = "Multiple matches found. Please select one.";
+                                    matchedItems = items;
+                                    break;
+                                default: {
+                                    if (!itemList.Add(items[0].RowId)) {
+                                        addItemError = "Item already in list";
+                                    } else {
+                                        inputNewItemName = string.Empty;
+                                    }
+
+                                    break;
+                                }
                             }
 
                             changed = true;
@@ -105,7 +112,7 @@ public unsafe class NoSellList : Tweak {
                     var clickedMatch = false;
                     foreach (var item in matchedItems) {
                         ImGui.TableNextColumn();
-                        ImGui.Text($"[{item.RowId}] {item.Name.RawString}");
+                        ImGui.Text($"[{item.RowId}] {item.Name.ExtractText()}");
                         ImGui.TableNextColumn();
                         ImGui.SetNextItemWidth(-1);
                         if (ImGui.Button($"Add##addItem{item}")) {
@@ -121,10 +128,10 @@ public unsafe class NoSellList : Tweak {
 
                     var removeId = 0U;
                     foreach (var item in itemList) {
-                        var itemInfo = Service.Data.Excel.GetSheet<Item>()?.GetRow(item);
-                        if (string.IsNullOrEmpty(itemInfo?.Name?.RawString)) continue;
+                        var itemInfo = Service.Data.Excel.GetSheet<Item>().GetRowOrDefault(item);
+                        if (string.IsNullOrEmpty(itemInfo?.Name.ExtractText())) continue;
                         ImGui.TableNextColumn();
-                        ImGui.Text($"[{itemInfo.RowId}] {itemInfo.Name.RawString}");
+                        ImGui.Text($"[{itemInfo.Value.RowId}] {itemInfo.Value.Name.ExtractText()}");
                         ImGui.TableNextColumn();
                         ImGui.SetNextItemWidth(-1);
                         if (ImGui.Button($"Remove##removeItem{item}")) removeId = item;
@@ -204,18 +211,20 @@ public unsafe class NoSellList : Tweak {
                 var slot = container->GetInventorySlot(slotIndex);
                 if (slot != null) {
                     if (Config.NoSellList.Any(i => i == slot->ItemId)) {
-                        var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(slot->ItemId);
-                        if (!string.IsNullOrEmpty(item?.Name?.RawString)) {
-                            Service.Toasts.ShowError($"{item.Name.RawString} is locked by {Name} in {Plugin.Name}.");
+                        var item = Service.Data.Excel.GetSheet<Item>().GetRowOrDefault(slot->ItemId);
+                        if (item == null) return false;
+                        if (!string.IsNullOrEmpty(item.Value.Name.ExtractText())) {
+                            Service.Toasts.ShowError($"{item.Value.Name.ExtractText()} is locked by {Name} in {Plugin.Name}.");
                             return false;
                         }
                     }
 
                     var customListMatch = Config.CustomLists.FirstOrDefault(t => t.Enabled && t.NoSellList.Any(i => i == slot->ItemId));
                     if (customListMatch != null) {
-                        var item = Service.Data.Excel.GetSheet<Item>()?.GetRow(slot->ItemId);
-                        if (!string.IsNullOrEmpty(item?.Name?.RawString)) {
-                            Service.Toasts.ShowError(new SeString(new TextPayload(item.Name.ToDalamudString().TextValue), new TextPayload(" is locked by "), new TextPayload(customListMatch.Name), new NewLinePayload(), new TextPayload(Name), new TextPayload(" in "), new TextPayload(Plugin.Name), new TextPayload(".")));
+                        var item = Service.Data.Excel.GetSheet<Item>().GetRowOrDefault(slot->ItemId);
+                        if (item == null) return false;
+                        if (!string.IsNullOrEmpty(item.Value.Name.ExtractText())) {
+                            Service.Toasts.ShowError(new SeString(new TextPayload(item.Value.Name.ExtractText()), new TextPayload(" is locked by "), new TextPayload(customListMatch.Name), new NewLinePayload(), new TextPayload(Name), new TextPayload(" in "), new TextPayload(Plugin.Name), new TextPayload(".")));
                             return false;
                         }
                     }
@@ -228,46 +237,37 @@ public unsafe class NoSellList : Tweak {
         return true;
     }
 
-    private delegate void SellItemFromRetainer(void* a1, int a2, InventoryType a3);
+    private delegate void SellItemFromVirtual(void* a1, int a2, InventoryType a3);
 
     private delegate void SellItemFromInventory(int a2, InventoryType a3);
 
-    private HookWrapper<SellItemFromRetainer> sellItemFromRetainerHook;
-    private HookWrapper<SellItemFromInventory> sellItemFromInventoryHook;
+    [TweakHook, Signature("48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 80 B9 ?? ?? ?? ?? ?? 41 8B F0", DetourName = nameof(SellItemFromRetainerDetour))]
+    private HookWrapper<SellItemFromVirtual> sellItemFromRetainerHook;
 
-    protected override void Enable() {
-        Config = LoadConfig<Configs>() ?? new Configs();
-        sellItemFromRetainerHook = Common.Hook<SellItemFromRetainer>("48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 80 B9 ?? ?? ?? ?? ?? 41 8B F0", SellItemFromRetainerDetour);
-        sellItemFromRetainerHook?.Enable();
-
-        sellItemFromInventoryHook = Common.Hook<SellItemFromInventory>("48 89 5C 24 10 48 89 6C 24 18 56 48 83 EC 20 8B E9", SellItemFromInventoryDetour);
-        sellItemFromInventoryHook?.Enable();
-
-        base.Enable();
-    }
+    [TweakHook, Signature("48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 41 8B F0 8B EA E8", DetourName = nameof(SellItemFromInventoryVFuncDetour))]
+    private HookWrapper<SellItemFromVirtual> sellItemFromInventoryVFuncHook;
+    
+    [TweakHook, Signature("E8 ?? ?? ?? ?? 48 8B 5C 24 ?? 33 C0 89 06", DetourName = nameof(SellItemFromInventoryDetour))]
+    private HookWrapper<SellItemFromInventory> sellItemFromInventoryHook; // SE why is this still used for drag & drop selling?
 
     private void SellItemFromInventoryDetour(int slotIndex, InventoryType inventory) {
+        SimpleLog.Verbose($"Attempting to sell from {inventory}:{slotIndex} [Drag & Drop]");
         if (CanSell(slotIndex, inventory)) {
             sellItemFromInventoryHook.Original(slotIndex, inventory);
         }
     }
 
     private void SellItemFromRetainerDetour(void* a1, int slotIndex, InventoryType inventory) {
+        SimpleLog.Verbose($"Attempting to sell from {inventory}:{slotIndex} [Retainer]");
         if (CanSell(slotIndex, inventory)) {
             sellItemFromRetainerHook.Original(a1, slotIndex, inventory);
         }
     }
-
-    protected override void Disable() {
-        sellItemFromRetainerHook?.Disable();
-        sellItemFromInventoryHook?.Disable();
-        SaveConfig(Config);
-        base.Disable();
-    }
-
-    public override void Dispose() {
-        sellItemFromRetainerHook?.Dispose();
-        sellItemFromInventoryHook?.Dispose();
-        base.Dispose();
+    
+    private void SellItemFromInventoryVFuncDetour(void* a1, int slotIndex, InventoryType inventory) {
+        SimpleLog.Verbose($"Attempting to sell from {inventory}:{slotIndex} [Inventory]");
+        if (CanSell(slotIndex, inventory)) {
+            sellItemFromInventoryVFuncHook.Original(a1, slotIndex, inventory);
+        }
     }
 }
