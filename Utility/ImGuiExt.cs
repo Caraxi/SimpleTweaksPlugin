@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
+using Dalamud.Interface.Colors;
+using Dalamud.Interface.Utility.Raii;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using ImGuiNET;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Enums;
@@ -233,4 +236,37 @@ public static class ImGuiExt {
         }
     }
 
+    public static bool ModifierFlagEditor(ref ModifierFlag tweakConfigPanModifier, bool allowNone = false) {
+        var e = false;
+        using (ImRaii.Group()) {
+            var btnSize = new Vector2(ImGui.GetTextLineHeightWithSpacing() * 2, ImGui.GetTextLineHeightWithSpacing()) + ImGui.GetStyle().FramePadding * 2;
+            using (ImRaii.PushColor(ImGuiCol.Button, Vector4.Zero)) {
+                using (ImRaii.PushColor(ImGuiCol.Text, tweakConfigPanModifier.HasFlag(ModifierFlag.Shift) ? ImGuiColors.HealerGreen : ImGuiColors.DPSRed)) {
+                    if (ImGui.Button($"SHIFT", btnSize)) {
+                        tweakConfigPanModifier ^= ModifierFlag.Shift;
+                        if (!allowNone && tweakConfigPanModifier == 0) tweakConfigPanModifier = ModifierFlag.Shift;
+                        e = true;
+                    }
+                }
+                ImGui.SameLine();
+                using (ImRaii.PushColor(ImGuiCol.Text, tweakConfigPanModifier.HasFlag(ModifierFlag.Ctrl) ? ImGuiColors.HealerGreen : ImGuiColors.DPSRed)) {
+                    if (ImGui.Button("CTRL", btnSize)) {
+                        tweakConfigPanModifier ^= ModifierFlag.Ctrl;
+                        if (!allowNone && tweakConfigPanModifier == 0) tweakConfigPanModifier = ModifierFlag.Ctrl;
+                        e = true;
+                    }
+                }
+                ImGui.SameLine();
+                using (ImRaii.PushColor(ImGuiCol.Text, tweakConfigPanModifier.HasFlag(ModifierFlag.Alt) ? ImGuiColors.HealerGreen : ImGuiColors.DPSRed)) {
+                    if (ImGui.Button("ALT", btnSize)) {
+                        tweakConfigPanModifier ^= ModifierFlag.Alt;
+                        if (!allowNone && tweakConfigPanModifier == 0) tweakConfigPanModifier = ModifierFlag.Alt;
+                        e = true;
+                    }
+                }
+            }
+        }
+
+        return e;
+    }
 }
