@@ -17,6 +17,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakAuthor("KazWolfe")]
 [TweakDescription("Allows text commands to be entered without caring about case.")]
 [TweakAutoConfig]
+[TweakReleaseVersion(UnreleasedVersion)]
 public unsafe class CaseInsensitiveCommands : ChatTweaks.SubTweak
 {
     public class Configs : TweakConfig
