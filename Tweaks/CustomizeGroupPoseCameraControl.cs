@@ -11,7 +11,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakName("Customize Group Pose Camera Control")]
 [TweakDescription("Allows you to customize the camera control in group pose")]
 [TweakAutoConfig]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.4.0")]
 [TweakCategory(TweakCategory.QoL)]
 public unsafe class CustomizeGroupPoseCameraControl : Tweak {
     public class Configs : TweakConfig {

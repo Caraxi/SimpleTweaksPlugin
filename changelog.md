@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.10.4.0
+***New Tweaks***
+- **`Case Insensitive Text Commands`** - Allows text commands to be entered without caring about case. *(KazWolfe)*
+
+- **`Customize Group Pose Camera Control`** - Allows you to customize the camera control in group pose
+
+
 ## 1.10.3.2
 ***Tweak Changes***
 - **`Show ID`**

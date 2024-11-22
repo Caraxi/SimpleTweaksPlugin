@@ -56,6 +56,11 @@
   Allows setting a custom amount to deposit or withdraw when using the 'Retrieve Quantity' and 'Entrust Quantity' options.
 
 
+- **Customize Group Pose Camera Control**
+
+  Allows you to customize the camera control in group pose
+
+
 - **Data Centre on Title Screen**
 
   Shows the current Data Centre on the Title Screen
@@ -326,6 +331,11 @@
 ### Chat Tweaks
 
 ---
+
+- **Case Insensitive Text Commands**
+
+  Allows text commands to be entered without caring about case.
+
 
 - **Chat Name Colours**
 
