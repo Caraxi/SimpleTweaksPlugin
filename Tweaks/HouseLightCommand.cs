@@ -58,7 +58,7 @@ public unsafe class HouseLightCommand : CommandTweak {
 
         var agent = AgentModule.Instance()->GetAgentByInternalId(AgentId.Housing);
         var isOpen = agent->IsAgentActive();
-        Common.SendEvent(agent, 32, permanent ? 0 : 3, brightness);
+        Common.SendEvent(agent, 33, permanent ? 0 : 3, brightness);
         if (permanent) {
             // This just stops the housing menu from toggling
             if (!isOpen)
