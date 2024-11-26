@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Dalamud.Game.Config;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using Dalamud.Interface.Utility;
 using Dalamud.Utility;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -28,7 +29,7 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
         public int[] FontSize;
     }
 
-    private delegate void SetFontSizeDelegate(byte* chatLogPanelWithOffset, byte fontSize);
+    private delegate void SetFontSizeDelegate(LogViewer* chatLogPanelWithOffset, byte fontSize);
 
     [TweakHook, Signature("40 53 48 83 EC 30 48 8B D9 88 51 48", DetourName = nameof(SetFontSizeDetour))]
     private HookWrapper<SetFontSizeDelegate> setFontSizeHook;
@@ -81,8 +82,8 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
         }
 
         if (ImGui.BeginTable("extendedChatSettingsTable", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg)) {
-            ImGui.TableSetupColumn("Panel", ImGuiTableColumnFlags.WidthFixed, 120 * ImGui.GetIO().FontGlobalScale);
-            ImGui.TableSetupColumn("Font Size", ImGuiTableColumnFlags.WidthFixed, 180 * ImGui.GetIO().FontGlobalScale);
+            ImGui.TableSetupColumn("Panel", ImGuiTableColumnFlags.WidthFixed, 120 * ImGuiHelpers.GlobalScale);
+            ImGui.TableSetupColumn("Font Size", ImGuiTableColumnFlags.WidthFixed, 180 * ImGuiHelpers.GlobalScale);
             ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableHeadersRow();
 
@@ -129,10 +130,9 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
 
     private void ToggleFontSizeConfigDropDowns(AtkUnitBase* unitBase, bool toggle) {
         if (unitBase == null) return;
-
         var txt = Service.Data.Excel.GetSheet<Addon>().GetRow(7802).Text.ToDalamudString();
-
         for (var i = 0U; i < 4; i++) {
+            
             var n = unitBase->GetNodeById(7U + i);
             if (n == null) continue;
             var cn = n->GetComponent();
@@ -150,7 +150,11 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
                 TooltipManager.RemoveTooltip(unitBase, &tnc->AtkResNode);
                 tnc->SetText(txt.EncodeWithNullTerminator());
             } else {
-                var str = txt.Append(new List<Payload>() { new UIForegroundPayload(3), new TextPayload(" (Managed by Simple Tweaks)"), new UIForegroundPayload(0) });
+                var str = txt.Append(new List<Payload>() {
+                    new UIForegroundPayload(3),
+                    new TextPayload(" (Managed by Simple Tweaks)"),
+                    new UIForegroundPayload(0)
+                });
                 TooltipManager.AddTooltip(unitBase, &tnc->AtkResNode, $"Setting managed by Simple Tweak:\n  - {LocalizedName}");
                 tnc->SetText(str.EncodeWithNullTerminator());
             }
@@ -166,28 +170,19 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
         ToggleFontSizeConfigDropDowns(addon, false);
     }
 
-    private void SetFontSizeDetour(byte* chatLogPanelWithOffset, byte fontSize) {
+    private void SetFontSizeDetour(LogViewer* logViewer, byte fontSize) {
         try {
-            if (Config.FontSize is { Length: 4 }) {
-                var chatLogPanel = (AddonChatLogPanel*)(chatLogPanelWithOffset - 0x280);
-                if (Config.FontSize != null) {
-                    var anyMatch = false;
-                    for (var i = 0; i < 4; i++) {
-                        var panel = Common.GetUnitBase<AddonChatLogPanel>($"ChatLogPanel_{i}");
-                        if (panel == null) continue;
-                        if (panel != chatLogPanel) continue;
-                        fontSize = (byte)Math.Clamp(Config.FontSize[i], MinimumFontSize, MaximumFontSize);
-                        anyMatch = true;
-                        break;
-                    }
-
-                    if (!anyMatch) {
-                        Plugin.Error(this, new Exception("Invalid Panel Offset"));
-                    }
-                }
+            if (Config.FontSize is { Length: 4 } && logViewer != null && logViewer->ChatLogPanel != null) {
+                fontSize = (byte)Math.Clamp(logViewer->ChatLogPanel->NameString switch {
+                    "ChatLogPanel_0" => Config.FontSize[0],
+                    "ChatLogPanel_1" => Config.FontSize[1],
+                    "ChatLogPanel_2" => Config.FontSize[2],
+                    "ChatLogPanel_3" => Config.FontSize[3],
+                    _ => fontSize
+                }, MinimumFontSize, MaximumFontSize);
             }
 
-            setFontSizeHook.Original(chatLogPanelWithOffset, fontSize);
+            setFontSizeHook.Original(logViewer, fontSize);
         } catch (Exception ex) {
             SimpleLog.Error(ex);
         }
