@@ -117,7 +117,7 @@ public unsafe class ScreenshotFileName : Tweak {
         new("p", () => "a.m. or p.m.", () => DateTime.Now.Hour < 12 ? "a.m." : "p.m."),
         new("M", () => "Two-digit minute", () => DateTime.Now.ToString("mm")),
         new("S", () => "Two-digit second", () => DateTime.Now.ToString("ss")),
-        new("F", () => "Three-digit milliseconds", () => DateTime.Now.Millisecond.ToString()),
+        new("F", () => "Three-digit milliseconds", () => DateTime.Now.Millisecond.ToString("D3")),
         new("ChrName", () => "Current character name", () => UIState.Instance()->PlayerState.CharacterNameString),
         new("Location", () => "Current location name", () => Service.Data.GetExcelSheet<TerritoryType>()?.GetRowOrDefault(Service.ClientState.TerritoryType)?.PlaceName.Value.Name.ExtractText() ?? "Unknown Location"),
     ];
