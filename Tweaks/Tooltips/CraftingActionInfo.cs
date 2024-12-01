@@ -32,7 +32,6 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
     }
 
     protected override void Enable() {
-        Config = LoadConfig<Configs>() ?? new Configs();
         progressString ??= Service.Data.Excel.GetSheet<Addon>().GetRow(213).Text.ExtractText();
         qualityString ??= Service.Data.Excel.GetSheet<Addon>().GetRow(216).Text.ExtractText();
         
@@ -41,7 +40,6 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
         if (Config.ShowResultsPreview) {
             Common.FrameworkUpdate += FrameworkUpdate;
         }
-        base.Enable();
     }
 
     protected override void ConfigChanged() {
@@ -52,10 +50,8 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
     }
 
     protected override void Disable() {
-        SaveConfig(Config);
         Common.FrameworkUpdate -= FrameworkUpdate;
         PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.CraftingActionInfoIdentifier);
-        base.Disable();
     }
 
     private void SetGhost(AtkTextNode* textNode, AtkTextNode* maxTextNode, AtkComponentNode* gauge, uint addValue) {
@@ -207,9 +203,10 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
         progressGaugeNode = progressGaugeNode->AtkResNode.GetAsAtkComponentNode();
         qualityGaugeNode = qualityGaugeNode->AtkResNode.GetAsAtkComponentNode();
         if (progressGaugeNode == null || qualityGaugeNode == null) return;
-        
-        if (Service.GameGui.HoveredAction.ActionID != 0) {
-            var result = GetActionResult(Service.GameGui.HoveredAction.ActionID);
+
+        var hoveredActionId = Common.GetUnitBase("ActionDetail", out var actionDetail) && actionDetail->IsVisible ? AgentActionDetail.Instance()->ActionId : 0;
+        if (hoveredActionId != 0) {
+            var result = GetActionResult(hoveredActionId);
             SetGhost(progressText, progressMaxText, progressGaugeNode, result.progress);
             SetGhost(qualityText, qualityMaxText, qualityGaugeNode, result.quality);
         } else {
