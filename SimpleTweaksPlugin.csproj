@@ -40,9 +40,7 @@
       <PackageReference Include="System.Numerics.Vectors" Version="4.6.0" />
       <PackageReference Include="DalamudPackager" Version="11.0.0" />
     </ItemGroup>
-    <PropertyGroup>
-        <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
-    </PropertyGroup>
+    <Import Project="Dalamud.Plugin.Bootstrap.targets"/>
 	<ItemGroup>
 		<Reference Include="Dalamud">
             <Private>false</Private>
