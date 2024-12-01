@@ -6,6 +6,4 @@
     <DalamudLibPath Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(HOME)/Library/Application Support/XIV on Mac/dalamud/Hooks/dev/</DalamudLibPath>
     <DalamudLibPath Condition="$(DALAMUD_HOME) != ''">$(DALAMUD_HOME)/</DalamudLibPath>
   </PropertyGroup>
-
-  <Import Project="$(DalamudLibPath)/targets/Dalamud.Plugin.targets"/>
 </Project>
