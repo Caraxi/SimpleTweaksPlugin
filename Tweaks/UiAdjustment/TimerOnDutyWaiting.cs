@@ -38,10 +38,7 @@ public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
         var timeRemaining = timeOffset.Seconds - stopwatch.Elapsed.Seconds;
         if (timeRemaining <= 0) return;
 
-        var str = new SeString(prefix.Payloads);
-        str.Payloads.Add(new TextPayload($" ({timeRemaining})"));
-        
-        timeRemainingString->SetString(str.EncodeWithNullTerminator());
+        timeRemainingString->SetString($"{prefix} ({timeRemaining})");
         addon->GetTextNodeById(3)->SetText(timeRemainingString->StringPtr);
     }
 }
