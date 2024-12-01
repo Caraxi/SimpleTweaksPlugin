@@ -43,10 +43,6 @@ public static class Extensions {
         return Common.ReadSeString(utf8String);
     }
 
-    public static void SetSeString(this Utf8String utf8String, SeString seString) {
-        Common.WriteSeString(utf8String, seString);
-    }
-
     public static int GetStableHashCode(this string str)
     {
         unchecked

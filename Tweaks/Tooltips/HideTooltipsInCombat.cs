@@ -113,7 +113,7 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
         } else {
             TooltipManager.RemoveTooltip(addon, &textNode->AtkResNode);
         }
-        textNode->NodeText.SetString(seString.Encode());
+        textNode->NodeText.SetString(seString.EncodeWithNullTerminator());
         textNode->ResizeNodeForCurrentText();
     }
     

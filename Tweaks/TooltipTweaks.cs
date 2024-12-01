@@ -37,16 +37,14 @@ public class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
 
         protected static unsafe void SetTooltipString(StringArrayData* stringArrayData, TooltipTweaks.ItemTooltipField field, SeString seString) {
             seString ??= new SeString();
-            var bytes = seString.Encode().ToList();
-            bytes.Add(0);
-            stringArrayData->SetValue((int)field, bytes.ToArray(), false, true, false);
+            var bytes = seString.EncodeWithNullTerminator();
+            stringArrayData->SetValue((int)field, bytes, false);
         }
 
         protected static unsafe void SetTooltipString(StringArrayData* stringArrayData, TooltipTweaks.ActionTooltipField field, SeString seString) {
             seString ??= new SeString();
-            var bytes = seString.Encode().ToList();
-            bytes.Add(0);
-            stringArrayData->SetValue((int)field, bytes.ToArray(), false, true, false);
+            var bytes = seString.EncodeWithNullTerminator();
+            stringArrayData->SetValue((int)field, bytes, false);
         }
 
         protected static InventoryItem Item => HoveredItem;

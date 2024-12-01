@@ -277,7 +277,7 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
         }
         
         textNode->AtkResNode.ToggleVisibility(true);
-        textNode->SetText(lines.Encode());
+        textNode->SetText(lines.EncodeWithNullTerminator());
         textNode->ResizeNodeForCurrentText();
         textNode->AtkResNode.SetPositionFloat(17, atkUnitBase->WindowNode->AtkResNode.Height - 10f);
         

@@ -97,7 +97,7 @@ public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
             }
 
             textNode->TextColor = new ByteColor { R = (byte)(inaccurate ? 0xFF : 0x45), G = (byte)(inaccurate ? 0x83 : 0xB2), B = (byte)(inaccurate ? 0x75 : 0xAE), A = 0xFF };
-            textNode->NodeText.SetString(seStr.Encode());
+            textNode->NodeText.SetString(seStr.EncodeWithNullTerminator());
 
             if (TweakConfig.ShowItemLevelIcon) {
                 if (!Common.GetNodeById(&previewComponent->UldManager, CustomNodes.Get(this), out AtkImageNode* iconNode)) {

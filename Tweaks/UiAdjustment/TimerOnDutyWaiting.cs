@@ -41,7 +41,7 @@ public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
         var str = new SeString(prefix.Payloads);
         str.Payloads.Add(new TextPayload($" ({timeRemaining})"));
         
-        timeRemainingString->SetString(str.Encode());
+        timeRemainingString->SetString(str.EncodeWithNullTerminator());
         addon->GetTextNodeById(3)->SetText(timeRemainingString->StringPtr);
     }
 }

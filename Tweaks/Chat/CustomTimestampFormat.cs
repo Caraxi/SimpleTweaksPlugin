@@ -78,7 +78,7 @@ public unsafe class CustomTimestampFormat : ChatTweaks.SubTweak {
                     seStr.Append(new ColorPayload(Config.Color));
                     seStr.Append((Config.UseServerTime ? time.DateTime : time.LocalDateTime).ToString(Config.Format));
                     seStr.Append(new ColorEndPayload());
-                    var bytes = seStr.Encode();
+                    var bytes = seStr.EncodeWithNullTerminator();
                     if (bytes.Length == 0 || bytes[0] == 0) {
                         str->SetString(string.Empty);
                     } else {
