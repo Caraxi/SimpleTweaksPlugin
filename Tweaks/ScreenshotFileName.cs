@@ -18,7 +18,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakAutoConfig]
 [Changelog("1.10.2.0", "Added ability to use folders in screenshot path.")]
 [Changelog("1.10.2.0", "Added ability to use character name and location in screenshot path.")]
-[Changelog(UnreleasedVersion, "Added option to use milliseconds in name template.")]
+[Changelog("1.10.5.0", "Added option to use milliseconds in name template.")]
 public unsafe class ScreenshotFileName : Tweak {
     public class Configs : TweakConfig {
         public string DateFormatString = "ffxiv_%Y-%m-%d_%H%M%S";

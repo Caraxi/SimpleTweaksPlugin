@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
@@ -13,6 +13,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [TweakName("Timer on Duty Waiting")]
 [TweakDescription("Shows the 45 second countdown after readying for a duty.")]
+[Changelog("1.10.5.0", "Fixed display of text in french clients.")]
 public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
     private readonly Utf8String* timeRemainingString = Utf8String.CreateEmpty();
     private readonly SeString prefix = Service.Data.GetExcelSheet<Addon>().GetRow(2780).Text.ToDalamudString();

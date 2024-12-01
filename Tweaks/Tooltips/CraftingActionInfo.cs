@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
@@ -15,6 +15,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 [TweakName("Improved Crafting Action Tooltips")]
 [TweakDescription("Adds calculated efficiency of crafting actions to tooltips.")]
 [TweakAutoConfig]
+[Changelog("1.10.5.0", "Fixed results preview not resetting.")]
 public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Show Results Preview")]

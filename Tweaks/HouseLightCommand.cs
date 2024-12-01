@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
@@ -13,6 +13,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakName("House Lights Command")]
 [TweakDescription("Adds a command to control lighting in your own housing areas.")]
 [TweakReleaseVersion("1.8.2.0")]
+[Changelog("1.10.5.0", "Fixed tweak not working.")]
 public unsafe class HouseLightCommand : CommandTweak {
     public override bool Experimental => true;
     protected override string Command => "lights";

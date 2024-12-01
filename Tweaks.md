@@ -126,6 +126,11 @@
   Adds a command to equip recommended gear.
 
 
+- **Estate Access Command**
+
+  Adds a command to open the estate access configuration for the current estate.
+
+
 - **Estate List Command**
 
   Adds a command to open the estate list of one of your friends.

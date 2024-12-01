@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Dalamud.Game.Config;
 using Dalamud.Game.Text.SeStringHandling;
@@ -21,6 +21,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakName("Improved Chat Font Sizes")]
 [TweakDescription("Allows you to change the font size for the chat windows beyond the default limits, and allows docked chat tabs to keep their font size separate from the main tab.")]
 [TweakAutoConfig]
+[Changelog("1.10.5.0", "Fixed tweak not working.")]
 public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
     public const byte MinimumFontSize = 8; // Game crashes below 8
     public const byte MaximumFontSize = 80;

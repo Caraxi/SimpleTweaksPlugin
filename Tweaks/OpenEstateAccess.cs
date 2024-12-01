@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Components;
 using Dalamud.Utility;
@@ -14,7 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("Estate Access Command")]
 [TweakDescription("Adds a command to open the estate access configuration for the current estate.")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.5.0")]
 public unsafe class OpenEstateAccess : CommandTweak {
     private delegate byte OpenEstateAccessSettingsDelegate(AgentHousing* agentHousing);
 
