@@ -116,10 +116,10 @@ public abstract class BaseTweak {
                 try {
                     var image = Service.TextureProvider.GetFromFile(Path.Join(PluginInterface.AssemblyLocation.DirectoryName, "TweakPreviews", $"{Key}.png"));
                     var previewImage = image.GetWrapOrDefault();
-                    if (previewImage == null) {
-                        hasPreviewImage = false;
-                    } else {
+                    if (previewImage != null) {
                         ImGui.Image(previewImage.ImGuiHandle, new Vector2(previewImage.Width, previewImage.Height));
+                    } else {
+                        ImGui.Text("Image Loading...");
                     }
                 } catch {
                     hasPreviewImage = false;
