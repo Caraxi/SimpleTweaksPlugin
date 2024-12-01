@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
+using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
@@ -12,7 +15,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Shows the 45 second countdown after readying for a duty.")]
 public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
     private readonly Utf8String* timeRemainingString = Utf8String.CreateEmpty();
-    private readonly string prefix = Service.Data.GetExcelSheet<Addon>().GetRow(2780).Text.ExtractText();
+    private readonly SeString prefix = Service.Data.GetExcelSheet<Addon>().GetRow(2780).Text.ToDalamudString();
     private Stopwatch stopwatch = new();
     private TimeSpan timeOffset = TimeSpan.Zero;
 
@@ -34,7 +37,10 @@ public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
         var timeRemaining = timeOffset.Seconds - stopwatch.Elapsed.Seconds;
         if (timeRemaining <= 0) return;
 
-        timeRemainingString->SetString($"{prefix} ({timeRemaining})");
+        var str = new SeString(prefix.Payloads);
+        str.Payloads.Add(new TextPayload($" ({timeRemaining})"));
+        
+        timeRemainingString->SetString(str.Encode());
         addon->GetTextNodeById(3)->SetText(timeRemainingString->StringPtr);
     }
 }
