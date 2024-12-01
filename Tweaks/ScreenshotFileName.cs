@@ -18,6 +18,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakAutoConfig]
 [Changelog("1.10.2.0", "Added ability to use folders in screenshot path.")]
 [Changelog("1.10.2.0", "Added ability to use character name and location in screenshot path.")]
+[Changelog(UnreleasedVersion, "Added option to use milliseconds in name template.")]
 public unsafe class ScreenshotFileName : Tweak {
     public class Configs : TweakConfig {
         public string DateFormatString = "ffxiv_%Y-%m-%d_%H%M%S";
@@ -117,6 +118,7 @@ public unsafe class ScreenshotFileName : Tweak {
         new("p", () => "a.m. or p.m.", () => DateTime.Now.Hour < 12 ? "a.m." : "p.m."),
         new("M", () => "Two-digit minute", () => DateTime.Now.ToString("mm")),
         new("S", () => "Two-digit second", () => DateTime.Now.ToString("ss")),
+        new("F", () => "Three-digit milliseconds", () => DateTime.Now.Millisecond.ToString("D3")),
         new("ChrName", () => "Current character name", () => UIState.Instance()->PlayerState.CharacterNameString),
         new("Location", () => "Current location name", () => Service.Data.GetExcelSheet<TerritoryType>()?.GetRowOrDefault(Service.ClientState.TerritoryType)?.PlaceName.Value.Name.ExtractText() ?? "Unknown Location"),
     ];
