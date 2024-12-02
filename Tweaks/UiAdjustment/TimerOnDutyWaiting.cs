@@ -38,9 +38,7 @@ public unsafe class TimerOnDutyWaiting : UiAdjustments.SubTweak {
         if (timeRemaining <= 0) return;
         var seStringBuilder = new SeStringBuilder();
         seStringBuilder.Append(Service.Data.GetExcelSheet<Addon>().GetRow(2780).Text);
-        seStringBuilder.Append((Rune)
         seStringBuilder.Append($" ({timeRemaining})");
-        seStringBuilder.AppendChar(0);
         timeRemainingString->SetString(seStringBuilder.GetViewAsSpan());
         addon->GetTextNodeById(3)->SetText(timeRemainingString->StringPtr);
     }
