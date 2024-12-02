@@ -52,12 +52,12 @@ class ExpGainLevelPercent : ChatTweaks.SubTweak {
         // Get next level exp threshold
         PlayerState player = UIState.Instance()->PlayerState;
         byte playerJob = player.CurrentClassJobId;
-        byte playerJobIndex = Service.Data.GetExcelSheet<ClassJob>().GetRow(playerJob).JobIndex;
+        sbyte playerJobIndex = Service.Data.GetExcelSheet<ClassJob>().GetRow(playerJob).ExpArrayIndex;
         short playerJobLevel = player.ClassJobLevels[playerJobIndex];
         int expToNext = Service.Data.GetExcelSheet<ParamGrow>().GetRow((uint) playerJobLevel).ExpToNext;
 
         // Calculate gained exp percentage of next level
-        double pctOfNextLevel = Math.Round(((float) gainedExp / (float) expToNext) * 100.0, 2);
+        double pctOfNextLevel = Math.Round(((double) gainedExp / (double) expToNext) * 100.0, 2);
 
         // Add percentage payload to message
         message.Payloads.Add(new TextPayload($" ({pctOfNextLevel}%)"));
