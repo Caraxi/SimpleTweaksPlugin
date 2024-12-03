@@ -47,7 +47,9 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
 
     public bool HideKofi;
     public bool ShowExperimentalTweaks;
-    public bool DisableAutoOpen;
+    public bool? DisableAutoOpen = null;
+    public bool DisableAutoOpenConfig;
+    public bool DisableAutoOpenDebug;
     public bool ShowInDevMenu;
     public bool NoFools;
     public bool NotBaby;
@@ -94,6 +96,12 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
 
             CustomProviders = null;
         }
+        
+        if (DisableAutoOpen != null) {
+            DisableAutoOpenConfig = DisableAutoOpenDebug = DisableAutoOpen.Value;
+            DisableAutoOpen = null;
+        }
+        
     }
     
     public void Save() {
@@ -537,7 +545,9 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
 #if DEBUG
                     if (ImGui.CollapsingHeader("Debug Options")) {
                         ImGui.Indent();
-                        if (ImGui.Checkbox("Disable Auto Open", ref DisableAutoOpen)) Save();
+                        if (ImGui.Checkbox("Disable Automatic opening of config window", ref DisableAutoOpenConfig)) Save();
+                        ImGui.Separator();
+                        if (ImGui.Checkbox("Disable Automatic opening of debug window", ref DisableAutoOpenDebug)) Save();
                         ImGui.Separator();
                         if (ImGui.Checkbox("Remove File Info From Logs", ref NoCallerInLog)) Save();
                         ImGui.Unindent();

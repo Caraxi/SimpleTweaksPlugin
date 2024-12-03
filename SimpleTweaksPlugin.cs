@@ -157,10 +157,8 @@ namespace SimpleTweaksPlugin {
 
 
 #if DEBUG
-            if (!PluginConfig.DisableAutoOpen) {
-                DebugWindow.IsOpen = true;
-                ConfigWindow.IsOpen = true;
-            }
+            DebugWindow.IsOpen = !PluginConfig.DisableAutoOpenDebug;
+            ConfigWindow.IsOpen = !PluginConfig.DisableAutoOpenConfig;
 #endif
             DebugManager.Reload();
 
