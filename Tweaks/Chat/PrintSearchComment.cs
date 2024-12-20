@@ -35,10 +35,9 @@ public class PrintSearchComment : ChatTweaks.SubTweak {
                     .Append(">")
                     .PopColorType()
                     .Append("\r")
-                    .Append(searchInfo)
-                    .ToArray();
+                    .Append(searchInfo);
 
-                Service.Chat.Print(SeString.Parse(builder));
+                Service.Chat.Print(builder.GetViewAsSpan());
             }
         } catch (Exception ex) {
             SimpleLog.Error(ex, $"Error in {GetType().Name} hook");

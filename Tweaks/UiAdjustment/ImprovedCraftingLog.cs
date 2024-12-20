@@ -195,7 +195,7 @@ public unsafe class ImprovedCraftingLog : Tweak {
         };
 
         if (buttonText != null) {
-            addon->SynthesizeButton->ButtonTextNode->SetText(buttonText.Encode());
+            addon->SynthesizeButton->ButtonTextNode->SetText(buttonText.EncodeWithNullTerminator());
         }
     }
 
@@ -220,7 +220,7 @@ public unsafe class ImprovedCraftingLog : Tweak {
     protected override void Disable() {
         Common.FrameworkUpdate -= ForceUpdateFramework;
         if (Common.GetUnitBase<AddonRecipeNote>(out var addon)) {
-            var text = Service.Data.Excel.GetSheet<Addon>().GetRow(1404).Text.ToDalamudString().Encode();
+            var text = Service.Data.Excel.GetSheet<Addon>().GetRow(1404).Text.ToDalamudString().EncodeWithNullTerminator();
             SimpleLog.Log($"Resetting Button Test: {(ulong)addon->SynthesizeButton->ButtonTextNode:X}");
             addon->SynthesizeButton->ButtonTextNode->NodeText.SetString(text);
         }

@@ -249,7 +249,7 @@ public unsafe class CustomTimeFormat : UiAdjustments.SubTweak {
         }
 
         if (timeSeString.Payloads.Count > 0) {
-            xivString->SetString(timeSeString.Encode());
+            xivString->SetString(timeSeString.EncodeWithNullTerminator());
         }
     }
 }

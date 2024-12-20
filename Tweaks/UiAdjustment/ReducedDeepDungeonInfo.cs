@@ -134,7 +134,7 @@ public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
         payloads.Add(new TextPayload("/"));
         payloads.AddRange(GetAetherpoolPayloads(armorAetherpoolSeStr));
 
-        textNode->SetText(new SeString(payloads).Encode());
+        textNode->SetText(new SeString(payloads).EncodeWithNullTerminator());
     }
 
     private static void SetDeepdungeonWindow(AtkComponentNode* windowNode, ushort? width, ushort? height)

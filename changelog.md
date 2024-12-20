@@ -1,5 +1,37 @@
 # Changelog
 
+## 1.10.5.1
+***Tweak Changes***
+- **`Timer on Duty Waiting`** - Fixed display on all clients...
+
+
+## 1.10.5.0
+***General Changes***
+- Fixed tweak preview images not loading correctly
+
+***New Tweaks***
+- **`Estate Access Command`** - Adds a command to open the estate access configuration for the current estate.
+
+
+***Tweak Changes***
+- **`House Lights Command`** - Fixed tweak not working.
+
+- **`Improved Chat Font Sizes`** - Fixed tweak not working.
+
+- **`Improved Crafting Action Tooltips`** - Fixed results preview not resetting.
+
+- **`Screenshot File Name`** - Added option to use milliseconds in name template.
+
+- **`Timer on Duty Waiting`** - Fixed display of text in french clients.
+
+
+## 1.10.4.0
+***New Tweaks***
+- **`Case Insensitive Text Commands`** - Allows text commands to be entered without caring about case. *(KazWolfe)*
+
+- **`Customize Group Pose Camera Control`** - Allows you to customize the camera control in group pose
+
+
 ## 1.10.3.2
 ***Tweak Changes***
 - **`Show ID`**

@@ -57,7 +57,7 @@ public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
             do {
                 replacementNameNode->FontSize = fs;
                 // Set the text each time we change the font to update the drawn size of the text
-                replacementNameNode->SetText(normalName.Encode());
+                replacementNameNode->SetText(normalName.EncodeWithNullTerminator());
                 replacementNameNode->GetTextDrawSize(&w, &h);
                 fs -= 1;
             } while (h > 35);

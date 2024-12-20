@@ -107,6 +107,6 @@ public unsafe class ShowItemID : TooltipTweaks.SubTweak {
 
         seStr.Payloads.Add(new TextPayload($"]"));
         seStr.Payloads.Add(new UIForegroundPayload(0));
-        categoryText->SetText(seStr.Encode());
+        categoryText->SetText(seStr.EncodeWithNullTerminator());
     }
 }

@@ -12,6 +12,7 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.System.String;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
 using Lumina.Excel;
@@ -40,10 +41,6 @@ public static class Extensions {
 
     public static SeString GetSeString(this Utf8String utf8String) {
         return Common.ReadSeString(utf8String);
-    }
-
-    public static void SetSeString(this Utf8String utf8String, SeString seString) {
-        Common.WriteSeString(utf8String, seString);
     }
 
     public static int GetStableHashCode(this string str)
@@ -200,5 +197,12 @@ public static class Extensions {
     public static bool TryGetAttribute<TAttribute>(this Type type, [NotNullWhen(true)] out TAttribute attribute) where TAttribute : Attribute {
         attribute = type.GetCustomAttribute<TAttribute>();
         return attribute != null;
+    }
+
+    public static bool IsPressed(this ModifierFlag modifierFlag) {
+        return 
+            Service.KeyState[VirtualKey.SHIFT] == modifierFlag.HasFlag(ModifierFlag.Shift) &&
+            Service.KeyState[VirtualKey.MENU] == modifierFlag.HasFlag(ModifierFlag.Alt) &&
+            Service.KeyState[VirtualKey.CONTROL] == modifierFlag.HasFlag(ModifierFlag.Ctrl);
     }
 }

@@ -116,7 +116,7 @@ public unsafe class ExpPercentage : UiAdjustments.SubTweak {
                 str.Append($"  {(char)SeIconChar.ExperienceFilled} {restedExperience.ToString($"F{Config.Decimals}", Culture)}%");
             }
 
-            textNode->SetText(str.Encode());
+            textNode->SetText(str.EncodeWithNullTerminator());
         } catch (Exception ex) {
             SimpleLog.Error(ex);
         }

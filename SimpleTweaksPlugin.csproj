@@ -4,7 +4,7 @@
         <TargetFramework>net8.0-windows</TargetFramework>
         <LangVersion>preview</LangVersion>
         <Platforms>x64</Platforms>
-        <Configurations>Debug;Release</Configurations>
+        <Configurations>Debug;Release;DebugSteamDeck</Configurations>
     </PropertyGroup>
     <PropertyGroup Label="Build">
         <NoWarn>CS8632,CS0649,CS0169</NoWarn>
@@ -16,9 +16,13 @@
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     </PropertyGroup>
+    <PropertyGroup Label="DebugSteamDeck" Condition="'$(Configuration)'=='DebugSteamDeck'">
+        <OutputPath>\\steamdeck\home\deck\DevPlugins\SimpleTweaksPlugin\</OutputPath>
+        <DefineConstants>DEBUG</DefineConstants>
+    </PropertyGroup>
     <PropertyGroup Label="Feature">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>1.10.3.5</Version>
+        <Version>1.10.5.1</Version>
     </PropertyGroup>
 	<PropertyGroup>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
@@ -40,9 +44,7 @@
       <PackageReference Include="System.Numerics.Vectors" Version="4.6.0" />
       <PackageReference Include="DalamudPackager" Version="11.0.0" />
     </ItemGroup>
-    <PropertyGroup>
-        <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
-    </PropertyGroup>
+    <Import Project="Dalamud.Plugin.Bootstrap.targets"/>
 	<ItemGroup>
 		<Reference Include="Dalamud">
             <Private>false</Private>

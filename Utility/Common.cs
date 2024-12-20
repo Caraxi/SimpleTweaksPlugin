@@ -101,15 +101,6 @@ public unsafe class Common {
         return unitBase != null;
     }
 
-    public static void WriteSeString(byte** startPtr, IntPtr alloc, SeString seString) {
-        if (startPtr == null) return;
-        var start = *(startPtr);
-        if (start == null) return;
-        if (start == (byte*)alloc) return;
-        WriteSeString((byte*)alloc, seString);
-        *startPtr = (byte*)alloc;
-    }
-
     public static SeString ReadSeString(byte** startPtr) {
         if (startPtr == null) return null;
         var start = *(startPtr);
@@ -133,29 +124,8 @@ public unsafe class Common {
         return SeString.Parse(bytes);
     }
 
-    public static void WriteSeString(byte* dst, SeString s) {
-        var bytes = s.Encode();
-        for (var i = 0; i < bytes.Length; i++) {
-            *(dst + i) = bytes[i];
-        }
-
-        *(dst + bytes.Length) = 0;
-    }
-
     public static SeString ReadSeString(Utf8String xivString) => SeString.Parse(xivString);
-
-    public static void WriteSeString(Utf8String xivString, SeString s) {
-        var bytes = s.Encode();
-        int i;
-        xivString.BufUsed = 0;
-        for (i = 0; i < bytes.Length && i < xivString.BufSize - 1; i++) {
-            *(xivString.StringPtr + i) = bytes[i];
-            xivString.BufUsed++;
-        }
-
-        *(xivString.StringPtr + i) = 0;
-    }
-
+    
     public static HookWrapper<T> Hook<T>(string signature, T detour, int addressOffset = 0) where T : Delegate {
         var addr = Service.SigScanner.ScanText(signature);
         var h = ImNotGonnaCallItThat.HookFromAddress(addr + addressOffset, detour);

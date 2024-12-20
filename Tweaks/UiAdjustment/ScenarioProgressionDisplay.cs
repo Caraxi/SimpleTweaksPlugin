@@ -128,7 +128,7 @@ public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
             }
         }
 
-        var encoded = text.Encode();
+        var encoded = text.EncodeWithNullTerminator();
         if (encoded.Length == 0 || encoded[0] == 0) {
             SimpleLog.Verbose($"Update ScenarioTree: [empty string]");
             textNode->SetText(string.Empty);

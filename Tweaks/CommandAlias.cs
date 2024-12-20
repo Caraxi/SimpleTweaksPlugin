@@ -165,6 +165,11 @@ public class CommandAlias : Tweak {
                         if (!a.IsValid()) return false;
                         return splitString[0] == $"/{a.Input}";
                     });
+
+                    if (alias == null && Plugin.GetTweak<Chat.CaseInsensitiveCommands>().Enabled) {
+                        alias = TweakConfig.AliasList.FirstOrDefault(a => a.Enabled && a.IsValid() && splitString[0].Equals($"/{a.Input}", StringComparison.InvariantCultureIgnoreCase));
+                    }
+
                     if (alias != null) {
                         var commandExtra = inputString[(alias.Input.Length + 1)..];
                         if (commandExtra.StartsWith(' ')) commandExtra = commandExtra[1..];
