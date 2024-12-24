@@ -82,6 +82,7 @@ public class ConfigWindow : SimpleWindow {
                 return;
         }
 
+        textures.RemoveAll(t => t == null);
         if (textures.Count == 0) return;
 
         var width = textures.Max(s => s.Size.X);
