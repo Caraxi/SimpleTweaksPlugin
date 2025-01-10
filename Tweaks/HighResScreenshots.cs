@@ -20,6 +20,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakName("Screenshot Improvements")]
 [TweakDescription("Allows taking higher resolution screenshots, Hiding Dalamud & Game UIs and removing the copyright notice from screenshots.")]
 [TweakAuthor("NotNite")]
+[Changelog(UnreleasedVersion, "Fixed 'Remove Copyright Text' option.")]
 public unsafe class HighResScreenshots : Tweak {
     private nint copyrightShaderAddress;
 
@@ -159,7 +160,7 @@ public unsafe class HighResScreenshots : Tweak {
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
 
-        if (!Service.SigScanner.TryScanText("48 8B 57 ?? 45 33 C9 48 8B 06 45 33 C0 48 8B CE 48 8B 52 ?? FF 50 ?? 48 8B 06 4C 8D 4C 24", out copyrightShaderAddress)) {
+        if (!Service.SigScanner.TryScanText("48 8B 56 30 45 33 C9", out copyrightShaderAddress)) {
             copyrightShaderAddress = 0;
         }
 
