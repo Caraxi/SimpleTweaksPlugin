@@ -85,7 +85,7 @@ public unsafe class OpenEstateAccess : CommandTweak {
                     return;
                 }
 
-                var houseId = housingManager->GetCurrentHouseId();
+                var houseId = housingManager->GetCurrentIndoorHouseId();
                 if (getOwnedHouseId(0) == houseId) {
                     agent->SelectedEstateType = EstateType.FreeCompanyEstate;
                 } else if (getOwnedHouseId(1) == houseId) {
