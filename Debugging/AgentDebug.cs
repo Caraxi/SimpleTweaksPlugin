@@ -5,8 +5,11 @@ using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Dalamud.Hooking;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
+using Dalamud.Interface.Utility.Raii;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -20,12 +23,27 @@ namespace SimpleTweaksPlugin.Debugging;
 public unsafe class AgentDebug : DebugHelper {
     private bool enableLogging;
 
-    private delegate void* GetAgentByInternalIDDelegate(void* agentModule, AgentId agentId);
+    private delegate AgentInterface* GetAgentByInternalIDDelegate(void* agentModule, AgentId agentId);
 
     private HookWrapper<GetAgentByInternalIDDelegate> getAgentByInternalIdHook;
     private HookWrapper<GetAgentByInternalIDDelegate> getAgentByInternalId2Hook;
 
-    private List<(AgentId id, ulong address, ulong hitCount)> agentGetLog = new();
+    private class AgentGetCounter(AgentId agentId, AgentInterface* agentInterface) {
+        public AgentId AgentId => agentId;
+        public AgentInterface* AgentInterface => agentInterface;
+        public ulong Count { get; set; } = 1;
+
+        public Lazy<Type[]> AgentStructType { get; } = new(() => {
+            return GetAgentTypes()
+                .Where(t => t.agentIds.Contains(agentId))
+                .Select(t => t.agentType)
+                .ToArray();
+        });
+    }
+
+    private Dictionary<AgentId, AgentGetCounter> agentGetLog = new();
+
+    // private List<(AgentId id, ulong address, ulong hitCount)> agentGetLog = new();
 
     private AgentId selectAgent;
 
@@ -109,7 +127,7 @@ public unsafe class AgentDebug : DebugHelper {
         sortedAgentList = null;
     }
 
-    private (Type agentType, AgentId[] agentIds)[] GetAgentTypes() {
+    private static (Type agentType, AgentId[] agentIds)[] GetAgentTypes() {
         var agentTypes = new List<(Type, AgentId[])>();
 
         agentTypes.AddRange(typeof(AgentInterface).Assembly.GetTypes()
@@ -119,7 +137,7 @@ public unsafe class AgentDebug : DebugHelper {
                 .ToArray()))
             .Where(t => t.Item2.Length > 0));
 
-        foreach (var tp in Plugin.TweakProviders) {
+        foreach (var tp in SimpleTweaksPlugin.Plugin.TweakProviders) {
             agentTypes.AddRange(tp.Assembly.GetTypes()
                 .Select((t) => (t, t.GetCustomAttributes(typeof(AgentAttribute))
                     .Cast<AgentAttribute>()
@@ -380,42 +398,59 @@ public unsafe class AgentDebug : DebugHelper {
                     }
                 }
 
-                ImGui.BeginChild($"scrolling", new Vector2(-1, -1));
+                if (ImGui.BeginTable("agentCallTable", 5, ImGuiTableFlags.Borders | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.Sortable | ImGuiTableFlags.ScrollY, ImGui.GetContentRegionAvail())) {
+                    ImGui.TableSetupScrollFreeze(0, 1);
+                    ImGui.TableSetupColumn("ID");
+                    ImGui.TableSetupColumn("Address");
+                    ImGui.TableSetupColumn("VTable");
+                    ImGui.TableSetupColumn("Count");
+                    ImGui.TableSetupColumn("Struct", ImGuiTableColumnFlags.WidthStretch);
 
-                ImGui.Columns(4);
-                ImGui.Text($"ID");
-                ImGui.NextColumn();
-                ImGui.Text("Address");
-                ImGui.NextColumn();
-                ImGui.Text("VTable");
-                ImGui.NextColumn();
+                    ImGui.TableHeadersRow();
 
-                ImGui.NextColumn();
-                ImGui.Separator();
-                ImGui.Separator();
-                foreach (var l in agentGetLog) {
-                    ImGui.Text($"[{(uint)l.id}] {l.id}");
-                    ImGui.NextColumn();
-                    DebugManager.ClickToCopyText($"{l.address:X}");
-                    ImGui.NextColumn();
+                    var a = false;
+                    foreach (var (agentId, getCounter) in agentGetLog) {
+                        ImGui.TableNextRow();
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"[{(uint)agentId:000}] {agentId}");
+                        ImGui.TableNextColumn();
+                        using (ImRaii.PushFont(UiBuilder.MonoFont)) {
+                            DebugManager.PrintAddress(getCounter.AgentInterface);
 
-                    var addr = (ulong*)(l.address);
-                    if (addr != null) {
-                        DebugManager.ClickToCopyText($"{addr[0]:X}");
-                        var baseAddr = (ulong)Process.GetCurrentProcess()
-                            .MainModule.BaseAddress;
-                        var offset = addr[0] - baseAddr;
-                        ImGui.SameLine();
-                        DebugManager.ClickToCopyText($"ffxiv_dx11.exe+{offset:X}");
+                            ImGui.TableNextColumn();
+
+                            if (getCounter.AgentInterface != null) {
+                                DebugManager.PrintAddress(getCounter.AgentInterface->VirtualTable);
+                            }
+                        }
+
+                        ImGui.TableNextColumn();
+                        ImGui.Text($"{getCounter.Count}");
+
+                        ImGui.TableNextColumn();
+
+                        if (getCounter.AgentStructType.IsValueCreated == false) {
+                            if (!a) {
+                                a = getCounter.AgentStructType.Value != null;
+                            }
+
+                            ImGui.TextDisabled("Please Wait...");
+                        } else {
+                            if (getCounter.AgentStructType.Value.Length == 0) {
+                                DebugManager.PrintOutObject(getCounter.AgentInterface);
+                            } else {
+                                foreach (var t in getCounter.AgentStructType.Value) {
+                                    var agentObj = Marshal.PtrToStructure(new nint(getCounter.AgentInterface), t);
+                                    if (agentObj != null) {
+                                        DebugManager.PrintOutObject(agentObj, (ulong)getCounter.AgentInterface);
+                                    }
+                                }
+                            }
+                        }
                     }
 
-                    ImGui.NextColumn();
-                    ImGui.Text($"{l.hitCount}");
-                    ImGui.NextColumn();
-                    ImGui.Separator();
+                    ImGui.EndTable();
                 }
-
-                ImGui.EndChild();
 
                 ImGui.EndTabItem();
             }
@@ -425,24 +460,46 @@ public unsafe class AgentDebug : DebugHelper {
     }
 
     private void SetupLogging() {
-        agentGetLog = new List<(AgentId, ulong, ulong)>();
+        agentGetLog = new Dictionary<AgentId, AgentGetCounter>();
         getAgentByInternalIdHook ??= Common.Hook(AgentModule.Addresses.GetAgentByInternalId.Value, new GetAgentByInternalIDDelegate(GetAgentByInternalIDDetour));
-        getAgentByInternalId2Hook ??= Common.Hook("E8 ?? ?? ?? ?? 48 85 C0 74 12 0F BF 80", new GetAgentByInternalIDDelegate(GetAgentByInternalIDDetour));
+        getAgentByInternalId2Hook ??= Common.Hook("E8 ?? ?? ?? ?? 48 85 C0 74 12 0F BF 80", new GetAgentByInternalIDDelegate(GetAgentByInternalID2Detour));
         getAgentByInternalIdHook?.Enable();
         getAgentByInternalId2Hook?.Enable();
     }
 
-    private void* GetAgentByInternalIDDetour(void* agentModule, AgentId agentId) {
+    private AgentInterface* GetAgentByInternalIDDetour(void* agentModule, AgentId agentId) {
         var ret = getAgentByInternalIdHook.Original(agentModule, agentId);
+        try {
+            if (agentGetLog == null) return ret;
 
-        var e = agentGetLog.FirstOrDefault(a => a.id == agentId);
-        var index = -1;
-        if (e != default) index = agentGetLog.IndexOf(e);
+            if (agentGetLog.TryGetValue(agentId, out var counter)) {
+                counter.Count++;
+            } else {
+                agentGetLog.Add(agentId, new AgentGetCounter(agentId, ret));
+            }
+        } catch (Exception ex) {
+            SimpleLog.Error(ex);
+            SimpleLog.Error("Disabled GetAgentByInternalId Hook");
+            getAgentByInternalIdHook.Disable();
+        }
 
-        if (index < 0) {
-            agentGetLog.Insert(0, (agentId, (ulong)ret, 1UL));
-        } else {
-            agentGetLog[index] = (agentId, (ulong)ret, e.hitCount + 1);
+        return ret;
+    }
+
+    private AgentInterface* GetAgentByInternalID2Detour(void* agentModule, AgentId agentId) {
+        var ret = getAgentByInternalId2Hook.Original(agentModule, agentId);
+        try {
+            if (agentGetLog == null) return ret;
+
+            if (agentGetLog.TryGetValue(agentId, out var counter)) {
+                counter.Count++;
+            } else {
+                agentGetLog.Add(agentId, new AgentGetCounter(agentId, ret));
+            }
+        } catch (Exception ex) {
+            SimpleLog.Error(ex);
+            SimpleLog.Error("Disabled GetAgentByInternalId2 Hook");
+            getAgentByInternalId2Hook?.Disable();
         }
 
         return ret;
