@@ -708,9 +708,8 @@ public abstract class BaseTweak {
             AutoSaveConfig();
         }
 
-        AfterDisable();
-
         Enabled = false;
+        AfterDisable();
     }
 
     protected virtual void Disable() { }
