@@ -83,10 +83,6 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
 
     public Configs Config { get; private set; }
 
-    private string settingKey;
-    private string focused;
-    private readonly List<VirtualKey> newKeys = [];
-
     public void DrawHotkeyConfig(ItemHotkey hotkey) {
         ImGui.PushID(hotkey.Key);
         while (ImGui.GetColumnIndex() != 0) ImGui.NextColumn();
@@ -102,68 +98,9 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
         }
 
         ImGui.NextColumn();
-        var strKeybind = string.Join("+", hotkey.Hotkey.Select(k => k.GetKeyName()));
 
-        ImGui.SetNextItemWidth(100);
-
-        if (settingKey == hotkey.Key) {
-            if (ImGui.GetIO().KeyAlt && !newKeys.Contains(VirtualKey.MENU)) newKeys.Add(VirtualKey.MENU);
-            if (ImGui.GetIO().KeyShift && !newKeys.Contains(VirtualKey.SHIFT)) newKeys.Add(VirtualKey.SHIFT);
-            if (ImGui.GetIO().KeyCtrl && !newKeys.Contains(VirtualKey.CONTROL)) newKeys.Add(VirtualKey.CONTROL);
-
-            for (var k = 0; k < ImGui.GetIO().KeysDown.Count && k < 160; k++) {
-                if (ImGui.GetIO().KeysDown[k]) {
-                    if (!newKeys.Contains((VirtualKey)k)) {
-                        if ((VirtualKey)k == VirtualKey.ESCAPE) {
-                            settingKey = null;
-                            newKeys.Clear();
-                            focused = null;
-                            break;
-                        }
-
-                        newKeys.Add((VirtualKey)k);
-                    }
-                }
-            }
-
-            newKeys.Sort();
-            strKeybind = string.Join("+", newKeys.Select(k => k.GetKeyName()));
-        }
-
-        if (settingKey == hotkey.Key) {
-            ImGui.PushStyleColor(ImGuiCol.Border, 0xFF00A5FF);
-            ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 2);
-        }
-
-        ImGui.InputText($"###{GetType().Name}hotkeyDisplay{hotkey.Key}", ref strKeybind, 100, ImGuiInputTextFlags.ReadOnly);
-        var active = ImGui.IsItemActive();
-        if (settingKey == hotkey.Key) {
-            ImGui.PopStyleColor(1);
-            ImGui.PopStyleVar();
-
-            if (focused != hotkey.Key) {
-                ImGui.SetKeyboardFocusHere(-1);
-                focused = hotkey.Key;
-            } else {
-                ImGui.SameLine();
-                if (ImGui.Button(newKeys.Count > 0 ? LocString("Confirm") + $"##{hotkey.Key}" : LocString("Cancel") + $"##{hotkey.Key}")) {
-                    settingKey = null;
-                    if (newKeys.Count > 0) hotkey.Hotkey = newKeys.ToArray();
-                    newKeys.Clear();
-                } else {
-                    if (!active) {
-                        focused = null;
-                        settingKey = null;
-                        if (newKeys.Count > 0) hotkey.Hotkey = newKeys.ToArray();
-                        newKeys.Clear();
-                    }
-                }
-            }
-        } else {
-            ImGui.SameLine();
-            if (ImGui.Button(LocString("Set Keybind") + $"###setHotkeyButton{hotkey.Key}")) {
-                settingKey = hotkey.Key;
-            }
+        if (HotkeyHelper.DrawHotkeyConfigEditor($"###{GetType().Name}hotkeyDisplay{hotkey.Key}", hotkey.Hotkey, out var newKeys)) {
+            hotkey.Hotkey = newKeys;
         }
 
         ImGui.SameLine();
@@ -225,18 +162,6 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
         nineGrid->AtkResNode.SetHeight(textHeight);
     }
 
-    private bool CheckHotkeyState(VirtualKey[] keys) {
-        foreach (var vk in Service.KeyState.GetValidVirtualKeys()) {
-            if (keys.Contains(vk)) {
-                if (!Service.KeyState[vk]) return false;
-            } else {
-                if (Service.KeyState[vk]) return false;
-            }
-        }
-
-        return true;
-    }
-
     private void OnFrameworkUpdate() {
         try {
             if (Service.GameGui.HoveredItem == 0) return;
@@ -255,15 +180,12 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
             foreach (var h in Hotkeys) {
                 if (!h.Enabled) continue;
                 if (!(id >= 2000000 ? h.DoShow(item as EventItem?) : h.DoShow(item as Item?))) continue;
-                if (!CheckHotkeyState(h.Hotkey)) continue;
+                
+                if (!HotkeyHelper.CheckHotkeyState(h.Hotkey)) continue;
                 if (id >= 2000000) {
                     h.OnTriggered(item as EventItem?);
                 } else {
                     h.OnTriggered(item as Item?);
-                }
-
-                foreach (var k in h.Hotkey) {
-                    Service.KeyState[(int)k] = false;
                 }
 
                 break;
