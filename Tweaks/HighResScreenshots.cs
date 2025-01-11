@@ -126,19 +126,15 @@ public unsafe class HighResScreenshots : Tweak {
             
             ImGui.Text($"Current Keybind: {string.Join(" + ", keybindText)}");
             if (updatingReShadeKeybind) {
-                var keyDown = Service.KeyState.GetValidVirtualKeys().FirstOrDefault(k => k is not (VirtualKey.CONTROL or VirtualKey.SHIFT or VirtualKey.MENU) && Service.KeyState[k], VirtualKey.NO_KEY);
-                if (keyDown != VirtualKey.NO_KEY) {
+                if (ImGui.Button("Cancel Keybind Change")) {
                     updatingReShadeKeybind = false;
-                    Config.ReShadeMainKey = keyDown;
-                    Config.ReShadeAlt = ImGui.GetIO().KeyAlt;
-                    Config.ReShadeShift = ImGui.GetIO().KeyShift;
-                    Config.ReShadeCtrl = ImGui.GetIO().KeyCtrl;
-                } else {
-                    ImGui.TextColored(ImGuiColors.DalamudOrange, "Take a screenshot with ReShade to update the keybind.");
+                    Service.NativeKeyState.OnKeystroke -= OnKeystroke;
                 }
             } else {
                 if (ImGui.Button("Update Keybind")) {
                     updatingReShadeKeybind = true;
+                    Service.NativeKeyState.OnKeystroke += OnKeystroke;
+                    
                 }
             }
             
@@ -147,6 +143,22 @@ public unsafe class HighResScreenshots : Tweak {
         }
     }
 
+    private void OnKeystroke(VirtualKey key, bool down, ref NativeKeyState.KeyHandleType handleType) {
+        if (!updatingReShadeKeybind) {
+            Service.NativeKeyState.OnKeystroke -= OnKeystroke;
+            return;
+        }
+
+        if (key is VirtualKey.MENU or VirtualKey.CONTROL or VirtualKey.SHIFT or VirtualKey.LMENU or VirtualKey.RMENU or VirtualKey.LCONTROL or VirtualKey.RCONTROL or VirtualKey.RSHIFT or VirtualKey.LSHIFT) return;
+        
+        Config.ReShadeMainKey = key;
+        Config.ReShadeAlt = NativeKeyState.IsKeyDown(VirtualKey.MENU);
+        Config.ReShadeShift = NativeKeyState.IsKeyDown(VirtualKey.SHIFT);
+        Config.ReShadeCtrl = NativeKeyState.IsKeyDown(VirtualKey.CONTROL);
+        updatingReShadeKeybind = false;
+
+    }
+    
     protected override void Setup() {
         AddChangelogNewTweak("1.8.2.0");
         AddChangelog("1.8.3.0", "Added option to hide dalamud UI for screenshot.");
@@ -293,6 +305,7 @@ public unsafe class HighResScreenshots : Tweak {
     }
 
     protected override void Disable() {
+        Service.NativeKeyState.OnKeystroke -= OnKeystroke;
         UIDebug.FreeExclusiveDraw();
         SaveConfig(Config);
         isInputIDClickedHook?.Disable();

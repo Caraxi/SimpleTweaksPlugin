@@ -5,6 +5,7 @@ using Dalamud.Game.ClientState.Objects;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin; 
 
@@ -31,4 +32,10 @@ public class Service {
     [PluginService] public static INotificationManager NotificationManager { get; private set; }
     [PluginService] public static IContextMenu ContextMenu { get; private set; }
     [PluginService] public static INamePlateGui NamePlateGui { get; private set; }
+
+    public static NativeKeyState NativeKeyState { get; } = new();
+
+    public static void Dispose() {
+        NativeKeyState.Dispose();
+    }
 }
