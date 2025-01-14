@@ -61,21 +61,16 @@ public unsafe class TalkAdjustments : Tweak
 
     private readonly struct TalkAtkValue
     {
-        private readonly int _raw = 0;
-        public static readonly TalkAtkValue Name = 0;
-        public static readonly TalkAtkValue Text = 1;
+        public const int Name = 0;
+        public const int Text = 1;
         /// <remarks> See <see cref="TalkStyle"/> </remarks>
-        public static readonly TalkAtkValue Style = 3;
+        public const int Style = 3;
         /// <remarks> enable: value != 0. Overrides <see cref="AutoAdvance"/> </remarks>
-        public static readonly TalkAtkValue InputBlockingAutoAdvance = 4;
-        public static readonly TalkAtkValue LogToChatChannel = 5;
+        public const int InputBlockingAutoAdvance = 4;
+        public const int LogToChatChannel = 5;
         /// <remarks> enable: value != 0</remarks>
-        public static readonly TalkAtkValue AutoAdvance = 6;
-        public static readonly TalkAtkValue AutoAdvanceDelayMs = 7;
-
-        private TalkAtkValue(int value) => _raw = value;
-        public static implicit operator TalkAtkValue(int value) => new(value);
-        public static implicit operator int(TalkAtkValue value) => value._raw;
+        public const int AutoAdvance = 6;
+        public const int AutoAdvanceDelayMs = 7;
     }
 
     [AddonPreRefresh("Talk")]
