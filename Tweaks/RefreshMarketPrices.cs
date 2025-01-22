@@ -15,7 +15,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakVersion(2)]
 [TweakAuthor("Chalkos")]
 public unsafe class RefreshMarketPrices : Tweak {
-    [TweakHook, Signature("E8 ?? ?? ?? ?? 8B 3F 85 FF", DetourName = nameof(HandlePricesDetour))]
+    [TweakHook, Signature("E8 ?? ?? ?? ?? 8B 3F 85 FF 74 16", DetourName = nameof(HandlePricesDetour))]
     private HookWrapper<HandlePrices> handlePricesHook;
 
     [Signature("BA CE 07 00 00 E8 ?? ?? ?? ?? 4C 8B C0 BA ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 45 33 C9")]
