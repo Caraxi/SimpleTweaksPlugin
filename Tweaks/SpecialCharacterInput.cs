@@ -39,8 +39,8 @@ public unsafe class SpecialCharacterInput : Tweak {
         public VirtualKey[] ToggleHotkey = [VirtualKey.MENU, VirtualKey.S];
         public List<string> History = [];
         public List<string> Custom = [];
-        public bool ShowHistory = true;
-        public bool ShowAllTab = true;
+        public bool ShowHistory = false;
+        public bool ShowAllTab = false;
         public int MaxHistory = 25;
         public bool ShowTitles = true;
     }
