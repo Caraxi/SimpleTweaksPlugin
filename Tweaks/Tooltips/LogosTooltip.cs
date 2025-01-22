@@ -16,6 +16,7 @@ namespace SimpleTweaksPlugin;
 [TweakDescription("Adds which kind of Logos Mnenes you can obtain from a Logogram in its tooltip.")]
 [TweakAuthor("Khayle")]
 [TweakCategory(TweakCategory.Tooltip)]
+[TweakReleaseVersion(UnreleasedVersion)]
 public unsafe class LogosTooltip : TooltipTweaks.SubTweak {
     private readonly Dictionary<uint, uint[]> Logograms = new()
     {
