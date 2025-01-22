@@ -81,6 +81,11 @@
   Disables all control of the camera using the mouse.
 
 
+- **Disable Novice Network Auto-Switch**
+
+  Disables automatically selecting novice network when logging in or transferring to another server.
+
+
 - **Disable Title Screen Movie**
 
   Prevents the title screen from playing the introduction movie after 60 seconds.
@@ -109,6 +114,11 @@
 - **Emote Log Subcommand**
 
   Adds a 'text' subcommand for emotes when emotelog is disabled.  /yes text
+
+
+- **Ensure tooltips remain on screen**
+
+  Prevents tooltips from extending below the bottom of the screen. Useful when using tweaks that make the tooltips longer.
 
 
 - **Equip items from Hotbars**
@@ -303,6 +313,11 @@
   (Legacy type movement only)
 
 
+- **Special Character Input**
+
+  Adds a window for adding special characters to text inputs.
+
+
 - **Sync Crafter Bars**
 
   Keeps DoH job bars in sync
@@ -465,6 +480,11 @@
 - **Item Hotkeys**
 
   Adds hotkeys for various actions when the item detail window is visible.
+
+
+- **Logos Tooltips**
+
+  Adds which kind of Logos Mnenes you can obtain from a Logogram in its tooltip.
 
 
 - **Materia Stats**

@@ -1,4 +1,4 @@
-﻿using Dalamud.Utility.Signatures;
+using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Shell;
@@ -9,7 +9,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 
 [TweakName("Disable Novice Network Auto-Switch")]
 [TweakDescription("Disables automatically selecting novice network when logging in or transferring to another server.")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.6.0")]
 public unsafe class DisableNoviceNetworkAutoSwitch : Tweak {
     private delegate void JoinNoviceNetworkDelegate(AgentChatLog* agentChatLog, uint numMentor, uint numNewAdventurer);
 

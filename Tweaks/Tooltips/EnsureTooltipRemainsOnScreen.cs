@@ -11,7 +11,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 [TweakDescription("Prevents tooltips from extending below the bottom of the screen. Useful when using tweaks that make the tooltips longer.")]
 [TweakCategory(TweakCategory.Tooltip, TweakCategory.UI)]
 [TweakAutoConfig]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.6.0")]
 public unsafe class EnsureTooltipRemainsOnScreen : Tweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Padding", IntMin = 0, IntMax = 100, IntType = TweakConfigOptionAttribute.IntEditType.Slider, EditorSize = 200)] public int Padding;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -11,7 +11,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [TweakName("Item Level in Examine")]
 [TweakDescription("Calculates the item level of other players when examining them.\nRed value means the player is wearing an item that scales to their level and it is showing the max level.")]
-[Changelog(UnreleasedVersion, "Tweak now uses item level provided by the game, improving accuracy.")]
+[Changelog("1.10.6.0", "Tweak now uses item level provided by the game, improving accuracy.")]
 [TweakAutoConfig]
 public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
     public class Config : TweakConfig {

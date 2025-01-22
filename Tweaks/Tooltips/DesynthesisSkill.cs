@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -15,7 +15,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
 [TweakName("Show Desynthesis Skill")]
 [TweakDescription("Shows your current desynthesis level when viewing a desynthesizable item.")]
-[Changelog(UnreleasedVersion, "Fixed tweak not working on french clients.")]
+[Changelog("1.10.6.0", "Fixed tweak not working on french clients.")]
 public class DesynthesisSkill : TooltipTweaks.SubTweak {
     private readonly uint[] desynthesisInDescription = [46, 56, 65, 66, 67, 68, 69, 70, 71, 72];
 

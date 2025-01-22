@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.10.6.0
+***New Tweaks***
+- **`Disable Novice Network Auto-Switch`** - Disables automatically selecting novice network when logging in or transferring to another server.
+
+- **`Ensure tooltips remain on screen`** - Prevents tooltips from extending below the bottom of the screen. Useful when using tweaks that make the tooltips longer.
+
+- **`Logos Tooltips`** - Adds which kind of Logos Mnenes you can obtain from a Logogram in its tooltip. *(Khayle)*
+
+- **`Special Character Input`** - Adds a window for adding special characters to text inputs.
+
+
+***Tweak Changes***
+- **`Item Level in Examine`** - Tweak now uses item level provided by the game, improving accuracy.
+
+- **`Screenshot Improvements`** - Fixed 'Remove Copyright Text' option.
+
+- **`Show Desynthesis Skill`** - Fixed tweak not working on french clients.
+
+
 ## 1.10.5.1
 ***Tweak Changes***
 - **`Timer on Duty Waiting`** - Fixed display on all clients...

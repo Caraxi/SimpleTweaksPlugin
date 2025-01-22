@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -19,7 +19,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakName("Special Character Input")]
 [TweakDescription("Adds a window for adding special characters to text inputs.")]
 [TweakAutoConfig]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.6.0")]
 public unsafe class SpecialCharacterInput : Tweak {
     private readonly ushort[] additionalSeIconChar = [0xE032, 0xE038, 0xE039, 0xE03F, 0xE044, 0xE05A, 0xE05E, 0xE05F, 0xE0B0];  // SeIconChar without name.
     

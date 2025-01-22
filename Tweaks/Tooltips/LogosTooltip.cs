@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.Text.SeStringHandling.Payloads;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Tweaks;
@@ -16,7 +16,7 @@ namespace SimpleTweaksPlugin;
 [TweakDescription("Adds which kind of Logos Mnenes you can obtain from a Logogram in its tooltip.")]
 [TweakAuthor("Khayle")]
 [TweakCategory(TweakCategory.Tooltip)]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.6.0")]
 public unsafe class LogosTooltip : TooltipTweaks.SubTweak {
     private readonly Dictionary<uint, uint[]> Logograms = new()
     {
