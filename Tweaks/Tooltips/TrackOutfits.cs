@@ -88,8 +88,6 @@ public unsafe class TrackOutfits : TooltipTweaks.SubTweak
                 SimpleLog.Error(ex);
             }
         }
-        else
-            SimpleLog.Information($"Item not part of any outfit");
     }
 
     private static uint[] GetOutfits(uint itemId)
