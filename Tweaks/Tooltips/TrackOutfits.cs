@@ -33,13 +33,13 @@ public unsafe class TrackOutfits : TooltipTweaks.SubTweak
 
     protected override void Enable()
     {
-        identifier = PluginInterface.AddChatLinkHandler((uint)LinkHandlerId.TrackOutfits, (_, _) => { });
+        identifier = PluginInterface.AddChatLinkHandler((uint)LinkHandlerId.TrackOutfitsIdentifier, (_, _) => { });
         MirageStoreItemIds = Service.Data.GetExcelSheet<MirageStoreSetItem>().Select(x => x.RowId).ToArray();
     }
 
     protected override void Disable()
     {
-        PluginInterface.RemoveChatLinkHandler((uint)LinkHandlerId.TrackOutfits);
+        PluginInterface.RemoveChatLinkHandler((uint)LinkHandlerId.TrackOutfitsIdentifier);
     }
 
     private long IsItemActionUnlockedDetour(UIState* uiState, void* item)
@@ -60,7 +60,7 @@ public unsafe class TrackOutfits : TooltipTweaks.SubTweak
         {
             var description = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ItemDescription);
 
-            if (description.Payloads.Any(payload => payload is DalamudLinkPayload { CommandId: (uint)LinkHandlerId.TrackOutfits }))
+            if (description.Payloads.Any(payload => payload is DalamudLinkPayload { CommandId: (uint)LinkHandlerId.TrackOutfitsIdentifier }))
                 return; // Don't append when it already exists.
 
             description.Payloads.Add(identifier);
