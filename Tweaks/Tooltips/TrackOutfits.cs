@@ -20,7 +20,6 @@ public unsafe class TrackOutfits : TooltipTweaks.SubTweak
     private HookWrapper<UIState.Delegates.IsItemActionUnlocked> isItemActionUnlockedHookWrapper;
 
     private DalamudLinkPayload identifier;
-    private uint[] MirageStoreItemIds = [];
     private uint[] OwnedOutfits
     {
         get
@@ -31,16 +30,8 @@ public unsafe class TrackOutfits : TooltipTweaks.SubTweak
         }
     }
 
-    protected override void Enable()
-    {
-        identifier = PluginInterface.AddChatLinkHandler((uint)LinkHandlerId.TrackOutfitsIdentifier, (_, _) => { });
-        MirageStoreItemIds = Service.Data.GetExcelSheet<MirageStoreSetItem>().Select(x => x.RowId).ToArray();
-    }
-
-    protected override void Disable()
-    {
-        PluginInterface.RemoveChatLinkHandler((uint)LinkHandlerId.TrackOutfitsIdentifier);
-    }
+    protected override void Enable() => identifier = PluginInterface.AddChatLinkHandler((uint)LinkHandlerId.TrackOutfitsIdentifier, (_, _) => { });
+    protected override void Disable() => PluginInterface.RemoveChatLinkHandler((uint)LinkHandlerId.TrackOutfitsIdentifier);
 
     private long IsItemActionUnlockedDetour(UIState* uiState, void* item)
     {
