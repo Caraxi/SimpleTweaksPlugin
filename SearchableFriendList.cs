@@ -4,9 +4,12 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface.Utility;
+using Dalamud.Interface.Utility.Raii;
+using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
 using ImGuiNET;
+using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -20,11 +23,11 @@ namespace SimpleTweaksPlugin;
 [TweakCategory(TweakCategory.UI, TweakCategory.QoL)]
 public unsafe class SearchableFriendList : Tweak {
     public class Configs : TweakConfig {
-        [TweakConfigOption("Ignore selected group")]
+        [TweakConfigOption("Ignore selected filter group")]
         public bool IgnoreSelectedGroup;
 
         [TweakConfigOption("CTRL-F to focus search")]
-        public bool SearchHotkey;
+        public bool SearchHotkey = true;
     }
 
     protected void DrawConfig() {
@@ -64,10 +67,19 @@ public unsafe class SearchableFriendList : Tweak {
     }
 
     private void ApplyFiltersDetour(InfoProxyCommonList* infoProxyCommonList) {
-        if (infoProxyCommonList != InfoProxyFriendList.Instance() || string.IsNullOrWhiteSpace(searchString)) {
+        if (infoProxyCommonList != InfoProxyFriendList.Instance()) {
             applyFiltersHook.Original(infoProxyCommonList);
             return;
         }
+
+        if (string.IsNullOrWhiteSpace(searchString)) {
+            using var noSearchPerformanceRun = PerformanceMonitor.Run("SearchableFriendList.ApplyFilters.NoSearch");
+            applyFiltersHook.Original(infoProxyCommonList);
+            return;
+        }
+
+
+        using var performanceRun = PerformanceMonitor.Run("SearchableFriendList.ApplyFilters.WithSearch");
 
         var friendList = (InfoProxyFriendList*)infoProxyCommonList;
         var resets = new Dictionary<ulong, uint>();
@@ -83,7 +95,7 @@ public unsafe class SearchableFriendList : Tweak {
                 var entry = (CharacterData2*)friendList->GetEntry(i);
                 if (entry == null) continue;
                 resets.Add(entry->ContentId, entry->ExtraFlags);
-                if ((TweakConfig.IgnoreSelectedGroup || entry->Group == resetFilterGroup) && MatchesSearch(entry->NameString)) {
+                if ((TweakConfig.IgnoreSelectedGroup || resetFilterGroup == InfoProxyCommonList.DisplayGroup.All || entry->Group == resetFilterGroup) && MatchesSearch(entry->NameString)) {
                     SimpleLog.Verbose($"{entry->NameString} contains {searchString}. Group is {entry->Group}");
                     entry->ExtraFlags &= 0xFFFF;
                     SimpleLog.Verbose($"- Group is changed to {entry->Group}");
@@ -108,12 +120,11 @@ public unsafe class SearchableFriendList : Tweak {
     }
 
     private void DrawSearchUi() {
-        var flAddon = Common.GetUnitBase("FriendList");
+        var flAddon = Common.GetUnitBase<AddonFriendList>("FriendList");
         var socialAddon = Common.GetUnitBase("Social");
 
-        if (socialAddon == null || flAddon == null || flAddon->IsVisible == false) {
+        if (socialAddon == null || flAddon == null || flAddon->IsVisible == false || flAddon->AddButton == null || flAddon->AddButton->OwnerNode == null) {
             if (string.IsNullOrWhiteSpace(searchString)) return;
-
             searchString = string.Empty;
             ReFilter();
             return;
@@ -131,20 +142,40 @@ public unsafe class SearchableFriendList : Tweak {
         if (!isFocused) return;
 
         ImGui.SetNextWindowViewport(ImGuiHelpers.MainViewport.ID);
-        ImGui.SetNextWindowPos(new Vector2(flAddon->X, flAddon->Y) + new Vector2(flAddon->GetScaledWidth(true) * 0.05f, flAddon->GetScaledHeight(true) * 0.90f));
-        ImGui.SetNextWindowSize(new Vector2(flAddon->GetScaledWidth(true) * 0.5f, flAddon->GetScaledHeight(true) * 0.05f));
-        if (ImGui.Begin("Friend Search Window", ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoBackground)) { 
-            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            if (Service.KeyState[VirtualKey.CONTROL] && Service.KeyState[VirtualKey.F]) {
-                ImGui.SetKeyboardFocusHere();
-            }
 
-            if (ImGui.InputTextWithHint("##friendSearch", "Search...", ref searchString, 32)) {
-                ReFilter();
-            }
+        var pos = (new Vector2(flAddon->X, flAddon->Y) + new Vector2(flAddon->AddButton->OwnerNode->X, flAddon->AddButton->OwnerNode->Y) * flAddon->Scale);
+        var size = new Vector2(flAddon->AddButton->OwnerNode->GetWidth(), flAddon->AddButton->OwnerNode->GetHeight()) * flAddon->Scale;
+        
+        if (flAddon->AddButton->OwnerNode->IsVisible()) {
+            // I have no idea if or when this is ever visible... but move over just incase
+            pos += size * Vector2.UnitX;
         }
-
-        ImGui.End();
+        
+        ImGui.SetNextWindowPos(pos, ImGuiCond.Always);
+        ImGui.SetNextWindowSize(size, ImGuiCond.Always);
+        
+        using (ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, Vector2.Zero)) {
+            if (ImGui.Begin("Friend Search Window", ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoBackground)) {
+                ImGui.SetWindowFontScale(1f / ImGuiHelpers.GlobalScale * flAddon->Scale);
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                if (TweakConfig.SearchHotkey && Service.KeyState[VirtualKey.CONTROL] && Service.KeyState[VirtualKey.F]) {
+                    ImGui.SetKeyboardFocusHere();
+                }
+                
+                using (ImRaii.PushStyle(ImGuiStyleVar.FrameBorderSize, flAddon->Scale < 1 ? 1 : 2))
+                using (ImRaii.PushColor(ImGuiCol.FrameBg, 0)) 
+                using (ImRaii.PushColor(ImGuiCol.Border, searchString.IsNullOrWhitespace() ? 0x80808080 : 0xFF11AAFF))
+                using (ImRaii.PushColor(ImGuiCol.BorderShadow, searchString.IsNullOrWhitespace() ? 0 : 0x800000FF)) {
+                    if (ImGui.InputTextWithHint("##friendSearch", "Search...", ref searchString, 32)) {
+                        ReFilter();
+                    }
+                }
+                
+                ImGui.SetWindowFontScale(1);
+            }
+            
+            ImGui.End();
+        }
     }
 
     protected override void Disable() {
@@ -154,7 +185,7 @@ public unsafe class SearchableFriendList : Tweak {
     protected override void AfterDisable() {
         ReFilter();
     }
-
+    
     [AddonPreRequestedUpdate("FriendList"), AddonPostRequestedUpdate("FriendList")]
     private void ReFilter() {
         InfoProxyFriendList.Instance()->ApplyFilters();
