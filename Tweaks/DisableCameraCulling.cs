@@ -10,7 +10,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakDescription("Disable the hiding of characters when the camera gets too close.")]
 [TweakCategory(TweakCategory.QoL)]
 [TweakAutoConfig]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.7.0")]
 public unsafe class DisableCameraCulling : Tweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Disable culling in Group Pose")] public bool DisableInGroupPose = true;

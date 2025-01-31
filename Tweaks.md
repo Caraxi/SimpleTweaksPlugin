@@ -66,6 +66,11 @@
   Shows the current Data Centre on the Title Screen
 
 
+- **Disable Camera Culling**
+
+  Disable the hiding of characters when the camera gets too close.
+
+
 - **Disable Click Targeting**
 
   Allows disabling of the target function on left and right mouse clicks.
@@ -294,6 +299,11 @@
 - **Screenshot Improvements**
 
   Allows taking higher resolution screenshots, Hiding Dalamud & Game UIs and removing the copyright notice from screenshots.
+
+
+- **Searchable Friend List**
+
+  Adds a search bar to the friend list.
 
 
 - **Set Option Command**

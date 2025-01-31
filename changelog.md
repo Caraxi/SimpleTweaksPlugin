@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.10.7.0
+***New Tweaks***
+- **`Disable Camera Culling`** - Disable the hiding of characters when the camera gets too close.
+
+- **`Searchable Friend List`** - Adds a search bar to the friend list.
+
+
 ## 1.10.6.0
 ***New Tweaks***
 - **`Disable Novice Network Auto-Switch`** - Disables automatically selecting novice network when logging in or transferring to another server.

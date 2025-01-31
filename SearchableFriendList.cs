@@ -19,7 +19,7 @@ namespace SimpleTweaksPlugin;
 [TweakName("Searchable Friend List")]
 [TweakDescription("Adds a search bar to the friend list.")]
 [TweakAutoConfig]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.7.0")]
 [TweakCategory(TweakCategory.UI, TweakCategory.QoL)]
 public unsafe class SearchableFriendList : Tweak {
     public class Configs : TweakConfig {
