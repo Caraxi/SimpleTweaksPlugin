@@ -93,13 +93,18 @@ namespace SimpleTweaksPlugin.Debugging {
                 if (tp.IsDisposed) continue;
 
                 foreach (var t in tp.Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(DebugHelper)) && !t.IsAbstract)) {
-                    if (DebugHelpers.Any(h => h.GetType() == t)) continue;
-                    var debugger = (DebugHelper)Activator.CreateInstance(t);
-                    if (debugger != null) {
-                        debugger.TweakProvider = tp;
-                        debugger.Plugin = _plugin;
-                        RegisterDebugPage(debugger.FullName, debugger.Draw);
-                        DebugHelpers.Add(debugger);
+                    try {
+                        if (DebugHelpers.Any(h => h.GetType() == t)) continue;
+                        var debugger = (DebugHelper)Activator.CreateInstance(t);
+                        if (debugger != null) {
+                            SignatureHelper.Initialise(debugger);
+                            debugger.TweakProvider = tp;
+                            debugger.Plugin = _plugin;
+                            RegisterDebugPage(debugger.FullName, debugger.Draw);
+                            DebugHelpers.Add(debugger);
+                        }
+                    } catch (Exception ex) {
+                        SimpleLog.Error(ex, $"Failed to register debug page with type {t.FullName}");
                     }
                 }
             }
