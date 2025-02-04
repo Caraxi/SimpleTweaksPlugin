@@ -9,8 +9,10 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
 [TweakName("Improved Blue Mage Action Tooltips")]
 [TweakDescription("Adds Damage Type, Aspect and Rank to blue mage actions.")]
+[Changelog(UnreleasedVersion, "Fixed tweak incorrectly applying to some pseudo-actions.")]
 public unsafe class BlueActionInfo : TooltipTweaks.SubTweak {
     public override void OnGenerateActionTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
+        if (Action.Id == 0) return;
         var aozAction = Service.Data.Excel.GetSheet<AozAction>().FirstOrNull(a => a.Action.RowId == Action.Id);
         if (aozAction?.Action == null) return;
         var aozActionTransient = Service.Data.Excel.GetSheet<AozActionTransient>().GetRowOrDefault(aozAction.Value.RowId);
