@@ -16,6 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Shows the percentage of completion of the main scenario.")]
 [TweakAutoConfig]
 [TweakReleaseVersion("1.9.0.0")]
+[Changelog(UnreleasedVersion, "Once again fixed logic.")]
 public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
 
     private ScenarioTree? finalScenario;
@@ -55,15 +56,15 @@ public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
                 if (!Service.Data.GetExcelSheet<Quest>().TryGetRow(st.RowId, out var quest)) continue;
                 if (!quest.Expansion.IsValid) continue;
 
-                if (finalScenario == null || st.Unknown0 > finalScenario.Value.Unknown0) finalScenario = st;
+                if (finalScenario == null || st.Unknown2 > finalScenario.Value.Unknown2) finalScenario = st;
                 expansionEnds.TryAdd(quest.Expansion.Value.RowId, st);
                 expansionBegins.TryAdd(quest.Expansion.Value.RowId, st);
 
-                if (st.Unknown0 > expansionEnds[quest.Expansion.Value.RowId].Unknown0) {
+                if (st.Unknown2 > expansionEnds[quest.Expansion.Value.RowId].Unknown2) {
                     expansionEnds[quest.Expansion.Value.RowId] = st;
                 }
 
-                if (st.Unknown0 < expansionBegins[quest.Expansion.Value.RowId].Unknown0) {
+                if (st.Unknown2 < expansionBegins[quest.Expansion.Value.RowId].Unknown2) {
                     expansionBegins[quest.Expansion.Value.RowId] = st;
                 }
             }
@@ -81,8 +82,8 @@ public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
             end = expansionEnds[expansion.Value.RowId];
         }
 
-        var complete = current.Value.Unknown0 - (float)begin.Unknown0;
-        var total = 1 + (end.Unknown0 - (float)begin.Unknown0);
+        var complete = current.Value.Unknown2 - (float)begin.Unknown2;
+        var total = 1 + (end.Unknown2 - (float)begin.Unknown2);
 
         if (QuestManager.IsQuestComplete(current.Value.RowId)) complete += 1;
         return complete / total;
