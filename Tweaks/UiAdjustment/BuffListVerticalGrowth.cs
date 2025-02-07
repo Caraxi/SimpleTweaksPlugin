@@ -1,8 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Events;
-using Dalamud.Logging;
-
 using System.Collections.Generic;
 using System.Linq;
 using System;
@@ -13,77 +11,66 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Allows you to change the buff/debuff vertical justification, enabling the list to grow from bottom to top.")]
 [TweakAuthor("LINKAD0")]
 [TweakAutoConfig]
-
-public unsafe class BufflistVerticalGrowth : UiAdjustments.SubTweak
-{
-    public class Configs : TweakConfig
-    {
+[TweakReleaseVersion(UnreleasedVersion)]
+public unsafe class BuffListVerticalGrowth : UiAdjustments.SubTweak {
+    public class Configs : TweakConfig {
         [TweakConfigOption("Buff List", HelpText = "Group 1: Status Info (Enhancements)")]
-        public bool buffListBool = false;
+        public bool BuffListBool;
 
         [TweakConfigOption("Debuff List", HelpText = "Group 3: Status Info (Enfeeblements)")]
-        public bool debuffListBool = false;
+        public bool DebuffListBool;
 
         [TweakConfigOption("Food/FC Buffs List", HelpText = "Group 4: Status Info (Others)")]
-        public bool aurasListBool = false;
+        public bool AurasListBool;
 
         [TweakConfigOption("Conditional Buff List", HelpText = "Group 2: Status Info (Conditional Enhancements)")]
-        public bool ConditionalBuffListBool = false;
-
+        public bool ConditionalBuffListBool;
     }
 
-    public Configs Config { get; private set; }
+    [TweakConfig] public Configs Config { get; private set; }
 
-
-
-    protected override void Enable()
-    {
-        Config = LoadConfig<Configs>() ?? new Configs();
+    protected override void Enable() {
         ConfigChanged();
-        base.Enable();
     }
 
-    protected override void ConfigChanged()
-    {
+    protected override void ConfigChanged() {
         UpdateHorizontalGrowth(0);
         UpdateHorizontalGrowth(1);
         UpdateHorizontalGrowth(2);
         UpdateHorizontalGrowth(3);
     }
 
-    private unsafe void UpdateHorizontalGrowth(int index, bool getConfigBool = true)
-    {
-        string AddonName;
-        bool ConfigBool;
+    private void UpdateHorizontalGrowth(int index, bool getConfigBool = true) {
+        string addonName;
+        bool configBool;
 
         // max number of buffs show
         int maxNumberOfBuffs;
         // number of nodes before the first buff node
         int nodesBeforeBuffsList;
 
-        switch (index)
-        {
+        switch (index) {
             case 0:
-                AddonName = "_StatusCustom0";
-                ConfigBool = Config.buffListBool;
+                addonName = "_StatusCustom0";
+                configBool = Config.BuffListBool;
                 nodesBeforeBuffsList = 5;
                 maxNumberOfBuffs = 20;
                 break;
             case 1:
-                AddonName = "_StatusCustom1";
-                ConfigBool = Config.debuffListBool;
+                addonName = "_StatusCustom1";
+                configBool = Config.DebuffListBool;
                 nodesBeforeBuffsList = 5;
                 maxNumberOfBuffs = 20;
                 break;
             case 2:
-                AddonName = "_StatusCustom2";
-                ConfigBool = Config.aurasListBool;
+                addonName = "_StatusCustom2";
+                configBool = Config.AurasListBool;
                 nodesBeforeBuffsList = 5;
                 maxNumberOfBuffs = 20;
                 break;
             case 3:
-                AddonName = "_StatusCustom3";
-                ConfigBool = Config.ConditionalBuffListBool;
+                addonName = "_StatusCustom3";
+                configBool = Config.ConditionalBuffListBool;
                 nodesBeforeBuffsList = 4;
                 maxNumberOfBuffs = 8;
                 break;
@@ -91,144 +78,92 @@ public unsafe class BufflistVerticalGrowth : UiAdjustments.SubTweak
                 SimpleLog.Log($"Wrong index value, should be 0, 1, 2 or 3, got {index}");
                 return;
         }
-        if (getConfigBool)
-        {}
-        else
-        {
-            ConfigBool = false;
+
+        if (!getConfigBool) {
+            configBool = false;
         }
 
-
-        var targetStatusCustom = (AtkUnitBase*)Service.GameGui.GetAddonByName(AddonName ?? "", 1);
+        var targetStatusCustom = (AtkUnitBase*)Service.GameGui.GetAddonByName(addonName);
         if (targetStatusCustom == null) return;
         //if (targetStatusCustom->UldManager.NodeList == null || targetStatusCustom->UldManager.NodeListCount < 25) return;
 
         AtkResNode* node;
 
-
-
         // Get a list of a all icons Y positions
-        List<float> yValuesArray = new List<float>();
+        var yValuesArray = new List<float>();
 
-        for (int i = 0; i < maxNumberOfBuffs; i++)
-        {
-            node = targetStatusCustom->UldManager.NodeList[maxNumberOfBuffs + nodesBeforeBuffsList -1 - i];
-
+        for (var i = 0; i < maxNumberOfBuffs; i++) {
+            node = targetStatusCustom->UldManager.NodeList[maxNumberOfBuffs + nodesBeforeBuffsList - 1 - i];
             yValuesArray.Add(node->Y);
         }
-
-  
-
-
 
         // fix for the 3x3 with 8 buffs and 1 vacant spot
         // in the Conditional Buff List
         // this assures the third and the sixth buff icon 
         // are in the first and second line respectively
-        if (index == 3) 
-        { 
-            IEnumerable<float> uniqueFloats = yValuesArray.Distinct();
-            List<float> uniqueFloatsList = uniqueFloats.ToList();
-            if (uniqueFloatsList.Count == 3)
-            {
+        if (index == 3) {
+            var uniqueFloats = yValuesArray.Distinct();
+            var uniqueFloatsList = uniqueFloats.ToList();
+            if (uniqueFloatsList.Count == 3) {
                 yValuesArray[2] = yValuesArray[0];
                 yValuesArray[5] = yValuesArray[3];
             }
         }
 
-        float yValue;
+        var arraySorted = yValuesArray[0] < yValuesArray[maxNumberOfBuffs - 1];
 
-        bool arraySorted = yValuesArray[0] < yValuesArray[maxNumberOfBuffs-1];
-
-        for (var i = 0; i < maxNumberOfBuffs; i++)
-        {
+        for (var i = 0; i < maxNumberOfBuffs; i++) {
             // always get the smallest Y position first
-            if (arraySorted)
-            {
-                yValue = yValuesArray[i];
-            }
-            else
-            {
-                yValue = yValuesArray[maxNumberOfBuffs-1 - i];
-            }
+            var yValue = arraySorted ? yValuesArray[i] : yValuesArray[maxNumberOfBuffs - 1 - i];
 
             // if true start with the last icon (it has the smallest index)
             // else start with the first icon (it has the biggest index)
-            if (ConfigBool)
-            {
-                node = targetStatusCustom->UldManager.NodeList[nodesBeforeBuffsList + i];
-            }
-            else
-            {
-                node = targetStatusCustom->UldManager.NodeList[maxNumberOfBuffs + nodesBeforeBuffsList - 1 - i];
-            }
-
+            node = configBool ? targetStatusCustom->UldManager.NodeList[nodesBeforeBuffsList + i] : targetStatusCustom->UldManager.NodeList[maxNumberOfBuffs + nodesBeforeBuffsList - 1 - i];
             node->Y = yValue;
-
             node->DrawFlags |= 0x1;
-
         }
     }
 
     [AddonPostRequestedUpdate("_StatusCustom0")]
-    private void AfterBuffListUpdate()
-    {
-        try
-        {
+    private void AfterBuffListUpdate() {
+        try {
             UpdateHorizontalGrowth(0);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             Plugin.Error(this, ex);
         }
     }
 
     [AddonPostRequestedUpdate("_StatusCustom1")]
-    private void AfterDebuffListUpdate()
-    {
-        try
-        {
+    private void AfterDebuffListUpdate() {
+        try {
             UpdateHorizontalGrowth(1);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             Plugin.Error(this, ex);
         }
     }
 
     [AddonPostRequestedUpdate("_StatusCustom2")]
-    private void AfterAuraListUpdate()
-    {
-        try
-        {
+    private void AfterAuraListUpdate() {
+        try {
             UpdateHorizontalGrowth(2);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             Plugin.Error(this, ex);
         }
     }
 
     [AddonPostRequestedUpdate("_StatusCustom3")]
-    private void AfterConditionalBuffListUpdate()
-    {
-        try
-        {
+    private void AfterConditionalBuffListUpdate() {
+        try {
             UpdateHorizontalGrowth(3);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             Plugin.Error(this, ex);
         }
     }
 
-    protected override void Disable()
-    {
+    protected override void Disable() {
         UpdateHorizontalGrowth(0, false);
         UpdateHorizontalGrowth(1, false);
         UpdateHorizontalGrowth(2, false);
         UpdateHorizontalGrowth(3, false);
-        SaveConfig(Config);
-        base.Disable();
     }
 }
