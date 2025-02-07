@@ -378,6 +378,10 @@ public abstract class BaseTweak {
                             if (ImGui.Selectable($"{enumValue.GetDescription()}", v.Equals(enumValue))) {
                                 f.SetValue(configObj, enumValue);
                             }
+
+                            if (ImGui.IsItemHovered() && enumValue.TryGetTooltip(out var tooltip)) {
+                                ImGui.SetTooltip(tooltip);
+                            }
                         }
 
                         ImGui.EndCombo();

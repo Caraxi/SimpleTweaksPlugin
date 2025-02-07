@@ -17,6 +17,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
 using Lumina.Excel;
 using SimpleTweaksPlugin.Sheets;
+using SimpleTweaksPlugin.TweakSystem;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace SimpleTweaksPlugin.Utility; 
@@ -28,6 +29,16 @@ public static class Extensions {
         if ((member.Length <= 0)) return @enum.ToString();
         var attribs = member[0].GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false);
         return attribs.Length > 0 ? ((System.ComponentModel.DescriptionAttribute)attribs[0]).Description : @enum.ToString();
+    }
+
+    public static bool TryGetTooltip(this Enum @enum, [NotNullWhen(true)] out string? tooltip) {
+        tooltip = string.Empty;
+        var eType = @enum.GetType();
+        var member = eType.GetMember(@enum.ToString());
+        if (member.Length <= 0) return false;
+        var attribs = member[0].GetCustomAttributes(typeof(EnumTooltipAttribute), false);
+        tooltip =  attribs.Length > 0 ? ((EnumTooltipAttribute)attribs[0]).Text : null;
+        return tooltip != null;
     }
 
     public static unsafe string GetString(this Utf8String utf8String) {
