@@ -14,7 +14,7 @@ using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
-namespace SimpleTweaksPlugin;
+namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("Searchable Friend List")]
 [TweakDescription("Adds a search bar to the friend list.")]
