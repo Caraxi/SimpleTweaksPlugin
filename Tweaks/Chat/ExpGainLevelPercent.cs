@@ -16,51 +16,45 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakName("Display EXP Gain Percentage of Level")]
 [TweakAuthor("zajrik")]
 [TweakDescription("Adds the percentage of your next level to exp gains in chat.")]
-class ExpGainLevelPercent : ChatTweaks.SubTweak {
+[TweakReleaseVersion(UnreleasedVersion)]
+public partial class ExpGainLevelPercent : ChatTweaks.SubTweak {
+    private const XivChatType ExperienceGainedChatMessageType = (XivChatType)2112;
+
     protected override void Enable() {
         Service.Chat.ChatMessage += OnChatMessage;
-        base.Enable();
     }
 
     protected override void Disable() {
         Service.Chat.ChatMessage -= OnChatMessage;
-        base.Disable();
     }
 
-    private readonly Regex expDropRegex = new Regex(
-        @"You gain ([0-9,]+) ?(?:\(\+[0-9,]+%\) )?(?:[a-zA-Z ]+? )?experience points\."
-    );
+    [GeneratedRegex(@"You gain ([0-9,]+) ?(?:\(\+[0-9,]+%\) )?(?:[a-zA-Z ]+? )?experience points\.")]
+    private static partial Regex ExpGainedRegex();
+    
+    private readonly Regex expDropRegex = ExpGainedRegex();
 
-    private unsafe void OnChatMessage(
-        XivChatType type,
-        int timestamp,
-        ref SeString sender,
-        ref SeString message,
-        ref bool isHandled
-    ) {
-        // Don't modify message if it's not an exp drop
-        if (!expDropRegex.IsMatch(message.TextValue)) {
-            return;
-        }
+    private unsafe void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled) {
+        // Don't modify messages if its not in the experience gain chat channel.
+        if (type != ExperienceGainedChatMessageType) return;
 
-        Match match = expDropRegex.Match(message.TextValue);
+        var match = expDropRegex.Match(message.TextValue);
+        if (!match.Success) return;
 
         // Parse gained exp from message
-        string gainedExpStr = match.Groups[1].ToString().Replace(",", string.Empty);
-        int gainedExp = int.Parse(gainedExpStr);
+        var gainedExpStr = match.Groups[1].ToString().Replace(",", string.Empty);
+        var gainedExp = int.Parse(gainedExpStr);
 
         // Get next level exp threshold
-        PlayerState player = UIState.Instance()->PlayerState;
-        byte playerJob = player.CurrentClassJobId;
-        sbyte playerJobIndex = Service.Data.GetExcelSheet<ClassJob>().GetRow(playerJob).ExpArrayIndex;
-        short playerJobLevel = player.ClassJobLevels[playerJobIndex];
-        int expToNext = Service.Data.GetExcelSheet<ParamGrow>().GetRow((uint) playerJobLevel).ExpToNext;
+        var player = UIState.Instance()->PlayerState;
+        var playerJob = player.CurrentClassJobId;
+        var playerJobIndex = Service.Data.GetExcelSheet<ClassJob>().GetRow(playerJob).ExpArrayIndex;
+        var playerJobLevel = player.ClassJobLevels[playerJobIndex];
+        var expToNext = Service.Data.GetExcelSheet<ParamGrow>().GetRow((uint)playerJobLevel).ExpToNext;
 
         // Calculate gained exp percentage of next level
-        double pctOfNextLevel = Math.Round(((double) gainedExp / (double) expToNext) * 100.0, 2);
+        var pctOfNextLevel = Math.Round((double)gainedExp / expToNext * 100.0f, 2);
 
         // Add percentage payload to message
         message.Payloads.Add(new TextPayload($" ({pctOfNextLevel}%)"));
     }
 }
-
