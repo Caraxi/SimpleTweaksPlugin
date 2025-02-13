@@ -12,7 +12,7 @@ using SimpleTweaksPlugin.Utility;
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [TweakName("Adjust Large Cooldown Counter")]
-[TweakDescription("Make adjustmenmts to the cooldown counter when using the large option.")]
+[TweakDescription("Make adjustments to the cooldown counter when using the large option.")]
 [TweakAutoConfig]
 public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
     private delegate void UpdateHotbarSlotCooldownText(AddonActionBarBase* addon, ulong a2, ulong a3, void* a4, uint a5, int a6);
