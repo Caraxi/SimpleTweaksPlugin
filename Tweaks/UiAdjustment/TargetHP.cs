@@ -38,14 +38,19 @@ public unsafe class TargetHP : UiAdjustments.SubTweak {
         [Description("Short Number")] ZeroDecimalPrecision,
         [Description("1 Decimal")] OneDecimalPrecision,
         [Description("2 Decimal")] TwoDecimalPrecision,
+        
+        // Percent Displays
+        [Description("Percent, no decimal")] Percent0Decimal = 1000,
+        [Description("Percent, 1 decimal")] Percent1Decimal,
+        [Description("Percent, 2 decimal")] Percent2Decimal,
     }
 
     public Configs Config { get; private set; }
 
     protected void DrawConfig(ref bool hasChanged) {
-        if (ImGui.BeginCombo("Display Format###targetHpFormat", $"{Config.DisplayFormat.GetDescription()} ({FormatNumber(5555555, Config.DisplayFormat)})")) {
+        if (ImGui.BeginCombo("Display Format###targetHpFormat", $"{Config.DisplayFormat.GetDescription()} ({FormatNumber(5555555, 10000000, Config.DisplayFormat)})")) {
             foreach (var v in (DisplayFormat[])Enum.GetValues(typeof(DisplayFormat))) {
-                if (!ImGui.Selectable($"{v.GetDescription()} ({FormatNumber(5555555, v)})##targetHpFormatSelect", Config.DisplayFormat == v)) continue;
+                if (!ImGui.Selectable($"{v.GetDescription()} ({FormatNumber(5555555, 10000000, v)})##targetHpFormatSelect", Config.DisplayFormat == v)) continue;
                 Config.DisplayFormat = v;
                 hasChanged = true;
             }
@@ -212,14 +217,26 @@ public unsafe class TargetHP : UiAdjustments.SubTweak {
         textNode->FontSize = fontSize;
 
         if (target is ICharacter chara) {
-            textNode->SetText($"{FormatNumber(chara.CurrentHp)}/{FormatNumber(chara.MaxHp)}");
+            textNode->SetText(FormatNumber(chara.CurrentHp, chara.MaxHp));
         } else {
             textNode->SetText("");
         }
     }
 
-    private string FormatNumber(uint num, DisplayFormat? displayFormat = null) {
+    private string FormatNumber(uint num, uint max, DisplayFormat? displayFormat = null) {
         displayFormat ??= Config.DisplayFormat;
+
+        if (displayFormat >= DisplayFormat.Percent0Decimal) {
+            var percent = num / (float)max * 100;
+            return displayFormat switch {
+                DisplayFormat.Percent0Decimal => $"{percent:F0}%",
+                DisplayFormat.Percent1Decimal => $"{percent:F1}%",
+                DisplayFormat.Percent2Decimal => $"{percent:F2}%",
+                _ => $"{percent}%"
+            };
+        }
+
+        if (max != 0) return $"{FormatNumber(num, 0, displayFormat)}/{FormatNumber(max, 0, displayFormat)}";
         if (displayFormat == DisplayFormat.FullNumber) return num.ToString(Culture);
         if (displayFormat == DisplayFormat.FullNumberSeparators) return num.ToString("N0", Culture);
 
