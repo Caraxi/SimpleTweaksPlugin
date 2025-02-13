@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakName("Display EXP Gain Percentage of Level")]
 [TweakAuthor("zajrik")]
 [TweakDescription("Adds the percentage of your next level to exp gains in chat.")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.8.0")]
 public partial class ExpGainLevelPercent : ChatTweaks.SubTweak {
     private const XivChatType ExperienceGainedChatMessageType = (XivChatType)2112;
 

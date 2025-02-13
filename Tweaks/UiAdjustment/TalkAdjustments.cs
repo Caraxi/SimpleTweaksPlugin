@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.Text;
 using FFXIVClientStructs.Interop;
 using SimpleTweaksPlugin.Events;
@@ -11,7 +11,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakAuthor("croizat")]
 [TweakDescription("Allows further customisation to the Talk addon.")]
 [TweakAutoConfig]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.8.0")]
 public unsafe class TalkAdjustments : Tweak {
     [TweakConfig] public Config TweakConfig { get; private set; }
 

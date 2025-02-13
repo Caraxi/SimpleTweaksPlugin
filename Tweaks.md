@@ -343,6 +343,11 @@
   Allows the use of the /systemconfig command while in gpose.
 
 
+- **Talk Adjustments**
+
+  Allows further customisation to the Talk addon.
+
+
 - **Try On Correct Item**
 
   Show the correct item when trying on a glamoured item.
@@ -395,6 +400,11 @@
 - **Disable Chat Movement**
 
   Prevents movement of the chat window.
+
+
+- **Display EXP Gain Percentage of Level**
+
+  Adds the percentage of your next level to exp gains in chat.
 
 
 - **Echo Party Finder**
@@ -566,6 +576,11 @@
   Adds the collectable checkmark to gacha items, such as Triple Triad card packs, when all potential items have been obtained.
 
 
+- **Track Outfits**
+
+  Shows whether or not you've made an outfit out of the hovered item.
+
+
 ### UI Tweaks
 
 ---
@@ -695,6 +710,13 @@
 - **Fast Item Search**
 
   Enable superfast searches for the market board & crafting log.
+
+
+- **Grow Buff List Vertically**
+
+  Allows you to change the buff/debuff vertical justification, enabling the list to grow from bottom to top.
+
+  ![Grow Buff List Vertically Preview](TweakPreviews/UiAdjustments@BuffListVerticalGrowth.png)
 
 
 - **Hide Achievements Nearing Completion Notifications**

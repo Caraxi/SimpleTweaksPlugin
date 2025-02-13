@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.10.8.0
+***New Tweaks***
+- **`Display EXP Gain Percentage of Level`** - Adds the percentage of your next level to exp gains in chat. *(zajrik)*
+
+- **`Grow Buff List Vertically`** - Allows you to change the buff/debuff vertical justification, enabling the list to grow from bottom to top. *(LINKAD0)*
+
+- **`Talk Adjustments`** - Allows further customisation to the Talk addon. *(croizat)*
+
+- **`Track Outfits`** - Shows whether or not you've made an outfit out of the hovered item. *(croizat)*
+
+
+***Tweak Changes***
+- **`Improved Blue Mage Action Tooltips`** - Fixed tweak incorrectly applying to some pseudo-actions.
+
+- **`Scenario Progression Display`** - Once again fixed logic.
+
+
 ## 1.10.7.0
 ***New Tweaks***
 - **`Disable Camera Culling`** - Disable the hiding of characters when the camera gets too close.

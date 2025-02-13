@@ -1,4 +1,4 @@
-﻿using FFXIVClientStructs.FFXIV.Component.GUI;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Events;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Allows you to change the buff/debuff vertical justification, enabling the list to grow from bottom to top.")]
 [TweakAuthor("LINKAD0")]
 [TweakAutoConfig]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.8.0")]
 public unsafe class BuffListVerticalGrowth : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Buff List", HelpText = "Group 1: Status Info (Enhancements)")]

@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.Text.SeStringHandling.Payloads;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -13,7 +13,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 [TweakName("Track Outfits")]
 [TweakDescription("Shows whether or not you've made an outfit out of the hovered item.")]
 [TweakAuthor("croizat")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.8.0")]
 public unsafe class TrackOutfits : TooltipTweaks.SubTweak
 {
     [TweakHook(typeof(UIState), nameof(UIState.IsItemActionUnlocked), nameof(IsItemActionUnlockedDetour))]

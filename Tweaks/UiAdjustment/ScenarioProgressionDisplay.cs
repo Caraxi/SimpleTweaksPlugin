@@ -16,7 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Shows the percentage of completion of the main scenario.")]
 [TweakAutoConfig]
 [TweakReleaseVersion("1.9.0.0")]
-[Changelog(UnreleasedVersion, "Once again fixed logic.")]
+[Changelog("1.10.8.0", "Once again fixed logic.")]
 public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
 
     private ScenarioTree? finalScenario;

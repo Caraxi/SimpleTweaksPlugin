@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
@@ -9,7 +9,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 
 [TweakName("Improved Blue Mage Action Tooltips")]
 [TweakDescription("Adds Damage Type, Aspect and Rank to blue mage actions.")]
-[Changelog(UnreleasedVersion, "Fixed tweak incorrectly applying to some pseudo-actions.")]
+[Changelog("1.10.8.0", "Fixed tweak incorrectly applying to some pseudo-actions.")]
 public unsafe class BlueActionInfo : TooltipTweaks.SubTweak {
     public override void OnGenerateActionTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
         if (Action.Id == 0) return;
