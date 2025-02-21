@@ -36,7 +36,7 @@ public class LevelingDungeonCommand : CommandTweak
             .Where(row => row.ContentType.RowId == (uint)InstanceContentType.Dungeon)
             .Where(row => UIState.IsInstanceContentUnlocked(row.Content.RowId))
             .Where(row => row.ClassJobLevelRequired <= UIState.Instance()->PlayerState.CurrentLevel)
-            .Where(row => row.ClassJobLevelRequired % 10 != 0) // Only leveling dungeons
+            .Where(row => row.ClassJobLevelRequired < 50 || row.ClassJobLevelRequired % 10 != 0) // Only leveling dungeons
             .MaxBy(row => row.ClassJobLevelRequired);
         var id = row?.RowId;
 
