@@ -26,6 +26,8 @@ public class Service {
     [PluginService] public static IToastGui Toasts { get; private set; }
     [PluginService] public static IGameConfig GameConfig { get; private set; }
     [PluginService] public static ITextureProvider TextureProvider { get; private set; }
+    [PluginService] public static ITextureSubstitutionProvider TextureSubstitutionProvider { get; private set; }
+    [PluginService] public static ITextureReadbackProvider TextureReadbackProvider { get; private set; }
     [PluginService] public static IAddonLifecycle AddonLifecycle { get; private set; }
     [PluginService] public static IDtrBar DtrBar { get; private set; }
     [PluginService] public static IDutyState DutyState { get; private set; }
