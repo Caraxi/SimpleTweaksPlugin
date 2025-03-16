@@ -10,6 +10,7 @@ using Dalamud.Interface.Components;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
@@ -35,6 +36,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [Changelog("1.8.8.2", "Fixed positioning of gil display moving when scale is anything other than 100%")]
 [Changelog("1.9.0.0", "Added an option to disable tooltips.")]
 [Changelog("1.9.0.0", "Fixed currency window positioning breaking when resizing game window.")]
+[Changelog(UnreleasedVersion, "Added option to Grand Company seals to display current grand company.")]
 public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak {
     public class Config : TweakConfig {
         public Direction DisplayDirection = Direction.Up;
@@ -46,7 +48,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak {
         public bool DisableEvents;
     }
     
-    public class CurrencyEntry {
+    public record CurrencyEntry {
         public bool Enabled = true;
         public uint ItemId;
         public int IconId;
@@ -56,6 +58,22 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak {
         public float HorizontalSpacing;
         public bool UseCustomPosition;
         public Vector2 CustomPosition;
+        public bool AutoAdjustGrandCompany;
+
+        public CurrencyEntry GetAdjusted() {
+            if (AutoAdjustGrandCompany && ItemId is 20 or 21 or 22) {
+                var gc = PlayerState.Instance()->GrandCompany;
+                if (gc is 0 or > 3) gc = PlayerState.Instance()->StartTown;
+                if (gc is 0 or > 3) return this;
+                return this with {
+                    ItemId = 19U + gc,
+                    IconId = 65003 + gc,
+                    Name = Service.Data.GetExcelSheet<Item>().GetRow(19U + gc).Name.ExtractText()
+                };
+            }
+
+            return this;
+        }
     }
 
     public enum Direction {
@@ -65,9 +83,9 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak {
         Down,
     }
 
-    private Config TweakConfig { get; set; } = null!;
+    [TweakConfig] private Config TweakConfig { get; set; } = null!;
     
-    private void DrawConfig() {
+    protected void DrawConfig() {
         DrawDirectionComboBox();
         
         DrawGridConfig();
@@ -281,7 +299,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak {
         
         // Make all counter nodes first, because if a icon node overlaps it even slightly it'll hide itself.
         foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count)) {
-            var currencyInfo = TweakConfig.Currencies[(int) index];
+            var currencyInfo = TweakConfig.Currencies[(int)index].GetAdjusted();
             if (currencyInfo.Enabled == false) continue;
             
             if (currencyInfo.UseCustomPosition) {
@@ -300,7 +318,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak {
         gridIndex = 0;
         foreach (uint index in Enumerable.Range(0, TweakConfig.Currencies.Count))
         {
-            var currencyInfo = TweakConfig.Currencies[(int) index];
+            var currencyInfo = TweakConfig.Currencies[(int) index].GetAdjusted();
             if (currencyInfo.Enabled == false) continue;   
             if (currencyInfo.UseCustomPosition) {
                 TryMakeIconNode(ImageBaseId + index, baseIconPosition + currencyInfo.CustomPosition, currencyInfo.IconId, currencyInfo.HqItem, currencyInfo.Name);
@@ -485,7 +503,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak {
     
     private void DrawCurrencies() {
         ImGui.TextUnformatted("Items being displayed:\n");
-        
+        var shownAutoGc = false;
         foreach (var index in Enumerable.Range(0, TweakConfig.Currencies.Count)) {
             var currency = TweakConfig.Currencies[index];
             if (ImGui.Checkbox($"##enableCurrency{index}", ref currency.Enabled)) {
@@ -563,6 +581,18 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak {
             }
             
             ImGui.TextUnformatted(currency.Name);
+            if (!shownAutoGc && currency.ItemId is 20 or 21 or 22) {
+                shownAutoGc = true;
+                ImGui.SameLine();
+                if (ImGui.Checkbox("Automatically Select Grand Company", ref currency.AutoAdjustGrandCompany)) {
+                    FreeAllNodes();
+                    SaveConfig(TweakConfig);
+                }
+                if (ImGui.IsItemHovered()) {
+                    ImGui.SetTooltip("If enabled, grand company seals will be automatically adjusted to show your current grand company.");
+                }
+            }
+            
             ImGui.EndDisabled();
         }
     }
