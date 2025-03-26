@@ -175,7 +175,7 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
 
             // only touch text nodes with a string starting with a digit
             var stringPtr = text->NodeText.StringPtr;
-            if (stringPtr == null || !char.IsDigit((char)*stringPtr)) {
+            if (stringPtr.Value == null || !char.IsDigit((char)*stringPtr.Value)) {
                 return;
             }
 

@@ -27,7 +27,7 @@ internal unsafe class SanctuarySprintReplacer : Tweak {
 
         // Override sprint
         if (type == ActionType.GeneralAction && id == 4) {
-            if (ActionManager.GetDutyActionId(0) == 31314) {
+            if (DutyActionManager.GetDutyActionId(0) == 31314) {
                 id = 31314;
                 type = ActionType.Action;
             } else {

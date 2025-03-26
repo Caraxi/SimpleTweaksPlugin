@@ -15,6 +15,9 @@ public unsafe class AutoLockHotbar : Tweak {
 
         [TweakConfigOption("Lock when changing zone.")]
         public bool ZoneChange = true;
+        
+        [TweakConfigOption("Lock Cross Hotbar")]
+        public bool CrossHotbar = true;
     }
 
     public Configs Config { get; private set; }
@@ -37,8 +40,19 @@ public unsafe class AutoLockHotbar : Tweak {
     }
 
     private void SetLock(bool lockHotbar) {
+        SetLockBar(lockHotbar);
+        if (Config.CrossHotbar) SetLockCross(lockHotbar);
+    }
+    
+    private void SetLockBar(bool lockHotbar) {
         var actionBar = Common.GetUnitBase("_ActionBar");
         if (actionBar == null) return;
-        Common.GenerateCallback(actionBar, 9, 3, 51u, 0u, lockHotbar);
+        Common.GenerateCallback(actionBar, 10, 3, 51u, 0u, lockHotbar);
+    }
+
+    private void SetLockCross(bool lockHotbar) {
+        var actionBar = Common.GetUnitBase("_ActionCross");
+        if (actionBar == null) return;
+        Common.GenerateCallback(actionBar, 10, 4, 62u, 10u, lockHotbar);
     }
 }

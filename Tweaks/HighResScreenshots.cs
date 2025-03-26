@@ -6,6 +6,8 @@ using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Kernel;
+using FFXIVClientStructs.FFXIV.Client.System.Photo;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
@@ -175,7 +177,7 @@ public unsafe class HighResScreenshots : Tweak {
         if (!Service.SigScanner.TryScanText("48 8B 56 30 45 33 C9", out copyrightShaderAddress)) {
             copyrightShaderAddress = 0;
         }
-
+        
         isInputIDClickedHook ??=
             Common.Hook<IsInputIDClickedDelegate>("E9 ?? ?? ?? ?? 83 7F ?? ?? 0F 8F ?? ?? ?? ?? BA ?? ?? ?? ?? 48 8B CB", IsInputIDClickedDetour);
         isInputIDClickedHook?.Enable();

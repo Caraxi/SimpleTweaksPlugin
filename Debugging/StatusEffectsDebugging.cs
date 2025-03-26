@@ -60,7 +60,7 @@ public unsafe class StatusEffectsDebugging : DebugHelper {
                 }
 
                 ImGui.TableNextColumn();
-                ImGui.Text($"{status->StackCount}");
+                ImGui.Text($"{status->Param}");
                 ImGui.TableNextColumn();
                 if (s is { IsPermanent: true }) {
                     ImGui.Text("Permanent");

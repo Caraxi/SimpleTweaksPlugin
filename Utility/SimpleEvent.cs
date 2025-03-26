@@ -42,7 +42,7 @@ public unsafe class SimpleEvent : IDisposable {
     private static readonly HookWrapper<GlobalEventDelegate> GlobalEventHook;
     
     static SimpleEvent() {
-        GlobalEventHook = Common.Hook<GlobalEventDelegate>("48 89 5C 24 ?? 48 89 7C 24 ?? 55 41 54 41 57", GlobalEventDetour);
+        GlobalEventHook = Common.Hook<GlobalEventDelegate>("48 89 5C 24 ?? 55 57 41 57 48 83 EC 50 48 8B D9 0F B7 EA", GlobalEventDetour);
         GlobalEventHook?.Enable();
     }
     

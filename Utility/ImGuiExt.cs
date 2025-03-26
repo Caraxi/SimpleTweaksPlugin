@@ -93,17 +93,17 @@ public static class ImGuiExt {
         var s = Service.Data.Excel.GetSheet<UIColor>();
         if (s == null) return;
         foreach (var c in s) {
-            if (uniqueSortedUiForeground.All(u => u.UIForeground != c.UIForeground)) {
+            if (uniqueSortedUiForeground.All(u => u.Dark != c.Dark)) {
                 uniqueSortedUiForeground.Add(c);
             }
-            if (uniqueSortedUiGlow.All(u => u.UIGlow != c.UIGlow)) {
+            if (uniqueSortedUiGlow.All(u => u.Light != c.Light)) {
                 uniqueSortedUiGlow.Add(c);
             }
         }
 
         uniqueSortedUiForeground.Sort((a, b) => {
-            var aRgb = Common.UiColorToVector4(a.UIForeground);
-            var bRgb = Common.UiColorToVector4(b.UIForeground);
+            var aRgb = Common.UiColorToVector4(a.Dark);
+            var bRgb = Common.UiColorToVector4(b.Dark);
             ImGui.ColorConvertRGBtoHSV(aRgb.X, aRgb.Y, aRgb.Z, out var aH, out var aS, out var aV);
             ImGui.ColorConvertRGBtoHSV(bRgb.X, bRgb.Y, bRgb.Z, out var bH, out var bS, out var bV);
             if (aH < bH) return -1;
@@ -116,8 +116,8 @@ public static class ImGuiExt {
         });
 
         uniqueSortedUiGlow.Sort((a, b) => {
-            var aRgb = Common.UiColorToVector4(a.UIGlow);
-            var bRgb = Common.UiColorToVector4(b.UIGlow);
+            var aRgb = Common.UiColorToVector4(a.Light);
+            var bRgb = Common.UiColorToVector4(b.Light);
             ImGui.ColorConvertRGBtoHSV(aRgb.X, aRgb.Y, aRgb.Z, out var aH, out var aS, out var aV);
             ImGui.ColorConvertRGBtoHSV(bRgb.X, bRgb.Y, bRgb.Z, out var bH, out var bS, out var bV);
             if (aH < bH) return -1;
@@ -154,13 +154,13 @@ public static class ImGuiExt {
 
         ImGui.SetNextItemWidth(24 * ImGui.GetIO().FontGlobalScale);
 
-        ImGui.PushStyleColor(ImGuiCol.FrameBg, Common.UiColorToVector4(glowOnly ? currentColor.UIGlow : currentColor.UIForeground));
-        ImGui.PushStyleColor(ImGuiCol.FrameBgHovered, Common.UiColorToVector4(glowOnly ? currentColor.UIGlow : currentColor.UIForeground));
-        ImGui.PushStyleColor(ImGuiCol.FrameBgActive, Common.UiColorToVector4(glowOnly ? currentColor.UIGlow : currentColor.UIForeground));
+        ImGui.PushStyleColor(ImGuiCol.FrameBg, Common.UiColorToVector4(glowOnly ? currentColor.Light : currentColor.Dark));
+        ImGui.PushStyleColor(ImGuiCol.FrameBgHovered, Common.UiColorToVector4(glowOnly ? currentColor.Light : currentColor.Dark));
+        ImGui.PushStyleColor(ImGuiCol.FrameBgActive, Common.UiColorToVector4(glowOnly ? currentColor.Light : currentColor.Dark));
 
         if (mode == ColorPickerMode.ForegroundAndGlow) {
             ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 4);
-            ImGui.PushStyleColor(ImGuiCol.Border, Common.UiColorToVector4(currentColor.UIGlow));
+            ImGui.PushStyleColor(ImGuiCol.Border, Common.UiColorToVector4(currentColor.Light));
         }
 
         var comboOpen = ImGui.BeginCombo($"{label}##combo", string.Empty, ImGuiComboFlags.NoArrowButton);
@@ -185,7 +185,7 @@ public static class ImGuiExt {
             for (var i = 0; i < cl.Count; i++) {
                 var c = cl[i];
                 if (i != 0 && i % sqrt != 0) ImGui.SameLine();
-                if (ImGui.ColorButton($"##ColorPick_{i}_{c.RowId}", Common.UiColorToVector4(glowOnly ? c.UIGlow : c.UIForeground), ImGuiColorEditFlags.NoTooltip)) {
+                if (ImGui.ColorButton($"##ColorPick_{i}_{c.RowId}", Common.UiColorToVector4(glowOnly ? c.Light : c.Dark), ImGuiColorEditFlags.NoTooltip)) {
                     colourKey = (ushort)c.RowId;
                     modified = true;
                     ImGui.CloseCurrentPopup();

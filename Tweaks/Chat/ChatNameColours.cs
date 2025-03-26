@@ -92,9 +92,9 @@ public class ChatNameColours : ChatTweaks.SubTweak {
         
         
         if (Service.Data.GetExcelSheet<UIColor>().TryGetRow(legacyColourId, out var xivCol)) {
-            var fb = (xivCol.UIForeground >> 8) & 255;
-            var fg = (xivCol.UIForeground >> 16) & 255;
-            var fr = (xivCol.UIForeground >> 24) & 255;
+            var fb = (xivCol.Dark >> 8) & 255;
+            var fg = (xivCol.Dark >> 16) & 255;
+            var fr = (xivCol.Dark >> 24) & 255;
             return new Vector3(fr / 255f, fg / 255f, fb / 255f);
         }
 
@@ -174,10 +174,10 @@ public class ChatNameColours : ChatTweaks.SubTweak {
                     fColor = new Vector4(fc.Color ?? Vector3.One, 1);
                 } else {
                     if (Service.Data.Excel.GetSheet<UIColor>().TryGetRow(fc.ColourKey, out var xivCol)) {
-                        var fa = xivCol.UIForeground & 255;
-                        var fb = (xivCol.UIForeground >> 8) & 255;
-                        var fg = (xivCol.UIForeground >> 16) & 255;
-                        var fr = (xivCol.UIForeground >> 24) & 255;
+                        var fa = xivCol.Dark & 255;
+                        var fb = (xivCol.Dark >> 8) & 255;
+                        var fg = (xivCol.Dark >> 16) & 255;
+                        var fr = (xivCol.Dark >> 24) & 255;
 
                         fColor = new Vector4(fr / 255f, fg / 255f, fb / 255f, fa / 255f);
                     } else {
@@ -194,9 +194,9 @@ public class ChatNameColours : ChatTweaks.SubTweak {
                 if (!Config.LegacyColours) {
                     if (fc.Color == null) {
                         if (Service.Data.Excel.GetSheet<UIColor>().TryGetRow(fc.ColourKey, out var xivCol)) {
-                            var fb = (xivCol.UIForeground >> 8) & 255;
-                            var fg = (xivCol.UIForeground >> 16) & 255;
-                            var fr = (xivCol.UIForeground >> 24) & 255;
+                            var fb = (xivCol.Dark >> 8) & 255;
+                            var fg = (xivCol.Dark >> 16) & 255;
+                            var fr = (xivCol.Dark >> 24) & 255;
                             fc.Color = new Vector3(fr / 255f, fg / 255f, fb / 255f);
                         } else {
                             fc.Color = Vector3.One;

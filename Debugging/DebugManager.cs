@@ -298,10 +298,10 @@ namespace SimpleTweaksPlugin.Debugging {
                             break;
                         }
 
-                        var r = (c.UIColor.Value.UIForeground >> 0x18) & 0xFF;
-                        var g = (c.UIColor.Value.UIForeground >> 0x10) & 0xFF;
-                        var b = (c.UIColor.Value.UIForeground >> 0x08) & 0xFF;
-                        var a = (c.UIColor.Value.UIForeground >> 0x00) & 0xFF;
+                        var r = (c.UIColor.Value.Dark >> 0x18) & 0xFF;
+                        var g = (c.UIColor.Value.Dark >> 0x10) & 0xFF;
+                        var b = (c.UIColor.Value.Dark >> 0x08) & 0xFF;
+                        var a = (c.UIColor.Value.Dark >> 0x00) & 0xFF;
 
                         ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(r / 255f, g / 255f, b / 255f, 1));
                         pushColorCount++;

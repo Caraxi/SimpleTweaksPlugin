@@ -40,21 +40,6 @@ public unsafe class SearchableFriendList : Tweak {
 
     [TweakHook(typeof(InfoProxyCommonList), nameof(InfoProxyCommonList.ApplyFilters), nameof(ApplyFiltersDetour))]
     private HookWrapper<InfoProxyCommonList.Delegates.ApplyFilters> applyFiltersHook;
-    
-
-    // Temp fix for ExtraFlags being in wrong offset.
-    [StructLayout(LayoutKind.Explicit, Size = InfoProxyCommonList.CharacterData.StructSize)]
-    private struct CharacterData2 {
-#if DEBUG
-#warning Remove this when Client Structs is updated in dalamud.
-#endif
-        
-        [FieldOffset(0x00)] public InfoProxyCommonList.CharacterData CharacterData;
-        [FieldOffset(0x20)] public uint ExtraFlags;
-        public InfoProxyCommonList.DisplayGroup Group => (InfoProxyCommonList.DisplayGroup)(ExtraFlags >> 16);
-        public string NameString => CharacterData.NameString;
-        public ulong ContentId => CharacterData.ContentId;
-    }
 
     private string searchString = string.Empty;
 
@@ -92,7 +77,7 @@ public unsafe class SearchableFriendList : Tweak {
             SimpleLog.Verbose($"Applying Filters for {entryCount} friends.");
 
             for (var i = 0U; i < entryCount; i++) {
-                var entry = (CharacterData2*)friendList->GetEntry(i);
+                var entry = friendList->GetEntry(i);
                 if (entry == null) continue;
                 resets.Add(entry->ContentId, entry->ExtraFlags);
                 if ((TweakConfig.IgnoreSelectedGroup || resetFilterGroup == InfoProxyCommonList.DisplayGroup.All || entry->Group == resetFilterGroup) && MatchesSearch(entry->NameString)) {
@@ -108,7 +93,7 @@ public unsafe class SearchableFriendList : Tweak {
             applyFiltersHook.Original(infoProxyCommonList);
             friendList->FilterGroup = resetFilterGroup;
             foreach (var r in resets) {
-                var entry = (CharacterData2*)friendList->GetEntryByContentId(r.Key);
+                var entry = friendList->GetEntryByContentId(r.Key);
                 entry->ExtraFlags = r.Value;
                 SimpleLog.Verbose($"Reset {entry->NameString} group to {entry->Group}");
             }

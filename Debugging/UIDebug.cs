@@ -477,7 +477,7 @@ public unsafe class UIDebug : DebugHelper {
                                 case ValueType.ManagedString:
                                 case ValueType.String8:
                                 case ValueType.String: {
-                                    if (atkValue->String == null) {
+                                    if (atkValue->String.Value == null) {
                                         ImGui.TextDisabled("null");
                                     } else {
                                         var str = MemoryHelper.ReadSeStringNullTerminated(new nint(atkValue->String));
@@ -718,7 +718,7 @@ public unsafe class UIDebug : DebugHelper {
                         ImGui.PopStyleColor();
                         var seStringBytes = new byte[textNode->NodeText.BufUsed];
                         for (var i = 0L; i < textNode->NodeText.BufUsed; i++) {
-                            seStringBytes[i] = textNode->NodeText.StringPtr[i];
+                            seStringBytes[i] = textNode->NodeText.StringPtr.Value[0];
                         }
 
                         var seString = SeString.Parse(seStringBytes);

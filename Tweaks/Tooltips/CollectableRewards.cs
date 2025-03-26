@@ -195,11 +195,11 @@ public class CollectableRewards : TooltipTweaks.SubTweak {
             // The container is a proper inventory type, a real item with a collectability.
             // We show only the relevant reward.
 
-            if (Item.Spiritbond < itemDetails.Rewards[0].QualityRequired) {
+            if (Item.SpiritbondOrCollectability < itemDetails.Rewards[0].QualityRequired) {
                 description.AddUiForeground($"      Minimum quality of {itemDetails.Rewards[0].QualityRequired} has not been reached.", 16);
-            } else if (Item.Spiritbond < itemDetails.Rewards[1].QualityRequired) {
+            } else if (Item.SpiritbondOrCollectability < itemDetails.Rewards[1].QualityRequired) {
                 AddItemRewardToDescription(itemDetails.Rewards[0], scripType, scripUiColour, description);
-            } else if (Item.Spiritbond < itemDetails.Rewards[2].QualityRequired) {
+            } else if (Item.SpiritbondOrCollectability < itemDetails.Rewards[2].QualityRequired) {
                 AddItemRewardToDescription(itemDetails.Rewards[1], scripType, scripUiColour, description);
             } else {
                 AddItemRewardToDescription(itemDetails.Rewards[2], scripType, scripUiColour, description);

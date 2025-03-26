@@ -21,7 +21,7 @@ public unsafe class TreasureHuntTargets : Tweak {
         if (potentialTarget == null) return true;
         if (potentialTarget->ObjectKind != ObjectKind.BattleNpc) return true;
         if (potentialTarget->SubKind != 5) return true;
-        if (potentialTarget->EventId.ContentId != EventHandlerType.TreasureHuntDirector) return true;
+        if (potentialTarget->EventId.ContentId != EventHandlerContent.TreasureHuntDirector) return true;
         return potentialTarget->NamePlateIconId is 60094 or 60096;
     }
 }

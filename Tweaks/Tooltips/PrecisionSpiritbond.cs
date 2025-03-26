@@ -30,7 +30,7 @@ public class PrecisionSpiritbond : SubTweak {
         var c = GetTooltipString(stringArrayData, SpiritbondPercent);
         if (c == null || c.TextValue.StartsWith("?")) return;
         try {
-            SetTooltipString(stringArrayData, SpiritbondPercent, (Item.Spiritbond / 100f).ToString(Config.TrailingZero ? "F2" : "0.##") + "%");
+            SetTooltipString(stringArrayData, SpiritbondPercent, (Item.SpiritbondOrCollectability / 100f).ToString(Config.TrailingZero ? "F2" : "0.##") + "%");
         } catch (Exception ex) {
             Plugin.Error(this, ex);
         }

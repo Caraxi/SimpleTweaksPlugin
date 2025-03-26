@@ -50,7 +50,7 @@ public unsafe class ConfigDebug : DebugHelper {
             for (var i = 0; i < configBase->ConfigCount; i++) {
                 if (configEntry->Type == 0) goto Continue;
                 var name = $"#{i};";
-                if (configEntry->Name != null)
+                if (configEntry->Name.Value != null)
                     name = MemoryHelper.ReadStringNullTerminated(new IntPtr(configEntry->Name));
 
                 if (!string.IsNullOrWhiteSpace(nameSearchString)) {
@@ -193,7 +193,7 @@ public unsafe class ConfigDebug : DebugHelper {
                 if (ImGui.BeginTabBar("generateDalamudTabs")) {
                     var sb = new StringBuilder();
 
-                    void Generate(ConfigBase* configBase, Type e) {
+                    void Generate(ConfigBase* configBase, Type e, string groupName) {
                         var counts = new Dictionary<string, int>();
                         var lastName = string.Empty;
                         if (configBase != null) {
@@ -203,10 +203,10 @@ public unsafe class ConfigDebug : DebugHelper {
                             var newEntries = new Dictionary<string, string>();
 
                             for (var i = 0; i < configBase->ConfigCount; i++) {
-                                if (configEntry->Name == null && (string.IsNullOrEmpty(lastName) || configEntry->Type == 0)) {
+                                if (configEntry->Name.Value == null && (string.IsNullOrEmpty(lastName) || configEntry->Type == 0)) {
                                     goto Continue;
                                 }
-                                var name = configEntry->Name == null ? lastName : MemoryHelper.ReadStringNullTerminated(new IntPtr(configEntry->Name));
+                                var name = configEntry->Name.Value == null ? lastName : MemoryHelper.ReadStringNullTerminated(new IntPtr(configEntry->Name));
                                 lastName = name;
                                 if (!counts.ContainsKey(name)) {
                                     counts.Add(name, 0);
@@ -219,7 +219,7 @@ public unsafe class ConfigDebug : DebugHelper {
                                 var type = (ConfigType)configEntry->Type;
                                 if (!name.StartsWith("<")) {
                                     entry.AppendLine($"    /// <summary>");
-                                    entry.AppendLine($"    /// System option with the internal name {name}.");
+                                    entry.AppendLine($"    /// {groupName} option with the internal name {name}.");
                                     entry.AppendLine($"    /// This option is a {type}.");
 
                                     entry.AppendLine($"    /// </summary>");
@@ -299,7 +299,7 @@ public unsafe class ConfigDebug : DebugHelper {
 public enum SystemConfigOption
 {");
 
-                        Generate(&Framework.Instance()->SystemConfig.SystemConfigBase.ConfigBase, typeof(SystemConfigOption));
+                        Generate(&Framework.Instance()->SystemConfig.SystemConfigBase.ConfigBase, typeof(SystemConfigOption), "System");
 
                         ImGui.EndTabItem();
                     }
@@ -316,7 +316,7 @@ public enum SystemConfigOption
 /// </summary>
 public enum UiConfigOption
 {");
-                        Generate(&Framework.Instance()->SystemConfig.UiConfig, typeof(UiConfigOption));
+                        Generate(&Framework.Instance()->SystemConfig.UiConfig, typeof(UiConfigOption), "UiConfig");
                         ImGui.EndTabItem();
                     }
 
@@ -332,7 +332,7 @@ public enum UiConfigOption
 /// </summary>
 public enum UiControlOption
 {");
-                        Generate(&Framework.Instance()->SystemConfig.UiControlConfig, typeof(UiControlOption));
+                        Generate(&Framework.Instance()->SystemConfig.UiControlConfig, typeof(UiControlOption), "UiControl");
                         ImGui.EndTabItem();
                     }
 

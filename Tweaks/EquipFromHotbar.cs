@@ -86,10 +86,10 @@ public unsafe class EquipFromHotbar : Tweak {
         }
     }
 
-    private long UseItemDetour(AgentInventoryContext* inventoryContext, uint itemId, uint a3, uint a4, short a5) {
+    private long UseItemDetour(AgentInventoryContext* inventoryContext, uint itemId, InventoryType a3, uint a4, short a5) {
         var retVal = useItemHook.Original(inventoryContext, itemId, a3, a4, a5);
         try {
-            if (!(a3 == 9999 && a4 == 0 && a5 == 0 && itemId < 1500000)) return retVal;
+            if (!(a3 == InventoryType.Invalid && a4 == 0 && a5 == 0 && itemId < 1500000)) return retVal;
             var isHq = itemId > 1000000;
             var realId = itemId % 500000;
             if (!Service.Data.GetExcelSheet<Item>().TryGetRow(realId, out var item)) return retVal;

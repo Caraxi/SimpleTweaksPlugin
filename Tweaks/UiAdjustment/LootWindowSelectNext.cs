@@ -53,7 +53,7 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak {
     private static void SelectItem(AddonNeedGreed* addon, int index) {
         var eventData = new AtkEventData();
         eventData.ListItemData.SelectedIndex = index;
-        addon->ReceiveEvent(AtkEventType.ListItemToggle, 0, null, &eventData);
+        addon->ReceiveEvent(AtkEventType.ListItemClick, 0, null, &eventData);
     }
     
     // There are other button types such as "Greed Only" and "Loot Recipient"

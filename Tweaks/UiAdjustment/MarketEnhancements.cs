@@ -110,7 +110,7 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
                     continue;
                 }
 
-                if (singlePriceNode->NodeText.StringPtr[0] == 0x20 || totalTextNode->NodeText.StringPtr[0] == 0x20) continue;
+                if (singlePriceNode->NodeText.StringPtr.Value[0] == 0x20 || totalTextNode->NodeText.StringPtr.Value[0] == 0x20) continue;
 
                 var priceString = Common.ReadSeString(singlePriceNode->NodeText).TextValue.Replace($"{(char)SeIconChar.Gil}", "").Replace($",", "").Replace(" ", "").Replace($".", "");
 

@@ -23,6 +23,8 @@ public unsafe class HouseLightCommand : CommandTweak {
     private readonly string[] permanentMarkers = ["save"];
 
     protected override void OnCommand(string args) {
+        
+        
         var housingManager = HousingManager.Instance();
 
         if (!housingManager->IsInside()) {
@@ -30,11 +32,12 @@ public unsafe class HouseLightCommand : CommandTweak {
             return;
         }
 
+        /*
         if (!housingManager->HasHousePermissions()) {
             Service.Chat.PrintError("You don't have permission to adjust the lights in this house/apartment.");
             return;
         }
-
+        */
         var s = args.Split(' ');
         if (s.Length < 1) {
             Service.Chat.PrintError($"/{CustomOrDefaultCommand} (0-5) [save]");
