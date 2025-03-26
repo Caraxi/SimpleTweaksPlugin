@@ -26,11 +26,11 @@ public unsafe class GearPositions : UiAdjustments.SubTweak {
     [AddonPostSetup("CharacterInspect")]
     private void InspectOnSetup(AtkUnitBase* atkUnitBase) {
         if (TweakConfig.SoulstoneAboveOffhand) {
-            MoveNode(atkUnitBase, 47, 262, -119);
-            MoveNode(atkUnitBase, 61, 262, -119);
+            MoveNode(atkUnitBase, 49, 262, -119);
+            MoveNode(atkUnitBase, 63, 262, -119);
         } else {
-            ShiftUp(atkUnitBase, 36, 262, -119, 42, 43, 44, 45, 46, 47);
-            ShiftUp(atkUnitBase, 50, 262, -119, 56, 57, 58, 59, 60, 61);
+            ShiftUp(atkUnitBase, 38, 262, -119, 44, 45, 46, 47, 48, 49);
+            ShiftUp(atkUnitBase, 52, 262, -119, 58, 59, 60, 61, 62, 63);
         }
     }
 
