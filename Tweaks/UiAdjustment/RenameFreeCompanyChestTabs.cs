@@ -62,11 +62,13 @@ public unsafe class RenameFreeCompanyChestTabs : UiAdjustments.SubTweak {
 
     [AddonPreDraw("FreeCompanyChest")]
     private void AddonPreDraw(AtkUnitBase* atkUnitBase) {
+        if (atkUnitBase->RootNode == null) return;
         var fcConfig = Config.GetCompanyConfig();
         if (fcConfig == null) return;
         for (var i = 0; i < 5 && i < fcConfig.TabNames.Length; i++) {
-            var node = Common.GetNodeByIDChain(atkUnitBase->GetRootNode(), 1, 9, 10 + i, 9);
-            if (node is not null) node->GetAsAtkTextNode()->NodeText.SetString(string.IsNullOrWhiteSpace(fcConfig.TabNames[i]) ? atkUnitBase->AtkValues[11 + i].ValueString() : $"{(char)(SeIconChar.BoxedNumber1 + i)} {fcConfig.TabNames[i]}");
+            var node = Common.GetNodeByIDChain(atkUnitBase->RootNode, 1, 9, 10 + i, 9);
+            var textNode = node != null ? node->GetAsAtkTextNode() : null;
+            if (textNode is not null) textNode->NodeText.SetString(string.IsNullOrWhiteSpace(fcConfig.TabNames[i]) ? atkUnitBase->AtkValues[11 + i].ValueString() : $"{(char)(SeIconChar.BoxedNumber1 + i)} {fcConfig.TabNames[i]}");
         }
     }
 }
