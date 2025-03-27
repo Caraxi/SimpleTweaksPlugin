@@ -37,8 +37,7 @@ public static class ChatHelper {
 
             var oldLength = utf8->Length;
 
-            
-            utf8->SanitizeString(AllowedEntities.UppercaseLetters | AllowedEntities.LowercaseLetters | AllowedEntities.Numbers | AllowedEntities.OtherCharacters, null);
+            utf8->SanitizeString(AllowedEntities.UppercaseLetters | AllowedEntities.LowercaseLetters | AllowedEntities.Numbers | AllowedEntities.SpecialCharacters | AllowedEntities.CharacterList | AllowedEntities.OtherCharacters | AllowedEntities.Payloads |AllowedEntities.Unknown9);
 
             if (utf8->Length != oldLength) {
                 throw new ArgumentException($"message contained invalid characters", nameof(message));
