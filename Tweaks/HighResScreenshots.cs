@@ -190,7 +190,7 @@ public unsafe class HighResScreenshots : Tweak {
     private uint oldHeight;
     private bool isRunning;
 
-    const int ScreenshotButton = 546;
+    const int ScreenshotButton = 551;
     public bool originalUiVisibility;
     byte[] originalCopyrightBytes;
     // IsInputIDClicked is called from Client::UI::UIInputModule.CheckScreenshotState, which is polled
