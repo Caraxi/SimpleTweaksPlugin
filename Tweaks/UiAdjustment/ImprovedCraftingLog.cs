@@ -35,7 +35,7 @@ public unsafe class ImprovedCraftingLog : Tweak {
     [TweakHook, Signature("E8 ?? ?? ?? ?? 48 8B 4B 10 33 FF C6 83", DetourName = nameof(CancelCraftingDetour))]
     private readonly HookWrapper<CancelCrafting> cancelCraftingHook = null!;
 
-    [TweakHook, Signature("40 55 53 56 57 41 57 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 0F 48 8B 7D 7F", DetourName = nameof(ReceiveEventDetour))]
+    [TweakHook, Signature("40 55 53 56 57 41 56 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 0F 4C 8B 75 7F 49 8B D9 0F B7 C2 41 8B F8", DetourName = nameof(ReceiveEventDetour))]
     private readonly HookWrapper<AtkUnitBase.Delegates.ReceiveEvent> receiveEventHook = null!;
 
     protected override void Enable() {
@@ -90,7 +90,7 @@ public unsafe class ImprovedCraftingLog : Tweak {
 
     private void ReceiveEventDetour(AtkUnitBase* unitBase, AtkEventType eventType, int eventParam, AtkEvent* atkEvent, AtkEventData* atkEventData) {
         try {
-            if (eventType == AtkEventType.ButtonClick && eventParam == 13) {
+            if (eventType == AtkEventType.ButtonClick && eventParam == 14) {
                 SimpleLog.Debug("Clicked Synthesise Button");
                 if (ClickSynthesisButtonDetour()) return;
             }
