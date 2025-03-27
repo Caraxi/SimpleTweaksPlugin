@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.10.8.1
+***Tweak Changes***
+- **`Expanded Currency Display`** - Added option to Grand Company seals to display current grand company.
+
+
 ## 1.10.8.0
 ***New Tweaks***
 - **`Display EXP Gain Percentage of Level`** - Adds the percentage of your next level to exp gains in chat. *(zajrik)*

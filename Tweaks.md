@@ -602,7 +602,7 @@
 
 - **Adjust Large Cooldown Counter**
 
-  Make adjustmenmts to the cooldown counter when using the large option.
+  Make adjustments to the cooldown counter when using the large option.
 
 
 - **Always Yes**

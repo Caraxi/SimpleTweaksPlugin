@@ -36,7 +36,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [Changelog("1.8.8.2", "Fixed positioning of gil display moving when scale is anything other than 100%")]
 [Changelog("1.9.0.0", "Added an option to disable tooltips.")]
 [Changelog("1.9.0.0", "Fixed currency window positioning breaking when resizing game window.")]
-[Changelog(UnreleasedVersion, "Added option to Grand Company seals to display current grand company.")]
+[Changelog("1.10.8.1", "Added option to Grand Company seals to display current grand company.")]
 public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak {
     public class Config : TweakConfig {
         public Direction DisplayDirection = Direction.Up;
