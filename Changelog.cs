@@ -344,6 +344,8 @@ public class Changelog : Window {
                             ImGui.Unindent();
                             ImGui.TreePop();
                         }
+                        
+                        ImGui.EndGroup();
                     }
                     ImGui.TreePop();
                 }
