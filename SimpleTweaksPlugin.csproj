@@ -4,7 +4,7 @@
         <TargetFramework>net9.0-windows</TargetFramework>
         <LangVersion>preview</LangVersion>
         <Platforms>x64</Platforms>
-        <Configurations>Debug;Release;DebugSteamDeck</Configurations>
+        <Configurations>Debug;Release;DebugSteamDeck;CustomCS</Configurations>
     </PropertyGroup>
     <PropertyGroup Label="Build">
         <NoWarn>CS8632,CS0649,CS0169</NoWarn>
@@ -19,6 +19,9 @@
     <PropertyGroup Label="DebugSteamDeck" Condition="'$(Configuration)'=='DebugSteamDeck'">
         <OutputPath>\\steamdeck\home\deck\DevPlugins\SimpleTweaksPlugin\</OutputPath>
         <DefineConstants>DEBUG</DefineConstants>
+    </PropertyGroup>
+    <PropertyGroup Label="CustomCS" Condition="'$(Configuration)'=='CustomCS'">
+        <DefineConstants>DEBUG;CustomCS</DefineConstants>
     </PropertyGroup>
     <PropertyGroup Label="Feature">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -51,12 +54,16 @@
             <HintPath>$(DalamudLibPath)\Dalamud.dll</HintPath>
 		</Reference>
 		<Reference Include="FFXIVClientStructs">
-			<Private>false</Private>
-			<HintPath>$(DalamudLibPath)\FFXIVClientStructs.dll</HintPath>
+			<Private Condition="'$(Configuration)'!='CustomCS'">false</Private>
+			<HintPath Condition="'$(Configuration)'!='CustomCS'">$(DalamudLibPath)\FFXIVClientStructs.dll</HintPath>
+            <Private Condition="'$(Configuration)'=='CustomCS'">true</Private>
+			<HintPath Condition="'$(Configuration)'=='CustomCS'">C:\ffxiv\repo\FFXIVClientStructs\bin\Debug\FFXIVClientStructs.dll</HintPath>
 		</Reference>
 		<Reference Include="InteropGenerator.Runtime">
-			<Private>false</Private>
-			<HintPath>$(DalamudLibPath)\InteropGenerator.Runtime.dll</HintPath>
+            <Private Condition="'$(Configuration)'!='CustomCS'">false</Private>
+            <HintPath Condition="'$(Configuration)'!='CustomCS'">$(DalamudLibPath)\InteropGenerator.Runtime.dll</HintPath>
+            <Private Condition="'$(Configuration)'=='CustomCS'">true</Private>
+            <HintPath Condition="'$(Configuration)'=='CustomCS'">C:\ffxiv\repo\FFXIVClientStructs\bin\Debug\InteropGenerator.Runtime.dll</HintPath>
 		</Reference>
         <Reference Include="Newtonsoft.Json">
             <Private>false</Private>
@@ -86,4 +93,7 @@
 	<ItemGroup>
 	  <Folder Include="Utility\FriendList" />
 	</ItemGroup>
+    <Target Name="Ensure CExporter" Condition="'$(Configuration)'=='CustomCS'" BeforeTargets="PreBuildEvent">
+        <Exec Command="dotnet run --no-restore -v q --project ..\FFXIVClientStructs\CExporter\CExporter.csproj --quiet --no-write --strip-color"/>
+    </Target>
 </Project>

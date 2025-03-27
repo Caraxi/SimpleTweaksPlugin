@@ -100,11 +100,23 @@ namespace SimpleTweaksPlugin {
             SimpleLog.SetupBuildPath();
 #endif
             Task.Run(() => {
+#if CustomCS
+                InitializeClientStructs();
+#endif
                 UpdateBlacklist();
                 Service.Framework.RunOnFrameworkThread(Initialize);
             });
 
         }
+        
+#if CustomCS
+        private void InitializeClientStructs() {
+            SimpleLog.Debug("Initializing Client Structs");
+            FFXIVClientStructs.Interop.Generated.Addresses.Register();
+            InteropGenerator.Runtime.Resolver.GetInstance.Setup(Service.SigScanner.SearchBase, Service.Data.GameData.Repositories["ffxiv"].Version, new FileInfo(Path.Join(Service.PluginInterface.GetPluginConfigDirectory(), "csSigCache.json")));
+            InteropGenerator.Runtime.Resolver.GetInstance.Resolve();
+        }
+#endif
 
 
         private void UpdateBlacklist() {

@@ -5,14 +5,26 @@ VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleTweaksPlugin", "..\SimpleTweaksPlugin.csproj", "{FAF7F5F2-708A-4FEA-BAE7-F73A3438A0D5}"
 	ProjectSection(ProjectDependencies) = postProject
-		{3DBAEE68-9D94-4807-BCB1-E42EDD52B489} = {3DBAEE68-9D94-4807-BCB1-E42EDD52B489}
+		{C36F8189-78F5-4DF5-B544-C0EA16F5851E} = {C36F8189-78F5-4DF5-B544-C0EA16F5851E}
+		{4A4E42E1-D93C-4356-93CB-801166EF94DC} = {4A4E42E1-D93C-4356-93CB-801166EF94DC}
+		{1C8DE1C3-A80F-4BAA-BE30-A6FCFE53B61F} = {1C8DE1C3-A80F-4BAA-BE30-A6FCFE53B61F}
+		{D6125D41-88CC-4DFE-B3C7-B5B51E5701B4} = {D6125D41-88CC-4DFE-B3C7-B5B51E5701B4}
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InteropGenerator", "..\..\FFXIVClientStructs\InteropGenerator\InteropGenerator.csproj", "{1C8DE1C3-A80F-4BAA-BE30-A6FCFE53B61F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InteropGenerator.Runtime", "..\..\FFXIVClientStructs\InteropGenerator.Runtime\InteropGenerator.Runtime.csproj", "{D6125D41-88CC-4DFE-B3C7-B5B51E5701B4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFXIVClientStructs", "..\..\FFXIVClientStructs\FFXIVClientStructs\FFXIVClientStructs.csproj", "{C36F8189-78F5-4DF5-B544-C0EA16F5851E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFXIVClientStructs.Generators", "..\..\FFXIVClientStructs\FFXIVClientStructs.Generators\FFXIVClientStructs.Generators.csproj", "{4A4E42E1-D93C-4356-93CB-801166EF94DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Release|x64 = Release|x64
 		DebugSteamDeck|x64 = DebugSteamDeck|x64
+		CustomCS|x64 = CustomCS|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{FAF7F5F2-708A-4FEA-BAE7-F73A3438A0D5}.Debug|x64.ActiveCfg = Debug|x64
@@ -21,6 +33,16 @@ Global
 		{FAF7F5F2-708A-4FEA-BAE7-F73A3438A0D5}.Release|x64.Build.0 = Release|x64
 		{FAF7F5F2-708A-4FEA-BAE7-F73A3438A0D5}.DebugSteamDeck|x64.ActiveCfg = DebugSteamDeck|x64
 		{FAF7F5F2-708A-4FEA-BAE7-F73A3438A0D5}.DebugSteamDeck|x64.Build.0 = DebugSteamDeck|x64
+		{FAF7F5F2-708A-4FEA-BAE7-F73A3438A0D5}.CustomCS|x64.ActiveCfg = CustomCS|x64
+		{FAF7F5F2-708A-4FEA-BAE7-F73A3438A0D5}.CustomCS|x64.Build.0 = CustomCS|x64
+		{C36F8189-78F5-4DF5-B544-C0EA16F5851E}.CustomCS|x64.ActiveCfg = Debug|Any CPU
+		{C36F8189-78F5-4DF5-B544-C0EA16F5851E}.CustomCS|x64.Build.0 = Debug|Any CPU
+		{4A4E42E1-D93C-4356-93CB-801166EF94DC}.CustomCS|x64.ActiveCfg = Debug|Any CPU
+		{4A4E42E1-D93C-4356-93CB-801166EF94DC}.CustomCS|x64.Build.0 = Debug|Any CPU
+		{1C8DE1C3-A80F-4BAA-BE30-A6FCFE53B61F}.CustomCS|x64.ActiveCfg = Debug|Any CPU
+		{1C8DE1C3-A80F-4BAA-BE30-A6FCFE53B61F}.CustomCS|x64.Build.0 = Debug|Any CPU
+		{D6125D41-88CC-4DFE-B3C7-B5B51E5701B4}.CustomCS|x64.ActiveCfg = Debug|Any CPU
+		{D6125D41-88CC-4DFE-B3C7-B5B51E5701B4}.CustomCS|x64.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
