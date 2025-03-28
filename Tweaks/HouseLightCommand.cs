@@ -14,7 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakDescription("Adds a command to control lighting in your own housing areas.")]
 [TweakReleaseVersion("1.8.2.0")]
 [Changelog("1.10.5.0", "Fixed tweak not working.")]
-[Changelog(UnreleasedVersion, "Added ability to toggle SSAO with 'ssao-on' and 'ssao-off' parameters")]
+[Changelog("1.10.8.4", "Added ability to toggle SSAO with 'ssao-on' and 'ssao-off' parameters")]
 public unsafe class HouseLightCommand : CommandTweak {
     public override bool Experimental => true;
     protected override string Command => "lights";

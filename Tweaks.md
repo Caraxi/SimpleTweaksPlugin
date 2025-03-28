@@ -323,6 +323,13 @@
   (Legacy type movement only)
 
 
+- **Sort World Visit List**
+
+  Removes the randomization from the data center visit world list.
+
+  ![Sort World Visit List Preview](TweakPreviews/SortWorldList.png)
+
+
 - **Special Character Input**
 
   Adds a window for adding special characters to text inputs.

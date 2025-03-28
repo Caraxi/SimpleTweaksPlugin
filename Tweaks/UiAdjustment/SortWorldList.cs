@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.Events;
@@ -10,7 +10,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [TweakName("Sort World Visit List")]
 [TweakDescription("Removes the randomization from the data center visit world list.")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.8.4")]
 public unsafe class SortWorldList : Tweak {
     private class Entry(string name, AtkResNode* node) {
         public string Name => name;

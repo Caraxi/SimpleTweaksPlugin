@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.10.8.4
+***New Tweaks***
+- **`Sort World Visit List`** - Removes the randomization from the data center visit world list.
+
+
+***Tweak Changes***
+- **`House Lights Command`** - Added ability to toggle SSAO with 'ssao-on' and 'ssao-off' parameters
+
+
 ## 1.10.8.1
 ***Tweak Changes***
 - **`Expanded Currency Display`** - Added option to Grand Company seals to display current grand company.
