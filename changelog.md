@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.10.9.0
+***Tweak Changes***
+- **`Add Number Separators`** - Fixed flytext number separator not working.
+
+- **`Limit Break Adjustments`** - Added preview for when not in a party
+
+
 ## 1.10.8.4
 ***New Tweaks***
 - **`Sort World Visit List`** - Removes the randomization from the data center visit world list.

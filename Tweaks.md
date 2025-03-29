@@ -792,6 +792,8 @@
 
   Simple customization of the limit break bars.
 
+  ![Limit Break Adjustments Preview](TweakPreviews/UiAdjustments@LimitBreakAdjustments.png)
+
 
 - **Lock Window Positions**
 

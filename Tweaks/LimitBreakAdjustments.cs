@@ -14,7 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakDescription("Simple customization of the limit break bars.")]
 [TweakReleaseVersion("1.8.2.0")]
 [TweakAutoConfig]
-[Changelog(UnreleasedVersion, "Added preview for when not in a party")]
+[Changelog("1.10.9.0", "Added preview for when not in a party")]
 public unsafe class LimitBreakAdjustments : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
         public static readonly Configs Default = new();
