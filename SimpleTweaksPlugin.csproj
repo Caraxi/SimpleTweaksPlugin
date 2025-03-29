@@ -94,7 +94,7 @@
 	<ItemGroup>
 	  <Folder Include="Utility\FriendList" />
 	</ItemGroup>
-    <Target Name="Clean CS" Condition="'$(Configuration)'!='CustomCS'" BeforeTargets="PreBuildEvent">
+    <Target Name="Clean CS" Condition="'$(Configuration)'=='Debug'" BeforeTargets="PreBuildEvent">
         <Exec Command="del $(TargetDir)FFXIVClientStructs.dll"/>
         <Exec Command="del $(TargetDir)InteropGenerator.Runtime.dll"/>
     </Target>
