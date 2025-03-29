@@ -19,6 +19,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakAutoConfig]
 [TweakReleaseVersion("1.10.2.0")]
 [Changelog("1.10.3.0", "Fixed issue causing custom separators to be lost when logging in.")]
+[Changelog(UnreleasedVersion, "Fixed flytext number separator not working.")]
 public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
         public bool FlyText = true;
@@ -53,7 +54,7 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
     private static class Signatures {
         internal const string ShowFlyText = "E8 ?? ?? ?? ?? FF C7 41 D1 C7";
         internal const string SprintfNumber = "E8 ?? ?? ?? ?? EB 68 48 8B 03";
-        internal const string FlyTextStringify = " 45 33 C0 C6 44 24 ?? ?? 8B D7 E8 ?? ?? ?? ?? 41 8B CF";
+        internal const string FlyTextStringify = "45 33 C0 C6 44 24 ?? ?? 8B D7 E8 ?? ?? ?? ?? 41 8B CC";
         internal const string HotbarManaStringify = "45 33 C0 48 8B CE 44 88 64 24 ?? 42 8B 54 B8 ?? E8 ?? ?? ?? ?? EB 21";
         internal const string PartyListStringify = "45 33 C0 C6 44 24 20 00 41 8B D6 E8 ?? ?? ?? ?? 49 8B";
         internal const string Separator = "44 0F B6 05 ?? ?? ?? ?? 45 84 C0 74 36 F6 87";
@@ -116,16 +117,18 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
     }
 
     internal void ConfigureInstructions() {
-        ConfigureInstruction(Signatures.FlyTextStringify, Config.FlyText);
-        ConfigureInstruction(Signatures.HotbarManaStringify, Config.AbilityCost);
-        ConfigureInstruction(Signatures.PartyListStringify, Config.PartyList);
+        ConfigureInstruction("Fly Text", Signatures.FlyTextStringify, Config.FlyText);
+        ConfigureInstruction("Hotbar Resource Cost", Signatures.HotbarManaStringify, Config.AbilityCost);
+        ConfigureInstruction("Party List HP", Signatures.PartyListStringify, Config.PartyList);
     }
 
-    private void ConfigureInstruction(string sig, bool enabled) {
+    private void ConfigureInstruction(string name, string sig, bool enabled) {
         if (!Service.SigScanner.TryScanText(sig, out var ptr)) {
+            SimpleLog.Error($"Couldn't find signature {sig} for {name}");
+            Plugin.Error(this, new Exception($"Signature '{sig}' for '{name}' not found."), true);
             return;
-        }
 
+        }
         if (enabled) {
             ReplaceBytes(ptr);
         } else {
