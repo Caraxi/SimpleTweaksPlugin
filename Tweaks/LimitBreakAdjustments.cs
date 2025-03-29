@@ -1,5 +1,7 @@
 using System;
 using System.Numerics;
+using Dalamud.Utility.Signatures;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using SimpleTweaksPlugin.Events;
@@ -12,17 +14,20 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakDescription("Simple customization of the limit break bars.")]
 [TweakReleaseVersion("1.8.2.0")]
 [TweakAutoConfig]
+[Changelog(UnreleasedVersion, "Added preview for when not in a party")]
 public unsafe class LimitBreakAdjustments : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
         public static readonly Configs Default = new();
-
         public float BarRotation;
         public Vector2 BarSpacing = new(164, 0);
         public Vector2 TextPosition = new(12, 1);
         public bool HideText;
     }
 
-    public Configs Config { get; private set; }
+    [TweakConfig] public Configs Config { get; private set; }
+    private bool previewLimitBreak;
+    private byte previewVisibleCounter;
+    private byte resetValue;
 
     protected void DrawConfig() {
         ImGui.DragFloat("Bar Rotation", ref Config.BarRotation, 0.5f, -360, 720, "%.1f");
@@ -33,10 +38,39 @@ public unsafe class LimitBreakAdjustments : UiAdjustments.SubTweak {
 
         ImGui.Checkbox("Hide Text", ref Config.HideText);
         ImGui.DragFloat2("Text Position", ref Config.TextPosition);
+        ImGui.Checkbox("Preview Bar", ref previewLimitBreak);
+
+        if (previewLimitBreak) {
+            if (previewVisibleCounter == 0) resetValue = LimitBreakController.Instance()->BarCount;
+            LimitBreakController.Instance()->BarCount = 3;
+            previewVisibleCounter = 2;
+        }
     }
 
+    private delegate void* SetValuesDelegate(LimitBreakController* controller, byte barCount, ushort currentUnits, ushort barUnits, byte a5, byte isPvp);
+
+    [TweakHook, Signature("0F B6 44 24 ?? 88 41 0E", DetourName = nameof(SetValuesDetour))]
+    private HookWrapper<SetValuesDelegate> setValuesHook;
+
+    private void* SetValuesDetour(LimitBreakController* controller, byte barCount, ushort currentUnits, ushort barUnits, byte a5, byte isPvp) {
+        previewLimitBreak = false;
+        previewVisibleCounter = 0;
+        return setValuesHook.Original(controller, barCount, currentUnits, barUnits, a5, isPvp);
+    }
+
+
     [FrameworkUpdate]
-    private void OnFrameworkUpdate() => Update(Config);
+    private void OnFrameworkUpdate() {
+        if (previewVisibleCounter > 0) {
+            previewVisibleCounter--;
+            if (previewVisibleCounter == 0) {
+                previewLimitBreak = false;
+                LimitBreakController.Instance()->BarCount = resetValue;
+            }
+        }
+        
+        Update(Config);
+    }
 
     private void Update(Configs config) {
         var lbAddon = Common.GetUnitBase("_LimitBreak");
@@ -69,5 +103,13 @@ public unsafe class LimitBreakAdjustments : UiAdjustments.SubTweak {
         }
     }
 
-    protected override void Disable() => Update(Configs.Default);
+    protected override void Disable() {
+        Update(Configs.Default);
+        previewLimitBreak = false;
+        LimitBreakController.Instance()->BarCount = 0;
+        if (previewVisibleCounter > 0) {
+            LimitBreakController.Instance()->BarCount = resetValue;
+            previewVisibleCounter = 0;
+        }
+    }
 }
