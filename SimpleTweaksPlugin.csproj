@@ -22,6 +22,7 @@
     </PropertyGroup>
     <PropertyGroup Label="CustomCS" Condition="'$(Configuration)'=='CustomCS'">
         <DefineConstants>DEBUG;CustomCS</DefineConstants>
+        <OutDir>$(ProjectDir)bin/Debug</OutDir>
     </PropertyGroup>
     <PropertyGroup Label="Feature">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -93,6 +94,10 @@
 	<ItemGroup>
 	  <Folder Include="Utility\FriendList" />
 	</ItemGroup>
+    <Target Name="Clean CS" Condition="'$(Configuration)'!='CustomCS'" BeforeTargets="PreBuildEvent">
+        <Exec Command="del $(TargetDir)FFXIVClientStructs.dll"/>
+        <Exec Command="del $(TargetDir)InteropGenerator.Runtime.dll"/>
+    </Target>
     <Target Name="Ensure CExporter" Condition="'$(Configuration)'=='CustomCS'" BeforeTargets="PreBuildEvent">
         <Exec Command="dotnet run --no-restore -v q --project ..\FFXIVClientStructs\CExporter\CExporter.csproj --quiet --no-write --strip-color"/>
     </Target>
