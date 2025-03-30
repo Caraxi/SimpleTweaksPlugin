@@ -39,7 +39,9 @@ public unsafe class ClickableAlarm : Tweak {
     }
 
     private static void EventAction(AtkEventType eventType, AtkUnitBase* unitBase, AtkResNode* node) {
-        if (eventType == AtkEventType.MouseClick) 
-            ChatHelper.SendMessage("/alarm");
+        if (eventType != AtkEventType.MouseClick) return;
+        if (unitBase == null || unitBase->NameString != "_DTR") return;
+        if (node == null || unitBase->GetNodeById(AlarmImageNode) != node) return;
+        ChatHelper.SendMessage("/alarm");
     }
 }
