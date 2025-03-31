@@ -15,6 +15,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakReleaseVersion("1.8.2.0")]
 [TweakAutoConfig]
 [Changelog("1.10.9.0", "Added preview for when not in a party")]
+[Changelog(UnreleasedVersion, "Fixed limit break text appearing when it isn't supposed to")]
 public unsafe class LimitBreakAdjustments : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
         public static readonly Configs Default = new();
@@ -82,7 +83,7 @@ public unsafe class LimitBreakAdjustments : UiAdjustments.SubTweak {
         var textNode = lbAddon->GetTextNodeById(2);
         if (textNode == null) return;
 
-        textNode->AtkResNode.ToggleVisibility(!config.HideText);
+        textNode->AtkResNode.ToggleVisibility(!config.HideText && LimitBreakController.Instance()->BarCount > 0);
         textNode->AtkResNode.SetPositionFloat(config.TextPosition.X, config.TextPosition.Y);
 
         var bars = new[] {
