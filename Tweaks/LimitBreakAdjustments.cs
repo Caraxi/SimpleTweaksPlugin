@@ -15,7 +15,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakReleaseVersion("1.8.2.0")]
 [TweakAutoConfig]
 [Changelog("1.10.9.0", "Added preview for when not in a party")]
-[Changelog(UnreleasedVersion, "Fixed limit break text appearing when it isn't supposed to")]
+[Changelog("1.10.9.1", "Fixed limit break text appearing when it isn't supposed to")]
 public unsafe class LimitBreakAdjustments : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
         public static readonly Configs Default = new();

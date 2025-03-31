@@ -7,7 +7,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("Clickable Alarm Icon")]
 [TweakDescription("Allows clicking the alarm icon in the server bar to open the alarm window.")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.9.1")]
 [TweakCategory(TweakCategory.UI, TweakCategory.QoL)]
 public unsafe class ClickableAlarm : Tweak {
     private const uint AlarmImageNode = 6;

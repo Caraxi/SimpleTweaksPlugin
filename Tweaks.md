@@ -41,6 +41,11 @@
   Allow clicking on classes to switch to gearsets.
 
 
+- **Clickable Alarm Icon**
+
+  Allows clicking the alarm icon in the server bar to open the alarm window.
+
+
 - **Combat Movement Type Control**
 
   Set movement type between Standard and Legacy when in/out of combat or when weapon is drawn/sheathed.

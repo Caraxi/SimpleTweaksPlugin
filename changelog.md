@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.10.9.1
+***New Tweaks***
+- **`Clickable Alarm Icon`** - Allows clicking the alarm icon in the server bar to open the alarm window.
+
+
+***Tweak Changes***
+- **`Limit Break Adjustments`** - Fixed limit break text appearing when it isn't supposed to
+
+
 ## 1.10.9.0
 ***Tweak Changes***
 - **`Add Number Separators`** - Fixed flytext number separator not working.
