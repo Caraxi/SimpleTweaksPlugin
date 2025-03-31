@@ -19,7 +19,7 @@ public unsafe class ZoomedChatCustomization : ChatTweaks.SubTweak {
 
     private delegate byte IsChatZoomed(AtkUnitBase* atkUnitBase);
 
-    [Signature("E8 ?? ?? ?? ?? 0F B6 8E ?? ?? ?? ?? 84 C0")]
+    [Signature("E8 ?? ?? ?? ?? 48 8B CF 84 C0 74 07")]
     private readonly IsChatZoomed isChatZoomed = null!;
 
     public class Configs : TweakConfig {
