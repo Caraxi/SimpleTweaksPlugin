@@ -118,7 +118,7 @@ public unsafe class HighResScreenshots : Tweak {
             ImGui.Indent();
             ImGui.Indent();
 
-            ImGui.TextWrapped("Take a screenshot using your FFXIV screenshot keybind.\nReShade will be used to take the screenshot instead.");
+            ImGui.TextWrapped("Match your Current Keybind below to your ReShade screenshot keybind.\nWhile this option is enabled and configured, use your regular FFXIV screenshot key to take high-resolution screenshots.");
             ImGui.Spacing();
             var keybindText = new List<string>();
             if (Config.ReShadeCtrl) keybindText.Add("CTRL");
