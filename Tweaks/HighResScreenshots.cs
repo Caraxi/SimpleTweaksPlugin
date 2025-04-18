@@ -126,7 +126,7 @@ public unsafe class HighResScreenshots : Tweak {
             if (Config.ReShadeShift) keybindText.Add("SHIFT");
             keybindText.Add($"{Config.ReShadeMainKey.GetFancyName()}");
             
-            ImGui.Text($"Current Keybind: {string.Join(" + ", keybindText)}");
+            ImGui.Text($"Current ReShade screenshot Keybind: {string.Join(" + ", keybindText)}");
             if (updatingReShadeKeybind) {
                 if (ImGui.Button("Cancel Keybind Change")) {
                     updatingReShadeKeybind = false;
