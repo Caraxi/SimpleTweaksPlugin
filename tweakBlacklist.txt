@@ -4,3 +4,4 @@ UiAdjustments@ControlHintMirroring
 UiAdjustments@StopCraftingButton::2
 UiAdjustments@FadeUnavailableActions
 UiAdjustments@LockWindowPosition
+UiAdjustments@SubmarineDestinationLetters
