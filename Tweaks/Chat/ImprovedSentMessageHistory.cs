@@ -82,7 +82,7 @@ public unsafe class ImprovedSentMessageHistory : Tweak {
         if (textInputComponent->AtkTextNode == null) return;
         
         var text = textInputComponent->AtkTextNode->GetText();
-        if (text == null) return;
+        if (text.Value == null) return;
         
         var str = Common.ReadString(text, 500);
         if (string.IsNullOrWhiteSpace(str)) return;
