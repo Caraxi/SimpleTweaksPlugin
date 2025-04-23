@@ -43,6 +43,10 @@ public unsafe class HideUnwantedBanner : UiAdjustments.SubTweak {
         new BannerSetting(121561, "GATE Joined"),
         new BannerSetting(121562, "GATE Complete"),
         new BannerSetting(121563, "GATE Failed"),
+        new BannerSetting(128370, "Stellar Mission Commenced"),
+        new BannerSetting(128371, "Stellar Mission Abandoned"),
+        new BannerSetting(128372, "Stellar Mission Failed"),
+        new BannerSetting(128373, "Stellar Mission Complete"),
     };
 
     private class Config : TweakConfig {
