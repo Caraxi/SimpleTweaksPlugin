@@ -3,8 +3,7 @@
 ## 1.10.9.3
 ***Tweak Changes***
 - **`Hide Unwanted Banners`**
-  - Added banners for Stellar Missions
-  - MidoriKami
+  - Added banners for Stellar Missions *(MidoriKami)*
   - Added ability to add other banners after being seen
   - Added image previews for banners
 

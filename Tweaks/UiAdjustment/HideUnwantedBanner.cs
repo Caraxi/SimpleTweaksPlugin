@@ -21,7 +21,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakAuthor("MidoriKami")]
 [TweakAutoConfig]
 [TweakReleaseVersion("1.8.3.0")]
-[Changelog("1.10.9.3", "Added banners for Stellar Missions", "MidoriKami")]
+[Changelog("1.10.9.3", "Added banners for Stellar Missions", Author = "MidoriKami")]
 [Changelog("1.10.9.3", "Added ability to add other banners after being seen")]
 [Changelog("1.10.9.3", "Added image previews for banners")]
 public unsafe class HideUnwantedBanner : UiAdjustments.SubTweak {
