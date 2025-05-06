@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.10.9.3
+***Tweak Changes***
+- **`Hide Unwanted Banners`**
+  - Added banners for Stellar Missions
+  - MidoriKami
+  - Added ability to add other banners after being seen
+  - Added image previews for banners
+
+
 ## 1.10.9.1
 ***New Tweaks***
 - **`Clickable Alarm Icon`** - Allows clicking the alarm icon in the server bar to open the alarm window.
