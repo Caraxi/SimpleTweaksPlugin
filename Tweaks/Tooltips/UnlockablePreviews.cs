@@ -172,10 +172,11 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
         imageNode->AtkResNode.SetHeight((ushort)(imageNode->AtkResNode.Width * size.Width / size.Height));
 
         imageNode->AtkResNode.SetPositionFloat(atkUnitBase->RootNode->Width / 2f - imageNode->AtkResNode.Width / 2f, anchorNode->Y + anchorNode->GetHeight() + 8);
-        atkUnitBase->WindowNode->AtkResNode.SetHeight((ushort)(imageNode->AtkResNode.Y + imageNode->AtkResNode.GetHeight() + 8));
+        atkUnitBase->WindowNode->AtkResNode.SetHeight((ushort)(imageNode->AtkResNode.Y + imageNode->AtkResNode.GetHeight() + 16));
 
         atkUnitBase->WindowNode->Component->UldManager.SearchNodeById(2)->SetHeight(atkUnitBase->WindowNode->AtkResNode.Height);
         insertNode->SetPositionFloat(insertNode->X, atkUnitBase->WindowNode->AtkResNode.GetHeight() - 20);
+        atkUnitBase->RootNode->SetHeight(atkUnitBase->WindowNode->AtkResNode.Height);
     }
 
     protected override void Disable() {
