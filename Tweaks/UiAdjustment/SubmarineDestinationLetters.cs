@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 using Dalamud.Game.Text;
+using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Utility;
 using Dalamud.Utility.Signatures;
+using FFXIVClientStructs.FFXIV.Component.GUI;
+using InteropGenerator.Runtime;
 using Lumina.Data;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
@@ -12,109 +14,80 @@ using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
-/* Heavily based on Namingway by Anna
- * https://git.anna.lgbt/ascclemens/Namingway/src/branch/main/Namingway/Renamer.cs
- */
-
 [TweakName("Label Submarine Destinations with Letters")]
 [TweakDescription("Uses the standard A-Z lettering to identify submarine destinations for easier use with other tools.")]
+[TweakVersion(2)]
 public unsafe class SubmarineDestinationLetters : UiAdjustments.SubTweak {
-    private delegate nint GetSubmarineExplorationRowDelegate(uint explorationId);
+    private delegate void* UpdateRowDelegate(AddonAirShipExploration* a1, uint a2, AtkResNode** a3);
 
-    [TweakHook, Signature("E8 ?? ?? ?? ?? 80 78 16 ?? 75 04", DetourName = nameof(GetExplorationRowDetour))]
-    private HookWrapper<GetSubmarineExplorationRowDelegate> getSubmarineExplorationRowHook;
+    [TweakHook, Signature("40 57 48 83 EC 40 0F B7 81 ?? ?? ?? ?? 49 8B F8", DetourName = nameof(UpdateRowDetour))]
+    private HookWrapper<UpdateRowDelegate> updateRowHook;
 
-    private readonly Dictionary<uint, nint> allocations = new();
-    private readonly Dictionary<uint, string> destinationNames = new();
+    private readonly Dictionary<string, string> destinationLetters = new();
 
     protected override void Enable() {
-        destinationNames.Clear();
+        
+        #if DEBUG
+        // Nag
+        if (Common.ClientStructsVersion > 5800) {
+            Plugin.Error(TweakManager, this, new Exception("Should really update this tweak to use FFXIVClientStucts..."), true);
+        }
+        #endif
+        
+        destinationLetters.Clear();
         var frSheet = Service.Data.Excel.GetSheet<SubmarineExploration>(Language.French);
         var sheet = Service.Data.Excel.GetSheet<SubmarineExploration>();
         foreach (var e in sheet) {
             var frRow = frSheet.GetRowOrDefault(e.RowId);
             if (frRow == null) continue;
-            destinationNames.Add(e.RowId, $"{ToBoxedLetters(frRow.Value.Location.ExtractText())} {e.Destination.ToDalamudString().TextValue}");
+            destinationLetters.TryAdd(e.Destination.ExtractText(), $"{ToBoxedLetters(frRow.Value.Location.ExtractText())}");
+            destinationLetters.TryAdd(e.Location.ExtractText(), $"{ToBoxedLetters(frRow.Value.Location.ExtractText())}");
         }
     }
 
-    private nint GetExplorationRowDetour(uint statusId) {
-        var data = getSubmarineExplorationRowHook.Original(statusId);
+    [StructLayout(LayoutKind.Explicit, Size = 0x1208)]
+    private struct AddonAirShipExploration {
+        [FieldOffset(0x0000)] public AtkUnitBase AtkUnitBase;
+        [FieldOffset(0x9E0)] public Destination Destinations; // 64
+        [FieldOffset(0x11F8)] public ushort NumDestinations;
+        [FieldOffset(0x11FC)] public ushort DisplayedDestinationIndex;
+    }
 
+    [StructLayout(LayoutKind.Explicit, Size = 0x20)]
+    private struct Destination {
+        [FieldOffset(0x00)] public CStringPointer DestinationName;
+        [FieldOffset(0x08)] public CStringPointer LocationName;
+        [FieldOffset(0x10)] public ushort X;
+        [FieldOffset(0x12)] public ushort Y;
+        [FieldOffset(0x14)] public uint RankReq;
+        [FieldOffset(0x18)] public uint ExpReward;
+        [FieldOffset(0x1E)] public ushort Stars;
+    }
+
+    private void* UpdateRowDetour(AddonAirShipExploration* a1, uint a2, AtkResNode** a3) {
         try {
-            return GetStatusSheetDetourInner(statusId, data);
-        } catch (Exception ex) {
-            SimpleLog.Error(ex, "Exception in GetStatusSheetDetour");
+            return updateRowHook.Original(a1, a2, a3);
+        } finally {
+            try {
+                if (a1->NumDestinations > a2) {
+                    if (a3 != null && a3[3] != null) {
+                        var nameNode = a3[3]->GetAsAtkTextNode();
+                        if (nameNode != null) {
+                            // TODO: Use FFXIVClientStructs
+                            var data = (Destination*)((ulong)a1 + 0x9E0 + 0x20 * a2);
+                            if (destinationLetters.TryGetValue(data->LocationName.ExtractText(), out var letters) || destinationLetters.TryGetValue(data->DestinationName.ExtractText(), out letters)) {
+                                var sb = new SeStringBuilder();
+                                sb.Append($"{letters} ");
+                                sb.Append(nameNode->NodeText.GetSeString());
+                                nameNode->SetText(sb.Encode());
+                            }
+                        }
+                    }
+                }
+            } catch {
+                // 
+            }
         }
-
-        return data;
-    }
-
-    private nint GetStatusSheetDetourInner(uint statusId, nint data) {
-        const int destinationOffset = 0;
-        const int locationOffset = 4;
-        const int expReward = 8;
-
-        if (destinationNames.TryGetValue(statusId, out var name)) {
-            if (allocations.TryGetValue(statusId, out var cached)) {
-                return cached + destinationOffset;
-            }
-
-            if (data == nint.Zero) return data;
-            var raw = new byte[1024];
-            Marshal.Copy(data - destinationOffset, raw, 0, raw.Length);
-            var nameBytes = Encoding.UTF8.GetBytes(name);
-            var oldName = ReadRawBytes(data + raw[destinationOffset]);
-            var descBytes = ReadRawBytes(data + raw[locationOffset] + 4);
-            var oldPost = raw[destinationOffset] + oldName.Length + 1 + descBytes.Length + 1;
-            var newPost = raw[destinationOffset] + nameBytes.Length + 1 + descBytes.Length + 1;
-
-            var newData = new byte[1536];
-
-            // copy over header
-            for (var i = 0; i < destinationOffset + raw[destinationOffset]; i++) {
-                newData[i] = raw[i];
-            }
-
-            newData[destinationOffset] = raw[destinationOffset];
-            newData[locationOffset] = (byte)(destinationOffset + newData[destinationOffset] + nameBytes.Length + 1 - 4);
-
-            // copy icon
-            for (var i = 0; i < 4; i++) {
-                newData[expReward + i] = raw[expReward + i];
-            }
-
-            // copy name
-            for (var i = 0; i < nameBytes.Length; i++) {
-                newData[destinationOffset + newData[destinationOffset] + i] = nameBytes[i];
-            }
-
-            // copy description
-            for (var i = 0; i < descBytes.Length; i++) {
-                newData[locationOffset + newData[locationOffset] + i] = descBytes[i];
-            }
-
-            // copy post-description info
-            for (var i = 0; i < raw.Length - oldPost; i++) {
-                newData[newPost + i] = raw[oldPost + i];
-            }
-
-            var newSheet = Marshal.AllocHGlobal(newData.Length);
-            Marshal.Copy(newData, 0, newSheet, newData.Length);
-
-            allocations[statusId] = newSheet;
-            return newSheet + destinationOffset;
-        }
-
-        return data;
-    }
-
-    protected override void Disable() {
-        foreach (var ptr in allocations.Values) {
-            Marshal.FreeHGlobal(ptr);
-        }
-
-        allocations.Clear();
     }
 
     private static string ToBoxedLetters(string inString) {
@@ -131,17 +104,5 @@ public unsafe class SubmarineDestinationLetters : UiAdjustments.SubTweak {
         }
 
         return outString;
-    }
-
-    private static byte[] ReadRawBytes(nint ptr) {
-        var bytes = new List<byte>();
-
-        var bytePtr = (byte*)ptr;
-        while (*bytePtr != 0) {
-            bytes.Add(*bytePtr);
-            bytePtr += 1;
-        }
-
-        return bytes.ToArray();
     }
 }
