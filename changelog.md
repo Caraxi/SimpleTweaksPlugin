@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.10.9.4
+***New Tweaks***
+- **`Squadron Chemistry Available Icon`** - Show an icon over squadron members who have a new chemistry available.
+
+
+***Tweak Changes***
+- **`Label Submarine Destinations with Letters`** - Rewritten to fix issues, re-enabled tweak.
+
+
 ## 1.10.9.3
 ***Tweak Changes***
 - **`Hide Unwanted Banners`**

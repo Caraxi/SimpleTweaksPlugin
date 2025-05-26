@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
@@ -15,7 +15,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakName("Squadron Chemistry Available Icon")]
 [TweakDescription("Show an icon over squadron members who have a new chemistry available.")]
 [TweakCategory(TweakCategory.UI, TweakCategory.QoL)]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.9.4")]
 public unsafe class GcArmyChemistryAvailable : Tweak {
     protected override void AfterEnable() {
         TerritoryChanged(Service.ClientState.TerritoryType);

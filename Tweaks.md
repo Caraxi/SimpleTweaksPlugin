@@ -340,6 +340,11 @@
   Adds a window for adding special characters to text inputs.
 
 
+- **Squadron Chemistry Available Icon**
+
+  Show an icon over squadron members who have a new chemistry available.
+
+
 - **Sync Crafter Bars**
 
   Keeps DoH job bars in sync
