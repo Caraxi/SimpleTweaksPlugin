@@ -111,7 +111,7 @@ public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
         var textValue = addon->AtkValues + 7;
         if (textValue->Type != ValueType.String || textValue->String.Value == null) return;
 
-        var button = addon->GetButtonNodeById(13);
+        var button = addon->GetComponentButtonById(13);
         if (button == null) return;
 
         var textNode = (AtkTextNode*)button->AtkComponentBase.GetTextNodeById(6);

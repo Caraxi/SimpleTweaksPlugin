@@ -15,7 +15,7 @@ public unsafe class OpenCraftingRecipe : ItemHotkey {
         if (recipes?.Count == 1) {
             AgentRecipeNote.Instance()->OpenRecipeByRecipeId(recipes[0].RowId);
         } else {
-            AgentRecipeNote.Instance()->OpenRecipeByItemId(item.RowId);
+            AgentRecipeNote.Instance()->SearchRecipeByItemId(item.RowId);
         }
     }
 
