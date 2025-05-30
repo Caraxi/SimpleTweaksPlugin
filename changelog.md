@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.10.10.0
+***New Tweaks***
+- **`Phantom Job Command`** - Adds a command to switch phantom jobs within Occult Crescent
+
+
+***Tweak Changes***
+- **`Display EXP Gain Percentage of Level`**
+  - Added support for Occult Crescent's phantom jobs.
+  - Added support for earning experience on jobs other than current job.
+
+
 ## 1.10.9.4
 ***New Tweaks***
 - **`Squadron Chemistry Available Icon`** - Show an icon over squadron members who have a new chemistry available.

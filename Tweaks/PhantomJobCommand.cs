@@ -10,7 +10,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("Phantom Job Command")]
 [TweakDescription("Adds a command to switch phantom jobs within Occult Crescent")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.10.0")]
 public unsafe class PhantomJobCommand : CommandTweak {
     protected override string Command => "/phantomjob";
 

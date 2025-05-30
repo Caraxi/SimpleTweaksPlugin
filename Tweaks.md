@@ -266,6 +266,11 @@
   Open the loot rolling window when new items are added to be rolled on.
 
 
+- **Phantom Job Command**
+
+  Adds a command to switch phantom jobs within Occult Crescent
+
+
 - **Quick Sell Items at Vendors**
 
   Hold a modifier key to sell items from your inventory in one click.

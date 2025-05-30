@@ -20,8 +20,8 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakAuthor("zajrik")]
 [TweakDescription("Adds the percentage of your next level to exp gains in chat.")]
 [TweakReleaseVersion("1.10.8.0")]
-[Changelog(UnreleasedVersion, "Added support for Occult Crescent's phantom jobs.")]
-[Changelog(UnreleasedVersion, "Added support for earning experience on jobs other than current job.")]
+[Changelog("1.10.10.0", "Added support for Occult Crescent's phantom jobs.")]
+[Changelog("1.10.10.0", "Added support for earning experience on jobs other than current job.")]
 public unsafe partial class ExpGainLevelPercent : ChatTweaks.SubTweak {
     private const XivChatType ExperienceGainedChatMessageType = (XivChatType)2112;
 
