@@ -95,8 +95,8 @@
 	  <Folder Include="Utility\FriendList" />
 	</ItemGroup>
     <Target Name="Clean CS" Condition="'$(Configuration)'=='Debug'" BeforeTargets="PreBuildEvent">
-        <Exec Command="del $(TargetDir)FFXIVClientStructs.dll"/>
-        <Exec Command="del $(TargetDir)InteropGenerator.Runtime.dll"/>
+        <Exec Command="del $(TargetDir)FFXIVClientStructs.dll" EchoOff="true" StandardErrorImportance="low" StandardOutputImportance="low"/>
+        <Exec Command="del $(TargetDir)InteropGenerator.Runtime.dll" EchoOff="true" StandardErrorImportance="low" StandardOutputImportance="low"/>
     </Target>
     <Target Name="Ensure CExporter" Condition="'$(Configuration)'=='CustomCS'" BeforeTargets="PreBuildEvent">
         <Exec Command="dotnet run --no-restore -v q --project ..\FFXIVClientStructs\CExporter\CExporter.csproj --quiet --no-write --strip-color"/>
