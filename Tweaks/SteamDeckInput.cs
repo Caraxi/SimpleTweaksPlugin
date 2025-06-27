@@ -14,26 +14,22 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakDescription("Replaces the default Steam Virtual Keyboard with one that doesn't take over the screen.")]
 public unsafe class SteamDeckInput : Tweak
 {
-    // undocumented valve shenanigans, scale factor for steam deck.
-    // probably shouldn't need to be changed. probably?
-    private const float KeyboardScaleValue = 1.5f;
-
-    private nint inputInterfaceOffset;
+    private nint _inputInterfaceOffset;
 
     public override bool CanLoad => Framework.Instance()->IsSteamApiInitialized() &&
                                     Framework.Instance()->SteamApi->IsRunningOnSteamDeck();
 
-    [TweakHook(typeof(SteamGamepadSoftKeyboard), nameof(SteamGamepadSoftKeyboard.OpenSoftKeyboard),
-        nameof(OpenSteamSoftKeyboardDetour))]
-    private HookWrapper<SoftKeyboardDeviceInterface.Delegates.OpenSoftKeyboard> openSteamSoftKeyboardHook = null!;
+    [TweakHook, Signature("48 83 EC 28 80 79 ?? ?? 74 ?? 48 85 D2", DetourName = nameof(OpenSteamSoftKeyboardDetour))]
+    private HookWrapper<SoftKeyboardDeviceInterface.Delegates.OpenSoftKeyboard> _openSteamSoftKeyboardHook = null!;
 
     protected override void Enable()
     {
-        this.inputInterfaceOffset =
+        
+        this._inputInterfaceOffset =
             Marshal.OffsetOf<AtkComponentTextInput>(nameof(AtkComponentTextInput.SoftKeyboardInputInterface));
-        if (this.inputInterfaceOffset == 0)
+        if (this._inputInterfaceOffset == 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(inputInterfaceOffset),
+            throw new ArgumentOutOfRangeException(nameof(_inputInterfaceOffset),
                 "Failed to get offset of SoftKeyboardInputInterface, cowardly refusing to load!");
         }
 
@@ -51,22 +47,20 @@ public unsafe class SteamDeckInput : Tweak
             return false;
 
         // I do not know how to do this better
-        var atkTextInput = (AtkComponentTextInput*)(inputInterfacePtr - inputInterfaceOffset);
-        var resNode = atkTextInput->AtkComponentInputBase.AtkComponentBase.AtkResNode;
+        var atkTextInput = (AtkComponentTextInput*)((nint)inputInterfacePtr - _inputInterfaceOffset);
+        var resNode = atkTextInput->AtkResNode;
 
         if (resNode == null)
         {
             // shouldn't be possible, but fall back for safety.
-            return openSteamSoftKeyboardHook.Original(softKeyboardDevice, inputInterfacePtr);
+            SimpleLog.Error("Failed to get ResNode from AtkComponentTextInput?!");
+            return _openSteamSoftKeyboardHook.Original(softKeyboardDevice, inputInterfacePtr);
         }
 
-        var scaledX = (int)(resNode->ScreenX / KeyboardScaleValue);
-        var scaledY = (int)(resNode->ScreenY / KeyboardScaleValue);
-
         SimpleLog.Debug(
-            $"Opening FloatingGamepad, textfield @ ({scaledX}, {scaledY}) with size {resNode->Width} {resNode->Height}");
+            $"Opening FloatingGamepad, textfield @ ({resNode->ScreenX}, {resNode->ScreenY}) with size {resNode->Width} {resNode->Height}");
         Framework.Instance()->SteamApi->ShowFloatingGamepadTextInput(
-            scaledX, scaledY,
+            (int)resNode->ScreenX, (int)resNode->ScreenY,
             resNode->Width, resNode->Height
         );
 
