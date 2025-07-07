@@ -14,6 +14,9 @@ public unsafe class ClearSelectedDuties : Tweak {
 
     [AddonPostSetup("ContentsFinder")]
     private void OnDutyFinderOpened(AddonContentsFinder* addon) {
+        if (ContentsFinder.Instance()->QueueInfo.QueueState != ContentsFinderQueueInfo.QueueStates.None)
+            return;
+
         var returnValue = stackalloc AtkValue[1];
         var command = stackalloc AtkValue[2];
         command[0].SetInt(12);
