@@ -27,7 +27,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
     private delegate void UpdateHotBarSlotDelegate(AddonActionBarBase* addon, ActionBarSlot* uiData, NumberArrayData* numberArray, StringArrayData* stringArray, int numberArrayIndex, int stringArrayIndex);
     
-    [TweakHook, Signature("E8 ?? ?? ?? ?? 49 81 C7 ?? ?? ?? ?? 83 C7 11", DetourName = nameof(OnHotBarSlotUpdate))]
+    [TweakHook, Signature("E8 ?? ?? ?? ?? 48 81 C6 ?? ?? ?? ?? 83 C7 11", DetourName = nameof(OnHotBarSlotUpdate))]
     private readonly HookWrapper<UpdateHotBarSlotDelegate>? onHotBarSlotUpdateHook;
 
     private readonly Dictionary<uint, Action?> actionCache = [];

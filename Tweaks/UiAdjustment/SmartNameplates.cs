@@ -29,7 +29,7 @@ public unsafe class SmartNameplates : UiAdjustments.SubTweak {
 
     private delegate byte ShouldDisplayNameplateDelegate(RaptureAtkModule* raptureAtkModule, GameObject* actor, GameObject* localPlayer, float distance);
 
-    [TweakHook, Signature("E8 ?? ?? ?? ?? 89 44 24 44 48 C7 86", DetourName = nameof(ShouldDisplayNameplateDetour))]
+    [TweakHook, Signature("E8 ?? ?? ?? ?? 89 44 24 50 48 C7 83", DetourName = nameof(ShouldDisplayNameplateDetour))]
     private HookWrapper<ShouldDisplayNameplateDelegate> shouldDisplayNameplateHook;
 
     protected void DrawConfig() {

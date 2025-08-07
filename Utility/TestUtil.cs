@@ -126,18 +126,16 @@ public static class TestUtil {
                     
                     if (!tweak.Enabled) {
                         StateString = $"Enabling Tweak: {tweak.Name}";
-                        await Service.Framework.RunOnTick(tweak.InternalEnable, delayTicks: 2);
+                        await Service.Framework.RunOnTick(tweak.InternalEnable, delayTicks: 1);
                     }
-
                     
-
-
                     if (tweak.Enabled) {
                         StateString = $"Running Test: {tweak.Name}";
-                        await Service.Framework.RunOnTick(tweak.Test, delayTicks: 2);
+                        await Service.Framework.RunOnTick(tweak.Test, delayTicks: 1);
 
 
                         if (tweak is SubTweakManager stm) {
+                            SimpleTweaksPluginConfig.RebuildTweakList();
                             foreach (var subTweak in stm.GetTweakList()) {
                                 await RunTest(subTweak);
                             }
@@ -145,9 +143,9 @@ public static class TestUtil {
                         
                     }
                     
-                    if (!wasEnabled) {
+                    if (!wasEnabled && tweak is not SubTweakManager { AlwaysEnabled: true}) {
                         StateString = $"Disabling Tweak: {tweak.Name}";
-                        await Service.Framework.RunOnTick(tweak.InternalDisable, delayTicks: 2);
+                        await Service.Framework.RunOnTick(tweak.InternalDisable, delayTicks: 1);
                     }
                     
                 } catch (Exception ex) {
@@ -175,5 +173,7 @@ public static class TestUtil {
 
         StateString = "Finished Test.";
         IsRunning = false;
+        SimpleTweaksPlugin.Plugin.PluginConfig.RefreshSearch();
+        SimpleTweaksPluginConfig.RebuildTweakList();
     }
 }
