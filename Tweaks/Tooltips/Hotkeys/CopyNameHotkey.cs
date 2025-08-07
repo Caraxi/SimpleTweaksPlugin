@@ -1,6 +1,6 @@
 ﻿using Dalamud.Game.ClientState.Keys;
 using Dalamud.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 
 namespace SimpleTweaksPlugin.Tweaks.Tooltips.Hotkeys;

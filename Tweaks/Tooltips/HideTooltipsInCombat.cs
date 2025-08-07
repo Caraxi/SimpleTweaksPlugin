@@ -82,10 +82,10 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
     private void OnAddonSetup(AddonSetupArgs obj) {
         switch (obj.AddonName) {
             case "ConfigCharacterHudGeneral":
-                ToggleConfigLock((AtkUnitBase*)obj.Addon, false);
+                ToggleConfigLock((AtkUnitBase*)obj.Addon.Address, false);
                 break;
             case "ConfigCharaHotbarXHB":
-                ToggleXhbConfigLock((AtkUnitBase*)obj.Addon, false);
+                ToggleXhbConfigLock((AtkUnitBase*)obj.Addon.Address, false);
                 break;
         }
     }

@@ -8,7 +8,7 @@ using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -113,7 +113,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
 
     [AddonPreDraw("_TargetInfoCastBar", "_TargetInfo", "_FocusTargetInfo")]
     private void OnAddonPreDraw(AddonArgs args) {
-        var addon = (AtkUnitBase*) args.Addon;
+        var addon = (AtkUnitBase*) args.Addon.Address;
 
         switch (args.AddonName) {
             case "_TargetInfoCastBar" when addon->IsVisible && TweakConfig.PrimaryTargetEnabled:
@@ -184,7 +184,7 @@ public unsafe class TargetCastbarCountdown : UiAdjustments.SubTweak {
         textNode->LineSpacing = 20;
         textNode->AlignmentFontType = 37;
         textNode->FontSize = 20;
-        textNode->TextFlags = (byte) TextFlags.Edge;
+        textNode->TextFlags = TextFlags.Edge;
         
         textNode->SetWidth(80);
         textNode->SetHeight(22);

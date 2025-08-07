@@ -70,10 +70,14 @@
             <Private>false</Private>
             <HintPath>$(DalamudLibPath)\Newtonsoft.Json.dll</HintPath>
 		</Reference>
-		<Reference Include="ImGui.NET">
+        <Reference Include="Dalamud.Bindings.ImGui">
             <Private>false</Private>
-            <HintPath>$(DalamudLibPath)\ImGui.NET.dll</HintPath>
-		</Reference>
+            <HintPath>$(DalamudLibPath)\Dalamud.Bindings.ImGui.dll</HintPath>
+        </Reference>
+        <Reference Include="Dalamud.Bindings.ImPlot">
+            <Private>false</Private>
+            <HintPath>$(DalamudLibPath)\Dalamud.Bindings.ImPlot.dll</HintPath>
+        </Reference>
 		<Reference Include="ImGuiScene">
             <Private>false</Private>
             <HintPath>$(DalamudLibPath)\ImGuiScene.dll</HintPath>

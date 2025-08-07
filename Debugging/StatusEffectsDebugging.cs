@@ -5,7 +5,7 @@ using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.Interop;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 
 namespace SimpleTweaksPlugin.Debugging;
@@ -71,15 +71,15 @@ public unsafe class StatusEffectsDebugging : DebugHelper {
 
                 ImGui.TableNextColumn();
 
-                if (status->SourceId == 0xE0000000 || status->SourceId == 0) {
+                if (status->SourceObject.ObjectId == 0xE0000000 || status->SourceObject.ObjectId == 0) {
                     ImGui.Text("None");
                 } else {
-                    var sourceObj = CharacterManager.Instance()->LookupBattleCharaByEntityId(status->SourceId);
+                    var sourceObj = CharacterManager.Instance()->LookupBattleCharaByEntityId(status->SourceObject.ObjectId);
                     if (sourceObj == null) {
-                        DebugManager.ClickToCopyText($"0x{status->SourceId:X}");
+                        DebugManager.ClickToCopyText($"0x{status->SourceObject.ObjectId:X}");
                     } else {
                         var sourceName = SeString.Parse(sourceObj->Name);
-                        DebugManager.ClickToCopyText($"{sourceName.TextValue}", $"0x{status->SourceId:X}");
+                        DebugManager.ClickToCopyText($"{sourceName.TextValue}", $"0x{status->SourceObject.ObjectId:X}");
                     }
                 }
 

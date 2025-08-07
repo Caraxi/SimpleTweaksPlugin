@@ -1,7 +1,5 @@
 using System.Runtime.InteropServices;
 using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Interface.Components;
-using Dalamud.Utility;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -21,7 +19,7 @@ public unsafe class OpenEstateAccess : CommandTweak {
     [Signature("E8 ?? ?? ?? ?? 84 C0 0F 85 ?? ?? ?? ?? 40 32 ED E9 ?? ?? ?? ?? E8")]
     private readonly OpenEstateAccessSettingsDelegate openEstateAccessSettings = null!;
 
-    private delegate long GetOwnedHouseId(int type, int index = -1);
+    private delegate HouseId GetOwnedHouseId(int type, int index = -1);
 
     [Signature("E8 ?? ?? ?? ?? 48 8B C8 E8 ?? ?? ?? ?? 8D 56 FE")]
     private readonly GetOwnedHouseId getOwnedHouseId = null!;
@@ -33,14 +31,7 @@ public unsafe class OpenEstateAccess : CommandTweak {
     private struct AgentHousing {
         [FieldOffset(0xA734)] public EstateType SelectedEstateType;
     }
-
-    private enum EstateType : uint {
-        PrivateEstate,
-        FreeCompanyEstate,
-        PrivateChambers,
-        Apartment
-    }
-
+    
     private SeString CommandUsage {
         get {
             var s = new SeStringBuilder();
@@ -89,11 +80,11 @@ public unsafe class OpenEstateAccess : CommandTweak {
                 if (getOwnedHouseId(0) == houseId) {
                     agent->SelectedEstateType = EstateType.FreeCompanyEstate;
                 } else if (getOwnedHouseId(1) == houseId) {
-                    agent->SelectedEstateType = EstateType.PrivateChambers;
+                    agent->SelectedEstateType = EstateType.PersonalChambers;
                 } else if (getOwnedHouseId(2) == houseId) {
-                    agent->SelectedEstateType = EstateType.PrivateEstate;
+                    agent->SelectedEstateType = EstateType.PersonalEstate;
                 } else if (getOwnedHouseId(6) == houseId) {
-                    agent->SelectedEstateType = EstateType.Apartment;
+                    agent->SelectedEstateType = EstateType.ApartmentRoom;
                 } else {
                     Service.Chat.PrintError("You are not inside your own estate.", Name);
                     Service.Chat.PrintError(CommandUsage, Name);
@@ -103,15 +94,15 @@ public unsafe class OpenEstateAccess : CommandTweak {
                 break;
             case "a":
             case "apartment":
-                agent->SelectedEstateType = EstateType.Apartment;
+                agent->SelectedEstateType = EstateType.ApartmentRoom;
                 break;
             case "c":
             case "chambers":
-                agent->SelectedEstateType = EstateType.PrivateChambers;
+                agent->SelectedEstateType = EstateType.PersonalChambers;
                 break;
             case "p":
             case "personal":
-                agent->SelectedEstateType = EstateType.PrivateEstate;
+                agent->SelectedEstateType = EstateType.PersonalEstate;
                 break;
             case "f":
             case "fc":

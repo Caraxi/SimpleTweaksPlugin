@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace SimpleTweaksPlugin.Utility; 
 

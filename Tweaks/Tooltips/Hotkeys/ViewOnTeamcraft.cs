@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Keys;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Utility;
 

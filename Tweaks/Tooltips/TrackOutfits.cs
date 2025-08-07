@@ -30,8 +30,8 @@ public unsafe class TrackOutfits : TooltipTweaks.SubTweak
         }
     }
 
-    protected override void Enable() => identifier = PluginInterface.AddChatLinkHandler((uint)LinkHandlerId.TrackOutfitsIdentifier, (_, _) => { });
-    protected override void Disable() => PluginInterface.RemoveChatLinkHandler((uint)LinkHandlerId.TrackOutfitsIdentifier);
+    protected override void Enable() => identifier = Service.Chat.AddChatLinkHandler((_, _) => { });
+    protected override void Disable() => Service.Chat.RemoveChatLinkHandler(identifier.CommandId);
 
     private long IsItemActionUnlockedDetour(UIState* uiState, void* item)
     {
@@ -51,7 +51,7 @@ public unsafe class TrackOutfits : TooltipTweaks.SubTweak
         {
             var description = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ItemDescription);
 
-            if (description.Payloads.Any(payload => payload is DalamudLinkPayload { CommandId: (uint)LinkHandlerId.TrackOutfitsIdentifier }))
+            if (description.Payloads.Any(payload => payload is DalamudLinkPayload dlp && dlp.CommandId == identifier.CommandId))
                 return; // Don't append when it already exists.
 
             description.Payloads.Add(identifier);

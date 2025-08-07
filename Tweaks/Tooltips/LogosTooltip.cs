@@ -1,6 +1,6 @@
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.Tweaks;
 using SimpleTweaksPlugin;
 using SimpleTweaksPlugin.TweakSystem;

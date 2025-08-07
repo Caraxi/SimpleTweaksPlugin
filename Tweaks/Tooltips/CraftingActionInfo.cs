@@ -36,7 +36,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
         progressString ??= Service.Data.Excel.GetSheet<Addon>().GetRow(213).Text.ExtractText();
         qualityString ??= Service.Data.Excel.GetSheet<Addon>().GetRow(216).Text.ExtractText();
         
-        identifier = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.CraftingActionInfoIdentifier, (_, _) => { });
+        identifier = Service.Chat.AddChatLinkHandler((_, _) => { });
 
         if (Config.ShowResultsPreview) {
             Common.FrameworkUpdate += FrameworkUpdate;
@@ -52,7 +52,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
 
     protected override void Disable() {
         Common.FrameworkUpdate -= FrameworkUpdate;
-        PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.CraftingActionInfoIdentifier);
+        if (identifier != null) Service.Chat.RemoveChatLinkHandler(identifier.CommandId);
     }
 
     private void SetGhost(AtkTextNode* textNode, AtkTextNode* maxTextNode, AtkComponentNode* gauge, uint addValue) {
@@ -133,8 +133,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
                 newGhostText->LineSpacing = textNode->LineSpacing;
                 newGhostText->AlignmentFontType = textNode->AlignmentFontType;
                 newGhostText->FontSize = textNode->FontSize;
-                newGhostText->TextFlags = (byte) ((TextFlags)textNode->TextFlags | TextFlags.Edge);
-                newGhostText->TextFlags2 = 0;
+                newGhostText->TextFlags = textNode->TextFlags | TextFlags.Edge;
 
                 newGhostText->AtkResNode.NodeId = CustomNodes.CraftingGhostText;
 
@@ -254,7 +253,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
         if (progress == 0 && quality == 0) return;
         
         var descriptionString = GetTooltipString(stringArrayData, TooltipTweaks.ActionTooltipField.Description);
-        if (descriptionString.Payloads.Any(payload => payload is DalamudLinkPayload { CommandId: (uint)LinkHandlerId.CraftingActionInfoIdentifier })) return; // Don't append when it already exists.
+        if (descriptionString.Payloads.Any(payload => payload is DalamudLinkPayload dlp && dlp.CommandId == identifier.CommandId)) return; // Don't append when it already exists.
         
         descriptionString.Append(NewLinePayload.Payload);
         descriptionString.Append(identifier);

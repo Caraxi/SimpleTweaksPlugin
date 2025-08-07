@@ -109,19 +109,19 @@ public unsafe class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         public ActionKind Category;
         public uint Id;
         public int Flag;
-        public byte Unknown4;
+        public bool IsLovmActionDetail;
     }
 
     public static readonly HoveredActionDetail HoveredAction = new HoveredActionDetail();
 
     public static uint LastLoadedItem { get; private set; }
 
-    private void ActionHoveredDetour(AgentActionDetail* agent, ActionKind actionKind, uint actionId, int flag, byte unk) {
+    private void ActionHoveredDetour(AgentActionDetail* agent, ActionKind actionKind, uint actionId, int flag, bool isLovmActionDetail) {
         HoveredAction.Category = actionKind;
         HoveredAction.Id = actionId;
         HoveredAction.Flag = flag;
-        HoveredAction.Unknown4 = unk;
-        actionHoveredHook?.Original(agent, actionKind, actionId, flag, unk);
+        HoveredAction.IsLovmActionDetail = isLovmActionDetail;
+        actionHoveredHook?.Original(agent, actionKind, actionId, flag, isLovmActionDetail);
     }
 
     private IntPtr ActionTooltipDetour(AtkUnitBase* addon, void* a2, ulong a3) {

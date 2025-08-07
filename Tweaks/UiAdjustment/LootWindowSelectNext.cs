@@ -29,7 +29,7 @@ public unsafe class LootWindowSelectNext : UiAdjustments.SubTweak {
     private void OnNeedGreedReceiveEvent(AddonReceiveEventArgs args) {
         var type = (AtkEventType) args.AtkEventType;
         var buttonType = (ButtonType) args.EventParam;
-        var addon = (AddonNeedGreed*) args.Addon;
+        var addon = (AddonNeedGreed*) args.Addon.Address;
         
         if (type is not AtkEventType.ButtonClick) return;
         

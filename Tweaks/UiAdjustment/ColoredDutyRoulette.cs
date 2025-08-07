@@ -8,7 +8,7 @@ using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
@@ -86,7 +86,7 @@ public unsafe partial class ColoredDutyRoulette : UiAdjustments.SubTweak {
     
     [AddonPostRefresh("ContentsFinder")]
     private void OnContentsFinderRefresh(AddonRefreshArgs args) {
-        var addon = (AddonContentsFinder*) args.Addon;
+        var addon = (AddonContentsFinder*) args.Addon.Address;
 
         foreach (var itemRenderer in addon->DutyList->Items.AsSpan()) {
             var componentNode = itemRenderer.Value->Renderer->AtkDragDropInterface.ComponentNode;

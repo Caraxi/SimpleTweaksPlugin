@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using ImGuiNET;
-using SimpleTweaksPlugin.Enums;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -21,10 +21,10 @@ public class ChrDirCommand : CommandTweak {
     private DalamudLinkPayload linkPayload;
 
     protected override void EnableCommand() {
-        linkPayload = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.OpenFolderLink, OpenFolder);
+        linkPayload = Service.Chat.AddChatLinkHandler(OpenFolder);
     }
 
-    private void OpenFolder(uint arg1, SeString arg2) {
+    private void OpenFolder(Guid arg1, SeString arg2) {
         var dir = arg2.TextValue.Replace($"{(char)0x00A0}", "").Replace("\n", "").Replace("\r", "");
         Process.Start("explorer.exe", dir);
     }
@@ -54,6 +54,6 @@ public class ChrDirCommand : CommandTweak {
     }
 
     protected override void DisableCommand() {
-        PluginInterface.RemoveChatLinkHandler((uint) LinkHandlerId.OpenFolderLink);
+        Service.Chat.RemoveChatLinkHandler(linkPayload.CommandId);
     }
 }

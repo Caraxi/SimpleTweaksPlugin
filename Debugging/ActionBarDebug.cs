@@ -8,7 +8,7 @@ using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.Interop;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using JetBrains.Annotations;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Utility;
@@ -252,7 +252,7 @@ public unsafe class ActionBarDebug : DebugHelper {
 
             var icon = Service.TextureProvider.GetFromGameIcon(new GameIconLookup(slot->IconId % 1000000, slot->IconId >= 1000000)).GetWrapOrDefault();
             if (icon != null) {
-                ImGui.Image(icon.ImGuiHandle, new Vector2(32));
+                ImGui.Image(icon.Handle, new Vector2(32));
             } else {
                 ImGui.GetWindowDrawList().AddRect(ImGui.GetCursorScreenPos(), ImGui.GetCursorScreenPos() + new Vector2(32), 0xFF0000FF, 4);
                 ImGui.GetWindowDrawList().AddText(ImGui.GetCursorScreenPos(), 0xFFFFFFFF, $"{slot->IconId}");

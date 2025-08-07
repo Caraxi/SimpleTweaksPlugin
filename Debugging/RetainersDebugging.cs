@@ -2,7 +2,7 @@
 using Dalamud.Interface.Textures;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.Interop;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace SimpleTweaksPlugin.Debugging;
 
@@ -47,7 +47,7 @@ public unsafe class RetainersDebugging : DebugHelper {
                 } else {
                     var icon = Service.TextureProvider.GetFromGameIcon(new GameIconLookup((uint)(62100 + r->ClassJob))).GetWrapOrDefault();
                     if (icon != null) {
-                        ImGui.Image(icon.ImGuiHandle, new Vector2(24));
+                        ImGui.Image(icon.Handle, new Vector2(24));
                     } else {
                         ImGui.Text($"[{r->ClassJob}]");
                     }

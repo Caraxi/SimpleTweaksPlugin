@@ -11,7 +11,7 @@ using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -72,12 +72,12 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak {
     [AddonFinalize("CutSceneSelectString", "SelectString")]
     private void OnAddonFinalize(AddonFinalizeArgs obj) {
         switch (obj) {
-            case { AddonName: "CutSceneSelectString", Addon: not 0 }:
-                PrintSelectedString(((AddonCutSceneSelectString*)obj.Addon)->OptionList);
+            case { AddonName: "CutSceneSelectString", Addon.Address: not 0 }:
+                PrintSelectedString(((AddonCutSceneSelectString*)obj.Addon.Address)->OptionList);
                 break;
 
-            case { AddonName: "SelectString", Addon: not 0 } when Service.Condition[ConditionFlag.OccupiedInQuestEvent]:
-                PrintSelectedString(((AddonSelectString*)obj.Addon)->PopupMenu.PopupMenu.List);
+            case { AddonName: "SelectString", Addon.Address: not 0 } when Service.Condition[ConditionFlag.OccupiedInQuestEvent]:
+                PrintSelectedString(((AddonSelectString*)obj.Addon.Address)->PopupMenu.PopupMenu.List);
                 break;
         }
     }

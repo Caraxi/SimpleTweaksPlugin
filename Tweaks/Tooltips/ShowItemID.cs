@@ -38,15 +38,14 @@ public unsafe class ShowItemID : TooltipTweaks.SubTweak {
     private void ActionDetailRefresh(AtkUnitBase* unitBase) {
         var node = unitBase->GetTextNodeById(6);
         if (node == null) return;
-        node->TextFlags |= (byte)TextFlags.MultiLine;
+        node->TextFlags |= TextFlags.MultiLine;
     }
 
     [AddonPostRefresh("ItemDetail")]
     private void ItemDetailRefresh(AtkUnitBase* unitBase) {
         var node = unitBase->GetTextNodeById(35);
         if (node == null) return;
-        node->TextFlags |= (byte)TextFlags.MultiLine;
-        node->TextFlags2 = 0;
+        node->TextFlags |= TextFlags.MultiLine;
     }
 
     public override void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {

@@ -8,7 +8,7 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;

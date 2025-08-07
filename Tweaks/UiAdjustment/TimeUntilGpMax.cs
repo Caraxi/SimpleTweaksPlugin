@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Numerics;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -152,8 +152,7 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
                 newTextNode->LineSpacing = 24;
                 newTextNode->AlignmentFontType = 0x15;
                 newTextNode->FontSize = 12;
-                newTextNode->TextFlags = (byte)(TextFlags.Edge);
-                newTextNode->TextFlags2 = 0;
+                newTextNode->TextFlags = TextFlags.Edge;
 
                 newTextNode->AtkResNode.NodeId = CustomNodes.TimeUntilGpMax;
 

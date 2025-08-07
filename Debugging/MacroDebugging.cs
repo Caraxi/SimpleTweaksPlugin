@@ -3,7 +3,7 @@ using System.Numerics;
 using Dalamud.Interface.Textures;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.Interop;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace SimpleTweaksPlugin.Debugging;
 
@@ -29,7 +29,7 @@ public unsafe class MacroDebugging : DebugHelper {
             var icon = Service.TextureProvider.GetFromGameIcon(new GameIconLookup(macro->IconId)).GetWrapOrDefault();
 
             if (icon != null) {
-                ImGui.Image(icon.ImGuiHandle, new Vector2(24));
+                ImGui.Image(icon.Handle, new Vector2(24));
             } else {
                 ImGui.Dummy(new Vector2(24));
             }

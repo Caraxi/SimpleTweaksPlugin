@@ -1,5 +1,5 @@
 using Dalamud.Game.ClientState.Conditions;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System;
 using System.Runtime.InteropServices;
 using SimpleTweaksPlugin.TweakSystem;

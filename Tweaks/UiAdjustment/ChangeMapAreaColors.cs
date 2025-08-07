@@ -6,7 +6,7 @@ using Dalamud.Interface.Components;
 using Dalamud.Utility;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using JetBrains.Annotations;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -177,7 +177,8 @@ public unsafe class ChangeMapAreaColors : UiAdjustments.SubTweak {
         // SimpleLog.Debug($"Called for AreaType: {(int) areaType}");
 
         if (Config.RaveMode && !Service.ClientState.IsPvP) {
-            ImGui.ColorConvertHSVtoRGB(raveHue / 255f, 1f, 1f, out var r, out var g, out var b);
+            float r = 0, g = 0, b = 0;
+            ImGui.ColorConvertHSVtoRGB(raveHue / 255f, 1f, 1f, ref r, ref g, ref b);
             SetNodeColor(node, new Vector4(r, g, b, 1));
 
             raveHue += 1;

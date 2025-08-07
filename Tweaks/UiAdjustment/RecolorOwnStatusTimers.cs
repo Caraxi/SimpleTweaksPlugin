@@ -1,6 +1,6 @@
 ﻿using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Client.Graphics;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 using Vector4 = System.Numerics.Vector4;

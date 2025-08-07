@@ -2,7 +2,7 @@
 using System.Numerics;
 using Dalamud.Interface;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;

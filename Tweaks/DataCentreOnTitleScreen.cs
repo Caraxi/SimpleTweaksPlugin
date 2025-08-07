@@ -19,7 +19,7 @@ public unsafe class DataCentreOnTitleScreen : Tweak {
         public bool ShowServiceAccountIndex;
     }
 
-    public Configs Config { get; private set; }
+    [TweakConfig] public Configs Config { get; private set; }
 
     [FrameworkUpdate]
     private void FrameworkOnUpdate() {
@@ -51,7 +51,7 @@ public unsafe class DataCentreOnTitleScreen : Tweak {
 
             if (selectedServiceIndex >= 0) {
                 displayText += $"\nService Account {selectedServiceIndex + 1}";
-                text->TextFlags |= (byte)TextFlags.MultiLine;
+                text->TextFlags |= TextFlags.MultiLine;
                 text->FontSize = 15;
                 text->LineSpacing = 13;
                 text->SetAlignment(AlignmentType.Top);
@@ -62,9 +62,7 @@ public unsafe class DataCentreOnTitleScreen : Tweak {
 
         text->FontSize = 18;
         text->LineSpacing = 18;
-        unchecked {
-            text->TextFlags &= (byte)~TextFlags.MultiLine;
-        }
+        text->TextFlags &= ~TextFlags.MultiLine;
 
         text->SetAlignment(AlignmentType.Center);
         text->SetText(displayText);

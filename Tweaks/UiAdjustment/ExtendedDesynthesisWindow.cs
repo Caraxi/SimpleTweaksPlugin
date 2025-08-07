@@ -7,7 +7,7 @@ using FFXIVClientStructs.FFXIV.Client.Graphics;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
@@ -174,7 +174,6 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
             header->EdgeColor = lastLabel->EdgeColor;
             header->BackgroundColor = lastLabel->BackgroundColor;
             header->TextFlags = lastLabel->TextFlags;
-            header->TextFlags2 = lastLabel->TextFlags2;
 
             header->AtkResNode.DrawFlags = lastNode->DrawFlags;
             header->AtkResNode.NodeFlags = lastNode->NodeFlags;
@@ -241,7 +240,6 @@ public unsafe class ExtendedDesynthesisWindow : UiAdjustments.SubTweak {
                     entryNode->EdgeColor = baseTextNode->EdgeColor;
                     entryNode->BackgroundColor = baseTextNode->BackgroundColor;
                     entryNode->TextFlags = baseTextNode->TextFlags;
-                    entryNode->TextFlags2 = baseTextNode->TextFlags2;
                     entryNode->AtkResNode.DrawFlags = baseNode->DrawFlags;
                     entryNode->AtkResNode.NodeFlags = baseNode->NodeFlags;
                     entryNode->AtkResNode.ToggleVisibility(true);

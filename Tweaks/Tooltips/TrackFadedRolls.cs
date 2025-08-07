@@ -26,11 +26,11 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
     private DalamudLinkPayload identifier;
 
     protected override void Enable() {
-        identifier = PluginInterface.AddChatLinkHandler((uint) LinkHandlerId.TrackFadedRollsIdentifier, (_, _) => { });
+        identifier = Service.Chat.AddChatLinkHandler((_, _) => { });
     }
 
     protected override void Disable() {
-        PluginInterface.RemoveChatLinkHandler((uint)LinkHandlerId.TrackFadedRollsIdentifier);
+        Service.Chat.RemoveChatLinkHandler(identifier.CommandId);
     }
     
    private long IsItemActionUnlockedDetour(UIState* uiState, void* item) {
@@ -51,7 +51,7 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
         if (craftResults.Count > 1) {
             var description = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ItemDescription);
             
-            if (description.Payloads.Any(payload => payload is DalamudLinkPayload { CommandId: (uint)LinkHandlerId.TrackFadedRollsIdentifier })) return; // Don't append when it already exists.
+            if (description.Payloads.Any(payload => payload is DalamudLinkPayload dlp && dlp.CommandId == identifier.CommandId)) return; // Don't append when it already exists.
 
             description.Payloads.Add(identifier);
             description.Payloads.Add(RawPayload.LinkTerminator);

@@ -15,7 +15,7 @@ using Dalamud.Interface.Utility;
 using Dalamud.Memory;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using ImGuiScene;
 using SimpleTweaksPlugin.Utility;
 using Action = System.Action;
@@ -49,7 +49,7 @@ public unsafe class UIDebug : DebugHelper {
     private readonly bool[] selectedInList = new bool[UnitListCount];
     private readonly string[] listNames = ["Depth Layer 1", "Depth Layer 2", "Depth Layer 3", "Depth Layer 4", "Depth Layer 5", "Depth Layer 6", "Depth Layer 7", "Depth Layer 8", "Depth Layer 9", "Depth Layer 10", "Depth Layer 11", "Depth Layer 12", "Depth Layer 13", "Loaded Units", "Focused Units", "Units 16", "Units 17", "Units 18"];
 
-    private static RawDX11Scene.BuildUIDelegate originalHandler;
+    // private static RawDX11Scene.BuildUIDelegate originalHandler;
 
     internal bool FindByAddress(AtkResNode* node, ulong address, out List<ulong>? path) {
         if (node == null) {
@@ -120,6 +120,7 @@ public unsafe class UIDebug : DebugHelper {
     }
 
     internal static bool SetExclusiveDraw(Action action) {
+        /*
         // Possibly the most cursed shit I've ever done.
         if (originalHandler != null) return false;
         try {
@@ -135,7 +136,7 @@ public unsafe class UIDebug : DebugHelper {
             if (interfaceManager == null) return false;
             var ef = interfaceManagerT.GetField("Draw", BindingFlags.Instance | BindingFlags.NonPublic);
             if (ef == null) return false;
-            var handler = (RawDX11Scene.BuildUIDelegate)ef.GetValue(interfaceManager);
+            var handler = (IImguiBackend)ef.GetValue(interfaceManager);
             if (handler == null) return false;
             originalHandler = handler;
             ef.SetValue(interfaceManager, new RawDX11Scene.BuildUIDelegate(action));
@@ -144,11 +145,12 @@ public unsafe class UIDebug : DebugHelper {
             SimpleLog.Fatal(ex);
             SimpleLog.Fatal("This could be messy...");
         }
-
+        */
         return false;
     }
 
     internal static bool FreeExclusiveDraw() {
+        /*
         if (originalHandler == null) return true;
         try {
             var dalamudAssembly = Service.PluginInterface.GetType().Assembly;
@@ -170,7 +172,7 @@ public unsafe class UIDebug : DebugHelper {
             SimpleLog.Fatal(ex);
             SimpleLog.Fatal("This could be messy...");
         }
-
+        */
         return false;
     }
 
@@ -773,8 +775,6 @@ public unsafe class UIDebug : DebugHelper {
                     ImGui.Text($"BGColor: #{textNode->BackgroundColor.R:X2}{textNode->BackgroundColor.G:X2}{textNode->BackgroundColor.B:X2}{textNode->BackgroundColor.A:X2}");
 
                     ImGui.Text($"TextFlags: {textNode->TextFlags}");
-                    ImGui.SameLine();
-                    ImGui.Text($"TextFlags2: {textNode->TextFlags2}");
 
                     break;
                 case NodeType.Counter:
@@ -854,9 +854,10 @@ public unsafe class UIDebug : DebugHelper {
                     if (ImGui.TreeNode($"Texture##{(ulong)kernelTexture->D3D11ShaderResourceView:X}"))
                     {
                         var textureSize = new Vector2(kernelTexture->ActualWidth, kernelTexture->ActualHeight);
+                        /*
                         ImGui.Image(new IntPtr(kernelTexture->D3D11ShaderResourceView),
                             new Vector2(kernelTexture->ActualWidth, kernelTexture->ActualHeight));
-
+                        */ // TODO: 7.3
                         if (ImGui.TreeNode($"Parts##{(ulong)kernelTexture->D3D11ShaderResourceView:X}"))
                         {
                             ImGui.BeginTable($"partsTable##{(ulong)kernelTexture->D3D11ShaderResourceView:X}", 3,
@@ -903,8 +904,9 @@ public unsafe class UIDebug : DebugHelper {
                                 }
 
                                 if (tPart.UldAsset is not null && tPart.UldAsset->AtkTexture.Resource is not null && tPart.UldAsset->AtkTexture.Resource->KernelTextureObject is not null) {
-                                    ImGui.Image(new IntPtr(tPart.UldAsset->AtkTexture.Resource->KernelTextureObject->D3D11ShaderResourceView), new Vector2(width, height),
-                                        new Vector2(u, v) / textureSize, new Vector2(u + width, v + height) / textureSize);   
+                                    
+                                    /*ImGui.Image(new IntPtr(tPart.UldAsset->AtkTexture.Resource->KernelTextureObject->D3D11ShaderResourceView), new Vector2(width, height),
+                                        new Vector2(u, v) / textureSize, new Vector2(u + width, v + height) / textureSize);*/ // TODO: 7.3
                                 }
                             }
 
@@ -920,9 +922,11 @@ public unsafe class UIDebug : DebugHelper {
                     if (ImGui.TreeNode(
                             $"Texture##{(ulong)textureInfo->AtkTexture.KernelTexture->D3D11ShaderResourceView:X}"))
                     {
+                        /*
                         ImGui.Image(new IntPtr(textureInfo->AtkTexture.KernelTexture->D3D11ShaderResourceView),
                             new Vector2(textureInfo->AtkTexture.KernelTexture->ActualWidth,
                                 textureInfo->AtkTexture.KernelTexture->ActualHeight));
+                                */ // TODO: 7.3
                         ImGui.TreePop();
                     }
                 }
@@ -1233,7 +1237,7 @@ public unsafe class UIDebug : DebugHelper {
                         ImGui.TableNextColumn();
                         ImGui.Text($"{evt->State.StateFlags}");
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{evt->State.UnkFlags1}/{evt->State.UnkFlags3}");
+                        ImGui.Text($"{evt->State.ReturnFlags}/{evt->State.UnkFlags3}");
                         ImGui.TableNextColumn();
                         DebugManager.PrintAddress(evt->Target);
                         ImGui.TableNextColumn();

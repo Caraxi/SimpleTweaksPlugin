@@ -70,7 +70,7 @@ public unsafe class RememberSelectedWorld : Tweak {
 
         for (var i = 0; i < 16; i++) {
             var n = stringArray->StringArray[i];
-            if (n == null) continue;
+            if (n.Value == null) continue;
             var s = Common.ReadString(n);
             if (s.Trim().Length == 0) continue;
             checkedWorldCount++;

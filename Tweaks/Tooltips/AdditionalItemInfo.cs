@@ -260,8 +260,7 @@ public unsafe class AdditionalItemInfo : TooltipTweaks.SubTweak {
             textNode->LineSpacing = 18;
             textNode->AlignmentFontType = 0x00;
             textNode->FontSize = 12;
-            textNode->TextFlags = (byte)((TextFlags)baseTextNode->TextFlags | TextFlags.MultiLine | TextFlags.AutoAdjustNodeSize);
-            textNode->TextFlags2 = 0;
+            textNode->TextFlags = baseTextNode->TextFlags | TextFlags.MultiLine | TextFlags.AutoAdjustNodeSize;
             
             var prev = insertNode->PrevSiblingNode;
             textNode->AtkResNode.ParentNode = insertNode->ParentNode;

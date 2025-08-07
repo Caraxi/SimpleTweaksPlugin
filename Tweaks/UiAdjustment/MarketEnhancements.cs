@@ -129,13 +129,13 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
                     singlePriceNode->EdgeColor.G = (byte)(Config.LazyTaxColour.Y * 255f);
                     singlePriceNode->EdgeColor.B = (byte)(Config.LazyTaxColour.Z * 255f);
                     singlePriceNode->EdgeColor.A = (byte)(Config.LazyTaxColour.W * 255f);
-                    singlePriceNode->TextFlags |= (byte)TextFlags.Edge;
+                    singlePriceNode->TextFlags |= TextFlags.Edge;
                 } else if (Config.HighlightNpcSellProfit && npcSellPrice > 0 && realCostPerItem < sellValue) {
                     singlePriceNode->EdgeColor.R = (byte)(Config.NpcSellProfitColour.X * 255f);
                     singlePriceNode->EdgeColor.G = (byte)(Config.NpcSellProfitColour.Y * 255f);
                     singlePriceNode->EdgeColor.B = (byte)(Config.NpcSellProfitColour.Z * 255f);
                     singlePriceNode->EdgeColor.A = (byte)(Config.NpcSellProfitColour.W * 255f);
-                    singlePriceNode->TextFlags |= (byte)TextFlags.Edge;
+                    singlePriceNode->TextFlags |= TextFlags.Edge;
                 } else {
                     singlePriceNode->EdgeColor.R = 0;
                     singlePriceNode->EdgeColor.G = 0;

@@ -11,7 +11,7 @@ using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using InteropGenerator.Runtime;
 using Newtonsoft.Json;
 using SimpleTweaksPlugin.Events;
@@ -117,7 +117,7 @@ public abstract class BaseTweak {
                     var image = Service.TextureProvider.GetFromFile(Path.Join(PluginInterface.AssemblyLocation.DirectoryName, "TweakPreviews", $"{Key}.png"));
                     var previewImage = image.GetWrapOrDefault();
                     if (previewImage != null) {
-                        ImGui.Image(previewImage.ImGuiHandle, new Vector2(previewImage.Width, previewImage.Height));
+                        ImGui.Image(previewImage.Handle, new Vector2(previewImage.Width, previewImage.Height));
                     } else {
                         ImGui.Text("Image Loading...");
                     }

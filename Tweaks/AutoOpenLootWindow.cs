@@ -53,14 +53,14 @@ public unsafe class AutoOpenLootWindow : Tweak {
 
     private static void TryOpenWindow() {
         SimpleLog.Verbose("Try opening NeedGreed");
-        var needGreedWindow = Service.GameGui.GetAddonByName("NeedGreed", 1);
-        if (needGreedWindow != IntPtr.Zero) {
+        var needGreedWindow = (AtkUnitBase*)Service.GameGui.GetAddonByName("NeedGreed", 1).Address;
+        if (needGreedWindow != null) {
             SimpleLog.Verbose("NeedGreed already open.");
             return;
         }
 
         SimpleLog.Verbose("Opening NeedGreed window.");
-        var notification = (AtkUnitBase*)Service.GameGui.GetAddonByName("_Notification", 1);
+        var notification = (AtkUnitBase*)Service.GameGui.GetAddonByName("_Notification", 1).Address;
         if (notification == null) {
             SimpleLog.Verbose("_Notification not open.");
             return;

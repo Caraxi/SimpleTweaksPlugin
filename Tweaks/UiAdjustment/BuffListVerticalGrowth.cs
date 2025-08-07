@@ -83,7 +83,7 @@ public unsafe class BuffListVerticalGrowth : UiAdjustments.SubTweak {
             configBool = false;
         }
 
-        var targetStatusCustom = (AtkUnitBase*)Service.GameGui.GetAddonByName(addonName);
+        var targetStatusCustom = (AtkUnitBase*)Service.GameGui.GetAddonByName(addonName).Address;
         if (targetStatusCustom == null) return;
         //if (targetStatusCustom->UldManager.NodeList == null || targetStatusCustom->UldManager.NodeListCount < 25) return;
 

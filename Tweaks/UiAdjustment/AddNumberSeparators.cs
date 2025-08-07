@@ -6,7 +6,7 @@ using System.Text;
 using Dalamud;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -38,17 +38,20 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
         hasChanged |= ImGui.Checkbox("Add separators to ability costs in tooltips", ref Config.AbilityTooltip);
 
         var custom = Config.CustomSeparator?.ToString() ?? string.Empty;
-        if (ImGui.InputText("Custom separator", ref custom, 1, ImGuiInputTextFlags.CallbackAlways, cb => {
-                cb->SelectionStart = 0;
-                cb->SelectionEnd = 1;
-                return 0;
-            })) {
+        
+        if (ImGui.InputText("Custom separator", ref custom, 1, ImGuiInputTextFlags.CallbackAlways, SelectChar)) {
             hasChanged = true;
             Config.CustomSeparator = string.IsNullOrEmpty(custom) || !char.IsAscii(custom[0]) || char.IsControl(custom[0]) ? null : custom[0];
             SetSeparatorDetour();
         }
 
         if (hasChanged) ConfigureInstructions();
+    }
+
+    private int SelectChar(scoped ref ImGuiInputTextCallbackData data) {
+        data.SelectionStart = 0;
+        data.SelectionEnd = 1;
+        return 0;
     }
 
     private static class Signatures {

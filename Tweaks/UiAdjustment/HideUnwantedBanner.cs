@@ -10,7 +10,7 @@ using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -84,7 +84,7 @@ public unsafe class HideUnwantedBanner : UiAdjustments.SubTweak {
                 try {
                     var seenIcon = Service.TextureProvider.GetFromGameIcon(b).GetWrapOrDefault();
                     if (seenIcon != null) {
-                        if (ImGui.ImageButton(seenIcon.ImGuiHandle, ImGuiHelpers.ScaledVector2(seenIcon.Width * 80f / seenIcon.Height, 80))) {
+                        if (ImGui.ImageButton(seenIcon.Handle, ImGuiHelpers.ScaledVector2(seenIcon.Width * 80f / seenIcon.Height, 80))) {
                             TweakConfig.HiddenBanners.Add(b);
                             SaveConfig(TweakConfig);
                             seenIds.Remove(b);
@@ -128,7 +128,7 @@ public unsafe class HideUnwantedBanner : UiAdjustments.SubTweak {
                     if (icon == null) {
                         ImGui.Text(banner.Label);
                     } else {
-                        ImGui.Image(icon.ImGuiHandle, ImGuiHelpers.ScaledVector2(icon.Width * 100f / icon.Height, 100));
+                        ImGui.Image(icon.Handle, ImGuiHelpers.ScaledVector2(icon.Width * 100f / icon.Height, 100));
                     }
                 } else {
                     ImGui.Text(banner.Label);

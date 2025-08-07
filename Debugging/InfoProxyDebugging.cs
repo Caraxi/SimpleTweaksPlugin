@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using InteropGenerator.Runtime.Attributes;
 
 namespace SimpleTweaksPlugin.Debugging;

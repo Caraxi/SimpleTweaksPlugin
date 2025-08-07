@@ -1,6 +1,6 @@
 ﻿using System;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.TweakSystem;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks;
 using static SimpleTweaksPlugin.Tweaks.TooltipTweaks.ItemTooltipField;

@@ -1,7 +1,7 @@
 ﻿using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -426,8 +426,8 @@ namespace SimpleTweaksPlugin.Debugging {
                         }
                     } else if (!type.IsPrimitive) {
                         switch (value) {
-                            case Lumina.Text.SeString seString:
-                                ImGui.Text($"{seString.RawString}");
+                            case Lumina.Text.ReadOnly.ReadOnlySeString seString:
+                                ImGui.Text($"{seString.ExtractText()}");
                                 break;
                             default:
                                 PrintOutObject(value, addr, new List<string>(path));

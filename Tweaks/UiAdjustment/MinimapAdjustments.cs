@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Numerics;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -93,7 +93,7 @@ public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
     private void WaitForUpdate() {
         try {
             if (!sw.IsRunning) sw.Restart();
-            var unitBase = (AtkUnitBase*)Service.GameGui.GetAddonByName("_NaviMap");
+            var unitBase = (AtkUnitBase*)Service.GameGui.GetAddonByName("_NaviMap").Address;
             if (unitBase == null) {
                 if (sw.ElapsedMilliseconds > 30000) {
                     sw.Stop();
@@ -112,7 +112,7 @@ public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
     }
 
     public void Update(bool enabled) {
-        var unitBase = (AtkUnitBase*)Service.GameGui.GetAddonByName("_NaviMap");
+        var unitBase = (AtkUnitBase*)Service.GameGui.GetAddonByName("_NaviMap").Address;
         if (unitBase == null) return;
 
         if (unitBase->UldManager.NodeListCount < 19) return;

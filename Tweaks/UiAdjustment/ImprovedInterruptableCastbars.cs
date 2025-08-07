@@ -5,7 +5,7 @@ using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -55,7 +55,7 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
 
     [AddonPostRequestedUpdate("_TargetInfoCastBar", "_TargetInfo", "_FocusTargetInfo")]
     private void OnAddonRequestedUpdate(AddonArgs args) {
-        var addon = (AtkUnitBase*) args.Addon;
+        var addon = (AtkUnitBase*) args.Addon.Address;
         
         switch (args.AddonName) {
             case "_TargetInfoCastBar" when addon->IsVisible:

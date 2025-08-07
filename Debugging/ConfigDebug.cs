@@ -7,7 +7,7 @@ using Dalamud.Memory;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Common.Configuration;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using ConfigType = Dalamud.Game.Config.ConfigType;
 
 namespace SimpleTweaksPlugin.Debugging;

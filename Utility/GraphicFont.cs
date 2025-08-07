@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Numerics;
 using System.Text;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace SimpleTweaksPlugin.Utility;
 
@@ -68,7 +68,7 @@ public class GraphicFont {
             var uv0 = basePosition + (Position * scale) / textureSize;
             var uv1 = uv0 + size / textureSize;
 
-            ImGui.Image(textureWrap.ImGuiHandle, drawSize ?? size, uv0, uv1);
+            ImGui.Image(textureWrap.Handle, drawSize ?? size, uv0, uv1);
         }
     }
 

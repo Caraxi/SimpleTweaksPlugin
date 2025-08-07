@@ -1,7 +1,7 @@
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Interface.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -132,7 +132,7 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak
     [AddonPostRequestedUpdate("_TargetInfo", "_FocusTargetInfo", "_TargetInfoCastBar")]
     private void OnAddonRequestedUpdate(AddonArgs args)
     {
-        var addon = (AtkUnitBase*)args.Addon;
+        var addon = (AtkUnitBase*)args.Addon.Address;
         switch (args.AddonName)
         {
             case "_FocusTargetInfo" when addon->IsVisible:
@@ -226,9 +226,8 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak
     private void UpdateTargetNodes(AtkTextNode* textNode, AtkImageNode* imageNode) =>
         UpdateCustomNodes(imageNode, textNode, Config.TargetFontSize, Config.TargetBackgroundHeightPadding, Config.TargetBackgroundWidthPadding, Config.TargetBackgroundColor, Config.TargetRightAlign, Config.TargetPosition);
 
-    private void ResizeAndAlignTextNode(AtkTextNode* textNode, bool rightAlign, Vector2 position)
-    {
-        textNode->TextFlags = (byte)(TextFlags.Edge);
+    private void ResizeAndAlignTextNode(AtkTextNode* textNode, bool rightAlign, Vector2 position) {
+        textNode->TextFlags = TextFlags.Edge;
         // anything not TopLeft / Left aligned seems to get a width and height of 0   
         // set to left align to resize node
         textNode->AlignmentType = AlignmentType.TopLeft;

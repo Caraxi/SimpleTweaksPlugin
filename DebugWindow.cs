@@ -1,6 +1,6 @@
 using System.Reflection;
 using Dalamud.Interface.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Utility;
 

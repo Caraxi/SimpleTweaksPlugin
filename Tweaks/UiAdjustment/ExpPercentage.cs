@@ -71,7 +71,7 @@ public unsafe class ExpPercentage : UiAdjustments.SubTweak {
 
         if (stringArray == null) return;
         var strPtr = stringArray->StringArray[69];
-        if (strPtr == null) return;
+        if (strPtr.Value == null) return;
         var numberArray = AtkStage.Instance()->GetNumberArrayData()[3];
         if (numberArray == null) return;
 

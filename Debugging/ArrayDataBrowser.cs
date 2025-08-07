@@ -3,7 +3,7 @@ using System.Numerics;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.AtkArray;
 using SimpleTweaksPlugin.AtkArray.NumberArrays;
 
@@ -53,7 +53,7 @@ public unsafe class ArrayDataBrowser : DebugHelper {
     public static bool ContainsValue(StringArrayData* array, string value) {
         for (var i = 0; i < array->AtkArrayData.Size; i++) {
             var strPtr = array->StringArray[i];
-            if (strPtr != null) {
+            if (strPtr.Value != null) {
                 try {
                     var str = MemoryHelper.ReadSeStringNullTerminated(new IntPtr(strPtr));
                     if (str.TextValue.ToLower().Contains(value.ToLower())) return true;
@@ -268,7 +268,7 @@ public unsafe class ArrayDataBrowser : DebugHelper {
                             ImGui.TableNextColumn();
 
                             var strPtr = array->StringArray[i];
-                            if (strPtr == null) {
+                            if (strPtr.Value == null) {
                                 ImGui.TextColored(new Vector4(1, 0, 0, 1), "string is null");
                             } else {
                                 try {

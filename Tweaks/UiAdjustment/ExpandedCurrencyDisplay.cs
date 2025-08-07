@@ -15,7 +15,7 @@ using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -484,7 +484,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak {
                     }
                     ImGui.SameLine();
                     
-                    ImGui.Image(icon.ImGuiHandle, new Vector2(23.0f, 23.0f));
+                    ImGui.Image(icon.Handle, new Vector2(23.0f, 23.0f));
                     ImGui.SameLine();
                     
                     ImGui.TextUnformatted($"{item.RowId:D6} - {item.Name.ExtractText()}");
@@ -567,7 +567,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak {
             }).GetWrapOrDefault();
             
             if (icon is not null) {
-                ImGui.Image(icon.ImGuiHandle, new Vector2(23.0f, 23.0f));
+                ImGui.Image(icon.Handle, new Vector2(23.0f, 23.0f));
                 ImGui.SameLine();
             }
             if (currency.UseCustomPosition) {

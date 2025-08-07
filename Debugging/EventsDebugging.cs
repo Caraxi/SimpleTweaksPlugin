@@ -4,7 +4,7 @@ using System.Numerics;
 using System.Reflection;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Interface.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.Events;
 
 namespace SimpleTweaksPlugin.Debugging;

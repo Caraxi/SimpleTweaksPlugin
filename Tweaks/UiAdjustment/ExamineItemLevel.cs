@@ -28,7 +28,7 @@ public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
         try {
             var examineWindow = Common.GetUnitBase<AddonCharacterInspect>("CharacterInspect");
             if (examineWindow == null) return;
-            var previewComponent = examineWindow->PreviewComponent;
+            var previewComponent = examineWindow->PreviewController.Component;
             var compInfo = (AtkUldComponentInfo*)previewComponent->UldManager.Objects;
             if (compInfo == null || compInfo->ComponentType != ComponentType.Preview) return;
             var errorNode = previewComponent->GetTextNodeById(2);

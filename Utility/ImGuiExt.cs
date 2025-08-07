@@ -6,7 +6,7 @@ using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.UI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Enums;
 
@@ -104,8 +104,9 @@ public static class ImGuiExt {
         uniqueSortedUiForeground.Sort((a, b) => {
             var aRgb = Common.UiColorToVector4(a.Dark);
             var bRgb = Common.UiColorToVector4(b.Dark);
-            ImGui.ColorConvertRGBtoHSV(aRgb.X, aRgb.Y, aRgb.Z, out var aH, out var aS, out var aV);
-            ImGui.ColorConvertRGBtoHSV(bRgb.X, bRgb.Y, bRgb.Z, out var bH, out var bS, out var bV);
+            float aH = 0f, aS = 0f, aV = 0f, bH = 0f, bS = 0f, bV = 0f;
+            ImGui.ColorConvertRGBtoHSV(aRgb.X, aRgb.Y, aRgb.Z, ref aH, ref aS, ref aV);
+            ImGui.ColorConvertRGBtoHSV(bRgb.X, bRgb.Y, bRgb.Z, ref bH, ref bS, ref bV);
             if (aH < bH) return -1;
             if (aH > bH) return 1;
             if (aS < bS) return -1;
@@ -118,8 +119,9 @@ public static class ImGuiExt {
         uniqueSortedUiGlow.Sort((a, b) => {
             var aRgb = Common.UiColorToVector4(a.Light);
             var bRgb = Common.UiColorToVector4(b.Light);
-            ImGui.ColorConvertRGBtoHSV(aRgb.X, aRgb.Y, aRgb.Z, out var aH, out var aS, out var aV);
-            ImGui.ColorConvertRGBtoHSV(bRgb.X, bRgb.Y, bRgb.Z, out var bH, out var bS, out var bV);
+            float aH = 0f, aS = 0f, aV = 0f, bH = 0f, bS = 0f, bV = 0f;
+            ImGui.ColorConvertRGBtoHSV(aRgb.X, aRgb.Y, aRgb.Z, ref aH, ref aS, ref aV);
+            ImGui.ColorConvertRGBtoHSV(bRgb.X, bRgb.Y, bRgb.Z, ref bH, ref bS, ref bV);
             if (aH < bH) return -1;
             if (aH > bH) return 1;
             if (aS < bS) return -1;

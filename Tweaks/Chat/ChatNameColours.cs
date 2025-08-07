@@ -8,7 +8,7 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.ExtraPayloads;
 using SimpleTweaksPlugin.TweakSystem;
@@ -78,8 +78,9 @@ public class ChatNameColours : ChatTweaks.SubTweak {
         if (!forceRandom && !Config.RandomColours) return Config.ApplyDefaultColour ? Config.DefaultColour : null;
         var key = $"{playerName}@{worldName}".GetStableHashCode();
         var hue = new Random(key).NextSingle();
-        ImGui.ColorConvertHSVtoRGB(hue, 1, 1, out var r, out var g, out var b);
-        return new Vector3(r, g, b);
+        var c = new Vector3();
+        ImGui.ColorConvertHSVtoRGB(hue, 1, 1, ref c.X, ref c.Y, ref c.Z);
+        return c;
     }
 
     private Vector3? GetGlow(string playerName, string worldName) {

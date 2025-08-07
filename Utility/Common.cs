@@ -70,7 +70,7 @@ public unsafe class Common {
     }
 
     public static AtkUnitBase* GetUnitBase(string name, int index = 1) {
-        return (AtkUnitBase*)Service.GameGui.GetAddonByName(name, index);
+        return (AtkUnitBase*)Service.GameGui.GetAddonByName(name, index).Address;
     }
 
     public static T* GetUnitBase<T>(string name = null, int index = 1) where T : unmanaged {
@@ -83,7 +83,7 @@ public unsafe class Common {
 
         if (string.IsNullOrEmpty(name)) return null;
 
-        return (T*)Service.GameGui.GetAddonByName(name, index);
+        return (T*)Service.GameGui.GetAddonByName(name, index).Address;
     }
 
     public static bool GetUnitBase<T>(out T* unitBase, string name = null, int index = 1) where T : unmanaged {
@@ -97,7 +97,7 @@ public unsafe class Common {
 
         if (string.IsNullOrEmpty(name)) return false;
 
-        unitBase = (T*)Service.GameGui.GetAddonByName(name, index);
+        unitBase = (T*)Service.GameGui.GetAddonByName(name, index).Address;
         return unitBase != null;
     }
 

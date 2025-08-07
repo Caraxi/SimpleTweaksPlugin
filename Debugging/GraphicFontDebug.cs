@@ -1,7 +1,7 @@
 using System;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin.Debugging;

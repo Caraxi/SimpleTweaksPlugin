@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.Tweaks.UiAdjustment;
 using System;
 using System.Collections.Generic;
@@ -121,7 +121,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     ImGui.TableNextColumn();
                     var statusIconTex = Service.TextureProvider.GetFromGameIcon(new GameIconLookup(statusSheet[statusId].Icon)).GetWrapOrEmpty();
                     var scale = (25 * ImGuiHelpers.GlobalScale) / statusIconTex.Height;
-                    ImGui.Image(statusIconTex.ImGuiHandle, new Vector2(statusIconTex.Width * scale, statusIconTex.Height * scale));
+                    ImGui.Image(statusIconTex.Handle, new Vector2(statusIconTex.Width * scale, statusIconTex.Height * scale));
 
                     ImGui.TableNextColumn();
                     ImGui.AlignTextToFramePadding();
@@ -191,7 +191,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     }
                 }
 
-                if (status.SourceId == localPlayer->EntityId) {
+                if (status.SourceObject.ObjectId == localPlayer->EntityId) {
                     continue;
                 }
 
@@ -385,7 +385,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                     ImGui.TableNextColumn();
                     var statusIconTex = Service.TextureProvider.GetFromGameIcon(new GameIconLookup(statusSheet[statusId].Icon)).GetWrapOrEmpty();
                     var scale = (25 * ImGuiHelpers.GlobalScale) / statusIconTex.Height;
-                    ImGui.Image(statusIconTex.ImGuiHandle, new Vector2(statusIconTex.Width * scale, statusIconTex.Height * scale));
+                    ImGui.Image(statusIconTex.Handle, new Vector2(statusIconTex.Width * scale, statusIconTex.Height * scale));
 
                     ImGui.TableNextColumn();
                     ImGui.AlignTextToFramePadding();

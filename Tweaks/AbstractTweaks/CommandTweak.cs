@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using Dalamud.Game.Command;
 using Dalamud.Interface.Utility;
 using Dalamud.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks.AbstractTweaks;
