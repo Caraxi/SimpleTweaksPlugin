@@ -14,7 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 public unsafe class ExtendedMacroIcon : Tweak {
     private delegate ulong SetupMacroIconDelegate(RaptureMacroModule* macroModule, UIModule* uiModule, byte* outCategory, int* outId, uint macroPage, uint macroIndex, void* a7);
 
-    [TweakHook, Signature("E8 ?? ?? ?? ?? 0F B6 BE ?? ?? ?? ?? 8B 9E", DetourName = nameof(SetupMacroIconDetour))]
+    [TweakHook, Signature("E8 ?? ?? ?? ?? 0F B6 BB ?? ?? ?? ?? 8B B3", DetourName = nameof(SetupMacroIconDetour))]
     private HookWrapper<SetupMacroIconDelegate> setupMacroIconHook;
 
     private delegate ulong GetIconIdDelegate(void* a1, ulong a2, ulong a3);

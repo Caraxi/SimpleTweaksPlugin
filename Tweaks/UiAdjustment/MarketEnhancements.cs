@@ -35,7 +35,7 @@ public unsafe class MarketEnhancements : UiAdjustments.SubTweak {
     private delegate void UpdateResultDelegate(AtkUnitBase* addonItemSearchResult, uint a2, ulong* a3, void* a4);
 
     private UpdateResultDelegate updateResultOriginal;
-    [Signature("40 57 48 83 EC 30 8B FA")] private nint updateResult;
+    [Signature("48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 30 8B DA 49 8B C1")] private nint updateResult;
 
     private delegate void* ListSetup(void* a1, AtkUnitBase* a2, nint a3);
 

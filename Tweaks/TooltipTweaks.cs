@@ -84,11 +84,11 @@ public unsafe class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
 
     protected override void Enable() {
         if (!Ready) return;
-
+        
         itemHoveredHook ??= Common.Hook<ItemHoveredDelegate>("E8 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? 48 89 9C 24 ?? ?? ?? ?? 4C 89 A4 24", ItemHoveredDetour);
-        actionTooltipHook ??= Common.Hook<ActionTooltipDelegate>("48 89 5C 24 ?? 55 56 57 41 56 41 57 48 83 EC ?? 48 8B 9A", ActionTooltipDetour);
+        actionTooltipHook ??= Common.Hook<ActionTooltipDelegate>("48 89 5C 24 ?? 55 56 57 41 54 41 56 48 83 EC 30 48 8B 9A", ActionTooltipDetour);
         generateItemTooltipHook ??= Common.Hook<GenerateItemTooltip>("48 89 5C 24 ?? 55 56 57 41 54 41 55 41 56 41 57 48 83 EC ?? 48 8B 42 ?? 4C 8B EA", GenerateItemTooltipDetour);
-        generateActionTooltipHook ??= Common.Hook<GenerateActionTooltip>("E8 ?? ?? ?? ?? 48 8B 43 ?? 48 8B 9F", GenerateActionTooltipDetour);
+        generateActionTooltipHook ??= Common.Hook<GenerateActionTooltip>("E8 ?? ?? ?? ?? 48 8B 43 28 48 8B AF", GenerateActionTooltipDetour);
         getItemRowHook ??= Common.Hook<GetItemRowDelegate>("E8 ?? ?? ?? ?? 4C 8B F8 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B D0 48 8D 0D", GetItemRowDetour);
 
         itemHoveredHook?.Enable();

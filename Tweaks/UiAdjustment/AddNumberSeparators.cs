@@ -57,11 +57,11 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
     private static class Signatures {
         internal const string ShowFlyText = "E8 ?? ?? ?? ?? FF C7 41 D1 C7";
         internal const string SprintfNumber = "E8 ?? ?? ?? ?? EB 68 48 8B 03";
-        internal const string FlyTextStringify = "45 33 C0 C6 44 24 ?? ?? 8B D7 E8 ?? ?? ?? ?? 41 8B CC";
+        internal const string FlyTextStringify = "45 33 C0 C6 44 24 ?? ?? 8B D7 E8 ?? ?? ?? ?? 48 8B 5E 10";
         internal const string HotbarManaStringify = "45 33 C0 48 8B CE 44 88 64 24 ?? 42 8B 54 B8 ?? E8 ?? ?? ?? ?? EB 21";
         internal const string PartyListStringify = "45 33 C0 C6 44 24 20 00 41 8B D6 E8 ?? ?? ?? ?? 49 8B";
         internal const string Separator = "44 0F B6 05 ?? ?? ?? ?? 45 84 C0 74 36 F6 87";
-        internal const string SetSeparatorCharacter = "E8 ?? ?? ?? ?? 48 8B 4F 18 48 8B 01 FF 50 18 48 8B C8";
+        internal const string SetSeparatorCharacter = "E8 ?? ?? ?? ?? 49 8B 4E 18 48 8B 01 FF 50 18";
     }
 
     private Dictionary<nint, byte[]> OldBytes { get; } = new();

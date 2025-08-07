@@ -290,7 +290,7 @@ public unsafe class ImprovedDutyFinderSettings : UiAdjustments.SubTweak {
         LimitedLevelingRoulette = 11,
     }
     
-    [Signature("E8 ?? ?? ?? ?? 49 8B 06 33 ED")]
+    [Signature("E8 ?? ?? ?? ?? 49 8B 06 45 33 FF 49 8B CE 45 89 7E 20 FF 50 28 B0 01")]
     private static delegate* unmanaged<byte*, nint, void> _setContentsFinderSettings;
 
     private static byte GetCurrentSettingValue(DutyFinderSetting dutyFinderSetting) {

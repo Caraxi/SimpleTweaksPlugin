@@ -26,7 +26,7 @@
     </PropertyGroup>
     <PropertyGroup Label="Feature">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>1.10.10.0</Version>
+        <Version>1.10.11.0</Version>
     </PropertyGroup>
 	<PropertyGroup>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
@@ -46,7 +46,7 @@
     </ItemGroup>
     <ItemGroup>
       <PackageReference Include="System.Numerics.Vectors" Version="4.6.0" />
-      <PackageReference Include="DalamudPackager" Version="12.0.0" />
+      <PackageReference Include="DalamudPackager" Version="13.0.0" />
     </ItemGroup>
     <Import Project="Dalamud.Plugin.Bootstrap.targets"/>
 	<ItemGroup>
@@ -97,6 +97,9 @@
     </ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Utility\FriendList" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Compile Remove="Tweaks\Tooltips\CollectableRewards.cs" />
 	</ItemGroup>
     <Target Name="Clean CS" Condition="'$(Configuration)'=='Debug'" BeforeTargets="PreBuildEvent">
         <Exec Command="del $(TargetDir)FFXIVClientStructs.dll" EchoOff="true" StandardErrorImportance="low" StandardOutputImportance="low"/>

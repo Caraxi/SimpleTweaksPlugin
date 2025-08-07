@@ -16,7 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 public unsafe class OpenEstateAccess : CommandTweak {
     private delegate byte OpenEstateAccessSettingsDelegate(AgentHousing* agentHousing);
 
-    [Signature("E8 ?? ?? ?? ?? 84 C0 0F 85 ?? ?? ?? ?? 40 32 ED E9 ?? ?? ?? ?? E8")]
+    [Signature("E8 ?? ?? ?? ?? 84 C0 0F 85 ?? ?? ?? ?? 40 32 F6 E9 ?? ?? ?? ?? E8")]
     private readonly OpenEstateAccessSettingsDelegate openEstateAccessSettings = null!;
 
     private delegate HouseId GetOwnedHouseId(int type, int index = -1);

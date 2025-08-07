@@ -9,6 +9,7 @@ using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Utility.Signatures;
+using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Debugging;
@@ -26,24 +27,9 @@ public unsafe partial class ExpGainLevelPercent : ChatTweaks.SubTweak {
     private const XivChatType ExperienceGainedChatMessageType = (XivChatType)2112;
 
     public Dictionary<string, Func<int>> ExpToNextMap = new();
-    
-    // TODO: Use Client Structs
-    private delegate OccultCrescentState* GetOccultCrescentStateDelegate();
-    [Signature("E8 ?? ?? ?? ?? 48 8B E8 48 85 C0 75 12")]
-    private GetOccultCrescentStateDelegate getOccultCrescentState;
-    [StructLayout(LayoutKind.Explicit, Size = 0x5A)]
-    public struct OccultCrescentState {
-        [FieldOffset(0x44)] public fixed byte SupportJobLevels[13];
-    }
 
     protected override void Enable() {
         Service.Chat.ChatMessage += OnChatMessage;
-        
-        #if DEBUG
-        if (Common.ClientStructsVersion > 5935) {
-            Plugin.Error(TweakManager, this, new Exception("Should really update this tweak to use ClientStructs"), true);
-        }
-        #endif
 
         foreach (var cj in Service.Data.GetExcelSheet<ClassJob>()) {
             if (ExpToNextMap.ContainsKey(cj.Name.ExtractText().ToLowerInvariant())) continue;
@@ -57,9 +43,9 @@ public unsafe partial class ExpGainLevelPercent : ChatTweaks.SubTweak {
         foreach (var pj in Service.Data.GetExcelSheet<MKDSupportJob>()) {
             if (ExpToNextMap.ContainsKey(pj.Unknown0.ExtractText().ToLowerInvariant())) continue;
             ExpToNextMap.TryAdd(pj.Unknown0.ExtractText().ToLowerInvariant(), () => {
-                var state = getOccultCrescentState();
+                var state = PublicContentOccultCrescent.GetState();
                 if (state == null) return 0;
-                var level = state->SupportJobLevels[pj.RowId];
+                var level = state->SupportJobLevels[(int)pj.RowId];
                 if (level == 0) return 0;
                 return (int) Service.Data.GetSubrowExcelSheet<MKDGrowDataSJob>().GetSubrow(pj.RowId, level).Unknown0;
             });

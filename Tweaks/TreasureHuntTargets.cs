@@ -1,3 +1,4 @@
+using System;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
@@ -12,7 +13,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakTags("maps")]
 [Changelog("1.8.5.0", "Fixed incorrect blocking targeting of Alexandrite Map targets.")]
 public unsafe class TreasureHuntTargets : Tweak {
-    [TweakHook, Signature("40 53 48 83 EC 20 F3 0F 10 89 ?? ?? ?? ?? 0F 57 C0 0F 2E C8 48 8B D9 7A 02", DetourName = nameof(IsTargetableDetour))]
+    [TweakHook(typeof(Character), nameof(Character.GetIsTargetable), nameof(IsTargetableDetour))]
     private HookWrapper<Character.Delegates.GetIsTargetable> isTargetableHook;
 
     private bool IsTargetableDetour(Character* potentialTarget) {

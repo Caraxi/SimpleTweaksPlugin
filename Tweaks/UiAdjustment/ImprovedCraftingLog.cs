@@ -35,11 +35,11 @@ public unsafe class ImprovedCraftingLog : Tweak {
     [TweakHook, Signature("E8 ?? ?? ?? ?? 48 8B 4B 10 33 FF C6 83", DetourName = nameof(CancelCraftingDetour))]
     private readonly HookWrapper<CancelCrafting> cancelCraftingHook = null!;
 
-    [TweakHook, Signature("40 55 53 56 57 41 56 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 0F 4C 8B 75 7F 49 8B D9 0F B7 C2 41 8B F8", DetourName = nameof(ReceiveEventDetour))]
+    [TweakHook, Signature("40 55 53 56 57 41 56 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 0F 48 8B 75 7F 49 8B D9 0F B7 C2 41 8B F8", DetourName = nameof(ReceiveEventDetour))]
     private readonly HookWrapper<AtkUnitBase.Delegates.ReceiveEvent> receiveEventHook = null!;
 
     protected override void Enable() {
-        passThroughFunction = (delegate*<RecipeNote*, void*>)Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 0F B6 C3 48 8B 5C 24 ?? 48 83 C4 20 5D");
+        passThroughFunction = (delegate*<RecipeNote*, void*>)Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 8D 8F ?? ?? ?? ?? E8 ?? ?? ?? ?? 33 F6 48 89 B7");
 
         Service.Commands.AddHandler("/stopcrafting", new CommandInfo(((_, _) => {
             if (Service.ClientState.LocalPlayer != null && !standingUp) {

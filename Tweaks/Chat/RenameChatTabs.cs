@@ -15,19 +15,9 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [Changelog("1.10.2.0", "Fixed issue causing tabs to become incorrectly sized.")]
 [Changelog("1.10.3.0", "Fixed tabs not being named on login.")]
 public unsafe class RenameChatTabs : ChatTweaks.SubTweak {
-    private delegate void SetChatTabName(RaptureLogModule* raptureLogModule, int tabIndex, Utf8String* tabName);
-
-    private delegate Utf8String* GetChatTabName(RaptureLogModule* raptureLogModule, int tabIndex);
-
     private delegate void* UpdateTabName(AgentChatLog* agent, int tabIndex, Utf8String* tabName);
 
-    [Signature("E8 ?? ?? ?? ?? 4D 8B 44 24 ?? 41 8B D7")]
-    private SetChatTabName setChatTabName;
-
-    [Signature("E8 ?? ?? ?? ?? 44 8D 73 01")]
-    private GetChatTabName getChatTabName;
-
-    [Signature("E8 ?? ?? ?? ?? 48 8B 8D ?? ?? ?? ?? 48 33 CC E8 ?? ?? ?? ?? 48 81 C4 ?? ?? ?? ?? 41 5F 41 5D 41 5C 5F")]
+    [Signature("4C 8B DC 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? 83 79 20 00 49 89 5B 10")]
     private UpdateTabName updateTabName;
 
     public class Config : TweakConfig {
@@ -55,10 +45,10 @@ public unsafe class RenameChatTabs : ChatTweaks.SubTweak {
 
     private void SetName(byte tab, string name) {
         var tempName = Utf8String.FromString(name);
-        setChatTabName(RaptureLogModule.Instance(), tab, tempName);
+        RaptureLogModule.Instance()->SetTabName(tab, tempName);
         tempName->Dtor(true);
-
-        var storedName = getChatTabName(RaptureLogModule.Instance(), tab);
+        
+        var storedName = RaptureLogModule.Instance()->GetTabName(tab);
         updateTabName(AgentChatLog.Instance(), tab, storedName);
     }
 

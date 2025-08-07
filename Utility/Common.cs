@@ -13,10 +13,12 @@ using Dalamud.IoC;
 using Dalamud.Networking.Http;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.Attributes;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Client.UI.Shell;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
 using Lumina.Excel.Sheets;
@@ -55,7 +57,7 @@ public unsafe class Common {
     public static void* ThrowawayOut { get; private set; } = (void*)Marshal.AllocHGlobal(1024);
 
     public static void Setup() {
-        LastCommandAddress = Service.SigScanner.GetStaticAddressFromSig("4C 8D 05 ?? ?? ?? ?? 41 B1 01 49 8B D4 E8 ?? ?? ?? ?? 83 EB 06");
+        LastCommandAddress = Service.SigScanner.GetStaticAddressFromSig("4C 8D 05 ?? ?? ?? ?? 49 8B D4 48 8B C8 E8 ?? ?? ?? ?? 83 EB 06");
         LastCommand = (Utf8String*)(LastCommandAddress);
 
         updateCursorHook = Hook<AtkModuleUpdateCursor>("48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 20 4C 8B F1 E8 ?? ?? ?? ?? 49 8B CE", UpdateCursorDetour);
