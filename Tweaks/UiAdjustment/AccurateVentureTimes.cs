@@ -82,12 +82,14 @@ public unsafe class AccurateVentureTimes : UiAdjustments.SubTweak {
                         var tSpan = TimeSpan.FromSeconds(rTime);
 
                         if (Config.SimpleDisplay) {
+                            ventureText->FontSize = 14;
                             if (tSpan.Hours > 0) {
                                 ventureText->SetText($"{tSpan.Hours:00}:{tSpan.Minutes:00}:{tSpan.Seconds:00}");
                             } else {
                                 ventureText->SetText($"{tSpan.Minutes:00}:{tSpan.Seconds:00}");
                             }
                         } else {
+                            ventureText->FontSize = 12;
                             var timeString = new List<string>();
                             switch (Service.ClientState.ClientLanguage) {
                                 case ClientLanguage.Japanese:
