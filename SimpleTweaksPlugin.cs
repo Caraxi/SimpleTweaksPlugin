@@ -78,6 +78,7 @@ namespace SimpleTweaksPlugin {
                 if (hook.IsEnabled) hook.Disable();
                 hook.Dispose();
             }
+            
             Common.HookList.Clear();
             Common.Shutdown();
             TooltipManager.Destroy();
@@ -93,7 +94,12 @@ namespace SimpleTweaksPlugin {
             pluginInterface.Create<SimpleLog>();
             pluginInterface.Create<Common>();
             
+            #if TEST
+            this.PluginConfig = new SimpleTweaksPluginConfig();
+            #else
             this.PluginConfig = (SimpleTweaksPluginConfig)Service.PluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
+            #endif
+            
             this.PluginConfig.Init(this);
             
 #if DEBUG
@@ -105,8 +111,8 @@ namespace SimpleTweaksPlugin {
 #endif
                 UpdateBlacklist();
                 Service.Framework.RunOnFrameworkThread(Initialize);
+                
             });
-
         }
         
 #if CustomCS
@@ -162,6 +168,8 @@ namespace SimpleTweaksPlugin {
 
             var simpleTweakProvider = new TweakProvider(Assembly.GetExecutingAssembly());
             simpleTweakProvider.LoadTweaks();
+            
+            
             TweakProviders.Add(simpleTweakProvider);
 
             foreach (var provider in PluginConfig.CustomTweakProviders) {
@@ -179,6 +187,8 @@ namespace SimpleTweaksPlugin {
             Service.Framework.Update += FrameworkOnUpdate;
             
             MetricsService.ReportMetrics();
+
+            TestUtil.Ready();
         }
         
 

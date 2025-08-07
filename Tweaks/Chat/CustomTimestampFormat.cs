@@ -26,7 +26,7 @@ public unsafe class CustomTimestampFormat : ChatTweaks.SubTweak {
 
     private delegate byte* ApplyTextFormatDelegate(RaptureTextModule* raptureTextModule, uint addonTextId, int value);
 
-    [TweakHook, Signature("E8 ?? ?? ?? ?? 41 8D 55 0B", DetourName = nameof(FormatTextDetour))]
+    [TweakHook, Signature("E9 ?? ?? ?? ?? 7D 20", DetourName = nameof(FormatTextDetour))]
     private HookWrapper<ApplyTextFormatDelegate>? applyTextFormatHook;
 
     public Configs Config { get; private set; }

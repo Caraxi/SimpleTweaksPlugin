@@ -178,6 +178,9 @@ public abstract class BaseTweak {
 
     private object LoadConfig(Type T, string key) {
         if (!T.IsSubclassOf(typeof(TweakConfig))) throw new Exception($"{T} is not a TweakConfig class.");
+#if TEST
+        return null;
+#else
         try {
             var configDirectory = PluginInterface.GetPluginConfigDirectory();
             var configFile = Path.Combine(configDirectory, key + ".json");
@@ -189,6 +192,9 @@ public abstract class BaseTweak {
             SimpleLog.Error(ex);
             return null;
         }
+#endif
+        
+        
     }
 
     protected void SaveConfig<T>(T config) where T : TweakConfig {
@@ -204,7 +210,10 @@ public abstract class BaseTweak {
                 SimpleLog.Verbose($"    [{Name} Config] {l}");
             }
 #endif
+            
+            #if !TEST
             File.WriteAllText(configFile, jsonString);
+            #endif  
         } catch (Exception ex) {
             SimpleLog.Error($"Failed to write config for tweak: {this.Name}");
             SimpleLog.Error(ex);
@@ -228,7 +237,9 @@ public abstract class BaseTweak {
                 SimpleLog.Verbose($"    [{Name} Config] {l}");
             }
 #endif
+#if !TEST
             File.WriteAllText(configFile, jsonString);
+#endif
         } catch (Exception ex) {
             SimpleLog.Error($"Failed to write config for tweak: {this.Name}");
             SimpleLog.Error(ex);
@@ -605,27 +616,49 @@ public abstract class BaseTweak {
                 SimpleLog.Verbose($"Setup Tweak Hook: [{Name}] {field.Name} for {attribute.AddressType.Name}.{attribute.AddressName}");
 
                 if (!(field.FieldType.IsGenericType && field.FieldType.GetGenericTypeDefinition() == typeof(HookWrapper<>))) {
+#if TEST
+                    throw new Exception($"Tweak Hook for named address not supported on {field.FieldType}");
+#else
                     SimpleLog.Error($"Tweak Hook for named address not supported on {field.FieldType}");
+#endif
+                    
                     continue;
                 }
 
                 var addressesType = attribute.AddressType.GetNestedType("Addresses");
                 if (addressesType == null) {
+#if TEST
+                    throw new Exception($"Failed to find {attribute.AddressType}.Addresses");
+#else
                     SimpleLog.Error($"Failed to find {attribute.AddressType}.Addresses");
+#endif
+                    
                     continue;
                 }
 
                 var addressField = addressesType.GetField(attribute.AddressName);
 
                 if (addressField == null) {
+                    
+#if TEST
+                    throw new Exception($"Failed to find {attribute.AddressType.Name}.Addresses.{attribute.AddressName}");
+#else
                     SimpleLog.Error($"Failed to find {attribute.AddressType.Name}.Addresses.{attribute.AddressName}");
+#endif
+                    
+                    
                     continue;
                 }
 
                 var addressObj = addressField.GetValue(null);
 
                 if (addressObj is not Address address) {
+#if TEST
+                    throw new Exception($"{attribute.AddressType.Name}.Addresses.{attribute.AddressName} is not an Address?");
+#else
                     SimpleLog.Error($"{attribute.AddressType.Name}.Addresses.{attribute.AddressName} is not an Address?");
+#endif
+                    
                     continue;
                 }
 
@@ -661,16 +694,26 @@ public abstract class BaseTweak {
 
                 var createMethod = hookType.GetMethod("FromAddress", BindingFlags.Static | BindingFlags.NonPublic);
                 if (createMethod == null) {
+                    
+#if TEST
+                    throw new Exception($"{GetType().Name}: could not find Hook<{hookDelegateType.Name}>.FromAddress");
+#else
                     SimpleTweaksPlugin.Plugin.Error(new Exception($"{GetType().Name}: could not find Hook<{hookDelegateType.Name}>.FromAddress"));
                     continue;
+#endif
                 }
 
                 var hook = createMethod.Invoke(null, [address.Value, detour, false]);
 
                 var wrapperCtor = field.FieldType.GetConstructor([hookType]);
                 if (wrapperCtor == null) {
+                    
+#if TEST
+                    throw new Exception($"{GetType().Name}: could not find could not find HookWrapper<{hookDelegateType.Name}> constructor");
+#else
                     SimpleTweaksPlugin.Plugin.Error(new Exception($"{GetType().Name}: could not find could not find HookWrapper<{hookDelegateType.Name}> constructor"));
                     continue;
+#endif
                 }
 
                 var wrapper = wrapperCtor.Invoke([hook]);
@@ -837,4 +880,8 @@ public abstract class BaseTweak {
     }
 
     #endregion
+
+    public virtual void Test() {
+        
+    }
 }

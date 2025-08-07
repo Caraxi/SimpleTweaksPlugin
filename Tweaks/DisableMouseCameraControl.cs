@@ -13,7 +13,7 @@ public class DisableMouseCameraControl : Tweak {
 
     private delegate CameraControlType GetCameraControlType();
 
-    [TweakHook, Signature("E8 ?? ?? ?? ?? 83 F8 01 74 55", DetourName = nameof(GetCameraControlTypeDetour))]
+    [TweakHook, Signature("E8 ?? ?? ?? ?? 83 F8 01 74 5F", DetourName = nameof(GetCameraControlTypeDetour))]
     private HookWrapper<GetCameraControlType> getCameraControlTypeHook;
 
     public class Configs : TweakConfig {

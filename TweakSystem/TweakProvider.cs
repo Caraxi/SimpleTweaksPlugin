@@ -31,6 +31,7 @@ public class TweakProvider : IDisposable {
 
                 tweak.InterfaceSetup(SimpleTweaksPlugin.Plugin, Service.PluginInterface, SimpleTweaksPlugin.Plugin.PluginConfig, this);
                 if (tweak.CanLoad) {
+                    
                     var blacklistKey = tweak.Key;
                     if (tweak.Version > 1) blacklistKey += $"::{tweak.Version}";
                     if (SimpleTweaksPlugin.Plugin.PluginConfig.BlacklistedTweaks.Contains(blacklistKey)) {
@@ -51,6 +52,7 @@ public class TweakProvider : IDisposable {
                         }
                     }
 
+                    #if !TEST
                     if (tweak is not IDisabledTweak) {
                         tweak.SetupInternal();
                         if (tweak.Ready && (SimpleTweaksPlugin.Plugin.PluginConfig.EnabledTweaks.Contains(tweak.Key) || tweak is SubTweakManager {AlwaysEnabled: true})) {
@@ -62,6 +64,7 @@ public class TweakProvider : IDisposable {
                             }
                         }
                     }
+                    #endif
 
                     Tweaks.Add(tweak);
                 }

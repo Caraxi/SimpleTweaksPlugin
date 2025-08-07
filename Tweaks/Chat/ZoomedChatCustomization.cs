@@ -14,7 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 public unsafe class ZoomedChatCustomization : ChatTweaks.SubTweak {
     private delegate void ZoomChat(AtkUnitBase* atkUnitBase);
 
-    [TweakHook, Signature("E8 ?? ?? ?? ?? 48 8D 8E ?? ?? ?? ?? E8 ?? ?? ?? ?? 85 C0 0F 84 ?? ?? ?? ?? 48 8B CB", DetourName = nameof(ChatZoomedDetour))]
+    [TweakHook, Signature("40 53 56 41 54 48 83 EC 60", DetourName = nameof(ChatZoomedDetour))]
     private readonly HookWrapper<ZoomChat> chatZoomedHook = null!;
 
     private delegate byte IsChatZoomed(AtkUnitBase* atkUnitBase);

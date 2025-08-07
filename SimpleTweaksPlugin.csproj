@@ -4,7 +4,7 @@
         <TargetFramework>net9.0-windows</TargetFramework>
         <LangVersion>preview</LangVersion>
         <Platforms>x64</Platforms>
-        <Configurations>Debug;Release;DebugSteamDeck;CustomCS</Configurations>
+        <Configurations>Debug;Release;DebugSteamDeck;CustomCS;Test</Configurations>
     </PropertyGroup>
     <PropertyGroup Label="Build">
         <NoWarn>CS8632,CS0649,CS0169</NoWarn>
@@ -22,6 +22,10 @@
     </PropertyGroup>
     <PropertyGroup Label="CustomCS" Condition="'$(Configuration)'=='CustomCS'">
         <DefineConstants>DEBUG;CustomCS</DefineConstants>
+        <OutDir>$(ProjectDir)bin/Debug</OutDir>
+    </PropertyGroup>
+    <PropertyGroup Label="Test" Condition="'$(Configuration)'=='Test'">
+        <DefineConstants>DEBUG;TEST</DefineConstants>
         <OutDir>$(ProjectDir)bin/Debug</OutDir>
     </PropertyGroup>
     <PropertyGroup Label="Feature">
@@ -98,10 +102,7 @@
 	<ItemGroup>
 	  <Folder Include="Utility\FriendList" />
 	</ItemGroup>
-	<ItemGroup>
-	  <Compile Remove="Tweaks\Tooltips\CollectableRewards.cs" />
-	</ItemGroup>
-    <Target Name="Clean CS" Condition="'$(Configuration)'=='Debug'" BeforeTargets="PreBuildEvent">
+    <Target Name="Clean CS" Condition="'$(Configuration)'!='CustomCS'" BeforeTargets="PreBuildEvent">
         <Exec Command="del $(TargetDir)FFXIVClientStructs.dll" EchoOff="true" StandardErrorImportance="low" StandardOutputImportance="low"/>
         <Exec Command="del $(TargetDir)InteropGenerator.Runtime.dll" EchoOff="true" StandardErrorImportance="low" StandardOutputImportance="low"/>
     </Target>

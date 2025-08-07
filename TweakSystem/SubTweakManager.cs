@@ -60,9 +60,11 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
                 }
 
                 tweak.InterfaceSetup(this.Plugin, this.PluginInterface, this.PluginConfig, this.TweakProvider, this);
+                #if !TEST
                 if (tweak is not IDisabledTweak) {
                     tweak.SetupInternal();
                 }
+                #endif
                 tweakList.Add(tweak);
             } catch (Exception ex) {
                 Plugin.Error(this, ex, true, $"Error in Setup of '{t.Name}' @ '{this.Name}'");
@@ -81,6 +83,7 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
 
     protected override void Enable() {
         if (!Ready) return;
+#if !TEST
         foreach (var t in SubTweaks) {
             if (t is IDisabledTweak) continue;
             if (PluginConfig.EnabledTweaks.Contains(GetTweakKey(t as T))) {
@@ -92,6 +95,7 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
                 }
             }
         }
+#endif
         Enabled = true;
     }
 

@@ -7,6 +7,7 @@ using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Bindings.ImGui;
+using SimpleTweaksPlugin.Utility;
 
 namespace SimpleTweaksPlugin;
 
@@ -108,10 +109,12 @@ public class ConfigWindow : SimpleWindow {
 
     public override void Draw() {
         base.Draw();
+        #if !TEST
         FestiveDecorations();
-
+        #endif
         var config = SimpleTweaksPlugin.Plugin.PluginConfig;
 
+#if !TEST
         if (config.AnalyticsOptOut == false && config.MetricsIdentifier?.Length != 64) {
             ImGui.SetWindowFontScale(1.25f);
             ImGui.Text("Simple Tweaks Statistics Collection");
@@ -157,8 +160,23 @@ public class ConfigWindow : SimpleWindow {
 
             return;
         }
-
+        
         SimpleTweaksPlugin.Plugin.PluginConfig.DrawConfigUI();
+        
+#else
+        if (ImGui.BeginTabBar("testBar")) {
+            if (ImGui.BeginTabItem("Test Runner")) {
+                TestUtil.Draw();
+                ImGui.EndTabItem();
+            }
+            if (ImGui.BeginTabItem("Config")) {
+                SimpleTweaksPlugin.Plugin.PluginConfig.DrawConfigUI();
+                ImGui.EndTabItem();
+            }
+            ImGui.EndTabBar();
+        }
+        
+#endif
     }
 
     public override void OnClose() {

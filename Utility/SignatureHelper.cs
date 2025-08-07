@@ -117,7 +117,12 @@ public static class SignatureHelper {
                 fallibility = info.IsNullable || wasWrapped ? Fallibility.Fallible : Fallibility.Infallible;
             }
 
+            #if TEST
+            var fallible = false;
+            #else
             var fallible = fallibility == Fallibility.Fallible;
+            #endif
+            
 
             void Invalid(string message, bool prepend = true) {
                 var errorMsg = prepend ? $"Invalid Signature attribute for {selfType.FullName}.{info.Name}: {message}" : message;

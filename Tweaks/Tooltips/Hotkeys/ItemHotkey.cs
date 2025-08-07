@@ -101,7 +101,10 @@ public abstract class ItemHotkey : IDisposable {
             var configDirectory = Service.PluginInterface.GetPluginConfigDirectory();
             var configFile = Path.Combine(configDirectory, $"{nameof(TooltipTweaks)}@{nameof(ItemHotkeys)}.{Key}.json");
             var jsonString = JsonConvert.SerializeObject(Config, Formatting.Indented);
+#if !TEST
             File.WriteAllText(configFile, jsonString);
+#endif
+            
         } catch (Exception ex) {
             SimpleLog.Error(ex);
         }
