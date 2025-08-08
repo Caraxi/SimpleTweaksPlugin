@@ -7,6 +7,7 @@ using Dalamud.Utility;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface;
 using JetBrains.Annotations;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -138,6 +139,14 @@ public unsafe class ChangeMapAreaColors : UiAdjustments.SubTweak {
                 ImGui.TableSetColumnIndex(2);
                 var newColor = ImGuiComponents.ColorPickerWithPalette((int)areaType, "##color", overrideColor, ImGuiColorEditFlags.NoAlpha);
                 edited |= !overrideColor.Equals(newColor);
+
+                if (!newColor.Equals(areaTypeMeta.DefaultColor)) {
+                    ImGui.SameLine();
+                    if (ImGuiComponents.IconButton(FontAwesomeIcon.Undo)) {
+                        edited = true;
+                        newColor = areaTypeMeta.DefaultColor;
+                    }
+                }
 
                 if (edited) {
                     Config!.Areas[(int)areaType] = new MapColorConfig.AreaEntry { Enabled = enabled, OverrideColor = newColor };
