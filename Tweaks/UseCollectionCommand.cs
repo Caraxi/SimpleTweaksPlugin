@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Dalamud.Utility.Signatures;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
@@ -19,30 +17,28 @@ public unsafe class UseCollectionCommand : CommandTweak {
     protected override string HelpMessage => "Use a Collection item by name or ID. Use without parameters to list available items and IDs.";
     protected override string Command => "usecollection";
 
-    private static readonly Dictionary<string, uint> McGuffin = Service.Data.GetExcelSheet<McGuffin>()!.Where(a => a.UIData.Value is { RowId: > 0 }).ToDictionary(b => b.UIData.Value.Name.ToString().ToLower(), b => b.RowId);
-
-    private delegate byte UseMcGuffinDelegate(IntPtr module, uint id);
-
-    [Signature("48 89 5C 24 ?? 57 48 83 EC 40 80 3D ?? ?? ?? ?? ??")]
-    private UseMcGuffinDelegate useMcGuffin = null!;
+    private static readonly Dictionary<string, uint> McGuffin = Service.Data.GetExcelSheet<McGuffin>()!
+        .Where(a => a.UIData.Value is { RowId: > 0 })
+        .ToDictionary(b => b.UIData.Value.Name.ToString(), b => b.RowId, StringComparer.OrdinalIgnoreCase);
 
     protected override void OnCommand(string args) {
+        var agent = AgentMcGuffin.Instance();
+
         if (args.Length == 0) {
-            var playerState = UIState.Instance()->PlayerState;
             Service.Chat.Print("Available Collection items:");
-            foreach (var row in Service.Data.GetExcelSheet<McGuffin>()!) {
-                if (row.UIData.Value is { RowId: > 0 } uiData && playerState.IsMcGuffinUnlocked(row.RowId)) {
-                    Service.Chat.Print($"  {uiData.Name} (ID: {row.RowId})");
+            foreach (var (name, id) in McGuffin) {
+                if (agent->CanOpenMcGuffin(id)) {
+                    Service.Chat.Print($"  {name} (ID: {id})");
                 }
             }
 
             return;
         }
 
-        if (!uint.TryParse(args, out var mcGuffinId) && !McGuffin.TryGetValue(args.ToLower(), out mcGuffinId)) return;
-        if (McGuffin.ContainsValue(mcGuffinId) && UIState.Instance()->PlayerState.IsMcGuffinUnlocked(mcGuffinId)) {
-            var module = (nint)AgentModule.Instance()->GetAgentByInternalId(AgentId.McGuffin);
-            useMcGuffin(module, mcGuffinId);
+        if (uint.TryParse(args, out var mcGuffinId) || McGuffin.TryGetValue(args, out mcGuffinId)) {
+            if (McGuffin.ContainsValue(mcGuffinId) && agent->CanOpenMcGuffin(mcGuffinId)) {
+                agent->OpenMcGuffin(mcGuffinId);
+            }
         }
     }
 }
