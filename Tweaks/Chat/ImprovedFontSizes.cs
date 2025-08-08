@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Dalamud.Game.Config;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
@@ -12,6 +13,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
+using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -32,10 +34,13 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
 
     private delegate void SetFontSizeDelegate(LogViewer* chatLogPanelWithOffset, byte fontSize);
 
+    [LinkHandler(LinkHandlerId.ImprovedFontSizesIdentifier)]
+    private DalamudLinkPayload identifier;
+
     [TweakHook, Signature("40 53 48 83 EC 30 48 8B D9 88 51 48", DetourName = nameof(SetFontSizeDetour))]
     private HookWrapper<SetFontSizeDelegate> setFontSizeHook;
 
-    [TweakHook(typeof(RaptureLogModule), nameof(RaptureLogModule.ShowLogMessage), nameof(ShowLogMessageDetour), AutoEnable = false)]
+    [TweakHook(AutoEnable = false), Signature("E8 ?? ?? ?? ?? 89 AB ?? ?? ?? ?? C7 07", DetourName = nameof(ShowLogMessageDetour))]
     private HookWrapper<RaptureLogModule.Delegates.ShowLogMessage> showLogMessageHook;
 
     [TweakConfig] public Configs Config { get; private set; }
@@ -151,13 +156,19 @@ public unsafe class ImprovedFontSizes : ChatTweaks.SubTweak {
                 TooltipManager.RemoveTooltip(unitBase, &tnc->AtkResNode);
                 tnc->SetText(txt.EncodeWithNullTerminator());
             } else {
-                var str = txt.Append(new List<Payload>() {
-                    new UIForegroundPayload(3),
-                    new TextPayload(" (Managed by Simple Tweaks)"),
-                    new UIForegroundPayload(0)
-                });
+                if (!txt.Payloads.Any(p => p is DalamudLinkPayload dlp && dlp.CommandId == identifier.CommandId)) {
+                    var str = txt.Append(new List<Payload>() {
+                        identifier,
+                        new UIForegroundPayload(3),
+                        new TextPayload(" (Managed by Simple Tweaks)"),
+                        new UIForegroundPayload(0)
+                    });
+                    tnc->SetText(str.EncodeWithNullTerminator());
+                } else {
+                    tnc->SetText(txt.EncodeWithNullTerminator());
+                }
+                
                 TooltipManager.AddTooltip(unitBase, &tnc->AtkResNode, $"Setting managed by Simple Tweak:\n  - {LocalizedName}");
-                tnc->SetText(str.EncodeWithNullTerminator());
             }
 
             tnc->ResizeNodeForCurrentText();
