@@ -24,6 +24,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
 
     public Configs Config { get; private set; }
 
+    [LinkHandler(LinkHandlerId.CraftingActionInfoIdentifier)]
     private DalamudLinkPayload? identifier;
     private string progressString;
     private string qualityString;
@@ -36,8 +37,6 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
         progressString ??= Service.Data.Excel.GetSheet<Addon>().GetRow(213).Text.ExtractText();
         qualityString ??= Service.Data.Excel.GetSheet<Addon>().GetRow(216).Text.ExtractText();
         
-        identifier = Service.Chat.AddChatLinkHandler((_, _) => { });
-
         if (Config.ShowResultsPreview) {
             Common.FrameworkUpdate += FrameworkUpdate;
         }
@@ -52,7 +51,6 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
 
     protected override void Disable() {
         Common.FrameworkUpdate -= FrameworkUpdate;
-        if (identifier != null) Service.Chat.RemoveChatLinkHandler(identifier.CommandId);
     }
 
     private void SetGhost(AtkTextNode* textNode, AtkTextNode* maxTextNode, AtkComponentNode* gauge, uint addValue) {

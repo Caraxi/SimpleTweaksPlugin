@@ -23,15 +23,8 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
     [TweakHook(typeof(UIState), nameof(UIState.IsItemActionUnlocked), nameof(IsItemActionUnlockedDetour))]
     private HookWrapper<UIState.Delegates.IsItemActionUnlocked> isItemActionUnlockedHookWrapper;
 
+    [LinkHandler(LinkHandlerId.TrackGachaItemsIdentifier)]
     private DalamudLinkPayload identifier;
-
-    protected override void Enable() {
-        identifier = Service.Chat.AddChatLinkHandler((_, _) => { });
-    }
-
-    protected override void Disable() {
-        Service.Chat.RemoveChatLinkHandler(identifier.CommandId);
-    }
     
    private long IsItemActionUnlockedDetour(UIState* uiState, void* item) {
         if (!IsHoveredItemOrchestrion(out var luminaItem)) {

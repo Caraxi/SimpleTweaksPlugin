@@ -51,14 +51,11 @@ public unsafe class TrackGachaItems : TooltipTweaks.SubTweak {
         ],
     };
 
+    [LinkHandler(LinkHandlerId.TrackGachaItemsIdentifier)]
     private DalamudLinkPayload identifier;
 
     [TweakHook(typeof(UIState), nameof(UIState.IsItemActionUnlocked), nameof(IsItemActionUnlockedDetour))]
     private HookWrapper<UIState.Delegates.IsItemActionUnlocked>? isItemActionUnlockedHookWrapper;
-
-    protected override void Enable() {
-        identifier = Service.Chat.AddChatLinkHandler((_, _) => { });
-    }
 
     private bool IsGachaFullyObtained(uint[] gachaList, out int obtainedCount) {
         obtainedCount = 0;
@@ -134,9 +131,5 @@ public unsafe class TrackGachaItems : TooltipTweaks.SubTweak {
         }
 
         return isItemActionUnlockedHookWrapper!.Original(uiState, item);
-    }
-
-    protected override void Disable() {
-        Service.Chat.RemoveChatLinkHandler(identifier.CommandId);
     }
 }

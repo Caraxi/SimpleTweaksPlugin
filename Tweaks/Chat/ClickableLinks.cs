@@ -14,12 +14,11 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakDescription("Parses links posted in chat and allows them to be clicked.")]
 class ClickableLinks : ChatTweaks.SubTweak {
     protected override void Enable() {
-        urlLinkPayload = Service.Chat.AddChatLinkHandler(UrlLinkHandle);
         Service.Chat.ChatMessage += OnChatMessage;
         base.Enable();
     }
 
-    private void UrlLinkHandle(Guid id, SeString message) {
+    private void UrlLinkHandle(uint id, SeString message) {
         var url = message.TextValue.Replace($"{(char)0x00A0}", "");
         Common.OpenBrowser(url);
     }
@@ -33,6 +32,7 @@ class ClickableLinks : ChatTweaks.SubTweak {
 
     private readonly Regex urlRegex = new Regex(@"(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?", RegexOptions.Compiled);
 
+    [LinkHandler(LinkHandlerId.OpenUrlLink, nameof(UrlLinkHandle))]
     private DalamudLinkPayload urlLinkPayload;
 
     private static bool IsBattleType(XivChatType type) {

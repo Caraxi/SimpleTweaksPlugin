@@ -12,6 +12,8 @@ using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using InteropGenerator.Runtime;
 using Newtonsoft.Json;
 using SimpleTweaksPlugin.Events;
@@ -729,6 +731,34 @@ public abstract class BaseTweak {
                 SimpleLog.Warning($"Skipped enabling Tweak Hook [{Name}] {field.Name} - Hook not created");
             }
         }
+
+
+        foreach (var (field, attr) in this.GetFieldsWithAttribute<LinkHandlerAttribute>()) {
+            if (field.FieldType != typeof(DalamudLinkPayload)) {
+                Plugin.Error(this, new Exception($"Invalid LinkHandler '{field.Name}' must be DalamudLinkPayload."));
+                continue;
+            }
+            DalamudLinkPayload handler = null;
+            if (string.IsNullOrEmpty(attr.MethodName)) {
+                handler = Service.Chat.AddChatLinkHandler((uint) attr.Id, (i, s) => { });
+            } else {
+                var method = this.GetType().GetMethod(attr.MethodName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                var methodParams = method.GetParameters();
+
+                handler = methodParams.Length switch {
+                    0 => Service.Chat.AddChatLinkHandler((uint)attr.Id, (i, s) => { method.Invoke(this, []); }),
+                    1 when methodParams[0].ParameterType == typeof(SeString) => Service.Chat.AddChatLinkHandler((uint)attr.Id, (i, s) => { method.Invoke(this, [s]); }),
+                    2 when methodParams[0].ParameterType == typeof(uint) && methodParams[1].ParameterType == typeof(SeString) => Service.Chat.AddChatLinkHandler((uint)attr.Id, (i, s) => { method.Invoke(this, [i, s]); }),
+                    _ => handler
+                };
+            }
+           
+            if (handler == null) {
+                Plugin.Error(this, new Exception($"Invalid LinkHandler '{field.Name}'."));
+            } else {
+                field.SetValue(this, handler);
+            }
+        }
         
         AfterEnable();
 
@@ -747,6 +777,13 @@ public abstract class BaseTweak {
             SimpleLog.Verbose($"Disable Tweak Hook: [{Name}] {field.Name}");
             if (field.GetValue(this) is IHookWrapper h) {
                 h.Disable();
+            }
+        }
+
+        foreach (var (field, attr) in this.GetFieldsWithAttribute<LinkHandlerAttribute>()) {
+            if (field.FieldType != typeof(DalamudLinkPayload)) continue;
+            if (field.GetValue(this) is DalamudLinkPayload v) {
+                Service.Chat.RemoveChatLinkHandler(v.CommandId);
             }
         }
 

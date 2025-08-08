@@ -28,7 +28,7 @@ public class EmoteLogServerBarEntry : Tweak {
         base.Disable();
     }
 
-    private void DtrEntryClicked(AddonMouseEventData eventData) {
+    private void DtrEntryClicked(DtrInteractionEvent eventData) {
         var value = Service.GameConfig.UiConfig.GetBool("EmoteTextType");
         Service.GameConfig.UiConfig.Set("EmoteTextType", !value);
     }

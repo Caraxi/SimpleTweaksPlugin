@@ -7,6 +7,7 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using Dalamud.Bindings.ImGui;
+using SimpleTweaksPlugin.Enums;
 using SimpleTweaksPlugin.Tweaks.AbstractTweaks;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -18,13 +19,10 @@ public class ChrDirCommand : CommandTweak {
     protected override string Command => "chrdir";
     protected override string HelpMessage => "Print your character save directory to chat. '/chrdir open' to open the directory in explorer.";
 
+    [LinkHandler(LinkHandlerId.OpenFolderLink, nameof(OpenFolder))]
     private DalamudLinkPayload linkPayload;
 
-    protected override void EnableCommand() {
-        linkPayload = Service.Chat.AddChatLinkHandler(OpenFolder);
-    }
-
-    private void OpenFolder(Guid arg1, SeString arg2) {
+    private void OpenFolder(SeString arg2) {
         var dir = arg2.TextValue.Replace($"{(char)0x00A0}", "").Replace("\n", "").Replace("\r", "");
         Process.Start("explorer.exe", dir);
     }

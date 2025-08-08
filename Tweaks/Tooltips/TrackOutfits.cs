@@ -19,6 +19,7 @@ public unsafe class TrackOutfits : TooltipTweaks.SubTweak
     [TweakHook(typeof(UIState), nameof(UIState.IsItemActionUnlocked), nameof(IsItemActionUnlockedDetour))]
     private HookWrapper<UIState.Delegates.IsItemActionUnlocked> isItemActionUnlockedHookWrapper;
 
+    [LinkHandler(LinkHandlerId.TrackOutfitsIdentifier)]
     private DalamudLinkPayload identifier;
     private uint[] OwnedOutfits
     {
@@ -29,9 +30,6 @@ public unsafe class TrackOutfits : TooltipTweaks.SubTweak
             return agent->GlamourDresserItemIds.ToArray().Where(x => x != 0 && Service.Data.GetExcelSheet<MirageStoreSetItem>().HasRow(x)).ToArray();
         }
     }
-
-    protected override void Enable() => identifier = Service.Chat.AddChatLinkHandler((_, _) => { });
-    protected override void Disable() => Service.Chat.RemoveChatLinkHandler(identifier.CommandId);
 
     private long IsItemActionUnlockedDetour(UIState* uiState, void* item)
     {

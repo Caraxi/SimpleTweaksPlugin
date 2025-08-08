@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.IoC;
 using Dalamud.Networking.Http;
 using Dalamud.Plugin.Services;
@@ -23,6 +24,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Debugging;
+using SimpleTweaksPlugin.Enums;
 using Action = System.Action;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
