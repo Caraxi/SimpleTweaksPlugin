@@ -8,6 +8,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakName("Auto Lock Action Bars")]
 [TweakDescription("Automatically locks action bars when certain conditions are met.")]
 [TweakAutoConfig]
+[Changelog("1.10.11.0", "Added option to automatically unlock after combat ends.", Author = "SitiSchu")]
 public unsafe class AutoLockHotbar : Tweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Lock at beginning of combat.")]

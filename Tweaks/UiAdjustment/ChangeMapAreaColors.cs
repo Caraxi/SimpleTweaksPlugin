@@ -18,6 +18,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Allows players to change the color of map areas like quest targets and FATEs.")]
 [TweakAuthor("KazWolfe")]
 [TweakAutoConfig]
+[Changelog("1.10.11.0", "Added reset button to return option to default colour.")]
 public unsafe class ChangeMapAreaColors : UiAdjustments.SubTweak {
     public class MapColorConfig : TweakConfig {
         public class AreaEntry {

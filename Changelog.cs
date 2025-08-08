@@ -80,6 +80,7 @@ public class Changelog : Window {
         Add("1.10.0.0", "Support for Dawntrail");
         Add("1.10.0.1", "Updated more tweaks for Dawntrail");
         Add("1.10.5.0", "Fixed tweak preview images not loading correctly");
+        Add("1.10.11.0", "Fixed translation loading.");
     }
 
 #if DEBUG

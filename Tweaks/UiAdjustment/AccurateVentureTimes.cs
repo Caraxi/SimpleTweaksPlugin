@@ -14,6 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakName("Accurate Venture Times")]
 [TweakDescription("Show live countdowns to venture completion on the retainer list.")]
 [TweakAutoConfig]
+[Changelog("1.10.11.0", "Reduced the size of the timer when not using simple display.")]
 public unsafe class AccurateVentureTimes : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
         [TweakConfigOption("Simple Display")] public bool SimpleDisplay;

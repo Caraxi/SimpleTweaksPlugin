@@ -20,6 +20,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakAuthor("KazWolfe")]
 [TweakDescription("Block Alt-Tab and other keys to keep you in the game.")]
 [TweakAutoConfig]
+[Changelog("1.10.11.0", "Added option to block Caps Lock key", Author = "KazWolfe")]
 public partial class KeyInterrupt : Tweak {
     public class Configs : TweakConfig {
         public bool InCombatOnly = true;

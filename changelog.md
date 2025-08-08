@@ -1,4 +1,21 @@
 # Changelog
+## 1.10.11.0
+***General Changes***
+- Fixed translation loading.
+
+***New Tweaks***
+- **`Use Steam Floating Keyboard`** - Replaces the default Steam Virtual Keyboard with one that doesn't take over the screen. *(KazWolfe)*
+
+
+***Tweak Changes***
+- **`Accurate Venture Times`** - Reduced the size of the timer when not using simple display.
+
+- **`Auto Lock Action Bars`** - Added option to automatically unlock after combat ends. *(SitiSchu)*
+
+- **`Change Map Area Colours`** - Added reset button to return option to default colour.
+
+- **`Keyboard Gaming Mode`** - Added option to block Caps Lock key *(KazWolfe)*
+
 
 ## 1.10.10.0
 ***New Tweaks***

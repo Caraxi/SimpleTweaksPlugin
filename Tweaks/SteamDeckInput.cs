@@ -13,12 +13,13 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakName("Use Steam Floating Keyboard")]
 [TweakAuthor("KazWolfe")]
 [TweakDescription("Replaces the default Steam Virtual Keyboard with one that doesn't take over the screen.")]
+[TweakReleaseVersion("1.10.11.0")]
 public unsafe class SteamDeckInput : Tweak
 {
     private nint _inputInterfaceOffset;
 
-    public override bool CanLoad => Framework.Instance()->IsSteamApiInitialized() &&
-                                    Framework.Instance()->SteamApi->IsRunningOnSteamDeck();
+    public override bool CanLoad => true /*Framework.Instance()->IsSteamApiInitialized() &&
+                                    Framework.Instance()->SteamApi->IsRunningOnSteamDeck()*/;
 
     [TweakHook, Signature("48 83 EC 28 80 79 ?? ?? 74 ?? 48 85 D2", DetourName = nameof(OpenSteamSoftKeyboardDetour))]
     private HookWrapper<SoftKeyboardDeviceInterface.Delegates.OpenSoftKeyboard> _openSteamSoftKeyboardHook = null!;
