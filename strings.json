@@ -1339,6 +1339,14 @@
     "message": "Hide Target Circle",
     "description": "[HideTargetCircle] Tweak Name"
   },
+  "UiAdjustments@HideTargetHighlight / Description": {
+    "message": "Allow hiding the potential target outline while not in combat or dungeons.",
+    "description": "[HideTargetHighlight] Tweak Description"
+  },
+  "UiAdjustments@HideTargetHighlight / Name": {
+    "message": "Hide Target Hightlight/Outline",
+    "description": "[HideTargetHighlight] Tweak Name"
+  },
   "UiAdjustments@HideUnwantedBanner / Description": {
     "message": "Hide information banners such as 'Venture Complete', or 'Levequest Accepted'",
     "description": "[HideUnwantedBanner] Tweak Description"
