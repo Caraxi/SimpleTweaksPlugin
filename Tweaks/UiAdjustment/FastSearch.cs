@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using Dalamud.Utility.Signatures;
 using Dalamud.Memory;
 using System.Text;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
@@ -32,13 +33,13 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
     [TweakConfig] public FastSearchConfig Config { get; private set; }
 
     [Agent(AgentId.ItemSearch)]
-    [StructLayout(LayoutKind.Explicit, Size = 0x37F0)]
+    [StructLayout(LayoutKind.Explicit, Size = 0x3888)]
     public struct AgentItemSearch2 {
         [FieldOffset(0x0000)] public AgentItemSearch AgentItemSearch;
-        [FieldOffset(0x3860)] public uint* ItemBuffer;
-        [FieldOffset(0x3868)] public uint ItemCount;
-        [FieldOffset(0x3874)] public byte IsPartialSearching;
-        [FieldOffset(0x3875)] public byte IsItemPushPending;
+        [FieldOffset(0x3868)] public uint* ItemBuffer;
+        [FieldOffset(0x3870)] public uint ItemCount;
+        [FieldOffset(0x387C)] public byte IsPartialSearching;
+        [FieldOffset(0x387D)] public byte IsItemPushPending;
     }
 
     private delegate void RecipeNoteRecieveDelegate(AgentRecipeNote* a1, Utf8String* a2, bool a3, bool a4);
