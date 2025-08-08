@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
+using Dalamud.Interface.ImGuiNotification;
 using Newtonsoft.Json;
 using SimpleTweaksPlugin.Utility;
 
@@ -86,28 +87,57 @@ internal static class Loc {
         _localizationStrings.Clear();
     }
 
-    public static void UpdateTranslations() {
+
+    private class CrowdinManifest {
+        [JsonProperty("files")] public string[] Files;
+        [JsonProperty("languages")] public string[] Languages;
+        [JsonProperty("timestamp")] public ulong Timestamp;
+        [JsonProperty("content")] public Dictionary<string, string[]> Content;
+    }
+    
+    
+    public static void UpdateTranslations(bool force = false, Action callback = null) {
         DownloadError = null;
         var downloadPath = Service.PluginInterface.GetPluginLocDirectory();
-        var zipFile = Path.Join(downloadPath, "loc.zip");
+        var config = SimpleTweaksPlugin.Plugin.PluginConfig;
         Task.Run(async () => {
             LoadingTranslations = true;
             try {
                 var httpClient = Common.HttpClient;
-                using var request = new HttpRequestMessage(HttpMethod.Get, "https://crowdin.com/backend/download/project/simpletweaks.zip");
-                request.Headers.Accept.Clear();
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xhtml+xml"));
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
-                request.Headers.Add("User-Agent", "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)");
-                
-                var response = await httpClient.SendAsync(request);
-                await using (var fs = new FileStream(zipFile, FileMode.Create)) {
-                    await response.Content.CopyToAsync(fs);
+
+
+
+                if (DateTime.Now - config.LanguageListUpdate > TimeSpan.FromMinutes(60) || force) {
+                    Service.NotificationManager.AddNotification(new Notification() { Content = "Updating Language List", Minimized = true, InitialDuration = TimeSpan.FromSeconds(4)});
+                    var manifestJson = await httpClient.GetStringAsync("https://distributions.crowdin.net/a20076cbde84bba34152668i8hw/manifest.json");
+                    var manifest = JsonConvert.DeserializeObject<CrowdinManifest>(manifestJson);
+                    foreach (var l in manifest.Languages) {
+                        config.LanguageUpdates.TryAdd(l, DateTime.MinValue);
+                    }
+                    
+                    SimpleLog.Warning(JsonConvert.SerializeObject(manifest, Formatting.Indented));
+                    config.LanguageListUpdate = DateTime.Now;
+                }
+
+
+                if (config.LanguageUpdates.TryGetValue(config.Language, out var updateTime)) {
+                    if (DateTime.Now - updateTime > TimeSpan.FromMinutes(60) || force) {
+                        Service.NotificationManager.AddNotification(new Notification() { Content = $"Updating Language: {config.Language}", Minimized = true, InitialDuration = TimeSpan.FromSeconds(4)});
+                        var languageJson = await httpClient.GetStringAsync($"https://distributions.crowdin.net/a20076cbde84bba34152668i8hw/content/{config.Language}/strings.json");
+                        var savePath = Path.Join(downloadPath, config.Language, "strings.json");
+
+                        var dir = Path.GetDirectoryName(savePath);
+
+                        if (!string.IsNullOrWhiteSpace(dir)) {
+                            new DirectoryInfo(dir).Create();
+                            await File.WriteAllTextAsync(savePath, languageJson);
+                        }
+                    }
                 }
                 
-                ZipFile.ExtractToDirectory(zipFile, downloadPath, true);
-                File.Delete(zipFile);
+                
+                
+                if (callback != null) await Service.Framework.RunOnTick(callback);
                 LoadingTranslations = false;
             } catch (Exception ex) {
                 SimpleLog.Error(ex);

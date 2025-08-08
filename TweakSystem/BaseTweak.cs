@@ -264,6 +264,11 @@ public abstract class BaseTweak {
 
     public bool DrawConfigUI(ref bool hasChanged) {
         var shouldForceOpenConfig = ForceOpenConfig;
+        #if DEBUG
+        if (ImGui.GetIO().KeyShift && ImGui.GetIO().KeyAlt && ImGui.GetIO().KeyCtrl) {
+            shouldForceOpenConfig = true;
+        }
+        #endif
         ForceOpenConfig = false;
         var configTreeOpen = false;
         if ((this is CommandTweak || UseAutoConfig || DrawConfigTree != null) && (Enabled || this is CommandTweak)) {
