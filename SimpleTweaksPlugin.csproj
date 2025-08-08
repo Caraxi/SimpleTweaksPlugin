@@ -102,7 +102,7 @@
 	<ItemGroup>
 	  <Folder Include="Utility\FriendList" />
 	</ItemGroup>
-    <Target Name="Clean CS" Condition="'$(Configuration)'!='CustomCS'" BeforeTargets="PreBuildEvent">
+    <Target Name="Clean CS" Condition="'$(Configuration)'!='CustomCS' and $([MSBuild]::IsOSPlatform('Windows'))" BeforeTargets="PreBuildEvent">
         <Exec Command="del $(TargetDir)FFXIVClientStructs.dll" EchoOff="true" StandardErrorImportance="low" StandardOutputImportance="low"/>
         <Exec Command="del $(TargetDir)InteropGenerator.Runtime.dll" EchoOff="true" StandardErrorImportance="low" StandardOutputImportance="low"/>
     </Target>
