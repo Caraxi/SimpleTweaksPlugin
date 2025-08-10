@@ -835,6 +835,18 @@
     "message": "Improved Sent Message History",
     "description": "[ImprovedSentMessageHistory] Tweak Name"
   },
+  "IncreaseChatBubbleLines / Description": {
+    "message": "Allow upto 7 lines of text to be displayed in chat bubbles.",
+    "description": "[IncreaseChatBubbleLines] Tweak Description"
+  },
+  "IncreaseChatBubbleLines / Max Lines": {
+    "message": "Max Lines",
+    "description": "[IncreaseChatBubbleLines] [Config] Max Lines"
+  },
+  "IncreaseChatBubbleLines / Name": {
+    "message": "Increase max line count in chat bubbles",
+    "description": "[IncreaseChatBubbleLines] Tweak Name"
+  },
   "JokeTweaks / Name": {
     "message": "Joke Tweaks",
     "description": "[JokeTweaks] Tweak Name"
@@ -1166,6 +1178,18 @@
   "TooltipTweaks@BlueActionInfo / Name": {
     "message": "Improved Blue Mage Action Tooltips",
     "description": "[BlueActionInfo] Tweak Name"
+  },
+  "TooltipTweaks@CollectableRewards / Colour scrip values": {
+    "message": "Colour scrip values",
+    "description": "[CollectableRewards] [Config] Colour scrip values"
+  },
+  "TooltipTweaks@CollectableRewards / Description": {
+    "message": "Shows rewards when viewing a collectable delivery item.",
+    "description": "[CollectableRewards] Tweak Description"
+  },
+  "TooltipTweaks@CollectableRewards / Name": {
+    "message": "Show Collectable Rewards",
+    "description": "[CollectableRewards] Tweak Name"
   },
   "TooltipTweaks@CopyHotkey / Browser Only": {
     "message": "Browser Only",

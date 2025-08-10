@@ -14,6 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakName("Reduced Deep Dungeon Info")]
 [TweakDescription("Removes redundant information from the deep dungeon character info.")]
 [TweakAuthor("Aireil")]
+[Changelog("1.10.11.1", "Fixed crash.")]
 public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
     protected override void Enable() {
         limiter = -10;

@@ -1,4 +1,15 @@
 # Changelog
+
+## 1.10.11.1
+***New Tweaks***
+- **`Increase max line count in chat bubbles`** - Allow upto 7 lines of text to be displayed in chat bubbles.
+
+
+***Tweak Changes***
+- **`Adjust Equipment Positions`** - Fixed incorrect ordering of equipment.
+
+- **`Reduced Deep Dungeon Info`** - Fixed crash.
+
 ## 1.10.11.0
 ***General Changes***
 - Fixed translation loading.

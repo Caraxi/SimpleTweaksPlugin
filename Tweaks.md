@@ -206,6 +206,11 @@
   Recover messages after accidentally pressing up in the chat, and increase the amount of history retained.
 
 
+- **Increase max line count in chat bubbles**
+
+  Allow upto 7 lines of text to be displayed in chat bubbles.
+
+
 - **Increased zoom on character previews**
 
   Allows zooming in near infinitely on character preview views, such as Try On and Examine.

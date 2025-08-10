@@ -7,6 +7,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [Changelog("1.8.1.1", "Fixed widget display when using standard UI quality.")]
 [Changelog("1.9.0.0", "Improved gamepad navigation on Character window.")]
 [Changelog("1.9.1.0", "Further improved gamepad navigation on Character window.")]
+[Changelog("1.10.11.1", "Fixed incorrect ordering of equipment.")]
 [TweakAutoConfig]
 [TweakName("Adjust Equipment Positions")]
 [TweakDescription("Repositions equipment positions in character menu and inspect to improve appearance.")]
