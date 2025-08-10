@@ -38,7 +38,7 @@ public unsafe class SystemConfigInGroupPose : Tweak {
     private void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled) {
         if (type != XivChatType.ErrorMessage) return;
         if (!Service.ClientState.IsGPosing) return;
-        if (commands.Contains(message.TextValue)) {
+        if (commands.Contains(message.TextValue.Replace(" ", "").Replace(" ", ""))) {
             var agent = AgentModule.Instance()->GetAgentByInternalId(AgentId.Config);
             agent->Show();
             isHandled = true;
