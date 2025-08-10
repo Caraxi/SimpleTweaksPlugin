@@ -72,11 +72,11 @@ public class CollectableRewards : TooltipTweaks.SubTweak {
         }
 
         var craftingJobExpArrayIndex = Service.Data.Excel.GetSheet<ClassJob>()!
-            .Where(job => job.DohDolJobIndex >= 0 && job.ItemSoulCrystal.RowId != 0)
+            .Where(job => job.ClassJobCategory.RowId == 33)
             .ToDictionary(job => job.DohDolJobIndex, job => job.ExpArrayIndex);
 
         var gatheringJobExpArrayIndex = Service.Data.Excel.GetSheet<ClassJob>()!
-            .Where(job => job is { DohDolJobIndex: >= 0, ItemSoulCrystal.RowId: 0 })
+            .Where(job => job.ClassJobCategory.RowId == 32)
             .ToDictionary(job => job.DohDolJobIndex, job => job.ExpArrayIndex);
 
         jobShortName = Service.Data.Excel.GetSheet<ClassJob>()!.Where(job => job.DohDolJobIndex >= 0)
