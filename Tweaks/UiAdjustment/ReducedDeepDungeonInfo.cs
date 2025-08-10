@@ -5,6 +5,7 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
+using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -15,64 +16,59 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakAuthor("Aireil")]
 public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
     protected override void Enable() {
-        Common.FrameworkUpdate += OnFrameworkUpdate;
-        base.Enable();
+        limiter = -10;
+        UpdateDeepDungeonStatus(Common.GetUnitBase("DeepDungeonStatus"), false);
     }
 
     protected override void Disable() {
-        Common.FrameworkUpdate -= OnFrameworkUpdate;
-        base.Disable();
-        UpdateDeepDungeonStatus(true);
+        UpdateDeepDungeonStatus(Common.GetUnitBase("DeepDungeonStatus"), true);
+    }
+    
+    [AddonPreDraw("DeepDungeonStatus")]
+    private void UpdateDeepDungeonStatus(AtkUnitBase* unitBase) {
+        UpdateDeepDungeonStatus(unitBase, false);
     }
 
-    private void OnFrameworkUpdate() {
-        try {
-            UpdateDeepDungeonStatus();
-        }
-        catch (Exception ex) {
-            SimpleLog.Error(ex);
-        }
+    [AddonPostSetup("DeepDungeonStatus")]
+    private void SetupDeepDungeonStatus() {
+        limiter = -10;
     }
-
+    
     private int limiter;
 
-    private void UpdateDeepDungeonStatus(bool reset = false) {
-        var deepDungeonUnitBase = Common.GetUnitBase("DeepDungeonStatus");
-        if (deepDungeonUnitBase == null)
-        {
-            limiter = -10;
-            return;
-        }
+    private void UpdateDeepDungeonStatus(AtkUnitBase* deepDungeonUnitBase, bool reset) {
+        if (deepDungeonUnitBase == null) return;
+        
         if (deepDungeonUnitBase->UldManager.NodeList == null ||
             deepDungeonUnitBase->UldManager.NodeListCount < 84) return;
 
         var resNode = deepDungeonUnitBase->UldManager.NodeList[0];
         var guideNode = deepDungeonUnitBase->UldManager.SearchNodeById(3);
         var windowCollisionNode = (AtkCollisionNode*) deepDungeonUnitBase->UldManager.NodeList[1];
-        var windowNode = (AtkComponentNode*) deepDungeonUnitBase->UldManager.NodeList[2];
-        var itemsEffectsInfoNode = deepDungeonUnitBase->UldManager.NodeList[3];
-        var magiciteInfoNode = deepDungeonUnitBase->UldManager.NodeList[23];
-        var itemsInfoNode = deepDungeonUnitBase->UldManager.NodeList[33];
-        var gearInfoNode = deepDungeonUnitBase->UldManager.NodeList[71];
+        var windowNode = (AtkComponentNode*) deepDungeonUnitBase->UldManager.NodeList[4];
+        var itemsEffectsInfoNode = deepDungeonUnitBase->GetNodeById(64);
+        var magiciteInfoNode = deepDungeonUnitBase->GetNodeById(54);
+        var itemsInfoNode = deepDungeonUnitBase->GetNodeById(16);
+        var gearInfoNode = deepDungeonUnitBase->GetNodeById(12);
 
-        var armAetherpoolNode = (AtkComponentNode*) deepDungeonUnitBase->UldManager.NodeList[73];
-        var armAetherpoolTextNode = (AtkTextNode*) armAetherpoolNode->Component->UldManager.NodeList[1];
-        var armorAetherpoolNode = (AtkComponentNode*) deepDungeonUnitBase->UldManager.NodeList[72];
-        var armorAetherpoolTextNode = (AtkTextNode*) armorAetherpoolNode->Component->UldManager.NodeList[1];
-        var textNode = (AtkTextNode*) deepDungeonUnitBase->UldManager.NodeList[77]; // "To next level:" node
+        var armAetherpoolNode = deepDungeonUnitBase->GetComponentNodeById(14);
+        var armAetherpoolTextNode = armAetherpoolNode->Component->GetTextNodeById(3);
+        var armorAetherpoolNode = deepDungeonUnitBase->GetComponentNodeById(15);
+        var armorAetherpoolTextNode = armorAetherpoolNode->Component->GetTextNodeById(3);
+        
+        var textNode = deepDungeonUnitBase->GetTextNodeById(10);
 
         var isHoh = magiciteInfoNode->IsVisible();
 
         if (reset) {
             gearInfoNode->ToggleVisibility(true);
             guideNode->ToggleVisibility(true);
-            deepDungeonUnitBase->UldManager.NodeList[76]->Color.A = 255;
-            deepDungeonUnitBase->UldManager.NodeList[76]->ToggleVisibility(true); // Job infos
-            deepDungeonUnitBase->UldManager.NodeList[78]->ToggleVisibility(true);
-            deepDungeonUnitBase->UldManager.NodeList[79]->ToggleVisibility(true);
-            deepDungeonUnitBase->UldManager.NodeList[80]->ToggleVisibility(true);
-            deepDungeonUnitBase->UldManager.NodeList[81]->ToggleVisibility(true);
-            deepDungeonUnitBase->UldManager.NodeList[82]->ToggleVisibility(true);
+            deepDungeonUnitBase->GetNodeById(5)->ToggleVisibility(true); // Job infos
+            deepDungeonUnitBase->GetNodeById(6)->ToggleVisibility(true);
+            deepDungeonUnitBase->GetNodeById(7)->ToggleVisibility(true);
+            deepDungeonUnitBase->GetNodeById(8)->ToggleVisibility(true);
+            deepDungeonUnitBase->GetNodeById(9)->ToggleVisibility(true);
+            deepDungeonUnitBase->GetNodeById(11)->ToggleVisibility(true);
 
             UiHelper.SetPosition(itemsEffectsInfoNode, null, isHoh ? 486 : 410);
             if (isHoh)
@@ -92,13 +88,12 @@ public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
 
         gearInfoNode->ToggleVisibility(false);
         guideNode->ToggleVisibility(false);
-        deepDungeonUnitBase->UldManager.NodeList[76]->Color.A = 0;
-        deepDungeonUnitBase->UldManager.NodeList[76]->ToggleVisibility(false); // Job infos
-        deepDungeonUnitBase->UldManager.NodeList[78]->ToggleVisibility(false);
-        deepDungeonUnitBase->UldManager.NodeList[79]->ToggleVisibility(false);
-        deepDungeonUnitBase->UldManager.NodeList[80]->ToggleVisibility(false);
-        deepDungeonUnitBase->UldManager.NodeList[81]->ToggleVisibility(false);
-        deepDungeonUnitBase->UldManager.NodeList[82]->ToggleVisibility(false);
+        deepDungeonUnitBase->GetNodeById(5)->ToggleVisibility(false); // Job infos
+        deepDungeonUnitBase->GetNodeById(6)->ToggleVisibility(false);
+        deepDungeonUnitBase->GetNodeById(7)->ToggleVisibility(false);
+        deepDungeonUnitBase->GetNodeById(8)->ToggleVisibility(false);
+        deepDungeonUnitBase->GetNodeById(9)->ToggleVisibility(false);
+        deepDungeonUnitBase->GetNodeById(11)->ToggleVisibility(false);
 
         UiHelper.SetPosition(itemsEffectsInfoNode, null, isHoh ? 270 : 194);
         if (isHoh)
