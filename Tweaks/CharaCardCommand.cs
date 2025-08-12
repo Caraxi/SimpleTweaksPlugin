@@ -33,8 +33,6 @@ public unsafe class CharaCardCommand : CommandTweak {
 
         if (resolve != null && resolve->ObjectKind == ObjectKind.Pc && resolve->SubKind == 4) {
             AgentCharaCard.Instance()->OpenCharaCard(resolve);
-        } else {
-            Service.Chat.PrintError($"{arguments} is not a player.");
         }
     }
 }
