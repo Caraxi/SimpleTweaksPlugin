@@ -23,12 +23,23 @@ public unsafe class ExamineItemLevel : UiAdjustments.SubTweak {
 
     protected override void Disable() => ShowItemLevel();
 
+#if DEBUG
+    protected override void Setup() {
+        if (Common.ClientStructsVersion > 6370) {
+            Plugin.Error(this, new Exception("Revert to examineWindow->PreviewController.Component"));
+        }
+        base.Setup();
+    }
+#endif
+    
+    
     [AddonPreDraw("CharacterInspect")]
     private void ShowItemLevel() {
         try {
             var examineWindow = Common.GetUnitBase<AddonCharacterInspect>("CharacterInspect");
             if (examineWindow == null) return;
-            var previewComponent = examineWindow->PreviewController.Component;
+            // TODO: Revert to examineWindow->PreviewController.Component;
+            var previewComponent = examineWindow->GetComponentByNodeId(41);
             var compInfo = (AtkUldComponentInfo*)previewComponent->UldManager.Objects;
             if (compInfo == null || compInfo->ComponentType != ComponentType.Preview) return;
             var errorNode = previewComponent->GetTextNodeById(2);
