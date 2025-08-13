@@ -136,7 +136,7 @@ public unsafe class SearchableFriendList : Tweak {
             pos += size * Vector2.UnitX;
         }
         
-        ImGui.SetNextWindowPos(pos, ImGuiCond.Always);
+        ImGui.SetNextWindowPos(pos + ImGui.GetMainViewport().Pos, ImGuiCond.Always);
         ImGui.SetNextWindowSize(size, ImGuiCond.Always);
         
         using (ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, Vector2.Zero)) {
