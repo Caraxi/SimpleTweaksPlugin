@@ -17,7 +17,7 @@ public unsafe class EstateListCommand : CommandTweak {
 
     protected override void OnCommand(string arguments) {
         if (string.IsNullOrWhiteSpace(arguments)) {
-            Service.Chat.PrintError($"/{Command} <name>");
+            if (ShowCommandErrors) Service.Chat.PrintError($"/{Command} <name>");
             return;
         }
 
@@ -51,6 +51,6 @@ public unsafe class EstateListCommand : CommandTweak {
             }
         }
 
-        Service.Chat.PrintError($"No friend with name \"{arguments}\" on your current world.");
+        if (ShowCommandErrors) Service.Chat.PrintError($"No friend with name \"{arguments}\" on your current world.");
     }
 }

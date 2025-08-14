@@ -224,8 +224,11 @@ public unsafe class SetOptionCommand : CommandTweak {
         var optionDefinition = optionDefinitions.FirstOrDefault(o => string.Equals(o.Name, optionKind, StringComparison.InvariantCultureIgnoreCase)) ?? optionDefinitions.FirstOrDefault(o => o.Alias.Any(a => string.Equals(a, optionKind, StringComparison.InvariantCultureIgnoreCase)));
 
         if (optionDefinition == null) {
-            Service.Chat.PrintError("Unknown Option");
-            Service.Chat.PrintError("/setoption list for a list of options");
+            if (ShowCommandErrors) {
+                Service.Chat.PrintError("Unknown Option");
+                Service.Chat.PrintError("/setoption list for a list of options");
+            }
+
             return;
         }
 
@@ -290,7 +293,7 @@ public unsafe class SetOptionCommand : CommandTweak {
                 }
             }
         } else {
-            Service.Chat.PrintError($"/setoption {optionKind} ({string.Join(" | ", optionDefinition.ValueNames)})");
+            if (ShowCommandErrors) Service.Chat.PrintError($"/setoption {optionKind} ({string.Join(" | ", optionDefinition.ValueNames)})");
         }
     }
 }

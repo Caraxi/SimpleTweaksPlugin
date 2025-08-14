@@ -43,6 +43,7 @@ public unsafe class EquipJobCommand : CommandTweak {
 
     protected override void OnCommand(string arguments) {
         if (string.IsNullOrWhiteSpace(arguments)) {
+            if (!ShowCommandErrors) return;
             if (TweakConfig.AllowPriority)
                 Service.Chat.PrintError($"/{Command} (priority list of job abbreviations...)");
             else
@@ -59,10 +60,10 @@ public unsafe class EquipJobCommand : CommandTweak {
                     case SwitchClassJobResult.FailedToFindGearset:
                         continue;
                     case SwitchClassJobResult.FailedToFindClassJob:
-                        Service.Chat.PrintError($"Bad job/class abbreviation: \"{option}\"");
+                        if (ShowCommandErrors) Service.Chat.PrintError($"Bad job/class abbreviation: \"{option}\"");
                         continue;
                     case SwitchClassJobResult.InternalError:
-                        Service.Chat.PrintError("An error occurred.");
+                        if (ShowCommandErrors) Service.Chat.PrintError("An error occurred.");
                         return;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -73,13 +74,13 @@ public unsafe class EquipJobCommand : CommandTweak {
                 case SwitchClassJobResult.Success:
                     break;
                 case SwitchClassJobResult.FailedToFindGearset:
-                    Service.Chat.PrintError("No suitable gearset found");
+                    if (ShowCommandErrors) Service.Chat.PrintError("No suitable gearset found");
                     break;
                 case SwitchClassJobResult.FailedToFindClassJob:
-                    Service.Chat.PrintError($"Unable to find job {arguments}");
+                    if (ShowCommandErrors) Service.Chat.PrintError($"Unable to find job {arguments}");
                     break;
                 case SwitchClassJobResult.InternalError:
-                    Service.Chat.PrintError("An error occurred.");
+                    if (ShowCommandErrors) Service.Chat.PrintError("An error occurred.");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

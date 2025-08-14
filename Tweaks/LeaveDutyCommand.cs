@@ -15,17 +15,17 @@ public unsafe class LeaveDutyCommand : CommandTweak {
 
     protected override void OnCommand(string args) {
         if (Service.Condition.Cutscene()) {
-            Service.Chat.PrintError("You cannot leave during a cutscene.");
+            if (ShowCommandErrors) Service.Chat.PrintError("You cannot leave during a cutscene.");
             return;
         }
 
         if (!Service.Condition.Duty()) {
-            Service.Chat.PrintError("You are not in a duty.");
+            if (ShowCommandErrors) Service.Chat.PrintError("You are not in a duty.");
             return;
         }
 
         if (!EventFramework.CanLeaveCurrentContent()) {
-            Service.Chat.PrintError("You cannot leave your current duty.");
+            if (ShowCommandErrors) Service.Chat.PrintError("You cannot leave your current duty.");
             return;
         }
 

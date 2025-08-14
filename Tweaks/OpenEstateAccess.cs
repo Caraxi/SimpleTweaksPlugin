@@ -76,8 +76,11 @@ public unsafe class OpenEstateAccess : CommandTweak {
             case "":
                 var housingManager = HousingManager.Instance();
                 if (housingManager == null || housingManager->IsInside() == false) {
-                    Service.Chat.PrintError("You are not inside your own estate.", Name);
-                    Service.Chat.PrintError(CommandUsage, Name);
+                    if (ShowCommandErrors) {
+                        Service.Chat.PrintError("You are not inside your own estate.", Name);
+                        Service.Chat.PrintError(CommandUsage, Name);
+                    }
+                    
                     return;
                 }
 
@@ -91,8 +94,11 @@ public unsafe class OpenEstateAccess : CommandTweak {
                 } else if (HousingManager.GetOwnedHouseId(EstateType.ApartmentRoom) == houseId) {
                     agent->SelectedEstateType = SelectedEstateType.ApartmentRoom;
                 } else {
-                    Service.Chat.PrintError("You are not inside your own estate.", Name);
-                    Service.Chat.PrintError(CommandUsage, Name);
+                    if (ShowCommandErrors) {
+                        Service.Chat.PrintError("You are not inside your own estate.", Name);
+                        Service.Chat.PrintError(CommandUsage, Name);
+                    }
+                    
                     return;
                 }
 
@@ -115,8 +121,11 @@ public unsafe class OpenEstateAccess : CommandTweak {
                 agent->SelectedEstateType = SelectedEstateType.FreeCompanyEstate;
                 break;
             default:
-                Service.Chat.PrintError("Unrecognised Estate Type", Name);
-                Service.Chat.PrintError(CommandUsage, Name);
+                if (ShowCommandErrors) {
+                    Service.Chat.PrintError("Unrecognised Estate Type", Name);
+                    Service.Chat.PrintError(CommandUsage, Name);
+                }
+                
                 return;
         }
 

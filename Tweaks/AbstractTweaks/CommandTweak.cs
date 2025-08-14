@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Dalamud.Game.Command;
 using Dalamud.Interface.Utility;
 using Dalamud.Utility;
 using Dalamud.Bindings.ImGui;
+using FFXIVClientStructs.FFXIV.Client.UI.Shell;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks.AbstractTweaks;
@@ -25,6 +27,26 @@ public abstract class CommandTweak : Tweak {
     private readonly List<string> registeredCommands = [];
     private string customMainCommand = string.Empty;
     private string customMainCommandInput = string.Empty;
+
+
+    [StructLayout(LayoutKind.Explicit, Size = 0x1250)]
+    private struct RaptureShellModuleExt {
+        [FieldOffset(0x00)] public RaptureShellModule RaptureShellModule;
+        [FieldOffset(0x2B2)] private byte suppressMacroErrors;
+
+        public int MacroCurrentLine => RaptureShellModule.MacroCurrentLine;
+        public bool SuppressMacroErrors => suppressMacroErrors != 0;
+    }
+    protected unsafe bool ShowCommandErrors {
+        get {
+            try {
+                var shellModule = (RaptureShellModuleExt*) RaptureShellModule.Instance();
+                return shellModule->MacroCurrentLine < 0 || !shellModule->SuppressMacroErrors;
+            } catch {
+                return true;
+            }
+        }
+    }
 
     protected sealed override void Enable() {
         EnableCommand();

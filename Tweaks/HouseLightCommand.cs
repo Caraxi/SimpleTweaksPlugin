@@ -27,18 +27,18 @@ public unsafe class HouseLightCommand : CommandTweak {
         var housingManager = HousingManager.Instance();
 
         if (!housingManager->IsInside()) {
-            Service.Chat.PrintError("You must be inside a house or apartment to use that command.");
+            if (ShowCommandErrors) Service.Chat.PrintError("You must be inside a house or apartment to use that command.");
             return;
         }
         
         if (!housingManager->HasHousePermissions()) {
-            Service.Chat.PrintError("You don't have permission to adjust the lights in this house/apartment.");
+            if (ShowCommandErrors) Service.Chat.PrintError("You don't have permission to adjust the lights in this house/apartment.");
             return;
         }
         
         var s = args.Split(' ');
         if (s.Length < 1) {
-            Service.Chat.PrintError($"/{CustomOrDefaultCommand} (0-5) [ssao-on | ssao-off] [save]");
+            if (ShowCommandErrors) Service.Chat.PrintError($"/{CustomOrDefaultCommand} (0-5) [ssao-on | ssao-off] [save]");
             return;
         }
 
@@ -58,7 +58,7 @@ public unsafe class HouseLightCommand : CommandTweak {
         }
 
         if (brightness < 0) {
-            Service.Chat.PrintError($"/{CustomOrDefaultCommand} (0-5) [ssao-on | ssao-off] [save]");
+            if (ShowCommandErrors) Service.Chat.PrintError($"/{CustomOrDefaultCommand} (0-5) [ssao-on | ssao-off] [save]");
             return;
         }
         

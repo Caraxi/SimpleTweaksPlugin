@@ -22,7 +22,7 @@ public unsafe class GearsetSaveCurrent : CommandTweak {
         if (activeGearset == null) return;
 
         if (activeGearset->ClassJob != UIState.Instance()->PlayerState.CurrentClassJobId) {
-            Service.Chat.PrintError("Active gearset class does not match current class.");
+            if (ShowCommandErrors) Service.Chat.PrintError("Active gearset class does not match current class.");
             return;
         }
 

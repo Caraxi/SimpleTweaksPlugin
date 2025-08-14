@@ -43,14 +43,14 @@ public unsafe class BaitCommand : CommandTweak {
 
         if (InventoryManager.Instance()->GetInventoryItemCount(bait) <= 0) {
             SimpleLog.Debug("refusing to switch, not enough bait");
-            Service.Chat.PrintError("You have none of that bait.", Name);
+            if (ShowCommandErrors) Service.Chat.PrintError("You have none of that bait.", Name);
             return;
         }
         
         var fishing = Service.Condition[ConditionFlag.Fishing];
         if (fishing) {
             SimpleLog.Debug("refusing to switch, fishing");
-            Service.Chat.PrintError("You cannot currently change bait.", Name);
+            if (ShowCommandErrors) Service.Chat.PrintError("You cannot currently change bait.", Name);
             return;
         }
 

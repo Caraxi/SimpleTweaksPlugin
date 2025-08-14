@@ -22,12 +22,12 @@ public class LevelingDungeonCommand : CommandTweak
     protected override unsafe void OnCommand(string args)
     {
         if (Service.Condition.Cutscene()) {
-            Service.Chat.PrintError("You cannot open the Duty Finder during a cutscene.");
+            if (ShowCommandErrors) Service.Chat.PrintError("You cannot open the Duty Finder during a cutscene.");
             return;
         }
 
         if (Service.Condition.Duty()) {
-            Service.Chat.PrintError("You cannot open the Duty Finder while in a duty.");
+            if (ShowCommandErrors) Service.Chat.PrintError("You cannot open the Duty Finder while in a duty.");
             return;
         }
 
@@ -42,7 +42,7 @@ public class LevelingDungeonCommand : CommandTweak
 
         if (id.HasValue)
             AgentContentsFinder.Instance()->OpenRegularDuty(id.Value);
-        else
+        else if (ShowCommandErrors)
             Service.Chat.PrintError("Failed to find a valid leveling dungeon.");
     }
 }

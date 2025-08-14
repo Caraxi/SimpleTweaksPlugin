@@ -16,12 +16,12 @@ public unsafe class PhantomJobCommand : CommandTweak {
 
     protected override void OnCommand(string args) {
         if (GameMain.Instance()->CurrentTerritoryIntendedUseId != 61) {
-            Service.Chat.PrintError("You can only use this command in Occult Crescent", "Simple Tweaks", 500);
+            if (ShowCommandErrors) Service.Chat.PrintError("You can only use this command in Occult Crescent", "Simple Tweaks", 500);
             return;
         }
         
         if (string.IsNullOrWhiteSpace(args)) {
-            Service.Chat.PrintError($"/{CustomOrDefaultCommand} [job]", "Simple Tweaks", 500);
+            if (ShowCommandErrors) Service.Chat.PrintError($"/{CustomOrDefaultCommand} [job]", "Simple Tweaks", 500);
             return;
         }
         
@@ -34,13 +34,13 @@ public unsafe class PhantomJobCommand : CommandTweak {
             }
 
             if (id == uint.MaxValue) {
-                Service.Chat.PrintError($"'{args}' is not a valid phantom job.", "Simple Tweaks", 500);
+                if (ShowCommandErrors) Service.Chat.PrintError($"'{args}' is not a valid phantom job.", "Simple Tweaks", 500);
                 return;
             }
         }
 
         if (!Service.Data.GetExcelSheet<MKDSupportJob>().HasRow(id)) {
-            Service.Chat.PrintError($"'{args}' is not a valid phantom job.", "Simple Tweaks", 500);
+            if (ShowCommandErrors) Service.Chat.PrintError($"'{args}' is not a valid phantom job.", "Simple Tweaks", 500);
             return;
         }
 

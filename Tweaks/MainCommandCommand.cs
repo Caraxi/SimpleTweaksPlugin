@@ -24,6 +24,6 @@ public unsafe class MainCommandCommand : CommandTweak {
             }
         }
 
-        Service.Chat.PrintError($"'{arguments}' is not a valid 'Main Command'.");
+        if (ShowCommandErrors) Service.Chat.PrintError($"'{arguments}' is not a valid 'Main Command'.");
     }
 }
