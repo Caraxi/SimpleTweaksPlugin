@@ -1,4 +1,4 @@
-﻿using Dalamud;
+using Dalamud;
 using Dalamud.Utility.Signatures;
 using SimpleTweaksPlugin.TweakSystem;
 
@@ -6,7 +6,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 
 [TweakName("Enable chat bubbles in combat")]
 [TweakDescription("Allow chat bubbles to be displayed while in combat.")]
-[TweakReleaseVersion(UnreleasedVersion)]
+[TweakReleaseVersion("1.10.11.5")]
 public class CombatChatBubbles : Tweak {
     [Signature("?? 0F 84 ?? ?? ?? ?? F6 80 ?? ?? ?? ?? ?? 0F 84 ?? ?? ?? ?? 49 8B 06")]
     private nint addr;

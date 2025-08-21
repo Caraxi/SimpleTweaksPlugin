@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.10.12.0
+***General Changes***
+- Disabled error messages in chat when using a tweak command in a macro after using '/macroerror off'.
+
+***New Tweaks***
+- **`Enable chat bubbles in combat`** - Allow chat bubbles to be displayed while in combat.
+
+
 ## 1.10.11.1
 ***New Tweaks***
 - **`Increase max line count in chat bubbles`** - Allow upto 7 lines of text to be displayed in chat bubbles.

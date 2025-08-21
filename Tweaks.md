@@ -61,11 +61,6 @@
   Allows setting a custom amount to deposit or withdraw when using the 'Retrieve Quantity' and 'Entrust Quantity' options.
 
 
-- **Customize Group Pose Camera Control**
-
-  Allows you to customize the camera control in group pose
-
-
 - **Data Centre on Title Screen**
 
   Shows the current Data Centre on the Title Screen
@@ -124,6 +119,11 @@
 - **Emote Log Subcommand**
 
   Adds a 'text' subcommand for emotes when emotelog is disabled.  /yes text
+
+
+- **Enable chat bubbles in combat**
+
+  Allow chat bubbles to be displayed while in combat.
 
 
 - **Ensure tooltips remain on screen**
