@@ -134,26 +134,31 @@ public unsafe class TargetHP : UiAdjustments.SubTweak {
     }
 
     private void UpdateMainTarget(AtkUnitBase* unitBase, IGameObject target, bool reset = false) {
-        if (unitBase == null || unitBase->UldManager.NodeList == null || unitBase->UldManager.NodeListCount < 40) return;
-        var gauge = (AtkComponentNode*)unitBase->UldManager.NodeList[36];
-        var textNode = (AtkTextNode*)unitBase->UldManager.NodeList[39];
-        UiHelper.SetSize(unitBase->UldManager.NodeList[37], reset || !Config.HideAutoAttack ? 44 : 0, reset || !Config.HideAutoAttack ? 20 : 0);
+        if (unitBase == null) return;
+        var gauge = unitBase->GetComponentNodeById(19);
+        var textNode = unitBase->GetTextNodeById(16);
+        var autoAttackNode = unitBase->GetImageNodeById(18);
+        if (gauge == null || textNode == null || autoAttackNode == null) return;
+        UiHelper.SetSize(autoAttackNode, reset || !Config.HideAutoAttack ? 44 : 0, reset || !Config.HideAutoAttack ? 20 : 0);
         UpdateGaugeBar(gauge, textNode, target, Config.Position, Config.UseCustomColor ? Config.CustomColor : null, Config.FontSize, Config.AlignLeft, reset);
     }
 
     private void UpdateFocusTarget(AtkUnitBase* unitBase, IGameObject target, bool reset = false) {
         if (Config.NoFocus) reset = true;
-        if (unitBase == null || unitBase->UldManager.NodeList == null || unitBase->UldManager.NodeListCount < 11) return;
-        var gauge = (AtkComponentNode*)unitBase->UldManager.NodeList[2];
-        var textNode = (AtkTextNode*)unitBase->UldManager.NodeList[10];
+        if (unitBase == null) return;
+        var gauge = unitBase->GetComponentNodeById(18);
+        var textNode = unitBase->GetTextNodeById(10);
+        if (gauge == null || textNode == null) return;
         UpdateGaugeBar(gauge, textNode, target, Config.FocusPosition, Config.FocusUseCustomColor ? Config.FocusCustomColor : null, Config.FocusFontSize, Config.FocusAlignLeft, reset);
     }
 
     private void UpdateMainTargetSplit(AtkUnitBase* unitBase, IGameObject target, bool reset = false) {
-        if (unitBase == null || unitBase->UldManager.NodeList == null || unitBase->UldManager.NodeListCount < 9) return;
-        var gauge = (AtkComponentNode*)unitBase->UldManager.NodeList[5];
-        var textNode = (AtkTextNode*)unitBase->UldManager.NodeList[8];
-        UiHelper.SetSize(unitBase->UldManager.NodeList[6], reset || !Config.HideAutoAttack ? 44 : 0, reset || !Config.HideAutoAttack ? 20 : 0);
+        if (unitBase == null) return;
+        var gauge = unitBase->GetComponentNodeById(13);
+        var textNode = unitBase->GetTextNodeById(10);
+        var autoAttackNode = unitBase->GetImageNodeById(12);
+        if (gauge == null || textNode == null || autoAttackNode == null) return;
+        UiHelper.SetSize(autoAttackNode, reset || !Config.HideAutoAttack ? 44 : 0, reset || !Config.HideAutoAttack ? 20 : 0);
         UpdateGaugeBar(gauge, textNode, target, Config.Position, Config.UseCustomColor ? Config.CustomColor : null, Config.FontSize, Config.AlignLeft, reset);
     }
 
