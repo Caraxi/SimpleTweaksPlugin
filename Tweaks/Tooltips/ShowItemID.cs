@@ -75,8 +75,7 @@ public unsafe class ShowItemID : TooltipTweaks.SubTweak {
     }
 
     public override void OnActionTooltip(AtkUnitBase* addon, TooltipTweaks.HoveredActionDetail action) {
-        if (addon->UldManager.NodeList == null || addon->UldManager.NodeListCount < 29) return;
-        var categoryText = (AtkTextNode*)addon->UldManager.NodeList[28];
+        var categoryText = addon->GetTextNodeById(6);
         if (categoryText == null) return;
         var seStr = Common.ReadSeString(categoryText->NodeText.StringPtr);
         if (seStr.Payloads.Count > 1) return;
