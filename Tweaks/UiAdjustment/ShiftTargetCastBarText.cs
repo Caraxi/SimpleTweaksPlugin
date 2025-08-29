@@ -89,12 +89,10 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
         }
 
         private void HandleBars(bool reset = false) {
-
             var focusTargetInfo = Common.GetUnitBase("_FocusTargetInfo");
             if (focusTargetInfo != null && focusTargetInfo->UldManager.NodeList != null && focusTargetInfo->UldManager.NodeListCount > 16 && (focusTargetInfo->IsVisible || reset)) {
                 DoShift(focusTargetInfo->GetTextNodeById(5));
             }
-
 
             var splitCastBar = Common.GetUnitBase("_TargetInfoCastBar");
             if (splitCastBar != null && splitCastBar->UldManager.NodeList != null && splitCastBar->UldManager.NodeListCount > 5 && (splitCastBar->IsVisible || reset)) {
