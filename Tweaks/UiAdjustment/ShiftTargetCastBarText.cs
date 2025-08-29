@@ -92,33 +92,32 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
 
             var focusTargetInfo = Common.GetUnitBase("_FocusTargetInfo");
             if (focusTargetInfo != null && focusTargetInfo->UldManager.NodeList != null && focusTargetInfo->UldManager.NodeListCount > 16 && (focusTargetInfo->IsVisible || reset)) {
-                DoShift(focusTargetInfo->UldManager.NodeList[16]);
+                DoShift(focusTargetInfo->GetTextNodeById(5));
             }
 
 
             var splitCastBar = Common.GetUnitBase("_TargetInfoCastBar");
             if (splitCastBar != null && splitCastBar->UldManager.NodeList != null && splitCastBar->UldManager.NodeListCount > 5 && (splitCastBar->IsVisible || reset)) {
-                DoShift(splitCastBar->UldManager.NodeList[5]);
+                DoShift(splitCastBar->GetTextNodeById(4));
                 if (!reset) return;
             }
 
             var mainTargetInfo = Common.GetUnitBase("_TargetInfo");
             if (mainTargetInfo != null && mainTargetInfo->UldManager.NodeList != null && mainTargetInfo->UldManager.NodeListCount > 44 && (mainTargetInfo->IsVisible || reset)) {
-                DoShift(mainTargetInfo->UldManager.NodeList[44]);
+                DoShift(mainTargetInfo->GetTextNodeById(12));
             }
         }
         
         private const int MinOffset = 0;
         private const int MaxOffset = 48;
 
-        private void DoShift(AtkResNode* node, bool reset = false) {
+        private void DoShift(AtkTextNode* node, bool reset = false) {
             if (node == null) return;
             var p = LoadedConfig.Offset;
             if (p < MinOffset) p = MinOffset;
             if (p > MaxOffset) p = MaxOffset;
             node->Height = reset ? (ushort) 24 : (ushort) p;
-            var textNode = (AtkTextNode*) node;
-            textNode->AlignmentFontType = reset ? (byte) AlignmentType.BottomRight : (byte) LoadedConfig.NameAlignment;
+            node->AlignmentFontType = reset ? (byte) AlignmentType.BottomRight : (byte) LoadedConfig.NameAlignment;
             if (reset) {
                 UiHelper.SetPosition(node, 0, null);
                 UiHelper.SetSize(node, 197, null);
@@ -126,7 +125,6 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 UiHelper.SetPosition(node, 8, null);
                 UiHelper.SetSize(node, 188, null);
             }
-            
         }
 
         protected override void Enable() {
