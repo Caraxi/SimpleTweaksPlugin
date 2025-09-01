@@ -117,11 +117,11 @@ public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
 
         if (unitBase->UldManager.NodeListCount < 19) return;
 
-        var sunImage = unitBase->UldManager.NodeList[4];
+        var sunImage = unitBase->GetImageNodeById(16);
         if (enabled && Config.HideSun) sunImage->ToggleVisibility(false);
         else sunImage->ToggleVisibility(true);
 
-        var weatherIcon = unitBase->UldManager.NodeList[6];
+        var weatherIcon = unitBase->GetComponentNodeById(14);
         if (enabled && Config.HideWeather) weatherIcon->ToggleVisibility(false);
         else weatherIcon->ToggleVisibility(true);
 
@@ -135,21 +135,21 @@ public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
             UiHelper.SetPosition(weatherIcon, 158, 24);
         }
 
-        var standardBorderImage = unitBase->UldManager.NodeList[5];
+        var standardBorderImage = unitBase->GetImageNodeById(15);
         if (enabled && Config.CleanBorder && Config.NoBorder) standardBorderImage->ToggleVisibility(false);
         else standardBorderImage->ToggleVisibility(true);
 
-        var fancyBorderImage = unitBase->UldManager.NodeList[8];
+        var fancyBorderImage = unitBase->GetImageNodeById(13);
         if (enabled && Config.CleanBorder) fancyBorderImage->ToggleVisibility(false);
         else fancyBorderImage->ToggleVisibility(true);
 
-        for (var i = 9; i < 13; i++) {
-            var directionIcon = unitBase->UldManager.NodeList[i];
+        for (uint i = 9; i < 13; i++) {
+            var directionIcon = unitBase->GetImageNodeById(i);
             if (enabled && Config.HideCompassDirections) directionIcon->ToggleVisibility(false);
             else directionIcon->ToggleVisibility(true);
         }
 
-        var coordinateDisplay = unitBase->UldManager.NodeList[13];
+        var coordinateDisplay = unitBase->GetNodeById(5);
         if (enabled && Config.HideCoordinates) coordinateDisplay->ToggleVisibility(false);
         else coordinateDisplay->ToggleVisibility(true);
         if (enabled) {
@@ -158,12 +158,12 @@ public unsafe class MinimapAdjustments : UiAdjustments.SubTweak {
             coordinateDisplay->SetPositionFloat(44, 194);
         }
 
-        var compassLockButton = unitBase->UldManager.NodeList[16];
+        var compassLockButton = unitBase->GetComponentNodeById(4);
         if (enabled && Config.HideCompassLock) compassLockButton->ToggleVisibility(false);
         else compassLockButton->ToggleVisibility(true);
 
-        for (var i = 17; i < 19; i++) {
-            var zoomButton = unitBase->UldManager.NodeList[i];
+        for (uint i = 2; i < 4; i++) {
+            var zoomButton = unitBase->GetComponentNodeById(i);
             if (enabled && Config.HideZoom) zoomButton->ToggleVisibility(false);
             else zoomButton->ToggleVisibility(true);
         }

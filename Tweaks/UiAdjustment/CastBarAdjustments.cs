@@ -137,14 +137,14 @@ public unsafe class CastBarAdjustments : UiAdjustments.SubTweak {
 
         if (castBar->AtkUnitBase.UldManager.NodeList == null || castBar->AtkUnitBase.UldManager.NodeListCount < 12) return;
 
-        var barNode = castBar->AtkUnitBase.UldManager.NodeList[3];
+        var barNode = castBar->GetNodeById(9);
 
-        var icon = (AtkComponentNode*)castBar->AtkUnitBase.GetNodeById(8);
-        var countdownText = castBar->AtkUnitBase.GetTextNodeById(7);
-        var castingText = castBar->AtkUnitBase.GetTextNodeById(6);
-        var skillNameText = castBar->AtkUnitBase.GetTextNodeById(4);
-        var progressBar = (AtkNineGridNode*)castBar->AtkUnitBase.GetNodeById(11);
-        var interruptedText = castBar->AtkUnitBase.GetTextNodeById(2);
+        var icon = castBar->GetComponentNodeById(8);
+        var countdownText = castBar->GetTextNodeById(7);
+        var castingText = castBar->GetTextNodeById(6);
+        var skillNameText = castBar->GetTextNodeById(4);
+        var progressBar = (AtkNineGridNode*)castBar->GetNodeById(11);
+        var interruptedText = castBar->GetTextNodeById(2);
         var slideMarker = (AtkNineGridNode*)null;
         var classicSlideMarker = (AtkImageNode*)null;
 

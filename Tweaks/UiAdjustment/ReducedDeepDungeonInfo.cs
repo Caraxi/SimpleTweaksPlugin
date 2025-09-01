@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Game.Text.SeStringHandling;
@@ -40,13 +39,10 @@ public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
     private void UpdateDeepDungeonStatus(AtkUnitBase* deepDungeonUnitBase, bool reset) {
         if (deepDungeonUnitBase == null) return;
         
-        if (deepDungeonUnitBase->UldManager.NodeList == null ||
-            deepDungeonUnitBase->UldManager.NodeListCount < 84) return;
-
-        var resNode = deepDungeonUnitBase->UldManager.NodeList[0];
-        var guideNode = deepDungeonUnitBase->UldManager.SearchNodeById(3);
-        var windowCollisionNode = (AtkCollisionNode*) deepDungeonUnitBase->UldManager.NodeList[1];
-        var windowNode = (AtkComponentNode*) deepDungeonUnitBase->UldManager.NodeList[4];
+        var resNode = deepDungeonUnitBase->RootNode;
+        var guideNode = deepDungeonUnitBase->GetNodeById(3);
+        var windowCollisionNode = deepDungeonUnitBase->WindowCollisionNode;
+        var windowNode = deepDungeonUnitBase->WindowNode;
         var itemsEffectsInfoNode = deepDungeonUnitBase->GetNodeById(64);
         var magiciteInfoNode = deepDungeonUnitBase->GetNodeById(54);
         var itemsInfoNode = deepDungeonUnitBase->GetNodeById(16);
@@ -155,9 +151,9 @@ public unsafe class ReducedDeepDungeonInfo : UiAdjustments.SubTweak {
 
         foreach (var payload in aetherpoolSeStr.Payloads.Where(p => p.Type == PayloadType.RawText)) {
             var text = ((TextPayload)payload).Text;
-            if (text.IndexOf('+') != -1)
+            if (text?.IndexOf('+') != -1)
             {
-                aetherpool = text.Substring(text.IndexOf('+'));
+                aetherpool = text?[text.IndexOf('+')..];
                 break;
             }
         }
