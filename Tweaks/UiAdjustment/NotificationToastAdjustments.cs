@@ -145,7 +145,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
             if (toastUnitBase == null) return null;
             if (toastUnitBase->UldManager.NodeList == null || toastUnitBase->UldManager.NodeListCount < 4) return null;
 
-            return toastUnitBase->UldManager.NodeList[0];
+            return toastUnitBase->RootNode;
         }
 
         private static void SetOffsetPosition(AtkResNode* node, float offsetX, float offsetY, float scale) {
