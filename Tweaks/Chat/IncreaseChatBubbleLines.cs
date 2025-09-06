@@ -16,7 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakDescription("Allow upto 7 lines of text to be displayed in chat bubbles.")]
 [TweakCategory(TweakCategory.Chat)]
 [TweakReleaseVersion("1.10.11.1")]
-[Changelog(UnreleasedVersion, "Added ability to adjust the duration of chat bubbles.")]
+[Changelog("1.10.12.1", "Added ability to adjust the duration of chat bubbles.")]
 [TweakAutoConfig]
 public unsafe class IncreaseChatBubbleLines : Tweak {
     public class Configs : TweakConfig {

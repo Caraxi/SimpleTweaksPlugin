@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.10.12.1
+***Tweak Changes***
+- **`Increase max line count in chat bubbles`** - Added ability to adjust the duration of chat bubbles.
+
+
 ## 1.10.12.0
 ***General Changes***
 - Disabled error messages in chat when using a tweak command in a macro after using '/macroerror off'.
