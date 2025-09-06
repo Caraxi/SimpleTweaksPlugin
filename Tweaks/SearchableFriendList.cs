@@ -9,6 +9,11 @@ using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
+using FFXIVClientStructs.FFXIV.Component.GUI;
+using KamiToolKit.Classes;
+using KamiToolKit.Nodes;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
@@ -22,6 +27,9 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakReleaseVersion("1.10.7.0")]
 [TweakCategory(TweakCategory.UI, TweakCategory.QoL)]
 public unsafe class SearchableFriendList : Tweak {
+    private TextInputNode searchInput;
+    private TextNode searchHint;
+    
     public class Configs : TweakConfig {
         [TweakConfigOption("Ignore selected filter group")]
         public bool IgnoreSelectedGroup;
@@ -63,7 +71,6 @@ public unsafe class SearchableFriendList : Tweak {
             return;
         }
 
-
         using var performanceRun = PerformanceMonitor.Run("SearchableFriendList.ApplyFilters.WithSearch");
 
         var friendList = (InfoProxyFriendList*)infoProxyCommonList;
@@ -101,70 +108,60 @@ public unsafe class SearchableFriendList : Tweak {
     }
 
     protected override void Enable() {
-        PluginInterface.UiBuilder.Draw += DrawSearchUi;
+        searchHint = new TextNode() {
+            IsVisible = true, 
+            Position = new Vector2(10, 6), 
+            String = "Search..."
+        };
+        
+        searchInput = new TextInputNode() {
+            IsVisible = true, 
+            OnInputReceived = (str) => {
+                searchString = str.TextValue;
+                ReFilter();
+            },
+            OnFocused = () => searchHint.IsVisible = false, 
+            OnUnfocused = () => searchHint.IsVisible = string.IsNullOrWhiteSpace(searchInput.String.TextValue)
+        };
+
+
+        Common.NativeController.AttachNode(searchHint, searchInput);
+        
+        if (Common.GetUnitBase(out AddonFriendList* friendList, "FriendList")) {
+            SetupFiendList(friendList);
+        }
+        
+        // PluginInterface.UiBuilder.Draw += DrawSearchUi;
     }
 
-    private void DrawSearchUi() {
-        var flAddon = Common.GetUnitBase<AddonFriendList>("FriendList");
-        var socialAddon = Common.GetUnitBase("Social");
+    [AddonPostSetup("FriendList")]
+    private void SetupFiendList(AddonFriendList* friendList) {
+        searchString = string.Empty;
+        searchInput.Position = new Vector2(5,  500);
+        searchInput.Size = new Vector2(300,  28);
+        searchInput.String = new SeString(new TextPayload(searchString));
+        Common.NativeController.AttachNode(searchInput, friendList->RootNode);
+        Common.FrameworkUpdate += FrameworkUpdate;
+    }
 
-        if (socialAddon == null || flAddon == null || flAddon->IsVisible == false || flAddon->AddButton == null || flAddon->AddButton->OwnerNode == null) {
-            if (string.IsNullOrWhiteSpace(searchString)) return;
-            searchString = string.Empty;
-            ReFilter();
-            return;
-        }
+    [AddonFinalize("FriendList")]
+    private void FinalizeFriendList(AddonFriendList* friendList) {
+        Common.NativeController.DetachNode(searchInput);
+        Common.FrameworkUpdate -= FrameworkUpdate;
+    }
 
-        var focusedList = &RaptureAtkUnitManager.Instance()->FocusedUnitsList;
-        var isFocused = false;
-        foreach (var f in focusedList->Entries) {
-            if (f.Value == null) continue;
-            if (f.Value != flAddon && f.Value != socialAddon) continue;
-            isFocused = true;
-            break;
-        }
-
-        if (!isFocused) return;
-
-        ImGui.SetNextWindowViewport(ImGuiHelpers.MainViewport.ID);
-
-        var pos = (new Vector2(flAddon->X, flAddon->Y) + new Vector2(flAddon->AddButton->OwnerNode->X, flAddon->AddButton->OwnerNode->Y) * flAddon->Scale);
-        var size = new Vector2(flAddon->AddButton->OwnerNode->GetWidth(), flAddon->AddButton->OwnerNode->GetHeight()) * flAddon->Scale;
-        
-        if (flAddon->AddButton->OwnerNode->IsVisible()) {
-            // I have no idea if or when this is ever visible... but move over just incase
-            pos += size * Vector2.UnitX;
-        }
-        
-        ImGui.SetNextWindowPos(pos + ImGui.GetMainViewport().Pos, ImGuiCond.Always);
-        ImGui.SetNextWindowSize(size, ImGuiCond.Always);
-        
-        using (ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, Vector2.Zero)) {
-            if (ImGui.Begin("Friend Search Window", ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoBackground)) {
-                ImGui.SetWindowFontScale(1f / ImGuiHelpers.GlobalScale * flAddon->Scale);
-                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-                if (TweakConfig.SearchHotkey && Service.KeyState[VirtualKey.CONTROL] && Service.KeyState[VirtualKey.F]) {
-                    ImGui.SetKeyboardFocusHere();
-                }
-                
-                using (ImRaii.PushStyle(ImGuiStyleVar.FrameBorderSize, flAddon->Scale < 1 ? 1 : 2))
-                using (ImRaii.PushColor(ImGuiCol.FrameBg, 0)) 
-                using (ImRaii.PushColor(ImGuiCol.Border, searchString.IsNullOrWhitespace() ? 0x80808080 : 0xFF11AAFF))
-                using (ImRaii.PushColor(ImGuiCol.BorderShadow, searchString.IsNullOrWhitespace() ? 0 : 0x800000FF)) {
-                    if (ImGui.InputTextWithHint("##friendSearch", "Search...", ref searchString, 32)) {
-                        ReFilter();
-                    }
-                }
-                
-                ImGui.SetWindowFontScale(1);
-            }
-            
-            ImGui.End();
-        }
+    private void FrameworkUpdate() {
+        if (!Common.GetUnitBase("FriendList", out var flAddon)) return;
+        if (!Common.GetUnitBase("Social", out var socialAddon)) return;
+        if (!TweakConfig.SearchHotkey || !Service.KeyState[VirtualKey.CONTROL] || !Service.KeyState[VirtualKey.F]) return;
+        if (!Common.AnyFocused(flAddon, socialAddon)) return;
+        Service.KeyState[VirtualKey.F] = false;
+        flAddon->SetFocusNode(&searchInput.CollisionNode.Node->AtkResNode);
     }
 
     protected override void Disable() {
-        PluginInterface.UiBuilder.Draw -= DrawSearchUi;
+        searchHint?.Dispose();
+        searchInput?.Dispose();
     }
 
     protected override void AfterDisable() {

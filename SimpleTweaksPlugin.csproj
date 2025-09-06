@@ -47,13 +47,15 @@
         <None Update="Decorations\**">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
+        <None Remove="lib\**" />
     </ItemGroup>
     <ItemGroup>
       <PackageReference Include="System.Numerics.Vectors" Version="4.6.0" />
       <PackageReference Include="DalamudPackager" Version="13.0.0" />
     </ItemGroup>
-    <Import Project="Dalamud.Plugin.Bootstrap.targets"/>
+    <Import Project="Dalamud.Plugin.Bootstrap.targets" />
 	<ItemGroup>
+        <ProjectReference Include="lib\KamiToolKit\KamiToolKit.csproj" />
 		<Reference Include="Dalamud">
             <Private>false</Private>
             <HintPath>$(DalamudLibPath)\Dalamud.dll</HintPath>
@@ -100,7 +102,7 @@
 		</Reference>
     </ItemGroup>
 	<ItemGroup>
-	  <Folder Include="Utility\FriendList" />
+        <Compile Remove="lib\**" />
 	</ItemGroup>
     <Target Name="Clean CS" Condition="'$(Configuration)'!='CustomCS' and $([MSBuild]::IsOSPlatform('Windows'))" BeforeTargets="PreBuildEvent">
         <Exec Command="del $(TargetDir)FFXIVClientStructs.dll" EchoOff="true" StandardErrorImportance="low" StandardOutputImportance="low"/>

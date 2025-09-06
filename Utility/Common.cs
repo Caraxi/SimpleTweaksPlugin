@@ -22,6 +22,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Shell;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
+using KamiToolKit;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Enums;
@@ -40,6 +41,7 @@ public unsafe class Common {
     public static uint ClientStructsVersion => CsVersion.Value;
     private static readonly Lazy<uint> CsVersion = new(() => (uint?)typeof(FFXIVClientStructs.ThisAssembly).Assembly.GetName().Version?.Build ?? 0U);
 
+    public static NativeController NativeController { get; private set; }
     public static event Action FrameworkUpdate;
 
     public static void InvokeFrameworkUpdate() {
@@ -64,6 +66,8 @@ public unsafe class Common {
 
         updateCursorHook = Hook<AtkModuleUpdateCursor>("48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 20 4C 8B F1 E8 ?? ?? ?? ?? 49 8B CE", UpdateCursorDetour);
         updateCursorHook?.Enable();
+
+        NativeController = new NativeController(Service.PluginInterface);
     }
 
     public static UIModule* UIModule => Framework.Instance()->GetUIModule();
@@ -328,6 +332,18 @@ public unsafe class Common {
         return sibNode != null ? GetNodeByIDChain(sibNode, ids) : null;
     }
 
+    public static bool AnyFocused(params AtkUnitBase*[] unitBase) {
+        var focusedList = &RaptureAtkUnitManager.Instance()->FocusedUnitsList;
+        foreach (var f in focusedList->Entries) {
+            if (f.Value == null) continue;
+            foreach (var u in unitBase) {
+                if (u == f.Value) return true;
+            }
+        }
+
+        return false;
+    }
+    
     public static void Shutdown() {
         if (ThrowawayOut != null) {
             Marshal.FreeHGlobal(new IntPtr(ThrowawayOut));
@@ -337,6 +353,7 @@ public unsafe class Common {
         updateCursorHook?.Disable();
         updateCursorHook?.Dispose();
         httpClient?.Dispose();
+        NativeController.Dispose();
     }
 
     public const int UnitListCount = 18;
