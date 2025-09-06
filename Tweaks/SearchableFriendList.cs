@@ -121,7 +121,7 @@ public unsafe class SearchableFriendList : Tweak {
                 ReFilter();
             },
             OnFocused = () => searchHint.IsVisible = false, 
-            OnUnfocused = () => searchHint.IsVisible = string.IsNullOrWhiteSpace(searchInput.String.TextValue)
+            OnUnfocused = () => searchHint.IsVisible = string.IsNullOrWhiteSpace(searchInput.String)
         };
 
 
@@ -139,7 +139,7 @@ public unsafe class SearchableFriendList : Tweak {
         searchString = string.Empty;
         searchInput.Position = new Vector2(5,  500);
         searchInput.Size = new Vector2(300,  28);
-        searchInput.String = new SeString(new TextPayload(searchString));
+        searchInput.String = searchString;
         Common.NativeController.AttachNode(searchInput, friendList->RootNode);
         Common.FrameworkUpdate += FrameworkUpdate;
     }
