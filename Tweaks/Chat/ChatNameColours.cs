@@ -371,7 +371,7 @@ public class ChatNameColours : ChatTweaks.SubTweak {
             }
 
             ImGui.SameLine();
-            ImGui.Text(type.GetDetails().FancyName);
+            ImGui.Text(type.GetDetails()?.FancyName ?? $"{type}");
         }
 
         ImGui.TableNextColumn();
