@@ -57,7 +57,7 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
 
     private delegate void AgentItemSearchUpdateAtkValuesDelegate(AgentItemSearch* a1, uint a2, byte* a3, bool a4);
 
-    [TweakHook, Signature("40 55 56 41 56 B8", DetourName = nameof(AgentItemSearchUpdateAtkValuesDetour))]
+    [TweakHook, Signature("E9 ?? ?? ?? ?? E5 96", DetourName = nameof(AgentItemSearchUpdateAtkValuesDetour))]
     private readonly HookWrapper<AgentItemSearchUpdateAtkValuesDelegate> agentItemSearchUpdateAtkValuesHook;
 
     private delegate void AgentItemSearchPushFoundItemsDelegate(AgentItemSearch* a1);
