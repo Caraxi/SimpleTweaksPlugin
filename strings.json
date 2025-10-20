@@ -2566,5 +2566,45 @@
   "UseCollectionCommand / Name": {
     "message": "Use Collection Command",
     "description": "[UseCollectionCommand] Tweak Name"
+  },
+  "UiAdjustments@CombatTimer / Always Visible": {
+    "message": "Always Visible",
+    "description": "[CombatTimer] [Config] Always Visible"
+  },
+  "UiAdjustments@CombatTimer / Hide after combat end (Seconds)": {
+    "message": "Hide after combat end (Seconds)",
+    "description": "[CombatTimer] [Config] Hide after combat end (Seconds)"
+  },
+  "UiAdjustments@CombatTimer / Description": {
+    "message": "Shows a countdown for combo actions.",
+    "description": "[CombatTimer] Tweak Description"
+  },
+  "UiAdjustments@CombatTimer / Font Size": {
+    "message": "Font Size",
+    "description": "[CombatTimer] [Config] Font Size"
+  },
+  "UiAdjustments@CombatTimer / Leading Zero": {
+    "message": "Leading Zero",
+    "description": "[CombatTimer] [Config] Leading Zero"
+  },
+  "UiAdjustments@CombatTimer / Name": {
+    "message": "Combo Timer",
+    "description": "[CombatTimer] Tweak Name"
+  },
+  "UiAdjustments@CombatTimer / Text Color": {
+    "message": "Text Color",
+    "description": "[CombatTimer] [Config] Text Color"
+  },
+  "UiAdjustments@CombatTimer / Text Outline Color": {
+    "message": "Text Outline Color",
+    "description": "[CombatTimer] [Config] Text Outline Color"
+  },
+  "UiAdjustments@CombatTimer / X Position Offset": {
+    "message": "X Position Offset",
+    "description": "[CombatTimer] [Config] X Position Offset"
+  },
+  "UiAdjustments@CombatTimer / Y Position Offset": {
+    "message": "Y Position Offset",
+    "description": "[CombatTimer] [Config] Y Position Offset"
   }
 }

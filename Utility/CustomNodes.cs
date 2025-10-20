@@ -32,17 +32,18 @@ public static class CustomNodes {
     public static bool TryGet(uint id, out string name) => NodeNames.TryGetValue(id, out name);
     
     public const int
-        TargetHP =             SimpleTweaksNodeBase + 1,
-        SlideCastMarker =      SimpleTweaksNodeBase + 2,
-        TimeUntilGpMax =       SimpleTweaksNodeBase + 3,
-        ComboTimer =           SimpleTweaksNodeBase + 4,
+        TargetHP             = SimpleTweaksNodeBase + 1,
+        SlideCastMarker      = SimpleTweaksNodeBase + 2,
+        TimeUntilGpMax       = SimpleTweaksNodeBase + 3,
+        ComboTimer           = SimpleTweaksNodeBase + 4,
         PartyListStatusTimer = SimpleTweaksNodeBase + 5,
         InventoryGil         = SimpleTweaksNodeBase + 6,
         GearPositionsBg      = SimpleTweaksNodeBase + 7, // and 8
-        ClassicSlideCast =     SimpleTweaksNodeBase + 9,
-        PaintingPreview =      SimpleTweaksNodeBase + 10,
-        AdditionalInfo =       SimpleTweaksNodeBase + 11,
-        CraftingGhostBar =     SimpleTweaksNodeBase + 12,
-        CraftingGhostText =    SimpleTweaksNodeBase + 13,
+        ClassicSlideCast     = SimpleTweaksNodeBase + 9,
+        PaintingPreview      = SimpleTweaksNodeBase + 10,
+        AdditionalInfo       = SimpleTweaksNodeBase + 11,
+        CraftingGhostBar     = SimpleTweaksNodeBase + 12,
+        CraftingGhostText    = SimpleTweaksNodeBase + 13,
+        CombatTimer          = SimpleTweaksNodeBase + 14,
         SimpleTweaksNodeBase = 0x53540000;
 }
