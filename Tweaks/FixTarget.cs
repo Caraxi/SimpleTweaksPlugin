@@ -15,6 +15,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakName("Fix '/target' command")]
 [TweakDescription("Allows using the default '/target' command for targeting players or NPCs by their names.")]
 [Changelog("1.8.3.0", "Fixed tweak not working in french.", Author = "Aireil")]
+[Changelog(UnreleasedVersion, "Add ability to clear target by providing no name.")]
 public class FixTarget : Tweak {
     private Regex regex;
 
@@ -37,7 +38,15 @@ public class FixTarget : Tweak {
     private unsafe void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled) {
         if (type != XivChatType.ErrorMessage) return;
         if (Common.LastCommand == null || Common.LastCommand->StringPtr.Value == null) return;
-        var lastCommandStr = Encoding.UTF8.GetString(Common.LastCommand->StringPtr, (int)Common.LastCommand->BufUsed);
+        var lastCommandStr = Common.LastCommand->ToString();
+        if (lastCommandStr.Equals("/target") || lastCommandStr.Equals("/ziel") || lastCommandStr.Equals("/cibler")) {
+            // Clear target
+            Service.Targets.Target = null;
+            Service.Targets.SoftTarget = null;
+            isHandled = true;
+            return;
+        }
+
         if (!(lastCommandStr.StartsWith("/target ") || lastCommandStr.StartsWith("/ziel ") || lastCommandStr.StartsWith("/cibler "))) {
             return;
         }
