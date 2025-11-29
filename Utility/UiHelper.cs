@@ -6,18 +6,21 @@ namespace SimpleTweaksPlugin.Utility;
 
 public static unsafe partial class UiHelper {
     public static void SetSize(AtkResNode* node, int? width, int? height) {
+        if (node == null) return;
         if (width != null && width >= ushort.MinValue && width <= ushort.MaxValue) node->Width = (ushort) width.Value;
         if (height != null && height >= ushort.MinValue && height <= ushort.MaxValue) node->Height = (ushort) height.Value;
         node->DrawFlags |= 0x1;
     }
 
     public static void SetPosition(AtkResNode* node, float? x, float? y) {
+        if (node == null) return;
         if (x != null) node->X = x.Value;
         if (y != null) node->Y = y.Value;
         node->DrawFlags |= 0x1;
     }
         
     public static void SetPosition(AtkUnitBase* atkUnitBase, float? x, float? y) {
+        if (atkUnitBase == null) return;
         if (x >= short.MinValue && x <= short.MaxValue) atkUnitBase->X = (short) x.Value;
         if (y >= short.MinValue && x <= short.MaxValue) atkUnitBase->Y = (short) y.Value;
     }
