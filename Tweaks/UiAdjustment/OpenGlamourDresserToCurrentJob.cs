@@ -12,8 +12,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 public unsafe class OpenGlamourDresserToCurrentJob : UiAdjustments.SubTweak {
     [AddonPreSetup("MiragePrismPrismBox")]
     private void OnMiragePrismBoxOpen(AtkUnitBase* atkUnitBase) {
-        if (Service.ClientState is { LocalPlayer.ClassJob.RowId: var playerJob }) {
-            Marshal.WriteByte((nint)atkUnitBase, 0x1A8, (byte)playerJob);
+        if (Service.Objects.LocalPlayer is { ClassJob.RowId: var playerJob }) {
+            atkUnitBase->Param = (int) playerJob;
         }
     }
 }

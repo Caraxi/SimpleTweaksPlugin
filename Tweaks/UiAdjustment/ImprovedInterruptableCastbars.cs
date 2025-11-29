@@ -96,7 +96,7 @@ public unsafe class ImprovedInterruptableCastbars : UiAdjustments.SubTweak{
         if (interject is null || headGraze is null) return;
         
         if (target as IBattleChara is { IsCasting: true, IsCastInterruptible: true } && castBarVisible) {
-            switch (Service.ClientState.LocalPlayer) {
+            switch (Service.Objects.LocalPlayer) {
                 case { ClassJob.Value.Role: 1, Level: >= 18 }: // Tank
                     interject->ToggleVisibility(true);
                     headGraze->ToggleVisibility(false);

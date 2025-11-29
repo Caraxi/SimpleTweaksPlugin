@@ -49,7 +49,7 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
 
     protected override void Enable() {
         Service.ClientState.Login += OnLogin;
-        if (Service.ClientState.LocalContentId != 0) OnLogin();
+        if (Service.PlayerState.ContentId != 0) OnLogin();
         if (Common.GetUnitBase("ConfigCharacterHudGeneral", out var addon)) ToggleConfigLock(addon, false);
         if (Common.GetUnitBase("ConfigCharaHotbarXHB", out var xhbAddon)) ToggleXhbConfigLock(xhbAddon, false);
     }
@@ -65,7 +65,7 @@ public unsafe class HideTooltipsInCombat : TooltipTweaks.SubTweak {
 
     protected override void Disable() {
         Service.Condition.ConditionChange -= OnConditionChange;
-        if (Service.ClientState.LocalContentId != 0) OnConditionChange(ConditionFlag.InCombat, false);
+        if (Service.PlayerState.ContentId != 0) OnConditionChange(ConditionFlag.InCombat, false);
         if (Common.GetUnitBase("ConfigCharacterHudGeneral", out var addon)) ToggleConfigLock(addon, true);
         if (Common.GetUnitBase("ConfigCharaHotbarXHB", out var xhbAddon)) ToggleXhbConfigLock(xhbAddon, true);
     }

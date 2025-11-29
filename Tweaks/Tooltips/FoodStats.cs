@@ -104,7 +104,7 @@ public unsafe class FoodStats : TooltipTweaks.SubTweak {
     }
 
     public override void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
-        if (Service.ClientState.LocalPlayer == null) return;
+        if (Service.Objects.LocalPlayer == null) return;
         var id = AgentItemDetail.Instance()->ItemId;
         if (id >= 2000000) return;
         var hq = id >= 500000;
@@ -121,7 +121,7 @@ public unsafe class FoodStats : TooltipTweaks.SubTweak {
             var percent = percentNumber / 100f;
 
             var max = hq ? action.DataHQ[1] : action.Data[1];
-            var actual = Math.Floor(Service.ClientState.LocalPlayer.MaxHp * percent);
+            var actual = Math.Floor(Service.Objects.LocalPlayer.MaxHp * percent);
 
             var seStr = hpPotionEffectString;
 

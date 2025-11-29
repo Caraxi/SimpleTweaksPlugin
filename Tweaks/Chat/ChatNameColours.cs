@@ -234,7 +234,7 @@ public class ChatNameColours : ChatTweaks.SubTweak {
                 Config.ForcedColours.Remove(del);
             }
 
-            if (Service.ClientState?.LocalPlayer != null) {
+            if (Service.Objects.LocalPlayer != null) {
                 ImGui.TableNextColumn();
                 if (ImGui.Button("+##newPlayerName", buttonSize)) {
                     addError = string.Empty;
@@ -252,7 +252,7 @@ public class ChatNameColours : ChatTweaks.SubTweak {
 
                 ImGui.TableNextColumn();
 
-                var currentWorld = Service.ClientState.LocalPlayer.CurrentWorld.Value.Name.ExtractText();
+                var currentWorld = Service.Objects.LocalPlayer.CurrentWorld.Value.Name.ExtractText();
                 var currentRegion = Regions.Find(r => r.DataCentres.Any(dc => dc.Worlds.Contains(currentWorld)));
 
                 ImGui.SetNextItemWidth(-1);

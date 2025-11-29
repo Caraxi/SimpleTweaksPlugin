@@ -107,7 +107,7 @@ public unsafe class ShowShieldOnHPBar : UiAdjustments.SubTweak {
                 return;
             }
 
-            var player = Service.ClientState.LocalPlayer;
+            var player = Service.Objects.LocalPlayer;
             if (player == null) return;
 
             var shieldRawPercentage = ((Character*)player.Address)->CharacterData.ShieldValue / 100f;

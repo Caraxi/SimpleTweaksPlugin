@@ -57,7 +57,7 @@ public class FixTarget : Tweak {
 
         IGameObject closestMatch = null;
         var closestDistance = float.MaxValue;
-        var player = Service.ClientState.LocalPlayer;
+        var player = Service.Objects.LocalPlayer;
         if (player == null) return;
         foreach (var actor in Service.Objects) {
             if (actor == null) continue;

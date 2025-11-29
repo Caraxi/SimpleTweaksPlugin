@@ -236,7 +236,7 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
         // MP
         Vector3 mpAdd;
         Vector3 mpMultiply;
-        var classJobId = Service.ClientState?.LocalPlayer?.ClassJob.RowId;
+        var classJobId = Service.Objects.LocalPlayer?.ClassJob.RowId;
 
         if (classJobId != null && doLIds.Contains(classJobId.Value)) {
             mpAdd = reset ? DefaultConfig.GpAddRgb : Config.GpAddRgb;

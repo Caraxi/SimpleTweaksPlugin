@@ -20,7 +20,7 @@ public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
     private string last = "";
 
     public override void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) {
-        if (Service.ClientState.LocalPlayer == null) return;
+        if (Service.Objects.LocalPlayer == null) return;
         AtkUnitBase* unitBase = Common.GetUnitBase("ItemDetail");
         if (unitBase == null) return;
 

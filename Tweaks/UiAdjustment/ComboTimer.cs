@@ -162,7 +162,7 @@ public unsafe class ComboTimer : UiAdjustments.SubTweak {
             comboActions.Add(combo->Action, Service.Data.Excel.GetSheet<Action>().OrderBy(a => a.ClassJobLevel).FirstOrNull(a => a.ActionCombo.RowId == combo->Action)?.ClassJobLevel ?? 255);
         }
 
-        var comboAvailable = Service.ClientState?.LocalPlayer != null && combo->Timer > 0 && combo->Action != 0 && comboActions.ContainsKey(combo->Action) && comboActions[combo->Action] <= Service.ClientState.LocalPlayer.Level;
+        var comboAvailable = Service.Objects.LocalPlayer != null && combo->Timer > 0 && combo->Action != 0 && comboActions.ContainsKey(combo->Action) && comboActions[combo->Action] <= Service.Objects.LocalPlayer.Level;
 
         if (Config.AlwaysVisible || comboAvailable) {
             textNode->AtkResNode.ToggleVisibility(true);

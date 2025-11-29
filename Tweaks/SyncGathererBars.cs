@@ -169,21 +169,21 @@ public unsafe class SyncGathererBars : Tweak {
         if (checkBar >= 10 && !Config.CrossBars[checkBar - 10]) return;
 
         if (onGatherer == false && checkBar == 0) {
-            if (Service.ClientState.LocalPlayer?.ClassJob.RowId is 16 or 17) {
+            if (Service.Objects.LocalPlayer?.ClassJob.RowId is 16 or 17) {
                 onGatherer = true;
             }
         }
 
         if (!onGatherer) return;
 
-        if (Service.ClientState.LocalPlayer?.ClassJob.RowId is not (16 or 17)) {
+        if (Service.Objects.LocalPlayer?.ClassJob.RowId is not (16 or 17)) {
             onGatherer = false;
             return;
         }
 
         var hotbarModule = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->UIModule->GetRaptureHotbarModule();
-        if (Service.ClientState.LocalPlayer == null) return;
-        var currentId = (int)Service.ClientState.LocalPlayer.ClassJob.RowId;
+        if (Service.Objects.LocalPlayer == null) return;
+        var currentId = (int)Service.Objects.LocalPlayer.ClassJob.RowId;
         if (currentId is not (16 or 17)) return;
 
         if (IsShared(checkBar < 10 ? checkBar : checkBar - 10, checkBar >= 10)) return;

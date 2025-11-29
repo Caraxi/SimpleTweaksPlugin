@@ -39,7 +39,7 @@ public unsafe class HideTargetCircle : UiAdjustments.SubTweak {
             outOfCombatTimer.Restart();
         } else if (Config.ShowInCombat && outOfCombatTimer.ElapsedMilliseconds < Config.CombatBuffer * 1000) {
             requestToBeShown = true;
-        } else if (Config.ShowWhileWeaponDrawn && Service.ClientState.LocalPlayer != null && Service.ClientState.LocalPlayer.StatusFlags.HasFlag(StatusFlags.WeaponOut)) {
+        } else if (Config.ShowWhileWeaponDrawn && Service.Objects.LocalPlayer != null && Service.Objects.LocalPlayer.StatusFlags.HasFlag(StatusFlags.WeaponOut)) {
             requestToBeShown = true;
         } else {
             requestToHide = true;

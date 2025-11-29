@@ -33,7 +33,7 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
     }
 
     private string GetHairstylePath(uint hairstyleItem, bool hr = true) {
-        var character = (Character*)(Service.ClientState.LocalPlayer?.Address ?? 0);
+        var character = (Character*)(Service.Objects.LocalPlayer?.Address ?? 0);
         if (character == null) return string.Empty;
 
         var tribeId = character->DrawData.CustomizeData.Tribe;

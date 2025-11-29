@@ -35,7 +35,7 @@ public unsafe class EstateListCommand : CommandTweak {
         for (var i = 0U; i < agent->InfoProxy->EntryCount; i++) {
             var f = agent->InfoProxy->GetEntry(i);
             if (f == null) continue;
-            if (f->HomeWorld != Service.ClientState.LocalPlayer?.CurrentWorld.RowId) continue;
+            if (f->HomeWorld != Service.Objects.LocalPlayer?.CurrentWorld.RowId) continue;
             if (f->ContentId == 0) continue;
             if (f->Name[0] == 0) continue;
             if ((f->ExtraFlags & 32) != 0) continue;

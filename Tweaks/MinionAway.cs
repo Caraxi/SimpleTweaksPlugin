@@ -10,7 +10,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakReleaseVersion("1.8.2.0")]
 public unsafe class MinionAway : CommandTweak {
     protected override void OnCommand(string args) {
-        var c = (Character*)(Service.ClientState.LocalPlayer?.Address ?? nint.Zero);
+        var c = (Character*)(Service.Objects.LocalPlayer?.Address ?? nint.Zero);
         if (c == null) return;
         var minion = c->CompanionData.CompanionObject;
         if (minion == null) return;

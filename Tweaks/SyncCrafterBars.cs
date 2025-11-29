@@ -91,7 +91,7 @@ public class SyncCrafterBars : Tweak {
     }
 
     public void PerformCrafterBarSync(uint copyFrom) {
-        if (Service.ClientState.LocalPlayer == null) return;
+        if (Service.Objects.LocalPlayer == null) return;
         if (Service.ClientState.IsPvP) return;
         if (!crafterJobs.Contains(copyFrom)) return;
         var classJobSheet = Service.Data.GetExcelSheet<ClassJob>();
@@ -122,12 +122,12 @@ public class SyncCrafterBars : Tweak {
 
     [FrameworkUpdate(NthTick = 20)]
     private void FrameworkOnUpdate() {
-        if (Service.ClientState.LocalPlayer == null) {
+        if (Service.Objects.LocalPlayer == null) {
             currentClassJob = 0;
             return;
         }
 
-        var cj = Service.ClientState.LocalPlayer.ClassJob.RowId;
+        var cj = Service.Objects.LocalPlayer.ClassJob.RowId;
         if (cj == currentClassJob) return;
 
         if (currentClassJob != 0 && crafterJobs.Contains(currentClassJob)) {

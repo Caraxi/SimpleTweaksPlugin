@@ -14,7 +14,7 @@ public unsafe class ImprovedWorldVisit : UiAdjustments.SubTweak {
     [AddonPostRequestedUpdate("WorldTravelSelect")]
     private void SetupWorldTravelSelect(AtkUnitBase* unitBase) {
         SimpleLog.Log("Rebuild World Visit Menu");
-        var currentWorld = Service.ClientState.LocalPlayer?.CurrentWorld.Value;
+        var currentWorld = Service.Objects.LocalPlayer?.CurrentWorld.Value;
         if (currentWorld == null) return;
         var currentDc = currentWorld.Value.DataCenter.RowId;
         var headerNode = unitBase->GetTextNodeById(13);

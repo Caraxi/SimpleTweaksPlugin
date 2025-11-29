@@ -103,7 +103,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
     }
 
     private void ProcessHotBarSlot(ActionBarSlot* hotBarSlotData, NumberArrayData* numberArray, int numberArrayIndex) {
-        if (Service.ClientState.LocalPlayer is { IsCasting: true } ) return;
+        if (Service.Objects.LocalPlayer is { IsCasting: true } ) return;
 
         var numberArrayData = (NumberArrayStruct*) (&numberArray->IntArray[numberArrayIndex]);
 
@@ -120,7 +120,7 @@ public unsafe class FadeUnavailableActions : UiAdjustments.SubTweak {
                 return;
             }
             var actionLevel = action.Value.ClassJobLevel;
-            var playerLevel = Service.ClientState.LocalPlayer?.Level ?? 0;
+            var playerLevel = Service.Objects.LocalPlayer?.Level ?? 0;
 
             switch (action) {
                 case { IsRoleAction: false } when actionLevel > playerLevel:

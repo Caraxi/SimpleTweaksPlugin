@@ -49,7 +49,7 @@ public unsafe class HideJobGauge : UiAdjustments.SubTweak {
             if (Common.GetUnitBase("JobHudNotice") != null) reset = true;
             var stage = AtkStage.Instance();
             var loadedUnitsList = &stage->RaptureAtkUnitManager->AtkUnitManager.AllLoadedUnitsList;
-            var character = (Character*)(Service.ClientState.LocalPlayer?.Address ?? nint.Zero);
+            var character = (Character*)(Service.Objects.LocalPlayer?.Address ?? nint.Zero);
 
             foreach (var j in Enumerable.Range(0, Math.Min(loadedUnitsList->Count, loadedUnitsList->Entries.Length))) {
                 var addon = loadedUnitsList->Entries[j].Value;

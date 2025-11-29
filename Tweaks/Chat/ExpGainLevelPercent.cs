@@ -72,7 +72,7 @@ public unsafe partial class ExpGainLevelPercent : ChatTweaks.SubTweak {
         var classJobName = match.Groups[2].ToString().Trim();
 
         if (string.IsNullOrWhiteSpace(classJobName)) {
-            classJobName = Service.ClientState.LocalPlayer?.ClassJob.Value.Name.ExtractText() ?? string.Empty;
+            classJobName = Service.Objects.LocalPlayer?.ClassJob.Value.Name.ExtractText() ?? string.Empty;
         }
 
         if (!ExpToNextMap.TryGetValue(classJobName.ToLowerInvariant(), out var getNextExpFunc)) {
