@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.10.12.6
+***Tweak Changes***
+- **`Fix '/target' command`** - Add ability to clear target by providing no name.
+
+
 ## 1.10.12.1
 ***Tweak Changes***
 - **`Increase max line count in chat bubbles`** - Added ability to adjust the duration of chat bubbles.

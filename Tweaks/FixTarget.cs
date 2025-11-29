@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using Dalamud.Game;
@@ -15,7 +15,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakName("Fix '/target' command")]
 [TweakDescription("Allows using the default '/target' command for targeting players or NPCs by their names.")]
 [Changelog("1.8.3.0", "Fixed tweak not working in french.", Author = "Aireil")]
-[Changelog(UnreleasedVersion, "Add ability to clear target by providing no name.")]
+[Changelog("1.10.12.6", "Add ability to clear target by providing no name.")]
 public class FixTarget : Tweak {
     private Regex regex;
 
