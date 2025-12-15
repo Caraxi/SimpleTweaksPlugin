@@ -15,6 +15,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 [TweakDescription("Shows whether or not you've made an outfit out of the hovered item.")]
 [TweakAuthor("croizat")]
 [TweakReleaseVersion("1.10.8.0")]
+[Changelog(UnreleasedVersion, "Fixed HQ outfits not working.")]
 public unsafe class TrackOutfits : TooltipTweaks.SubTweak
 {
     [TweakHook(typeof(UIState), nameof(UIState.IsItemActionUnlocked), nameof(IsItemActionUnlockedDetour))]
