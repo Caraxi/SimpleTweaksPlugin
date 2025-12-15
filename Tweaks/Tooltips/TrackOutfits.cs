@@ -1,4 +1,5 @@
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -27,13 +28,13 @@ public unsafe class TrackOutfits : TooltipTweaks.SubTweak
         {
             var agent = ItemFinderModule.Instance();
             if (agent == null) return [];
-            return agent->GlamourDresserItemIds.ToArray().Where(x => x != 0 && Service.Data.GetExcelSheet<MirageStoreSetItem>().HasRow(x)).ToArray();
+            return agent->GlamourDresserItemIds.ToArray().Where(x => x != 0 && Service.Data.GetExcelSheet<MirageStoreSetItem>().HasRow(x)).Select(x => ItemUtil.GetBaseId(x).ItemId).ToArray();
         }
     }
 
     private long IsItemActionUnlockedDetour(UIState* uiState, void* item)
     {
-        if (GetOutfits(Item.ItemId) is { Length: > 0 } outfits)
+        if (GetOutfits(ItemUtil.GetBaseId(Item.ItemId).ItemId) is { Length: > 0 } outfits)
         {
             foreach (var o in outfits)
                 if (!OwnedOutfits.Contains(o))
@@ -45,7 +46,7 @@ public unsafe class TrackOutfits : TooltipTweaks.SubTweak
 
     public override void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData)
     {
-        if (GetOutfits(Item.ItemId) is { Length: > 0 } outfits)
+        if (GetOutfits(ItemUtil.GetBaseId(Item.ItemId).ItemId) is { Length: > 0 } outfits)
         {
             var description = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ItemDescription);
 
