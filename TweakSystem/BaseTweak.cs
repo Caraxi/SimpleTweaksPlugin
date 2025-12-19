@@ -386,7 +386,7 @@ public abstract class BaseTweak {
 
                     if (attr.EditorSize != int.MinValue) ImGui.SetNextItemWidth(attr.EditorSize == -1 ? -1 : attr.EditorSize * ImGui.GetIO().FontGlobalScale);
 
-                    if (ImGui.BeginCombo($"{localizedName}##{f.Name}_{this.GetType().Namespace}_{configOptionIndex++}", $"{v.GetDescription()}")) {
+                    if (ImGui.BeginCombo($"{localizedName}##{f.Name}_{this.GetType().Namespace}_{configOptionIndex++}", $"{v?.GetDescription() ?? "Unknown"}")) {
                         foreach (var eV in f.FieldType.GetEnumValues()) {
                             if (eV is not Enum enumValue) {
                                 ImGui.Selectable($"???{eV}");

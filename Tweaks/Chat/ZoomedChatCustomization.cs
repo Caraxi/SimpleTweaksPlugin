@@ -17,12 +17,7 @@ public unsafe class ZoomedChatCustomization : ChatTweaks.SubTweak {
 
     [TweakHook, Signature("40 53 56 41 54 48 83 EC 60", DetourName = nameof(ChatZoomedDetour))]
     private readonly HookWrapper<ZoomChat> chatZoomedHook = null!;
-
-    private delegate byte IsChatZoomed(AtkUnitBase* atkUnitBase);
-
-    [Signature("E8 ?? ?? ?? ?? 48 8B CF 84 C0 74 07")]
-    private readonly IsChatZoomed isChatZoomed = null!;
-
+    
     public class Configs : TweakConfig {
         public Vector2 Size = new(70f, 90f);
         public Vector2 Position = new(50f, 50f);

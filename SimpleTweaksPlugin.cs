@@ -466,7 +466,7 @@ namespace SimpleTweaksPlugin {
             public bool Closed;
             public string Message = string.Empty;
             public ulong Count = 1;
-            public override bool Equals(object obj) {
+            public override bool Equals(object? obj) {
                 if (obj is CaughtError otherError) {
                     if (otherError.Manager != Manager) return false;
                     if (otherError.Tweak != Tweak) return false;

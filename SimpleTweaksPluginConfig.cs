@@ -143,7 +143,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
     private record TweakCategoryContainer(string CategoryName) {
         public string LocalizedName => LocalizedCategoryName(CategoryName);
         public List<BaseTweak> Tweaks = new();
-        public virtual bool Equals(TweakCategoryContainer other) => CategoryName == other?.CategoryName;
+        public virtual bool Equals(TweakCategoryContainer? other) => CategoryName == other?.CategoryName;
         public override int GetHashCode() => CategoryName.GetHashCode();
     }
 

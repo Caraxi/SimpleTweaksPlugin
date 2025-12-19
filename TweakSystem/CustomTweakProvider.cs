@@ -21,7 +21,7 @@ public class CustomTweakProvider : TweakProvider {
         this.config = config;
         var loadedFileInfo = new FileInfo(this.config.Assembly);
         lastWriteTime = loadedFileInfo.LastWriteTime;
-        loadContext = new TweakLoadContext(loadedFileInfo.Name, loadedFileInfo.Directory);
+        loadContext = new TweakLoadContext(loadedFileInfo.Name, loadedFileInfo.Directory ?? throw new Exception("Invalid file path"));
         AssemblyPath = config.Assembly;
         Assembly = loadContext.LoadFromFile(this.config.Assembly);
         Service.PluginInterface.UiBuilder.Draw += OnDraw;

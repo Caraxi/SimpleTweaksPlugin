@@ -31,7 +31,7 @@ namespace SimpleTweaksPlugin {
 namespace SimpleTweaksPlugin.Debugging {
     public partial class DebugConfig {
         public string SelectedPage = String.Empty;
-        public Dictionary<string, object> SavedValues = new();
+        public Dictionary<string, object?> SavedValues = new();
 
         public List<string> Undocked = new List<string>();
     }
@@ -320,7 +320,7 @@ namespace SimpleTweaksPlugin.Debugging {
         private static ulong beginModule;
         private static ulong endModule;
 
-        private static unsafe void PrintOutValue(ulong addr, List<string> path, Type type, object value, MemberInfo member) {
+        private static unsafe void PrintOutValue(ulong addr, List<string> path, Type type, object? value, MemberInfo member) {
             try {
                 if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)) {
                     value = type.GetMethod("ToArray")?.Invoke(value, null);
@@ -337,7 +337,7 @@ namespace SimpleTweaksPlugin.Debugging {
 
                 if (type.IsPointer) {
                     var val = (Pointer)value;
-                    var unboxed = Pointer.Unbox(val);
+                    var unboxed = val == null ? null : Pointer.Unbox(val);
                     if (unboxed != null) {
                         var unboxedAddr = (ulong)unboxed;
                         ClickToCopyText($"{(ulong)unboxed:X}");
@@ -350,7 +350,8 @@ namespace SimpleTweaksPlugin.Debugging {
 
                         try {
                             var eType = type.GetElementType();
-                            var ptrObj = SafeMemory.PtrToStructure(new IntPtr(unboxed), eType);
+                            
+                            var ptrObj = eType == null ? null : SafeMemory.PtrToStructure(new IntPtr(unboxed), eType);
                             ImGui.SameLine();
                             PrintOutObject(ptrObj, (ulong)unboxed, new List<string>(path));
                         } catch {
@@ -366,7 +367,7 @@ namespace SimpleTweaksPlugin.Debugging {
                             for (var i = 0; i < arr.Length; i++) {
                                 ImGui.Text($"[{i}]");
                                 ImGui.SameLine();
-                                PrintOutValue(addr, new List<string>(path) { $"_arrValue_{i}" }, type.GetElementType(), arr.GetValue(i), member);
+                                PrintOutValue(addr, new List<string>(path) { $"_arrValue_{i}" }, type.GetElementType() ?? throw new Exception("Invalid Element Type"), arr.GetValue(i), member);
                             }
 
                             ImGui.TreePop();
@@ -670,7 +671,7 @@ namespace SimpleTweaksPlugin.Debugging {
             }
         }
 
-        public static unsafe void PrintOutObject(object obj, ulong addr, List<string> path, bool autoExpand = false, string headerText = null) {
+        public unsafe static void PrintOutObject(object? obj, ulong addr, List<string> path, bool autoExpand = false, string headerText = null) {
             if (obj is Utf8String utf8String) {
                 var text = string.Empty;
                 Exception err = null;

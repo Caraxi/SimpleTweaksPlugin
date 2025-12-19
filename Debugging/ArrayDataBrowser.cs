@@ -68,7 +68,7 @@ public unsafe class ArrayDataBrowser : DebugHelper {
 
     private string searchValue = string.Empty;
 
-    public static void DrawArrayDataTable(NumberArrayData* array, NumberArray arrayHelper = null) {
+    public static void DrawArrayDataTable(NumberArrayData* array, NumberArray? arrayHelper = null) {
 
         if (arrayHelper != null) {
             DebugManager.PrintOutObject(arrayHelper, (ulong) array);

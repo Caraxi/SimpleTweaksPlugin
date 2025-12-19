@@ -33,7 +33,7 @@ public class EmoteLogServerBarEntry : Tweak {
         Service.GameConfig.UiConfig.Set("EmoteTextType", !value);
     }
 
-    private void UiConfigChanged(object sender, ConfigChangeEvent e) {
+    private void UiConfigChanged(object? sender, ConfigChangeEvent e) {
         if ((UiConfigOption)e.Option == UiConfigOption.EmoteTextType) {
             SetDtrEntryText();
         }

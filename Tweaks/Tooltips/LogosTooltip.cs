@@ -98,6 +98,7 @@ public unsafe class LogosTooltip : TooltipTweaks.SubTweak {
                 var logosItem = Service.Data.Excel.GetSheet<Item>()?.FirstOrNull(a => a.RowId == Item.ItemId);
                 if (logosItem == null) return;
 				var logosMemory = Service.Data.Excel.GetSheet<Item>()?.FirstOrNull(a => a.RowId == logos);
+                if (logosMemory == null) continue;
 				stringLogos += $"{logosMemory.Value.Name.ExtractText()}, ";
             }
 			stringLogos = $"{stringLogos.Substring(0, stringLogos.Length - 2)}.";

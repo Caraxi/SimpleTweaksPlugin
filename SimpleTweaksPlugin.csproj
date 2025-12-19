@@ -1,115 +1,23 @@
-<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup Label="Target">
-        <PlatformTarget>x64</PlatformTarget>
-        <TargetFramework>net10.0-windows</TargetFramework>
-        <LangVersion>preview</LangVersion>
-        <Platforms>x64</Platforms>
+<Project Sdk="Dalamud.NET.Sdk/14.0.1">
+    <PropertyGroup>
+        <Version>1.10.12.6</Version>
         <Configurations>Debug;Release;DebugSteamDeck;CustomCS;Test</Configurations>
-    </PropertyGroup>
-    <PropertyGroup Label="Build">
-        <NoWarn>CS8632,CS0649,CS0169</NoWarn>
-        <OutputType>Library</OutputType>
-        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-        <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
-        <DebugSymbols>true</DebugSymbols>
-        <DebugType>full</DebugType>
-        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    </PropertyGroup>
-    <PropertyGroup Label="DebugSteamDeck" Condition="'$(Configuration)'=='DebugSteamDeck'">
-        <OutputPath>\\steamdeck\home\deck\DevPlugins\SimpleTweaksPlugin\</OutputPath>
-        <DefineConstants>DEBUG</DefineConstants>
-    </PropertyGroup>
-    <PropertyGroup Label="CustomCS" Condition="'$(Configuration)'=='CustomCS'">
-        <DefineConstants>DEBUG;CustomCS</DefineConstants>
-        <OutDir>$(ProjectDir)bin/Debug</OutDir>
+        <NoWarn>CS8632,CS0649,CS0169,CS8618,CS0162,CS8625,CS8602,CS8605,CS8600,CS8601,CS8603</NoWarn>
     </PropertyGroup>
     <PropertyGroup Label="Test" Condition="'$(Configuration)'=='Test'">
         <DefineConstants>DEBUG;TEST</DefineConstants>
         <OutDir>$(ProjectDir)bin/Debug</OutDir>
     </PropertyGroup>
-    <PropertyGroup Label="Feature">
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>1.10.12.6</Version>
-    </PropertyGroup>
-	<PropertyGroup>
-        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-        <AssemblyName>SimpleTweaksPlugin</AssemblyName>
-    </PropertyGroup>
-    <ItemGroup>
-      <None Update="images\icon.png">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="TweakPreviews\**">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-          
-      </None>
-        <None Update="Decorations\**">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Remove="lib\**" />
-    </ItemGroup>
-    <ItemGroup>
-      <PackageReference Include="System.Numerics.Vectors" Version="4.6.0" />
-      <PackageReference Include="DalamudPackager" Version="14.0.1" />
-    </ItemGroup>
-    <Import Project="Dalamud.Plugin.Bootstrap.targets" />
 	<ItemGroup>
         <ProjectReference Include="lib\KamiToolKit\KamiToolKit.csproj" />
-		<Reference Include="Dalamud">
-            <Private>false</Private>
-            <HintPath>$(DalamudLibPath)\Dalamud.dll</HintPath>
-		</Reference>
-		<Reference Include="FFXIVClientStructs">
-			<Private Condition="'$(Configuration)'!='CustomCS'">false</Private>
-			<HintPath Condition="'$(Configuration)'!='CustomCS'">$(DalamudLibPath)\FFXIVClientStructs.dll</HintPath>
-            <Private Condition="'$(Configuration)'=='CustomCS'">true</Private>
-			<HintPath Condition="'$(Configuration)'=='CustomCS'">C:\ffxiv\repo\FFXIVClientStructs\bin\Debug\FFXIVClientStructs.dll</HintPath>
-		</Reference>
-		<Reference Include="InteropGenerator.Runtime">
-            <Private Condition="'$(Configuration)'!='CustomCS'">false</Private>
-            <HintPath Condition="'$(Configuration)'!='CustomCS'">$(DalamudLibPath)\InteropGenerator.Runtime.dll</HintPath>
-            <Private Condition="'$(Configuration)'=='CustomCS'">true</Private>
-            <HintPath Condition="'$(Configuration)'=='CustomCS'">C:\ffxiv\repo\FFXIVClientStructs\bin\Debug\InteropGenerator.Runtime.dll</HintPath>
-		</Reference>
-        <Reference Include="Newtonsoft.Json">
-            <Private>false</Private>
-            <HintPath>$(DalamudLibPath)\Newtonsoft.Json.dll</HintPath>
-		</Reference>
-        <Reference Include="Dalamud.Bindings.ImGui">
-            <Private>false</Private>
-            <HintPath>$(DalamudLibPath)\Dalamud.Bindings.ImGui.dll</HintPath>
-        </Reference>
-        <Reference Include="Dalamud.Bindings.ImPlot">
-            <Private>false</Private>
-            <HintPath>$(DalamudLibPath)\Dalamud.Bindings.ImPlot.dll</HintPath>
-        </Reference>
-		<Reference Include="ImGuiScene">
-            <Private>false</Private>
-            <HintPath>$(DalamudLibPath)\ImGuiScene.dll</HintPath>
-		</Reference>
-		<Reference Include="Lumina">
-            <Private>false</Private>
-            <HintPath>$(DalamudLibPath)\Lumina.dll</HintPath>
-		</Reference>
-		<Reference Include="Lumina.Excel">
-            <Private>false</Private>
-            <HintPath>$(DalamudLibPath)\Lumina.Excel.dll</HintPath>
-		</Reference>
-		<Reference Include="JetBrains.Annotations">
+        <Reference Include="JetBrains.Annotations">
             <Private>false</Private>
             <HintPath>$(DalamudLibPath)\JetBrains.Annotations.dll</HintPath>
-		</Reference>
-    </ItemGroup>
-	<ItemGroup>
+        </Reference>
+        <None Update="images\icon.png" CopyToOutputDirectory="Always"/>
+        <None Update="TweakPreviews\**" CopyToOutputDirectory="Always"/>
+        <None Update="Decorations\**" CopyToOutputDirectory="Always"/>
+        <None Remove="lib\**" />
         <Compile Remove="lib\**" />
 	</ItemGroup>
-    <Target Name="Clean CS" Condition="'$(Configuration)'!='CustomCS' and $([MSBuild]::IsOSPlatform('Windows'))" BeforeTargets="PreBuildEvent">
-        <Exec Command="del $(TargetDir)FFXIVClientStructs.dll" EchoOff="true" StandardErrorImportance="low" StandardOutputImportance="low"/>
-        <Exec Command="del $(TargetDir)InteropGenerator.Runtime.dll" EchoOff="true" StandardErrorImportance="low" StandardOutputImportance="low"/>
-    </Target>
-    <Target Name="Ensure CExporter" Condition="'$(Configuration)'=='CustomCS'" BeforeTargets="PreBuildEvent">
-        <Exec Command="dotnet run --no-restore -v q --project ..\FFXIVClientStructs\CExporter\CExporter.csproj --quiet --no-write --strip-color"/>
-    </Target>
 </Project>

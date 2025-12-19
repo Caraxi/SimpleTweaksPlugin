@@ -83,7 +83,7 @@ public class CollectableRewards : TooltipTweaks.SubTweak {
             .Select(job => job.Abbreviation.ToString())
             .ToList();
 
-        Dictionary<uint, (sbyte, string)> rowToJobInfo = new();
+        Dictionary<uint, (sbyte, string?)> rowToJobInfo = new();
 
         // Cache the list of collectable items we support
         foreach (var collectableCollection in Service.Data.Excel.GetSubrowSheet<CollectablesShopItem>()) {
@@ -99,7 +99,7 @@ public class CollectableRewards : TooltipTweaks.SubTweak {
                             entry.index < 8
                                 ? craftingJobExpArrayIndex[(sbyte)entry.index]
                                 : gatheringJobExpArrayIndex[(sbyte)(entry.index - 8)], jobShortName[entry.index]))
-                        .FirstOrDefault((0, null));
+                        .FirstOrDefault();
                     if (jobInfo.Item2 is null) continue;
                     rowToJobInfo.Add(collectable.RowId, jobInfo);
                 }

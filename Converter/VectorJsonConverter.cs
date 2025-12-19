@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace SimpleTweaksPlugin.Converter; 
 
 public class VectorJsonConverter : JsonConverter {
-    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) {
+    public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) {
         if (value is Vector2 v2) {
             writer.WriteValue($"{v2.X}|{v2.Y}");
         } else if (value is Vector3 v3) {
@@ -16,9 +16,9 @@ public class VectorJsonConverter : JsonConverter {
         }
     }
 
-    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
+    public override object ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer) {
         float[] values;
-        var str = (string)reader.Value;
+        var str = (string?)reader.Value;
         try {
             values = str.Split('|').Select(float.Parse).ToArray();
         } catch {

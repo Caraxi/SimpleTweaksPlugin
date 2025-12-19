@@ -171,7 +171,7 @@ public static class Extensions {
         return new PointerSpanUnboxer<T>(span);
     }
 
-    internal static IEnumerable<(FieldInfo Field, TAttribute Attribute)> GetFieldsWithAttribute<TAttribute>(this object obj, BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) where TAttribute : Attribute {
+    internal static IEnumerable<(FieldInfo Field, TAttribute? Attribute)> GetFieldsWithAttribute<TAttribute>(this object obj, BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) where TAttribute : Attribute {
         return obj.GetType().GetFields(flags).Select(f => (f, f.GetCustomAttribute<TAttribute>())).Where(f => f.Item2 != null);
     }
     

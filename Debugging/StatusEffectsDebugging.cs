@@ -110,7 +110,7 @@ public unsafe class StatusEffectsDebugging : DebugHelper {
                 if (Service.Targets?.Target == null) {
                     ImGui.Text("No Target");
                 } else {
-                    var targetObject = (GameObject*)Service.Targets?.Target?.Address;
+                    var targetObject = (GameObject*) (Service.Targets.Target?.Address ?? 0);
                     if (targetObject == null || !battleCharaKinds.Contains(targetObject->ObjectKind)) {
                         ImGui.Text($"Unsupported Target Kind: {targetObject->ObjectKind}");
                     } else {
@@ -125,7 +125,7 @@ public unsafe class StatusEffectsDebugging : DebugHelper {
                 if (Service.Targets?.FocusTarget == null) {
                     ImGui.Text("No Focus Target");
                 } else {
-                    var targetObject = (GameObject*)Service.Targets?.FocusTarget?.Address;
+                    var targetObject = (GameObject*) (Service.Targets.FocusTarget?.Address ?? 0);
                     if (targetObject == null || !battleCharaKinds.Contains(targetObject->ObjectKind)) {
                         ImGui.Text($"Unsupported Target Kind: {targetObject->ObjectKind}");
                     } else {

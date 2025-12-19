@@ -72,7 +72,7 @@ public unsafe class AddonDebug : DebugHelper {
                         }
                         case ValueType.String8:
                         case ValueType.String: {
-                            atkValueList.Add(Marshal.PtrToStringUTF8(new IntPtr(a->String)));
+                            atkValueList.Add(Marshal.PtrToStringUTF8(new IntPtr(a->String)) ?? string.Empty);
                             break;
                         }
                         case ValueType.UInt: {
@@ -367,8 +367,9 @@ public unsafe class AddonDebug : DebugHelper {
                         atkValueList.Add(a->Int);
                         break;
                     }
-                    case ValueType.String: {
-                        atkValueList.Add(Marshal.PtrToStringUTF8(new IntPtr(a->String)));
+                    case ValueType.String:
+                    {
+                        atkValueList.Add(Marshal.PtrToStringUTF8(new IntPtr(a->String)) ?? string.Empty);
                         break;
                     }
                     case ValueType.UInt: {

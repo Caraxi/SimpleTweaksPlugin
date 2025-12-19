@@ -348,7 +348,7 @@ public unsafe class UIDebug : DebugHelper {
         public AtkUnitBase* UnitBase;
         public List<NodeResult> Nodes = [];
 
-        public override bool Equals(object obj) {
+        public override bool Equals(object? obj) {
             if (!(obj is AddonResult ar)) return false;
             return UnitBase == ar.UnitBase;
         }
@@ -358,7 +358,7 @@ public unsafe class UIDebug : DebugHelper {
         public AtkResNode* ResNode;
         public NodeState State;
 
-        public override bool Equals(object obj) {
+        public override bool Equals(object? obj) {
             if (!(obj is NodeResult nr)) return false;
             return nr.ResNode == ResNode;
         }

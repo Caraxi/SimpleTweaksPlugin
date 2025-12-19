@@ -373,7 +373,7 @@ public enum UiControlOption
         return (attr?.Type, attr?.Name);
     }
     
-    private void OnConfigChange(object sender, ConfigChangeEvent e) {
+    private void OnConfigChange(object? sender, ConfigChangeEvent e) {
         
         var section = e.Option switch {
             SystemConfigOption => Service.GameConfig.System,

@@ -21,10 +21,10 @@ public class DutyTimer : Tweak {
         Service.DutyState.DutyCompleted -= OnDutyCompleted;
     }
     
-    private void OnDutyStarted(object sender, ushort e) 
+    private void OnDutyStarted(object? sender, ushort e) 
         => startTimestamp = DateTime.UtcNow;
 
-    private void OnDutyCompleted(object sender, ushort e) 
+    private void OnDutyCompleted(object? sender, ushort e) 
         => Service.Chat.Print($@"Duty Completed in: {DateTime.UtcNow - startTimestamp:hh\:mm\:ss\.ffff}");
 
     [TerritoryChanged]

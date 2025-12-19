@@ -52,8 +52,8 @@ public unsafe class AgentDebug : DebugHelper {
     private bool agentListActiveOnly;
     private bool agentListKnownOnly = true;
     private bool sortById;
-    private Type selectedAgentType;
-    private Type[] selectedAgentTypes;
+    private Type? selectedAgentType;
+    private Type[]? selectedAgentTypes;
     private string agentSearch = string.Empty;
 
     private bool starting = true;

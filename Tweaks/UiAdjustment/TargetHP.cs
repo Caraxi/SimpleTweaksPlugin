@@ -133,7 +133,7 @@ public unsafe class TargetHP : UiAdjustments.SubTweak {
         }
     }
 
-    private void UpdateMainTarget(AtkUnitBase* unitBase, IGameObject target, bool reset = false) {
+    private void UpdateMainTarget(AtkUnitBase* unitBase, IGameObject? target, bool reset = false) {
         if (unitBase == null) return;
         var gauge = unitBase->GetComponentNodeById(19);
         var textNode = unitBase->GetTextNodeById(16);
@@ -143,7 +143,7 @@ public unsafe class TargetHP : UiAdjustments.SubTweak {
         UpdateGaugeBar(gauge, textNode, target, Config.Position, Config.UseCustomColor ? Config.CustomColor : null, Config.FontSize, Config.AlignLeft, reset);
     }
 
-    private void UpdateFocusTarget(AtkUnitBase* unitBase, IGameObject target, bool reset = false) {
+    private void UpdateFocusTarget(AtkUnitBase* unitBase, IGameObject? target, bool reset = false) {
         if (Config.NoFocus) reset = true;
         if (unitBase == null) return;
         var gauge = unitBase->GetComponentNodeById(18);
@@ -152,7 +152,7 @@ public unsafe class TargetHP : UiAdjustments.SubTweak {
         UpdateGaugeBar(gauge, textNode, target, Config.FocusPosition, Config.FocusUseCustomColor ? Config.FocusCustomColor : null, Config.FocusFontSize, Config.FocusAlignLeft, reset);
     }
 
-    private void UpdateMainTargetSplit(AtkUnitBase* unitBase, IGameObject target, bool reset = false) {
+    private void UpdateMainTargetSplit(AtkUnitBase* unitBase, IGameObject? target, bool reset = false) {
         if (unitBase == null) return;
         var gauge = unitBase->GetComponentNodeById(13);
         var textNode = unitBase->GetTextNodeById(10);
@@ -162,7 +162,7 @@ public unsafe class TargetHP : UiAdjustments.SubTweak {
         UpdateGaugeBar(gauge, textNode, target, Config.Position, Config.UseCustomColor ? Config.CustomColor : null, Config.FontSize, Config.AlignLeft, reset);
     }
 
-    private void UpdateGaugeBar(AtkComponentNode* gauge, AtkTextNode* cloneTextNode, IGameObject target, Vector2 positionOffset, Vector4? customColor, byte fontSize, bool alignLeft, bool reset) {
+    private void UpdateGaugeBar(AtkComponentNode* gauge, AtkTextNode* cloneTextNode, IGameObject? target, Vector2 positionOffset, Vector4? customColor, byte fontSize, bool alignLeft, bool reset) {
         if (gauge == null || (ushort)gauge->AtkResNode.Type < 1000) return;
 
         AtkTextNode* textNode = null;

@@ -4,6 +4,8 @@ using FFXIVClientStructs.Interop;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using System;
+using System.Linq;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
@@ -64,12 +66,14 @@ public unsafe class TalkAdjustments : Tweak {
 
     [AddonPreRefresh("Talk")]
     private void OnRefresh(AddonArgs args) {
-        if (args is not AddonRefreshArgs { AtkValueSpan: var values }) return;
+        if (args is not AddonRefreshArgs refreshArgs || refreshArgs.AtkValueCount < TalkAtkValue.LogToChatChannel) return;
         try {
-            if ((!TweakConfig.OnlyOverrideNormal || values[TalkAtkValue.Style].UInt == 0) && TalkAtkValue.Style < values.Length)
-                values.GetPointer(TalkAtkValue.Style)->SetUInt((uint)TweakConfig.Style);
-            if (TalkAtkValue.LogToChatChannel < values.Length && TweakConfig.LogChannel != default)
-                values.GetPointer(TalkAtkValue.LogToChatChannel)->SetUInt((uint)TweakConfig.LogChannel);
+            var style = (AtkValue*) refreshArgs.AtkValueEnumerable.Skip(TalkAtkValue.Style).First().Address;
+            var logToChatChannel = (AtkValue*) refreshArgs.AtkValueEnumerable.Skip(TalkAtkValue.LogToChatChannel).First().Address;
+            if ((!TweakConfig.OnlyOverrideNormal || style->UInt == 0) && TalkAtkValue.Style < refreshArgs.AtkValueCount)
+                style->SetUInt((uint)TweakConfig.Style);
+            if (TalkAtkValue.LogToChatChannel < refreshArgs.AtkValueCount && TweakConfig.LogChannel != default)
+                logToChatChannel->SetUInt((uint)TweakConfig.LogChannel);
         } catch (Exception e) {
             SimpleLog.Error(e, $"Something went wrong in {nameof(TalkAdjustments)}.{nameof(OnRefresh)}");
         }
