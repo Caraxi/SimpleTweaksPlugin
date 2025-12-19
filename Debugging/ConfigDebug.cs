@@ -19,7 +19,6 @@ public unsafe class ConfigDebug : DebugHelper {
 
     private void DrawConfigBase(ConfigBase* configBase) {
         ImGui.Text($"Config Count: {configBase->ConfigCount}");
-        ImGui.Text($"{configBase->UnkString.ToString()}");
 
         DebugManager.PrintAddress(configBase);
         ImGui.SameLine();

@@ -23,5 +23,7 @@ readonly unsafe public struct ExtendedRecipeLookup(ExcelPage page, uint offset, 
     
     public static ExtendedRecipeLookup Create(ExcelPage page, uint offset, uint row) => new(page, offset, row);
     public uint RowId => row; 
+    public ExcelPage ExcelPage => page;
+    public uint RowOffset => offset;
 }
 

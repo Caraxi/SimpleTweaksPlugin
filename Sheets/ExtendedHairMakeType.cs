@@ -8,6 +8,8 @@ namespace SimpleTweaksPlugin.Sheets;
 [Sheet("HairMakeType")]
 public readonly unsafe struct HairMakeTypeExt : IRowExtension<HairMakeTypeExt, HairMakeType> {
     public uint RowId { get; }
+    public ExcelPage ExcelPage { get; }
+    public uint RowOffset { get; }
     public RowRef<CharaMakeCustomize>[] HairStyles { get; }
     public HairMakeType HairMakeType { get; }
 
@@ -16,6 +18,8 @@ public readonly unsafe struct HairMakeTypeExt : IRowExtension<HairMakeTypeExt, H
     
     public HairMakeTypeExt(ExcelPage page, uint offset, uint row) {
         RowId = row;
+        ExcelPage = page;
+        RowOffset = offset;
         HairMakeType = new HairMakeType(page, offset, row);
         
         var hairstyles = new List<uint>();

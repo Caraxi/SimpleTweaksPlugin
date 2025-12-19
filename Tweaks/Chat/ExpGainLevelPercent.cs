@@ -41,8 +41,8 @@ public unsafe partial class ExpGainLevelPercent : ChatTweaks.SubTweak {
         }
 
         foreach (var pj in Service.Data.GetExcelSheet<MKDSupportJob>()) {
-            if (ExpToNextMap.ContainsKey(pj.Unknown0.ExtractText().ToLowerInvariant())) continue;
-            ExpToNextMap.TryAdd(pj.Unknown0.ExtractText().ToLowerInvariant(), () => {
+            if (ExpToNextMap.ContainsKey(pj.Name.ExtractText().ToLowerInvariant())) continue;
+            ExpToNextMap.TryAdd(pj.Name.ExtractText().ToLowerInvariant(), () => {
                 var state = PublicContentOccultCrescent.GetState();
                 if (state == null) return 0;
                 var level = state->SupportJobLevels[(int)pj.RowId];

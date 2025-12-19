@@ -1,11 +1,11 @@
-using FFXIVClientStructs.FFXIV.Component.GUI;
-using Dalamud.Bindings.ImGui;
 using System;
 using System.Numerics;
+using System.Runtime.InteropServices;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game.Config;
 using Dalamud.Interface.Utility;
-using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -15,10 +15,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakDescription("Make adjustments to the cooldown counter when using the large option.")]
 [TweakAutoConfig]
 public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
-    private delegate void UpdateHotbarSlotCooldownText(AddonActionBarBase* addon, ulong a2, ulong a3, void* a4, uint a5, int a6);
-
-    [TweakHook, Signature("E8 ?? ?? ?? ?? 49 8B CF E8 ?? ?? ?? ?? 48 8B 78 30 4C 3B 7F 08 75 3A", DetourName = nameof(UpdateHotbarSlotCooldownTextDetour))]
-    private HookWrapper<UpdateHotbarSlotCooldownText> updateHotbarSlotCooldownTextHook;
+    [TweakHook(typeof(AddonActionBarBase), nameof(AddonActionBarBase.UpdateHotbarSlot), nameof(UpdateHotbarSlotCooldownTextDetour))]
+    private HookWrapper<AddonActionBarBase.Delegates.UpdateHotbarSlot> updateHotbarSlotCooldownTextHook;
 
     public class Configs : TweakConfig {
         public FontType Font = FontType.TrumpGothic;
@@ -88,43 +86,46 @@ public unsafe class LargeCooldownCounter : UiAdjustments.SubTweak {
         return (byte)s;
     }
 
-    private void UpdateHotbarSlotCooldownTextDetour(AddonActionBarBase* addon, ulong a2, ulong a3, void* a4, uint a5, int a6) {
-        updateHotbarSlotCooldownTextHook.Original(addon, a2, a3, a4, a5, a6);
+    [StructLayout(LayoutKind.Explicit)]
+    private struct ActionBarSlotCustom {
+        [FieldOffset(0x00)] public AtkComponentDragDrop* DragDrop;
+    }
 
+    private void UpdateHotbarSlotCooldownTextDetour(AddonActionBarBase* addon, ActionBarSlot* slot, NumberArrayData* numberArray, StringArrayData* stringArrayData, int numberArrayIndex, int stringArrayIndex) {
+        updateHotbarSlotCooldownTextHook.Original(addon, slot, numberArray, stringArrayData, numberArrayIndex, stringArrayIndex);
+
+        var slotData = (ActionBarSlotCustom*)slot;
         try {
-            // E8 ?? ?? ?? ?? 49 8B CF E8 ?? ?? ?? ?? 48 8B 78 30 4C 3B 7F 08 75 3A
-            // This some cursed shit. TODO: Work this out properly
-            var v7 = *(int*)(*(ulong*)(a3 + 0x28) + 4UL * a5 + 8);
-            if (v7 == 5) {
-                var v8 = *(ulong*)(*(ulong*)(a2 + 136UL) + 248UL);
-                var cooldownTextNode = *(AtkTextNode**)(v8 + 248);
-                if ((byte)Config.Font >= 4) Config.Font = FontType.TrumpGothic;
+            if (numberArray->IntArray[numberArrayIndex + 2] != 5) return;
+            if (slotData == null || slotData->DragDrop == null || slotData->DragDrop->AtkComponentIcon == null || slotData->DragDrop->AtkComponentIcon->FrameIcon == null ) return;
+            var cooldownTextNode = slotData->DragDrop->AtkComponentIcon->FrameIcon->GetAsAtkTextNode();
+            if (cooldownTextNode == null) return;
+            if ((byte)Config.Font >= 4) Config.Font = FontType.TrumpGothic;
 
-                cooldownTextNode->SetAlignment(AlignmentType.Center);
-                cooldownTextNode->SetFont(Config.Font);
-                cooldownTextNode->FontSize = GetFontSize();
+            cooldownTextNode->SetAlignment(AlignmentType.Center);
+            cooldownTextNode->SetFont(Config.Font);
+            cooldownTextNode->FontSize = GetFontSize();
 
-                if (cooldownTextNode->TextColor.B < 100) {
-                    cooldownTextNode->TextColor.R = (byte)(Config.InvalidColour.X * 255f);
-                    cooldownTextNode->TextColor.G = (byte)(Config.InvalidColour.Y * 255f);
-                    cooldownTextNode->TextColor.B = (byte)(Config.InvalidColour.Z * 255f);
-                    cooldownTextNode->TextColor.A = (byte)(Config.InvalidColour.W * 255f);
+            if (cooldownTextNode->TextColor.B < 100) {
+                cooldownTextNode->TextColor.R = (byte)(Config.InvalidColour.X * 255f);
+                cooldownTextNode->TextColor.G = (byte)(Config.InvalidColour.Y * 255f);
+                cooldownTextNode->TextColor.B = (byte)(Config.InvalidColour.Z * 255f);
+                cooldownTextNode->TextColor.A = (byte)(Config.InvalidColour.W * 255f);
 
-                    cooldownTextNode->EdgeColor.R = (byte)(Config.InvalidEdgeColour.X * 255f);
-                    cooldownTextNode->EdgeColor.G = (byte)(Config.InvalidEdgeColour.Y * 255f);
-                    cooldownTextNode->EdgeColor.B = (byte)(Config.InvalidEdgeColour.Z * 255f);
-                    cooldownTextNode->EdgeColor.A = (byte)(Config.InvalidEdgeColour.W * 255f);
-                } else {
-                    cooldownTextNode->TextColor.R = (byte)(Config.CooldownColour.X * 255f);
-                    cooldownTextNode->TextColor.G = (byte)(Config.CooldownColour.Y * 255f);
-                    cooldownTextNode->TextColor.B = (byte)(Config.CooldownColour.Z * 255f);
-                    cooldownTextNode->TextColor.A = (byte)(Config.CooldownColour.W * 255f);
+                cooldownTextNode->EdgeColor.R = (byte)(Config.InvalidEdgeColour.X * 255f);
+                cooldownTextNode->EdgeColor.G = (byte)(Config.InvalidEdgeColour.Y * 255f);
+                cooldownTextNode->EdgeColor.B = (byte)(Config.InvalidEdgeColour.Z * 255f);
+                cooldownTextNode->EdgeColor.A = (byte)(Config.InvalidEdgeColour.W * 255f);
+            } else {
+                cooldownTextNode->TextColor.R = (byte)(Config.CooldownColour.X * 255f);
+                cooldownTextNode->TextColor.G = (byte)(Config.CooldownColour.Y * 255f);
+                cooldownTextNode->TextColor.B = (byte)(Config.CooldownColour.Z * 255f);
+                cooldownTextNode->TextColor.A = (byte)(Config.CooldownColour.W * 255f);
 
-                    cooldownTextNode->EdgeColor.R = (byte)(Config.CooldownEdgeColour.X * 255f);
-                    cooldownTextNode->EdgeColor.G = (byte)(Config.CooldownEdgeColour.Y * 255f);
-                    cooldownTextNode->EdgeColor.B = (byte)(Config.CooldownEdgeColour.Z * 255f);
-                    cooldownTextNode->EdgeColor.A = (byte)(Config.CooldownEdgeColour.W * 255f);
-                }
+                cooldownTextNode->EdgeColor.R = (byte)(Config.CooldownEdgeColour.X * 255f);
+                cooldownTextNode->EdgeColor.G = (byte)(Config.CooldownEdgeColour.Y * 255f);
+                cooldownTextNode->EdgeColor.B = (byte)(Config.CooldownEdgeColour.Z * 255f);
+                cooldownTextNode->EdgeColor.A = (byte)(Config.CooldownEdgeColour.W * 255f);
             }
         } catch (Exception ex) {
             SimpleLog.Error(ex);

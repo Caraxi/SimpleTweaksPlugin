@@ -17,7 +17,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakAutoConfig]
 [TweakReleaseVersion("1.9.0.0")]
 [Changelog("1.10.8.0", "Once again fixed logic.")]
-public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
+public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak, IDisabledTweak {
 
     private ScenarioTree? finalScenario;
     private readonly Dictionary<uint, ScenarioTree> expansionBegins = new();
@@ -138,4 +138,6 @@ public unsafe class ScenarioProgressionDisplay : UiAdjustments.SubTweak {
             textNode->SetText(encoded);
         }
     }
+
+    public string DisabledMessage => "Tweak is not currently functional and will return when possible";
 }

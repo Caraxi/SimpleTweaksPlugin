@@ -13,6 +13,7 @@ using Dalamud.Game;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
+using KamiToolKit;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.Utility;
@@ -64,6 +65,7 @@ namespace SimpleTweaksPlugin {
 
         public void Dispose() {
             SimpleLog.Debug("Dispose");
+            TestUtil.Cancel();
             SaveAllConfig();
             Service.Framework.Update -= FrameworkOnUpdate;
             Service.PluginInterface.UiBuilder.Draw -= this.BuildUI;
@@ -83,6 +85,7 @@ namespace SimpleTweaksPlugin {
             Common.Shutdown();
             TooltipManager.Destroy();
             SimpleEvent.Destroy();
+            KamiToolKitLibrary.Dispose();
             Service.Dispose();
         }
 
@@ -148,6 +151,7 @@ namespace SimpleTweaksPlugin {
         }
         
         private void Initialize() {
+            KamiToolKitLibrary.Initialize(Service.PluginInterface);
             SetupLocalization();
 
             UiHelper.Setup(Service.SigScanner);

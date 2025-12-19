@@ -115,7 +115,7 @@ public unsafe class FoodStats : TooltipTweaks.SubTweak {
         var action = item.ItemAction.Value;
         
 
-        if (action is { Type : 847 }) {
+        if (action is { Action.RowId: 847 }) {
             // Healing Potion
             var percentNumber = hq ? action.DataHQ[0] : action.Data[0];
             var percent = percentNumber / 100f;
@@ -137,7 +137,7 @@ public unsafe class FoodStats : TooltipTweaks.SubTweak {
             SetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.Effects, seStr);
         }
 
-        if (action is not { Type: 844 or 845 or 846 }) return;
+        if (action is not { Action.RowId: 844 or 845 or 846 }) return;
 
         if (!foodSheet.TryGetRow(hq ? action.DataHQ[1] : action.Data[1], out var itemFood)) return;
         var payloads = new List<Payload>();

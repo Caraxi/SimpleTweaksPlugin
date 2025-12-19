@@ -127,7 +127,7 @@ public unsafe class CharacterClassSwitcher : Tweak {
         }
 
         if (eventType == AtkEventType.InputReceived) {
-            var a5 = (byte*)args.Data;
+            var a5 = (byte*)args.AtkEventData;
             if (a5 == null || a5[0] != 0x01 || a5[4] != 1) {
                 return;
             }

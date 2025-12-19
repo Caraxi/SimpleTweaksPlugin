@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Game.Text;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Style;
 using Dalamud.Interface.Utility.Raii;
@@ -42,6 +45,8 @@ public static class TestUtil {
 
     private static List<TestLogEntry> LogEntries = new();
     private static bool scroll;
+
+    private static CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
     
     public static void Ready() {
         IsReady = true;
@@ -52,6 +57,19 @@ public static class TestUtil {
     }
     
     public static void Draw() {
+
+        if (cancellationTokenSource.IsCancellationRequested) {
+            IsRunning = false;
+            StateString = "Cancelled";
+        }
+
+        using (ImRaii.Disabled(!IsRunning)) {
+            if (ImGui.SmallButton("Cancel")) {
+                cancellationTokenSource.Cancel();
+            }
+        }
+        ImGui.SameLine();
+        
         ImGui.TextColored(IsRunning ? ImGuiColors.HealerGreen : ImGuiColors.DalamudYellow, IsRunning ? "Test Running" : "Test Not Running");
         ImGui.SameLine();
         ImGui.Text(" : ");
@@ -102,62 +120,99 @@ public static class TestUtil {
         e.Click = click;
         return e;
     }
+
+    private static void FileLog(string message) {
+        var path = Path.Join(Service.PluginInterface.GetPluginConfigDirectory(), "test.log");
+        File.AppendAllText(path, $"{message}\n");
+    }
+
+    private static uint throttle = 50;
     
     public static async Task Start() {
        
-       
+        FileLog($"Starting Test @ {DateTime.Now}");
+
         try {
             if (!IsReady) return;
             if (IsRunning) return;
             
             IsRunning = true;
             async Task RunTest(BaseTweak tweak) {
+                if (tweak is IDisabledTweak) return;
+                if (throttle > 0) await Task.Delay(TimeSpan.FromMilliseconds(throttle), cancellationTokenSource.Token);
+                if (cancellationTokenSource.IsCancellationRequested) return;
                 try {
 
+                    Service.Chat.Print(new XivChatEntry()
+                    {
+                        Type = XivChatType.Echo,
+                        Message = $"[{tweak.Key}] Starting Test"
+                    });
+                    
+                    FileLog($"[{tweak.Key}] Starting Test");
+                    
                     if (!tweak.CanLoad) {
+                        FileLog($"[{tweak.Key}] Unable to load");
                         throw new Exception("Cannot Load");
                     }
 
                     if (!tweak.Ready) {
+                        FileLog($"[{tweak.Key}] Setup");
                         await Service.Framework.RunOnTick(tweak.SetupInternal);
                     }
+                    
+                    if (throttle > 0) await Task.Delay(TimeSpan.FromMilliseconds(throttle), cancellationTokenSource.Token);
+                    if (cancellationTokenSource.IsCancellationRequested) return;
 
                     var wasEnabled = tweak.Enabled;
                     
                     if (!tweak.Enabled) {
+                        FileLog($"[{tweak.Key}] Enable Tweak");
                         StateString = $"Enabling Tweak: {tweak.Name}";
                         await Service.Framework.RunOnTick(tweak.InternalEnable, delayTicks: 1);
+                        
+                        if (throttle > 0) await Task.Delay(TimeSpan.FromMilliseconds(throttle), cancellationTokenSource.Token);
+                        if (cancellationTokenSource.IsCancellationRequested) return;
                     }
                     
                     if (tweak.Enabled) {
+                        FileLog($"[{tweak.Key}] Running Tests");
                         StateString = $"Running Test: {tweak.Name}";
                         await Service.Framework.RunOnTick(tweak.Test, delayTicks: 1);
 
+                        if (throttle > 0) await Task.Delay(TimeSpan.FromMilliseconds(throttle), cancellationTokenSource.Token);
+                        if (cancellationTokenSource.IsCancellationRequested) return;
 
                         if (tweak is SubTweakManager stm) {
+                            FileLog($"[{tweak.Key}] Running Subtweak Tests");
                             SimpleTweaksPluginConfig.RebuildTweakList();
+                            
+                            if (throttle > 0) await Task.Delay(TimeSpan.FromMilliseconds(throttle), cancellationTokenSource.Token);
+                            if (cancellationTokenSource.IsCancellationRequested) return;
+                            
                             foreach (var subTweak in stm.GetTweakList()) {
                                 await RunTest(subTweak);
                             }
                         }
-                        
                     }
                     
+                    if (throttle > 0) await Task.Delay(TimeSpan.FromMilliseconds(throttle), cancellationTokenSource.Token);
+                    if (cancellationTokenSource.IsCancellationRequested) return;
+                    
                     if (!wasEnabled && tweak is not SubTweakManager { AlwaysEnabled: true}) {
+                        FileLog($"[{tweak.Key}] Disable");
                         StateString = $"Disabling Tweak: {tweak.Name}";
                         await Service.Framework.RunOnTick(tweak.InternalDisable, delayTicks: 1);
                     }
                     
                 } catch (Exception ex) {
+                    FileLog($"[{tweak.Key}] Failed - {ex.Message}");
                     var l =  Log($" - Tweak '{tweak.Name}' Failed Test [{tweak.Key}]\n\t\t{ex.Message}", ImGuiColors.DalamudRed);
                     if (ex.Message.StartsWith("Failed to find Text signature")) {
                         var sig = ex.Message.Split("(").Last().Split(")").First();
                         l.AddExtra($"{sig}", ImGuiColors.DalamudYellow, () => ImGui.SetClipboardText(sig));
                     }
                     l.AddExtra($"{ex}", ImGuiColors.DalamudRed);
-                    
-                    
-                    
                 }
             }
             
@@ -165,6 +220,7 @@ public static class TestUtil {
 
             foreach (var tweak in SimpleTweaksPlugin.Plugin.Tweaks) {
                 await RunTest(tweak);
+
             }
             
         } catch (Exception e) {
@@ -175,5 +231,9 @@ public static class TestUtil {
         IsRunning = false;
         SimpleTweaksPlugin.Plugin.PluginConfig.RefreshSearch();
         SimpleTweaksPluginConfig.RebuildTweakList();
+    }
+
+    public static void Cancel() {
+        cancellationTokenSource.Cancel();
     }
 }

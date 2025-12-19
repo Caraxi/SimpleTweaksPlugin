@@ -664,7 +664,7 @@ public unsafe class ExpandedCurrencyDisplay : UiAdjustments.SubTweak {
         var imageNode = UiHelper.MakeImageNode(nodeId, new UiHelper.PartInfo(0, 0, 36, 36));
         imageNode->AtkResNode.NodeFlags = NodeFlags.AnchorTop | NodeFlags.AnchorLeft | NodeFlags.Visible | NodeFlags.Enabled | NodeFlags.EmitsEvents;
         imageNode->WrapMode = 1;
-        imageNode->Flags = (byte) ImageNodeFlags.AutoFit;
+        imageNode->Flags = ImageNodeFlags.AutoFit;
 
         imageNode->LoadIconTexture((uint)(hqIcon ? icon + 1_000_000 : icon), 0);
         imageNode->AtkResNode.ToggleVisibility(true);

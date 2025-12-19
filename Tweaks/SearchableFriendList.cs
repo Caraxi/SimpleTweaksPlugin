@@ -117,7 +117,7 @@ public unsafe class SearchableFriendList : Tweak {
         searchInput = new TextInputNode() {
             IsVisible = true, 
             OnInputReceived = (str) => {
-                searchString = str.TextValue;
+                searchString = str.ExtractText();
                 ReFilter();
             },
             OnFocused = () => searchHint.IsVisible = false, 
@@ -125,7 +125,7 @@ public unsafe class SearchableFriendList : Tweak {
         };
 
 
-        Common.NativeController.AttachNode(searchHint, searchInput);
+        searchHint.AttachNode(searchInput);
         
         if (Common.GetUnitBase(out AddonFriendList* friendList, "FriendList")) {
             SetupFiendList(friendList);
@@ -140,13 +140,13 @@ public unsafe class SearchableFriendList : Tweak {
         searchInput.Position = new Vector2(5,  500);
         searchInput.Size = new Vector2(300,  28);
         searchInput.String = searchString;
-        Common.NativeController.AttachNode(searchInput, friendList->RootNode);
+        searchInput.AttachNode(friendList->RootNode);
         Common.FrameworkUpdate += FrameworkUpdate;
     }
 
     [AddonFinalize("FriendList")]
     private void FinalizeFriendList(AddonFriendList* friendList) {
-        Common.NativeController.DetachNode(searchInput);
+        searchInput.DetachNode();
         Common.FrameworkUpdate -= FrameworkUpdate;
     }
 

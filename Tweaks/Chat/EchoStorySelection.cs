@@ -70,7 +70,7 @@ public unsafe class EchoStorySelection : ChatTweaks.SubTweak {
     }
 
     [AddonFinalize("CutSceneSelectString", "SelectString")]
-    private void OnAddonFinalize(AddonFinalizeArgs obj) {
+    private void OnAddonFinalize(AddonArgs obj) {
         switch (obj) {
             case { AddonName: "CutSceneSelectString", Addon.Address: not 0 }:
                 PrintSelectedString(((AddonCutSceneSelectString*)obj.Addon.Address)->OptionList);

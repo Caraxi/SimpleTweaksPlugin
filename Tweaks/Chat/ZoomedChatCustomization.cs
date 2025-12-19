@@ -2,6 +2,7 @@ using System.Numerics;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Dalamud.Bindings.ImGui;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -42,8 +43,9 @@ public unsafe class ZoomedChatCustomization : ChatTweaks.SubTweak {
     }
 
     private void TryApply() {
-        var addon = Common.GetUnitBase("ChatLog");
-        if (addon != null && isChatZoomed(addon) != 0) {
+        var addon = (AddonChatLog*) Common.GetUnitBase("ChatLog");
+        
+        if (addon != null && addon->IsZoomed()) {
             Service.Framework.RunOnTick(ApplyCustomization);
             Service.Framework.RunOnTick(ApplyCustomization, delayTicks: 1);
         }

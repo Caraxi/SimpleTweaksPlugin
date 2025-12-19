@@ -71,7 +71,7 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
         var itemAction = item?.ItemAction.Value;
         if (itemAction == null) return;
 
-        var (imagePath, size) = itemAction.Value.Type switch {
+        var (imagePath, size) = itemAction.Value.Action.RowId switch {
             1322 => (GetMountImagePath(itemAction.Value.Data[0]), new ImageSize(190, 234, 0.8f)),
             853 => (GetMinionImagePath(itemAction.Value.Data[0]), new ImageSize(100, 100, 0.8f)),
             2633 => (GetHairstylePath(itemId), new ImageSize(100, 100, 0.8f)),
@@ -98,7 +98,7 @@ public unsafe class UnlockablePreviews : TooltipTweaks.SubTweak {
             imageNode->AtkResNode.NodeFlags = NodeFlags.AnchorTop | NodeFlags.AnchorLeft;
             imageNode->AtkResNode.DrawFlags = 0;
             imageNode->WrapMode = 1;
-            imageNode->Flags = 128;
+            imageNode->Flags = ImageNodeFlags.AutoFit;
 
             var partsList = (AtkUldPartsList*)IMemorySpace.GetUISpace()->Malloc((ulong)sizeof(AtkUldPartsList), 8);
             if (partsList == null) {

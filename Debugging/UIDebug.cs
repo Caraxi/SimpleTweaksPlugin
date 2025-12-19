@@ -1145,8 +1145,8 @@ public unsafe class UIDebug : DebugHelper {
                     var textInputComponent = (AtkComponentTextInput*)compNode->Component;
                     ImGui.Text($"InputBase Text1: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->AtkComponentInputBase.EvaluatedString.StringPtr))}");
                     ImGui.Text($"InputBase Text2: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->AtkComponentInputBase.RawString.StringPtr))}");
-                    ImGui.Text($"Text1: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText01.StringPtr))}");
-                    ImGui.Text($"Text2: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->UnkText02.StringPtr))}");
+                    ImGui.Text($"RawString: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->RawString.StringPtr))}");
+                    ImGui.Text($"EvalString: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->EvaluatedString.StringPtr))}");
                     ImGui.Text($"Text3: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->AvailableLines.StringPtr))}");
                     ImGui.Text($"Text4: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->HighlightedAutoTranslateOptionColorPrefix.StringPtr))}");
                     ImGui.Text($"Text5: {Marshal.PtrToStringAnsi(new IntPtr(textInputComponent->HighlightedAutoTranslateOptionColorSuffix.StringPtr))}");
@@ -1235,7 +1235,7 @@ public unsafe class UIDebug : DebugHelper {
                         ImGui.TableNextColumn();
                         ImGui.Text($"{evt->State.StateFlags}");
                         ImGui.TableNextColumn();
-                        ImGui.Text($"{evt->State.ReturnFlags}/{evt->State.UnkFlags3}");
+                        ImGui.Text($"{evt->State.ReturnFlags}");
                         ImGui.TableNextColumn();
                         DebugManager.PrintAddress(evt->Target);
                         ImGui.TableNextColumn();

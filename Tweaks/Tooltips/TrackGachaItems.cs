@@ -67,7 +67,7 @@ public unsafe class TrackGachaItems : TooltipTweaks.SubTweak {
             var obtained = false;
             var action = gachaResultItem.Value.ItemAction;
             if (!action.IsValid || action.RowId == 0) continue;
-            switch (action.Value.Type) {
+            switch (action.Value.Action.RowId) {
                 case 1322:
                     // Mount
                     obtained = UIState.Instance()->PlayerState.IsMountUnlocked(action.Value.Data[0]);
@@ -81,7 +81,7 @@ public unsafe class TrackGachaItems : TooltipTweaks.SubTweak {
                     obtained = UIState.Instance()->IsTripleTriadCardUnlocked((ushort)gachaResultItem.Value.AdditionalData.RowId);
                     break;
                 default:
-                    Plugin.Error(this, new Exception($"Unhandled Item Action Type: {action.Value.Type}"), true);
+                    Plugin.Error(this, new Exception($"Unhandled Item Action Type: {action.Value.Action.RowId}"), true);
                     break;
             }
 

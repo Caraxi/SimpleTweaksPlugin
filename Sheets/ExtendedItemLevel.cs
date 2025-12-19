@@ -19,6 +19,8 @@ public readonly unsafe struct ExtendedItemLevel(ExcelPage page, uint offset, uin
     
     public static ExtendedItemLevel Create(ExcelPage page, uint offset, uint row) => new(page, offset, row);
     public uint RowId => row;
+    public ExcelPage ExcelPage => page;
+    public uint RowOffset => offset;
     
     #region Debug
     [UsedImplicitly]

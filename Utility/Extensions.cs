@@ -210,10 +210,10 @@ public static class Extensions {
         return attribute != null;
     }
 
-    public static bool IsPressed(this ModifierFlag modifierFlag) {
+    public static bool IsPressed(this AtkEventData.AtkMouseData.ModifierFlag modifierFlag) {
         return 
-            Service.KeyState[VirtualKey.SHIFT] == modifierFlag.HasFlag(ModifierFlag.Shift) &&
-            Service.KeyState[VirtualKey.MENU] == modifierFlag.HasFlag(ModifierFlag.Alt) &&
-            Service.KeyState[VirtualKey.CONTROL] == modifierFlag.HasFlag(ModifierFlag.Ctrl);
+            Service.KeyState[VirtualKey.SHIFT] == modifierFlag.HasFlag(AtkEventData.AtkMouseData.ModifierFlag.Shift) &&
+            Service.KeyState[VirtualKey.MENU] == modifierFlag.HasFlag(AtkEventData.AtkMouseData.ModifierFlag.Alt) &&
+            Service.KeyState[VirtualKey.CONTROL] == modifierFlag.HasFlag(AtkEventData.AtkMouseData.ModifierFlag.Ctrl);
     }
 }
