@@ -18,6 +18,7 @@ public unsafe class BlueActionInfo : TooltipTweaks.SubTweak {
         var aozActionTransient = Service.Data.Excel.GetSheet<AozActionTransient>().GetRowOrDefault(aozAction.Value.RowId);
         if (aozActionTransient?.Stats == null) return;
         var descriptionString = GetTooltipString(stringArrayData, TooltipTweaks.ActionTooltipField.Description);
+        if (descriptionString == null) return;
         if (descriptionString.TextValue.Contains(Service.ClientState.ClientLanguage switch {
                 Dalamud.Game.ClientLanguage.English => "Rank: ★",
                 Dalamud.Game.ClientLanguage.German => "Rang: ★",

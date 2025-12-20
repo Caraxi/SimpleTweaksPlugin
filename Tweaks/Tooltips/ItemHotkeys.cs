@@ -58,7 +58,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
 
         foreach (var hk in Hotkeys) {
             if (!hk.Enabled) continue;
-            if (hk.Config.HideFromTooltip) continue;
+            if (hk.Config is { HideFromTooltip: true }) continue;
 
             if (itemId >= 2000000) {
                 if (!hk.AcceptsEventItem) continue;
@@ -84,6 +84,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
     public Configs Config { get; private set; }
 
     public void DrawHotkeyConfig(ItemHotkey hotkey) {
+        if (hotkey.Config == null) return;
         ImGui.PushID(hotkey.Key);
         while (ImGui.GetColumnIndex() != 0) ImGui.NextColumn();
 

@@ -47,7 +47,7 @@ public unsafe class AgentDebug : DebugHelper {
 
     private AgentId selectAgent;
 
-    private List<(AgentId id, bool hasClass)> sortedAgentList;
+    private List<(AgentId id, bool hasClass)>? sortedAgentList;
     private float agentListWidth = 100f;
     private bool agentListActiveOnly;
     private bool agentListKnownOnly = true;
@@ -71,7 +71,7 @@ public unsafe class AgentDebug : DebugHelper {
             AgentId = agentId;
             agentInterface = Framework.Instance()->GetUIModule()->GetAgentModule()->GetAgentByInternalId(agentId);
             hook = Common.Hook<AgentEventHandler>(agentInterface->AtkEventInterface.VirtualTable->ReceiveEvent, HandleEvent);
-            hook?.Enable();
+            hook.Enable();
         }
 
         public void* HandleEvent(AgentInterface* agent, void* a2, AtkValue* values, ulong atkValueCount, ulong eventType) {
@@ -308,15 +308,16 @@ public unsafe class AgentDebug : DebugHelper {
                         ImGui.SameLine();
                         DebugManager.ClickToCopyText($"{(ulong)agentInterface->AtkEventInterface.VirtualTable:X}");
 
-                        var beginModule = (ulong)Process.GetCurrentProcess()
-                            .MainModule.BaseAddress.ToInt64();
-                        var endModule = (beginModule + (ulong)Process.GetCurrentProcess()
-                            .MainModule.ModuleMemorySize);
-                        if (beginModule > 0 && (ulong)agentInterface->AtkEventInterface.VirtualTable >= beginModule && (ulong)agentInterface->AtkEventInterface.VirtualTable <= endModule) {
-                            ImGui.SameLine();
-                            ImGui.PushStyleColor(ImGuiCol.Text, 0xffcbc0ff);
-                            DebugManager.ClickToCopyText($"ffxiv_dx11.exe+{((ulong)agentInterface->AtkEventInterface.VirtualTable - beginModule):X}");
-                            ImGui.PopStyleColor();
+                        var mainModule = Process.GetCurrentProcess().MainModule;
+                        if (mainModule != null) {
+                            var beginModule = (ulong)mainModule.BaseAddress.ToInt64();
+                            var endModule = (beginModule + (ulong)mainModule.ModuleMemorySize);
+                            if (beginModule > 0 && (ulong)agentInterface->AtkEventInterface.VirtualTable >= beginModule && (ulong)agentInterface->AtkEventInterface.VirtualTable <= endModule) {
+                                ImGui.SameLine();
+                                ImGui.PushStyleColor(ImGuiCol.Text, 0xffcbc0ff);
+                                DebugManager.ClickToCopyText($"ffxiv_dx11.exe+{((ulong)agentInterface->AtkEventInterface.VirtualTable - beginModule):X}");
+                                ImGui.PopStyleColor();
+                            }
                         }
 
                         ImGui.Separator();

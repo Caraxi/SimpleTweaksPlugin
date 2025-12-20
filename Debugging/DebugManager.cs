@@ -37,7 +37,7 @@ namespace SimpleTweaksPlugin.Debugging {
     }
 
     public abstract class DebugHelper : IDisposable {
-        public SimpleTweaksPlugin Plugin;
+        public SimpleTweaksPlugin Plugin = null!;
         public abstract void Draw();
         public abstract string Name { get; }
 
@@ -267,7 +267,7 @@ namespace SimpleTweaksPlugin.Debugging {
             ImGui.GetForegroundDrawList().AddRect(position, position + size, nodeVisible ? 0xFF00FF00 : 0xFF0000FF);
         }
 
-        public static void ClickToCopyText(string text, string textCopy = null) {
+        public static void ClickToCopyText(string text, string? textCopy = null) {
             textCopy ??= text;
             ImGui.Text($"{text}");
             if (ImGui.IsItemHovered()) {
@@ -321,11 +321,11 @@ namespace SimpleTweaksPlugin.Debugging {
         private static ulong beginModule;
         private static ulong endModule;
 
-        private static unsafe void PrintOutValue(ulong addr, List<string> path, Type type, object? value, MemberInfo member) {
+        private unsafe static void PrintOutValue(ulong addr, List<string> path, Type type, object? value, MemberInfo member) {
             try {
                 if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)) {
                     value = type.GetMethod("ToArray")?.Invoke(value, null);
-                    type = value.GetType();
+                    type = value?.GetType() ?? throw new Exception("Invalid Type");
                 }
 
                 var valueParser = member.GetCustomAttribute(typeof(ValueParser));
@@ -454,15 +454,15 @@ namespace SimpleTweaksPlugin.Debugging {
             }
         }
 
-        public static unsafe void PrintOutObject<T>(T* ptr, bool autoExpand = false, string headerText = null) where T : unmanaged {
+        public static unsafe void PrintOutObject<T>(T* ptr, bool autoExpand = false, string? headerText = null) where T : unmanaged {
             PrintOutObject(ptr, new List<string>(), autoExpand, headerText);
         }
 
-        public static unsafe void PrintOutObject<T>(T* ptr, List<string> path, bool autoExpand = false, string headerText = null) where T : unmanaged {
+        public static unsafe void PrintOutObject<T>(T* ptr, List<string> path, bool autoExpand = false, string? headerText = null) where T : unmanaged {
             PrintOutObject(*ptr, (ulong)ptr, path, autoExpand, headerText);
         }
 
-        public static unsafe void PrintOutObject(object obj, ulong addr, bool autoExpand = false, string headerText = null) {
+        public static unsafe void PrintOutObject(object obj, ulong addr, bool autoExpand = false, string? headerText = null) {
             PrintOutObject(obj, addr, new List<string>(), autoExpand, headerText);
         }
 
@@ -489,7 +489,7 @@ namespace SimpleTweaksPlugin.Debugging {
             return $"{n}<{string.Join(',', gArgs)}>";
         }
 
-        private unsafe static void PrintOutField(FieldInfo f, LayoutKind layoutKind, ref ulong offsetAddress, ulong addr, object obj, List<string> path, string customTypeName = null, string customName = null) {
+        private unsafe static void PrintOutField(FieldInfo f, LayoutKind layoutKind, ref ulong offsetAddress, ulong addr, object obj, List<string> path, string? customTypeName = null, string? customName = null) {
             var fixedSizeArrayAttribute = f.GetCustomAttribute<FixedSizeArrayAttribute>();
             if (fixedSizeArrayAttribute?.IsString ?? false) return;
 
@@ -670,7 +670,11 @@ namespace SimpleTweaksPlugin.Debugging {
             }
         }
 
-        public unsafe static void PrintOutObject(object? obj, ulong addr, List<string> path, bool autoExpand = false, string headerText = null) {
+        public unsafe static void PrintOutObject(object? obj, ulong addr, List<string> path, bool autoExpand = false, string? headerText = null) {
+            if (obj == null) {
+                ImGui.TextDisabled("null");
+                return;
+            }
             if (obj is Utf8String utf8String) {
                 var text = string.Empty;
                 Exception? err = null;
@@ -696,9 +700,12 @@ namespace SimpleTweaksPlugin.Debugging {
             var openedNode = false;
             try {
                 if (endModule == 0 && beginModule == 0) {
+                    
                     try {
-                        beginModule = (ulong)Process.GetCurrentProcess().MainModule.BaseAddress.ToInt64();
-                        endModule = (beginModule + (ulong)Process.GetCurrentProcess().MainModule.ModuleMemorySize);
+                        var mainModule = Process.GetCurrentProcess().MainModule;
+                        if (mainModule == null) throw new Exception();
+                        beginModule = (ulong)mainModule.BaseAddress.ToInt64();
+                        endModule = (beginModule + (ulong)mainModule.ModuleMemorySize);
                     } catch {
                         endModule = 1;
                     }
@@ -749,8 +756,9 @@ namespace SimpleTweaksPlugin.Debugging {
             try {
                 if (endModule == 0 && beginModule == 0) {
                     try {
-                        beginModule = (ulong)Process.GetCurrentProcess().MainModule.BaseAddress.ToInt64();
-                        endModule = (beginModule + (ulong)Process.GetCurrentProcess().MainModule.ModuleMemorySize);
+                        var mainModule = Process.GetCurrentProcess().MainModule ?? throw new Exception();
+                        beginModule = (ulong)mainModule.BaseAddress.ToInt64();
+                        endModule = (beginModule + (ulong)mainModule.ModuleMemorySize);
                     } catch {
                         endModule = 1;
                     }

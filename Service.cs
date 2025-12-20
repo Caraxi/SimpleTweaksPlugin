@@ -11,30 +11,30 @@ namespace SimpleTweaksPlugin;
 
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
 public class Service {
-    [PluginService] public static IDalamudPluginInterface PluginInterface { get; private set; }
-    [PluginService] public static IChatGui Chat { get; private set; }
-    [PluginService] public static IClientState ClientState { get; private set; }
-    [PluginService] public static ICommandManager Commands { get; private set; }
-    [PluginService] public static ICondition Condition { get; private set; }
-    [PluginService] public static IDataManager Data { get; private set; }
-    [PluginService] public static IFramework Framework { get; private set; }
-    [PluginService] public static IGameGui GameGui { get; private set; }
-    [PluginService] public static IKeyState KeyState { get; private set; }
-    [PluginService] public static IObjectTable Objects { get; private set; }
-    [PluginService] public static ISigScanner SigScanner { get; private set; }
-    [PluginService] public static ITargetManager Targets { get; private set; }
-    [PluginService] public static IToastGui Toasts { get; private set; }
-    [PluginService] public static IGameConfig GameConfig { get; private set; }
-    [PluginService] public static ITextureProvider TextureProvider { get; private set; }
-    [PluginService] public static ITextureSubstitutionProvider TextureSubstitutionProvider { get; private set; }
-    [PluginService] public static ITextureReadbackProvider TextureReadbackProvider { get; private set; }
-    [PluginService] public static IAddonLifecycle AddonLifecycle { get; private set; }
-    [PluginService] public static IDtrBar DtrBar { get; private set; }
-    [PluginService] public static IDutyState DutyState { get; private set; }
-    [PluginService] public static INotificationManager NotificationManager { get; private set; }
-    [PluginService] public static IContextMenu ContextMenu { get; private set; }
-    [PluginService] public static INamePlateGui NamePlateGui { get; private set; }
-    [PluginService] public static IPlayerState PlayerState { get; private set; }
+    [PluginService] public static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
+    [PluginService] public static IChatGui Chat { get; private set; } = null!;
+    [PluginService] public static IClientState ClientState { get; private set; } = null!;
+    [PluginService] public static ICommandManager Commands { get; private set; } = null!;
+    [PluginService] public static ICondition Condition { get; private set; } = null!;
+    [PluginService] public static IDataManager Data { get; private set; } = null!;
+    [PluginService] public static IFramework Framework { get; private set; } = null!;
+    [PluginService] public static IGameGui GameGui { get; private set; } = null!;
+    [PluginService] public static IKeyState KeyState { get; private set; } = null!;
+    [PluginService] public static IObjectTable Objects { get; private set; } = null!;
+    [PluginService] public static ISigScanner SigScanner { get; private set; } = null!;
+    [PluginService] public static ITargetManager Targets { get; private set; } = null!;
+    [PluginService] public static IToastGui Toasts { get; private set; } = null!;
+    [PluginService] public static IGameConfig GameConfig { get; private set; } = null!;
+    [PluginService] public static ITextureProvider TextureProvider { get; private set; } = null!;
+    [PluginService] public static ITextureSubstitutionProvider TextureSubstitutionProvider { get; private set; } = null!;
+    [PluginService] public static ITextureReadbackProvider TextureReadbackProvider { get; private set; } = null!;
+    [PluginService] public static IAddonLifecycle AddonLifecycle { get; private set; } = null!;
+    [PluginService] public static IDtrBar DtrBar { get; private set; } = null!;
+    [PluginService] public static IDutyState DutyState { get; private set; } = null!;
+    [PluginService] public static INotificationManager NotificationManager { get; private set; } = null!;
+    [PluginService] public static IContextMenu ContextMenu { get; private set; } = null!;
+    [PluginService] public static INamePlateGui NamePlateGui { get; private set; } = null!;
+    [PluginService] public static IPlayerState PlayerState { get; private set; } = null!;
 
     public static NativeKeyState NativeKeyState { get; } = new();
 

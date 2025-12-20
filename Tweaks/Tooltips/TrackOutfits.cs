@@ -48,8 +48,8 @@ public unsafe class TrackOutfits : TooltipTweaks.SubTweak
         if (GetOutfits(Item.ItemId) is { Length: > 0 } outfits)
         {
             var description = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ItemDescription);
-
-            if (description.Payloads.Any(payload => payload is DalamudLinkPayload dlp && dlp.CommandId == identifier.CommandId))
+            
+            if (description == null || description.Payloads.Any(payload => payload is DalamudLinkPayload dlp && dlp.CommandId == identifier.CommandId))
                 return; // Don't append when it already exists.
 
             description.Payloads.Add(identifier);

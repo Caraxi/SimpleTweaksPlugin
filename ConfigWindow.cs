@@ -86,8 +86,8 @@ public class ConfigWindow : SimpleWindow {
         textures.RemoveAll(t => t == null);
         if (textures.Count == 0) return;
 
-        var width = textures.Max(s => s.Size.X);
-        var height = textures.Max(s => s.Size.Y);
+        var width = textures.Max(s => s?.Size.X ?? 0);
+        var height = textures.Max(s => s?.Size.Y ?? 0);
         var size = new Vector2(width, height) / 3 * ImGuiHelpers.GlobalScale;
         var center = ImGui.GetWindowPos() + ((ImGui.GetWindowSize() / 2) * Vector2.UnitX) + (ImGui.GetWindowSize() * Vector2.UnitY);
         var p = center - (size * Vector2.UnitX / 2) - (size * Vector2.UnitY * 0.85f);

@@ -34,7 +34,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
 
     public List<string> EnabledTweaks = new();
     public List<string> HiddenTweaks = new();
-    public List<string> CustomProviders;
+    public List<string>? CustomProviders;
     public bool ShouldSerializeCustomProviders() => CustomProviders != null;
     
     public List<CustomTweakProviderConfig> CustomTweakProviders = new();
@@ -147,9 +147,9 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
         public override int GetHashCode() => CategoryName.GetHashCode();
     }
 
-    [NonSerialized] private static List<TweakCategoryContainer> _tweakCategories;
-    [NonSerialized] private static List<BaseTweak> _allTweaks;
-    [NonSerialized] private static List<BaseTweak> _enabledTweaks;
+    [NonSerialized] private static List<TweakCategoryContainer>? _tweakCategories;
+    [NonSerialized] private static List<BaseTweak>? _allTweaks;
+    [NonSerialized] private static List<BaseTweak>? _enabledTweaks;
 
     private void DrawTweakConfig(BaseTweak t, ref bool hasChange) {
         var enabled = t.Enabled;

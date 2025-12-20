@@ -270,7 +270,7 @@ public unsafe class AddonDebug : DebugHelper {
 
                         var addr = (ulong) l.UpdateItemCallback;
                         if (addr > 0) {
-                            var baseAddr = (ulong) Process.GetCurrentProcess().MainModule.BaseAddress;
+                            var baseAddr = (ulong) (Process.GetCurrentProcess().MainModule?.BaseAddress ?? throw new Exception("Failed to get BaseAddress"));
                             var offset = addr - baseAddr;
                             ImGui.SameLine();
                             DebugManager.ClickToCopyText($"ffxiv_dx11.exe+{offset:X}");

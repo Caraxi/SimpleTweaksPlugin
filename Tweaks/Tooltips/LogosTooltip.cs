@@ -104,7 +104,7 @@ public unsafe class LogosTooltip : TooltipTweaks.SubTweak {
 			stringLogos = $"{stringLogos.Substring(0, stringLogos.Length - 2)}.";
             var description = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ItemDescription);
 
-            if (description.TextValue.Contains(containsString)) return; // Don't append when it already exists.
+            if (description == null || description.TextValue.Contains(containsString)) return; // Don't append when it already exists.
 
             description.Payloads.Add(RawPayload.LinkTerminator);
 

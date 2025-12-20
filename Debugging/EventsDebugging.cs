@@ -68,7 +68,7 @@ public unsafe class EventsDebugging : DebugHelper {
 
                 ShowEventList(territoryChangedSubscribers, true);
             } else {
-                if (addonEventDict.TryGetValue(selectedType, out var selectedTypeDict)) {
+                if (addonEventDict != null && addonEventDict.TryGetValue(selectedType, out var selectedTypeDict)) {
                     var h = true;
                     foreach (var (addonName, list) in selectedTypeDict) {
                         ImGui.SetWindowFontScale(1.25f);

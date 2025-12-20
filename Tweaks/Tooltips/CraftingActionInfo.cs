@@ -251,6 +251,7 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
         if (progress == 0 && quality == 0) return;
         
         var descriptionString = GetTooltipString(stringArrayData, TooltipTweaks.ActionTooltipField.Description);
+        if (descriptionString == null) return;
         if (descriptionString.Payloads.Any(payload => payload is DalamudLinkPayload dlp && dlp.CommandId == identifier.CommandId)) return; // Don't append when it already exists.
         
         descriptionString.Append(NewLinePayload.Payload);

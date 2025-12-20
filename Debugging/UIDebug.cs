@@ -49,7 +49,7 @@ public unsafe class UIDebug : DebugHelper {
     private readonly bool[] selectedInList = new bool[UnitListCount];
     private readonly string[] listNames = ["Depth Layer 1", "Depth Layer 2", "Depth Layer 3", "Depth Layer 4", "Depth Layer 5", "Depth Layer 6", "Depth Layer 7", "Depth Layer 8", "Depth Layer 9", "Depth Layer 10", "Depth Layer 11", "Depth Layer 12", "Depth Layer 13", "Loaded Units", "Focused Units", "Units 16", "Units 17", "Units 18"];
 
-    private static object originalHandler;
+    private static object? originalHandler;
 
     internal bool FindByAddress(AtkResNode* node, ulong address, out List<ulong>? path) {
         if (node == null) {
@@ -600,7 +600,7 @@ public unsafe class UIDebug : DebugHelper {
         }
     }
 
-    public static void PrintNode(AtkResNode* node, bool printSiblings = true, string treePrefix = "", bool textOnly = false) {
+    public static void PrintNode(AtkResNode* node, bool printSiblings = true, string? treePrefix = "", bool textOnly = false) {
         if (node == null)
             return;
 
@@ -656,7 +656,7 @@ public unsafe class UIDebug : DebugHelper {
 
     private static int counterNodeInputNumber;
 
-    private static void PrintSimpleNode(AtkResNode* node, string treePrefix, bool textOnly = false) {
+    private static void PrintSimpleNode(AtkResNode* node, string? treePrefix, bool textOnly = false) {
         bool popped = false;
         bool isVisible = node->IsVisible();
 
@@ -938,7 +938,7 @@ public unsafe class UIDebug : DebugHelper {
 
     }
 
-    private static void PrintComponentNode(AtkResNode* node, string treePrefix, bool textOnly = false) {
+    private static void PrintComponentNode(AtkResNode* node, string? treePrefix, bool textOnly = false) {
         var compNode = (AtkComponentNode*)node;
         var componentInfo = compNode->Component->UldManager;
         var objectInfo = (AtkUldComponentInfo*)componentInfo.Objects;

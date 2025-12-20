@@ -10,8 +10,8 @@ using Dalamud.Bindings.ImGui;
 namespace SimpleTweaksPlugin.Utility;
 
 public static class HotkeyHelper {
-    private static string _settingKey;
-    private static string _focused;
+    private static string? _settingKey;
+    private static string? _focused;
     private static readonly List<VirtualKey> NewKeys = [];
     private static readonly Stopwatch Safety = Stopwatch.StartNew();
     

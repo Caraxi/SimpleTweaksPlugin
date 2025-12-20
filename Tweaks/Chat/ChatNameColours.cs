@@ -41,7 +41,7 @@ public class ChatNameColours : ChatTweaks.SubTweak {
         public ushort DefaultColourKey = 1;
         public Vector3 DefaultColour = Vector3.One;
 
-        public ChannelConfig DefaultChannelConfig = new();
+        public ChannelConfig? DefaultChannelConfig = new();
         public Dictionary<XivChatType, ChannelConfig> ChannelConfigs = new();
     }
 
@@ -346,7 +346,7 @@ public class ChatNameColours : ChatTweaks.SubTweak {
                         if (v is None or Debug) continue;
 
                         if (ImGui.Selectable($"{v.GetDetails()?.FancyName ?? $"{v}"}")) {
-                            Config.ChannelConfigs.TryAdd(v, new ChannelConfig { Message = Config.DefaultChannelConfig.Message, Sender = Config.DefaultChannelConfig.Sender });
+                            Config.ChannelConfigs.TryAdd(v, new ChannelConfig { Message = Config.DefaultChannelConfig?.Message ?? false, Sender = Config.DefaultChannelConfig?.Sender ?? false });
                         }
                     }
 
@@ -359,7 +359,8 @@ public class ChatNameColours : ChatTweaks.SubTweak {
         }
     }
 
-    public void DrawChannelConfig(XivChatType type, ref ChannelConfig config) {
+    public void DrawChannelConfig(XivChatType type, ref ChannelConfig? config) {
+        if (config == null) return;
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
         if (type == None) {
@@ -448,8 +449,8 @@ public class ChatNameColours : ChatTweaks.SubTweak {
                 if (channelConfig.Message) Parse(ref message);
             }
         } else if (chatTypes.Contains(type)) {
-            if (Config.DefaultChannelConfig.Sender) Parse(ref sender);
-            if (Config.DefaultChannelConfig.Message) Parse(ref message);
+            if (Config.DefaultChannelConfig?.Sender == true) Parse(ref sender);
+            if (Config.DefaultChannelConfig?.Message == true) Parse(ref message);
         }
     }
 

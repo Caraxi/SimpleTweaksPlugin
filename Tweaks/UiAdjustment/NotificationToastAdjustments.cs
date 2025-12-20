@@ -14,7 +14,7 @@ using SimpleTweaksPlugin.Utility;
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
         public bool ShouldSerializeNotificationToastAdjustments() => NotificationToastAdjustments != null;
-        public NotificationToastAdjustments.Configs NotificationToastAdjustments = null;
+        public NotificationToastAdjustments.Configs? NotificationToastAdjustments = null;
     }
 }
 

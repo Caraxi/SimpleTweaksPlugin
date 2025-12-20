@@ -6,7 +6,7 @@ namespace SimpleTweaksPlugin.TweakSystem;
 public class ChangelogAttribute : Attribute {
     public string Version { get; }
     public string[] Changes { get; }
-    public string Author { get; init; }
+    public string Author { get; init; } = string.Empty;
 
     public ChangelogAttribute(string version, params string[] changes) {
         Version = version;

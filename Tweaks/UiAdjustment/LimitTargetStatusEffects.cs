@@ -20,7 +20,7 @@ using GameObject = FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject;
 namespace SimpleTweaksPlugin {
     public partial class UiAdjustmentsConfig {
         public bool ShouldSerializeLimitTargetStatusEffects() => LimitTargetStatusEffects != null;
-        public LimitTargetStatusEffects.Configs LimitTargetStatusEffects = null;
+        public LimitTargetStatusEffects.Configs? LimitTargetStatusEffects = null;
     }
 }
 

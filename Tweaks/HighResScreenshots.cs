@@ -49,9 +49,6 @@ public unsafe class HighResScreenshots : Tweak {
     private delegate byte IsInputIDClickedDelegate(nint a1, int a2);
 
     private HookWrapper<IsInputIDClickedDelegate> isInputIDClickedHook;
-    
-    private delegate byte ReShadeKeyTest(byte* a1, uint a2, byte a3, byte a4, byte a5, byte a6);
-    private HookWrapper<ReShadeKeyTest> reShadeKeyTestHook;
 
     private bool updatingReShadeKeybind;
     
@@ -192,7 +189,7 @@ public unsafe class HighResScreenshots : Tweak {
 
     const int ScreenshotButton = 551;
     public bool originalUiVisibility;
-    byte[] originalCopyrightBytes;
+    byte[]? originalCopyrightBytes;
     // IsInputIDClicked is called from Client::UI::UIInputModule.CheckScreenshotState, which is polled
     // We change the res when the button is pressed and tell it to take a screenshot the next time it is polled
     private byte IsInputIDClickedDetour(nint a1, int a2) {

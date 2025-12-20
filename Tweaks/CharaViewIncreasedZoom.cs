@@ -11,8 +11,9 @@ namespace SimpleTweaksPlugin.Tweaks;
 public unsafe class CharaViewIncreasedZoom : Tweak {
     private delegate void CharaViewZoom(CharaView* charaView, float delta);
 
+
     [TweakHook, Signature("48 8B 41 20 48 85 C0 74 4C", DetourName = nameof(ZoomDetour))]
-    private HookWrapper<CharaViewZoom> charaViewZoomHook;
+    private HookWrapper<CharaViewZoom> charaViewZoomHook = null!;
 
     [StructLayout(LayoutKind.Explicit)]
     private struct Camera {

@@ -11,7 +11,7 @@ public class PerformanceMonitor : DebugHelper {
 
     public class PerformanceLogger : IDisposable {
         private string? runKey;
-        public PerformanceLogger(string key = null, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFileName = null) {
+        public PerformanceLogger(string? key = null, [CallerMemberName] string? callerMemberName = null, [CallerFilePath] string? callerFileName = null) {
             var k = key;
             if (k == null && (callerFileName == null || callerMemberName == null)) return;
             k ??= $"{callerFileName}::{callerMemberName}";
@@ -27,7 +27,7 @@ public class PerformanceMonitor : DebugHelper {
         }
     }
 
-    public static PerformanceLogger Run(string key = null, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFileName = null) {
+    public static PerformanceLogger Run(string? key = null, [CallerMemberName] string? callerMemberName = null, [CallerFilePath] string? callerFileName = null) {
         var k = key;
         if (k == null && (callerFileName == null || callerMemberName == null)) return new PerformanceLogger();
         k ??= $"{callerFileName}::{callerMemberName}";
@@ -174,7 +174,7 @@ public class PerformanceMonitor : DebugHelper {
 
     private static readonly Dictionary<string, PerformanceLog> Logs = new();
 
-    public static void Begin(string key = null, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFileName = null) {
+    public static void Begin(string? key = null, [CallerMemberName] string? callerMemberName = null, [CallerFilePath] string? callerFileName = null) {
         var k = key;
         if (k == null && (callerFileName == null || callerMemberName == null)) return;
         k ??= $"{callerFileName}::{callerMemberName}";
@@ -182,7 +182,7 @@ public class PerformanceMonitor : DebugHelper {
         Logs[k].Begin();
     }
 
-    public static void End(string key = null, [CallerMemberName] string callerMemberName = null, [CallerFilePath] string callerFileName = null) {
+    public static void End(string? key = null, [CallerMemberName] string? callerMemberName = null, [CallerFilePath] string? callerFileName = null) {
         var k = key;
         if (k == null && (callerFileName == null || callerMemberName == null)) return;
         k ??= $"{callerFileName}::{callerMemberName}";

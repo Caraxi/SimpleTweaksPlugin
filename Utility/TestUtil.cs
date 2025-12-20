@@ -19,12 +19,10 @@ namespace SimpleTweaksPlugin.Utility;
 
 public static class TestUtil {
     public record TestLogEntry(string Message, Vector4? Colour = null) {
-        private static ulong counter;
-        
         public DateTime Time { get; } = DateTime.Now;
         public List<TestLogEntry> Extra = [];
 
-        public TestLogEntry AddExtra(string text, Vector4? colour = null, Action click = null) {
+        public TestLogEntry AddExtra(string text, Vector4? colour = null, Action? click = null) {
             var e = new TestLogEntry(text, colour);
             Extra.Add(e);
             scroll = true;
@@ -33,7 +31,7 @@ public static class TestUtil {
             return e;
         }
 
-        public Action Click { get; set; } = () => { };
+        public Action? Click { get; set; } = () => { };
 
     }
 
@@ -113,7 +111,7 @@ public static class TestUtil {
         ImGui.EndChild();
     }
 
-    public static TestLogEntry Log(string message, Vector4? colour = null, Action click = null) {
+    public static TestLogEntry Log(string message, Vector4? colour = null, Action? click = null) {
         var e = new TestLogEntry(message, colour);
         LogEntries.Add(e);
         scroll = true;

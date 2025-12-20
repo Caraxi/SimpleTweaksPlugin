@@ -13,6 +13,7 @@ using Dalamud.Memory;
 using System.Text;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI;
+using JetBrains.Annotations;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Events;
 
@@ -48,12 +49,13 @@ public unsafe class FastSearch : UiAdjustments.SubTweak {
     private readonly HookWrapper<RecipeNoteRecieveDelegate> recipeNoteRecieveHook;
 
     [TweakHook, Signature("80 B9 ?? ?? ?? ?? ?? 74 27 8B 81 ?? ?? ?? ?? 41 B8", DetourName = nameof(RecipeNoteIterateDetour))]
-    private readonly HookWrapper<System.Action> recipeNoteIterateHook;
+    private readonly HookWrapper<System.Action> recipeNoteIterateHook = null!;
 
     private delegate void AgentItemSearchUpdateDelegate(AgentItemSearch* a1);
 
-    [TweakHook, Signature("E8 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 80 BB ?? ?? ?? ?? ?? 0F 85", DetourName = nameof(AgentItemSearchUpdateDetour))]
-    private readonly HookWrapper<AgentItemSearchUpdateDelegate> agentItemSearchUpdate1Hook;
+
+    [UsedImplicitly, TweakHook, Signature("E8 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 48 8B CB E8 ?? ?? ?? ?? 80 BB ?? ?? ?? ?? ?? 0F 85", DetourName = nameof(AgentItemSearchUpdateDetour))]
+    private readonly HookWrapper<AgentItemSearchUpdateDelegate> agentItemSearchUpdate1Hook = null!;
 
     private delegate void AgentItemSearchUpdateAtkValuesDelegate(AgentItemSearch* a1, uint a2, byte* a3, bool a4);
 

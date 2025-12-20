@@ -39,7 +39,7 @@ public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
         if (glamName == null) return;
 
         var normalName = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ItemName);
-
+        if (normalName == null) return;
         normalName.Append(NewLinePayload.Payload);
         normalName.Append(glamName);
 

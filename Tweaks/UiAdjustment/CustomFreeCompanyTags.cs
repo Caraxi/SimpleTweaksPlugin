@@ -50,6 +50,8 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
     }
 
     private void NamePlateGuiOnOnDataUpdate(INamePlateUpdateContext context, IReadOnlyList<INamePlateUpdateHandler> handlers) {
+        var localPlayer = Service.Objects.LocalPlayer;
+        if (localPlayer == null) return;
         foreach (var h in handlers) {
             if (h.PlayerCharacter == null) continue;
 
@@ -60,7 +62,7 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
                 if (battleChara->Character.HomeWorld != battleChara->Character.CurrentWorld) {
                     // Wanderer
                     var w = Service.Data.Excel.GetSheet<World>().GetRowOrDefault(battleChara->Character.HomeWorld);
-                    if (w == null || w.Value.RowId == 0 || w.Value.DataCenter.RowId == Service.Objects.LocalPlayer.CurrentWorld.Value.DataCenter.RowId) {
+                    if (w == null || w.Value.RowId == 0 || w.Value.DataCenter.RowId == localPlayer.CurrentWorld.Value.DataCenter.RowId) {
                         customization = Config.WandererCustomization;
                     } else {
                         customization = Config.TravellerCustomization;

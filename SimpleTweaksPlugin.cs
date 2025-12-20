@@ -226,7 +226,7 @@ namespace SimpleTweaksPlugin {
             OnConfigCommandHandler(null, null);
         }
 
-        public void OnConfigCommandHandler(object command, object args) {
+        public void OnConfigCommandHandler(object? command, object? args) {
             if (args is string argString) {
                 if (argString == "Debug") {
                     DebugWindow.UnCollapseOrToggle();
@@ -392,10 +392,11 @@ namespace SimpleTweaksPlugin {
             
             
             
-            foreach (var e in ErrorList.Where(e => e.IsNew && e.Tweak != null)) {
+            foreach (var e in ErrorList.Where(e => e is { IsNew: true, Tweak: not null })) {
+                if (e.Tweak == null) continue;
                 e.IsNew = false;
-                e.Tweak.InternalDisable();
-                Service.NotificationManager.AddNotification(new Notification { Content = $"{e.Tweak.Name} has been disabled due to an error.", Title = "Simple Tweaks", Type = NotificationType.Error }); 
+                e.Tweak?.InternalDisable();
+                Service.NotificationManager.AddNotification(new Notification { Content = $"{e.Tweak?.Name} has been disabled due to an error.", Title = "Simple Tweaks", Type = NotificationType.Error }); 
             }
 
             WindowSystem.Draw();
@@ -487,7 +488,7 @@ namespace SimpleTweaksPlugin {
             Error(null, ex, true, message, callerFilePath, callerLineNumber, callerMemberName);
         }
         
-        public void Error(BaseTweak tweak, Exception exception, bool allowContinue = false, string message = "", [CallerFilePath] string callerFilePath = "", [CallerLineNumber] int callerLineNumber = 0, [CallerMemberName] string callerMemberName = "" ) {
+        public void Error(BaseTweak? tweak, Exception exception, bool allowContinue = false, string message = "", [CallerFilePath] string callerFilePath = "", [CallerLineNumber] int callerLineNumber = 0, [CallerMemberName] string callerMemberName = "" ) {
             if (tweak != null) {
                 SimpleLog.Error($"Exception in '{tweak.Name}'" + (string.IsNullOrEmpty(message) ? "" : ($": {message}")), callerFilePath, callerMemberName, callerLineNumber);
             } else {

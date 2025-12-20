@@ -38,13 +38,13 @@ public class TweakConfigOptionAttribute : Attribute {
         Drag,
     }
         
-    public TweakConfigOptionAttribute(string name, int priority = 0, string localizeKey = null) {
+    public TweakConfigOptionAttribute(string name, int priority = 0, string? localizeKey = null) {
         Name = name;
         LocalizeKey = localizeKey ?? name;
         Priority = priority;
     }
 
-    public TweakConfigOptionAttribute(string name, string editorType, int priority = 0, string localizeKey = null) {
+    public TweakConfigOptionAttribute(string name, string editorType, int priority = 0, string? localizeKey = null) {
         Name = name;
         Priority = priority;
         LocalizeKey = localizeKey ?? name;

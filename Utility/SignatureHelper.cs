@@ -207,8 +207,9 @@ public static class SignatureHelper {
                     var hookType = actualType;
 
                     if (isHookWrapper) {
-                        hookType = actualType.GetField("wrappedHook", BindingFlags.Instance | BindingFlags.NonPublic).FieldType;
+                        hookType = actualType.GetField("wrappedHook", BindingFlags.Instance | BindingFlags.NonPublic)?.FieldType;
                     }
+                    if (hookType == null) continue;
 
                     var createMethod = hookType.GetMethod("FromAddress", BindingFlags.Static | BindingFlags.NonPublic);
                     if (createMethod == null) {

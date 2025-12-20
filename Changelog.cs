@@ -170,7 +170,7 @@ public class Changelog : Window {
         return true;
     }
 
-    public static string GenerateChangelogMarkdown(Version changelogVersion = null, StringBuilder stringBuilder = null) {
+    public static string GenerateChangelogMarkdown(Version? changelogVersion = null, StringBuilder? stringBuilder = null) {
         stringBuilder ??= new StringBuilder();
 
         if (changelogVersion == null) {
@@ -193,10 +193,10 @@ public class Changelog : Window {
         }
 
         if (Entries.TryGetValue(changelogVersion, out var changelogs)) {
-            
-            var generalChanges = changelogs.Where(c => c.Tweak == null);
-            var newTweaks = changelogs.Where(c => c.IsNewTweak && c.Tweak != null && c.TweakProvider is not CustomTweakProvider).OrderBy(c => c.Tweak.Name);
-            var tweakChanges = changelogs.Where(c => c.Tweak != null && c.IsNewTweak == false && c.TweakProvider is not CustomTweakProvider).OrderBy(c => c.Tweak.Name);
+
+            var generalChanges = changelogs.Where(c => c.Tweak == null).ToArray();
+            var newTweaks = changelogs.Where(c => c is { IsNewTweak: true, Tweak: not null, TweakProvider: not CustomTweakProvider }).OrderBy(c => c.Tweak?.Name).ToArray();
+            var tweakChanges = changelogs.Where(c => c.Tweak != null && c is { IsNewTweak: false, TweakProvider: not CustomTweakProvider }).OrderBy(c => c.Tweak?.Name).ToArray();
 
             if (generalChanges.Any()) {
 
@@ -221,7 +221,9 @@ public class Changelog : Window {
                 stringBuilder.AppendLine("***New Tweaks***");
 
                 foreach (var c in newTweaks) {
-                    stringBuilder.Append($"- **`{c.Tweak.Name}`** - {c.Tweak.Description.Split('\n')[0]}");
+                    if (c.Tweak == null) continue;
+                    
+                    stringBuilder.Append($"- **`{c.Tweak.Name}`** - {c.Tweak?.Description?.Split('\n')[0]}");
                     if (!string.IsNullOrEmpty(c.ChangeAuthor)) {
                         stringBuilder.Append($" *({c.ChangeAuthor})*");
                     }
@@ -240,6 +242,7 @@ public class Changelog : Window {
                 
                 foreach (var g in tweakChangeGroups) {
                     if (!g.Any()) continue; // Who knows
+                    if (g.Key == null) continue;
                     if (g.Count() >= 2) {
                         
                         stringBuilder.AppendLine($"- **`{g.Key.Name}`**");
@@ -322,7 +325,7 @@ public class Changelog : Window {
                 }
             }
 
-            var newTweaks = changelogs.Where(c => c.IsNewTweak && c.Tweak != null && ShouldShowTweak(c.Tweak)).OrderBy(c => c.Tweak.Name);
+            var newTweaks = changelogs.Where(c => c.IsNewTweak && c.Tweak != null && ShouldShowTweak(c.Tweak)).OrderBy(c => c.Tweak?.Name).ToArray();
             if (newTweaks.Any()) {
                 if (ImGui.TreeNodeEx($"New Tweaks##{version}", ImGuiTreeNodeFlags.DefaultOpen)) {
                     foreach (var c in newTweaks) {
@@ -361,11 +364,12 @@ public class Changelog : Window {
                 }
             }
 
-            var tweakChanges = changelogs.Where(c => c.Tweak != null && c.IsNewTweak == false && ShouldShowTweak(c.Tweak)).GroupBy(c => c.Tweak);
+            var tweakChanges = changelogs.Where(c => c.Tweak != null && c.IsNewTweak == false && ShouldShowTweak(c.Tweak)).GroupBy(c => c.Tweak).ToArray();
             if (tweakChanges.Any()) {
                 if (ImGui.TreeNodeEx($"Tweak Changes##{version}", ImGuiTreeNodeFlags.DefaultOpen)) {
-                    foreach (var group in tweakChanges.OrderBy(g => g.Key.Name)) {
+                    foreach (var group in tweakChanges.OrderBy(g => g.Key?.Name)) {
                         var tweak = group.Key;
+                        if (tweak == null) continue;
 
                         var xBefore = ImGui.GetCursorPosX();
                         

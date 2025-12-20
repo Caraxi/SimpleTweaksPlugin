@@ -111,7 +111,10 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
     }
 
     private void Update(bool reset = false) {
-        if (Service.Objects.LocalPlayer?.ClassJob.Value.ClassJobCategory.RowId != 32) reset = true;
+        var localPlayer = Service.Objects.LocalPlayer;
+        if (localPlayer == null) return;
+        
+        if (localPlayer.ClassJob.Value.ClassJobCategory.RowId != 32) reset = true;
         var paramWidget = Common.GetUnitBase("_ParameterWidget");
         if (paramWidget == null) return;
 
@@ -194,14 +197,15 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
             return;
         }
 
-        var targetGp = Config.GpGoal > 0 ? Math.Min(Config.GpGoal, Service.Objects.LocalPlayer.MaxGp) : Service.Objects.LocalPlayer.MaxGp;
-        if (targetGp - Service.Objects.LocalPlayer.CurrentGp > 0 || forceVisible > 0) {
+
+        var targetGp = Config.GpGoal > 0 ? Math.Min(Config.GpGoal, localPlayer.MaxGp) : localPlayer.MaxGp;
+        if (targetGp - localPlayer.CurrentGp > 0 || forceVisible > 0) {
             if (forceVisible > 0) forceVisible--;
             textNode->AtkResNode.ToggleVisibility(true);
             textNode->AtkResNode.SetPositionFloat(210 + Config.PositionOffset.X, 1 + Config.PositionOffset.Y);
 
             var gpPerSecond = gpPerTick / timePerTick;
-            var secondsUntilFull = (targetGp - Service.Objects.LocalPlayer.CurrentGp) / gpPerSecond;
+            var secondsUntilFull = (targetGp - localPlayer.CurrentGp) / gpPerSecond;
 
             if (gatheringWidget == null) {
                 secondsUntilFull += timePerTick - (float)lastGpChangeStopwatch.Elapsed.TotalSeconds;

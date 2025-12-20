@@ -19,6 +19,7 @@ public class VectorJsonConverter : JsonConverter {
     public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer) {
         float[]? values;
         var str = (string?)reader.Value;
+        if (str == null) return null;
         try {
             values = str.Split('|').Select(float.Parse).ToArray();
         } catch {

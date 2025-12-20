@@ -82,7 +82,7 @@ public abstract class BaseTweak {
     internal bool ForceOpenConfig { private get; set; }
 
     public TweakProvider TweakProvider { get; private set; }
-    public SubTweakManager TweakManager { get; private set; }
+    public SubTweakManager? TweakManager { get; private set; }
 
     public virtual bool CanLoad => true;
 
@@ -90,7 +90,7 @@ public abstract class BaseTweak {
 
     protected CultureInfo Culture => Plugin.Culture;
 
-    public void InterfaceSetup(SimpleTweaksPlugin plugin, IDalamudPluginInterface pluginInterface, SimpleTweaksPluginConfig config, TweakProvider tweakProvider, SubTweakManager tweakManager = null) {
+    public void InterfaceSetup(SimpleTweaksPlugin plugin, IDalamudPluginInterface pluginInterface, SimpleTweaksPluginConfig config, TweakProvider tweakProvider, SubTweakManager? tweakManager = null) {
         this.PluginInterface = pluginInterface;
         this.PluginConfig = config;
         this.Plugin = plugin;
@@ -98,7 +98,7 @@ public abstract class BaseTweak {
         this.TweakManager = tweakManager;
     }
 
-    public string LocString(string key, string fallback, string description = null) {
+    public string LocString(string key, string fallback, string? description = null) {
         description ??= $"{Name} - {fallback}";
         return Loc.Localize($"{this.Key} / {key}", fallback, $"[{this.GetType().Name}] {description}");
     }
@@ -324,13 +324,15 @@ public abstract class BaseTweak {
 
             if (configObj == null) {
                 configObj = Activator.CreateInstance(configProperty.PropertyType);
+                if (configObj == null) return;
                 configProperty.SetValue(this, configObj);
             }
 
-            var fields = configObj.GetType().GetFields().Where(f => f.GetCustomAttribute(typeof(TweakConfigOptionAttribute)) != null).Select(f => (f, (TweakConfigOptionAttribute?)f.GetCustomAttribute(typeof(TweakConfigOptionAttribute)))).OrderBy(a => a.Item2.Priority).ThenBy(a => a.Item2.Name);
+            var fields = configObj.GetType().GetFields().Where(f => f.GetCustomAttribute(typeof(TweakConfigOptionAttribute)) != null).Select(f => (f, (TweakConfigOptionAttribute?)f.GetCustomAttribute(typeof(TweakConfigOptionAttribute)))).OrderBy(a => a.Item2?.Priority).ThenBy(a => a.Item2?.Name);
 
             var configOptionIndex = 0;
             foreach (var (f, attr) in fields) {
+                if (attr == null) continue;
                 if (attr.ConditionalDisplay) {
                     var conditionalMethod = configObj.GetType().GetMethod($"ShouldShow{f.Name}", BindingFlags.Public | BindingFlags.Instance);
                     if (conditionalMethod != null) {
@@ -345,19 +347,19 @@ public abstract class BaseTweak {
                 if (attr.Editor != null) {
                     var v = f.GetValue(configObj);
                     var arr = new[] { $"{localizedName}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", v };
-                    var o = (bool)attr.Editor.Invoke(null, arr);
+                    var o = (bool?)attr.Editor.Invoke(null, arr) ?? false;
                     if (o) {
                         hasChanged = true;
                         f.SetValue(configObj, arr[1]);
                     }
                 } else if (f.FieldType == typeof(bool)) {
-                    var v = (bool)f.GetValue(configObj);
+                    var v = (bool?)f.GetValue(configObj) ?? false;
                     if (ImGui.Checkbox($"{localizedName}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", ref v)) {
                         hasChanged = true;
                         f.SetValue(configObj, v);
                     }
                 } else if (f.FieldType == typeof(int)) {
-                    var v = (int)f.GetValue(configObj);
+                    var v = (int?)f.GetValue(configObj) ?? 0;
                     ImGui.SetNextItemWidth(attr.EditorSize == -1 ? -1 : attr.EditorSize * ImGui.GetIO().FontGlobalScale);
                     var e = attr.IntType switch {
                         TweakConfigOptionAttribute.IntEditType.Slider => ImGui.SliderInt($"{localizedName}##{f.Name}_{this.GetType().Name}_{configOptionIndex++}", ref v, attr.IntMin, attr.IntMax),
@@ -389,7 +391,7 @@ public abstract class BaseTweak {
                                 continue;
                             }
 
-                            if (ImGui.Selectable($"{enumValue.GetDescription()}", v.Equals(enumValue))) {
+                            if (ImGui.Selectable($"{enumValue.GetDescription()}", v != null && v.Equals(enumValue))) {
                                 f.SetValue(configObj, enumValue);
                             }
 
@@ -426,7 +428,7 @@ public abstract class BaseTweak {
 
             var configObj = this.GetType().GetProperties().FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(TweakConfig)))?.GetValue(this);
             if (configObj != null) {
-                var fields = configObj.GetType().GetFields().Select(f => (f, (TweakConfigOptionAttribute?)f.GetCustomAttribute(typeof(TweakConfigOptionAttribute)))).OrderBy(a => a.Item2.Priority).ThenBy(a => a.Item2.Name);
+                var fields = configObj.GetType().GetFields().Select(f => (f, (TweakConfigOptionAttribute?)f.GetCustomAttribute(typeof(TweakConfigOptionAttribute)))).OrderBy(a => a.Item2?.Priority).ThenBy(a => a.Item2?.Name);
 
                 if (args.Length > 1) {
                     var field = fields.FirstOrDefault(f => f.f.Name == args[0]);
@@ -450,8 +452,9 @@ public abstract class BaseTweak {
                                     break;
                                 }
                                 case "t":
-                                case "toggle": {
-                                    var v = (bool)field.f.GetValue(configObj);
+                                case "toggle":
+                                {
+                                    var v = (bool?)field.f.GetValue(configObj) ?? false;
                                     field.f.SetValue(configObj, !v);
                                     break;
                                 }
@@ -464,11 +467,11 @@ public abstract class BaseTweak {
                             RequestSaveConfig();
                         } else if (field.f.FieldType == typeof(int)) {
                             var isValidInt = int.TryParse(args[1], out var val);
-                            if (isValidInt && val >= field.Item2.IntMin && val <= field.Item2.IntMax) {
+                            if (isValidInt && val >= field.Item2?.IntMin && val <= field.Item2?.IntMax) {
                                 field.f.SetValue(configObj, val);
                                 RequestSaveConfig();
                             } else {
-                                Service.Chat.PrintError($"'{args[1]}' is not a valid integer between {field.Item2.IntMin} and {field.Item2.IntMax}.");
+                                Service.Chat.PrintError($"'{args[1]}' is not a valid integer between {field.Item2?.IntMin} and {field.Item2?.IntMax}.");
                             }
                         }
 
@@ -487,7 +490,7 @@ public abstract class BaseTweak {
                     if (aField.f.FieldType == typeof(bool)) {
                         valuesString = $"on|off";
                     } else if (aField.f.FieldType == typeof(int)) {
-                        valuesString = $"{aField.Item2.IntMin} - {aField.Item2.IntMax}";
+                        valuesString = $"{aField.Item2?.IntMin} - {aField.Item2?.IntMax}";
                     }
 
                     if (!string.IsNullOrEmpty(valuesString)) {
@@ -615,6 +618,7 @@ public abstract class BaseTweak {
         EventController.RegisterEvents(this);
 
         foreach (var (field, attribute) in this.GetFieldsWithAttribute<TweakHookAttribute>()) {
+            if (attribute == null) continue;
             if (attribute.AddressType != null && field.GetValue(this) is null) {
                 SimpleLog.Verbose($"Setup Tweak Hook: [{Name}] {field.Name} for {attribute.AddressType.Name}.{attribute.AddressName}");
 
@@ -623,9 +627,8 @@ public abstract class BaseTweak {
                     throw new Exception($"Tweak Hook for named address not supported on {field.FieldType}");
 #else
                     SimpleLog.Error($"Tweak Hook for named address not supported on {field.FieldType}");
-#endif
-                    
                     continue;
+#endif
                 }
 
                 var addressesType = attribute.AddressType.GetNestedType("Addresses");
@@ -634,23 +637,19 @@ public abstract class BaseTweak {
                     throw new Exception($"Failed to find {attribute.AddressType}.Addresses");
 #else
                     SimpleLog.Error($"Failed to find {attribute.AddressType}.Addresses");
-#endif
-                    
                     continue;
+#endif
                 }
 
                 var addressField = addressesType.GetField(attribute.AddressName);
 
                 if (addressField == null) {
-                    
 #if TEST
                     throw new Exception($"Failed to find {attribute.AddressType.Name}.Addresses.{attribute.AddressName}");
 #else
                     SimpleLog.Error($"Failed to find {attribute.AddressType.Name}.Addresses.{attribute.AddressName}");
-#endif
-                    
-                    
                     continue;
+#endif
                 }
 
                 var addressObj = addressField.GetValue(null);
@@ -660,9 +659,8 @@ public abstract class BaseTweak {
                     throw new Exception($"{attribute.AddressType.Name}.Addresses.{attribute.AddressName} is not an Address?");
 #else
                     SimpleLog.Error($"{attribute.AddressType.Name}.Addresses.{attribute.AddressName} is not an Address?");
-#endif
-                    
                     continue;
+#endif
                 }
 
                 SimpleLog.Verbose($"    {attribute.AddressType.Name}.Addresses.{attribute.AddressName} = 0x{address.Value:X}");
@@ -735,6 +733,7 @@ public abstract class BaseTweak {
 
 
         foreach (var (field, attr) in this.GetFieldsWithAttribute<LinkHandlerAttribute>()) {
+            if (attr == null) continue;
             if (field.FieldType != typeof(DalamudLinkPayload)) {
                 Plugin.Error(this, new Exception($"Invalid LinkHandler '{field.Name}' must be DalamudLinkPayload."));
                 continue;
@@ -744,6 +743,7 @@ public abstract class BaseTweak {
                 handler = Service.Chat.AddChatLinkHandler((uint) attr.Id, (i, s) => { });
             } else {
                 var method = this.GetType().GetMethod(attr.MethodName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                if (method == null) continue;
                 var methodParams = method.GetParameters();
 
                 handler = methodParams.Length switch {
@@ -909,7 +909,7 @@ public abstract class BaseTweak {
                 HandleAttributes(i.GetCustomAttributes<TweakCategoryAttribute>(true));
             }
 
-            if (Experimental) field.Add($"{TweakCategory.Experimental}");
+            if (Experimental) field?.Add($"{TweakCategory.Experimental}");
 
             return field ?? [];
         }

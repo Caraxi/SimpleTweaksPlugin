@@ -149,7 +149,7 @@ public static unsafe class EventController {
             return false;
         }
 
-        public void Invoke(object args) {
+        public void Invoke(object? args) {
             if (!Enabled) return;
             if (NthTick > 1) {
                 if (++tick < NthTick) return;
@@ -172,10 +172,10 @@ public static unsafe class EventController {
                     SubscriberKind.Unknown => null,
                     SubscriberKind.Framework => Method.Invoke(Tweak, []),
                     SubscriberKind.NoParameter => Method.Invoke(Tweak, []),
-                    SubscriberKind.AtkUnitBase => Method.Invoke(Tweak, [Pointer.Box((void*)((AddonArgs)args).Addon.Address, typeof(AtkUnitBase*))]),
-                    SubscriberKind.AtkUnitBaseWithArrays => Method.Invoke(Tweak, [Pointer.Box((void*)((AddonArgs)args).Addon.Address, typeof(AtkUnitBase*)), Pointer.Box(AtkStage.Instance()->GetNumberArrayData(), typeof(NumberArrayData**)), Pointer.Box(AtkStage.Instance()->GetStringArrayData(), typeof(StringArrayData**))]),
-                    SubscriberKind.AddonPointer => Method.Invoke(Tweak, [Pointer.Box((void*)((AddonArgs)args).Addon.Address, addonPointerType)]),
-                    SubscriberKind.AddonPointerWithArrays => Method.Invoke(Tweak, [Pointer.Box((void*)((AddonArgs)args).Addon.Address, addonPointerType), Pointer.Box(AtkStage.Instance()->GetNumberArrayData(), typeof(NumberArrayData**)), Pointer.Box(AtkStage.Instance()->GetStringArrayData(), typeof(StringArrayData**))]),
+                    SubscriberKind.AtkUnitBase => Method.Invoke(Tweak, [Pointer.Box((void*)((AddonArgs)args!).Addon.Address, typeof(AtkUnitBase*))]),
+                    SubscriberKind.AtkUnitBaseWithArrays => Method.Invoke(Tweak, [Pointer.Box((void*)((AddonArgs)args!).Addon.Address, typeof(AtkUnitBase*)), Pointer.Box(AtkStage.Instance()->GetNumberArrayData(), typeof(NumberArrayData**)), Pointer.Box(AtkStage.Instance()->GetStringArrayData(), typeof(StringArrayData**))]),
+                    SubscriberKind.AddonPointer => Method.Invoke(Tweak, [Pointer.Box((void*)((AddonArgs)args!).Addon.Address, addonPointerType)]),
+                    SubscriberKind.AddonPointerWithArrays => Method.Invoke(Tweak, [Pointer.Box((void*)((AddonArgs)args!).Addon.Address, addonPointerType), Pointer.Box(AtkStage.Instance()->GetNumberArrayData(), typeof(NumberArrayData**)), Pointer.Box(AtkStage.Instance()->GetStringArrayData(), typeof(StringArrayData**))]),
                     SubscriberKind.AddonArgs => Method.Invoke(Tweak, [args]),
                     SubscriberKind.AddonSetupArgs when args is AddonSetupArgs addonSetupArgs => Method.Invoke(Tweak, [addonSetupArgs]),
                     SubscriberKind.AddonRequestedUpdateArgs when args is AddonRequestedUpdateArgs addonRequestedUpdateArgs => Method.Invoke(Tweak, [addonRequestedUpdateArgs]),

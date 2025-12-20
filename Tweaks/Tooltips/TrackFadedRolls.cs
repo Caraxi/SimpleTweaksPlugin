@@ -43,7 +43,7 @@ public unsafe class TrackFadedRolls : TooltipTweaks.SubTweak {
         var craftResults = GetRollsCraftedWithItem(luminaItem);
         if (craftResults.Count > 1) {
             var description = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ItemDescription);
-            
+            if (description == null) return;
             if (description.Payloads.Any(payload => payload is DalamudLinkPayload dlp && dlp.CommandId == identifier.CommandId)) return; // Don't append when it already exists.
 
             description.Payloads.Add(identifier);

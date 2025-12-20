@@ -13,11 +13,9 @@ using SimpleTweaksPlugin.Utility;
 namespace SimpleTweaksPlugin; 
 
 public class LocalizedString {
-    [JsonProperty("message")]
-    public string Message { get; set; }
+    [JsonProperty("message")] public string Message { get; set; } = string.Empty;
 
-    [JsonProperty("description")]
-    public string Description { get; set; }
+    [JsonProperty("description")] public string Description { get; set; } = string.Empty;
 }
 
 internal static class Loc {
@@ -57,7 +55,7 @@ internal static class Loc {
         }
     }
 
-    internal static string Localize(string key, string fallbackValue, string description = null) {
+    internal static string Localize(string key, string fallbackValue, string? description = null) {
         if (currentLanguage == "DEBUG") return $"#{key}#";
         try {
             return _localizationStrings[key].Message;
@@ -96,7 +94,7 @@ internal static class Loc {
     }
     
     
-    public static void UpdateTranslations(bool force = false, Action callback = null) {
+    public static void UpdateTranslations(bool force = false, Action? callback = null) {
         DownloadError = null;
         var downloadPath = Service.PluginInterface.GetPluginLocDirectory();
         var config = SimpleTweaksPlugin.Plugin.PluginConfig;
@@ -111,6 +109,7 @@ internal static class Loc {
                     Service.NotificationManager.AddNotification(new Notification() { Content = "Updating Language List", Minimized = true, InitialDuration = TimeSpan.FromSeconds(4)});
                     var manifestJson = await httpClient.GetStringAsync("https://distributions.crowdin.net/a20076cbde84bba34152668i8hw/manifest.json");
                     var manifest = JsonConvert.DeserializeObject<CrowdinManifest>(manifestJson);
+                    if (manifest == null) return;
                     foreach (var l in manifest.Languages) {
                         config.LanguageUpdates.TryAdd(l, DateTime.MinValue);
                     }
@@ -148,5 +147,5 @@ internal static class Loc {
     }
 
     public static bool LoadingTranslations { get; private set; }
-    public static Exception DownloadError { get; private set; }
+    public static Exception? DownloadError { get; private set; }
 }

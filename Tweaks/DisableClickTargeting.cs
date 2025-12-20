@@ -139,15 +139,13 @@ public unsafe class DisableClickTargeting : Tweak {
     private delegate byte GetInputStatusDelegate(InputManager* a1, int a2);
 
     [TweakHook, Signature("E8 ?? ?? ?? ?? 84 C0 44 8B C3", DetourName = nameof(GetInputStatusDetour))]
-    private HookWrapper<GetInputStatusDelegate> getInputStatusHook;
+    private HookWrapper<GetInputStatusDelegate> getInputStatusHook = null!;
 
     private delegate GameObject* GetMouseOverObjectDelegate(TargetSystem* a1, int a2, int a3, GameObjectArray* a4, Camera* camera);
 
-    [TweakHook, Signature("E8 ?? ?? ?? ?? 48 8B D8 48 85 C0 74 50 48 8B CB", DetourName = nameof(GetMouseOverObjectDetour))]
-    private HookWrapper<GetMouseOverObjectDelegate> getMouseOverObjectHook;
 
-    [Signature("E8 ?? ?? ?? ?? 84 C0 44 8B C3")]
-    private GetInputStatusDelegate getInputStatus;
+    [TweakHook, Signature("E8 ?? ?? ?? ?? 48 8B D8 48 85 C0 74 50 48 8B CB", DetourName = nameof(GetMouseOverObjectDetour))]
+    private HookWrapper<GetMouseOverObjectDelegate> getMouseOverObjectHook = null!;
 
     private const int LeftMouse = 11;
     private const int RightMouse = 4;
@@ -167,7 +165,7 @@ public unsafe class DisableClickTargeting : Tweak {
 
         if (actor != null && TweakConfig.UseNameFilter) {
             var actorName = actor->NameString;
-            var nf = TweakConfig.NameFilters.FirstOrDefault(a => a.Name == actorName, null);
+            var nf = TweakConfig.NameFilters.FirstOrDefault(a => a?.Name == actorName, null);
             if (nf != null) return NameFilterCheck(nf, a2) ? status : (byte)0;
         }
 
@@ -187,7 +185,7 @@ public unsafe class DisableClickTargeting : Tweak {
 
         if (TweakConfig.UseNameFilter) {
             var actorName = actor->NameString;
-            var nf = TweakConfig.NameFilters.FirstOrDefault(a => a.Name == actorName, null);
+            var nf = TweakConfig.NameFilters.FirstOrDefault(a => a?.Name == actorName, null);
             if (nf != null) return NameFilterCheck(nf, pressed) ? actor : null;
         }
 
