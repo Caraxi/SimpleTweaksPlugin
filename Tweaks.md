@@ -803,11 +803,6 @@
   Red value means the player is wearing an item that scales to their level and it is showing the max level.
 
 
-- **Label Submarine Destinations with Letters**
-
-  Uses the standard A-Z lettering to identify submarine destinations for easier use with other tools.
-
-
 - **Limit Break Adjustments**
 
   Simple customization of the limit break bars.
