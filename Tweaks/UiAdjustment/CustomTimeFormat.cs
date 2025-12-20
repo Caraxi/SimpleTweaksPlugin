@@ -56,7 +56,7 @@ public unsafe class CustomTimeFormat : UiAdjustments.SubTweak {
         public bool MoveUp;
     }
 
-    private void DrawClockConfig(int index, string name, string icon, ref bool hasChanged, ref bool enabled, ref string format, ref MoveAction moveAction, DateTimeOffset example) {
+    private void DrawClockConfig(int index, string name, string icon, ref bool hasChanged, ref bool enabled, ref string format, ref MoveAction? moveAction, DateTimeOffset example) {
         ImGui.Text(icon);
         ImGui.SameLine();
 
@@ -114,13 +114,13 @@ public unsafe class CustomTimeFormat : UiAdjustments.SubTweak {
         }
     }
 
-    private bool DrawClockConfig(int id, int index, string[] icons, ref bool hasChanged, ref MoveAction moveAction) {
+    private bool DrawClockConfig(int id, int index, string[] icons, ref bool hasChanged, ref MoveAction? moveAction) {
         switch (id) {
             case 0: {
-                if (Service.GameConfig.TryGet(UiConfigOption.TimeEorzea, out bool showET)) {
+                if (Service.GameConfig.TryGet(UiConfigOption.TimeEorzea, out bool showEt)) {
                     var et = DateTimeOffset.FromUnixTimeSeconds(FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->ClientTime.EorzeaTime);
-                    DrawClockConfig(index, LocString("Eorzea Time"), icons[0], ref hasChanged, ref showET, ref TweakConfig.CustomFormatET, ref moveAction, et);
-                    if (hasChanged) Service.GameConfig.Set(UiConfigOption.TimeEorzea, showET);
+                    DrawClockConfig(index, LocString("Eorzea Time"), icons[0], ref hasChanged, ref showEt, ref TweakConfig.CustomFormatET, ref moveAction, et);
+                    if (hasChanged) Service.GameConfig.Set(UiConfigOption.TimeEorzea, showEt);
                 } else {
                     ImGui.TextColored(ImGuiColors.DalamudRed, "Error: Failed to get ET config.");
                 }
@@ -128,9 +128,9 @@ public unsafe class CustomTimeFormat : UiAdjustments.SubTweak {
                 break;
             }
             case 1: {
-                if (Service.GameConfig.TryGet(UiConfigOption.TimeLocal, out bool showLT)) {
-                    DrawClockConfig(index, LocString("Local Time"), icons[1], ref hasChanged, ref showLT, ref TweakConfig.CustomFormatLT, ref moveAction, DateTimeOffset.Now);
-                    if (hasChanged) Service.GameConfig.Set(UiConfigOption.TimeLocal, showLT);
+                if (Service.GameConfig.TryGet(UiConfigOption.TimeLocal, out bool showLt)) {
+                    DrawClockConfig(index, LocString("Local Time"), icons[1], ref hasChanged, ref showLt, ref TweakConfig.CustomFormatLT, ref moveAction, DateTimeOffset.Now);
+                    if (hasChanged) Service.GameConfig.Set(UiConfigOption.TimeLocal, showLt);
                 } else {
                     ImGui.TextColored(ImGuiColors.DalamudRed, "Error: Failed to get LT config.");
                 }
@@ -138,9 +138,9 @@ public unsafe class CustomTimeFormat : UiAdjustments.SubTweak {
                 break;
             }
             case 2: {
-                if (Service.GameConfig.TryGet(UiConfigOption.TimeServer, out bool showST)) {
-                    DrawClockConfig(index, LocString("Server Time"), icons[2], ref hasChanged, ref showST, ref TweakConfig.CustomFormatST, ref moveAction, DateTimeOffset.UtcNow);
-                    if (hasChanged) Service.GameConfig.Set(UiConfigOption.TimeServer, showST);
+                if (Service.GameConfig.TryGet(UiConfigOption.TimeServer, out bool showSt)) {
+                    DrawClockConfig(index, LocString("Server Time"), icons[2], ref hasChanged, ref showSt, ref TweakConfig.CustomFormatST, ref moveAction, DateTimeOffset.UtcNow);
+                    if (hasChanged) Service.GameConfig.Set(UiConfigOption.TimeServer, showSt);
                 } else {
                     ImGui.TextColored(ImGuiColors.DalamudRed, "Error: Failed to get ST config.");
                 }
@@ -181,7 +181,7 @@ public unsafe class CustomTimeFormat : UiAdjustments.SubTweak {
             hasChanged = true;
         }
 
-        MoveAction moveAction = null;
+        MoveAction? moveAction = null;
         for (var i = 0; i < order.Length; i++) {
             if (!DrawClockConfig(order[i], i, icons, ref hasChanged, ref moveAction)) {
                 break;

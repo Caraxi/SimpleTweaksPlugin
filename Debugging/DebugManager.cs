@@ -95,7 +95,7 @@ namespace SimpleTweaksPlugin.Debugging {
                 foreach (var t in tp.Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(DebugHelper)) && !t.IsAbstract)) {
                     try {
                         if (DebugHelpers.Any(h => h.GetType() == t)) continue;
-                        var debugger = (DebugHelper)Activator.CreateInstance(t);
+                        var debugger = (DebugHelper?) Activator.CreateInstance(t);
                         if (debugger != null) {
                             SignatureHelper.Initialise(debugger);
                             debugger.TweakProvider = tp;
@@ -137,7 +137,8 @@ namespace SimpleTweaksPlugin.Debugging {
                     foreach (var tp in SimpleTweaksPlugin.Plugin.TweakProviders) {
                         if (tp.IsDisposed) continue;
                         foreach (var t in tp.Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(DebugHelper)) && !t.IsAbstract)) {
-                            var debugger = (DebugHelper)Activator.CreateInstance(t);
+                            var debugger = (DebugHelper?) Activator.CreateInstance(t);
+                            if (debugger == null) continue;
                             debugger.TweakProvider = tp;
                             debugger.Plugin = _plugin;
                             RegisterDebugPage(debugger.FullName, debugger.Draw);
@@ -328,7 +329,7 @@ namespace SimpleTweaksPlugin.Debugging {
                 }
 
                 var valueParser = member.GetCustomAttribute(typeof(ValueParser));
-                var fixedBuffer = (FixedBufferAttribute)member.GetCustomAttribute(typeof(FixedBufferAttribute));
+                var fixedBuffer = (FixedBufferAttribute?)member.GetCustomAttribute(typeof(FixedBufferAttribute));
 
                 if (valueParser is ValueParser vp) {
                     vp.ImGuiPrint(type, value, member, addr);
@@ -336,7 +337,7 @@ namespace SimpleTweaksPlugin.Debugging {
                 }
 
                 if (type.IsPointer) {
-                    var val = (Pointer)value;
+                    var val = (Pointer?)value;
                     var unboxed = val == null ? null : Pointer.Unbox(val);
                     if (unboxed != null) {
                         var unboxedAddr = (ulong)unboxed;
@@ -361,8 +362,7 @@ namespace SimpleTweaksPlugin.Debugging {
                         ImGui.Text("null");
                     }
                 } else {
-                    if (type.IsArray) {
-                        var arr = (Array)value;
+                    if (type.IsArray && value is Array arr) {
                         if (ImGui.TreeNode($"Values##{member.Name}-{addr}-{string.Join("-", path)}")) {
                             for (var i = 0; i < arr.Length; i++) {
                                 ImGui.Text($"[{i}]");
@@ -475,11 +475,11 @@ namespace SimpleTweaksPlugin.Debugging {
         }
 
         public static T GetSavedValue<T>(string key, T defaultValue) {
-            if (!_plugin.PluginConfig.Debugging.SavedValues.ContainsKey(key)) return defaultValue;
-            return (T)_plugin.PluginConfig.Debugging.SavedValues[key];
+            if (!_plugin.PluginConfig.Debugging.SavedValues.TryGetValue(key, out var value) || value is not T tVal) return defaultValue;
+            return tVal;
         }
 
-        private static string ParseTypeName(Type type, List<Type> loopSafety = null) {
+        private static string ParseTypeName(Type type, List<Type>? loopSafety = null) {
             if (!type.IsGenericType) return type.Name;
             loopSafety ??= new List<Type>();
             if (loopSafety.Contains(type)) return $"...{type.Name}";
@@ -489,7 +489,7 @@ namespace SimpleTweaksPlugin.Debugging {
             return $"{n}<{string.Join(',', gArgs)}>";
         }
 
-        private static unsafe void PrintOutField(FieldInfo f, LayoutKind layoutKind, ref ulong offsetAddress, ulong addr, object obj, List<string> path, string customTypeName = null, string customName = null) {
+        private unsafe static void PrintOutField(FieldInfo f, LayoutKind layoutKind, ref ulong offsetAddress, ulong addr, object obj, List<string> path, string customTypeName = null, string customName = null) {
             var fixedSizeArrayAttribute = f.GetCustomAttribute<FixedSizeArrayAttribute>();
             if (fixedSizeArrayAttribute?.IsString ?? false) return;
 
@@ -526,7 +526,7 @@ namespace SimpleTweaksPlugin.Debugging {
                 fixedSizeArraySize = 0;
             }
 
-            var fixedBuffer = (FixedBufferAttribute)f.GetCustomAttribute(typeof(FixedBufferAttribute));
+            var fixedBuffer = (FixedBufferAttribute?)f.GetCustomAttribute(typeof(FixedBufferAttribute));
 
             if (fixedBuffer != null) {
                 ImGui.Text($"fixed");
@@ -535,8 +535,7 @@ namespace SimpleTweaksPlugin.Debugging {
             } else {
                 if (fixedSizeArrayAttribute != null) {
                     ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{customTypeName ?? ParseTypeName(f.FieldType.GetElementType() ?? f.FieldType)}[{fixedSizeArraySize}]");
-                } else if (f.FieldType.IsArray) {
-                    var arr = (Array)f.GetValue(obj);
+                } else if (f.FieldType.IsArray && f.GetValue(obj) is Array arr) {
                     ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{customTypeName ?? ParseTypeName(f.FieldType.GetElementType() ?? f.FieldType)}[{arr?.Length ?? 0}]");
                 } else {
                     ImGui.TextColored(new Vector4(0.2f, 0.9f, 0.9f, 1), $"{customTypeName ?? ParseTypeName(f.FieldType)}");
@@ -674,7 +673,7 @@ namespace SimpleTweaksPlugin.Debugging {
         public unsafe static void PrintOutObject(object? obj, ulong addr, List<string> path, bool autoExpand = false, string headerText = null) {
             if (obj is Utf8String utf8String) {
                 var text = string.Empty;
-                Exception err = null;
+                Exception? err = null;
                 try {
                     var s = utf8String.BufUsed > int.MaxValue ? int.MaxValue : (int)utf8String.BufUsed;
                     if (s > 1) {

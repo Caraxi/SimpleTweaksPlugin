@@ -481,7 +481,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                         if (ImGui.Checkbox(LocalizedCategoryName("Enabled Tweaks"), ref ShowEnabledTweaksTab)) Save();
                         if (ImGui.Checkbox(LocalizedCategoryName("All Tweaks"), ref ShowAllTweaksTab)) Save();
 
-                        string categoryDescription;
+                        string? categoryDescription;
                         foreach (var c in HiddenCategories.Select(s => new TweakCategoryContainer(s)).Union(tweakCategories.Where(c => c.Tweaks.Any(IsTweakVisible))).OrderBy(c => c.LocalizedName)) {
                             if (c.CategoryName == $"{TweakCategory.Other}") continue;
                             if (c.CategoryName == $"{TweakCategory.Experimental}" && ShowExperimentalTweaks == false) continue;
@@ -736,7 +736,7 @@ public partial class SimpleTweaksPluginConfig : IPluginConfiguration {
                     if (HiddenTweaks.Count > 0) {
                         if (ImGui.CollapsingHeader($"Hidden Tweaks ({HiddenTweaks.Count})###hiddenTweaks")) {
                             ImGui.Indent();
-                            string removeKey = null;
+                            string? removeKey = null;
                             foreach (var hidden in HiddenTweaks) {
                                 var tweak = plugin.GetTweakById(hidden);
                                 if (tweak == null) continue;

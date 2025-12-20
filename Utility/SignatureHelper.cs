@@ -95,8 +95,8 @@ public static class SignatureHelper {
 
     private const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
-    private static PropertyInfo PIsFunctionPointer { get; } = typeof(Type).GetProperty("IsFunctionPointer", BindingFlags.Public | BindingFlags.Instance);
-    private static PropertyInfo PIsUnmanagedFunctionPointer { get; } = typeof(Type).GetProperty("IsUnmanagedFunctionPointer", BindingFlags.Public | BindingFlags.Instance);
+    private static PropertyInfo? PIsFunctionPointer { get; } = typeof(Type).GetProperty("IsFunctionPointer", BindingFlags.Public | BindingFlags.Instance);
+    private static PropertyInfo? PIsUnmanagedFunctionPointer { get; } = typeof(Type).GetProperty("IsUnmanagedFunctionPointer", BindingFlags.Public | BindingFlags.Instance);
 
     public static void Initialise(object self, bool log = true) {
         var scanner = Service.SigScanner;

@@ -129,7 +129,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
 
     protected override void Setup() {
         foreach (var t in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(ItemHotkey)))) {
-            var h = (ItemHotkey)Activator.CreateInstance(t);
+            var h = (ItemHotkey?)Activator.CreateInstance(t);
             if (h != null) {
                 Hotkeys.Add(h);
             }
@@ -168,7 +168,7 @@ public unsafe class ItemHotkeys : TooltipTweaks.SubTweak {
 
             var id = Service.GameGui.HoveredItem;
 
-            object item;
+            object? item;
             if (id >= 2000000) {
                 item = Service.Data.Excel.GetSheet<EventItem>().GetRowOrDefault((uint)id);
             } else {

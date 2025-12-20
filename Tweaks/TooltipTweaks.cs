@@ -20,10 +20,10 @@ public unsafe class TooltipTweaks : SubTweakManager<TooltipTweaks.SubTweak> {
         public virtual void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) { }
         public virtual void OnGenerateActionTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData) { }
 
-        protected static SeString GetTooltipString(StringArrayData* stringArrayData, TooltipTweaks.ItemTooltipField field) => GetTooltipString(stringArrayData, (int)field);
-        protected static SeString GetTooltipString(StringArrayData* stringArrayData, TooltipTweaks.ActionTooltipField field) => GetTooltipString(stringArrayData, (int)field);
+        protected static SeString? GetTooltipString(StringArrayData* stringArrayData, TooltipTweaks.ItemTooltipField field) => GetTooltipString(stringArrayData, (int)field);
+        protected static SeString? GetTooltipString(StringArrayData* stringArrayData, TooltipTweaks.ActionTooltipField field) => GetTooltipString(stringArrayData, (int)field);
 
-        protected static SeString GetTooltipString(StringArrayData* stringArrayData, int field) {
+        protected static SeString? GetTooltipString(StringArrayData* stringArrayData, int field) {
             try {
                 if (stringArrayData->AtkArrayData.Size <= field)
                     throw new IndexOutOfRangeException($"Attempted to get Index#{field} ({field}) but size is only {stringArrayData->AtkArrayData.Size}");

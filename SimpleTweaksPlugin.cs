@@ -100,7 +100,7 @@ namespace SimpleTweaksPlugin {
             #if TEST
             this.PluginConfig = new SimpleTweaksPluginConfig();
             #else
-            this.PluginConfig = (SimpleTweaksPluginConfig)Service.PluginInterface.GetPluginConfig() ?? new SimpleTweaksPluginConfig();
+            this.PluginConfig = Service.PluginInterface.GetPluginConfig() as SimpleTweaksPluginConfig ?? new SimpleTweaksPluginConfig();
             #endif
             
             this.PluginConfig.Init(this);
@@ -362,7 +362,7 @@ namespace SimpleTweaksPlugin {
             return null;
         }
 
-        public T GetTweak<T>(IEnumerable<BaseTweak>? tweakList = null) where T : BaseTweak {
+        public T? GetTweak<T>(IEnumerable<BaseTweak>? tweakList = null) where T : BaseTweak {
             tweakList ??= Tweaks;
             foreach (var t in tweakList) {
                 if (t is T tweak) return tweak;
@@ -459,8 +459,8 @@ namespace SimpleTweaksPlugin {
 
 
         internal class CaughtError {
-            public BaseTweak Tweak;
-            public SubTweakManager Manager;
+            public BaseTweak? Tweak;
+            public SubTweakManager? Manager;
             public Exception Exception;
             public bool IsNew = true;
             public bool Closed;

@@ -44,7 +44,7 @@ public static unsafe class TooltipManager {
     private static void TooltipDelegate(AtkEventType eventType, AtkUnitBase* atkUnitBase, AtkResNode* node) {
         var addonName = atkUnitBase->NameString;
         if (!_tooltips.TryGetValue(addonName, out var addonDict)) return;
-        if (!addonDict.TryGetValue(node->NodeId, out Func<string> tooltip)) return;
+        if (!addonDict.TryGetValue(node->NodeId, out var tooltip)) return;
         if (eventType == AtkEventType.MouseOver) {
             AtkStage.Instance()->TooltipManager.ShowTooltip(atkUnitBase->Id, node, tooltip());
         } else if (eventType == AtkEventType.MouseOut) {

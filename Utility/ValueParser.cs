@@ -16,12 +16,12 @@ public abstract class ValueParser : Attribute {
 
     public class FixedString : ValueParser {
         public unsafe override string GetString(Type type, object? obj, MemberInfo member, ulong parentAddr) {
-            var fixedBuffer = (FixedBufferAttribute) member.GetCustomAttribute(typeof(FixedBufferAttribute));
+            var fixedBuffer = (FixedBufferAttribute?) member.GetCustomAttribute(typeof(FixedBufferAttribute));
             if (fixedBuffer == null || fixedBuffer.ElementType != typeof(byte)) {
                 return $"[Not a fixed byte buffer] {obj}";
             }
 
-            var fieldOffset = (FieldOffsetAttribute) member.GetCustomAttribute(typeof(FieldOffsetAttribute));
+            var fieldOffset = (FieldOffsetAttribute?) member.GetCustomAttribute(typeof(FieldOffsetAttribute));
             if (fieldOffset == null) {
                 return $"[No FieldOffset] {obj}";
             }

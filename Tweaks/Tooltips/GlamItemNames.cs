@@ -33,12 +33,12 @@ public unsafe class GlamItemNames : TooltipTweaks.SubTweak {
         if (vanillaNameNode == null) return;
         vanillaNameNode->ToggleVisibility(true);
 
-        SeString glamName = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.GlamourName);
+        var glamName = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.GlamourName);
 
         // We don't need to do anything the item isn't / cannot be glamoured
         if (glamName == null) return;
 
-        SeString normalName = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ItemName);
+        var normalName = GetTooltipString(stringArrayData, TooltipTweaks.ItemTooltipField.ItemName);
 
         normalName.Append(NewLinePayload.Payload);
         normalName.Append(glamName);

@@ -33,7 +33,7 @@ internal static class Loc {
             return;
         }
 
-        string json = null;
+        string? json = null;
         var locDir = Service.PluginInterface.GetPluginLocDirectory();
         if (string.IsNullOrWhiteSpace(locDir)) return;
 
@@ -52,7 +52,7 @@ internal static class Loc {
         }
 
         if (!string.IsNullOrWhiteSpace(json)) {
-            _localizationStrings = JsonConvert.DeserializeObject<SortedDictionary<string, LocalizedString>>(json);
+            _localizationStrings = JsonConvert.DeserializeObject<SortedDictionary<string, LocalizedString>>(json) ?? [];
             currentLanguage = langCode;
         }
     }
@@ -77,7 +77,7 @@ internal static class Loc {
 
     internal static void ImportDictionary(string json) {
         try {
-            _localizationStrings = JsonConvert.DeserializeObject<SortedDictionary<string, LocalizedString>>(json);
+            _localizationStrings = JsonConvert.DeserializeObject<SortedDictionary<string, LocalizedString>>(json) ?? [];
         } catch {
             //
         }

@@ -17,14 +17,14 @@ public static class ArrayHelper {
         foreach (var t in typeof(NumberArray).Assembly.GetTypes()) {
             if (t.IsAbstract) continue;
             if (t.IsSubclassOf(typeof(NumberArray))) {
-                var i = (NumberArray)Activator.CreateInstance(t);
+                var i = (NumberArray?)Activator.CreateInstance(t);
                 if (i != null) {
                     if (NumberArrays.TryAdd(i.NumberArrayIndex, i)) {
                         NumberArrayTypes[t] = i.NumberArrayIndex;
                     }
                 }
             } else if (t.IsSubclassOf(typeof(StringArray))) {
-                var i = (StringArray)Activator.CreateInstance(t);
+                var i = (StringArray?)Activator.CreateInstance(t);
                 if (i != null) {
                     if (StringArrays.TryAdd(i.StringArrayIndex, i)) {
                         StringArrayTypes[t] = i.StringArrayIndex;
@@ -38,7 +38,7 @@ public static class ArrayHelper {
         return GetNumberArray(typeof(T)) as T;
     }
     
-    public static NumberArray GetNumberArray(Type type) {
+    public static NumberArray? GetNumberArray(Type type) {
         return !NumberArrayTypes.TryGetValue(type, out var index) ? null : NumberArrays.GetValueOrDefault(index);
     }
     
@@ -46,7 +46,7 @@ public static class ArrayHelper {
         return GetStringArray(typeof(T)) as T;
     }
     
-    public static StringArray GetStringArray(Type type) {
+    public static StringArray? GetStringArray(Type type) {
         return !StringArrayTypes.TryGetValue(type, out var index) ? null : StringArrays.GetValueOrDefault(index);
     }
 }

@@ -71,7 +71,7 @@ public unsafe class DisableClickTargeting : Tweak {
                 ImGui.TableSetupColumn(LocString("PlayerHeader", "Only\nPlayers"), ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoClip, 50 * ImGui.GetIO().FontGlobalScale);
 
                 ImGui.TableHeadersRow();
-                NameFilter deleteNf = null;
+                NameFilter? deleteNf = null;
                 foreach (var nf in TweakConfig.NameFilters) {
                     ImGui.TableNextColumn();
                     if (ImGui.Button($"X##namefilter_delete_{++i}", new Vector2(-1, 24 * ImGui.GetIO().FontGlobalScale))) {

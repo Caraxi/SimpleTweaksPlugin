@@ -51,7 +51,7 @@ public class CollectableRewards : TooltipTweaks.SubTweak {
 
     private class CollectableCachedDetails {
         public sbyte? JobTableIndex;
-        public string JobName;
+        public string? JobName;
         public int LevelMin;
         public int LevelMax;
         public int ScripRewardType;

@@ -159,7 +159,7 @@ public class ChatNameColours : ChatTweaks.SubTweak {
 
             ImGui.TableHeadersRow();
 
-            ForcedColour del = null;
+            ForcedColour? del = null;
             foreach (var fc in Config.ForcedColours) {
                 ImGui.TableNextColumn();
 

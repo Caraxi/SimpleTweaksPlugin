@@ -17,7 +17,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [Changelog("1.8.3.0", "Fixed tweak not working in french.", Author = "Aireil")]
 [Changelog("1.10.12.6", "Add ability to clear target by providing no name.")]
 public class FixTarget : Tweak {
-    private Regex regex;
+    private Regex? regex;
 
     protected override void Enable() {
         regex = Service.ClientState.ClientLanguage switch {
@@ -55,12 +55,11 @@ public class FixTarget : Tweak {
         if (!match.Success) return;
         var searchName = match.Groups[1].Value.ToLowerInvariant();
 
-        IGameObject closestMatch = null;
+        IGameObject? closestMatch = null;
         var closestDistance = float.MaxValue;
         var player = Service.Objects.LocalPlayer;
         if (player == null) return;
         foreach (var actor in Service.Objects) {
-            if (actor == null) continue;
             if (!actor.Name.TextValue.Contains(searchName, System.StringComparison.InvariantCultureIgnoreCase) || !((GameObjectStruct*)actor.Address)->GetIsTargetable()) continue;
             var distance = Vector3.Distance(player.Position, actor.Position);
             if (closestMatch == null) {

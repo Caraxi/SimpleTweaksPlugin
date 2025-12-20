@@ -240,7 +240,7 @@ public unsafe class AddNumberSeparators : UiAdjustments.SubTweak {
 
         var nfi = (NumberFormatInfo)NumberFormatInfo.CurrentInfo.Clone();
         if (Config.CustomSeparator != null) {
-            nfi.NumberGroupSeparator = Config.CustomSeparator.ToString();
+            nfi.NumberGroupSeparator = Config.CustomSeparator.ToString() ?? ",";
         }
 
         var str = number.ToString("N0", nfi);

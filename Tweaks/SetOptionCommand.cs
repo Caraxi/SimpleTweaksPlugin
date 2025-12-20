@@ -249,7 +249,7 @@ public unsafe class SetOptionCommand : CommandTweak {
         if (optionDefinition.AllowToggle && inputValue is "t" or "toggle") {
             switch (optionDefinition) {
                 case OptionDefinition<uint> i: {
-                    if (!optionSection.TryGetProperties(optionDefinition.ID, out UIntConfigProperties properties) || properties == null) {
+                    if (!optionSection.TryGetProperties(optionDefinition.ID, out UIntConfigProperties? properties) || properties == null) {
                         Plugin.Error(this, new Exception($"Failed to get option detail for {optionDefinition.Name}"), allowContinue: true);
                         return;
                     }

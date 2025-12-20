@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Utility;
@@ -29,7 +30,7 @@ public static class CustomNodes {
 
     public static bool TryGet(string name, out uint id) => TryGet(name, 0, out id);
     public static bool TryGet(string name, int index, out uint id) => NodeIds.TryGetValue($"{name}#{index}", out id);
-    public static bool TryGet(uint id, out string name) => NodeNames.TryGetValue(id, out name);
+    public static bool TryGet(uint id, [NotNullWhen(true)] out string? name) => NodeNames.TryGetValue(id, out name);
     
     public const int
         TargetHP =             SimpleTweaksNodeBase + 1,

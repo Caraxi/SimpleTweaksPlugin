@@ -330,8 +330,8 @@ public unsafe class CustomFreeCompanyTags : UiAdjustments.SubTweak {
             ImGui.TableSetupColumn(LocString("Replacement"), ImGuiTableColumnFlags.NoClip);
             ImGui.TableHeadersRow();
 
-            string deleteKey = null;
-            string renameKey = null;
+            string? deleteKey = null;
+            string? renameKey = null;
 
             foreach (var fc in Config.FcCustomizations.OrderBy(k => k.Key)) {
                 var k = fc.Key;

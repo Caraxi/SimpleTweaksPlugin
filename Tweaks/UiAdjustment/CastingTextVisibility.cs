@@ -207,17 +207,17 @@ internal unsafe class CastingTextVisibility : UiAdjustments.SubTweak
         textNode->FontSize = (byte)fontSize;
     }
 
-    private void ResetTextNodes()
-    {
-        var fui = Common.GetUnitBase("_FocusTargetInfo", 1);
-        var tui = Common.GetUnitBase("_TargetInfo", 1);
-        var stui = Common.GetUnitBase("_TargetInfoCastBar", 1);
-        var ftext = Common.GetNodeByID<AtkTextNode>(&fui->UldManager, focusTargetTextNodeId);
-        var ttext = Common.GetNodeByID<AtkTextNode>(&tui->UldManager, targetTextNodeId);
-        var sttext = Common.GetNodeByID<AtkTextNode>(&stui->UldManager, splitTargetTextNodeId);
-        if (ftext != null) ftext->ToggleVisibility(true);
-        if (ttext != null) ttext->ToggleVisibility(true);
-        if (sttext != null) sttext->ToggleVisibility(true);
+    private void ResetTextNodes() {
+        void Reset(string addonName, uint nodeId) {
+            var addon = Common.GetUnitBase(addonName);
+            if (addon == null) return;
+            var node = Common.GetNodeByID<AtkTextNode>(&addon->UldManager, nodeId);
+            if (node != null) node->ToggleVisibility(true);
+        }
+        
+        Reset("_FocusTargetInfo", focusTargetTextNodeId);
+        Reset("_TargetInfo", targetTextNodeId);
+        Reset("_TargetInfoCastBar", splitTargetTextNodeId);
     }
 
     private void UpdateFocusTargetNodes(AtkTextNode* textNode, AtkImageNode* imageNode) =>

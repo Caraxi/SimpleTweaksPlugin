@@ -2,7 +2,8 @@
     <PropertyGroup>
         <Version>1.10.12.6</Version>
         <Configurations>Debug;Release;DebugSteamDeck;CustomCS;Test</Configurations>
-        <NoWarn>CS8632,CS0649,CS0169,CS8618,CS0162,CS8625,CS8602,CS8605,CS8600,CS8601,CS8603</NoWarn>
+        <NoWarn>CS8632,CS0649,CS0169,CS8618,CS0162,CS8625,CS8602,CS8605</NoWarn>
+        <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
     </PropertyGroup>
     <PropertyGroup Label="Test" Condition="'$(Configuration)'=='Test'">
         <DefineConstants>DEBUG;TEST</DefineConstants>

@@ -364,7 +364,7 @@ public unsafe class UIDebug : DebugHelper {
         }
     }
 
-    private static readonly Dictionary<string, Type> AddonMapping = new();
+    private readonly static Dictionary<string, Type?> AddonMapping = new();
 
     private List<NodeResult> GetAtkResNodeAtPosition(AtkUldManager* uldManager, Vector2 position, bool noReverse = false) {
         var list = new List<NodeResult>();
@@ -521,13 +521,14 @@ public unsafe class UIDebug : DebugHelper {
 
         ImGui.Separator();
 
-        object addonObj;
+        object? addonObj;
 
         if (addonName != null && AddonMapping.ContainsKey(addonName)) {
-            if (AddonMapping[addonName] == null) {
+            var m = AddonMapping[addonName];
+            if (m == null) {
                 addonObj = *atkUnitBase;
             } else {
-                addonObj = Marshal.PtrToStructure(new IntPtr(atkUnitBase), AddonMapping[addonName]);
+                addonObj = Marshal.PtrToStructure(new IntPtr(atkUnitBase), m);
             }
         } else if (addonName != null) {
             AddonMapping.Add(addonName, null);
@@ -536,7 +537,7 @@ public unsafe class UIDebug : DebugHelper {
                 try {
                     foreach (var t in a.GetTypes()) {
                         if (!t.IsPublic) continue;
-                        var xivAddonAttr = (AddonAttribute)t.GetCustomAttribute(typeof(AddonAttribute), false);
+                        var xivAddonAttr = (AddonAttribute?)t.GetCustomAttribute(typeof(AddonAttribute), false);
                         if (xivAddonAttr == null) continue;
                         if (!xivAddonAttr.AddonIdentifiers.Contains(addonName)) continue;
                         AddonMapping[addonName] = t;

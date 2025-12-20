@@ -31,7 +31,7 @@ public class TweakConfigOptionAttribute : Attribute {
 
     public delegate bool ConfigOptionEditor(string name, ref object configOption);
         
-    public MethodInfo Editor { get; set; }
+    public MethodInfo? Editor { get; set; }
 
     public enum IntEditType {
         Slider,

@@ -78,9 +78,9 @@ public unsafe class Common {
         return (AtkUnitBase*)Service.GameGui.GetAddonByName(name, index).Address;
     }
 
-    public static T* GetUnitBase<T>(string name = null, int index = 1) where T : unmanaged {
+    public static T* GetUnitBase<T>(string? name = null, int index = 1) where T : unmanaged {
         if (string.IsNullOrEmpty(name)) {
-            var attr = (AddonAttribute) typeof(T).GetCustomAttribute(typeof(AddonAttribute));
+            var attr = (AddonAttribute?) typeof(T).GetCustomAttribute(typeof(AddonAttribute));
             if (attr != null) {
                 name = attr.AddonIdentifiers.FirstOrDefault();
             }
@@ -91,10 +91,10 @@ public unsafe class Common {
         return (T*)Service.GameGui.GetAddonByName(name, index).Address;
     }
 
-    public static bool GetUnitBase<T>(out T* unitBase, string name = null, int index = 1) where T : unmanaged {
+    public static bool GetUnitBase<T>(out T* unitBase, string? name = null, int index = 1) where T : unmanaged {
         unitBase = null;
         if (string.IsNullOrEmpty(name)) {
-            var attr = (AddonAttribute) typeof(T).GetCustomAttribute(typeof(AddonAttribute));
+            var attr = (AddonAttribute?) typeof(T).GetCustomAttribute(typeof(AddonAttribute));
             if (attr != null) {
                 name = attr.AddonIdentifiers.FirstOrDefault();
             }
@@ -106,7 +106,7 @@ public unsafe class Common {
         return unitBase != null;
     }
 
-    public static SeString ReadSeString(byte** startPtr) {
+    public static SeString? ReadSeString(byte** startPtr) {
         if (startPtr == null) return null;
         var start = *(startPtr);
         if (start == null) return null;
@@ -419,7 +419,7 @@ public unsafe class Common {
         updateCursorHook?.Disable();
     }
 
-    public static string GetTexturePath(AtkImageNode* imageNode) {
+    public static string? GetTexturePath(AtkImageNode* imageNode) {
         if (imageNode == null) return null;
         var partList = imageNode->PartsList;
         if (partList == null || partList->Parts == null) return null;
@@ -435,7 +435,7 @@ public unsafe class Common {
         return handle->ResourceHandle.FileName.ToString();
     }
 
-    public static string ReadString(byte* b, int maxLength = 0, bool nullIsEmpty = true) {
+    public static string? ReadString(byte* b, int maxLength = 0, bool nullIsEmpty = true) {
         if (b == null) return nullIsEmpty ? string.Empty : null;
         if (maxLength > 0) return Encoding.UTF8.GetString(b, maxLength).Split('\0')[0];
         var l = 0;
@@ -443,7 +443,7 @@ public unsafe class Common {
         return Encoding.UTF8.GetString(b, l);
     }
 
-    private static HttpClient httpClient;
+    private static HttpClient? httpClient;
     private static HappyEyeballsCallback happyEyeballsCallback;
 
     public static HttpClient HttpClient {

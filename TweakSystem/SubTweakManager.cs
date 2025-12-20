@@ -31,7 +31,7 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
 
         foreach (var t in GetType().Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(T)))) {
             try {
-                var tweak = (T) Activator.CreateInstance(t);
+                var tweak = (T?) Activator.CreateInstance(t);
                 if (tweak == null) continue;
                 if (SimpleTweaksPlugin.Plugin.GetTweakById(tweak.Key) != null) {
                     SimpleLog.Warning($"Skipped loading tweak with from '{t.Namespace}.{t.Name}'. Tweak with key '{tweak.Key}' already loaded.");
@@ -86,7 +86,8 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
 #if !TEST
         foreach (var t in SubTweaks) {
             if (t is IDisabledTweak) continue;
-            if (PluginConfig.EnabledTweaks.Contains(GetTweakKey(t as T))) {
+            if (t is not T subT) continue;
+            if (PluginConfig.EnabledTweaks.Contains(GetTweakKey(subT))) {
                 try {
                     SimpleLog.Log($"Enable: {t.Name} @ {Name}");
                     t.InternalEnable();

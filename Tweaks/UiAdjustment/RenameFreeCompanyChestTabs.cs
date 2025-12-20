@@ -21,7 +21,7 @@ public unsafe class RenameFreeCompanyChestTabs : UiAdjustments.SubTweak {
     public class Configuration : TweakConfig {
         public Dictionary<ulong, FreeCompanyConfig> FreeCompanies = new();
 
-        public FreeCompanyConfig GetCompanyConfig() {
+        public FreeCompanyConfig? GetCompanyConfig() {
             var fcId = InfoProxyFreeCompany.Instance()->Id;
             return fcId == 0 ? null : FreeCompanies.GetValueOrDefault(fcId);
         }

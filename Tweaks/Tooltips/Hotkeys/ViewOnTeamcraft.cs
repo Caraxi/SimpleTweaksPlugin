@@ -13,7 +13,7 @@ public class ViewOnTeamcraft : ItemHotkey {
         public bool ForceBrowser;
     }
 
-    public new HotkeyConfig Config => base.Config as HotkeyConfig;
+    public new HotkeyConfig Config => base.Config as HotkeyConfig ?? throw new Exception("Invalid HotkeyConfig");
 
     protected override string Name => "View on Teamcraft";
     protected override VirtualKey[] DefaultKeyCombo => [VirtualKey.CONTROL, VirtualKey.T];

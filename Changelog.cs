@@ -142,7 +142,7 @@ public class Changelog : Window {
     #endif
     
     public Changelog() : base("###simpleTweaksChangelog") {
-        CurrentVersion = Assembly.GetExecutingAssembly().GetName().Version;
+        CurrentVersion = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0, 0);
         WindowName = $"Simple Tweaks Changelog ({CurrentVersion})###simpleTweaksChangelog";
         Size = ImGuiHelpers.ScaledVector2(600, 600);
         SizeCondition = ImGuiCond.FirstUseEver;

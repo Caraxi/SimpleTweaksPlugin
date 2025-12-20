@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Dalamud.Game.Addon.Lifecycle;
@@ -7,6 +8,7 @@ using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.Attributes;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using JetBrains.Annotations;
 using Lumina.Excel.Sheets;
 using SimpleTweaksPlugin.Debugging;
 using SimpleTweaksPlugin.TweakSystem;
@@ -194,12 +196,12 @@ public static unsafe class EventController {
     private static List<EventSubscriber> FrameworkUpdateSubscribers { get; } = [];
     private static List<EventSubscriber> TerritoryChangedSubscribers { get; } = [];
 
-    private static bool TryGetCustomAttribute<T>(this MemberInfo element, out T attribute) where T : Attribute {
+    private static bool TryGetCustomAttribute<T>(this MemberInfo element, [NotNullWhen(true)] out T? attribute) where T : Attribute {
         attribute = element.GetCustomAttribute<T>();
         return attribute != null;
     }
 
-    public static void RegisterEvents(BaseTweak tweak) {
+    public static void RegisterEvents(BaseTweak? tweak) {
         if (tweak == null) return;
         if (tweak.IsDisposed) return;
 

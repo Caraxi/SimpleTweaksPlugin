@@ -26,7 +26,7 @@ public abstract class ItemHotkey : IDisposable {
 
     private Type configType = typeof(ItemHotkeyConfig);
 
-    public ItemHotkeyConfig Config;
+    public ItemHotkeyConfig? Config;
 
     public bool Enabled { get; private set; }
 
@@ -80,17 +80,17 @@ public abstract class ItemHotkey : IDisposable {
 
     public void LoadConfig() {
         try {
-            Config = (ItemHotkeyConfig)Activator.CreateInstance(configType);
+            Config = Activator.CreateInstance(configType) as ItemHotkeyConfig;
             var configDirectory = Service.PluginInterface.GetPluginConfigDirectory();
             var configFile = Path.Combine(configDirectory, $"{nameof(TooltipTweaks)}@{nameof(ItemHotkeys)}.{Key}.json");
             if (File.Exists(configFile)) {
                 var jsonString = File.ReadAllText(configFile);
-                Config = (ItemHotkeyConfig)JsonConvert.DeserializeObject(jsonString, configType);
+                Config = (ItemHotkeyConfig?)JsonConvert.DeserializeObject(jsonString, configType);
             }
 
-            Config ??= (ItemHotkeyConfig)Activator.CreateInstance(configType);
+            Config ??= (ItemHotkeyConfig?)Activator.CreateInstance(configType);
         } catch (Exception ex) {
-            Config = (ItemHotkeyConfig)Activator.CreateInstance(configType);
+            Config = (ItemHotkeyConfig?)Activator.CreateInstance(configType);
             SimpleLog.Error(ex);
         }
     }
