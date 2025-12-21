@@ -171,7 +171,7 @@ public unsafe class HighResScreenshots : Tweak {
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
 
-        if (!Service.SigScanner.TryScanText("48 8B 56 30 45 33 C9", out copyrightShaderAddress)) {
+        if (!Service.SigScanner.TryScanText("48 8B 57 ?? 45 33 C9 ?? ?? ?? 45 33 C0", out copyrightShaderAddress)) {
             copyrightShaderAddress = 0;
         }
         
@@ -187,7 +187,7 @@ public unsafe class HighResScreenshots : Tweak {
     private uint oldHeight;
     private bool isRunning;
 
-    const int ScreenshotButton = 551;
+    const int ScreenshotButton = 554;
     public bool originalUiVisibility;
     byte[]? originalCopyrightBytes;
     // IsInputIDClicked is called from Client::UI::UIInputModule.CheckScreenshotState, which is polled
