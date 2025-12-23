@@ -18,6 +18,7 @@ public class ReplyChannelSwitch : ChatTweaks.SubTweak {
             ClientLanguage.English => @"“/r” requires a valid string.",
             ClientLanguage.German => @"Das Textkommando „/r“ erfordert den Unterbefehl [Name/Eingabe] an 1. Stelle.",
             ClientLanguage.French => @"L'argument “nom” est manquant (/r).",
+            ClientLanguage.ChineseSimplified => @"“/r”出现问题：1号指定的字串不存在。",
             _ => throw new ArgumentOutOfRangeException()
         };
 
