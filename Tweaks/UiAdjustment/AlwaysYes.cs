@@ -162,7 +162,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 if (Config.Dyes) SetFocusYes(args.Addon, 6);
                 return;
             case "SalvageDialog":
-                if (Config.Desynthesis) DelayedSetFocusYes(args.AddonName, 24, null, 23);
+                if (Config.Desynthesis) DelayedSetFocusYes(args.AddonName, 25, null, 24);
                 return;
             case "PurifyResult":
                 if (Config.AutomaticAetherialReduction) SetFocusYes(args.Addon, 19);
@@ -196,23 +196,43 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         if (unitBase == null) return;
         if (unitBase->UldManager.LoadedState != AtkLoadState.Loaded) return;
 
-        var yesButton = unitBase->UldManager.SearchNodeById(yesButtonId);
+        var yesButton = unitBase->GetComponentNodeById(yesButtonId);
         if (yesButton == null) return;
 
+        var yesButtonBase = yesButton->Component;
+        if (yesButtonBase == null) return;
+        if (yesButtonBase->GetComponentType() != ComponentType.Button)
+        {
+            SimpleLog.Error($"Component base was not a button, this should not happen: yesButtonId {yesButtonId},  yesHoldButtonId {yesHoldButtonId}, checkBoxId {checkBoxId}");
+            return;
+        }
+
+        var isYesButtonEnabled = ((AtkComponentButton*)yesButtonBase)->IsEnabled;
+
+        var checkBox = checkBoxId != null ? unitBase->GetComponentNodeById(checkBoxId.Value) : null;
+        var checkBoxBase = checkBox != null ? checkBox->Component : null;
+        if (checkBoxBase != null && checkBoxBase->GetComponentType() != ComponentType.CheckBox) {
+            SimpleLog.Error($"Component base was not a check box, this should not happen: yesButtonId {yesButtonId},  yesHoldButtonId {yesHoldButtonId}, checkBoxId {checkBoxId}");
+            return;
+        }
+
+        var isCheckBoxVisible = checkBox != null && checkBox->IsVisible();
+        var isCheckBoxTicked = checkBoxBase != null && ((AtkComponentCheckBox*)checkBoxBase)->IsChecked;
+
         uint collisionId;
-        AtkResNode* targetNode;
-        var checkBox = checkBoxId != null ? (AtkComponentNode*)unitBase->UldManager.SearchNodeById(checkBoxId.Value) : null;
-        var checkBoxTick = checkBox != null && checkBox->Component != null && checkBox->Component->UldManager.LoadedState == AtkLoadState.Loaded ? (AtkTextNode*)checkBox->Component->UldManager.SearchNodeById(3) : null;
-        var textCheckBox = checkBox != null && checkBox->Component != null && checkBox->Component->UldManager.LoadedState == AtkLoadState.Loaded ? (AtkTextNode*)checkBox->Component->UldManager.SearchNodeById(2) : null;
-        var isCheckBoxVisible = checkBox != null && checkBox->AtkResNode.IsVisible();
-        var isCheckBoxTicked = checkBoxTick != null && checkBoxTick->IsVisible();
-        var isCheckBoxTextNotEmpty = textCheckBox != null && !textCheckBox->NodeText.ToString().IsNullOrWhitespace();
-        if (Config.SelectCheckBox && isCheckBoxVisible && (!Config.IgnoreTickedCheckBox || !isCheckBoxTicked) && isCheckBoxTextNotEmpty) {
+        AtkComponentNode* targetNode;
+        if (Config.SelectCheckBox && !isYesButtonEnabled && isCheckBoxVisible && (!Config.IgnoreTickedCheckBox || !isCheckBoxTicked)) {
             collisionId = 5;
-            targetNode = &checkBox->AtkResNode;
+            targetNode = checkBox;
         } else {
-            var holdButton = yesHoldButtonId != null ? unitBase->UldManager.SearchNodeById(yesHoldButtonId.Value) : null;
+            var holdButton = yesHoldButtonId != null ? unitBase->GetComponentNodeById(yesHoldButtonId.Value) : null;
             if (holdButton != null && !yesButton->IsVisible()) {
+                if (holdButton->Component->GetComponentType() != ComponentType.HoldButton)
+                {
+                    SimpleLog.Error($"Component base was not a hold button, this should not happen: yesButtonId {yesButtonId},  yesHoldButtonId {yesHoldButtonId}, checkBoxId {checkBoxId}");
+                    return;
+                }
+
                 collisionId = 7;
                 targetNode = holdButton;
             } else {
@@ -221,11 +241,17 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
             }
         }
 
-        var targetComponent = ((AtkComponentNode*)targetNode)->Component;
+        var targetComponent = targetNode->Component;
         if (targetComponent == null || targetComponent->UldManager.LoadedState != AtkLoadState.Loaded) return;
 
-        var yesCollision = targetComponent->UldManager.SearchNodeById(collisionId);
+        var yesCollision = targetComponent->GetNodeById(collisionId);
         if (yesCollision == null) return;
+
+        if (yesCollision->GetNodeType() != NodeType.Collision)
+        {
+            SimpleLog.Error($"Node was not a collision node, this should not happen: yesButtonId {yesButtonId},  yesHoldButtonId {yesHoldButtonId}, checkBoxId {checkBoxId}");
+            return;
+        }
 
         unitBase->SetFocusNode(yesCollision);
         unitBase->CursorTarget = yesCollision;
