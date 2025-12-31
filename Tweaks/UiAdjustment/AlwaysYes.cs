@@ -14,6 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakName("Always Yes")]
 [TweakDescription("Sets the default action in dialog boxes to yes when using confirm (num 0).")]
 [TweakAuthor("Aireil")]
+[Changelog(UnreleasedVersion, "Fixed desynthesis not working, the tweak will now ignore the checkbox setting if the yes button is enabled.")]
 [Changelog("1.10.0.5", "Added support for dyes.")]
 [Changelog("1.10.0.4", "Added a setting to ignore checkbox if it is ticked and fixed the tweak not working with desynthesis.")]
 [Changelog("1.10.0.0", "Added support for automatic aetherial reduction.")]
@@ -45,7 +46,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
     private string newException = string.Empty;
 
     protected void DrawConfig(ref bool hasChanged) {
-        hasChanged |= ImGui.Checkbox("Default cursor to the checkbox when one exists", ref Config.SelectCheckBox);
+        hasChanged |= ImGui.Checkbox("Default cursor to the checkbox when one exists and the yes button is disabled", ref Config.SelectCheckBox);
         ImGui.BeginDisabled(!Config.SelectCheckBox);
         ImGui.Indent();
         hasChanged |= ImGui.Checkbox("Ignore the previous setting if the checkbox is ticked", ref Config.IgnoreTickedCheckBox);
