@@ -1,6 +1,6 @@
 <Project Sdk="Dalamud.NET.Sdk/14.0.1">
     <PropertyGroup>
-        <Version>1.14.0.1</Version>
+        <Version>1.14.0.2</Version>
         <Configurations>Debug;Release;DebugSteamDeck;CustomCS;Test</Configurations>
         <NoWarn>CS0649,CS0414,CS8618</NoWarn>
         <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
