@@ -18,7 +18,7 @@ public unsafe class HideQualityWhenNoHQ : UiAdjustments.SubTweak {
         var recipeNote = RecipeNote.Instance();
         var recipe = Service.Data.GetExcelSheet<Recipe>().GetRowOrDefault(recipeNote->ActiveCraftRecipeId);
         if (recipe == null) return;
-        if (recipe.Value.CanHq || recipe.Value.IsExpert) return;
+        if (recipe.Value.CanHq || recipe.Value.IsExpert || recipe.Value.RequiredQuality > 0) return;
         var qualityNode = addon->GetNodeById(58);
         if (qualityNode == null) return;
         qualityNode->ToggleVisibility(false);
