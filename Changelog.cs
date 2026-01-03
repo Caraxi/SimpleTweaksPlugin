@@ -1,5 +1,5 @@
 #if DEBUG
-global using static SimpleTweaksPlugin.Changelog;
+global using static SimpleTweaksPlugin.ChangelogConstants;
 #endif
 
 using System;
@@ -14,6 +14,12 @@ using Dalamud.Bindings.ImGui;
 using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin;
+
+#if DEBUG
+public class ChangelogConstants {
+    public const string UnreleasedVersion = "99.99.99.99";
+}
+#endif 
 
 public class ChangelogEntry {
     public BaseTweak? Tweak { get; }
@@ -84,9 +90,7 @@ public class Changelog : Window {
         Add("1.10.11.5", "Disabled error messages in chat when using a tweak command in a macro after using '/macroerror off'.");
     }
 
-#if DEBUG
-    public const string UnreleasedVersion = "99.99.99.99";
-#endif 
+
 
     private static Dictionary<Version, List<ChangelogEntry>> Entries = new();
 

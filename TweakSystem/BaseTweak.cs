@@ -554,18 +554,22 @@ public abstract class BaseTweak {
         Setup();
         hasPreviewImage = File.Exists(Path.Join(PluginInterface.AssemblyLocation.DirectoryName, "TweakPreviews", $"{Key}.png"));
 
+        AttemptDrawConfigSetup();
+        Ready = true;
+    }
+    
+    internal void AddChangelogs() {
         foreach (var c in GetType().GetCustomAttributes<ChangelogAttribute>()) {
             if (c is TweakReleaseVersionAttribute) {
-                AddChangelogNewTweak(c.Version);
+                Changelog.AddNewTweak(this, c.Version);
             }
 
             foreach (var change in c.Changes) {
-                AddChangelog(c.Version, change).Author(c.Author);
+                var entry = Changelog.Add(this, c.Version, change);
+                if (!string.IsNullOrWhiteSpace(c.Author))
+                    entry.Author(c.Author);
             }
         }
-
-        AttemptDrawConfigSetup();
-        Ready = true;
     }
     
     protected virtual void Setup() { }
@@ -816,7 +820,10 @@ public abstract class BaseTweak {
         IsDisposed = true;
     }
 
+    [Obsolete("Use attributes")]
     protected ChangelogEntry AddChangelog(string version, string log) => Changelog.Add(this, version, log);
+    
+    [Obsolete("Use attributes")]
     protected ChangelogEntry AddChangelogNewTweak(string version) => Changelog.AddNewTweak(this, version).Author(Author);
 
     #region Attribute Handles

@@ -60,6 +60,7 @@ public abstract class SubTweakManager<T> : SubTweakManager where T : BaseTweak {
                 }
 
                 tweak.InterfaceSetup(this.Plugin, this.PluginInterface, this.PluginConfig, this.TweakProvider, this);
+                tweak.AddChangelogs();                
                 #if !TEST
                 if (tweak is not IDisabledTweak) {
                     tweak.SetupInternal();

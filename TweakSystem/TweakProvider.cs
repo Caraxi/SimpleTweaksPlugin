@@ -52,6 +52,7 @@ public class TweakProvider : IDisposable {
                         }
                     }
 
+                    tweak.AddChangelogs();
                     #if !TEST
                     if (tweak is not IDisabledTweak) {
                         tweak.SetupInternal();
