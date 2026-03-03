@@ -455,6 +455,8 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment {
                 1736, // Dropsy (BLU)
 
                 236, // Choco Beak (Chocobo)
+
+                3359, // Variant Spirit Dart
             };
         }
     }
