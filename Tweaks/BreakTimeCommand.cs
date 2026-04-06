@@ -8,7 +8,7 @@ using Timer = System.Timers.Timer;
 namespace SimpleTweaksPlugin.Tweaks;
 
 [TweakName("Break Time Command")]
-[TweakDescription("Adds a command to setup a break time and automatically starting a ready check when the break is over.")]
+[TweakDescription("Adds a command to setup a break time and automatically start a ready check when the break is over.")]
 [TweakAuthor("Tischel")]
 public unsafe class BreakTimeCommand : CommandTweak
 {
