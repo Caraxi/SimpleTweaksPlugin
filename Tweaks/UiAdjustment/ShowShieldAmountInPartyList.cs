@@ -7,6 +7,7 @@ using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using FFXIVClientStructs.FFXIV.Client.UI.Info;
 using SimpleTweaksPlugin.Events;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
@@ -108,6 +109,11 @@ public unsafe class ShowShieldAmountInPartyList : UiAdjustments.SubTweak {
                 currentJobId = Service.PlayerState.ClassJob.RowId;
             }
         }
+
+        var proxy = InfoProxyPartyMember.Instance();
+        if (proxy == null) return;
+        if (proxy->EntryCount < 1) return;
+
         if (Config.ReduceMana != isManaRemoved)
         {
             ToggleManaPart();
