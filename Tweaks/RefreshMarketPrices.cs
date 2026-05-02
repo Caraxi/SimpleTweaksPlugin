@@ -4,6 +4,7 @@ using Dalamud;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Client.UI.Info;
 using SimpleTweaksPlugin.TweakSystem;
 using SimpleTweaksPlugin.Utility;
 
@@ -14,13 +15,11 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakVersion(2)]
 [TweakAuthor("Chalkos")]
 public unsafe class RefreshMarketPrices : Tweak {
-    [TweakHook, Signature("E8 ?? ?? ?? ?? 83 3B 00 74 16", DetourName = nameof(HandlePricesDetour))]
-    private HookWrapper<HandlePrices> handlePricesHook;
+    [TweakHook(typeof(InfoProxyItemSearch), nameof(InfoProxyItemSearch.ProcessRequestResult), nameof(HandlePricesDetour))]
+    private HookWrapper<InfoProxyItemSearch.Delegates.ProcessRequestResult> processRequestResultHook;
 
     [Signature("BA CE 07 00 00 E8 ?? ?? ?? ?? 4C 8B C0 BA ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 45 33 C9")]
     private readonly nint waitMessageCodeChangeAddress = IntPtr.Zero;
-    
-    private delegate long HandlePrices(void* unk1, void* unk2, void* unk3, void* unk4, void* unk5, void* unk6, void* unk7);
 
     private byte[] waitMessageCodeOriginalBytes = new byte[5];
     private bool waitMessageCodeErrored;
@@ -46,25 +45,19 @@ public unsafe class RefreshMarketPrices : Tweak {
     private int failCount;
     private int maxFailCount;
 
-    private long HandlePricesDetour(void* unk1, void* unk2, void* unk3, void* unk4, void* unk5, void* unk6, void* unk7) {
+    private void HandlePricesDetour(InfoProxyItemSearch* infoProxy, byte a2, int a3) {
         cancelSource?.Cancel();
         cancelSource?.Dispose();
         cancelSource = new CancellationTokenSource();
 
-        var result = handlePricesHook.Original.Invoke(unk1, unk2, unk3, unk4, unk5, unk6, unk7);
+        processRequestResultHook.Original.Invoke(infoProxy, a2, a3);
 
-        if (result != 1) {
-            maxFailCount = Math.Max(++failCount, maxFailCount);
-            Service.Framework.RunOnTick(() => {
-                if (Common.GetUnitBase<AddonItemSearchResult>(out var addonItemSearchResult) && AddonItemSearchResultThrottled(addonItemSearchResult)) {
-                    Service.Framework.RunOnTick(RefreshPrices, TimeSpan.FromSeconds(2f + (0.5f * maxFailCount - 1)), 0, cancelSource.Token);
-                }
-            });
-        } else {
-            failCount = Math.Max(0, maxFailCount - 1);
-        }
-
-        return result;
+        maxFailCount = Math.Max(++failCount, maxFailCount);
+        Service.Framework.RunOnTick(() => {
+            if (Common.GetUnitBase<AddonItemSearchResult>(out var addonItemSearchResult) && AddonItemSearchResultThrottled(addonItemSearchResult)) {
+                Service.Framework.RunOnTick(RefreshPrices, TimeSpan.FromSeconds(2f + (0.5f * maxFailCount - 1)), 0, cancelSource.Token);
+            }
+        });
     }
 
     private void RefreshPrices() {
