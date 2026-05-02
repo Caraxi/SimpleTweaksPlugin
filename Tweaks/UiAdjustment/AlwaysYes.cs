@@ -171,7 +171,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 if (Config.Lobby) SetFocusYes(args.Addon, 4);
                 return;
             case "LobbyDKTWorldList":
-                if (Config.Lobby) DelayedSetFocusYes(args.AddonName, 23);
+                if (Config.Lobby) DelayedSetFocusYes(args.AddonName, 25);
                 return;
             case "LobbyDKTCheckExec":
                 if (Config.Lobby) DelayedSetFocusYes(args.AddonName, 3);
