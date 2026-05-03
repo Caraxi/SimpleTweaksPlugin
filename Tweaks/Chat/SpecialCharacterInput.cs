@@ -114,63 +114,63 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
 
     protected override void Setup()
     {
-        this.Config = this.LoadConfig<TweakConfigs>() ?? new TweakConfigs();
-        this.ConfigChanged();
+        Config = LoadConfig<TweakConfigs>() ?? new TweakConfigs();
+        ConfigChanged();
     }
 
     protected override void ConfigChanged()
     {
         // Ensures that lists do not become empty after loading
-        this.Config.Custom ??= [];
-        this.Config.favsymbols ??= [];
-        this.Config.History ??= [];
+        Config.Custom ??= [];
+        Config.favsymbols ??= [];
+        Config.History ??= [];
     }
 
     protected override void Enable()
     {
         // Using Axis '18pt' to make the symbols more legible
-        this.symbolFont = PluginInterface.UiBuilder.FontAtlas.NewGameFontHandle(new GameFontStyle(GameFontFamily.Axis, 18f));
-        PluginInterface.UiBuilder.Draw += this.Draw;
+        symbolFont = PluginInterface.UiBuilder.FontAtlas.NewGameFontHandle(new GameFontStyle(GameFontFamily.Axis, 18f));
+        PluginInterface.UiBuilder.Draw += Draw;
     }
 
     protected override void Disable()
     {
-        PluginInterface.UiBuilder.Draw -= this.Draw;
+        PluginInterface.UiBuilder.Draw -= Draw;
 
-        this.symbolFont?.Dispose();
-        this.symbolFont = null;
+        symbolFont?.Dispose();
+        symbolFont = null;
 
-        this.popupOpen = partyFinderPopupOpen = messageBookPopupOpen = keybindPopupOpen = false;
-        this.keybindTextInput = null;
-        this.editbPosition = draggingButton = draggingScrollBar = false;
+        popupOpen = partyFinderPopupOpen = messageBookPopupOpen = keybindPopupOpen = false;
+        keybindTextInput = null;
+        editbPosition = draggingButton = draggingScrollBar = false;
 
-        this.SaveConfig(this.Config);
+        SaveConfig(Config);
     }
 
     public override void Dispose()
     {
-        this.symbolFont?.Dispose();
-        this.symbolFont = null;
+        symbolFont?.Dispose();
+        symbolFont = null;
         base.Dispose();
     }
 
     protected void DrawConfig(ref bool hasChanged)
     {
-        this.ConfigChanged();
+        ConfigChanged();
 
-        if (HotkeyHelper.DrawHotkeyConfigEditor("Toggle Character Selector", this.Config.ToggleHotkey, out var newKeys))
+        if (HotkeyHelper.DrawHotkeyConfigEditor("Toggle Character Selector", Config.ToggleHotkey, out var newKeys))
         {
-            this.Config.ToggleHotkey = newKeys;
+            Config.ToggleHotkey = newKeys;
             hasChanged = true;
         }
 
         ImGui.Spacing();
-        if (ImGui.CollapsingHeader($"Custom Entries ({this.Config.Custom.Count})###cEntriesHeader", ImGuiTreeNodeFlags.DefaultOpen))
+        if (ImGui.CollapsingHeader($"Custom Entries ({Config.Custom.Count})###cEntriesHeader", ImGuiTreeNodeFlags.DefaultOpen))
         {
             var delete = -1;
             using (ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, new Vector2(4f * ImGuiHelpers.GlobalScale, ImGui.GetStyle().ItemSpacing.Y)))
             {
-                for (var i = 0; i < this.Config.Custom.Count; i++)
+                for (var i = 0; i < Config.Custom.Count; i++)
                 {
                     if (ImGui.SmallButton($"{(char)SeIconChar.Cross}##deleteCustom{i}"))
                     {
@@ -179,10 +179,10 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
 
                     ImGui.SameLine();
                     ImGui.SetNextItemWidth(Math.Max(180f, ImGui.GetContentRegionAvail().X));
-                    var val = this.Config.Custom[i];
+                    var val = Config.Custom[i];
                     if (ImGui.InputText($"##custom_{i}", ref val, 128))
                     {
-                        this.Config.Custom[i] = val;
+                        Config.Custom[i] = val;
                         hasChanged = true;
                     }
 
@@ -194,21 +194,21 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
 
                 if (delete >= 0)
                 {
-                    this.Config.Custom.RemoveAt(delete);
+                    Config.Custom.RemoveAt(delete);
                     hasChanged = true;
                 }
 
                 ImGui.Separator();
                 ImGui.SetNextItemWidth(Math.Max(180f, ImGui.GetContentRegionAvail().X - 76f * ImGuiHelpers.GlobalScale));
-                ImGui.InputText("##newCustomEntry", ref this.newCustomEntry, 128);
+                ImGui.InputText("##newCustomEntry", ref newCustomEntry, 128);
                 ImGui.SameLine();
                 if (ImGui.SmallButton("+ Add##addCustomEntry"))
                 {
-                    var entry = this.newCustomEntry.Trim();
+                    var entry = newCustomEntry.Trim();
                     if (!string.IsNullOrWhiteSpace(entry))
                     {
-                        this.Config.Custom.Add(entry);
-                        this.newCustomEntry = string.Empty;
+                        Config.Custom.Add(entry);
+                        newCustomEntry = string.Empty;
                         hasChanged = true;
                     }
                 }
@@ -219,15 +219,15 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
     [FrameworkUpdate]
     private void FrameworkUpdate()
     {
-        if (!HotkeyHelper.CheckHotkeyState(this.Config.ToggleHotkey))
+        if (!HotkeyHelper.CheckHotkeyState(Config.ToggleHotkey))
         {
             return;
         }
 
-        if (this.keybindPopupOpen)
+        if (keybindPopupOpen)
         {
-            this.keybindPopupOpen = false;
-            this.keybindTextInput = null;
+            keybindPopupOpen = false;
+            keybindTextInput = null;
             return;
         }
 
@@ -238,11 +238,11 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
         }
 
         var scale = ImGuiHelpers.GlobalScale;
-        this.keybindTextInput = focused;
-        this.keybindPopupAnchorSize = new Vector2(Math.Clamp(24f * scale, 18f * scale, 28f * scale));
-        this.keybindPopupAnchorPos = ClampPositionToScreen(ImGui.GetIO().MousePos + new Vector2(12f * scale, 12f * scale), this.keybindPopupAnchorSize);
-        this.selectedPopupTab = PopupTab.Symbols;
-        this.keybindPopupOpen = true;
+        keybindTextInput = focused;
+        keybindPopupAnchorSize = new Vector2(Math.Clamp(24f * scale, 18f * scale, 28f * scale));
+        keybindPopupAnchorPos = ClampPositionToScreen(ImGui.GetIO().MousePos + new Vector2(12f * scale, 12f * scale), keybindPopupAnchorSize);
+        selectedPopupTab = PopupTab.Symbols;
+        keybindPopupOpen = true;
     }
 
     private static AtkComponentTextInput* GetFocusedTextInput()
@@ -301,133 +301,133 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
         var MsgBookPopup = false;
 
         // Chat Log button
-        if (this.TryGetNativeChatButtonPlacement(out var nPos, out var nSize, out colors))
+        if (TryGetNativeChatButtonPlacement(out var nPos, out var nSize, out colors))
         {
-            this.nativebPos = nPos;
-            this.currentbSize = nSize;
-            this.currentbPos = this.GetCurrentbPosition(nPos, nSize);
+            nativebPos = nPos;
+            currentbSize = nSize;
+            currentbPos = GetCurrentbPosition(nPos, nSize);
 
-            this.DrawChatButton(this.currentbPos, nSize, colors);
-            ChatPopup = this.popupOpen;
+            DrawChatButton(currentbPos, nSize, colors);
+            ChatPopup = popupOpen;
         }
         else
         {
-            this.popupOpen = false;
-            this.editbPosition = false;
+            popupOpen = false;
+            editbPosition = false;
         }
         // Party Finder button
-        if (this.TryGetRecruitmentCommentTarget(out var pfTarget))
+        if (TryGetRecruitmentCommentTarget(out var pfTarget))
         {
             var scale = ImGuiHelpers.GlobalScale;
-            var refSide = this.currentbSize.Y > 0.1f ? this.currentbSize.Y : 24f * scale;
+            var refSide = currentbSize.Y > 0.1f ? currentbSize.Y : 24f * scale;
             var Side = Math.Clamp(Math.Min(refSide, pfTarget.Size.Y * 0.50f), 18f * scale, 28f * scale);
-            this.partyFinderbSize = new Vector2(Side, Side);
-            this.partyFinderbPos = ClampPositionToScreen(
+            partyFinderbSize = new Vector2(Side, Side);
+            partyFinderbPos = ClampPositionToScreen(
                 new Vector2(pfTarget.Position.X + 6f * scale, pfTarget.Position.Y + pfTarget.Size.Y + 2f * scale),
-                this.partyFinderbSize);
+                partyFinderbSize);
 
-            this.DrawContextButton(
+            DrawContextButton(
                 "##SpecialCharacterInputRecruitmentCommentButtonOverlay",
                 "##SpecialCharacterInputRecruitmentCommentOpenButton",
-                this.partyFinderbPos,
-                this.partyFinderbSize,
+                partyFinderbPos,
+                partyFinderbSize,
                 colors,
-                ref this.partyFinderPopupOpen);
-            PartyFinderPopup = this.partyFinderPopupOpen;
+                ref partyFinderPopupOpen);
+            PartyFinderPopup = partyFinderPopupOpen;
         }
         else
         {
-            this.partyFinderPopupOpen = false;
+            partyFinderPopupOpen = false;
         }
         // Guestbook/Message Book button
-        if (this.TryGetMessageBookInputTarget(out var messageTarget))
+        if (TryGetMessageBookInputTarget(out var messageTarget))
         {
             var scale = ImGuiHelpers.GlobalScale;
-            var refSide = this.currentbSize.Y > 0.1f ? this.currentbSize.Y : 24f * scale;
+            var refSide = currentbSize.Y > 0.1f ? currentbSize.Y : 24f * scale;
             var Side = Math.Clamp(Math.Min(refSide, messageTarget.Size.Y * 0.58f), 18f * scale, 28f * scale);
-            this.messageBookbSize = new Vector2(Side, Side);
-            this.messageBookbPos = ClampPositionToScreen(
+            messageBookbSize = new Vector2(Side, Side);
+            messageBookbPos = ClampPositionToScreen(
                 new Vector2(messageTarget.Position.X + 6f * scale, messageTarget.Position.Y + messageTarget.Size.Y + 3f * scale),
-                this.messageBookbSize);
+                messageBookbSize);
 
-            this.DrawContextButton(
+            DrawContextButton(
                 "##SpecialCharacterInputMessageBookButtonOverlay",
                 "##SpecialCharacterInputMessageBookOpenButton",
-                this.messageBookbPos,
-                this.messageBookbSize,
+                messageBookbPos,
+                messageBookbSize,
                 colors,
-                ref this.messageBookPopupOpen);
-            MsgBookPopup = this.messageBookPopupOpen;
+                ref messageBookPopupOpen);
+            MsgBookPopup = messageBookPopupOpen;
         }
         else
         {
-            this.messageBookPopupOpen = false;
+            messageBookPopupOpen = false;
         }
         // Popup Rendering
         if (ChatPopup)
         {
-            this.DrawSymbolsPopup(
+            DrawSymbolsPopup(
                 "Chat",
                 colors,
-                this.currentbPos,
-                this.currentbSize,
-                PopupPlacement.AboveRight, includePositionEditor: true, SymbolInsertTarget.Chat, ref this.popupOpen);
+                currentbPos,
+                currentbSize,
+                PopupPlacement.AboveRight, includePositionEditor: true, SymbolInsertTarget.Chat, ref popupOpen);
         }
 
         if (PartyFinderPopup)
         {
-            this.DrawSymbolsPopup(
+            DrawSymbolsPopup(
                 "PartyFinder",
                 colors,
-                this.partyFinderbPos,
-                this.partyFinderbSize,
-                PopupPlacement.Below, includePositionEditor: false, SymbolInsertTarget.RecruitmentComment, ref this.partyFinderPopupOpen);
+                partyFinderbPos,
+                partyFinderbSize,
+                PopupPlacement.Below, includePositionEditor: false, SymbolInsertTarget.RecruitmentComment, ref partyFinderPopupOpen);
         }
 
         if (MsgBookPopup)
         {
-            this.DrawSymbolsPopup(
+            DrawSymbolsPopup(
                 "MessageBook",
                 colors,
-                this.messageBookbPos,
-                this.messageBookbSize, PopupPlacement.Below, includePositionEditor: false, SymbolInsertTarget.MessageBookInput, ref this.messageBookPopupOpen);
+                messageBookbPos,
+                messageBookbSize, PopupPlacement.Below, includePositionEditor: false, SymbolInsertTarget.MessageBookInput, ref messageBookPopupOpen);
         }
 
-        if (this.keybindPopupOpen)
+        if (keybindPopupOpen)
         {
-            this.DrawSymbolsPopup(
+            DrawSymbolsPopup(
                 "Keybind",
                 colors,
-                this.keybindPopupAnchorPos,
-                this.keybindPopupAnchorSize, PopupPlacement.Below, includePositionEditor: false, SymbolInsertTarget.FocusedTextInput, ref this.keybindPopupOpen);
+                keybindPopupAnchorPos,
+                keybindPopupAnchorSize, PopupPlacement.Below, includePositionEditor: false, SymbolInsertTarget.FocusedTextInput, ref keybindPopupOpen);
         }
     }
 
     private Vector2 GetCurrentbPosition(Vector2 nPos, Vector2 nSize)
     {
-        if (!this.Config.HasCustombPosition)
+        if (!Config.HasCustombPosition)
         {
             return nPos;
         }
 
-        if (!this.Config.UsesRelativeButtonOffset)
+        if (!Config.UsesRelativeButtonOffset)
         {
-            this.Config.ButtonOffset = this.Config.bPosition - nPos;
-            this.Config.UsesRelativeButtonOffset = true;
-            this.bPositionDirty = true;
+            Config.ButtonOffset = Config.bPosition - nPos;
+            Config.UsesRelativeButtonOffset = true;
+            bPositionDirty = true;
         }
 
-        var desired = nPos + this.Config.ButtonOffset;
+        var desired = nPos + Config.ButtonOffset;
         var clamped = ClampPositionToScreen(desired, nSize);
 
         if (Vector2.DistanceSquared(desired, clamped) > 0.01f)
         {
-            this.Config.ButtonOffset = clamped - nPos;
-            this.Config.bPosition = clamped;
-            this.bPositionDirty = true;
+            Config.ButtonOffset = clamped - nPos;
+            Config.bPosition = clamped;
+            bPositionDirty = true;
         }
 
-        this.SaveConfigurationIfDirty();
+        SaveConfigurationIfDirty();
         return clamped;
     }
 
@@ -496,24 +496,24 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
 
     private void DrawChatButton(Vector2 position, Vector2 size, UiColors colors)
     {
-        var clicked = this.DrawHeartButtonOverlay(
+        var clicked = DrawHeartButtonOverlay(
             "##SpecialCharacterInputChatButtonOverlay",
             "##SpecialCharacterInputOpenButton", position, size, colors,
-            this.editbPosition, out var active);
+            editbPosition, out var active);
 
-        if (this.editbPosition)
+        if (editbPosition)
         {
-            this.HandleButtonDragging(size, active);
+            HandleButtonDragging(size, active);
         }
         else if (clicked)
         {
-            this.popupOpen = !this.popupOpen;
+            popupOpen = !popupOpen;
         }
     }
 
     private void DrawContextButton(string windowId, string buttonId, Vector2 position, Vector2 size, UiColors colors, ref bool isOpen)
     {
-        if (this.DrawHeartButtonOverlay(windowId, buttonId, position, size, colors, editing: false, out _))
+        if (DrawHeartButtonOverlay(windowId, buttonId, position, size, colors, editing: false, out _))
         {
             isOpen = !isOpen;
         }
@@ -574,9 +574,9 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
                 IDisposable? pushedFont = null;
                 try
                 {
-                    if (this.symbolFont is { Available: true })
+                    if (symbolFont is { Available: true })
                     {
-                        pushedFont = this.symbolFont.Push();
+                        pushedFont = symbolFont.Push();
                     }
 
                     var text = "♥";
@@ -610,19 +610,19 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
         var io = ImGui.GetIO();
         if (active && ImGui.IsMouseDragging(ImGuiMouseButton.Left))
         {
-            this.draggingButton = true;
-            var clamped = ClampPositionToScreen(this.currentbPos + io.MouseDelta, size);
-            this.Config.HasCustombPosition = true;
-            this.Config.UsesRelativeButtonOffset = true;
-            this.Config.bPosition = clamped;
-            this.Config.ButtonOffset = clamped - this.nativebPos;
-            this.currentbPos = clamped;
-            this.bPositionDirty = true;
+            draggingButton = true;
+            var clamped = ClampPositionToScreen(currentbPos + io.MouseDelta, size);
+            Config.HasCustombPosition = true;
+            Config.UsesRelativeButtonOffset = true;
+            Config.bPosition = clamped;
+            Config.ButtonOffset = clamped - nativebPos;
+            currentbPos = clamped;
+            bPositionDirty = true;
         }
-        else if (this.draggingButton && !ImGui.IsMouseDown(ImGuiMouseButton.Left))
+        else if (draggingButton && !ImGui.IsMouseDown(ImGuiMouseButton.Left))
         {
-            this.draggingButton = false;
-            this.SaveConfigurationIfDirty();
+            draggingButton = false;
+            SaveConfigurationIfDirty();
         }
     }
 
@@ -630,9 +630,9 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
         string idSuffix, UiColors colors, Vector2 anchorPos, Vector2 anchorSize, PopupPlacement placement,
         bool includePositionEditor, SymbolInsertTarget insertTarget, ref bool isOpen)
     {
-        this.ConfigChanged();
+        ConfigChanged();
 
-        var cEntries = this.GetcEntries();
+        var cEntries = GetcEntries();
         var scale = ImGuiHelpers.GlobalScale;
         var dSize = ImGui.GetIO().DisplaySize;
         var cell = Math.Clamp(anchorSize.Y * 1.05f, 22f * scale, 34f * scale);
@@ -706,7 +706,7 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
 
                 if (includePositionEditor)
                 {
-                    var editLabel = this.editbPosition ? "Editing button position" : "Change button position";
+                    var editLabel = editbPosition ? "Editing button position" : "Change button position";
                     var editbSize = new Vector2(
                         Math.Min(
                             Math.Max(126f * scale, ImGui.CalcTextSize(editLabel).X + 16f * scale),
@@ -715,16 +715,16 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
                     var editbPos = new Vector2(wPos.X + padding + ImGui.CalcTextSize(title).X + 12f * scale, wPos.Y + padding - 1f * scale);
 
                     ImGui.SetCursorScreenPos(editbPos);
-                    using (ImRaii.PushColor(ImGuiCol.Button, this.editbPosition ? colors.EditButton : colors.Button))
-                    using (ImRaii.PushColor(ImGuiCol.ButtonHovered, this.editbPosition ? colors.EditButtonHovered : colors.ButtonHovered))
+                    using (ImRaii.PushColor(ImGuiCol.Button, editbPosition ? colors.EditButton : colors.Button))
+                    using (ImRaii.PushColor(ImGuiCol.ButtonHovered, editbPosition ? colors.EditButtonHovered : colors.ButtonHovered))
                     using (ImRaii.PushColor(ImGuiCol.ButtonActive, colors.ButtonActive))
                     using (ImRaii.PushColor(ImGuiCol.Text, colors.Text))
                     {
                         if (ImGui.Button(editLabel, editbSize))
                         {
-                            this.editbPosition = !this.editbPosition;
-                            this.draggingButton = false;
-                            this.SaveConfigurationIfDirty();
+                            editbPosition = !editbPosition;
+                            draggingButton = false;
+                            SaveConfigurationIfDirty();
                         }
                     }
                 }
@@ -735,7 +735,7 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
                     isOpen = false;
                     if (idSuffix == "Keybind")
                     {
-                        this.keybindTextInput = null;
+                        keybindTextInput = null;
                     }
                 }
 
@@ -747,38 +747,38 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
 
                 var tabStartY = wPos.Y + padding + headerHeight;
                 ImGui.SetCursorScreenPos(new Vector2(wPos.X + padding, tabStartY));
-                this.DrawPopupTab("Symbols", PopupTab.Symbols, colors, tabHeight, scale);
+                DrawPopupTab("Symbols", PopupTab.Symbols, colors, tabHeight, scale);
                 ImGui.SameLine(0f, 6f * scale);
-                this.DrawPopupTab("Custom", PopupTab.Custom, colors, tabHeight, scale);
+                DrawPopupTab("Custom", PopupTab.Custom, colors, tabHeight, scale);
 
                 var contentStartY = tabStartY + tabHeight + contentGap;
                 var contentHeight = pHeight - padding - (contentStartY - wPos.Y);
                 ImGui.SetCursorScreenPos(new Vector2(wPos.X + padding, contentStartY));
 
-                if (this.selectedPopupTab == PopupTab.Custom)
+                if (selectedPopupTab == PopupTab.Custom)
                 {
                     if (cEntries.Count == 0)
                     {
-                        ImGui.TextColored(colors.MutedText, "No custom entries configured.");
+                        ImGui.TextColored(colors.MutedText, "No custom entries configured yet - Type /tweaks\nand change it through the tweak options.");
                     }
                     else
                     {
                         var customCellWidth = Math.Clamp(cEntries.Max(entry => ImGui.CalcTextSize(entry).X + 18f * scale), cell, gridWidth);
                         var customColumns = Math.Clamp((int)((gridWidth + spacing) / (customCellWidth + spacing)), 1, columns);
                         var customRows = Math.Max(1, (int)Math.Ceiling(cEntries.Count / (double)customColumns));
-                        this.DrawEntriesGrid(idSuffix, cEntries, customColumns, customRows, customCellWidth, cell, spacing, Math.Max(cell, contentHeight), scrollWidth, colors, insertTarget, ref this.customScrollY, allowfavs: false);
+                        DrawEntriesGrid(idSuffix, cEntries, customColumns, customRows, customCellWidth, cell, spacing, Math.Max(cell, contentHeight), scrollWidth, colors, insertTarget, ref customScrollY, allowfavs: false);
                     }
                 }
                 else
                 {
-                    var favsHeight = this.DrawfavsSection(idSuffix, columns, cell, spacing, gridWidth, colors, insertTarget);
+                    var favsHeight = DrawfavsSection(idSuffix, columns, cell, spacing, gridWidth, colors, insertTarget);
                     if (favsHeight > 0f)
                     {
                         ImGui.SetCursorScreenPos(new Vector2(wPos.X + padding, contentStartY + favsHeight));
                     }
 
                     var availableGridHeight = Math.Max(cell, contentHeight - favsHeight);
-                    this.DrawEntriesGrid(idSuffix, Symbols, columns, sRows, cell, cell, spacing, availableGridHeight, scrollWidth, colors, insertTarget, ref this.symbolScrollY, allowfavs: true);
+                    DrawEntriesGrid(idSuffix, Symbols, columns, sRows, cell, cell, spacing, availableGridHeight, scrollWidth, colors, insertTarget, ref symbolScrollY, allowfavs: true);
                 }
             }
         }
@@ -793,7 +793,7 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
 
     private void DrawPopupTab(string label, PopupTab tab, UiColors colors, float height, float scale)
     {
-        var active = this.selectedPopupTab == tab;
+        var active = selectedPopupTab == tab;
         using (ImRaii.PushColor(ImGuiCol.Button, active ? colors.ButtonActive : colors.Button))
         using (ImRaii.PushColor(ImGuiCol.ButtonHovered, colors.ButtonHovered))
         using (ImRaii.PushColor(ImGuiCol.ButtonActive, colors.ButtonActive))
@@ -802,20 +802,20 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
             var width = Math.Max(72f * scale, ImGui.CalcTextSize(label).X + 18f * scale);
             if (ImGui.Button($"{label}##SpecialCharacterInputTab{label}", new Vector2(width, height)))
             {
-                this.selectedPopupTab = tab;
+                selectedPopupTab = tab;
             }
         }
     }
 
     private IReadOnlyList<string> GetcEntries()
     {
-        this.Config.Custom ??= [];
-        return this.Config.Custom.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).Distinct().ToArray();
+        Config.Custom ??= [];
+        return Config.Custom.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).Distinct().ToArray();
     }
 
     private float DrawfavsSection(string idSuffix, int columns, float cell, float spacing, float gridWidth, UiColors colors, SymbolInsertTarget insertTarget)
     {
-        var favs = this.Getfavsymbols();
+        var favs = Getfavsymbols();
         if (favs.Count == 0)
         {
             return 0f;
@@ -824,7 +824,7 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
         var scale = ImGuiHelpers.GlobalScale;
         var origin = ImGui.GetCursorScreenPos();
         var dList = ImGui.GetWindowDrawList();
-        var label = "favs";
+        var label = "Favorites";
         var labelHeight = 20f * scale;
         var rows = (int)Math.Ceiling(favs.Count / (double)columns);
         var favsGridHeight = rows * cell + Math.Max(0, rows - 1) * spacing;
@@ -833,9 +833,9 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
         ImGui.TextColored(colors.MutedText, label);
 
         IDisposable? pushedFont = null;
-        if (this.symbolFont is { Available: true })
+        if (symbolFont is { Available: true })
         {
-            pushedFont = this.symbolFont.Push();
+            pushedFont = symbolFont.Push();
         }
 
         for (var i = 0; i < favs.Count; i++)
@@ -843,7 +843,7 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
             var row = i / columns;
             var col = i % columns;
             var cellMin = new Vector2(origin.X + col * (cell + spacing), origin.Y + labelHeight + row * (cell + spacing));
-            this.DrawSymbolCell(favs[i], $"{idSuffix}-favorite-{i}", cellMin, new Vector2(cell, cell), colors, isFavorite: true, insertTarget, allowFavoriteToggle: true);
+            DrawSymbolCell(favs[i], $"{idSuffix}-favorite-{i}", cellMin, new Vector2(cell, cell), colors, isFavorite: true, insertTarget, allowFavoriteToggle: true);
         }
 
         pushedFont?.Dispose();
@@ -885,7 +885,7 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
                          | ImGuiWindowFlags.NoScrollWithMouse
                          | ImGuiWindowFlags.NoNav;
 
-        if (ImGui.BeginChild($"##SpecialCharacterInputGridChild{idSuffix}{this.selectedPopupTab}", gridSize, false, childFlags))
+        if (ImGui.BeginChild($"##SpecialCharacterInputGridChild{idSuffix}{selectedPopupTab}", gridSize, false, childFlags))
         {
             var childOrigin = ImGui.GetCursorScreenPos();
             var drawList = ImGui.GetWindowDrawList();
@@ -903,9 +903,9 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
             var lastRow = Math.Min(rows - 1, (int)Math.Ceiling((scrollY + gridHeight) / rowHeight));
 
             IDisposable? pushedFont = null;
-            if (this.symbolFont is { Available: true })
+            if (symbolFont is { Available: true })
             {
-                pushedFont = this.symbolFont.Push();
+                pushedFont = symbolFont.Push();
             }
 
             for (var row = firstRow; row <= lastRow; row++)
@@ -927,7 +927,7 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
                         continue;
                     }
 
-                    this.DrawSymbolCell(entry, $"{idSuffix}-entry-{this.selectedPopupTab}-{index}", cellMin, new Vector2(cellWidth, cellHeight), colors, allowfavs && this.IsFavorite(entry), insertTarget, allowfavs);
+                    DrawSymbolCell(entry, $"{idSuffix}-entry-{selectedPopupTab}-{index}", cellMin, new Vector2(cellWidth, cellHeight), colors, allowfavs && IsFavorite(entry), insertTarget, allowfavs);
                 }
             }
 
@@ -950,27 +950,27 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
 
                 if (tHover && ImGui.IsMouseClicked(ImGuiMouseButton.Left))
                 {
-                    this.draggingScrollBar = true;
-                    this.scrollDragOffsetY = mouse.Y - thumbY;
+                    draggingScrollBar = true;
+                    scrollDragOffsetY = mouse.Y - thumbY;
                 }
                 else if (!tHover && trackHover && ImGui.IsMouseClicked(ImGuiMouseButton.Left))
                 {
-                    this.draggingScrollBar = true;
-                    this.scrollDragOffsetY = thumbHeight * 0.5f;
-                    var targetThumbY = Math.Clamp(mouse.Y - this.scrollDragOffsetY, childOrigin.Y, childOrigin.Y + gridHeight - thumbHeight);
+                    draggingScrollBar = true;
+                    scrollDragOffsetY = thumbHeight * 0.5f;
+                    var targetThumbY = Math.Clamp(mouse.Y - scrollDragOffsetY, childOrigin.Y, childOrigin.Y + gridHeight - thumbHeight);
                     scrollY = Math.Clamp(((targetThumbY - childOrigin.Y) / Math.Max(1f, gridHeight - thumbHeight)) * maxScroll, 0f, maxScroll);
                 }
 
-                if (this.draggingScrollBar)
+                if (draggingScrollBar)
                 {
                     if (ImGui.IsMouseDown(ImGuiMouseButton.Left))
                     {
-                        var targetThumbY = Math.Clamp(mouse.Y - this.scrollDragOffsetY, childOrigin.Y, childOrigin.Y + gridHeight - thumbHeight);
+                        var targetThumbY = Math.Clamp(mouse.Y - scrollDragOffsetY, childOrigin.Y, childOrigin.Y + gridHeight - thumbHeight);
                         scrollY = Math.Clamp(((targetThumbY - childOrigin.Y) / Math.Max(1f, gridHeight - thumbHeight)) * maxScroll, 0f, maxScroll);
                     }
                     else
                     {
-                        this.draggingScrollBar = false;
+                        draggingScrollBar = false;
                     }
                 }
 
@@ -979,11 +979,11 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
                 thumbMax = new Vector2(barX + scrollWidth, thumbY + thumbHeight);
 
                 drawList.AddRectFilled(barMin, barMax, Color(colors.ScrollTrack), scrollWidth * 0.5f);
-                drawList.AddRectFilled(thumbMin, thumbMax, Color((tHover || this.draggingScrollBar) ? colors.ButtonHovered : colors.ScrollThumb), scrollWidth * 0.5f);
+                drawList.AddRectFilled(thumbMin, thumbMax, Color((tHover || draggingScrollBar) ? colors.ButtonHovered : colors.ScrollThumb), scrollWidth * 0.5f);
             }
             else
             {
-                this.draggingScrollBar = false;
+                draggingScrollBar = false;
             }
         }
 
@@ -1003,7 +1003,6 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
         ImGui.PopID();
 
         drawList.AddRectFilled(cellMin, cellMax, Color(hovered ? colors.CellHovered : colors.CellBackground), 5f * scale);
-        drawList.AddRect(cellMin, cellMax, Color(isFavorite ? colors.Border : colors.CellBorder), 5f * scale, ImDrawFlags.None, Math.Max(1f, scale));
 
         var textSize = ImGui.CalcTextSize(symbol);
         var textPos = cellMin + (cellSize - textSize) * 0.5f;
@@ -1032,11 +1031,11 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
 
         if (allowFavoriteToggle && ImGui.GetIO().KeyCtrl)
         {
-            this.ToggleFavorite(symbol);
+            ToggleFavorite(symbol);
         }
         else
         {
-            this.QueueInsertSymbol(symbol, insertTarget);
+            QueueInsertSymbol(symbol, insertTarget);
         }
     }
 
@@ -1044,23 +1043,23 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
     {
         if (insertTarget == SymbolInsertTarget.FocusedTextInput)
         {
-            this.InsertTextIntoFocusedTextInput(symbol);
+            InsertTextIntoFocusedTextInput(symbol);
             return;
         }
 
         if (insertTarget == SymbolInsertTarget.RecruitmentComment)
         {
-            this.InsertTextIntoRecruitmentComment(symbol);
+            InsertTextIntoRecruitmentComment(symbol);
             return;
         }
 
         if (insertTarget == SymbolInsertTarget.MessageBookInput)
         {
-            this.InsertTextIntoMessageBook(symbol);
+            InsertTextIntoMessageBook(symbol);
             return;
         }
 
-        _ = Service.Framework.RunOnTick(() => this.InsertTextIntoChat(symbol), delayTicks: 2);
+        _ = Service.Framework.RunOnTick(() => InsertTextIntoChat(symbol), delayTicks: 2);
     }
 
     private void AdvanceCaretOnNextTick(Action<int> advanceCaret, string insertedText)
@@ -1078,7 +1077,7 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
     {
         try
         {
-            var textInput = this.keybindTextInput;
+            var textInput = keybindTextInput;
             if (textInput == null || !textInput->Enabled)
             {
                 textInput = GetFocusedTextInput();
@@ -1090,7 +1089,7 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
             }
 
             textInput->InsertText(text, false);
-            this.AdvanceCaretOnNextTick(this.AdvanceFocusedTextInputCaretRightIfStillActive, text);
+            AdvanceCaretOnNextTick(AdvanceFocusedTextInputCaretRightIfStillActive, text);
         }
         catch (Exception ex)
         {
@@ -1102,7 +1101,7 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
     {
         try
         {
-            var textInput = this.keybindTextInput;
+            var textInput = keybindTextInput;
             if (textInput == null || !textInput->Enabled)
             {
                 textInput = GetFocusedTextInput();
@@ -1142,7 +1141,7 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
 
             textInput->InsertText(text, false);
 
-            this.AdvanceCaretOnNextTick(this.AdvanceChatCaretRightIfStillActive, text);
+            AdvanceCaretOnNextTick(AdvanceChatCaretRightIfStillActive, text);
         }
         catch (Exception ex)
         {
@@ -1154,7 +1153,7 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
     {
         try
         {
-            if (!this.TryGetRecruitmentCommentTarget(out var target) || target.Input == null || target.Addon == null || target.Node == null)
+            if (!TryGetRecruitmentCommentTarget(out var target) || target.Input == null || target.Addon == null || target.Node == null)
             {
                 return;
             }
@@ -1167,7 +1166,7 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
 
             target.Input->InsertText(text, false);
 
-            this.AdvanceCaretOnNextTick(this.AdvanceRecruitmentCommentCaretRightIfStillActive, text);
+            AdvanceCaretOnNextTick(AdvanceRecruitmentCommentCaretRightIfStillActive, text);
         }
         catch (Exception ex)
         {
@@ -1204,7 +1203,7 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
     {
         try
         {
-            if (!this.TryGetRecruitmentCommentTarget(out var target) || target.Input == null)
+            if (!TryGetRecruitmentCommentTarget(out var target) || target.Input == null)
             {
                 return;
             }
@@ -1226,7 +1225,7 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
     {
         try
         {
-            if (!this.TryGetMessageBookInputTarget(out var target) || target.Input == null || target.Addon == null || target.Node == null)
+            if (!TryGetMessageBookInputTarget(out var target) || target.Input == null || target.Addon == null || target.Node == null)
             {
                 return;
             }
@@ -1238,7 +1237,7 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
 
             target.Input->InsertText(text, false);
 
-            this.AdvanceCaretOnNextTick(this.AdvanceMessageBookCaretRightIfStillActive, text);
+            AdvanceCaretOnNextTick(AdvanceMessageBookCaretRightIfStillActive, text);
         }
         catch (Exception ex)
         {
@@ -1250,7 +1249,7 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
     {
         try
         {
-            if (!this.TryGetMessageBookInputTarget(out var target) || target.Input == null)
+            if (!TryGetMessageBookInputTarget(out var target) || target.Input == null)
             {
                 return;
             }
@@ -1546,40 +1545,40 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
     // Configuration helpers
     private List<string> Getfavsymbols()
     {
-        this.Config.favsymbols ??= new List<string>();
-        if (this.Config.favsymbols.Count <= 1)
+        Config.favsymbols ??= new List<string>();
+        if (Config.favsymbols.Count <= 1)
         {
-            return this.Config.favsymbols;
+            return Config.favsymbols;
         }
 
         var seen = new HashSet<string>(StringComparer.Ordinal);
         var changed = false;
-        for (var i = this.Config.favsymbols.Count - 1; i >= 0; i--)
+        for (var i = Config.favsymbols.Count - 1; i >= 0; i--)
         {
-            var symbol = this.Config.favsymbols[i];
+            var symbol = Config.favsymbols[i];
             if (string.IsNullOrWhiteSpace(symbol) || !seen.Add(symbol))
             {
-                this.Config.favsymbols.RemoveAt(i);
+                Config.favsymbols.RemoveAt(i);
                 changed = true;
             }
         }
 
         if (changed)
         {
-            this.SaveConfig(this.Config);
+            SaveConfig(Config);
         }
 
-        return this.Config.favsymbols;
+        return Config.favsymbols;
     }
 
     private bool IsFavorite(string symbol)
     {
-        return this.Getfavsymbols().Contains(symbol, StringComparer.Ordinal);
+        return Getfavsymbols().Contains(symbol, StringComparer.Ordinal);
     }
 
     private void ToggleFavorite(string symbol)
     {
-        var favs = this.Getfavsymbols();
+        var favs = Getfavsymbols();
         var existingIndex = favs.FindIndex(item => string.Equals(item, symbol, StringComparison.Ordinal));
         if (existingIndex >= 0)
         {
@@ -1590,18 +1589,18 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
             favs.Add(symbol);
         }
 
-        this.SaveConfig(this.Config);
+        SaveConfig(Config);
     }
 
     private void SaveConfigurationIfDirty()
     {
-        if (!this.bPositionDirty)
+        if (!bPositionDirty)
         {
             return;
         }
 
-        this.SaveConfig(this.Config);
-        this.bPositionDirty = false;
+        SaveConfig(Config);
+        bPositionDirty = false;
     }
 
     private static Vector2 GetNodeScreenSize(AtkResNode* node, float scale)
@@ -1705,11 +1704,11 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
     {
         public TextInputTarget(AtkUnitBase* addon, AtkComponentTextInput* input, AtkResNode* node, Vector2 position, Vector2 size)
         {
-            this.Addon = addon;
-            this.Input = input;
-            this.Node = node;
-            this.Position = position;
-            this.Size = size;
+            Addon = addon;
+            Input = input;
+            Node = node;
+            Position = position;
+            Size = size;
         }
 
         public AtkUnitBase* Addon { get; }
@@ -1837,37 +1836,37 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
             clearStyle: true);
 
         public UiColors(
-            Vector4 PopupBackground,
-            Vector4 Button,
-            Vector4 ButtonHovered,
-            Vector4 ButtonActive,
-            Vector4 EditButton,
-            Vector4 EditButtonHovered,
-            Vector4 Border,
-            Vector4 CellBackground,
-            Vector4 CellHovered,
-            Vector4 CellBorder,
-            Vector4 Text,
-            Vector4 SymbolText,
-            Vector4 MutedText,
-            Vector4 ScrollTrack,
-            Vector4 ScrollThumb)
+            Vector4 popupBackground,
+            Vector4 button,
+            Vector4 buttonHovered,
+            Vector4 buttonActive,
+            Vector4 editButton,
+            Vector4 editButtonHovered,
+            Vector4 border,
+            Vector4 cellBackground,
+            Vector4 cellHovered,
+            Vector4 cellBorder,
+            Vector4 text,
+            Vector4 symbolText,
+            Vector4 mutedText,
+            Vector4 scrollTrack,
+            Vector4 scrollThumb)
         {
-            this.PopupBackground = PopupBackground;
-            this.Button = Button;
-            this.ButtonHovered = ButtonHovered;
-            this.ButtonActive = ButtonActive;
-            this.EditButton = EditButton;
-            this.EditButtonHovered = EditButtonHovered;
-            this.Border = Border;
-            this.CellBackground = CellBackground;
-            this.CellHovered = CellHovered;
-            this.CellBorder = CellBorder;
-            this.Text = Text;
-            this.SymbolText = SymbolText;
-            this.MutedText = MutedText;
-            this.ScrollTrack = ScrollTrack;
-            this.ScrollThumb = ScrollThumb;
+            PopupBackground = popupBackground;
+            Button = button;
+            ButtonHovered = buttonHovered;
+            ButtonActive = buttonActive;
+            EditButton = editButton;
+            EditButtonHovered = editButtonHovered;
+            Border = border;
+            CellBackground = cellBackground;
+            CellHovered = cellHovered;
+            CellBorder = cellBorder;
+            Text = text;
+            SymbolText = symbolText;
+            MutedText = mutedText;
+            ScrollTrack = scrollTrack;
+            ScrollThumb = scrollThumb;
         }
 
         public Vector4 PopupBackground { get; }
@@ -1911,21 +1910,21 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
             var scrollTrackAlpha = clearStyle ? 0.22f : 0.32f;
 
             return new UiColors(
-                PopupBackground: popup,
-                Button: button,
-                ButtonHovered: Lift(button, hoverLift, Math.Clamp(button.W + 0.08f, 0f, 1f)),
-                ButtonActive: Lift(button, activeLift, Math.Clamp(button.W + 0.12f, 0f, 1f)),
-                EditButton: new Vector4(0.78f, 0.05f, 0.05f, 0.90f),
-                EditButtonHovered: new Vector4(0.95f, 0.08f, 0.08f, 0.96f),
-                Border: border,
-                CellBackground: WithAlpha(button, cellAlpha),
-                CellHovered: WithAlpha(Lift(button, hoverLift, 1f), cellHoverAlpha),
-                CellBorder: WithAlpha(border, clearStyle ? 0.22f : 0.28f),
-                Text: text,
-                SymbolText: symbol,
-                MutedText: muted,
-                ScrollTrack: WithAlpha(button, scrollTrackAlpha),
-                ScrollThumb: WithAlpha(border, 0.72f));
+                WithAlpha(popup, Math.Clamp(popup.W + 0.15f, 0f, 1f)),
+                button,
+                Lift(button, hoverLift, Math.Clamp(button.W + 0.08f, 0f, 1f)),
+                Lift(button, activeLift, Math.Clamp(button.W + 0.12f, 0f, 1f)),
+                new Vector4(0.78f, 0.05f, 0.05f, 0.90f),
+                new Vector4(0.95f, 0.08f, 0.08f, 0.96f),
+                border,
+                WithAlpha(button, cellAlpha),
+                WithAlpha(Lift(button, hoverLift, 1f), cellHoverAlpha),
+                WithAlpha(border, clearStyle ? 0.22f : 0.28f),
+                text,
+                symbol,
+                muted,
+                WithAlpha(button, scrollTrackAlpha),
+                WithAlpha(border, 0.72f));
         }
 
         private static UiColors FromChatLogFallback(AddonChatLog* chatLog)
@@ -2052,3 +2051,4 @@ public sealed unsafe class SpecialCharacterInput : ChatTweaks.SubTweak
     }
 
 }
+// update May 03/2026 - Bryer
