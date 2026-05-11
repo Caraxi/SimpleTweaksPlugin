@@ -6,3 +6,4 @@ UiAdjustments@FadeUnavailableActions
 UiAdjustments@LockWindowPosition
 UiAdjustments@SubmarineDestinationLetters
 CharaCardCommand
+DisableNoviceNetworkAutoSwitch
