@@ -77,4 +77,37 @@ public class AddonPostReceiveEventAttribute : AddonEventAttribute {
     public AddonPostReceiveEventAttribute(params string[] addonNames) : base(AddonEvent.PostReceiveEvent, addonNames) { }
 }
 
+public class AddonPreOpenAttribute : AddonEventAttribute {
+    public AddonPreOpenAttribute(params string[] addonNames) : base(AddonEvent.PreOpen, addonNames) { }
+}
+
+public class AddonPostOpenAttribute : AddonEventAttribute {
+    public AddonPostOpenAttribute(params string[] addonNames) : base(AddonEvent.PostOpen, addonNames) { }
+}
+
+public class AddonPreCloseAttribute : AddonEventAttribute {
+    public AddonPreCloseAttribute(params string[] addonNames) : base(AddonEvent.PreClose, addonNames) { }
+}
+
+public class AddonPostCloseAttribute : AddonEventAttribute {
+    public AddonPostCloseAttribute(params string[] addonNames) : base(AddonEvent.PostClose, addonNames) { }
+}
+
+public class AddonPreShowAttribute : AddonEventAttribute {
+    public AddonPreShowAttribute(params string[] addonNames) : base(AddonEvent.PreShow, addonNames) { }
+}
+
+public class AddonPostShowAttribute : AddonEventAttribute {
+    public AddonPostShowAttribute(params string[] addonNames) : base(AddonEvent.PostShow, addonNames) { }
+}
+
+public class AddonPreHideAttribute : AddonEventAttribute {
+    public AddonPreHideAttribute(params string[] addonNames) : base(AddonEvent.PreHide, addonNames) { }
+}
+
+public class AddonPostHideAttribute : AddonEventAttribute {
+    public AddonPostHideAttribute(params string[] addonNames) : base(AddonEvent.PostHide, addonNames) { }
+}
+
+
 #endregion
