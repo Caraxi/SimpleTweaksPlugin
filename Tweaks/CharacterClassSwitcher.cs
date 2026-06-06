@@ -14,6 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakName("Character Window Job Switcher")]
 [TweakDescription("Allow clicking on classes to switch to gearsets.")]
 [Changelog("1.8.5.1", "Fixed tweak not working on DoH without desynthesis unlocked.")]
+[Changelog(UnreleasedVersion, "Fixed issue causing a loop of trying to apply a gearset that is missing its weapon when using gamepad.")]
 public unsafe class CharacterClassSwitcher : Tweak {
     private readonly Dictionary<uint, uint> classJobComponentMap = new() {
         { 19, 08 }, // PLD
@@ -113,7 +114,7 @@ public unsafe class CharacterClassSwitcher : Tweak {
         }
     }
 
-    //private void OnEvent(AtkUnitBase* atkUnitBase, AtkEventType eventType, int eventParam, AtkEvent* atkEvent, AtkEventData* atkEventData) {
+    private (int InputId, InputState State) lastControllerInput;
     [AddonPreReceiveEvent("CharacterClass")]
     private void EventHandle(AddonReceiveEventArgs args) {
         var eventType = (AtkEventType)args.AtkEventType;
@@ -127,9 +128,12 @@ public unsafe class CharacterClassSwitcher : Tweak {
         }
 
         if (eventType == AtkEventType.InputReceived) {
-            var a5 = (byte*)args.AtkEventData;
-            if (a5 == null || a5[0] != 0x01 || a5[4] != 1) {
-                return;
+            var a5 = (AtkEventData*)args.AtkEventData;
+            if (a5 == null) return;
+            try {
+                if (a5->InputData.InputId != 0x01 || a5->InputData.State != InputState.Up || lastControllerInput.InputId != 0x01 || lastControllerInput.State is not (InputState.Down or InputState.Held)) return;
+            } finally {
+                lastControllerInput = (a5->InputData.InputId, a5->InputData.State);
             }
         }
 
