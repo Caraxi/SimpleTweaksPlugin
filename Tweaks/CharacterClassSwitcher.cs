@@ -14,7 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakName("Character Window Job Switcher")]
 [TweakDescription("Allow clicking on classes to switch to gearsets.")]
 [Changelog("1.8.5.1", "Fixed tweak not working on DoH without desynthesis unlocked.")]
-[Changelog(UnreleasedVersion, "Fixed issue causing a loop of trying to apply a gearset that is missing its weapon when using gamepad.")]
+[Changelog("1.15.0.6", "Fixed issue causing a loop of trying to apply a gearset that is missing its weapon when using gamepad.")]
 public unsafe class CharacterClassSwitcher : Tweak {
     private readonly Dictionary<uint, uint> classJobComponentMap = new() {
         { 19, 08 }, // PLD

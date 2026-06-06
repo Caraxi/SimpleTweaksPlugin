@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.15.0.6
+***Tweak Changes***
+- **`Character Window Job Switcher`** - Fixed issue causing a loop of trying to apply a gearset that is missing its weapon when using gamepad.
+
+
 ## 1.15.0.5
 ***General Changes***
 - Fixed issues with some tweaks not saving their settings correctly.
