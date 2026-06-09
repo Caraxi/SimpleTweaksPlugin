@@ -112,6 +112,7 @@ public unsafe class TrackOutfits : TooltipTweaks.SubTweak
 
     public override void OnGenerateItemTooltip(NumberArrayData* numberArrayData, StringArrayData* stringArrayData)
     {
+        if (Item.ItemId >= 2000000) return;
         var baseId = ItemUtil.GetBaseId((Item.ItemId % 1000000) + (Item.Flags.HasFlag(InventoryItem.ItemFlags.HighQuality) ? 1000000U : 0U));
         if (GetOutfits(baseId.ItemId) is { Length: > 0 } outfits) {
 
