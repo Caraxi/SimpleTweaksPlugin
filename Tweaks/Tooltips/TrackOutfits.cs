@@ -25,6 +25,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 [TweakAutoConfig]
 [Changelog("1.14.0.0", "Fixed HQ outfits not working.")]
 [Changelog("1.15.0.5", "Added option to ignore quality when checking if an item exists as part of an outfit.")]
+[Changelog("1.15.0.7", "Fixed some key items incorrectly indicating they belong to an outfit.")]
 public unsafe class TrackOutfits : TooltipTweaks.SubTweak
 {
     [TweakHook(typeof(UIState), nameof(UIState.IsItemActionUnlocked), nameof(IsItemActionUnlockedDetour))]

@@ -16,6 +16,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [TweakReleaseVersion("1.10.8.0")]
 [Changelog("1.10.10.0", "Added support for Occult Crescent's phantom jobs.")]
 [Changelog("1.10.10.0", "Added support for earning experience on jobs other than current job.")]
+[Changelog("1.15.0.7", "Fixed log message being hidden after Dalamud update.")]
 public unsafe class ExpGainLevelPercent : ChatTweaks.SubTweak {
     
     private void AppendPercent(ILogMessage logMessage, float gainedExp, float expToNext) {

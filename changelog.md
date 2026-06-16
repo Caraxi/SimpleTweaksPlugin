@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.15.0.7
+***Tweak Changes***
+- **`Display EXP Gain Percentage of Level`** - Fixed log message being hidden after Dalamud update.
+
+- **`Track Outfits`** - Fixed some key items incorrectly indicating they belong to an outfit.
+
+
 ## 1.15.0.6
 ***Tweak Changes***
 - **`Character Window Job Switcher`** - Fixed issue causing a loop of trying to apply a gearset that is missing its weapon when using gamepad.
