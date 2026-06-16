@@ -17,8 +17,7 @@ namespace SimpleTweaksPlugin.Tweaks.Chat;
 [Changelog("1.10.10.0", "Added support for Occult Crescent's phantom jobs.")]
 [Changelog("1.10.10.0", "Added support for earning experience on jobs other than current job.")]
 public unsafe class ExpGainLevelPercent : ChatTweaks.SubTweak {
-    private const XivChatType ExperienceGainedChatMessageType = (XivChatType)2112;
-
+    
     private void AppendPercent(ILogMessage logMessage, float gainedExp, float expToNext) {
         logMessage.PreventOriginal();
         var str = new SeStringBuilder();
@@ -26,8 +25,8 @@ public unsafe class ExpGainLevelPercent : ChatTweaks.SubTweak {
         str.Append(logMessage.FormatLogMessageForDebugging());
         str.Append($" ({MathF.Round(pctOfNextLevel, 3)}%)");
         Service.Chat.Print(new XivChatEntry {
-            Type = ExperienceGainedChatMessageType,
-            Message = str.ToReadOnlySeString().ToDalamudString()
+            Type = XivChatType.Progress,
+            MessageBytes = str.ToArray(),
         });
     }
 
