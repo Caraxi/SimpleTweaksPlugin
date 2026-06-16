@@ -20,6 +20,7 @@ namespace SimpleTweaksPlugin.Tweaks;
 [TweakAuthor("KazWolfe")]
 [TweakDescription("Block Alt-Tab and other keys to keep you in the game.")]
 [TweakAutoConfig]
+[TweakReleaseVersion("1.8.3.0")]
 [Changelog("1.10.11.0", "Added option to block Caps Lock key", Author = "KazWolfe")]
 public partial class KeyInterrupt : Tweak {
     public class Configs : TweakConfig {
@@ -102,11 +103,6 @@ public partial class KeyInterrupt : Tweak {
     private HookHandlerDelegate? _delegate;
 
     private CancellationTokenSource? _cts;
-
-    protected override void Setup() {
-        AddChangelogNewTweak("1.8.3.0");
-        base.Setup();
-    }
 
     protected override void Enable() {
         this._delegate = this.OnKeystroke;

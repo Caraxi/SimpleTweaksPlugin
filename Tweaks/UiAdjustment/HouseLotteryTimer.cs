@@ -42,7 +42,7 @@ public unsafe class HouseLotteryTimer : UiAdjustments.SubTweak {
                 if (atkValue->Type != AtkValueType.Int) continue;
                 if (atkValue->Int != 18) continue;
                 atkValue++;
-                if (atkValue->String.Value == null || atkValue->Type != AtkValueType.String8) break;
+                if (atkValue->String.Value == null || atkValue->Type != AtkValueType.ConstString) break;
                 var lotteryPeriod = GetLotteryTimeInfo();
                 var displayString = Common.ReadString(atkValue->String);
                 if (string.IsNullOrEmpty(displayString)) break;

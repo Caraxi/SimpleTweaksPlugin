@@ -16,10 +16,16 @@ using Framework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
-[Changelog("1.9.7.1", "Re-added 'Use ReShade' option")]
 [TweakName("Screenshot Improvements")]
 [TweakDescription("Allows taking higher resolution screenshots, Hiding Dalamud & Game UIs and removing the copyright notice from screenshots.")]
 [TweakAuthor("NotNite")]
+[TweakReleaseVersion("1.8.2.0")]
+[Changelog("1.8.3.0", "Added option to hide dalamud UI for screenshot.")]
+[Changelog("1.8.5.0", "Added option to hide game UI for screenshots.")]
+[Changelog("1.8.5.0", "Added option to remove the FFXIV Copyright from screenshots.")]
+[Changelog("1.8.5.1", "Renamed from 'High Resolution Screenshots' to 'Screenshot Improvements'")]
+[Changelog("1.8.6.0", "Added experimental option to use ReShade for screenshots.")]
+[Changelog("1.9.7.1", "Re-added 'Use ReShade' option")]
 [Changelog("1.10.6.0", "Fixed 'Remove Copyright Text' option.")]
 public unsafe class HighResScreenshots : Tweak {
     private nint copyrightShaderAddress;
@@ -153,16 +159,6 @@ public unsafe class HighResScreenshots : Tweak {
         Config.ReShadeCtrl = NativeKeyState.IsKeyDown(VirtualKey.CONTROL);
         updatingReShadeKeybind = false;
 
-    }
-    
-    protected override void Setup() {
-        AddChangelogNewTweak("1.8.2.0");
-        AddChangelog("1.8.3.0", "Added option to hide dalamud UI for screenshot.");
-        AddChangelog("1.8.5.0", "Added option to hide game UI for screenshots.");
-        AddChangelog("1.8.5.0", "Added option to remove the FFXIV Copyright from screenshots.");
-        AddChangelog("1.8.5.1", "Renamed from 'High Resolution Screenshots' to 'Screenshot Improvements'");
-        AddChangelog("1.8.6.0", "Added experimental option to use ReShade for screenshots.");
-        base.Setup();
     }
 
     protected override void Enable() {

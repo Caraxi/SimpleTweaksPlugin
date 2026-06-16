@@ -15,6 +15,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 [TweakName("Improved Crafting Action Tooltips")]
 [TweakDescription("Adds calculated efficiency of crafting actions to tooltips.")]
 [TweakAutoConfig]
+[Changelog("1.8.1.1", "Fixed tweak not disabling correctly.")]
 [Changelog("1.10.5.0", "Fixed results preview not resetting.")]
 public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
     public class Configs : TweakConfig {
@@ -28,10 +29,6 @@ public unsafe class CraftingActionInfo : TooltipTweaks.SubTweak {
     private DalamudLinkPayload? identifier;
     private string progressString;
     private string qualityString;
-    
-    protected override void Setup() {
-        AddChangelog("1.8.1.1", "Fixed tweak not disabling correctly.");
-    }
 
     protected override void Enable() {
         progressString ??= Service.Data.Excel.GetSheet<Addon>().GetRow(213).Text.ExtractText();

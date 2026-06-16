@@ -10,6 +10,12 @@ using SimpleTweaksPlugin.TweakSystem;
 
 namespace SimpleTweaksPlugin.Tweaks;
 
+[Changelog("1.8.3.2", "Improved reliability through patches")]
+[Changelog("1.8.4.0", "Fixed issues when using gamepad mode")]
+[Changelog("1.8.4.0", "Re-added accidentally remove gamepad mode option")]
+[Changelog("1.8.4.0", "Added 'LimitMouseToGameWindow' and 'CharacterDisplayLimit'")]
+[Changelog("1.8.4.0", "Fixed 'DisplayNameSize' using incorrect values")]
+[Changelog("1.8.9.1", "Fixed toggle options not working.")]
 [Changelog("1.9.4.0", "Added support for changing the cutscene audio language.")]
 [Changelog("1.9.4.0", "Added support for changing title display options.", Author = "Gehock")]
 [Changelog("1.9.4.0", "Added support for 'Small' and 'Smallest' for nameplate size options.", Author = "Gehock")]
@@ -20,15 +26,6 @@ public unsafe class SetOptionCommand : CommandTweak {
     protected override string Command => "setoption";
     protected override string HelpMessage => "Usage: /setoption <option> <value>";
     protected override string[] Alias => new[] { "setopt" };
-
-    protected override void Setup() {
-        AddChangelog("1.8.3.2", "Improved reliability through patches");
-        AddChangelog("1.8.4.0", "Fixed issues when using gamepad mode");
-        AddChangelog("1.8.4.0", "Re-added accidentally remove gamepad mode option");
-        AddChangelog("1.8.4.0", "Added 'LimitMouseToGameWindow' and 'CharacterDisplayLimit'");
-        AddChangelog("1.8.4.0", "Fixed 'DisplayNameSize' using incorrect values");
-        AddChangelog("1.8.9.1", "Fixed toggle options not working.");
-    }
 
     public enum OptionGroup {
         System,

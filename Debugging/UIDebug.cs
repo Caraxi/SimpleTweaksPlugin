@@ -474,7 +474,7 @@ public unsafe class UIDebug : DebugHelper {
                                     break;
                                 }
                                 case AtkValueType.ManagedString:
-                                case AtkValueType.String8:
+                                case AtkValueType.ConstString:
                                 case AtkValueType.String: {
                                     if (atkValue->String.Value == null) {
                                         ImGui.TextDisabled("null");

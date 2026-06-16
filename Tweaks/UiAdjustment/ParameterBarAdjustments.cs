@@ -17,10 +17,12 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakName("Parameter Bar Adjustments")]
 [TweakDescription("Allows hiding or moving specific parts of the parameter bar (HP and mana bars).")]
 [TweakAuthor("Aireil")]
-[Changelog("1.10.0.1", "Hide MP bar on Viper")]
-[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 [TweakTags("parameter", "hp", "mana", "bar")]
 [TweakAutoConfig]
+[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+[Changelog("1.8.1.2", "Fixed positioning of HP bar.")]
+[Changelog("1.8.1.1", "Added option to center HP bar when MP bar is hidden.")]
+[Changelog("1.10.0.1", "Hide MP bar on Viper")]
 public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
         public HideAndOffsetConfig TargetCycling = new() { OffsetX = 100, OffsetY = 1 };
@@ -60,11 +62,6 @@ public unsafe class ParameterBarAdjustments : UiAdjustments.SubTweak {
     private readonly List<uint> doLIds = [16, 17, 18];
 
     private bool inPvp;
-
-    protected override void Setup() {
-        AddChangelog("1.8.1.2", "Fixed positioning of HP bar.");
-        AddChangelog("1.8.1.1", "Added option to center HP bar when MP bar is hidden.");
-    }
 
     protected override void AfterEnable() {
         OnTerritoryChanged(Service.ClientState.TerritoryType);

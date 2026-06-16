@@ -11,6 +11,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [TweakName("Time Until GP Max")]
 [TweakDescription("Shows a countdown when playing Gathering classes to estimate the time until their GP is capped.")]
+[Changelog("1.8.2.0", "Added an option to display time in Eorzean Hours", Author = "peterberbec")]
 public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
     private readonly Stopwatch lastGpChangeStopwatch = new();
     private readonly Stopwatch lastUpdate = new();
@@ -43,10 +44,6 @@ public unsafe class TimeUntilGpMax : UiAdjustments.SubTweak {
     }
 
     public Configs Config { get; private set; }
-
-    protected override void Setup() {
-        AddChangelog("1.8.2.0", "Added an option to display time in Eorzean Hours").Author("peterberbec");
-    }
 
     protected override void Enable() {
         Config = LoadConfig<Configs>() ?? new Configs();
