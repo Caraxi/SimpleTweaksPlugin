@@ -14,6 +14,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakName("Always Yes")]
 [TweakDescription("Sets the default action in dialog boxes to yes when using confirm (num 0).")]
 [TweakAuthor("Aireil")]
+[Changelog(UnreleasedVersion, "Fixed Always Yes sometimes not instantly working.")]
 [Changelog("1.14.0.2", "Fixed desynthesis not working and an issue resetting the selection the the incorrect action when moving some windows. The tweak will now ignore the checkbox setting if the yes button is enabled.")]
 [Changelog("1.10.0.5", "Added support for dyes.")]
 [Changelog("1.10.0.4", "Added a setting to ignore checkbox if it is ticked and fixed the tweak not working with desynthesis.")]
@@ -124,7 +125,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
     private void OnAddonSetup(AddonSetupArgs args) {
         switch (args.AddonName) {
             case "SelectYesno":
-                if (Config.YesNo && !IsYesnoAnException(args.Addon)) DelayedSetFocusYes(args.AddonName, 8, 9, 4, 1);
+                if (Config.YesNo && !IsYesnoAnException(args.Addon)) DelayedSetFocusYes(args, 8, 9, 4, 1);
                 return;
             case "ContentsFinderConfirm":
                 if (Config.DutyConfirmation) SetFocusYes(args.Addon, 63);
@@ -157,7 +158,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 if (Config.Dyes) SetFocusYes(args.Addon, 6);
                 return;
             case "SalvageDialog":
-                if (Config.Desynthesis) DelayedSetFocusYes(args.AddonName, 25, null, 24);
+                if (Config.Desynthesis) DelayedSetFocusYes(args, 25, null, 24);
                 return;
             case "PurifyResult":
                 if (Config.AutomaticAetherialReduction) SetFocusYes(args.Addon, 19);
@@ -166,10 +167,10 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 if (Config.Lobby) SetFocusYes(args.Addon, 4);
                 return;
             case "LobbyDKTWorldList":
-                if (Config.Lobby) DelayedSetFocusYes(args.AddonName, 25);
+                if (Config.Lobby) DelayedSetFocusYes(args, 25);
                 return;
             case "LobbyDKTCheckExec":
-                if (Config.Lobby) DelayedSetFocusYes(args.AddonName, 3);
+                if (Config.Lobby) DelayedSetFocusYes(args, 3);
                 return;
             case "ShopExchangeItemDialog":
                 if (Config.ItemExchangeConfirmations) SetFocusYes(args.Addon, 18);
@@ -180,9 +181,10 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         }
     }
 
-    private void DelayedSetFocusYes(string addon, uint yesButtonId, uint? yesHoldButtonId = null, uint? checkBoxId = null, int delay = 0) {
+    private void DelayedSetFocusYes(AddonSetupArgs args, uint yesButtonId, uint? yesHoldButtonId = null, uint? checkBoxId = null, int delay = 0) {
+        SetFocusYes(args.Addon, yesButtonId, yesHoldButtonId, checkBoxId);
         Service.Framework.RunOnTick(() => {
-            if (Common.GetUnitBase(addon, out var unitBase)) SetFocusYes((nint)unitBase, yesButtonId, yesHoldButtonId, checkBoxId);
+            if (Common.GetUnitBase(args.AddonName, out var unitBase)) SetFocusYes((nint)unitBase, yesButtonId, yesHoldButtonId, checkBoxId);
         }, delayTicks: delay);
     }
 
