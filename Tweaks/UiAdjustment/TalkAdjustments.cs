@@ -47,7 +47,11 @@ public unsafe class TalkAdjustments : Tweak {
         [EnumTooltip("A mixture of the system message style and the dragon style.")]
         DragonSystem = 8,
         [EnumTooltip("The system message style with a purple background.")]
-        PurpleSystem = 9
+        PurpleSystem = 9,
+        [EnumTooltip("A style with drips on the side.")]
+        Water = 10,
+        [EnumTooltip("Blue system message used by robots on the moon.")]
+        Robot = 11,
     }
 
     private readonly struct TalkAtkValue {
