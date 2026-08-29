@@ -40,6 +40,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         public bool Lobby = true;
         public bool ItemExchangeConfirmations = true;
         public bool BlundervilleExitDialog = true;
+        public bool ZodiacWeaponEnhancement = true;
         public List<string> ExceptionsYesNo = new();
     }
 
@@ -112,6 +113,7 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
         hasChanged |= ImGui.Checkbox("Character selection dialogs", ref Config.Lobby);
         hasChanged |= ImGui.Checkbox("Item exchange confirmations", ref Config.ItemExchangeConfirmations);
         hasChanged |= ImGui.Checkbox("Blunderville exit dialog", ref Config.BlundervilleExitDialog);
+        hasChanged |= ImGui.Checkbox("Zodiac Weapon Enhancement", ref Config.ZodiacWeaponEnhancement);
 
         ImGui.Unindent();
 
@@ -176,6 +178,9 @@ public unsafe class AlwaysYes : UiAdjustments.SubTweak {
                 return;
             case "FGSExitDialog":
                 if (Config.BlundervilleExitDialog) SetSpecialFocus(args.Addon, 10, 6);
+                return;
+            case "RelicSphereUpgrade":
+                if (Config.ZodiacWeaponEnhancement) SetFocusYes(args.Addon, 6);
                 return;
         }
     }
