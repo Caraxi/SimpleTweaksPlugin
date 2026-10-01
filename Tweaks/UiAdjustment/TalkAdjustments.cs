@@ -32,6 +32,7 @@ public unsafe class TalkAdjustments : Tweak {
     public enum TalkStyle : byte {
         [EnumTooltip("The normal style with a white background.")]
         Normal = 0,
+        //NormalAlt = 1, // same timeline as Normal, seems to be handled identically
         [EnumTooltip("A style with lights on the top and bottom border.")]
         Lights = 2,
         [EnumTooltip("A style used for when characters are shouting.")]
@@ -73,7 +74,7 @@ public unsafe class TalkAdjustments : Tweak {
         try {
             var style = (AtkValue*) refreshArgs.AtkValueEnumerable.Skip(TalkAtkValue.Style).First().Address;
             var logToChatChannel = (AtkValue*) refreshArgs.AtkValueEnumerable.Skip(TalkAtkValue.LogToChatChannel).First().Address;
-            if ((!TweakConfig.OnlyOverrideNormal || style->UInt == 0) && TalkAtkValue.Style < refreshArgs.AtkValueCount)
+            if ((!TweakConfig.OnlyOverrideNormal || style->UInt is 0 or 1) && TalkAtkValue.Style < refreshArgs.AtkValueCount)
                 style->SetUInt((uint)TweakConfig.Style);
             if (TalkAtkValue.LogToChatChannel < refreshArgs.AtkValueCount && TweakConfig.LogChannel != default)
                 logToChatChannel->SetUInt((uint)TweakConfig.LogChannel);
