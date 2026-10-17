@@ -14,14 +14,14 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [TweakName("Always Yes")]
 [TweakDescription("Sets the default action in dialog boxes to yes when using confirm (num 0).")]
 [TweakAuthor("Aireil")]
-[Changelog(UnreleasedVersion, "Fixed Always Yes sometimes not instantly working.")]
+[Changelog("1.15.0.8", "Fixed Always Yes sometimes not instantly working.")]
 [Changelog("1.14.0.2", "Fixed desynthesis not working and an issue resetting the selection the the incorrect action when moving some windows. The tweak will now ignore the checkbox setting if the yes button is enabled.")]
 [Changelog("1.10.0.5", "Added support for dyes.")]
 [Changelog("1.10.0.4", "Added a setting to ignore checkbox if it is ticked and fixed the tweak not working with desynthesis.")]
 [Changelog("1.10.0.0", "Added support for automatic aetherial reduction.")]
 [Changelog("1.9.2.1", "Added support for Blunderville exit dialog.")]
 [Changelog("1.8.5.0", "Added an option to default cursor to the checkbox when one exists.")]
-[Changelog(UnreleasedVersion, "Added support for Zodiac Weapon Enhancement dialog.")]
+[Changelog("1.15.0.8", "Added support for Zodiac Weapon Enhancement dialog.")]
 [TweakAutoConfig]
 public unsafe class AlwaysYes : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {

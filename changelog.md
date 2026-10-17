@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.15.0.8
+***Tweak Changes***
+- **`Always Yes`**
+  - Fixed Always Yes sometimes not instantly working.
+  - Added support for Zodiac Weapon Enhancement dialog.
+
+- **`Cleaner World Visit Menu`** - Fixed display on worlds that allow cross-DC travel
+
+
 ## 1.15.0.7
 ***Tweak Changes***
 - **`Display EXP Gain Percentage of Level`** - Fixed log message being hidden after Dalamud update.

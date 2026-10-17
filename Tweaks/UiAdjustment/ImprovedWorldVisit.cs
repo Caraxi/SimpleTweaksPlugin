@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.ClientState.Keys;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -10,7 +10,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 
 [TweakName("Cleaner World Visit Menu")]
 [TweakDescription("Cleans up the world visit menu and shows your current location in order on the list.")]
-[Changelog(UnreleasedVersion, "Fixed display on worlds that allow cross-DC travel")]
+[Changelog("1.15.0.8", "Fixed display on worlds that allow cross-DC travel")]
 public unsafe class ImprovedWorldVisit : Tweak {
     [AddonEvent("WorldTravelSelect", AddonEvent.PostSetup, AddonEvent.PostRequestedUpdate, AddonEvent.PostRefresh, AddonEvent.PostOpen)]
     private void SetupWorldTravelSelect(AtkUnitBase* unitBase) {
