@@ -20,6 +20,7 @@ namespace SimpleTweaksPlugin.Tweaks.UiAdjustment;
 [Changelog("1.10.0.0", "Added support for automatic aetherial reduction.")]
 [Changelog("1.9.2.1", "Added support for Blunderville exit dialog.")]
 [Changelog("1.8.5.0", "Added an option to default cursor to the checkbox when one exists.")]
+[Changelog(UnreleasedVersion, "Added support for Zodiac Weapon Enhancement dialog.")]
 [TweakAutoConfig]
 public unsafe class AlwaysYes : UiAdjustments.SubTweak {
     public class Configs : TweakConfig {
