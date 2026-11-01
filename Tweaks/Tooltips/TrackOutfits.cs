@@ -26,6 +26,7 @@ namespace SimpleTweaksPlugin.Tweaks.Tooltips;
 [Changelog("1.14.0.0", "Fixed HQ outfits not working.")]
 [Changelog("1.15.0.5", "Added option to ignore quality when checking if an item exists as part of an outfit.")]
 [Changelog("1.15.0.7", "Fixed some key items incorrectly indicating they belong to an outfit.")]
+[Changelog(UnreleasedVersion, "Added option to ignore armoire items.")]
 public unsafe class TrackOutfits : TooltipTweaks.SubTweak
 {
     [TweakHook(typeof(UIState), nameof(UIState.IsItemActionUnlocked), nameof(IsItemActionUnlockedDetour))]
@@ -40,6 +41,8 @@ public unsafe class TrackOutfits : TooltipTweaks.SubTweak
     public class Configs : TweakConfig {
         [TweakConfigOption("Mark HQ items as obtained if their NQ variant is obtained, or vice versa")]
         public bool IgnoreQuality = true;
+        [TweakConfigOption("Don't show tracking on items that can be stored in the armoire")]
+        public bool IgnoreArmoire = true;
     }
     
     [TweakConfig] public Configs TweakConfig { get; private set; } = new();
@@ -144,12 +147,15 @@ public unsafe class TrackOutfits : TooltipTweaks.SubTweak
         }
     }
 
-    private static uint[] GetOutfits(uint itemId)
+    private uint[] GetOutfits(uint itemId)
     {
-        return Service.Data.GetExcelSheet<MirageStoreSetItemLookup>()
+        if (TweakConfig.IgnoreArmoire && ArmoireItems.Contains(itemId)) return [];
+
+        return [.. Service.Data.GetExcelSheet<MirageStoreSetItemLookup>()
             .Where(row => row.RowId == itemId)
             .SelectMany(row => row.Item.Where(x => x.Value.RowId != 0))
-            .Select(x => x.Value.RowId)
-            .ToArray();
+            .Select(x => x.Value.RowId)];
     }
+
+    private IReadOnlySet<uint> ArmoireItems => (field) ?? (field = Service.Data.GetExcelSheet<Lumina.Excel.Sheets.Cabinet>().Where(r => r.Item.RowId != 0).Select(r => r.Item.RowId).ToHashSet());
 }
