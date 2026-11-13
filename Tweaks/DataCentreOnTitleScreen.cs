@@ -1,4 +1,4 @@
-﻿using Dalamud.Game.Config;
+using Dalamud.Game.Config;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
@@ -26,11 +26,10 @@ public unsafe class DataCentreOnTitleScreen : Tweak {
         if (Service.Condition.Any()) return;
         var addon = Common.GetUnitBase("_TitleMenu");
         if (addon == null) return;
-        if (!Service.Data.Excel.GetSheet<WorldDCGroupType>().TryGetRow(AgentLobby.Instance()->DataCenter, out var dc) || dc.RowId == 0) {
+        var dcSheet = Service.Data.Excel.GetSheet<WorldDCGroupType>();
+        if (!dcSheet.TryGetRow(AgentLobby.Instance()->DataCenter, out var dc) || dc.RowId == 0) {
             var world = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->SystemConfig.GetLastWorldId();
-            if (Service.Data.Excel.GetSheet<World>().TryGetRow(world, out var worldRow)) {
-                dc = worldRow.DataCenter.Value;
-            } else {
+            if (!Service.Data.Excel.GetSheet<World>().TryGetRow(world, out var worldRow) || !dcSheet.TryGetRow(worldRow.Unknown0, out dc) || dc.RowId == 0) {
                 return;
             }
         }
